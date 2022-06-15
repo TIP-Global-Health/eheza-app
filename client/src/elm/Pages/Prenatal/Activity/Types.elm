@@ -82,3 +82,7 @@ type TreatmentReviewTask
 type OutsideCareStep
     = OutsideCareStepDiagnoses
     | OutsideCareStepMedications
+
+
+type ImmunisationTask
+    = TaskTetanus

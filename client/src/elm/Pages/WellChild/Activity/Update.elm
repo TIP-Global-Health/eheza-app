@@ -21,6 +21,7 @@ import Measurement.Model
         , MuacForm
         , NutritionForm
         , PhotoForm
+        , VaccinationFormViewMode(..)
         , WeightForm
         , emptyHeightForm
         , emptyMuacForm

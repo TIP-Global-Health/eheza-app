@@ -946,7 +946,7 @@ immunisationTaskToVaccineType task =
             Nothing
 
 
-getFormByVaccineTypeFunc : WellChildVaccineType -> (ImmunisationData -> VaccinationForm)
+getFormByVaccineTypeFunc : WellChildVaccineType -> (ImmunisationData -> WellChildVaccinationForm)
 getFormByVaccineTypeFunc vaccineType =
     case vaccineType of
         VaccineBCG ->
@@ -1010,7 +1010,7 @@ getMeasurementByVaccineTypeFunc vaccineType measurements =
                 |> getMeasurementValueFunc
 
 
-updateVaccinationFormByVaccineType : WellChildVaccineType -> VaccinationForm -> ImmunisationData -> ImmunisationData
+updateVaccinationFormByVaccineType : WellChildVaccineType -> WellChildVaccinationForm -> ImmunisationData -> ImmunisationData
 updateVaccinationFormByVaccineType vaccineType form data =
     case vaccineType of
         VaccineBCG ->
@@ -1183,71 +1183,6 @@ vaccineDoseToComparable dose =
 
         VaccineDoseFifth ->
             5
-
-
-fromVaccinationValue : Maybe VaccinationValue -> VaccinationForm
-fromVaccinationValue saved =
-    Maybe.map
-        (\value ->
-            { administeredDoses = Just value.administeredDoses
-            , administeredDosesDirty = True
-            , administrationDates = Just value.administrationDates
-            , administrationNote = Just value.administrationNote
-            , administrationNoteDirty = False
-            , viewMode = ViewModeInitial
-            , updatePreviousVaccines = Just False
-            , willReceiveVaccineToday = value.administrationNote == AdministeredToday |> Just
-            , vaccinationUpdateDate = Nothing
-            , dateSelectorPopupState = Nothing
-            }
-        )
-        saved
-        |> Maybe.withDefault emptyVaccinationForm
-
-
-vaccinationFormWithDefault : VaccinationForm -> Maybe VaccinationValue -> VaccinationForm
-vaccinationFormWithDefault form saved =
-    unwrap
-        form
-        (\value ->
-            let
-                administrationNote =
-                    valueConsideringIsDirtyField form.administrationNoteDirty form.administrationNote value.administrationNote
-            in
-            { administeredDoses = or form.administeredDoses (Just value.administeredDoses)
-            , administeredDosesDirty = form.administeredDosesDirty
-            , administrationDates = or form.administrationDates (Just value.administrationDates)
-            , administrationNote = administrationNote
-            , administrationNoteDirty = form.administrationNoteDirty
-            , viewMode = form.viewMode
-            , updatePreviousVaccines = or form.updatePreviousVaccines (Just False)
-            , willReceiveVaccineToday = or form.willReceiveVaccineToday (administrationNote == Just AdministeredToday |> Just)
-            , vaccinationUpdateDate = form.vaccinationUpdateDate
-            , dateSelectorPopupState = form.dateSelectorPopupState
-            }
-        )
-        saved
-
-
-toVaccinationValueWithDefault : Maybe VaccinationValue -> VaccinationForm -> Maybe VaccinationValue
-toVaccinationValueWithDefault saved form =
-    vaccinationFormWithDefault form saved
-        |> toVaccinationValue
-
-
-toVaccinationValue : VaccinationForm -> Maybe VaccinationValue
-toVaccinationValue form =
-    let
-        administeredDoses =
-            Maybe.withDefault EverySet.empty form.administeredDoses
-
-        administrationDates =
-            Maybe.withDefault EverySet.empty form.administrationDates
-
-        administrationNote =
-            Maybe.withDefault AdministeredPreviously form.administrationNote
-    in
-    Just <| VaccinationValue administeredDoses administrationDates administrationNote
 
 
 generateRemianingECDSignsBeforeCurrentEncounter : NominalDate -> AssembledData -> List ECDSign
@@ -2248,7 +2183,7 @@ wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress =
         |> Maybe.withDefault False
 
 
-wasInitialOpvAdministeredByVaccinationForm : NominalDate -> VaccinationForm -> Bool
+wasInitialOpvAdministeredByVaccinationForm : NominalDate -> WellChildVaccinationForm -> Bool
 wasInitialOpvAdministeredByVaccinationForm birthDate form =
     Maybe.map2
         (\administeredDoses administrationDates ->

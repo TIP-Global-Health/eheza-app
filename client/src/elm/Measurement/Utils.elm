@@ -589,3 +589,48 @@ toVitalsValue form =
         )
         form.respiratoryRate
         form.bodyTemperature
+
+
+vaccinationFormWithDefault : VaccinationForm msg -> Maybe VaccinationValue -> VaccinationForm msg
+vaccinationFormWithDefault form saved =
+    unwrap
+        form
+        (\value ->
+            let
+                administrationNote =
+                    valueConsideringIsDirtyField form.administrationNoteDirty form.administrationNote value.administrationNote
+            in
+            { administeredDoses = or form.administeredDoses (Just value.administeredDoses)
+            , administeredDosesDirty = form.administeredDosesDirty
+            , administrationDates = or form.administrationDates (Just value.administrationDates)
+            , administrationNote = administrationNote
+            , administrationNoteDirty = form.administrationNoteDirty
+            , viewMode = form.viewMode
+            , updatePreviousVaccines = or form.updatePreviousVaccines (Just False)
+            , willReceiveVaccineToday = or form.willReceiveVaccineToday (administrationNote == Just AdministeredToday |> Just)
+            , vaccinationUpdateDate = form.vaccinationUpdateDate
+            , dateSelectorPopupState = form.dateSelectorPopupState
+            }
+        )
+        saved
+
+
+toVaccinationValueWithDefault : Maybe VaccinationValue -> VaccinationForm msg -> Maybe VaccinationValue
+toVaccinationValueWithDefault saved form =
+    vaccinationFormWithDefault form saved
+        |> toVaccinationValue
+
+
+toVaccinationValue : VaccinationForm msg -> Maybe VaccinationValue
+toVaccinationValue form =
+    let
+        administeredDoses =
+            Maybe.withDefault EverySet.empty form.administeredDoses
+
+        administrationDates =
+            Maybe.withDefault EverySet.empty form.administrationDates
+
+        administrationNote =
+            Maybe.withDefault AdministeredPreviously form.administrationNote
+    in
+    Just <| VaccinationValue administeredDoses administrationDates administrationNote

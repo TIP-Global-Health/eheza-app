@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
-import DateSelector.SelectorPopup exposing (DateSelectorConfig)
+import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
@@ -207,16 +207,20 @@ emptyHeadCircumferenceForm =
 
 
 type alias ImmunisationData =
-    { bcgForm : VaccinationForm
-    , dtpForm : VaccinationForm
-    , hpvForm : VaccinationForm
-    , ipvForm : VaccinationForm
-    , mrForm : VaccinationForm
-    , opvForm : VaccinationForm
-    , pcv13Form : VaccinationForm
-    , rotarixForm : VaccinationForm
+    { bcgForm : WellChildVaccinationForm
+    , dtpForm : WellChildVaccinationForm
+    , hpvForm : WellChildVaccinationForm
+    , ipvForm : WellChildVaccinationForm
+    , mrForm : WellChildVaccinationForm
+    , opvForm : WellChildVaccinationForm
+    , pcv13Form : WellChildVaccinationForm
+    , rotarixForm : WellChildVaccinationForm
     , activeTask : Maybe ImmunisationTask
     }
+
+
+type alias WellChildVaccinationForm =
+    VaccinationForm Msg
 
 
 emptyImmunisationData : ImmunisationData
@@ -230,42 +234,6 @@ emptyImmunisationData =
     , pcv13Form = emptyVaccinationForm
     , rotarixForm = emptyVaccinationForm
     , activeTask = Nothing
-    }
-
-
-type alias VaccinationForm =
-    { administeredDoses : Maybe (EverySet VaccineDose)
-    , administeredDosesDirty : Bool
-    , administrationDates : Maybe (EverySet NominalDate)
-
-    -- This is the note for suggesed dose for encounter.
-    -- There are situations where there will be no suggested dose,
-    -- due to ability to uodate previous doses.
-    -- In this case, we'll set 'AdministeredPreviously' value.
-    , administrationNote : Maybe AdministrationNote
-    , administrationNoteDirty : Bool
-
-    -- Form inner functionality inputs
-    , viewMode : VaccinationFormViewMode
-    , updatePreviousVaccines : Maybe Bool
-    , willReceiveVaccineToday : Maybe Bool
-    , vaccinationUpdateDate : Maybe NominalDate
-    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
-    }
-
-
-emptyVaccinationForm : VaccinationForm
-emptyVaccinationForm =
-    { administeredDoses = Nothing
-    , administeredDosesDirty = False
-    , administrationDates = Nothing
-    , administrationNote = Nothing
-    , administrationNoteDirty = False
-    , viewMode = ViewModeInitial
-    , updatePreviousVaccines = Nothing
-    , willReceiveVaccineToday = Nothing
-    , vaccinationUpdateDate = Nothing
-    , dateSelectorPopupState = Nothing
     }
 
 

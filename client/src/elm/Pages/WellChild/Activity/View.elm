@@ -22,7 +22,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (InvokationModule(..), PhotoForm, VitalsForm, VitalsFormMode(..))
+import Measurement.Model exposing (InvokationModule(..), PhotoForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
@@ -1082,7 +1082,7 @@ immunisationTasksCompletedFromTotal language currentDate isChw assembled data ta
         |> Maybe.withDefault ( 0, 0 )
 
 
-viewVaccinationForm : Language -> NominalDate -> Bool -> AssembledData -> WellChildVaccineType -> VaccinationForm -> Html Msg
+viewVaccinationForm : Language -> NominalDate -> Bool -> AssembledData -> WellChildVaccineType -> WellChildVaccinationForm -> Html Msg
 viewVaccinationForm language currentDate isChw assembled vaccineType form =
     let
         ( contentByViewMode, _, _ ) =
@@ -1173,7 +1173,7 @@ vaccinationFormDynamicContentAndTasks :
     -> Bool
     -> AssembledData
     -> WellChildVaccineType
-    -> VaccinationForm
+    -> WellChildVaccinationForm
     -> ( List (Html Msg), Int, Int )
 vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form =
     Maybe.map
