@@ -1300,15 +1300,15 @@ type TranslationId
     | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
-    | WellChildImmunisationDescription VaccineType
-    | WellChildImmunisationDosage VaccineType
-    | WellChildImmunisationHeader VaccineType
-    | WellChildImmunisationHistory VaccineType
+    | WellChildImmunisationDescription WellChildVaccineType
+    | WellChildImmunisationDosage WellChildVaccineType
+    | WellChildImmunisationHeader WellChildVaccineType
+    | WellChildImmunisationHistory WellChildVaccineType
     | WellChildImmunisationTask Pages.WellChild.Activity.Types.ImmunisationTask
     | WellChildMedicationTask Pages.WellChild.Activity.Types.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChild.Activity.Types.NextStepsTask
     | WellChildSymptom WellChildSymptom
-    | WellChildVaccineLabel VaccineType
+    | WellChildVaccineLabel WellChildVaccineType
     | WhatDoYouWantToDo
     | WhatType
     | WhatWasTheirResponse
@@ -12750,45 +12750,54 @@ translationSet trans =
 
         VaccineType vaccineType ->
             case vaccineType of
-                VaccineBCG ->
-                    { english = "BCG Bacilius Calmette - Guérin Vaccine (BCG)"
-                    , kinyarwanda = Just "Urukingo rw'igituntu"
-                    }
+                WellChildVaccine wellChildVaccineType ->
+                    case wellChildVaccineType of
+                        VaccineBCG ->
+                            { english = "BCG Bacilius Calmette - Guérin Vaccine (BCG)"
+                            , kinyarwanda = Just "Urukingo rw'igituntu"
+                            }
 
-                VaccineOPV ->
-                    { english = "Oral Polio Vaccine (OPV)"
-                    , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu kanwa"
-                    }
+                        VaccineOPV ->
+                            { english = "Oral Polio Vaccine (OPV)"
+                            , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu kanwa"
+                            }
 
-                VaccineDTP ->
-                    { english = "DTP - HepB - Hib Vaccine"
-                    , kinyarwanda = Just "Urukingo rwa Kokorishi, Agakwega (Tetanosi), Akaniga,indwara zifata imyanya y'ubuhumekero, Umwijima wo mu bwoko bwa B"
-                    }
+                        VaccineDTP ->
+                            { english = "DTP - HepB - Hib Vaccine"
+                            , kinyarwanda = Just "Urukingo rwa Kokorishi, Agakwega (Tetanosi), Akaniga,indwara zifata imyanya y'ubuhumekero, Umwijima wo mu bwoko bwa B"
+                            }
 
-                VaccinePCV13 ->
-                    { english = "Pneumoccocal Vaccine (PCV 13)"
-                    , kinyarwanda = Just "Urukingo rw'umusonga"
-                    }
+                        VaccinePCV13 ->
+                            { english = "Pneumoccocal Vaccine (PCV 13)"
+                            , kinyarwanda = Just "Urukingo rw'umusonga"
+                            }
 
-                VaccineRotarix ->
-                    { english = "Rotavirus (Rotarix) Vaccine"
-                    , kinyarwanda = Just "Urukingo rw'impiswi"
-                    }
+                        VaccineRotarix ->
+                            { english = "Rotavirus (Rotarix) Vaccine"
+                            , kinyarwanda = Just "Urukingo rw'impiswi"
+                            }
 
-                VaccineIPV ->
-                    { english = "Inactivated Polio Vaccine"
-                    , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
-                    }
+                        VaccineIPV ->
+                            { english = "Inactivated Polio Vaccine"
+                            , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
+                            }
 
-                VaccineMR ->
-                    { english = "Measles-Rubella Vaccine"
-                    , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
-                    }
+                        VaccineMR ->
+                            { english = "Measles-Rubella Vaccine"
+                            , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
+                            }
 
-                VaccineHPV ->
-                    { english = "HPV Vaccine"
-                    , kinyarwanda = Just "Urukingo rw'Inkondo y'umura"
-                    }
+                        VaccineHPV ->
+                            { english = "HPV Vaccine"
+                            , kinyarwanda = Just "Urukingo rw'Inkondo y'umura"
+                            }
+
+                PrenatalVaccine prenatalVaccineType ->
+                    case prenatalVaccineType of
+                        VaccineTetanus ->
+                            { english = "Tetanus"
+                            , kinyarwanda = Nothing
+                            }
 
         ValidationErrors ->
             { english = "Validation Errors"

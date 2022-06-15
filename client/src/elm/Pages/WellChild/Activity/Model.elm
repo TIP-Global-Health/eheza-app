@@ -47,14 +47,14 @@ type Msg
     | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask
-    | SetVaccinationFormViewMode VaccineType VaccinationFormViewMode
-    | SetUpdatePreviousVaccines VaccineType VaccineDose Bool
-    | SetWillReceiveVaccineToday VaccineType VaccineDose Bool
-    | SetAdministrationNote VaccineType AdministrationNote
-    | SetVaccinationUpdateDateSelectorState VaccineType (Maybe (DateSelectorConfig Msg))
-    | SetVaccinationUpdateDate VaccineType NominalDate
-    | SaveVaccinationUpdateDate VaccineType VaccineDose
-    | DeleteVaccinationUpdateDate VaccineType VaccineDose NominalDate
+    | SetVaccinationFormViewMode WellChildVaccineType VaccinationFormViewMode
+    | SetUpdatePreviousVaccines WellChildVaccineType VaccineDose Bool
+    | SetWillReceiveVaccineToday WellChildVaccineType VaccineDose Bool
+    | SetAdministrationNote WellChildVaccineType AdministrationNote
+    | SetVaccinationUpdateDateSelectorState WellChildVaccineType (Maybe (DateSelectorConfig Msg))
+    | SetVaccinationUpdateDate WellChildVaccineType NominalDate
+    | SaveVaccinationUpdateDate WellChildVaccineType VaccineDose
+    | DeleteVaccinationUpdateDate WellChildVaccineType VaccineDose NominalDate
     | SaveBCGImmunisation PersonId (Maybe ( WellChildBCGImmunisationId, WellChildBCGImmunisation )) (Maybe ImmunisationTask)
     | SaveDTPImmunisation PersonId (Maybe ( WellChildDTPImmunisationId, WellChildDTPImmunisation )) (Maybe ImmunisationTask)
     | SaveHPVImmunisation PersonId (Maybe ( WellChildHPVImmunisationId, WellChildHPVImmunisation )) (Maybe ImmunisationTask)

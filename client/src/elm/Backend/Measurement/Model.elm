@@ -2011,6 +2011,11 @@ type ECDSign
 
 
 type VaccineType
+    = WellChildVaccine WellChildVaccineType
+    | PrenatalVaccine PrenatalVaccineType
+
+
+type WellChildVaccineType
     = VaccineBCG
     | VaccineOPV
     | VaccineDTP
@@ -2019,6 +2024,10 @@ type VaccineType
     | VaccineIPV
     | VaccineMR
     | VaccineHPV
+
+
+type PrenatalVaccineType
+    = VaccineTetanus
 
 
 type VaccineDose

@@ -4092,17 +4092,6 @@ decodeMeasurementNote =
             )
 
 
-decodeVaccineType : Decoder VaccineType
-decodeVaccineType =
-    string
-        |> andThen
-            (\type_ ->
-                vaccineTypeFromString type_
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| type_ ++ " is not a recognized VaccineType")
-            )
-
-
 decodeVaccineDose : Decoder VaccineDose
 decodeVaccineDose =
     string

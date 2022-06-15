@@ -1082,7 +1082,7 @@ immunisationTasksCompletedFromTotal language currentDate isChw assembled data ta
         |> Maybe.withDefault ( 0, 0 )
 
 
-viewVaccinationForm : Language -> NominalDate -> Bool -> AssembledData -> VaccineType -> VaccinationForm -> Html Msg
+viewVaccinationForm : Language -> NominalDate -> Bool -> AssembledData -> WellChildVaccineType -> VaccinationForm -> Html Msg
 viewVaccinationForm language currentDate isChw assembled vaccineType form =
     let
         ( contentByViewMode, _, _ ) =
@@ -1153,7 +1153,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                         |> Maybe.withDefault ( StatusCompleted, "completed" )
             in
             div [ class "entry vaccination" ]
-                [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType vaccineType ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType (WellChildVaccine vaccineType) ]
                 , Dict.values doses
                     |> List.sortWith Date.compare
                     |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
@@ -1172,7 +1172,7 @@ vaccinationFormDynamicContentAndTasks :
     -> NominalDate
     -> Bool
     -> AssembledData
-    -> VaccineType
+    -> WellChildVaccineType
     -> VaccinationForm
     -> ( List (Html Msg), Int, Int )
 vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form =

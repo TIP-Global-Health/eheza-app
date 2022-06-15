@@ -717,7 +717,7 @@ immunisationTasks =
     immunisationVaccinationTasks ++ [ TaskOverview ]
 
 
-generateSuggestedVaccinations : NominalDate -> Bool -> AssembledData -> List ( VaccineType, VaccineDose )
+generateSuggestedVaccinations : NominalDate -> Bool -> AssembledData -> List ( WellChildVaccineType, VaccineDose )
 generateSuggestedVaccinations currentDate isChw assembled =
     if isChw then
         [ ( VaccineBCG, VaccineDoseFirst ), ( VaccineOPV, VaccineDoseFirst ) ]
@@ -746,7 +746,7 @@ generateSuggestedVaccinations currentDate isChw assembled =
 {-| For each type of vaccine, we generate next dose and administration date.
 If there's no need for future vaccination, Nothing is returned.
 -}
-generateFutureVaccinationsData : NominalDate -> Person -> Bool -> VaccinationProgressDict -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData : NominalDate -> Person -> Bool -> VaccinationProgressDict -> List ( WellChildVaccineType, Maybe ( VaccineDose, NominalDate ) )
 generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vaccinationProgress =
     let
         initialOpvAdministered =
@@ -786,7 +786,7 @@ generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vacc
 
 {-| Check if the first dose of vaccine may be administered to the person on the limit date.
 -}
-expectVaccineForPerson : NominalDate -> Person -> Bool -> VaccineType -> Bool
+expectVaccineForPerson : NominalDate -> Person -> Bool -> WellChildVaccineType -> Bool
 expectVaccineForPerson limitDate person initialOpvAdministered vaccineType =
     expectVaccineDoseForPerson limitDate person initialOpvAdministered ( vaccineType, VaccineDoseFirst )
 
@@ -796,7 +796,7 @@ For example, to check if the dose of vaccine may be administered today, we set
 limit date to current date. If we want to check in one year, we set the limit date
 to current date + 1 year.
 -}
-expectVaccineDoseForPerson : NominalDate -> Person -> Bool -> ( VaccineType, VaccineDose ) -> Bool
+expectVaccineDoseForPerson : NominalDate -> Person -> Bool -> ( WellChildVaccineType, VaccineDose ) -> Bool
 expectVaccineDoseForPerson limitDate person initialOpvAdministered ( vaccineType, vaccineDose ) =
     person.birthDate
         |> Maybe.map
@@ -820,7 +820,7 @@ expectVaccineDoseForPerson limitDate person initialOpvAdministered ( vaccineType
         |> Maybe.withDefault False
 
 
-initialVaccinationDateByBirthDate : NominalDate -> Bool -> ( VaccineType, VaccineDose ) -> NominalDate
+initialVaccinationDateByBirthDate : NominalDate -> Bool -> ( WellChildVaccineType, VaccineDose ) -> NominalDate
 initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, vaccineDose ) =
     let
         dosesInterval =
@@ -874,7 +874,7 @@ initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType
                 |> Date.add unit (dosesInterval * interval)
 
 
-latestVaccinationDataForVaccine : VaccinationProgressDict -> VaccineType -> Maybe ( VaccineDose, NominalDate )
+latestVaccinationDataForVaccine : VaccinationProgressDict -> WellChildVaccineType -> Maybe ( VaccineDose, NominalDate )
 latestVaccinationDataForVaccine vaccinationsData vaccineType =
     Dict.get vaccineType vaccinationsData
         |> Maybe.andThen
@@ -885,7 +885,7 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
             )
 
 
-nextVaccinationDataForVaccine : NominalDate -> Bool -> VaccineDose -> VaccineType -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine : NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe ( VaccineDose, NominalDate )
 nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
     if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
         Nothing
@@ -902,7 +902,7 @@ nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdmini
                 )
 
 
-nextDoseForVaccine : NominalDate -> NominalDate -> Bool -> VaccineDose -> VaccineType -> Maybe VaccineDose
+nextDoseForVaccine : NominalDate -> NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe VaccineDose
 nextDoseForVaccine currentDate lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
     nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
         |> Maybe.andThen
@@ -915,7 +915,7 @@ nextDoseForVaccine currentDate lastDoseDate initialOpvAdministered lastDoseAdmin
             )
 
 
-immunisationTaskToVaccineType : ImmunisationTask -> Maybe VaccineType
+immunisationTaskToVaccineType : ImmunisationTask -> Maybe WellChildVaccineType
 immunisationTaskToVaccineType task =
     case task of
         TaskBCG ->
@@ -946,7 +946,7 @@ immunisationTaskToVaccineType task =
             Nothing
 
 
-getFormByVaccineTypeFunc : VaccineType -> (ImmunisationData -> VaccinationForm)
+getFormByVaccineTypeFunc : WellChildVaccineType -> (ImmunisationData -> VaccinationForm)
 getFormByVaccineTypeFunc vaccineType =
     case vaccineType of
         VaccineBCG ->
@@ -974,7 +974,7 @@ getFormByVaccineTypeFunc vaccineType =
             .rotarixForm
 
 
-getMeasurementByVaccineTypeFunc : VaccineType -> WellChildMeasurements -> Maybe VaccinationValue
+getMeasurementByVaccineTypeFunc : WellChildVaccineType -> WellChildMeasurements -> Maybe VaccinationValue
 getMeasurementByVaccineTypeFunc vaccineType measurements =
     case vaccineType of
         VaccineBCG ->
@@ -1010,7 +1010,7 @@ getMeasurementByVaccineTypeFunc vaccineType measurements =
                 |> getMeasurementValueFunc
 
 
-updateVaccinationFormByVaccineType : VaccineType -> VaccinationForm -> ImmunisationData -> ImmunisationData
+updateVaccinationFormByVaccineType : WellChildVaccineType -> VaccinationForm -> ImmunisationData -> ImmunisationData
 updateVaccinationFormByVaccineType vaccineType form data =
     case vaccineType of
         VaccineBCG ->
@@ -1038,7 +1038,7 @@ updateVaccinationFormByVaccineType vaccineType form data =
             { data | rotarixForm = form }
 
 
-getAllDosesForVaccine : Bool -> VaccineType -> List VaccineDose
+getAllDosesForVaccine : Bool -> WellChildVaccineType -> List VaccineDose
 getAllDosesForVaccine initialOpvAdministered vaccineType =
     let
         lastDose =
@@ -1055,7 +1055,7 @@ getAllDosesForVaccine initialOpvAdministered vaccineType =
         allVaccineDoses
 
 
-getLastDoseForVaccine : Bool -> VaccineType -> VaccineDose
+getLastDoseForVaccine : Bool -> WellChildVaccineType -> VaccineDose
 getLastDoseForVaccine initialOpvAdministered vaccineType =
     case vaccineType of
         VaccineBCG ->
@@ -1087,7 +1087,7 @@ getLastDoseForVaccine initialOpvAdministered vaccineType =
             VaccineDoseSecond
 
 
-getIntervalForVaccine : VaccineType -> ( Int, Unit )
+getIntervalForVaccine : WellChildVaccineType -> ( Int, Unit )
 getIntervalForVaccine vaccineType =
     case vaccineType of
         VaccineBCG ->
@@ -1115,7 +1115,7 @@ getIntervalForVaccine vaccineType =
             ( 6, Months )
 
 
-allVaccineTypesForPerson : Person -> List VaccineType
+allVaccineTypesForPerson : Person -> List WellChildVaccineType
 allVaccineTypesForPerson person =
     List.filter
         (\vaccineType ->
@@ -1129,7 +1129,7 @@ allVaccineTypesForPerson person =
         allVaccineTypes
 
 
-allVaccineTypes : List VaccineType
+allVaccineTypes : List WellChildVaccineType
 allVaccineTypes =
     [ VaccineBCG
     , VaccineOPV
