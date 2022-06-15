@@ -1354,6 +1354,10 @@ type PrenatalMentalHealthQuestionOption
     | MentalHealthQuestionOption3
 
 
+type alias PrenatalTetanusImmunisation =
+    PrenatalMeasurement VaccinationValue
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -2226,6 +2230,7 @@ type alias PrenatalMeasurements =
     , outsideCare : Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )
     , hivPCRTest : Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )
     , mentalHealth : Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth )
+    , tetanusImmunisation : Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation )
     }
 
 
@@ -2266,6 +2271,7 @@ emptyPrenatalMeasurements =
     , outsideCare = Nothing
     , hivPCRTest = Nothing
     , mentalHealth = Nothing
+    , tetanusImmunisation = Nothing
     }
 
 
