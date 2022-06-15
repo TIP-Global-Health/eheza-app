@@ -1147,44 +1147,6 @@ allVaccineDoses =
     [ VaccineDoseFirst, VaccineDoseSecond, VaccineDoseThird, VaccineDoseFourth ]
 
 
-getNextVaccineDose : VaccineDose -> Maybe VaccineDose
-getNextVaccineDose dose =
-    case dose of
-        VaccineDoseFirst ->
-            Just VaccineDoseSecond
-
-        VaccineDoseSecond ->
-            Just VaccineDoseThird
-
-        VaccineDoseThird ->
-            Just VaccineDoseFourth
-
-        VaccineDoseFourth ->
-            Just VaccineDoseFifth
-
-        VaccineDoseFifth ->
-            Nothing
-
-
-vaccineDoseToComparable : VaccineDose -> Int
-vaccineDoseToComparable dose =
-    case dose of
-        VaccineDoseFirst ->
-            1
-
-        VaccineDoseSecond ->
-            2
-
-        VaccineDoseThird ->
-            3
-
-        VaccineDoseFourth ->
-            4
-
-        VaccineDoseFifth ->
-            5
-
-
 generateRemianingECDSignsBeforeCurrentEncounter : NominalDate -> AssembledData -> List ECDSign
 generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled =
     getPreviousMeasurements assembled.previousMeasurementsWithDates
@@ -2143,27 +2105,6 @@ generateVaccinationProgress person measurements =
     , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
     ]
         ++ hpvProgress
-        |> Dict.fromList
-
-
-generateVaccinationProgressForVaccine : List VaccinationValue -> Dict VaccineDose NominalDate
-generateVaccinationProgressForVaccine vaccinations =
-    List.foldl
-        (\vaccination accum ->
-            let
-                doses =
-                    EverySet.toList vaccination.administeredDoses
-                        |> List.sortBy vaccineDoseToComparable
-
-                dates =
-                    EverySet.toList vaccination.administrationDates
-                        |> List.sortWith Date.compare
-            in
-            accum ++ List.Extra.zip doses dates
-        )
-        []
-        vaccinations
-        |> List.sortBy (Tuple.first >> vaccineDoseToComparable)
         |> Dict.fromList
 
 

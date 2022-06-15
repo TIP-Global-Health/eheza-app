@@ -16,7 +16,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (SendToHCForm)
-import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
@@ -231,7 +231,7 @@ medicationDistributionResolveFromValue allowedSigns value sign =
             EverySet.member sign value.distributionSigns
 
         nonAdministrationNoteSetForSign =
-            Pages.Utils.resolveMedicationsNonAdministrationReasons value
+            Measurement.Utils.resolveMedicationsNonAdministrationReasons value
                 |> Dict.filter (\medicationDistributionSign _ -> medicationDistributionSign == sign)
                 |> Dict.isEmpty
                 |> not
@@ -2492,3 +2492,15 @@ toPrenatalSendToHCValue referralFacility form =
     Maybe.map PrenatalSendToHCValue signs
         |> andMap reasonForNotSendingToHC
         |> andMap (Just referralFacility)
+
+
+generateVaccinationProgress : List PrenatalMeasurements -> VaccinationProgressDict
+generateVaccinationProgress measurements =
+    let
+        tetanusImmunisations =
+            List.filterMap (.tetanusImmunisation >> getMeasurementValueFunc)
+                measurements
+    in
+    [ ( VaccineTetanus, generateVaccinationProgressForVaccine tetanusImmunisations )
+    ]
+        |> Dict.fromList

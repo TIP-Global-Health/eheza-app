@@ -17,8 +17,10 @@ import Backend.NutritionEncounter.Utils
         )
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
+import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+import List.Extra
 import LocalData
 import Maybe.Extra exposing (andMap, or, unwrap)
 import Measurement.Model exposing (..)
@@ -591,6 +593,65 @@ toVitalsValue form =
         form.bodyTemperature
 
 
+resolveMedicationsNonAdministrationReasons :
+    { v | nonAdministrationSigns : EverySet MedicationNonAdministrationSign }
+    -> Dict MedicationDistributionSign AdministrationNote
+resolveMedicationsNonAdministrationReasons value =
+    EverySet.toList value.nonAdministrationSigns
+        |> List.filterMap
+            (\sign ->
+                case sign of
+                    MedicationAmoxicillin reason ->
+                        Just ( Amoxicillin, reason )
+
+                    MedicationCoartem reason ->
+                        Just ( Coartem, reason )
+
+                    MedicationORS reason ->
+                        Just ( ORS, reason )
+
+                    MedicationZinc reason ->
+                        Just ( Zinc, reason )
+
+                    MedicationParacetamol reason ->
+                        Just ( Paracetamol, reason )
+
+                    MedicationMebendezole reason ->
+                        Just ( Mebendezole, reason )
+
+                    MedicationTenofovir reason ->
+                        Just ( Tenofovir, reason )
+
+                    MedicationLamivudine reason ->
+                        Just ( Lamivudine, reason )
+
+                    MedicationDolutegravir reason ->
+                        Just ( Dolutegravir, reason )
+
+                    MedicationTDF3TC reason ->
+                        Just ( TDF3TC, reason )
+
+                    MedicationIron reason ->
+                        Just ( Iron, reason )
+
+                    MedicationFolicAcid reason ->
+                        Just ( FolicAcid, reason )
+
+                    MedicationCeftriaxone reason ->
+                        Just ( Ceftriaxone, reason )
+
+                    MedicationAzithromycin reason ->
+                        Just ( Azithromycin, reason )
+
+                    MedicationMetronidazole reason ->
+                        Just ( Metronidazole, reason )
+
+                    NoMedicationNonAdministrationSigns ->
+                        Nothing
+            )
+        |> Dict.fromList
+
+
 vaccinationFormWithDefault : VaccinationForm msg -> Maybe VaccinationValue -> VaccinationForm msg
 vaccinationFormWithDefault form saved =
     unwrap
@@ -634,3 +695,62 @@ toVaccinationValue form =
             Maybe.withDefault AdministeredPreviously form.administrationNote
     in
     Just <| VaccinationValue administeredDoses administrationDates administrationNote
+
+
+generateVaccinationProgressForVaccine : List VaccinationValue -> Dict VaccineDose NominalDate
+generateVaccinationProgressForVaccine vaccinations =
+    List.foldl
+        (\vaccination accum ->
+            let
+                doses =
+                    EverySet.toList vaccination.administeredDoses
+                        |> List.sortBy vaccineDoseToComparable
+
+                dates =
+                    EverySet.toList vaccination.administrationDates
+                        |> List.sortWith Date.compare
+            in
+            accum ++ List.Extra.zip doses dates
+        )
+        []
+        vaccinations
+        |> List.sortBy (Tuple.first >> vaccineDoseToComparable)
+        |> Dict.fromList
+
+
+getNextVaccineDose : VaccineDose -> Maybe VaccineDose
+getNextVaccineDose dose =
+    case dose of
+        VaccineDoseFirst ->
+            Just VaccineDoseSecond
+
+        VaccineDoseSecond ->
+            Just VaccineDoseThird
+
+        VaccineDoseThird ->
+            Just VaccineDoseFourth
+
+        VaccineDoseFourth ->
+            Just VaccineDoseFifth
+
+        VaccineDoseFifth ->
+            Nothing
+
+
+vaccineDoseToComparable : VaccineDose -> Int
+vaccineDoseToComparable dose =
+    case dose of
+        VaccineDoseFirst ->
+            1
+
+        VaccineDoseSecond ->
+            2
+
+        VaccineDoseThird ->
+            3
+
+        VaccineDoseFourth ->
+            4
+
+        VaccineDoseFifth ->
+            5
