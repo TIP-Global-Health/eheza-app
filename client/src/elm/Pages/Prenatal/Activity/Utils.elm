@@ -133,8 +133,9 @@ expectActivity currentDate assembled activity =
                         |> Maybe.withDefault False
 
                 PrenatalImmunisation ->
-                    -- @todo
-                    True
+                    generateSuggestedVaccinations currentDate assembled
+                        |> List.isEmpty
+                        |> not
 
                 -- Unique Chw activities.
                 _ ->
@@ -289,8 +290,8 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.mentalHealth
 
         PrenatalImmunisation ->
-            -- @todo
-            False
+            (not <| expectActivity currentDate assembled PrenatalImmunisation)
+                || List.all (immunisationTaskCompleted currentDate assembled) immunisationTasks
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
@@ -5527,3 +5528,113 @@ toPrenatalMentalHealthValue form =
         )
         form.signs
         form.specialistAtHC
+
+
+immunisationTaskCompleted : NominalDate -> AssembledData -> ImmunisationTask -> Bool
+immunisationTaskCompleted currentDate data task =
+    let
+        measurements =
+            data.measurements
+
+        taskExpected =
+            expectImmunisationTask currentDate data
+    in
+    case task of
+        TaskTetanus ->
+            (not <| taskExpected TaskTetanus) || isJust measurements.tetanusImmunisation
+
+
+expectImmunisationTask : NominalDate -> AssembledData -> ImmunisationTask -> Bool
+expectImmunisationTask currentDate assembled task =
+    -- @todo
+    -- let
+    --     futureVaccinations =
+    --         generateFutureVaccinationsData currentDate assembled.person False assembled.vaccinationHistory
+    --             |> Dict.fromList
+    --
+    --     ageInWeeks =
+    --         Maybe.map
+    --             (\birthDate ->
+    --                 Date.diff Weeks birthDate currentDate
+    --             )
+    --             assembled.person.birthDate
+    --
+    --     isTaskExpected vaccineType =
+    --         Dict.get vaccineType futureVaccinations
+    --             |> Maybe.Extra.join
+    --             |> Maybe.map
+    --                 (\( dose, date ) ->
+    --                     let
+    --                         defaultCondition =
+    --                             not <| Date.compare date currentDate == GT
+    --                     in
+    --                     if vaccineType == VaccineOPV then
+    --                         case dose of
+    --                             VaccineDoseFirst ->
+    --                                 Maybe.map
+    --                                     (\ageWeeks ->
+    --                                         -- First dose of OPV vaccine is given within first 2
+    --                                         -- weeks from birth, or, starting from 6 weeks after birth.
+    --                                         -- In latter case, there're only 3 doses, and not 4.
+    --                                         if ageWeeks >= 2 && ageWeeks <= 5 then
+    --                                             False
+    --
+    --                                         else
+    --                                             defaultCondition
+    --                                     )
+    --                                     ageInWeeks
+    --                                     |> Maybe.withDefault False
+    --
+    --                             VaccineDoseSecond ->
+    --                                 Maybe.map
+    --                                     (\ageWeeks ->
+    --                                         -- Second dose of OPV vaccine is given starting from
+    --                                         -- 6 weeks after birth.
+    --                                         if ageWeeks < 6 then
+    --                                             False
+    --
+    --                                         else
+    --                                             defaultCondition
+    --                                     )
+    --                                     ageInWeeks
+    --                                     |> Maybe.withDefault False
+    --
+    --                             _ ->
+    --                                 defaultCondition
+    --
+    --                     else
+    --                         defaultCondition
+    --                 )
+    --             |> Maybe.withDefault False
+    -- in
+    -- immunisationTaskToVaccineType task
+    --     |> Maybe.map isTaskExpected
+    --     -- Only task that is not converted to vaccine type
+    --     -- is 'Overview', which we allways show.
+    --     |> Maybe.withDefault True
+    True
+
+
+immunisationTasks : List ImmunisationTask
+immunisationTasks =
+    [ TaskTetanus ]
+
+
+generateSuggestedVaccinations : NominalDate -> AssembledData -> List ( WellChildVaccineType, VaccineDose )
+generateSuggestedVaccinations currentDate assembled =
+    -- @todo
+    -- List.filter (expectVaccineForPerson currentDate assembled.person) allVaccineTypes
+    --     |> List.filterMap
+    --         (\vaccineType ->
+    --             let
+    --                 suggestedDose =
+    --                     case latestVaccinationDataForVaccine assembled.vaccinationHistory vaccineType of
+    --                         Just ( lastDoseAdministered, lastDoseDate ) ->
+    --                             nextDoseForVaccine currentDate lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
+    --
+    --                         Nothing ->
+    --                             Just VaccineDoseFirst
+    --             in
+    --             Maybe.map (\nextDose -> ( vaccineType, nextDose )) suggestedDose
+    --         )
+    []

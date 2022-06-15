@@ -587,7 +587,7 @@ immunisationTaskCompleted currentDate isChw data db task =
             data.measurements
 
         taskExpected =
-            expectImmunisationTask currentDate isChw data db
+            expectImmunisationTask currentDate isChw data
     in
     case task of
         TaskBCG ->
@@ -618,8 +618,8 @@ immunisationTaskCompleted currentDate isChw data db task =
             not <| taskExpected TaskOverview
 
 
-expectImmunisationTask : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChild.Activity.Types.ImmunisationTask -> Bool
-expectImmunisationTask currentDate isChw assembled db task =
+expectImmunisationTask : NominalDate -> Bool -> AssembledData -> Pages.WellChild.Activity.Types.ImmunisationTask -> Bool
+expectImmunisationTask currentDate isChw assembled task =
     if isChw then
         case task of
             TaskBCG ->

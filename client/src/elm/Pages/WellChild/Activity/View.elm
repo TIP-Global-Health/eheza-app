@@ -810,7 +810,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
             assembled.measurements
 
         tasks =
-            List.filter (expectImmunisationTask currentDate isChw assembled db) immunisationTasks
+            List.filter (expectImmunisationTask currentDate isChw assembled) immunisationTasks
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
