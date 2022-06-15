@@ -126,6 +126,7 @@ var tableForType = {
     prenatal_send_to_hc: 'shards',
     prenatal_symptom_review: 'shards',
     prenatal_syphilis_test: 'shards',
+    prenatal_tetanus_immunisation: 'shards',
     prenatal_urine_dipstick_test: 'shards',
     relationship: 'shards',
     resource: 'shards',
