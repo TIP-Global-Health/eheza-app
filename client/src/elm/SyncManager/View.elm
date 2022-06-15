@@ -618,6 +618,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalSyphilisTest identifier ->
                 viewMeasurement identifier "Prenatal Syphilis Test"
 
+            BackendAuthorityPrenatalTetanusImmunisation identifier ->
+                viewMeasurement identifier "Prenatal Tetanus Immunisation"
+
             BackendAuthorityPrenatalUrineDipstickTest identifier ->
                 viewMeasurement identifier "Prenatal Urine Dipstick Test"
 

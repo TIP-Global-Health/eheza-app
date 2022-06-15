@@ -624,6 +624,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalSyphilisTest identifier ->
             getIdentifier identifier "prenatal_syphilis_test"
 
+        BackendAuthorityPrenatalTetanusImmunisation identifier ->
+            getIdentifier identifier "prenatal_tetanus_immunisation"
+
         BackendAuthorityPrenatalUrineDipstickTest identifier ->
             getIdentifier identifier "prenatal_urine_dipstick_test"
 
@@ -1194,6 +1197,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalSyphilisTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalSyphilisTest identifier
 
+        BackendAuthorityPrenatalTetanusImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalTetanusImmunisation identifier
+
         BackendAuthorityPrenatalUrineDipstickTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalUrineDipstickTest identifier
 
@@ -1726,6 +1732,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalSyphilisTest identifier ->
             PrenatalSyphilisTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalTetanusImmunisation identifier ->
+            PrenatalTetanusImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalUrineDipstickTest identifier ->
             PrenatalUrineDipstickTestRevision (toEntityUuid identifier.uuid) identifier.entity

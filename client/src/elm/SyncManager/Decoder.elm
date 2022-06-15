@@ -745,6 +745,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalSyphilisTest
                             BackendAuthorityPrenatalSyphilisTest
 
+                    "prenatal_tetanus_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalTetanusImmunisation
+                            BackendAuthorityPrenatalTetanusImmunisation
+
                     "prenatal_urine_dipstick_test" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalUrineDipstickTest
