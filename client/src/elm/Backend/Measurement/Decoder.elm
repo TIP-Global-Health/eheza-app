@@ -131,6 +131,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_outside_care" (decodeHead decodePrenatalOutsideCare) Nothing
         |> optional "prenatal_hiv_pcr_test" (decodeHead decodePrenatalHIVPCRTest) Nothing
         |> optional "prenatal_mental_health" (decodeHead decodePrenatalMentalHealth) Nothing
+        |> optional "prenatal_tetanus_immunisation" (decodeHead decodePrenatalTetanusImmunisation) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -931,6 +932,11 @@ decodePrenatalMentalHealthQuestionOption =
                                 ++ " is not a recognized PrenatalMentalHealthQuestionOption"
                         )
             )
+
+
+decodePrenatalTetanusImmunisation : Decoder PrenatalTetanusImmunisation
+decodePrenatalTetanusImmunisation =
+    decodePrenatalMeasurement decodeVaccinationValue
 
 
 decodeHeight : Decoder Height
