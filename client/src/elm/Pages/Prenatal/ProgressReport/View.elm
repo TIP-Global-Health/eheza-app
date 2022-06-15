@@ -2534,9 +2534,6 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
             _ ->
                 []
 
-    else if diagnosis == DiagnosisOther then
-        diagnosisForProgressReportToString language DiagnosisOther
-
     else if List.member diagnosis outsideCareDiagnoses then
         completePhrase Nothing
 
