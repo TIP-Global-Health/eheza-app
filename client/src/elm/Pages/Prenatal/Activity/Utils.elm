@@ -5212,7 +5212,7 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                                     outsideCareDiagnosesLeftColumn
                                     outsideCareDiagnosesRightColumn
                                     (form.diagnoses |> Maybe.withDefault [])
-                                    Nothing
+                                    (Just DiagnosisOther)
                                     SetOutsideCareDiagnosis
                                     Translate.PrenatalDiagnosis
                               ]

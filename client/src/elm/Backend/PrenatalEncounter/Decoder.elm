@@ -241,6 +241,9 @@ decodePrenatalDiagnosis =
                     "suicide-risk" ->
                         succeed DiagnosisSuicideRisk
 
+                    "other" ->
+                        succeed DiagnosisOther
+
                     "none" ->
                         succeed NoPrenatalDiagnosis
 

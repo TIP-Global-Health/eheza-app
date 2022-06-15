@@ -628,7 +628,7 @@ update language currentDate id db msg model =
                 updatedForm =
                     setMultiSelectInputValue .diagnoses
                         (\value -> { outsideCareForm | diagnoses = value })
-                        NoPrenatalDiagnosis
+                        DiagnosisOther
                         diagnosis
                         outsideCareForm
 

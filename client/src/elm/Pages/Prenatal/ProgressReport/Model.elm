@@ -114,6 +114,7 @@ medicalDiagnoses =
     , DiagnosisDepressionHighlyPossible
     , DiagnosisDepressionProbable
     , DiagnosisSuicideRisk
+    , DiagnosisOther
     ]
 
 

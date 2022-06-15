@@ -814,6 +814,7 @@ function hedley_prenatal_field_default_field_bases() {
         'depression-highly-possible' => 'Depression Highly Possible',
         'depression-probable' => 'Depression Probable',
         'suicide-risk' => 'Suicide Risk',
+        'other' => 'Other',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

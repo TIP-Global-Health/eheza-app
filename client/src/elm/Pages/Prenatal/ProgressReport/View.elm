@@ -2436,6 +2436,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             --@todo
             []
 
+        DiagnosisOther ->
+            -- Other diagnosis is used only at outside care diagnostics.
+            []
+
         NoPrenatalDiagnosis ->
             []
 

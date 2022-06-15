@@ -61,4 +61,5 @@ type PrenatalDiagnosis
     | DiagnosisDepressionHighlyPossible
     | DiagnosisDepressionProbable
     | DiagnosisSuicideRisk
+    | DiagnosisOther
     | NoPrenatalDiagnosis

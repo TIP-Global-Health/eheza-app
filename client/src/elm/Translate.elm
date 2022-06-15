@@ -8142,6 +8142,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8444,6 +8449,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisOther ->
+                    { english = "Received a diagnosis from a different health care facility - please follow up with patient"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8658,6 +8668,11 @@ translationSet trans =
 
                 DiagnosisSuicideRisk ->
                     { english = "Patient show signs of being a suicide risk"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisOther ->
+                    { english = "Other"
                     , kinyarwanda = Nothing
                     }
 

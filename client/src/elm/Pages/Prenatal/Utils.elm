@@ -2406,7 +2406,7 @@ diagnosedSyphilis =
 
 outsideCareDiagnoses : List PrenatalDiagnosis
 outsideCareDiagnoses =
-    outsideCareDiagnosesLeftColumn ++ outsideCareDiagnosesRightColumn
+    DiagnosisOther :: outsideCareDiagnosesLeftColumn ++ outsideCareDiagnosesRightColumn
 
 
 outsideCareDiagnosesLeftColumn : List PrenatalDiagnosis

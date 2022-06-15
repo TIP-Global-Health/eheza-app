@@ -238,5 +238,8 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisSuicideRisk ->
                 "suicide-risk"
 
+            DiagnosisOther ->
+                "other"
+
             NoPrenatalDiagnosis ->
                 "none"
