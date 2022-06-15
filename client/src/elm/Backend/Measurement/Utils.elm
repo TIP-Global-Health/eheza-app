@@ -654,6 +654,9 @@ vaccineDoseFromString dose =
         "dose-4" ->
             Just VaccineDoseFourth
 
+        "dose-5" ->
+            Just VaccineDoseFifth
+
         _ ->
             Nothing
 
@@ -672,6 +675,9 @@ vaccineDoseToString dose =
 
         VaccineDoseFourth ->
             "dose-4"
+
+        VaccineDoseFifth ->
+            "dose-5"
 
 
 getMeasurementValueFunc : Maybe ( id, { measurement | value : v } ) -> Maybe v

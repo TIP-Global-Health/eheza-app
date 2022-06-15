@@ -1160,6 +1160,9 @@ getNextVaccineDose dose =
             Just VaccineDoseFourth
 
         VaccineDoseFourth ->
+            Just VaccineDoseFifth
+
+        VaccineDoseFifth ->
             Nothing
 
 
@@ -1177,6 +1180,9 @@ vaccineDoseToComparable dose =
 
         VaccineDoseFourth ->
             4
+
+        VaccineDoseFifth ->
+            5
 
 
 fromVaccinationValue : Maybe VaccinationValue -> VaccinationForm

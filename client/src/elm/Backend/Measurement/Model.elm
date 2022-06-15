@@ -2026,6 +2026,7 @@ type VaccineDose
     | VaccineDoseSecond
     | VaccineDoseThird
     | VaccineDoseFourth
+    | VaccineDoseFifth
 
 
 type alias WellChildMebendezole =
