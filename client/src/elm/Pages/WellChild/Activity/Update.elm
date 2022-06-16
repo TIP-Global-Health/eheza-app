@@ -31,7 +31,7 @@ import Measurement.Model
         )
 import Measurement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (setMultiSelectInputValue)
+import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue)
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Activity.Utils exposing (..)
@@ -1648,10 +1648,3 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-
-
-insertIntoSet : a -> Maybe (EverySet a) -> Maybe (EverySet a)
-insertIntoSet value set =
-    Maybe.map (EverySet.insert value) set
-        |> Maybe.withDefault (EverySet.singleton value)
-        |> Just

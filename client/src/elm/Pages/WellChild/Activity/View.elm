@@ -1401,7 +1401,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                                                                                 [ NonAdministrationPatientUnableToAfford, NonAdministrationTooIll, NonAdministrationOther ]
                                                                                 form.administrationNote
                                                                                 (SetAdministrationNote vaccineType)
-                                                                                Translate.AdministrationNoteForWellChild
+                                                                                Translate.AdministrationNoteForImmunisation
                                                                             ]
                                                                       ]
                                                                     , taskCompletedWithException form.administrationNote AdministeredToday

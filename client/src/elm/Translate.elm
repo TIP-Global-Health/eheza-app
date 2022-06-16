@@ -821,7 +821,7 @@ type TranslationId
     | NutritionSigns
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | AdministrationNote AdministrationNote
-    | AdministrationNoteForWellChild AdministrationNote
+    | AdministrationNoteForImmunisation AdministrationNote
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
@@ -947,6 +947,11 @@ type TranslationId
     | PrenatalHealthEducationMentalHealthInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
+    | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
+    | PrenatalImmunisationDescription PrenatalVaccineType
+    | PrenatalImmunisationDosage PrenatalVaccineType
+    | PrenatalImmunisationHeader PrenatalVaccineType
+    | PrenatalImmunisationHistory PrenatalVaccineType
     | PrenatalLaboratoryBloodGroupLabel
     | PrenatalLaboratoryBloodGroupTestResult
     | PrenatalLaboratoryBloodGroup BloodGroup
@@ -1013,6 +1018,7 @@ type TranslationId
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
     | PrenatalTestResult PrenatalTestResult
     | PrenatalUrineDipstickTestVariant PrenatalTestVariant
+    | PrenatalVaccineLabel PrenatalVaccineType
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -6687,7 +6693,7 @@ translationSet trans =
                     , kinyarwanda = Just "Byamaze kwakirwa"
                     }
 
-        AdministrationNoteForWellChild note ->
+        AdministrationNoteForImmunisation note ->
             case note of
                 NonAdministrationLackOfStock ->
                     { english = "Out of Stock"
@@ -9018,6 +9024,42 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        PrenatalImmunisationTask task ->
+            case task of
+                Pages.Prenatal.Activity.Types.TaskTetanus ->
+                    { english = "Tetanus"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalImmunisationDescription task ->
+            case task of
+                VaccineTetanus ->
+                    { english = "The Tetanus vaccine prevents the patient from getting Tetanus which causes muscle spasms, fever, high blood pressure, and death."
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalImmunisationDosage task ->
+            case task of
+                VaccineTetanus ->
+                    -- @todo: do we need this?
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalImmunisationHeader task ->
+            case task of
+                VaccineTetanus ->
+                    { english = "Tetanus"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalImmunisationHistory task ->
+            case task of
+                VaccineTetanus ->
+                    { english = "Tetanus History"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLaboratoryBloodGroupLabel ->
             { english = "Blood Group"
             , kinyarwanda = Nothing
@@ -10456,6 +10498,13 @@ translationSet trans =
 
                 VariantLongTest ->
                     { english = "Long Dip"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalVaccineLabel value ->
+            case value of
+                VaccineTetanus ->
+                    { english = "Tetanus"
                     , kinyarwanda = Nothing
                     }
 

@@ -861,3 +861,10 @@ emptySelectOption isSelected =
         , selected isSelected
         ]
         [ text "" ]
+
+
+insertIntoSet : a -> Maybe (EverySet a) -> Maybe (EverySet a)
+insertIntoSet value set =
+    Maybe.map (EverySet.insert value) set
+        |> Maybe.withDefault (EverySet.singleton value)
+        |> Just

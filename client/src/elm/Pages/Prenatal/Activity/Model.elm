@@ -8,7 +8,17 @@ import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (DropZoneFile, SendToHCForm, VaccinationForm, VitalsForm, emptySendToHCForm, emptyVaccinationForm, emptyVitalsForm)
+import Measurement.Model
+    exposing
+        ( DropZoneFile
+        , SendToHCForm
+        , VaccinationForm
+        , VaccinationFormViewMode
+        , VitalsForm
+        , emptySendToHCForm
+        , emptyVaccinationForm
+        , emptyVitalsForm
+        )
 import Pages.Page exposing (Page)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Model exposing (..)
@@ -201,6 +211,17 @@ type Msg
     | SetSpecialistAtHC Bool
     | SetMentalHealthWarningPopupState (Maybe Msg)
     | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
+      -- IMMUNISATION
+    | SetActiveImmunisationTask ImmunisationTask
+    | SetVaccinationFormViewMode PrenatalVaccineType VaccinationFormViewMode
+    | SetUpdatePreviousVaccines PrenatalVaccineType VaccineDose Bool
+    | SetWillReceiveVaccineToday PrenatalVaccineType VaccineDose Bool
+    | SetAdministrationNote PrenatalVaccineType AdministrationNote
+    | SetVaccinationUpdateDateSelectorState PrenatalVaccineType (Maybe (DateSelectorConfig Msg))
+    | SetVaccinationUpdateDate PrenatalVaccineType NominalDate
+    | SaveVaccinationUpdateDate PrenatalVaccineType VaccineDose
+    | DeleteVaccinationUpdateDate PrenatalVaccineType VaccineDose NominalDate
+    | SaveTetanusImmunisation PersonId (Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation ))
 
 
 type alias Model =
