@@ -229,6 +229,9 @@ decodePrenatalDiagnosis =
                     "tuberculosis" ->
                         succeed DiagnosisTuberculosis
 
+                    "depression-not-likely" ->
+                        succeed DiagnosisDepressionNotLikely
+
                     "depression-possible" ->
                         succeed DiagnosisDepressionPossible
 

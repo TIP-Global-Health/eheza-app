@@ -8122,6 +8122,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionNotLikely ->
+                    { english = "Depression not Likely"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDepressionPossible ->
                     { english = "Depression Possible"
                     , kinyarwanda = Nothing
@@ -8429,6 +8434,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionNotLikely ->
+                    { english = "Depression not Likely"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDepressionPossible ->
                     { english = "Depression Possible"
                     , kinyarwanda = Nothing
@@ -8648,6 +8658,11 @@ translationSet trans =
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionNotLikely ->
+                    { english = "Depression not Likely"
                     , kinyarwanda = Nothing
                     }
 
