@@ -12417,7 +12417,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                -- Not a Hypertension treatments.
+                -- All others are not Hypertension treatments.
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
