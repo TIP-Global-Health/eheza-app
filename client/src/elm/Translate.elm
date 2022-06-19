@@ -567,6 +567,7 @@ type TranslationId
     | EnterPairingCode
     | EntryStatusAntenatal PaneEntryStatus
     | EntryStatusDiagnosis PaneEntryStatus
+    | EPDSPreformedOn
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
@@ -4173,6 +4174,11 @@ translationSet trans =
         SubmitPairingCode ->
             { english = "Submit Pairing Code"
             , kinyarwanda = Just "Umubare uhuza igikoresho cy'ikoranabuhanga na apulikasiyo"
+            }
+
+        EPDSPreformedOn ->
+            { english = "EPDS performed on"
+            , kinyarwanda = Nothing
             }
 
         ErrorCheckLocalConfig ->

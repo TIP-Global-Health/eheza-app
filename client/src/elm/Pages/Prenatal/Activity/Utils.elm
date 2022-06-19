@@ -127,7 +127,7 @@ expectActivity currentDate assembled activity =
                                         |> List.isEmpty
                                         |> not
                             in
-                            egaInWeeks >= 28 && not performedPreviously
+                            egaInWeeks >= 24 && not performedPreviously
                         )
                         assembled.globalLmpDate
                         |> Maybe.withDefault False

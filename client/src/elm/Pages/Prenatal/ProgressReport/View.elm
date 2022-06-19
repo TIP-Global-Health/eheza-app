@@ -1998,6 +1998,14 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
+        mentalHealthMessage =
+            translate language Translate.EPDSPreformedOn
+                ++ " "
+                ++ formatDDMMYYYY date
+                ++ " - "
+                ++ diagnosisForProgressReport
+                |> wrapWithLI
+
         noTreatmentRecordedMessage =
             noTreatmentRecordedMessageWithComplications ""
 
@@ -2421,24 +2429,19 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> wrapWithLI
 
         DiagnosisDepressionNotLikely ->
-            --@todo
-            []
+            mentalHealthMessage
 
         DiagnosisDepressionPossible ->
-            --@todo
-            []
+            mentalHealthMessage
 
         DiagnosisDepressionHighlyPossible ->
-            --@todo
-            []
+            mentalHealthMessage
 
         DiagnosisDepressionProbable ->
-            --@todo
-            []
+            mentalHealthMessage
 
         DiagnosisSuicideRisk ->
-            --@todo
-            []
+            mentalHealthMessage
 
         DiagnosisOther ->
             -- Other diagnosis is used only at outside care diagnostics.
