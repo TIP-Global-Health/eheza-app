@@ -135,7 +135,8 @@ viewHeader language id initiator model =
             Maybe.map
                 (\mode ->
                     case mode of
-                        LabResultsCurrent ->
+                        LabResultsCurrent currentMode ->
+                            -- @todo
                             Translate.LabResults
 
                         LabResultsHistory _ ->
@@ -159,12 +160,27 @@ viewHeader language id initiator model =
                 goBackActionByLabResultsState defaultAction =
                     Maybe.map
                         (\mode ->
+                            let
+                                backToCurrentMsg targetMode =
+                                    SetLabResultsMode (Just (LabResultsCurrent targetMode))
+                            in
                             case mode of
-                                LabResultsCurrent ->
-                                    SetLabResultsMode Nothing
+                                LabResultsCurrent currentMode ->
+                                    case currentMode of
+                                        LabResultsCurrentMain ->
+                                            SetLabResultsMode Nothing
 
-                                LabResultsHistory _ ->
-                                    SetLabResultsMode (Just LabResultsCurrent)
+                                        LabResultsCurrentDipstickShort ->
+                                            backToCurrentMsg LabResultsCurrentMain
+
+                                        LabResultsCurrentDipstickLong ->
+                                            backToCurrentMsg LabResultsCurrentMain
+
+                                LabResultsHistory historyMode ->
+                                    Maybe.withDefault LabResultsCurrentMain model.labResultsHistoryOrigin
+                                        |> LabResultsCurrent
+                                        |> Just
+                                        |> SetLabResultsMode
                         )
                         model.labResultsMode
                         |> Maybe.withDefault defaultAction
@@ -197,7 +213,8 @@ viewContent language currentDate isChw initiator model assembled =
             case model.labResultsMode of
                 Just mode ->
                     case mode of
-                        LabResultsCurrent ->
+                        LabResultsCurrent _ ->
+                            -- @todo
                             [ viewLabResultsPane language currentDate assembled ]
 
                         LabResultsHistory historyMode ->
@@ -1076,7 +1093,7 @@ viewLabsPane language currentDate assembled =
         , div [ class "pane-content" ]
             [ div
                 [ class "ui primary button"
-                , onClick <| SetLabResultsMode <| Just LabResultsCurrent
+                , onClick <| SetLabResultsMode <| Just (LabResultsCurrent LabResultsCurrentMain)
                 ]
                 [ text <| translate language Translate.SeeLabResults ]
             ]

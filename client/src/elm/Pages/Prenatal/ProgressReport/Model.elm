@@ -9,6 +9,7 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { labResultsMode : Maybe LabResultsMode
+    , labResultsHistoryOrigin : Maybe LabResultsCurrentMode
     , showEndEncounterDialog : Bool
     }
 
@@ -16,18 +17,25 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { labResultsMode = Nothing
+    , labResultsHistoryOrigin = Nothing
     , showEndEncounterDialog = False
     }
-
-
-type LabResultsMode
-    = LabResultsCurrent
-    | LabResultsHistory LabResultsHistoryMode
 
 
 type PrenatalTestReport
     = TestPerformed PrenatalTestResult
     | TestNotPerformedKnownAsPositive
+
+
+type LabResultsMode
+    = LabResultsCurrent LabResultsCurrentMode
+    | LabResultsHistory LabResultsHistoryMode
+
+
+type LabResultsCurrentMode
+    = LabResultsCurrentMain
+    | LabResultsCurrentDipstickShort
+    | LabResultsCurrentDipstickLong
 
 
 type LabResultsHistoryMode
