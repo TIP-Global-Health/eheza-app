@@ -2420,6 +2420,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ formatDDMMYYYY date
                 |> wrapWithLI
 
+        DiagnosisDepressionNotLikely ->
+            --@todo
+            []
+
         DiagnosisDepressionPossible ->
             --@todo
             []

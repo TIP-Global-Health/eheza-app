@@ -1615,11 +1615,6 @@ matchMentalHealthPrenatalDiagnosis assembled diagnosis =
             getMeasurementValueFunc assembled.measurements.mentalHealth
                 |> Maybe.andThen (.signs >> suicideRiskDiagnosedBySigns)
                 |> Maybe.withDefault False
-
-        mentalHealthScore =
-            getMeasurementValueFunc assembled.measurements.mentalHealth
-                |> Maybe.map (.signs >> Dict.values >> List.map mentalHealthQuestionOptionToScore >> List.sum)
-                |> Maybe.withDefault 0
     in
     if suicideRiskDiagnosed then
         diagnosis == DiagnosisSuicideRisk
@@ -1651,6 +1646,7 @@ matchMentalHealthPrenatalDiagnosis assembled diagnosis =
                                     False
                        )
                 )
+            |> Maybe.withDefault False
 
 
 suicideRiskDiagnosedBySigns : Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption -> Maybe Bool
