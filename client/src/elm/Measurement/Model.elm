@@ -9,6 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
+import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -448,4 +449,23 @@ emptyVaccinationForm =
     , willReceiveVaccineToday = Nothing
     , vaccinationUpdateDate = Nothing
     , dateSelectorPopupState = Nothing
+    }
+
+
+type alias VaccinationFormDynamicContentAndTasksConfig msg =
+    { birthDate : NominalDate
+    , expectedDoses : List VaccineDose
+    , dosesFromPreviousEncountersData : List ( VaccineDose, NominalDate )
+    , dosesFromCurrentEncounterData : List ( VaccineDose, NominalDate )
+    , setVaccinationFormViewModeMsg : VaccinationFormViewMode -> msg
+    , setUpdatePreviousVaccinesMsg : VaccineDose -> Bool -> msg
+    , setWillReceiveVaccineTodayMsg : VaccineDose -> Bool -> msg
+    , setAdministrationNoteMsg : AdministrationNote -> msg
+    , setVaccinationUpdateDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setVaccinationUpdateDateMsg : NominalDate -> msg
+    , saveVaccinationUpdateDateMsg : VaccineDose -> msg
+    , deleteVaccinationUpdateDateMsg : VaccineDose -> NominalDate -> msg
+    , nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+    , getIntervalForVaccine : VaccineDose -> ( Int, Unit )
+    , firstDoseExpectedFrom : NominalDate
     }

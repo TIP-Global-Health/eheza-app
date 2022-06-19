@@ -759,7 +759,7 @@ generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vacc
                     nextVaccinationData =
                         case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
                             Just ( lastDoseAdministered, lastDoseDate ) ->
-                                nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
+                                nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
 
                             Nothing ->
                                 -- There were no vaccination so far, so
@@ -885,8 +885,8 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
             )
 
 
-nextVaccinationDataForVaccine : NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe ( VaccineDose, NominalDate )
-nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
+nextVaccinationDataForVaccine : WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
     if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
         Nothing
 
@@ -904,7 +904,7 @@ nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdmini
 
 nextDoseForVaccine : NominalDate -> NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe VaccineDose
 nextDoseForVaccine currentDate lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
-    nextVaccinationDataForVaccine lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
+    nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
         |> Maybe.andThen
             (\( dose, dueDate ) ->
                 if Date.compare dueDate currentDate == GT then

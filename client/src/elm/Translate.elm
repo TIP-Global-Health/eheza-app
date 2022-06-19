@@ -821,7 +821,8 @@ type TranslationId
     | NutritionSigns
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | AdministrationNote AdministrationNote
-    | AdministrationNoteForImmunisation AdministrationNote
+    | AdministrationNoteForPrenatalImmunisation AdministrationNote
+    | AdministrationNoteForWellChildImmunisation AdministrationNote
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
@@ -1284,8 +1285,10 @@ type TranslationId
     | VaccinationCatchUpRequiredQuestion
     | VaccinationStatus VaccinationStatus
     | VaccinationNoDosesAdministered
-    | VaccineDoseAdministeredPreviouslyQuestion String
-    | VaccineDoseAdministeredTodayQuestion String
+    | VaccineDoseAdministeredPreviouslyPrenatalQuestion String
+    | VaccineDoseAdministeredPreviouslyWellChildQuestion String
+    | VaccineDoseAdministeredTodayPrenatalQuestion String
+    | VaccineDoseAdministeredTodayWellChildQuestion String
     | VaccineType VaccineType
     | ValidationErrors
     | Version
@@ -6693,7 +6696,45 @@ translationSet trans =
                     , kinyarwanda = Just "Byamaze kwakirwa"
                     }
 
-        AdministrationNoteForImmunisation note ->
+        AdministrationNoteForPrenatalImmunisation note ->
+            case note of
+                NonAdministrationLackOfStock ->
+                    { english = "Out of Stock"
+                    , kinyarwanda = Just "Byashize mu bubiko"
+                    }
+
+                NonAdministrationKnownAllergy ->
+                    { english = "Known Allergy or Reaction"
+                    , kinyarwanda = Just "Agira ingaruka zizwi kubera uru rukingo/umuti"
+                    }
+
+                NonAdministrationPatientDeclined ->
+                    { english = "Patient Declined"
+                    , kinyarwanda = Just "Umurwayi yanze"
+                    }
+
+                NonAdministrationPatientUnableToAfford ->
+                    { english = "Patient Unable to Afford"
+                    , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
+                    }
+
+                NonAdministrationTooIll ->
+                    { english = "Too Sick"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    }
+
+                -- Other options are not relevant for Immunisation.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        AdministrationNoteForWellChildImmunisation note ->
             case note of
                 NonAdministrationLackOfStock ->
                     { english = "Out of Stock"
@@ -6715,11 +6756,6 @@ translationSet trans =
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
-                NonAdministrationHomeBirth ->
-                    { english = "Home Birth"
-                    , kinyarwanda = Nothing
-                    }
-
                 NonAdministrationTooIll ->
                     { english = "Too Sick"
                     , kinyarwanda = Nothing
@@ -6730,13 +6766,9 @@ translationSet trans =
                     , kinyarwanda = Just "Ibindi"
                     }
 
-                AdministeredToday ->
-                    { english = "Administered Today"
-                    , kinyarwanda = Nothing
-                    }
-
-                AdministeredPreviously ->
-                    { english = "Administered Previously"
+                -- Other options are not relevant for Immunisation.
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -12787,12 +12819,22 @@ translationSet trans =
             , kinyarwanda = Just "Nta makuru ku nkigo agaragara"
             }
 
-        VaccineDoseAdministeredPreviouslyQuestion vaccineType ->
+        VaccineDoseAdministeredPreviouslyPrenatalQuestion vaccineType ->
+            { english = "Did the patient receive any " ++ vaccineType ++ " immunizations prior to today that are not recorded above"
+            , kinyarwanda = Nothing
+            }
+
+        VaccineDoseAdministeredPreviouslyWellChildQuestion vaccineType ->
             { english = "Did the child receive any " ++ vaccineType ++ " immunizations prior to today that are not recorded above"
             , kinyarwanda = Just <| "Umwana yaba yarabonye " ++ vaccineType ++ " bakaba batarabyanditse"
             }
 
-        VaccineDoseAdministeredTodayQuestion vaccineType ->
+        VaccineDoseAdministeredTodayPrenatalQuestion vaccineType ->
+            { english = "Will the patient receive the " ++ vaccineType ++ " immunization today"
+            , kinyarwanda = Nothing
+            }
+
+        VaccineDoseAdministeredTodayWellChildQuestion vaccineType ->
             { english = "Will the child receive the " ++ vaccineType ++ " immunization today"
             , kinyarwanda = Just <| "Umwana arahabwa " ++ vaccineType ++ " uyu munsi"
             }
