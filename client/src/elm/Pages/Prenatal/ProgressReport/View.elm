@@ -178,9 +178,7 @@ viewHeader language id initiator model =
 
                                 LabResultsHistory historyMode ->
                                     Maybe.withDefault LabResultsCurrentMain model.labResultsHistoryOrigin
-                                        |> LabResultsCurrent
-                                        |> Just
-                                        |> SetLabResultsMode
+                                        |> backToCurrentMsg
                         )
                         model.labResultsMode
                         |> Maybe.withDefault defaultAction
@@ -213,9 +211,9 @@ viewContent language currentDate isChw initiator model assembled =
             case model.labResultsMode of
                 Just mode ->
                     case mode of
-                        LabResultsCurrent _ ->
+                        LabResultsCurrent currentMode ->
                             -- @todo
-                            [ viewLabResultsPane language currentDate assembled ]
+                            [ viewLabResultsPane language currentDate currentMode assembled ]
 
                         LabResultsHistory historyMode ->
                             [ viewLabResultsHistoryPane language currentDate historyMode ]
@@ -1100,8 +1098,8 @@ viewLabsPane language currentDate assembled =
         ]
 
 
-viewLabResultsPane : Language -> NominalDate -> AssembledData -> Html Msg
-viewLabResultsPane language currentDate assembled =
+viewLabResultsPane : Language -> NominalDate -> LabResultsCurrentMode -> AssembledData -> Html Msg
+viewLabResultsPane language currentDate mode assembled =
     let
         heading =
             div [ class "heading" ]
@@ -1160,13 +1158,6 @@ viewLabResultsPane language currentDate assembled =
 
         malariaTestResults =
             getTestResults .malariaTest .testResult
-
-        groupOneContent =
-            [ viewLabResultsEntry language currentDate (LabResultsHistoryHIV hivTestResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistorySyphilis syphilisTestResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryHepatitisB hepatitisBTestResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryMalaria malariaTestResults)
-            ]
 
         urineDipstickTestValues =
             List.filterMap (.urineDipstickTest >> getMeasurementValueFunc)
@@ -1228,19 +1219,6 @@ viewLabResultsPane language currentDate assembled =
         bilirubinResults =
             List.map (\( date, value ) -> ( date, value.bilirubin )) longUrineDipstickTestResults
 
-        groupTwoContent =
-            [ viewLabResultsEntry language currentDate (LabResultsHistoryProtein proteinResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryPH phResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryGlucose glucoseResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryLeukocytes leukocytesResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryNitrite nitriteResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryUrobilinogen urobilinogenResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryHaemoglobin haemoglobinResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistorySpecificGravity specificGravityResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryKetone ketoneResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryBilirubin bilirubinResults)
-            ]
-
         randomBloodSugarResults =
             getTestResults .randomBloodSugarTest .sugarCount
 
@@ -1267,25 +1245,42 @@ viewLabResultsPane language currentDate assembled =
         rhesusResults =
             List.map (\( date, ( _, rhesus ) ) -> ( date, rhesus )) bloodGpRsResults
 
-        groupThreeContent =
-            [ viewLabResultsEntry language currentDate (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryHemoglobin hemoglobinResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryBloodGroup bloodGroupResults)
-            , viewLabResultsEntry language currentDate (LabResultsHistoryRhesus rhesusResults)
-            ]
+        content =
+            case mode of
+                LabResultsCurrentMain ->
+                    [ viewLabResultsEntry language currentDate (LabResultsHistoryHIV hivTestResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistorySyphilis syphilisTestResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryHepatitisB hepatitisBTestResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryMalaria malariaTestResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryHemoglobin hemoglobinResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryBloodGroup bloodGroupResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryRhesus rhesusResults)
+                    ]
+
+                LabResultsCurrentDipstickShort ->
+                    [ viewLabResultsEntry language currentDate (LabResultsHistoryProtein proteinResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryPH phResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryGlucose glucoseResults)
+                    ]
+
+                LabResultsCurrentDipstickLong ->
+                    [ viewLabResultsEntry language currentDate (LabResultsHistoryProtein proteinResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryPH phResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryGlucose glucoseResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryLeukocytes leukocytesResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryNitrite nitriteResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryUrobilinogen urobilinogenResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryHaemoglobin haemoglobinResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistorySpecificGravity specificGravityResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryKetone ketoneResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryBilirubin bilirubinResults)
+                    ]
     in
-    div [ class "lab-results" ] <|
+    div [ class "lab-results" ]
         [ viewItemHeading language Translate.LabResults "blue"
         , div [ class "pane-content" ] [ heading ]
-        , groupHeading Translate.GroupOne
-        , div [ class "group-content" ]
-            groupOneContent
-        , groupHeading Translate.GroupTwo
-        , div [ class "group-content" ]
-            groupTwoContent
-        , groupHeading Translate.GroupThree
-        , div [ class "group-content" ]
-            groupThreeContent
+        , div [ class "group-content" ] content
         ]
 
 
