@@ -12407,9 +12407,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                -- @todo: extend with additional signs?
-                _ ->
-                    { english = ""
+                TreatmentHypertensionAddCarvedilol ->
+                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 4x a day and Carvedilol (6.25mg) by mouth 2x a day for hypertension."
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHypertensionAddAmlodipine ->
+                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 4x a day, Carvedilol (6.25mg) by mouth 2x a day and Amlodipine (5mg) by mouth 1x a day for hypertension."
                     , kinyarwanda = Nothing
                     }
 
