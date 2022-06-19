@@ -12487,6 +12487,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                -- All others are not Hypertension treatments.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         TreatmentDetailsMalaria sign ->
             case sign of
                 TreatmentQuinineSulphate ->
