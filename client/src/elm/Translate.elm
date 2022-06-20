@@ -616,9 +616,6 @@ type TranslationId
     | GroupAssessment
     | Gravida
     | GroupEncounter
-    | GroupOne
-    | GroupTwo
-    | GroupThree
     | Growth
     | HalfOfDosage String
     | HandedReferralFormQuestion
@@ -699,6 +696,7 @@ type TranslationId
     | LabHistory
     | LabResults
     | LabResultsHistoryModeLabel LabResultsHistoryMode
+    | LabResultsNormalRange LabResultsHistoryMode
     | LastChecked
     | LastContacted
     | LastSuccesfulContactLabel
@@ -817,6 +815,7 @@ type TranslationId
     | NoContactReason NoContactReason
     | NoGroupsFound
     | NoMatchesFound
+    | NormalRange
     | NoTreatmentAdministered
     | NoTreatmentRecorded
     | NutritionSigns
@@ -1013,6 +1012,7 @@ type TranslationId
     | PrenatalSymptomQuestionsHeader
     | PrenatalTestExecutionNote PrenatalTestExecutionNote
     | PrenatalTestResult PrenatalTestResult
+    | PrenatalUrineDipstickTestLabel PrenatalTestVariant
     | PrenatalUrineDipstickTestVariant PrenatalTestVariant
     | PreTerm
     | PregnancyConcludedLabel
@@ -4605,21 +4605,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        GroupOne ->
-            { english = "Group One"
-            , kinyarwanda = Nothing
-            }
-
-        GroupTwo ->
-            { english = "Group Two"
-            , kinyarwanda = Nothing
-            }
-
-        GroupThree ->
-            { english = "Group Three"
-            , kinyarwanda = Nothing
-            }
-
         Growth ->
             { english = "Growth"
             , kinyarwanda = Just "Imikurire"
@@ -5542,6 +5527,98 @@ translationSet trans =
 
                 LabResultsHistoryRhesus _ ->
                     { english = "Rhesus Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+        LabResultsNormalRange mode ->
+            case mode of
+                LabResultsHistoryHIV _ ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistorySyphilis _ ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHepatitisB _ ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryMalaria _ ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryProtein _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryPH _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryGlucose _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryLeukocytes _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryNitrite _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryUrobilinogen _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHaemoglobin _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistorySpecificGravity _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryKetone _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryBilirubin _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryRandomBloodSugar _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHemoglobin _ ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryBloodGroup _ ->
+                    { english = "NA"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryRhesus _ ->
+                    { english = "NA"
                     , kinyarwanda = Nothing
                     }
 
@@ -6597,6 +6674,11 @@ translationSet trans =
         NoMatchesFound ->
             { english = "No matches found"
             , kinyarwanda = Just "Ibyo wifuza ntibiboneste"
+            }
+
+        NormalRange ->
+            { english = "Normal Range"
+            , kinyarwanda = Nothing
             }
 
         NoTreatmentAdministered ->
@@ -10460,6 +10542,18 @@ translationSet trans =
 
                 PrenatalTestIndeterminate ->
                     { english = "Indeterminate"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalUrineDipstickTestLabel variant ->
+            case variant of
+                VariantShortTest ->
+                    { english = "Urine Dipstick Short"
+                    , kinyarwanda = Nothing
+                    }
+
+                VariantLongTest ->
+                    { english = "Urine Dipstick Long"
                     , kinyarwanda = Nothing
                     }
 

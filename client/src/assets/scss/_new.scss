@@ -2525,10 +2525,17 @@ div.page-report.clinical .ui.unstackable.items {
     .heading,
     .entry {
 
-      .name,
-      .date,
-      .result {
-        width: 215px;
+      .name {
+        width: 190px;
+      }
+
+      .date {
+        width: 130px;
+      }
+
+      .result,
+      .normal-range {
+        width:160px;
       }
     }
 
@@ -2542,13 +2549,6 @@ div.page-report.clinical .ui.unstackable.items {
       .name {
         margin-left: 20px;
       }
-    }
-
-    .group-heading {
-      background: $color-primary;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 0 10px;
     }
 
     .group-content {
