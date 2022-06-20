@@ -130,7 +130,6 @@ function encounter_all_count($type, $filter = NULL, $limit = NULL) {
       LEFT JOIN field_data_field_individual_participant ip ON e.field_{$type}_encounter_target_id=ip.entity_id
       LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
       LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
-      LEFT JOIN field_data_field_prenatal_encounter_type t ON e.field_prenatal_encounter_target_id=t.entity_id
       WHERE field_district_value='Bugesera'
       AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
   }
@@ -150,20 +149,27 @@ function encounter_all_count($type, $filter = NULL, $limit = NULL) {
 function encounter_unique_count($type, $filter = NULL, $limit = NULL) {
   if ($filter === 'hc' && $type == 'prenatal') {
     // Health center ANC.
-    return db_query("SELECT COUNT(DISTINCT field_person_target_id)
+    return db_query("SELECT COUNT(DISTINCT person.field_person_target_id)
       FROM field_data_field_prenatal_encounter e
       LEFT JOIN node ON e.entity_id = node.nid
-      LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id
+      LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+      LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+      LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
       LEFT JOIN field_data_field_prenatal_encounter_type t on e.field_prenatal_encounter_target_id=t.entity_id
         WHERE (field_prenatal_encounter_type_value='nurse'
           OR field_prenatal_encounter_type_value is NULL)
+          AND field_district_value='Bugesera'
           AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
   }
-  return db_query("SELECT COUNT(DISTINCT field_person_target_id)
+  return db_query("SELECT COUNT(DISTINCT person.field_person_target_id)
     FROM field_data_field_{$type}_encounter e
     LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id
     LEFT JOIN node ON e.entity_id = node.nid
-    WHERE FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_{$type}_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+    LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
+    WHERE field_district_value='Bugesera'
+    AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
 }
 
 $bootstrap_data_structures = file_get_contents(__DIR__ . '/bootstrap-demographics-report.SQL');
@@ -305,11 +311,13 @@ FROM
         LEFT JOIN field_data_field_group_type gt ON field_clinic_target_id = gt.entity_id
         LEFT JOIN field_data_field_person p ON p.entity_id = sess_rel.entity_id
         LEFT JOIN person_classified class ON p.field_person_target_id = class.entity_id
+        LEFT JOIN field_data_field_district district ON p.field_person_target_id=district.entity_id
         LEFT JOIN node ON sess_rel.entity_id = node.nid
     WHERE
         sess_rel.bundle IN ($measurement_types_list)
         AND field_group_type_value IS NOT NULL
         AND class.entity_id IS NOT NULL
+        AND field_district_value='Bugesera'
         AND FROM_UNIXTIME(node.created) < '$limit'
     GROUP BY
       field_group_type_value, field_person_target_id, field_session_target_id
@@ -341,11 +349,13 @@ FROM
         LEFT JOIN field_data_field_group_type gt ON field_clinic_target_id = gt.entity_id
         LEFT JOIN field_data_field_person p ON p.entity_id = sess_rel.entity_id
         LEFT JOIN person_classified class ON p.field_person_target_id = class.entity_id
+        LEFT JOIN field_data_field_district district ON p.field_person_target_id=district.entity_id
         LEFT JOIN node ON sess_rel.entity_id = node.nid
     WHERE
         sess_rel.bundle IN ($measurement_types_list)
         AND field_group_type_value IS NOT NULL
         AND class.entity_id IS NOT NULL
+        AND field_district_value='Bugesera'
         AND FROM_UNIXTIME(node.created) < '$limit'
     GROUP BY
       field_group_type_value, field_person_target_id
