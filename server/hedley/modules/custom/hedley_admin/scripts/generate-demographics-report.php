@@ -38,15 +38,19 @@ $measurement_types_sql_list = implode(', ', $types);
  */
 function classified_count($age, $gender) {
   if ($age === 'all' && $gender === 'all') {
-    return db_query("SELECT COUNT(*) FROM person_classified")->fetchField();
+    return db_query("SELECT COUNT(*)
+    FROM person_classified
+    LEFT JOIN field_data_field_district district ON person_classified.entity_id=district.entity_id
+    WHERE field_district_value='Bugesera'")->fetchField();
   }
   else {
     return db_query("SELECT
     COUNT(*)
     FROM
     person_classified
-    WHERE
-    age = :age AND
+    LEFT JOIN field_data_field_district district ON person_classified.entity_id=district.entity_id
+    WHERE field_district_value='Bugesera'
+    AND age = :age AND
     gender = :gender
     ", [
       ':age' => $age,
@@ -70,18 +74,21 @@ function impacted_count($age, $gender) {
   if ($age === 'all' && $gender === 'all') {
     return (int) db_query("SELECT COUNT(*)
       FROM person_classified cl
-      INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id")->fetchField();
+      INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id
+      LEFT JOIN field_data_field_district district ON cl.entity_id=district.entity_id
+      WHERE field_district_value='Bugesera'")->fetchField();
   }
   else {
     return (int) db_query("
     SELECT
         COUNT(*)
       FROM
-        person_classified cl INNER JOIN
-        person_impacted pi ON cl.entity_id = pi.entity_id
-      WHERE
-          age = :age AND
-          gender = :gender
+        person_classified cl
+        INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id
+        LEFT JOIN field_data_field_district district ON cl.entity_id=district.entity_id
+        WHERE field_district_value='Bugesera'
+        AND age = :age
+        AND gender = :gender
       ", [
         ':age' => $age,
         ':gender' => $gender,
@@ -106,16 +113,26 @@ function encounter_all_count($type, $filter = NULL, $limit = NULL) {
     return db_query("SELECT COUNT(DISTINCT field_prenatal_encounter_target_id)
       FROM field_data_field_prenatal_encounter e
       LEFT JOIN node ON e.entity_id = node.nid
+      LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+      LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+      LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
       LEFT JOIN field_data_field_prenatal_encounter_type t ON e.field_prenatal_encounter_target_id=t.entity_id
       WHERE (field_prenatal_encounter_type_value='nurse'
         OR field_prenatal_encounter_type_value is NULL)
+        AND field_district_value='Bugesera'
         AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
+
   }
   else {
     return db_query("SELECT COUNT(DISTINCT field_{$type}_encounter_target_id)
       FROM field_data_field_{$type}_encounter e
       LEFT JOIN node ON e.entity_id = node.nid
-      WHERE FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
+      LEFT JOIN field_data_field_individual_participant ip ON e.field_{$type}_encounter_target_id=ip.entity_id
+      LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+      LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
+      LEFT JOIN field_data_field_prenatal_encounter_type t ON e.field_prenatal_encounter_target_id=t.entity_id
+      WHERE field_district_value='Bugesera'
+      AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
   }
 }
 
