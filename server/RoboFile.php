@@ -391,7 +391,7 @@ class RoboFile extends Tasks {
     if (empty($limit_date)) {
       $limit_date = date('Y-m-d');
     }
-    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php --limit_date=$limit_date");
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report-area.php --limit_date=$limit_date");
   }
 
   /**
