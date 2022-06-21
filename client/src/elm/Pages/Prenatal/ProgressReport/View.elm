@@ -1888,6 +1888,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                 (\reason_ ->
                                     if reason_ == NoReasonForNotSendingToHC then
                                         ""
+
                                     else
                                         " - " ++ (String.toLower <| translate language <| Translate.ReasonForNotSendingToHC reason_)
                                 )
@@ -2350,7 +2351,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     (\value ->
                         let
                             nonAdministrationReasons =
-                                Pages.Utils.resolveMedicationsNonAdministrationReasons value
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
                         in
                         Maybe.map2
                             (\ceftriaxoneMessage azithromycinMessage ->
@@ -2383,7 +2384,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     (\value ->
                         let
                             nonAdministrationReasons =
-                                Pages.Utils.resolveMedicationsNonAdministrationReasons value
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
                         in
                         treatmentMessageForMedicationLower value.distributionSigns nonAdministrationReasons Metronidazole
                             |> Maybe.map

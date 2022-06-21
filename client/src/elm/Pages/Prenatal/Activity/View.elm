@@ -2407,10 +2407,7 @@ viewVaccinationForm language currentDate assembled vaccineType form =
         , div [ class "instructions" ] <|
             [ div [ class "header icon-label" ] <|
                 [ i [ class "icon-open-book" ] []
-                , div []
-                    [ div [ class "description" ] [ text <| translate language <| Translate.PrenatalImmunisationDescription vaccineType ]
-                    , div [ class "dosage" ] [ text <| translate language <| Translate.PrenatalImmunisationDosage vaccineType ]
-                    ]
+                , div [ class "description" ] [ text <| translate language <| Translate.PrenatalImmunisationDescription vaccineType ]
                 ]
             , viewLabel language (Translate.PrenatalImmunisationHistory vaccineType)
             ]

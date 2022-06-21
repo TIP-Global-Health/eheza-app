@@ -951,7 +951,6 @@ type TranslationId
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
     | PrenatalImmunisationDescription PrenatalVaccineType
-    | PrenatalImmunisationDosage PrenatalVaccineType
     | PrenatalImmunisationHeader PrenatalVaccineType
     | PrenatalImmunisationHistory PrenatalVaccineType
     | PrenatalLaboratoryBloodGroupLabel
@@ -9088,14 +9087,6 @@ translationSet trans =
             case task of
                 VaccineTetanus ->
                     { english = "The Tetanus vaccine prevents the patient from getting Tetanus which causes muscle spasms, fever, high blood pressure, and death."
-                    , kinyarwanda = Nothing
-                    }
-
-        PrenatalImmunisationDosage task ->
-            case task of
-                VaccineTetanus ->
-                    -- @todo: do we need this?
-                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
