@@ -2487,6 +2487,10 @@ div.page-report.clinical .ui.unstackable.items {
   .lab-results,
   .lab-results-history {
 
+    .pane-content {
+      border-bottom: 1px solid $color-text;
+    }
+
     .heading,
     .entry {
       display: flex;
@@ -2497,6 +2501,7 @@ div.page-report.clinical .ui.unstackable.items {
     }
 
     .entry {
+      border-bottom: 1px solid $color-text;
       font-weight: 500;
       line-height: 60px;
 
@@ -2517,6 +2522,10 @@ div.page-report.clinical .ui.unstackable.items {
         padding: 3px 8px;
         text-transform: uppercase;
       }
+
+      &:last-child {
+        border-bottom: none;
+      }
     }
 
     .entry.warning {
@@ -2528,6 +2537,13 @@ div.page-report.clinical .ui.unstackable.items {
         height: 50px;
         width: 45px;
       }
+    }
+
+    .group-content {
+      background: $color-white;
+      color: $color-text;
+      font-size: 18px;
+      padding: 0 20px;
     }
   }
 
@@ -2554,23 +2570,8 @@ div.page-report.clinical .ui.unstackable.items {
       }
     }
 
-    .entry {
-      border-bottom: 1px solid $color-text;
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .name {
-        margin-left: 20px;
-      }
-    }
-
-    .group-content {
-      background: $color-white;
-      color: $color-text;
-      font-size: 18px;
-      padding: 0 20px;
+    .entry .name {
+      margin-left: 20px;
     }
   }
 
@@ -2579,19 +2580,20 @@ div.page-report.clinical .ui.unstackable.items {
     .heading,
     .entry {
 
-      .date,
-      .result {
-        width: 50%;
+      .date{
+        width: 20%;
+      }
+
+      .result,
+      .normal-range {
+        text-align: center;
+        width: 35%;
       }
     }
 
-    .heading {
-      margin-bottom: 10px;
-    }
-
-    .entry {
-      border-top: 1px solid $color-text;
-    }
+    .entry .date {
+      margin-left: 20px;
+    }    
   }
 
   .ui.unstackable.items .lab-results-history .pane-content {
