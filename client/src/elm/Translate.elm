@@ -567,6 +567,7 @@ type TranslationId
     | EnterPairingCode
     | EntryStatusAntenatal PaneEntryStatus
     | EntryStatusDiagnosis PaneEntryStatus
+    | EPDSPreformedOn
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
@@ -4182,6 +4183,11 @@ translationSet trans =
         SubmitPairingCode ->
             { english = "Submit Pairing Code"
             , kinyarwanda = Just "Umubare uhuza igikoresho cy'ikoranabuhanga na apulikasiyo"
+            }
+
+        EPDSPreformedOn ->
+            { english = "EPDS performed on"
+            , kinyarwanda = Nothing
             }
 
         ErrorCheckLocalConfig ->
@@ -8165,6 +8171,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionNotLikely ->
+                    { english = "Depression not Likely"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDepressionPossible ->
                     { english = "Depression Possible"
                     , kinyarwanda = Nothing
@@ -8472,6 +8483,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionNotLikely ->
+                    { english = "Depression not Likely"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDepressionPossible ->
                     { english = "Depression Possible"
                     , kinyarwanda = Nothing
@@ -8691,6 +8707,11 @@ translationSet trans =
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionNotLikely ->
+                    { english = "Depression not Likely"
                     , kinyarwanda = Nothing
                     }
 
@@ -12548,7 +12569,17 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                -- @todo: extend with additional signs?
+                TreatmentHypertensionAddCarvedilol ->
+                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 4x a day and Carvedilol (6.25mg) by mouth 2x a day for hypertension."
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentHypertensionAddAmlodipine ->
+                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 4x a day, Carvedilol (6.25mg) by mouth 2x a day and Amlodipine (5mg) by mouth 1x a day for hypertension."
+                    , kinyarwanda = Nothing
+                    }
+
+                -- All others are not Hypertension treatments.
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing

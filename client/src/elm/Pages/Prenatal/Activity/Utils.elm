@@ -139,7 +139,7 @@ expectActivity currentDate assembled activity =
                                         |> List.isEmpty
                                         |> not
                             in
-                            egaInWeeks >= 28 && not performedPreviously
+                            egaInWeeks >= 24 && not performedPreviously
                         )
                         assembled.globalLmpDate
                         |> Maybe.withDefault False
@@ -1636,30 +1636,38 @@ matchMentalHealthPrenatalDiagnosis assembled diagnosis =
             getMeasurementValueFunc assembled.measurements.mentalHealth
                 |> Maybe.andThen (.signs >> suicideRiskDiagnosedBySigns)
                 |> Maybe.withDefault False
-
-        mentalHealthScore =
-            getMeasurementValueFunc assembled.measurements.mentalHealth
-                |> Maybe.map (.signs >> Dict.values >> List.map mentalHealthQuestionOptionToScore >> List.sum)
-                |> Maybe.withDefault 0
     in
-    case diagnosis of
-        DiagnosisDepressionPossible ->
-            not suicideRiskDiagnosed
-                && (mentalHealthScore >= 9 && mentalHealthScore < 12)
+    if suicideRiskDiagnosed then
+        diagnosis == DiagnosisSuicideRisk
 
-        DiagnosisDepressionHighlyPossible ->
-            not suicideRiskDiagnosed
-                && (mentalHealthScore >= 12 && mentalHealthScore < 14)
+    else
+        getMeasurementValueFunc assembled.measurements.mentalHealth
+            |> Maybe.map
+                (.signs
+                    >> Dict.values
+                    >> List.map mentalHealthQuestionOptionToScore
+                    >> List.sum
+                    >> (\mentalHealthScore ->
+                            case diagnosis of
+                                DiagnosisDepressionNotLikely ->
+                                    mentalHealthScore < 9
 
-        DiagnosisDepressionProbable ->
-            not suicideRiskDiagnosed && mentalHealthScore >= 14
+                                DiagnosisDepressionPossible ->
+                                    mentalHealthScore >= 9 && mentalHealthScore < 12
 
-        DiagnosisSuicideRisk ->
-            suicideRiskDiagnosed
+                                DiagnosisDepressionHighlyPossible ->
+                                    mentalHealthScore >= 12 && mentalHealthScore < 14
 
-        -- Others are not mental health diagnoses.
-        _ ->
-            False
+                                DiagnosisDepressionProbable ->
+                                    mentalHealthScore >= 14
+
+                                -- Others are not mental health diagnoses that
+                                -- are being determined by score.
+                                _ ->
+                                    False
+                       )
+                )
+            |> Maybe.withDefault False
 
 
 suicideRiskDiagnosedBySigns : Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption -> Maybe Bool
@@ -1888,7 +1896,8 @@ symptomsDiagnoses =
 
 mentalHealthDiagnoses : List PrenatalDiagnosis
 mentalHealthDiagnoses =
-    [ DiagnosisDepressionPossible
+    [ DiagnosisDepressionNotLikely
+    , DiagnosisDepressionPossible
     , DiagnosisDepressionHighlyPossible
     , DiagnosisDepressionProbable
     , DiagnosisSuicideRisk

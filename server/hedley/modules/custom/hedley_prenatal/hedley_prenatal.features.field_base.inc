@@ -810,6 +810,7 @@ function hedley_prenatal_field_default_field_bases() {
         'trichomonas-or-bv' => 'Trichomonas or Bacterial Vaginosis',
         'trichomonas-or-bv-continued' => 'Trichomonas or Bacterial Vaginosis Continued',
         'tuberculosis' => 'Tuberculosis',
+        'depression-not-likely' => 'Depression Not Likely',
         'depression-possible' => 'Depression Possible',
         'depression-highly-possible' => 'Depression Highly Possible',
         'depression-probable' => 'Depression Probable',

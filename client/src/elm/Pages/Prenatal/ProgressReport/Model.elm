@@ -80,6 +80,11 @@ obstetricalDiagnoses =
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense
     , DiagnosisPelvicPainContinued
+    , DiagnosisDepressionNotLikely
+    , DiagnosisDepressionPossible
+    , DiagnosisDepressionHighlyPossible
+    , DiagnosisDepressionProbable
+    , DiagnosisSuicideRisk
     ]
 
 
@@ -110,10 +115,6 @@ medicalDiagnoses =
     , DiagnosisTuberculosis
     , DiagnosisTrichomonasOrBacterialVaginosis
     , DiagnosisTrichomonasOrBacterialVaginosisContinued
-    , DiagnosisDepressionPossible
-    , DiagnosisDepressionHighlyPossible
-    , DiagnosisDepressionProbable
-    , DiagnosisSuicideRisk
     , DiagnosisOther
     ]
 
