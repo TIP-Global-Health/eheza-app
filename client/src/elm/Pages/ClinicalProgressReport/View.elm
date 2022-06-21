@@ -294,7 +294,7 @@ viewChwActivityPane language currentDate isChw data =
         pregnancyDatingAction =
             allMeasurementsWithDates
                 |> List.filterMap
-                    (\( date_, _, measurements ) ->
+                    (\( _, _, measurements ) ->
                         Just measurements
                     )
                 |> List.any (.lastMenstrualPeriod >> isJust)
@@ -302,7 +302,7 @@ viewChwActivityPane language currentDate isChw data =
         sentToHCActivity =
             allMeasurementsWithDates
                 |> List.filterMap
-                    (\( date_, _, measurements ) ->
+                    (\( _, _, measurements ) ->
                         Just measurements
                     )
                 |> List.any (.sendToHC >> isJust)
@@ -310,7 +310,7 @@ viewChwActivityPane language currentDate isChw data =
         birthPlan =
             allMeasurementsWithDates
                 |> List.filterMap
-                    (\( date_, _, measurements ) ->
+                    (\( _, _, measurements ) ->
                         Just measurements
                     )
                 |> List.any (.birthPlan >> isJust)
@@ -318,7 +318,7 @@ viewChwActivityPane language currentDate isChw data =
         labActivity =
             allMeasurementsWithDates
                 |> List.filterMap
-                    (\( date_, _, measurements ) ->
+                    (\( _, _, measurements ) ->
                         Just measurements
                     )
                 |> List.any (.pregnancyTest >> isJust)
@@ -326,7 +326,7 @@ viewChwActivityPane language currentDate isChw data =
         appointmentActivity =
             allMeasurementsWithDates
                 |> List.filterMap
-                    (\( date_, _, measurements ) ->
+                    (\( _, _, measurements ) ->
                         Just measurements
                     )
                 |> List.any (.appointmentConfirmation >> isJust)
@@ -334,7 +334,7 @@ viewChwActivityPane language currentDate isChw data =
         healthEducationActivity =
             allMeasurementsWithDates
                 |> List.filterMap
-                    (\( date_, _, measurements ) ->
+                    (\( _, _, measurements ) ->
                         Just measurements
                     )
                 |> List.any (.healthEducation >> isJust)
@@ -345,7 +345,7 @@ viewChwActivityPane language currentDate isChw data =
                     if sign /= NoDangerSign then
                         allMeasurementsWithDates
                             |> List.filterMap
-                                (\( date_, _, measurements ) ->
+                                (\( _, _, measurements ) ->
                                     Just measurements
                                 )
                             |> List.any (.dangerSigns >> isJust)
@@ -365,14 +365,14 @@ viewChwActivityPane language currentDate isChw data =
 
         activities =
             div [ class "entry" ]
-                [ div [ style "color" "black", class "cell date" ] [ text <| formatDDMMYYYY currentDate ]
+                [ div [ style "color" "black", class "cell date" ] [ text <| formatDDMMYYYY data.encounter.startDate ]
                 , div [ class <| "cell activity" ] [ ul [] activity ]
                 ]
 
         heading =
-            div [ class "heading" ]
-                [ div [ class "date" ] [ translateText language Translate.Date ]
-                , div [ class "activity" ] [ translateText language Translate.Actions ]
+            div [ class "heading chw-activities" ]
+                [ div [ class "date" ] [ text <| translate language Translate.Date ]
+                , div [ class "status" ] [ text <| translate language Translate.Actions ]
                 ]
     in
     div [ class "chw-activity" ] <|
