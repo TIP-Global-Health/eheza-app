@@ -387,6 +387,7 @@ type TranslationId
     | CannotStartEncounterLabel
     | CardiacDisease
     | CaregiverAccompanyQuestion
+    | CaregiverMessage
     | CaregiverName
     | CaregiverNationalId
     | CaseManagement
@@ -2370,6 +2371,11 @@ translationSet trans =
         CaregiverAccompanyQuestion ->
             { english = "Do you have a caregiver to accompany you to the health center when you give birth"
             , kinyarwanda = Just "Ufite umuntu wo kuguherekeza ku kigo nderabuzima igihe ugiye kubyara"
+            }
+
+        CaregiverMessage ->
+            { english = "This person is a caregiver. There are no activities to complete."
+            , kinyarwanda = Just "Uyu ni umurezi w'umwana. Nta bikorwa usabwa kumukorera."
             }
 
         CaregiverName ->
