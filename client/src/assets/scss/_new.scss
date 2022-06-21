@@ -2487,6 +2487,10 @@ div.page-report.clinical .ui.unstackable.items {
   .lab-results,
   .lab-results-history {
 
+    .pane-heading {
+      text-align: center;
+    }
+
     .pane-content {
       border-bottom: 1px solid $color-text;
     }

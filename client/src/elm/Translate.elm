@@ -103,7 +103,7 @@ import Pages.Prenatal.Activity.Types
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
-import Pages.Prenatal.ProgressReport.Model exposing (LabResultsHistoryMode(..))
+import Pages.Prenatal.ProgressReport.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..))
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
@@ -698,6 +698,7 @@ type TranslationId
     | LabResults
     | LabResultsHistoryModeLabel LabResultsHistoryMode
     | LabResultsNormalRange LabResultsHistoryMode
+    | LabResultsPaneHeader LabResultsCurrentMode
     | LastChecked
     | LastContacted
     | LastSuccesfulContactLabel
@@ -5642,6 +5643,23 @@ translationSet trans =
 
                 LabResultsHistoryRhesus _ ->
                     { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+        LabResultsPaneHeader mode ->
+            case mode of
+                LabResultsCurrentMain ->
+                    { english = "Lab Results"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsCurrentDipstickShort ->
+                    { english = "Short Dipstick Lab Results"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsCurrentDipstickLong ->
+                    { english = "Long Dipstick Lab Results"
                     , kinyarwanda = Nothing
                     }
 

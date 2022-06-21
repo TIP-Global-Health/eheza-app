@@ -133,7 +133,6 @@ viewHeader language id initiator model =
                 (\mode ->
                     case mode of
                         LabResultsCurrent currentMode ->
-                            -- @todo
                             Translate.LabResults
 
                         LabResultsHistory _ ->
@@ -209,7 +208,6 @@ viewContent language currentDate isChw initiator model assembled =
                 Just mode ->
                     case mode of
                         LabResultsCurrent currentMode ->
-                            -- @todo
                             [ viewLabResultsPane language currentDate currentMode assembled ]
 
                         LabResultsHistory historyMode ->
@@ -1402,7 +1400,7 @@ viewLabResultsPane language currentDate mode assembled =
                 ]
     in
     div [ class "lab-results" ]
-        [ viewItemHeading language Translate.LabResults "blue"
+        [ viewItemHeading language (Translate.LabResultsPaneHeader mode) "blue"
         , div [ class "pane-content" ] [ heading ]
         , div [ class "group-content" ] content
         ]
