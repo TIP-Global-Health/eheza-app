@@ -2591,9 +2591,17 @@ div.page-report.clinical .ui.unstackable.items {
       }
     }
 
-    .entry .date {
-      margin-left: 20px;
-    }    
+    .entry {
+
+      .date {
+        margin-left: 20px;
+      }
+
+      img.icon-warning {
+        height: 46px;
+        margin-top: 6px;
+      }
+    }
   }
 
   .ui.unstackable.items .lab-results-history .pane-content {

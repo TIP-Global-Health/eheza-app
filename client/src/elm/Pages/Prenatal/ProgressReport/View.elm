@@ -1846,11 +1846,19 @@ viewLabResultsHistoryPane language currentDate mode =
                 resultNormal =
                     Maybe.map resultNormalFunc maybeResult
                         |> Maybe.withDefault True
+
+                warningIcon =
+                    if not resultNormal then
+                        img [ class "icon-warning", src "assets/images/exclamation-red.png" ] []
+
+                    else
+                        emptyNode
             in
             div [ classList [ ( "entry", True ), ( "warning", not resultNormal ) ] ]
                 [ div [ class "date" ] [ text <| formatDDMMYYYY date ]
                 , div [ class "result" ] [ resultCell ]
                 , div [ class "normal-range" ] [ text <| translate language <| Translate.LabResultsNormalRange mode ]
+                , warningIcon
                 ]
     in
     div [ class "lab-results-history" ]
