@@ -1240,15 +1240,15 @@ viewLabResultsPane language currentDate mode assembled =
                     ]
 
                 LabResultsCurrentDipstickShort ->
-                    [ viewLabResultsEntry language currentDate (LabResultsHistoryProtein proteinResults)
-                    , viewLabResultsEntry language currentDate (LabResultsHistoryPH phResults)
-                    , viewLabResultsEntry language currentDate (LabResultsHistoryGlucose glucoseResults)
+                    [ proteinEntry
+                    , phEntry
+                    , glucoseEntry
                     ]
 
                 LabResultsCurrentDipstickLong ->
-                    [ viewLabResultsEntry language currentDate (LabResultsHistoryProtein proteinResults)
-                    , viewLabResultsEntry language currentDate (LabResultsHistoryPH phResults)
-                    , viewLabResultsEntry language currentDate (LabResultsHistoryGlucose glucoseResults)
+                    [ proteinEntry
+                    , phEntry
+                    , glucoseEntry
                     , viewLabResultsEntry language currentDate (LabResultsHistoryLeukocytes leukocytesResults)
                     , viewLabResultsEntry language currentDate (LabResultsHistoryNitrite nitriteResults)
                     , viewLabResultsEntry language currentDate (LabResultsHistoryUrobilinogen urobilinogenResults)
@@ -1257,6 +1257,15 @@ viewLabResultsPane language currentDate mode assembled =
                     , viewLabResultsEntry language currentDate (LabResultsHistoryKetone ketoneResults)
                     , viewLabResultsEntry language currentDate (LabResultsHistoryBilirubin bilirubinResults)
                     ]
+
+        proteinEntry =
+            viewLabResultsEntry language currentDate (LabResultsHistoryProtein proteinResults)
+
+        phEntry =
+            viewLabResultsEntry language currentDate (LabResultsHistoryPH phResults)
+
+        glucoseEntry =
+            viewLabResultsEntry language currentDate (LabResultsHistoryGlucose glucoseResults)
 
         dipstickShortEntry =
             List.head proteinResults
@@ -1295,6 +1304,7 @@ viewLabResultsPane language currentDate mode assembled =
                             (formatDDMMYYYY date)
                             result
                             (Just <| SetLabResultsMode <| Just <| LabResultsCurrent LabResultsCurrentDipstickShort)
+                            resultsNormal
                     )
                 |> Maybe.withDefault (emptyDipstickEntry (Translate.PrenatalUrineDipstickTestLabel VariantShortTest))
 
@@ -1362,13 +1372,14 @@ viewLabResultsPane language currentDate mode assembled =
                             (formatDDMMYYYY date)
                             result
                             (Just <| SetLabResultsMode <| Just <| LabResultsCurrent LabResultsCurrentDipstickLong)
+                            resultsNormal
                     )
                 |> Maybe.withDefault (emptyDipstickEntry (Translate.PrenatalUrineDipstickTestLabel VariantLongTest))
 
         emptyDipstickEntry label =
-            viewDipstickEntry label "--/--/----" "---" Nothing
+            viewDipstickEntry label "--/--/----" "---" Nothing True
 
-        viewDipstickEntry label date result maybeAction =
+        viewDipstickEntry label date result maybeAction resultNormal =
             let
                 forwardIcon =
                     Maybe.map
@@ -1382,7 +1393,7 @@ viewLabResultsPane language currentDate mode assembled =
                         maybeAction
                         |> Maybe.withDefault emptyNode
             in
-            div [ class "entry" ]
+            div [ classList [ ( "entry", True ), ( "warning", not resultNormal ) ] ]
                 [ div [ class "name" ] [ translateText language label ]
                 , div [ class "date" ] [ text date ]
                 , div [ class "result" ] [ text result ]

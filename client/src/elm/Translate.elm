@@ -4877,7 +4877,7 @@ translationSet trans =
         HIVPCRResult result ->
             case result of
                 ResultSuppressedViralLoad ->
-                    { english = "Suppressed viral load"
+                    { english = "Suppressed (<20 copies)"
                     , kinyarwanda = Nothing
                     }
 
@@ -5556,7 +5556,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryHIVPCR _ ->
-                    { english = "Suppressed viral load"
+                    { english = "Suppressed (<20 copies)"
                     , kinyarwanda = Nothing
                     }
 
