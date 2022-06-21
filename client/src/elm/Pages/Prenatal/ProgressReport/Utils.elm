@@ -104,6 +104,11 @@ hivResultNormal =
     prenatalTestReportNormal
 
 
+hivPCRResultNormal : HIVPCRResult -> Bool
+hivPCRResultNormal =
+    (==) ResultSuppressedViralLoad
+
+
 syphilisResultNormal : PrenatalTestResult -> Bool
 syphilisResultNormal =
     prenatalTestResultNormal
@@ -126,39 +131,33 @@ proteinResultNormal value =
 
 
 phResultNormal : PHValue -> Bool
-phResultNormal value =
-    -- @todo
-    True
+phResultNormal =
+    (/=) Ph85
 
 
 glucoseResultNormal : GlucoseValue -> Bool
-glucoseResultNormal value =
-    -- @todo
-    True
+glucoseResultNormal =
+    (==) Glucose0
 
 
 leukocytesResultNormal : LeukocytesValue -> Bool
-leukocytesResultNormal value =
-    -- @todo
-    True
+leukocytesResultNormal =
+    (==) LeukocytesNegative
 
 
 nitriteResultNormal : NitriteValue -> Bool
-nitriteResultNormal value =
-    -- @todo
-    True
+nitriteResultNormal =
+    (==) NitriteNegative
 
 
 urobilinogenResultNormal : UrobilinogenValue -> Bool
 urobilinogenResultNormal value =
-    -- @todo
-    True
+    List.member value [ Urobilinogen02, Urobilinogen10 ]
 
 
 urineHaemoglobinValueResultNormal : HaemoglobinValue -> Bool
-urineHaemoglobinValueResultNormal value =
-    -- @todo
-    True
+urineHaemoglobinValueResultNormal =
+    (==) HaemoglobinNegative
 
 
 specificGravityResultNormal : SpecificGravityValue -> Bool
@@ -168,27 +167,29 @@ specificGravityResultNormal value =
 
 
 ketoneResultNormal : KetoneValue -> Bool
-ketoneResultNormal value =
-    -- @todo
-    True
+ketoneResultNormal =
+    (==) KetoneNegative
 
 
 bilirubinResultNormal : BilirubinValue -> Bool
-bilirubinResultNormal value =
-    -- @todo
-    True
+bilirubinResultNormal =
+    (==) BilirubinNegative
 
 
 randomBloodSugarResultNormal : Float -> Bool
 randomBloodSugarResultNormal value =
-    -- @todo
-    True
+    value >= 74 && value <= 110
 
 
 hemoglobinResultNormal : Float -> Bool
 hemoglobinResultNormal value =
     -- @todo
     True
+
+
+rhesusResultsNormal : Rhesus -> Bool
+rhesusResultsNormal =
+    (==) RhesusPositive
 
 
 prenatalTestReportNormal : PrenatalTestReport -> Bool

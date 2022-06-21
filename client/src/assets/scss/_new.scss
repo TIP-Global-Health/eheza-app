@@ -2530,10 +2530,14 @@ div.page-report.clinical .ui.unstackable.items {
       }
 
       .date {
-        width: 130px;
+        width: 120px;
       }
 
-      .result,
+      .result {
+        text-align: center;
+        width:180px;
+      }
+
       .normal-range {
         width:160px;
       }

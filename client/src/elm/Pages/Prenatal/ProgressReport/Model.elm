@@ -40,6 +40,7 @@ type LabResultsCurrentMode
 
 type LabResultsHistoryMode
     = LabResultsHistoryHIV (List ( NominalDate, Maybe PrenatalTestReport ))
+    | LabResultsHistoryHIVPCR (List ( NominalDate, Maybe HIVPCRResult ))
     | LabResultsHistorySyphilis (List ( NominalDate, Maybe PrenatalTestResult ))
     | LabResultsHistoryHepatitisB (List ( NominalDate, Maybe PrenatalTestReport ))
     | LabResultsHistoryMalaria (List ( NominalDate, Maybe PrenatalTestResult ))

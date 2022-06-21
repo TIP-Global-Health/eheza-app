@@ -944,6 +944,11 @@ type alias PrenatalHIVPCRTest =
     PrenatalMeasurement PrenatalHIVPCRTestValue
 
 
+type HIVPCRResult
+    = ResultSuppressedViralLoad
+    | ResultDetectibleViralLoad Float
+
+
 type alias PrenatalHepatitisBTest =
     PrenatalMeasurement PrenatalHepatitisBTestValue
 

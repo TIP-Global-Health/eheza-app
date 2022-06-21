@@ -648,6 +648,7 @@ type TranslationId
     | HighSeverityAlerts
     | HistoryTask HistoryTask
     | HIV
+    | HIVPCRResult HIVPCRResult
     | HIVStatus HIVStatus
     | HIVStatusLabel
     | HIVTreatmentSign HIVTreatmentSign
@@ -4873,6 +4874,18 @@ translationSet trans =
             , kinyarwanda = Just "Amaguru atameze neza(yagize imitego)"
             }
 
+        HIVPCRResult result ->
+            case result of
+                ResultSuppressedViralLoad ->
+                    { english = "Suppressed viral load"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResultDetectibleViralLoad value ->
+                    { english = String.fromFloat value
+                    , kinyarwanda = Nothing
+                    }
+
         HIVStatus status ->
             case status of
                 HIVExposedInfant ->
@@ -5445,6 +5458,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                LabResultsHistoryHIVPCR _ ->
+                    { english = "HIV PCR Test History"
+                    , kinyarwanda = Nothing
+                    }
+
                 LabResultsHistorySyphilis _ ->
                     { english = "Syphilis Test History"
                     , kinyarwanda = Nothing
@@ -5537,6 +5555,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                LabResultsHistoryHIVPCR _ ->
+                    { english = "Suppressed viral load"
+                    , kinyarwanda = Nothing
+                    }
+
                 LabResultsHistorySyphilis _ ->
                     { english = "Negative"
                     , kinyarwanda = Nothing
@@ -5558,32 +5581,32 @@ translationSet trans =
                     }
 
                 LabResultsHistoryPH _ ->
-                    { english = "@todo"
+                    { english = "4.5-8"
                     , kinyarwanda = Nothing
                     }
 
                 LabResultsHistoryGlucose _ ->
-                    { english = "@todo"
+                    { english = "0"
                     , kinyarwanda = Nothing
                     }
 
                 LabResultsHistoryLeukocytes _ ->
-                    { english = "@todo"
+                    { english = "Negative"
                     , kinyarwanda = Nothing
                     }
 
                 LabResultsHistoryNitrite _ ->
-                    { english = "@todo"
+                    { english = "Negative"
                     , kinyarwanda = Nothing
                     }
 
                 LabResultsHistoryUrobilinogen _ ->
-                    { english = "@todo"
+                    { english = "1 mg/dL or less"
                     , kinyarwanda = Nothing
                     }
 
                 LabResultsHistoryHaemoglobin _ ->
-                    { english = "@todo"
+                    { english = "Negative"
                     , kinyarwanda = Nothing
                     }
 
@@ -5593,17 +5616,17 @@ translationSet trans =
                     }
 
                 LabResultsHistoryKetone _ ->
-                    { english = "@todo"
+                    { english = "Negative"
                     , kinyarwanda = Nothing
                     }
 
                 LabResultsHistoryBilirubin _ ->
-                    { english = "@todo"
+                    { english = "Negative"
                     , kinyarwanda = Nothing
                     }
 
                 LabResultsHistoryRandomBloodSugar _ ->
-                    { english = "@todo"
+                    { english = "74-110 mg/dl"
                     , kinyarwanda = Nothing
                     }
 
@@ -5618,7 +5641,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryRhesus _ ->
-                    { english = "NA"
+                    { english = "Positive"
                     , kinyarwanda = Nothing
                     }
 

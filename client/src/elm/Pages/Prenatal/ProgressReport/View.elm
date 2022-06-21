@@ -7,6 +7,7 @@ import Backend.Measurement.Model
     exposing
         ( DangerSign(..)
         , EyesCPESign(..)
+        , HIVPCRResult(..)
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , MedicationDistributionSign(..)
@@ -21,6 +22,7 @@ import Backend.Measurement.Model
         , RecommendedTreatmentSign(..)
         , ReferralFacility(..)
         , SendToHCSign(..)
+        , ViralLoadStatus(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
@@ -1122,6 +1124,21 @@ viewLabResultsPane language currentDate mode assembled =
         hivTestResults =
             getTestResultsKnownAsPositive .hivTest .testResult
 
+        hivPCRTestResults =
+            getTestResults .hivPCRTest
+                (\value ->
+                    Maybe.andThen
+                        (\status ->
+                            case status of
+                                ViralLoadUndetectable ->
+                                    Just ResultSuppressedViralLoad
+
+                                ViralLoadDetectable ->
+                                    Maybe.map ResultDetectibleViralLoad value.hivViralLoad
+                        )
+                        value.hivViralLoadStatus
+                )
+
         syphilisTestResults =
             getTestResults .syphilisTest .testResult
 
@@ -1198,18 +1215,7 @@ viewLabResultsPane language currentDate mode assembled =
             getTestResults .hemoglobinTest .hemoglobinCount
 
         bloodGpRsResults =
-            List.filterMap (.bloodGpRsTest >> getMeasurementValueFunc)
-                measurementsWithLabResults
-                |> List.filterMap
-                    (\value ->
-                        if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
-                            Maybe.map (\executionDate -> ( executionDate, ( value.bloodGroup, value.rhesus ) ))
-                                value.executionDate
-
-                        else
-                            Nothing
-                    )
-                |> List.sortWith sortTuplesByDateDesc
+            getTestResults .bloodGpRsTest (\value -> ( value.bloodGroup, value.rhesus ))
 
         bloodGroupResults =
             List.map (\( date, ( bloodGroup, _ ) ) -> ( date, bloodGroup )) bloodGpRsResults
@@ -1221,6 +1227,7 @@ viewLabResultsPane language currentDate mode assembled =
             case mode of
                 LabResultsCurrentMain ->
                     [ viewLabResultsEntry language currentDate (LabResultsHistoryHIV hivTestResults)
+                    , viewLabResultsEntry language currentDate (LabResultsHistoryHIVPCR hivPCRTestResults)
                     , viewLabResultsEntry language currentDate (LabResultsHistorySyphilis syphilisTestResults)
                     , viewLabResultsEntry language currentDate (LabResultsHistoryHepatitisB hepatitisBTestResults)
                     , viewLabResultsEntry language currentDate (LabResultsHistoryMalaria malariaTestResults)
@@ -1403,6 +1410,18 @@ viewLabResultsEntry language currentDate results =
                     { label = Translate.PrenatalLaboratoryTaskLabel TaskHIVTest
                     , recentResult = Maybe.map (translatePrenatalTestReport language) recentResultValue
                     , knownAsPositive = recentResultValue == Just TestNotPerformedKnownAsPositive
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
+                    }
+
+                LabResultsHistoryHIVPCR assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
+                    { label = Translate.PrenatalLaboratoryTaskLabel TaskHIVPCRTest
+                    , recentResult = Maybe.map (Translate.HIVPCRResult >> translate language) recentResultValue
+                    , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     }
@@ -1633,6 +1652,9 @@ viewLabResultsHistoryPane language currentDate mode =
             case mode of
                 LabResultsHistoryHIV assembled ->
                     List.map (viewEntry (translatePrenatalTestReport language)) assembled
+
+                LabResultsHistoryHIVPCR assembled ->
+                    List.map (viewEntry (Translate.HIVPCRResult >> translate language)) assembled
 
                 LabResultsHistorySyphilis assembled ->
                     List.map (viewEntry (Translate.PrenatalTestResult >> translate language)) assembled
