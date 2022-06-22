@@ -1,14 +1,14 @@
 module Pages.Participant.View exposing (viewChild, viewMother, viewUbudehe)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..))
-import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)
+import Activity.Utils exposing (getActivityIcon, isCaregiver, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.Session.Model exposing (EditableSession)
+import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -240,7 +240,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     ]
                     |> keyed "child-info"
               ]
-            , viewActivityCards childParticipant language activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
+            , viewActivityCards childParticipant language session ( childId, child ) activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
             , content
             , popup
             ]
@@ -394,7 +394,7 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
                     ]
                     |> keyed "mother"
               ]
-            , viewActivityCards motherParticipant language activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
+            , viewActivityCards motherParticipant language session ( motherId, mother ) activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
             , content
             ]
 
@@ -402,16 +402,21 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
 viewActivityCards :
     Participant id value activity msg NominalDate
     -> Language
+    -> EditableSession
+    -> ( PersonId, Person )
     -> CompletedAndPending (List activity)
     -> Tab
     -> ClinicType
     -> Maybe activity
     -> List ( String, Html (Msg activity any) )
-viewActivityCards config language activities selectedTab clinicType selectedActivity =
+viewActivityCards config language session ( motherId, mother ) activities selectedTab clinicType selectedActivity =
     let
         pendingActivitiesView =
             if List.isEmpty activities.pending then
                 [ span [] [ text <| translate language Translate.NoActivitiesPendingForThisParticipant ] ]
+
+            else if List.isEmpty activities.pending && isCaregiver session.offlineSession motherId then
+                [ span [] [ text <| translate language Translate.CaregiverMessage ] ]
 
             else
                 List.map (viewActivityListItem config language clinicType selectedActivity) activities.pending
@@ -419,6 +424,9 @@ viewActivityCards config language activities selectedTab clinicType selectedActi
         completedActivitiesView =
             if List.isEmpty activities.completed then
                 [ span [] [ text <| translate language Translate.NoActivitiesCompletedForThisParticipant ] ]
+
+            else if List.isEmpty activities.completed && isCaregiver session.offlineSession motherId then
+                [ span [] [ text <| translate language Translate.CaregiverMessage ] ]
 
             else
                 List.map (viewActivityListItem config language clinicType selectedActivity) activities.completed
