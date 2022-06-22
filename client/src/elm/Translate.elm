@@ -9494,7 +9494,7 @@ translationSet trans =
             }
 
         PrenatalLaboratoryHIVPCRViralLoadStatusQuestion ->
-            { english = "Are there <20 copies/mm3"
+            { english = "Are there less than 20 copies/mm3"
             , kinyarwanda = Nothing
             }
 

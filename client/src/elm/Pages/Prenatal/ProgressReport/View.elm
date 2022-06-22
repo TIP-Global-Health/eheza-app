@@ -2019,8 +2019,20 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
         DiagnosisHIVDetectableViralLoad ->
-            -- @todo
-            []
+            getMeasurementValueFunc measurements.hivPCRTest
+                |> Maybe.andThen .hivViralLoad
+                |> Maybe.map
+                    (\viralLoad ->
+                        diagnosisForProgressReportToString language diagnosis
+                            ++ " "
+                            ++ (String.toLower <| translate language Translate.On)
+                            ++ " "
+                            ++ formatDDMMYYYY date
+                            ++ " -- "
+                            ++ String.fromFloat viralLoad
+                            |> wrapWithLI
+                    )
+                |> Maybe.withDefault []
 
         DiagnosisDiscordantPartnership ->
             getMeasurementValueFunc measurements.medicationDistribution
