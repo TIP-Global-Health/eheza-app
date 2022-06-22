@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         , IllnessSymptom(..)
         , MedicationDistributionSign(..)
         , PrenatalHIVSign(..)
+        , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
         , PrenatalOutsideCareMedication(..)
         , PrenatalSymptomQuestion(..)
@@ -432,6 +433,40 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                    )
                 |> List.sortWith (sortByDateDesc (\( date, _, _ ) -> date))
 
+        initialHealthEducationOccurances =
+            List.foldr
+                (\( date, _, measurements ) accum ->
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> Maybe.map
+                            (\signs ->
+                                let
+                                    signRecord sign =
+                                        if
+                                            EverySet.member sign signs
+                                                && (isNothing <| Dict.get sign accum)
+                                        then
+                                            Just ( sign, date )
+
+                                        else
+                                            Nothing
+                                in
+                                [ signRecord EducationNausiaVomiting
+                                , signRecord EducationLegCramps
+                                , signRecord EducationLowBackPain
+                                , signRecord EducationConstipation
+                                , signRecord EducationVaricoseVeins
+                                , signRecord EducationLegPainRedness
+                                , signRecord EducationPelvicPain
+                                ]
+                                    |> Maybe.Extra.values
+                                    |> Dict.fromList
+                                    |> Dict.union accum
+                            )
+                        |> Maybe.withDefault accum
+                )
+                Dict.empty
+                allMeasurementsWithDates
+
         dignoses =
             List.map
                 (\( date, diagnoses, measurements ) ->
@@ -456,8 +491,46 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                             value.diagnoses
                                     )
                                 |> Maybe.withDefault []
+
+                        healthEducationDiagnosesEntries =
+                            getMeasurementValueFunc measurements.healthEducation
+                                |> Maybe.map
+                                    (\signs ->
+                                        let
+                                            formatedDate =
+                                                formatDDMMYYYY date
+
+                                            messageForSign sign =
+                                                if EverySet.member sign signs then
+                                                    Dict.get sign initialHealthEducationOccurances
+                                                        |> Maybe.map
+                                                            (\initialDate ->
+                                                                let
+                                                                    currentIsInitial =
+                                                                        Date.compare initialDate date == EQ
+                                                                in
+                                                                Translate.PrenatalHealthEducationSignsDiagnosis currentIsInitial formatedDate sign
+                                                                    |> translate language
+                                                                    |> wrapWithLI
+                                                            )
+
+                                                else
+                                                    Nothing
+                                        in
+                                        [ messageForSign EducationNausiaVomiting
+                                        , messageForSign EducationLegCramps
+                                        , messageForSign EducationLowBackPain
+                                        , messageForSign EducationConstipation
+                                        , messageForSign EducationVaricoseVeins
+                                        , messageForSign EducationLegPainRedness
+                                        , messageForSign EducationPelvicPain
+                                        ]
+                                            |> Maybe.Extra.values
+                                            |> List.concat
+                                    )
+                                |> Maybe.withDefault []
                     in
-                    diagnosesEntries ++ outsideCareDiagnosesEntries
+                    diagnosesEntries ++ outsideCareDiagnosesEntries ++ healthEducationDiagnosesEntries
                 )
                 allMeasurementsWithDates
                 |> List.concat

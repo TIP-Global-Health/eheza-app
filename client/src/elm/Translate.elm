@@ -932,6 +932,7 @@ type TranslationId
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalFlankPainSign PrenatalFlankPainSign
     | PrenatalHealthEducationAppropriateProvided
+    | PrenatalHealthEducationSignsDiagnosis Bool String PrenatalHealthEducationSign
     | PrenatalHealthEducationLabel PrenatalHealthEducationSign
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
     | PrenatalHealthEducationHivDetectableViralLoadInform
@@ -8749,6 +8750,91 @@ translationSet trans =
 
                 NoFlankPain ->
                     { english = "None"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalHealthEducationSignsDiagnosis isInitial date sign ->
+            case sign of
+                EducationNausiaVomiting ->
+                    if isInitial then
+                        { english = "Nausea + vomitting in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent nausea + vomitting in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationLegCramps ->
+                    if isInitial then
+                        { english = "Leg cramps in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent leg cramps in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationLowBackPain ->
+                    if isInitial then
+                        { english = "Low back pain in pregancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent low back pain in pregancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationConstipation ->
+                    if isInitial then
+                        { english = "Constipation in pregnacy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent constipation in pregnacy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationVaricoseVeins ->
+                    if isInitial then
+                        { english = "Varicose veins during pregnancy provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent varicose veins during pregnancy provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationLegPainRedness ->
+                    if isInitial then
+                        { english = "Leg pain during pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent leg pain during pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationPelvicPain ->
+                    if isInitial then
+                        { english = "Pelvic pain in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent pelvic pain in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                -- Other signs do not reflect a diagnosis.
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
