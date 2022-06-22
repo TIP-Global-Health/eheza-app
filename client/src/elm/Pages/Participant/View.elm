@@ -412,7 +412,7 @@ viewActivityCards :
 viewActivityCards config language session ( motherId, mother ) activities selectedTab clinicType selectedActivity =
     let
         pendingActivitiesView =
-            if List.isEmpty activities.pending then
+            if List.isEmpty activities.pending && not (isCaregiver session.offlineSession motherId) then
                 [ span [] [ text <| translate language Translate.NoActivitiesPendingForThisParticipant ] ]
 
             else if List.isEmpty activities.pending && isCaregiver session.offlineSession motherId then
@@ -422,7 +422,7 @@ viewActivityCards config language session ( motherId, mother ) activities select
                 List.map (viewActivityListItem config language clinicType selectedActivity) activities.pending
 
         completedActivitiesView =
-            if List.isEmpty activities.completed then
+            if List.isEmpty activities.completed && not (isCaregiver session.offlineSession motherId) then
                 [ span [] [ text <| translate language Translate.NoActivitiesCompletedForThisParticipant ] ]
 
             else if List.isEmpty activities.completed && isCaregiver session.offlineSession motherId then
