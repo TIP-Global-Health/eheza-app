@@ -5709,7 +5709,7 @@ nextVaccinationDataForVaccine currentDate egaInWeeks vaccineType lastDoseDate la
                             -- need to give that dose right away.
                             -- Therefore, in case next shot date per standard interval
                             -- is in future, but last shot was given before current
-                            -- pregnancy started, we sugges next shot to be given today.
+                            -- pregnancy started, we suggest next shot to be given today.
                             if
                                 (Date.compare currentDate nextVaccinationDateByInterval == LT)
                                     && (Date.diff Weeks lastDoseDate currentDate > egaInWeeks)
