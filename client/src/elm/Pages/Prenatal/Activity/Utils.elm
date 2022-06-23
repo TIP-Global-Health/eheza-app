@@ -717,7 +717,7 @@ hospitalizeDueToNauseaAndVomiting : AssembledData -> Bool
 hospitalizeDueToNauseaAndVomiting assembled =
     let
         -- NauseaAndVomiting reported at current encounter, and
-        -- any of follow up questions was answered Yes.
+        -- any of follow up questions were answered Yes.
         byCurrentEncounter =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
@@ -795,7 +795,7 @@ provideMentalHealthEducation assembled =
 hospitalizeDueToPelvicPain : AssembledData -> Bool
 hospitalizeDueToPelvicPain assembled =
     -- PelvicPain reported at current encounter, and
-    -- any of follow up questions was answered Yes.
+    -- any of follow up questions were answered Yes.
     getMeasurementValueFunc assembled.measurements.symptomReview
         |> Maybe.map
             (\value ->
