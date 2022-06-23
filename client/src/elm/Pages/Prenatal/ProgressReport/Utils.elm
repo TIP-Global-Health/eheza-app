@@ -125,9 +125,8 @@ malariaResultNormal =
 
 
 proteinResultNormal : ProteinValue -> Bool
-proteinResultNormal value =
-    -- @todo
-    True
+proteinResultNormal =
+    (==) Protein0
 
 
 phResultNormal : PHValue -> Bool
