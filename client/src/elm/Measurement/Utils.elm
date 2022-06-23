@@ -951,13 +951,10 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
                                     -- This is the date starting from which we allow
                                     -- vaccine administration for todays dose.
                                     expectedOnDate =
-                                        Maybe.map
+                                        Maybe.andThen
                                             (\( lastDose, lastDoseDate ) ->
-                                                let
-                                                    ( interval, unit ) =
-                                                        config.getIntervalForVaccine lastDose
-                                                in
-                                                Date.add unit interval lastDoseDate
+                                                config.nextVaccinationDataForVaccine lastDoseDate lastDose
+                                                    |> Maybe.map Tuple.second
                                             )
                                             lastDoseData
                                             |> Maybe.withDefault config.firstDoseExpectedFrom

@@ -139,15 +139,24 @@ expectActivity currentDate assembled activity =
                                         |> List.isEmpty
                                         |> not
                             in
-                            egaInWeeks >= 24 && not performedPreviously
+                            egaInWeeks >= 28 && not performedPreviously
                         )
                         assembled.globalLmpDate
                         |> Maybe.withDefault False
 
                 PrenatalImmunisation ->
-                    generateSuggestedVaccinations currentDate assembled
-                        |> List.isEmpty
-                        |> not
+                    Maybe.map
+                        (\lmpDate ->
+                            let
+                                egaInWeeks =
+                                    calculateEGAWeeks currentDate lmpDate
+                            in
+                            generateSuggestedVaccinations currentDate egaInWeeks assembled
+                                |> List.isEmpty
+                                |> not
+                        )
+                        assembled.globalLmpDate
+                        |> Maybe.withDefault False
 
                 -- Unique Chw activities.
                 _ ->
@@ -5569,15 +5578,8 @@ expectImmunisationTask : NominalDate -> AssembledData -> ImmunisationTask -> Boo
 expectImmunisationTask currentDate assembled task =
     let
         futureVaccinations =
-            generateFutureVaccinationsData currentDate assembled.vaccinationHistory
+            generateFutureVaccinationsData currentDate assembled
                 |> Dict.fromList
-
-        ageInWeeks =
-            Maybe.map
-                (\birthDate ->
-                    Date.diff Weeks birthDate currentDate
-                )
-                assembled.person.birthDate
 
         isTaskExpected vaccineType =
             Dict.get vaccineType futureVaccinations
@@ -5595,26 +5597,35 @@ expectImmunisationTask currentDate assembled task =
 {-| For each type of vaccine, we generate next dose and administration date.
 If there's no need for future vaccination, Nothing is returned.
 -}
-generateFutureVaccinationsData : NominalDate -> VaccinationProgressDict -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccinationsData currentDate vaccinationProgress =
-    List.map
-        (\vaccineType ->
+generateFutureVaccinationsData : NominalDate -> AssembledData -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData currentDate assembled =
+    Maybe.map
+        (\lmpDate ->
             let
-                nextVaccinationData =
-                    case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
-                        Just ( lastDoseAdministered, lastDoseDate ) ->
-                            nextVaccinationDataForVaccine vaccineType lastDoseDate lastDoseAdministered
-
-                        Nothing ->
-                            -- There were no vaccination so far, so
-                            -- we offer first dose for today.
-                            Just ( VaccineDoseFirst, currentDate )
+                egaInWeeks =
+                    calculateEGAWeeks currentDate lmpDate
             in
-            -- Getting Nothing at nextVaccinationData indicates that
-            -- vacination cycle is completed for this vaccine.
-            ( vaccineType, nextVaccinationData )
+            List.map
+                (\vaccineType ->
+                    let
+                        nextVaccinationData =
+                            case latestVaccinationDataForVaccine assembled.vaccinationHistory vaccineType of
+                                Just ( lastDoseAdministered, lastDoseDate ) ->
+                                    nextVaccinationDataForVaccine currentDate egaInWeeks vaccineType lastDoseDate lastDoseAdministered
+
+                                Nothing ->
+                                    -- There were no vaccination so far, so
+                                    -- we offer first dose for today.
+                                    Just ( VaccineDoseFirst, currentDate )
+                    in
+                    -- Getting Nothing at nextVaccinationData indicates that
+                    -- vacination cycle is completed for this vaccine.
+                    ( vaccineType, nextVaccinationData )
+                )
+                allVaccineTypes
         )
-        allVaccineTypes
+        assembled.globalLmpDate
+        |> Maybe.withDefault []
 
 
 immunisationTaskToVaccineType : ImmunisationTask -> PrenatalVaccineType
@@ -5629,15 +5640,15 @@ immunisationTasks =
     [ TaskTetanus ]
 
 
-generateSuggestedVaccinations : NominalDate -> AssembledData -> List ( PrenatalVaccineType, VaccineDose )
-generateSuggestedVaccinations currentDate assembled =
+generateSuggestedVaccinations : NominalDate -> Int -> AssembledData -> List ( PrenatalVaccineType, VaccineDose )
+generateSuggestedVaccinations currentDate egaInWeeks assembled =
     List.filterMap
         (\vaccineType ->
             let
                 suggestedDose =
                     case latestVaccinationDataForVaccine assembled.vaccinationHistory vaccineType of
                         Just ( lastDoseAdministered, lastDoseDate ) ->
-                            nextDoseForVaccine currentDate vaccineType lastDoseDate lastDoseAdministered
+                            nextDoseForVaccine currentDate egaInWeeks vaccineType lastDoseDate lastDoseAdministered
 
                         Nothing ->
                             Just VaccineDoseFirst
@@ -5663,9 +5674,9 @@ latestVaccinationDataForVaccine vaccinationHistory vaccineType =
             )
 
 
-nextDoseForVaccine : NominalDate -> PrenatalVaccineType -> NominalDate -> VaccineDose -> Maybe VaccineDose
-nextDoseForVaccine currentDate vaccineType lastDoseDate lastDoseAdministered =
-    nextVaccinationDataForVaccine vaccineType lastDoseDate lastDoseAdministered
+nextDoseForVaccine : NominalDate -> Int -> PrenatalVaccineType -> NominalDate -> VaccineDose -> Maybe VaccineDose
+nextDoseForVaccine currentDate egaInWeeks vaccineType lastDoseDate lastDoseAdministered =
+    nextVaccinationDataForVaccine currentDate egaInWeeks vaccineType lastDoseDate lastDoseAdministered
         |> Maybe.andThen
             (\( dose, dueDate ) ->
                 if Date.compare dueDate currentDate == GT then
@@ -5676,8 +5687,8 @@ nextDoseForVaccine currentDate vaccineType lastDoseDate lastDoseAdministered =
             )
 
 
-nextVaccinationDataForVaccine : PrenatalVaccineType -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
-nextVaccinationDataForVaccine vaccineType lastDoseDate lastDoseAdministered =
+nextVaccinationDataForVaccine : NominalDate -> Int -> PrenatalVaccineType -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine currentDate egaInWeeks vaccineType lastDoseDate lastDoseAdministered =
     if getLastDoseForVaccine vaccineType == lastDoseAdministered then
         Nothing
 
@@ -5685,11 +5696,18 @@ nextVaccinationDataForVaccine vaccineType lastDoseDate lastDoseAdministered =
         getNextVaccineDose lastDoseAdministered
             |> Maybe.map
                 (\dose ->
-                    let
-                        ( interval, unit ) =
-                            getIntervalForVaccine vaccineType lastDoseAdministered
-                    in
-                    ( dose, Date.add unit interval lastDoseDate )
+                    -- In case last shot was given before current pregnancy, we
+                    -- need to five next dose right away.
+                    if Date.diff Weeks lastDoseDate currentDate > egaInWeeks then
+                        ( dose, currentDate )
+                        -- Otherwise, go by vaccine interval.
+
+                    else
+                        let
+                            ( interval, unit ) =
+                                getIntervalForVaccine vaccineType ( lastDoseAdministered, lastDoseDate )
+                        in
+                        ( dose, Date.add unit interval lastDoseDate )
                 )
 
 
@@ -5700,8 +5718,8 @@ getLastDoseForVaccine vaccineType =
             VaccineDoseFifth
 
 
-getIntervalForVaccine : PrenatalVaccineType -> VaccineDose -> ( Int, Unit )
-getIntervalForVaccine vaccineType lastDoseAdministered =
+getIntervalForVaccine : PrenatalVaccineType -> ( VaccineDose, NominalDate ) -> ( Int, Unit )
+getIntervalForVaccine vaccineType ( lastDoseAdministered, lastDoseDate ) =
     case vaccineType of
         VaccineTetanus ->
             case lastDoseAdministered of
@@ -5749,8 +5767,8 @@ vaccinationFormDynamicContentAndTasks :
     -> PrenatalVaccinationForm
     -> ( List (Html Msg), Int, Int )
 vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form =
-    Maybe.map
-        (\birthDate ->
+    Maybe.map2
+        (\birthDate lmpDate ->
             let
                 config =
                     { birthDate = birthDate
@@ -5765,10 +5783,13 @@ vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType
                     , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
                     , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
                     , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
-                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine vaccineType
+                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine currentDate egaInWeeks vaccineType
                     , getIntervalForVaccine = getIntervalForVaccine vaccineType
                     , firstDoseExpectedFrom = birthDate
                     }
+
+                egaInWeeks =
+                    calculateEGAWeeks currentDate lmpDate
 
                 expectedDoses =
                     getAllDosesForVaccine vaccineType
@@ -5799,6 +5820,7 @@ vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType
             Measurement.Utils.vaccinationFormDynamicContentAndTasks language currentDate config (PrenatalVaccine vaccineType) form
         )
         assembled.person.birthDate
+        assembled.globalLmpDate
         |> Maybe.withDefault ( [], 0, 1 )
 
 
