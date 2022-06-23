@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, prenatalTestResultToString, weightValueFunc)
+import Backend.Measurement.Utils exposing (getHeightValue, getMeasurementValueFunc, muacIndication, muacValueFunc, prenatalTestResultToString, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -656,15 +656,12 @@ viewExaminationContent language currentDate assembled data =
         tasks =
             [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
 
-        firstEnconter =
-            nurseEncounterNotPerformed assembled
-
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, examinationTasksCompletedFromTotal assembled data firstEnconter task )
-                    )
+            List.map
+                (\task ->
+                    ( task, examinationTasksCompletedFromTotal assembled data task )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -709,6 +706,23 @@ viewExaminationContent language currentDate assembled data =
                     ]
                 ]
 
+        nutritionForm =
+            let
+                form =
+                    assembled.measurements.nutrition
+                        |> getMeasurementValueFunc
+                        |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
+            in
+            if isJust measuredHeight then
+                Maybe.map (\(HeightInCm height) -> { form | height = Just height }) measuredHeight
+                    |> Maybe.withDefault form
+
+            else
+                form
+
+        measuredHeight =
+            resolveMeasuredHeight assembled
+
         viewForm =
             case data.activeTask of
                 Vitals ->
@@ -723,28 +737,9 @@ viewExaminationContent language currentDate assembled data =
                 NutritionAssessment ->
                     let
                         hideHeightInput =
-                            not firstEnconter
-
-                        form_ =
-                            assembled.measurements.nutrition
-                                |> getMeasurementValueFunc
-                                |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
-
-                        form =
-                            if hideHeightInput then
-                                assembled.nursePreviousMeasurementsWithDates
-                                    |> List.head
-                                    |> Maybe.andThen
-                                        (\( _, _, measurements ) ->
-                                            getMotherHeightMeasurement measurements
-                                        )
-                                    |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
-                                    |> Maybe.withDefault form_
-
-                            else
-                                form_
+                            isJust measuredHeight
                     in
-                    viewNutritionAssessmentForm language currentDate assembled form hideHeightInput
+                    viewNutritionAssessmentForm language currentDate assembled nutritionForm hideHeightInput
 
                 CorePhysicalExam ->
                     let
@@ -814,27 +809,10 @@ viewExaminationContent language currentDate assembled data =
                                 nextTask
 
                         NutritionAssessment ->
-                            let
-                                passHeight =
-                                    nurseEncounterNotPerformed assembled |> not
-
-                                maybeHeight =
-                                    if passHeight then
-                                        assembled.nursePreviousMeasurementsWithDates
-                                            |> List.head
-                                            |> Maybe.andThen
-                                                (\( _, _, measurements ) ->
-                                                    getMotherHeightMeasurement measurements
-                                                )
-                                            |> Maybe.map heightValueFunc
-
-                                    else
-                                        Nothing
-                            in
                             SaveNutritionAssessment
                                 assembled.participant.person
                                 assembled.measurements.nutrition
-                                maybeHeight
+                                (Maybe.map getHeightValue measuredHeight)
                                 nextTask
 
                         CorePhysicalExam ->
@@ -2915,7 +2893,7 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
 
         heightPreviousValue =
             resolvePreviousValue assembled .nutrition .height
-                |> Maybe.map heightValueFunc
+                |> Maybe.map getHeightValue
 
         weightPreviousValue =
             resolvePreviousValue assembled .nutrition .weight
@@ -3240,7 +3218,7 @@ viewObstetricalExamForm language currentDate assembled form =
 
         fundalHeightPreviousValue =
             resolvePreviousValue assembled .obstetricalExam .fundalHeight
-                |> Maybe.map heightValueFunc
+                |> Maybe.map getHeightValue
     in
     div [ class "ui form examination obstetrical-exam" ]
         [ div [ class "ui grid" ]

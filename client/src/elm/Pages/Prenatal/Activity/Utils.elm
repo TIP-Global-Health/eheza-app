@@ -2,7 +2,7 @@ module Pages.Prenatal.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, prenatalLabExpirationPeriod, weightValueFunc)
+import Backend.Measurement.Utils exposing (getHeightValue, getMeasurementValueFunc, muacIndication, muacValueFunc, prenatalLabExpirationPeriod, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
@@ -1076,10 +1076,30 @@ getDangerSignsListForType getFunc mappingFunc noSignsValue measurements =
         |> Maybe.withDefault []
 
 
-getMotherHeightMeasurement : PrenatalMeasurements -> Maybe HeightInCm
-getMotherHeightMeasurement measurements =
-    getMeasurementValueFunc measurements.nutrition
-        |> Maybe.map .height
+resolveMeasuredHeight : AssembledData -> Maybe HeightInCm
+resolveMeasuredHeight assembled =
+    let
+        resolveHeight measurements =
+            getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .height
+
+        heightMeasuredByNurse =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveHeight measurements
+                )
+                assembled.nursePreviousMeasurementsWithDates
+                |> List.head
+
+        heightMeasuredByCHW =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveHeight measurements
+                )
+                assembled.chwPreviousMeasurementsWithDates
+                |> List.head
+    in
+    Maybe.Extra.or heightMeasuredByNurse heightMeasuredByCHW
 
 
 generatePrenatalAssesmentForChw : AssembledData -> PrenatalAssesment
@@ -3464,7 +3484,7 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
 
 fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
 fromObstetricalExamValue saved =
-    { fundalHeight = Maybe.map (.fundalHeight >> heightValueFunc) saved
+    { fundalHeight = Maybe.map (.fundalHeight >> getHeightValue) saved
     , fundalHeightDirty = False
     , fetalPresentation = Maybe.map .fetalPresentation saved
     , fetalMovement = Maybe.map .fetalMovement saved
@@ -3480,7 +3500,7 @@ obstetricalExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (heightValueFunc value.fundalHeight)
+                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (getHeightValue value.fundalHeight)
                 , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
@@ -3658,7 +3678,7 @@ toFamilyPlanningValue form =
 
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
 fromPrenatalNutritionValue saved =
-    { height = Maybe.map (.height >> heightValueFunc) saved
+    { height = Maybe.map (.height >> getHeightValue) saved
     , heightDirty = False
     , weight = Maybe.map (.weight >> weightValueFunc) saved
     , weightDirty = False
@@ -3673,7 +3693,7 @@ prenatalNutritionFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { height = valueConsideringIsDirtyField form.heightDirty form.height (heightValueFunc value.height)
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (getHeightValue value.height)
                 , heightDirty = form.heightDirty
                 , weight = valueConsideringIsDirtyField form.weightDirty form.weight (weightValueFunc value.weight)
                 , weightDirty = form.weightDirty
@@ -3956,8 +3976,8 @@ historyTasksCompletedFromTotal assembled data task =
             ( 0, 0 )
 
 
-examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> Bool -> ExaminationTask -> ( Int, Int )
-examinationTasksCompletedFromTotal assembled data firstEncounter task =
+examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
+examinationTasksCompletedFromTotal assembled data task =
     case task of
         Vitals ->
             let
@@ -3979,8 +3999,11 @@ examinationTasksCompletedFromTotal assembled data firstEncounter task =
 
         NutritionAssessment ->
             let
+                measuredHeight =
+                    resolveMeasuredHeight assembled
+
                 hideHeightInput =
-                    not firstEncounter
+                    isJust measuredHeight
 
                 form_ =
                     assembled.measurements.nutrition
@@ -3989,10 +4012,7 @@ examinationTasksCompletedFromTotal assembled data firstEncounter task =
 
                 form =
                     if hideHeightInput then
-                        assembled.nursePreviousMeasurementsWithDates
-                            |> List.head
-                            |> Maybe.andThen (\( _, _, measurements ) -> getMotherHeightMeasurement measurements)
-                            |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
+                        Maybe.map (\(HeightInCm height) -> { form_ | height = Just height }) measuredHeight
                             |> Maybe.withDefault form_
 
                     else

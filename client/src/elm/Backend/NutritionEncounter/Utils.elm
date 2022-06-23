@@ -7,7 +7,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
         ( headCircumferenceValueFunc
-        , heightValueFunc
+        , getHeightValue
         , muacIndication
         , muacValueFunc
         , nutritionSignToString
@@ -277,7 +277,7 @@ resolvePreviousMeasurementsSetForChild childId db =
             generateIndividualNutritionMeasurementsForChild childId db
 
         nutritionHeights =
-            resolveIndividualNutritionValues individualNutritionMeasurements .height heightValueFunc
+            resolveIndividualNutritionValues individualNutritionMeasurements .height getHeightValue
 
         nutritionMuacs =
             resolveIndividualNutritionValues individualNutritionMeasurements .muac muacValueFunc
@@ -289,7 +289,7 @@ resolvePreviousMeasurementsSetForChild childId db =
             generateIndividualWellChildMeasurementsForChild childId db
 
         wellChildHeights =
-            resolveIndividualWellChildValues individualWellChildMeasurements .height heightValueFunc
+            resolveIndividualWellChildValues individualWellChildMeasurements .height getHeightValue
 
         wellChildMuacs =
             resolveIndividualWellChildValues individualWellChildMeasurements .muac muacValueFunc
@@ -310,7 +310,7 @@ resolvePreviousMeasurementsSetForChild childId db =
                 |> Maybe.map
                     (.heights
                         >> Dict.values
-                        >> List.map (\measurement -> ( measurement.dateMeasured, heightValueFunc measurement.value ))
+                        >> List.map (\measurement -> ( measurement.dateMeasured, getHeightValue measurement.value ))
                     )
                 |> Maybe.withDefault []
 

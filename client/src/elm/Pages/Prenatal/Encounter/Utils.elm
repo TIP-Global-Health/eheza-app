@@ -3,7 +3,7 @@ module Pages.Prenatal.Encounter.Utils exposing (..)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, getHeightValue, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples, sortEncounterTuplesDesc)
 import Backend.PrenatalActivity.Model exposing (..)
@@ -493,7 +493,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                         Tuple.second measurement
                                             |> .value
                                             |> .height
-                                            |> heightValueFunc
+                                            |> getHeightValue
 
                                     weight =
                                         Tuple.second measurement
@@ -542,7 +542,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                         Tuple.second measurement
                                             |> .value
                                             |> .height
-                                            |> heightValueFunc
+                                            |> getHeightValue
 
                                     weight =
                                         Tuple.second measurement
@@ -581,7 +581,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                         Tuple.second measurement
                                             |> .value
                                             |> .height
-                                            |> heightValueFunc
+                                            |> getHeightValue
 
                                     weight =
                                         Tuple.second measurement

@@ -560,8 +560,8 @@ postpartumChildDangerSignFromString sign =
             Nothing
 
 
-heightValueFunc : HeightInCm -> Float
-heightValueFunc =
+getHeightValue : HeightInCm -> Float
+getHeightValue =
     \(HeightInCm cm) -> cm
 
 
