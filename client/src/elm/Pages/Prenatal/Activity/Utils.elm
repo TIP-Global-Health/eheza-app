@@ -5696,18 +5696,30 @@ nextVaccinationDataForVaccine currentDate egaInWeeks vaccineType lastDoseDate la
         getNextVaccineDose lastDoseAdministered
             |> Maybe.map
                 (\dose ->
-                    -- In case last shot was given before current pregnancy, we
-                    -- need to five next dose right away.
-                    if Date.diff Weeks lastDoseDate currentDate > egaInWeeks then
-                        ( dose, currentDate )
-                        -- Otherwise, go by vaccine interval.
+                    let
+                        ( interval, unit ) =
+                            getIntervalForVaccine vaccineType lastDoseAdministered
 
-                    else
-                        let
-                            ( interval, unit ) =
-                                getIntervalForVaccine vaccineType lastDoseAdministered
-                        in
-                        ( dose, Date.add unit interval lastDoseDate )
+                        nextVaccinationDateByInterval =
+                            Date.add unit interval lastDoseDate
+
+                        nextVaccinationDate =
+                            -- Per requirements, if patient got less than 5 doses,
+                            -- and did not recieve a dose during current pregnancy, we
+                            -- need to give that dose right away.
+                            -- Therefore, in case next shot date per standard interval
+                            -- is in future, but last shot was given before current
+                            -- pregnancy started, we sugges next shot to be given today.
+                            if
+                                (Date.compare currentDate nextVaccinationDateByInterval == LT)
+                                    && (Date.diff Weeks lastDoseDate currentDate > egaInWeeks)
+                            then
+                                currentDate
+
+                            else
+                                nextVaccinationDateByInterval
+                    in
+                    ( dose, nextVaccinationDate )
                 )
 
 
