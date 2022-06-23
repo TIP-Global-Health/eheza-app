@@ -5705,7 +5705,7 @@ nextVaccinationDataForVaccine currentDate egaInWeeks vaccineType lastDoseDate la
                     else
                         let
                             ( interval, unit ) =
-                                getIntervalForVaccine vaccineType ( lastDoseAdministered, lastDoseDate )
+                                getIntervalForVaccine vaccineType lastDoseAdministered
                         in
                         ( dose, Date.add unit interval lastDoseDate )
                 )
@@ -5718,8 +5718,8 @@ getLastDoseForVaccine vaccineType =
             VaccineDoseFifth
 
 
-getIntervalForVaccine : PrenatalVaccineType -> ( VaccineDose, NominalDate ) -> ( Int, Unit )
-getIntervalForVaccine vaccineType ( lastDoseAdministered, lastDoseDate ) =
+getIntervalForVaccine : PrenatalVaccineType -> VaccineDose -> ( Int, Unit )
+getIntervalForVaccine vaccineType lastDoseAdministered =
     case vaccineType of
         VaccineTetanus ->
             case lastDoseAdministered of
