@@ -8623,22 +8623,22 @@ translationSet trans =
                     }
 
                 DiagnosisDepressionPossible ->
-                    { english = "Patient show signs of possible depression"
+                    { english = "Patient shows signs of possible depression"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisDepressionHighlyPossible ->
-                    { english = "Patient show signs of fairly hight possiblity of depression"
+                    { english = "Patient shows signs of fairly high possibility of depression"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisDepressionProbable ->
-                    { english = "Patient show signs of probable depression"
+                    { english = "Patient shows signs of probable depression"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisSuicideRisk ->
-                    { english = "Patient show signs of being a suicide risk"
+                    { english = "Patient shows signs of being a suicide risk"
                     , kinyarwanda = Nothing
                     }
 
