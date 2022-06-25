@@ -2798,7 +2798,7 @@ decodeReferralFacility =
         |> andThen
             (\facility ->
                 case facility of
-                    "healh-center" ->
+                    "health-center" ->
                         succeed FacilityHealthCenter
 
                     "hospital" ->

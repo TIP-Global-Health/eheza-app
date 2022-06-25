@@ -2249,7 +2249,7 @@ encodeReferralFacility facility =
     string <|
         case facility of
             FacilityHealthCenter ->
-                "healh-center"
+                "health-center"
 
             FacilityHospital ->
                 "hospital"
