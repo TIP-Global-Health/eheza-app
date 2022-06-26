@@ -199,6 +199,9 @@ decodePrenatalDiagnosis =
                     "pelvic-pain-intense" ->
                         succeed DiagnosisPelvicPainIntense
 
+                    "pelvic-pain-continued" ->
+                        succeed DiagnosisPelvicPainContinued
+
                     "urinary-tract-infection" ->
                         succeed DiagnosisUrinaryTractInfection
 
@@ -226,6 +229,9 @@ decodePrenatalDiagnosis =
                     "tuberculosis" ->
                         succeed DiagnosisTuberculosis
 
+                    "depression-not-likely" ->
+                        succeed DiagnosisDepressionNotLikely
+
                     "depression-possible" ->
                         succeed DiagnosisDepressionPossible
 
@@ -237,6 +243,9 @@ decodePrenatalDiagnosis =
 
                     "suicide-risk" ->
                         succeed DiagnosisSuicideRisk
+
+                    "other" ->
+                        succeed DiagnosisOther
 
                     "none" ->
                         succeed NoPrenatalDiagnosis

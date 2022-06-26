@@ -744,7 +744,10 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.sendToHCForm
-                        |> toSendToHCValueWithDefault measurement
+                        |> -- We pass Nothing here, because we know that Hospital form
+                           -- is displayed, and it does not require non default
+                           -- referral facility.
+                           toPrenatalSendToHCValueWithDefault measurement Nothing
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

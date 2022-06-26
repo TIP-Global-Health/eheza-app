@@ -1228,12 +1228,11 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
                     if not sentToHealthCenter then
                         let
                             options =
-                                case facility of
-                                    FacilityHIVProgram ->
-                                        [ ClientRefused, ClientAlreadyInCare, ReasonForNotSendingToHCOther ]
+                                if List.member facility [ FacilityHIVProgram, FacilityMentalHealthSpecialist ] then
+                                    [ ClientRefused, ClientAlreadyInCare, ReasonForNotSendingToHCOther ]
 
-                                    _ ->
-                                        [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                                else
+                                    [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
                         in
                         [ div [ class "why-not" ]
                             [ viewQuestionLabel language Translate.WhyNot

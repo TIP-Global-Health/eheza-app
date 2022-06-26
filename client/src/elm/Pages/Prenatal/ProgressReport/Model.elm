@@ -75,6 +75,16 @@ obstetricalDiagnoses =
     , DiagnosisInfection
     , DiagnosisImminentDelivery
     , DiagnosisLaborAndDelivery
+    , DiagnosisHeartburn
+    , DiagnosisHeartburnPersistent
+    , DiagnosisDeepVeinThrombosis
+    , DiagnosisPelvicPainIntense
+    , DiagnosisPelvicPainContinued
+    , DiagnosisDepressionNotLikely
+    , DiagnosisDepressionPossible
+    , DiagnosisDepressionHighlyPossible
+    , DiagnosisDepressionProbable
+    , DiagnosisSuicideRisk
     ]
 
 
@@ -95,6 +105,17 @@ medicalDiagnoses =
     , DiagnosisMalaria
     , DiagnosisMalariaWithAnemia
     , DiagnosisMalariaWithSevereAnemia
+    , DiagnosisUrinaryTractInfection
+    , DiagnosisUrinaryTractInfectionContinued
+    , DiagnosisPyelonephritis
+    , DiagnosisCandidiasis
+    , DiagnosisCandidiasisContinued
+    , DiagnosisGonorrhea
+    , DiagnosisGonorrheaContinued
+    , DiagnosisTuberculosis
+    , DiagnosisTrichomonasOrBacterialVaginosis
+    , DiagnosisTrichomonasOrBacterialVaginosisContinued
+    , DiagnosisOther
     ]
 
 

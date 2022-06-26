@@ -1820,6 +1820,22 @@ viewNextStepsContent language currentDate isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
+        referralFacility =
+            if isChw then
+                FacilityHealthCenter
+
+            else if
+                referToHospitalForNonHIVDiagnosis assembled
+                    || referToHospitalDueToAdverseEvent assembled
+            then
+                FacilityHospital
+
+            else if referToMentalHealthSpecialist assembled then
+                FacilityMentalHealthSpecialist
+
+            else
+                FacilityHIVProgram
+
         viewForm =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
@@ -1837,24 +1853,22 @@ viewNextStepsContent language currentDate isChw assembled data =
                 Just NextStepsSendToHC ->
                     let
                         ( viewFormFunc, accompanyConfig ) =
-                            if isChw then
-                                ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
+                            case referralFacility of
+                                FacilityHealthCenter ->
+                                    ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
 
-                            else if
-                                referToHospitalForNonHIVDiagnosis assembled
-                                    || referToHospitalDueToAdverseEvent assembled
-                            then
-                                ( viewSendToHospitalForm, Nothing )
+                                FacilityHospital ->
+                                    ( viewSendToHospitalForm, Nothing )
 
-                            else if referToMentalHealthSpecialist assembled then
-                                ( viewSendToMentalSpecialistForm, Nothing )
+                                FacilityMentalHealthSpecialist ->
+                                    ( viewSendToMentalSpecialistForm, Nothing )
 
-                            else
-                                ( viewSendToHIVProgramForm, Just SetAccompanyToHC )
+                                FacilityHIVProgram ->
+                                    ( viewSendToHIVProgramForm, Just SetAccompanyToHC )
                     in
                     measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
                         |> viewFormFunc language
                             currentDate
                             SetReferToHealthCenter
@@ -1959,7 +1973,15 @@ viewNextStepsContent language currentDate isChw assembled data =
                                         SaveFollowUp personId assesment measurements.followUp secondPhase nextTask
 
                                     NextStepsSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC secondPhase nextTask
+                                        let
+                                            nonDefaultFacility =
+                                                if List.member referralFacility [ FacilityMentalHealthSpecialist, FacilityHIVProgram ] then
+                                                    Just referralFacility
+
+                                                else
+                                                    Nothing
+                                        in
+                                        SaveSendToHC personId measurements.sendToHC secondPhase nonDefaultFacility nextTask
 
                                     NextStepsHealthEducation ->
                                         SaveHealthEducationSubActivity personId measurements.healthEducation secondPhase nextTask

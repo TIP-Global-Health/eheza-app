@@ -799,6 +799,7 @@ function hedley_prenatal_field_default_field_bases() {
         'heartburn-persistent' => 'Persistent Heartburn',
         'dvt' => 'Deep Vein Thrombosis',
         'pelvic-pain-intense' => 'Intense Pelvic Pain',
+        'pelvic-pain-continued' => 'Intense Pelvic Continued',
         'urinary-tract-infection' => 'Urinary Tract Infection',
         'urinary-tract-infection-continued' => 'Urinary Tract Infection Continued',
         'pyelonephritis' => 'Pyelonephritis',
@@ -809,10 +810,12 @@ function hedley_prenatal_field_default_field_bases() {
         'trichomonas-or-bv' => 'Trichomonas or Bacterial Vaginosis',
         'trichomonas-or-bv-continued' => 'Trichomonas or Bacterial Vaginosis Continued',
         'tuberculosis' => 'Tuberculosis',
+        'depression-not-likely' => 'Depression Not Likely',
         'depression-possible' => 'Depression Possible',
         'depression-highly-possible' => 'Depression Highly Possible',
         'depression-probable' => 'Depression Probable',
         'suicide-risk' => 'Suicide Risk',
+        'other' => 'Other',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -964,6 +967,31 @@ function hedley_prenatal_field_default_field_bases() {
         'amoxicilin' => 'Amoxicilin',
         'clotrimaxazole-200' => 'Clotrimaxazole 200mg',
         'clotrimaxazole-500' => 'Clotrimaxazole 500mg',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_referral_facility'.
+  $field_bases['field_referral_facility'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_referral_facility',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hiv-program' => 'HIV program',
+        'mental-health-specialist' => 'Mental health specialist',
       ),
       'allowed_values_function' => '',
     ),

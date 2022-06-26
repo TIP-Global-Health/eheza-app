@@ -127,7 +127,7 @@ expectActivity currentDate assembled activity =
                                         |> List.isEmpty
                                         |> not
                             in
-                            egaInWeeks >= 28 && not performedPreviously
+                            egaInWeeks >= 24 && not performedPreviously
                         )
                         assembled.globalLmpDate
                         |> Maybe.withDefault False
@@ -655,6 +655,7 @@ referToHospitalForNonHIVDiagnosis assembled =
             , DiagnosisHeartburnPersistent
             , DiagnosisDeepVeinThrombosis
             , DiagnosisPelvicPainIntense
+            , DiagnosisPelvicPainContinued
             , DiagnosisPyelonephritis
             , DiagnosisMalariaMedicatedContinued
             , DiagnosisMalariaWithAnemiaMedicatedContinued
@@ -716,7 +717,7 @@ hospitalizeDueToNauseaAndVomiting : AssembledData -> Bool
 hospitalizeDueToNauseaAndVomiting assembled =
     let
         -- NauseaAndVomiting reported at current encounter, and
-        -- any of follow up questions was answered Yes.
+        -- any of follow up questions were answered Yes.
         byCurrentEncounter =
             getMeasurementValueFunc assembled.measurements.symptomReview
                 |> Maybe.map
@@ -793,23 +794,15 @@ provideMentalHealthEducation assembled =
 
 hospitalizeDueToPelvicPain : AssembledData -> Bool
 hospitalizeDueToPelvicPain assembled =
-    let
-        -- PelvicPain reported at current encounter, and
-        -- any of follow up questions was answered Yes.
-        byCurrentEncounter =
-            getMeasurementValueFunc assembled.measurements.symptomReview
-                |> Maybe.map
-                    (\value ->
-                        EverySet.member PelvicPain value.symptoms
-                            && EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions
-                    )
-                |> Maybe.withDefault False
-
-        -- PelvicPain was reported at any of previous encounters.
-        byPreviousEncounters =
-            symptomRecordedPreviously assembled PelvicPain
-    in
-    byCurrentEncounter || byPreviousEncounters
+    -- PelvicPain reported at current encounter, and
+    -- any of follow up questions were answered Yes.
+    getMeasurementValueFunc assembled.measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                EverySet.member PelvicPain value.symptoms
+                    && EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions
+            )
+        |> Maybe.withDefault False
 
 
 symptomRecorded : PrenatalMeasurements -> PrenatalSymptom -> Bool
@@ -1562,6 +1555,10 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
         DiagnosisPelvicPainIntense ->
             hospitalizeDueToPelvicPain assembled
 
+        DiagnosisPelvicPainContinued ->
+            -- Pelvic pain was reported previously.
+            symptomRecordedPreviously assembled PelvicPain
+
         DiagnosisUrinaryTractInfection ->
             urinaryTractInfectionDiagnosed
                 && (not <| diagnosedPreviously DiagnosisUrinaryTractInfection assembled)
@@ -1618,30 +1615,38 @@ matchMentalHealthPrenatalDiagnosis assembled diagnosis =
             getMeasurementValueFunc assembled.measurements.mentalHealth
                 |> Maybe.andThen (.signs >> suicideRiskDiagnosedBySigns)
                 |> Maybe.withDefault False
-
-        mentalHealthScore =
-            getMeasurementValueFunc assembled.measurements.mentalHealth
-                |> Maybe.map (.signs >> Dict.values >> List.map mentalHealthQuestionOptionToScore >> List.sum)
-                |> Maybe.withDefault 0
     in
-    case diagnosis of
-        DiagnosisDepressionPossible ->
-            not suicideRiskDiagnosed
-                && (mentalHealthScore >= 9 && mentalHealthScore < 12)
+    if suicideRiskDiagnosed then
+        diagnosis == DiagnosisSuicideRisk
 
-        DiagnosisDepressionHighlyPossible ->
-            not suicideRiskDiagnosed
-                && (mentalHealthScore >= 12 && mentalHealthScore < 14)
+    else
+        getMeasurementValueFunc assembled.measurements.mentalHealth
+            |> Maybe.map
+                (.signs
+                    >> Dict.values
+                    >> List.map mentalHealthQuestionOptionToScore
+                    >> List.sum
+                    >> (\mentalHealthScore ->
+                            case diagnosis of
+                                DiagnosisDepressionNotLikely ->
+                                    mentalHealthScore < 9
 
-        DiagnosisDepressionProbable ->
-            not suicideRiskDiagnosed && mentalHealthScore >= 14
+                                DiagnosisDepressionPossible ->
+                                    mentalHealthScore >= 9 && mentalHealthScore < 12
 
-        DiagnosisSuicideRisk ->
-            suicideRiskDiagnosed
+                                DiagnosisDepressionHighlyPossible ->
+                                    mentalHealthScore >= 12 && mentalHealthScore < 14
 
-        -- Others are not mental health diagnoses.
-        _ ->
-            False
+                                DiagnosisDepressionProbable ->
+                                    mentalHealthScore >= 14
+
+                                -- Others are not mental health diagnoses that
+                                -- are being determined by score.
+                                _ ->
+                                    False
+                       )
+                )
+            |> Maybe.withDefault False
 
 
 suicideRiskDiagnosedBySigns : Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption -> Maybe Bool
@@ -1854,6 +1859,7 @@ symptomsDiagnoses =
     , DiagnosisHeartburnPersistent
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense
+    , DiagnosisPelvicPainContinued
     , DiagnosisUrinaryTractInfection
     , DiagnosisUrinaryTractInfectionContinued
     , DiagnosisPyelonephritis
@@ -1869,7 +1875,8 @@ symptomsDiagnoses =
 
 mentalHealthDiagnoses : List PrenatalDiagnosis
 mentalHealthDiagnoses =
-    [ DiagnosisDepressionPossible
+    [ DiagnosisDepressionNotLikely
+    , DiagnosisDepressionPossible
     , DiagnosisDepressionHighlyPossible
     , DiagnosisDepressionProbable
     , DiagnosisSuicideRisk
@@ -2491,7 +2498,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 form =
                     assembled.measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
 
                 ( reasonForNotSentCompleted, reasonForNotSentActive ) =
                     form.referToHealthCenter
@@ -4581,14 +4588,14 @@ expectLaboratoryTask currentDate assembled task =
         case task of
             TaskHIVTest ->
                 (not <| isKnownAsPositive .hivTest)
-                    && isRepeatingTestOnWeek 38 TaskHIVTest
+                    && isInitialTest TaskHIVTest
 
             TaskSyphilisTest ->
                 isRepeatingTestOnWeek 38 TaskSyphilisTest
 
             TaskHepatitisBTest ->
                 (not <| isKnownAsPositive .hepatitisBTest)
-                    && isRepeatingTestOnWeek 34 TaskHepatitisBTest
+                    && isInitialTest TaskHepatitisBTest
 
             TaskMalariaTest ->
                 True
@@ -5179,13 +5186,7 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                                         (\diagnoses ->
                                             if
                                                 List.any (\diagnosis -> List.member diagnosis diagnoses)
-                                                    [ DiagnosisHIV
-                                                    , DiagnosisSyphilis
-                                                    , DiagnosisMalaria
-                                                    , DiagnosisModerateAnemia
-                                                    , DiagnosisGestationalHypertensionImmediate
-                                                    , DiagnosisChronicHypertensionImmediate
-                                                    ]
+                                                    outsideCareDiagnosesWithPossibleMedication
                                             then
                                                 ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion GivenMedicine
                                                   , viewBoolInput
@@ -5217,27 +5218,10 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                             in
                             ( [ viewLabel language Translate.SelectAllDiagnoses
                               , viewCheckBoxMultipleSelectInput language
-                                    [ DiagnosisHIV
-                                    , DiagnosisSyphilis
-                                    , DiagnosisNeurosyphilis
-                                    , DiagnosisMalaria
-                                    , DiagnosisHepatitisB
-                                    , DiagnosisModerateAnemia
-                                    , DiagnosisSevereAnemia
-                                    , DiagnosisPelvicPainIntense
-                                    , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
-                                    ]
-                                    [ DiagnosisChronicHypertensionImmediate
-                                    , DiagnosisGestationalHypertensionImmediate
-                                    , DiagnosisModeratePreeclampsiaImmediate
-                                    , DiagnosisDeepVeinThrombosis
-                                    , DiagnosisPyelonephritis
-                                    , DiagnosisHeartburnPersistent
-                                    , DiagnosisPlacentaPrevia
-                                    , DiagnosisHyperemesisGravidum
-                                    ]
+                                    outsideCareDiagnosesLeftColumn
+                                    outsideCareDiagnosesRightColumn
                                     (form.diagnoses |> Maybe.withDefault [])
-                                    Nothing
+                                    (Just DiagnosisOther)
                                     SetOutsideCareDiagnosis
                                     Translate.PrenatalDiagnosis
                               ]

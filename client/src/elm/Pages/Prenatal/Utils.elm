@@ -15,6 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Measurement.Model exposing (SendToHCForm)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
@@ -2362,13 +2363,28 @@ diagnosedHypertension phase =
 
 diagnosedHypertensionPrevoiusly : AssembledData -> Bool
 diagnosedHypertensionPrevoiusly assembled =
-    diagnosedPreviouslyAnyOf
-        [ DiagnosisChronicHypertensionImmediate
-        , DiagnosisGestationalHypertensionImmediate
-        , DiagnosisChronicHypertensionAfterRecheck
-        , DiagnosisGestationalHypertensionAfterRecheck
-        ]
-        assembled
+    diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled
+
+
+resolvePreviousHypertensionDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
+resolvePreviousHypertensionDiagnosis nursePreviousMeasurementsWithDates =
+    List.filterMap
+        (\( _, diagnoses, _ ) ->
+            EverySet.toList diagnoses
+                |> List.filter (\diagnosis -> List.member diagnosis hypertensionDiagnoses)
+                |> List.head
+        )
+        nursePreviousMeasurementsWithDates
+        |> List.head
+
+
+hypertensionDiagnoses : List PrenatalDiagnosis
+hypertensionDiagnoses =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionAfterRecheck
+    ]
 
 
 diagnosedMalaria : AssembledData -> Bool
@@ -2386,3 +2402,93 @@ diagnosedSyphilis =
         [ DiagnosisSyphilis
         , DiagnosisSyphilisWithComplications
         ]
+
+
+outsideCareDiagnoses : List PrenatalDiagnosis
+outsideCareDiagnoses =
+    DiagnosisOther :: outsideCareDiagnosesLeftColumn ++ outsideCareDiagnosesRightColumn
+
+
+outsideCareDiagnosesLeftColumn : List PrenatalDiagnosis
+outsideCareDiagnosesLeftColumn =
+    [ DiagnosisHIV
+    , DiagnosisSyphilis
+    , DiagnosisNeurosyphilis
+    , DiagnosisMalaria
+    , DiagnosisHepatitisB
+    , DiagnosisModerateAnemia
+    , DiagnosisSevereAnemia
+    , DiagnosisPelvicPainIntense
+    , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
+    ]
+
+
+outsideCareDiagnosesRightColumn : List PrenatalDiagnosis
+outsideCareDiagnosesRightColumn =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisModeratePreeclampsiaImmediate
+    , DiagnosisDeepVeinThrombosis
+    , DiagnosisPyelonephritis
+    , DiagnosisHeartburnPersistent
+    , DiagnosisPlacentaPrevia
+    , DiagnosisHyperemesisGravidum
+    ]
+
+
+outsideCareDiagnosesWithPossibleMedication : List PrenatalDiagnosis
+outsideCareDiagnosesWithPossibleMedication =
+    [ DiagnosisHIV
+    , DiagnosisSyphilis
+    , DiagnosisMalaria
+    , DiagnosisModerateAnemia
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisChronicHypertensionImmediate
+    ]
+
+
+prenatalSendToHCFormWithDefault : SendToHCForm -> Maybe PrenatalSendToHCValue -> SendToHCForm
+prenatalSendToHCFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
+                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
+                , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
+
+                -- Not used at prenatal.
+                , enrollToNutritionProgram = form.enrollToNutritionProgram
+
+                -- Not used at prenatal.
+                , referToNutritionProgram = form.referToNutritionProgram
+                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
+                }
+            )
+
+
+toPrenatalSendToHCValueWithDefault : Maybe PrenatalSendToHCValue -> Maybe ReferralFacility -> SendToHCForm -> Maybe PrenatalSendToHCValue
+toPrenatalSendToHCValueWithDefault saved referralFacility form =
+    prenatalSendToHCFormWithDefault form saved
+        |> toPrenatalSendToHCValue referralFacility
+
+
+toPrenatalSendToHCValue : Maybe ReferralFacility -> SendToHCForm -> Maybe PrenatalSendToHCValue
+toPrenatalSendToHCValue referralFacility form =
+    let
+        signs =
+            [ ifNullableTrue HandReferrerForm form.handReferralForm
+            , ifNullableTrue ReferToHealthCenter form.referToHealthCenter
+            , ifNullableTrue PrenatalAccompanyToHC form.accompanyToHealthCenter
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+
+        reasonForNotSendingToHC =
+            form.reasonForNotSendingToHC
+                |> Maybe.withDefault NoReasonForNotSendingToHC
+                |> Just
+    in
+    Maybe.map PrenatalSendToHCValue signs
+        |> andMap reasonForNotSendingToHC
+        |> andMap (Just referralFacility)

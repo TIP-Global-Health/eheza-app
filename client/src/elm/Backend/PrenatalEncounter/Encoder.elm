@@ -193,6 +193,9 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisPelvicPainIntense ->
                 "pelvic-pain-intense"
 
+            DiagnosisPelvicPainContinued ->
+                "pelvic-pain-continued"
+
             DiagnosisUrinaryTractInfection ->
                 "urinary-tract-infection"
 
@@ -203,10 +206,10 @@ encodePrenatalDiagnosis diagnosis =
                 "pyelonephritis"
 
             DiagnosisCandidiasis ->
-                "candidiasis-continued"
+                "candidiasis"
 
             DiagnosisCandidiasisContinued ->
-                "candidiasis"
+                "candidiasis-continued"
 
             DiagnosisGonorrhea ->
                 "gonorrhea"
@@ -221,7 +224,10 @@ encodePrenatalDiagnosis diagnosis =
                 "trichomonas-or-bv-continued"
 
             DiagnosisTuberculosis ->
-                "Tuberculosis"
+                "tuberculosis"
+
+            DiagnosisDepressionNotLikely ->
+                "depression-not-likely"
 
             DiagnosisDepressionPossible ->
                 "depression-possible"
@@ -234,6 +240,9 @@ encodePrenatalDiagnosis diagnosis =
 
             DiagnosisSuicideRisk ->
                 "suicide-risk"
+
+            DiagnosisOther ->
+                "other"
 
             NoPrenatalDiagnosis ->
                 "none"

@@ -46,6 +46,7 @@ type PrenatalDiagnosis
     | DiagnosisHeartburnPersistent
     | DiagnosisDeepVeinThrombosis
     | DiagnosisPelvicPainIntense
+    | DiagnosisPelvicPainContinued
     | DiagnosisUrinaryTractInfection
     | DiagnosisUrinaryTractInfectionContinued
     | DiagnosisPyelonephritis
@@ -56,8 +57,10 @@ type PrenatalDiagnosis
     | DiagnosisTrichomonasOrBacterialVaginosis
     | DiagnosisTrichomonasOrBacterialVaginosisContinued
     | DiagnosisTuberculosis
+    | DiagnosisDepressionNotLikely
     | DiagnosisDepressionPossible
     | DiagnosisDepressionHighlyPossible
     | DiagnosisDepressionProbable
     | DiagnosisSuicideRisk
+    | DiagnosisOther
     | NoPrenatalDiagnosis

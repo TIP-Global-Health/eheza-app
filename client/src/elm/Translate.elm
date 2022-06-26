@@ -65,7 +65,7 @@ import Form.Error exposing (ErrorValue(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html, text)
 import Http
-import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..), ReferralFacility(..))
+import Measurement.Model exposing (FloatInputConstraints, NextStepsTask(..))
 import Pages.AcuteIllness.Activity.Types
     exposing
         ( DangerSignsTask(..)
@@ -320,6 +320,7 @@ type TranslationId
     | AcuteIllnessActivityTitle AcuteIllnessActivity
     | AddChild
     | AddContact
+    | AddedToPatientRecordOn
     | AddFamilyMember
     | AddFamilyMemberFor String
     | AddNewParticipant
@@ -450,6 +451,7 @@ type TranslationId
     | ContactsTracingHelper
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
+    | Continued
     | ContributingFactor ContributingFactorsSign
     | ContributingFactorsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
@@ -520,6 +522,7 @@ type TranslationId
     | Diabetes
     | DiagnosedAtAnotherFacilityPrefix
     | DiagnosedAtAnotherFacilitySuffix
+    | DiagnosedByOutsideCare
     | Diagnosis
     | DiagnosisDate
     | DifferenceBetweenDueAndDeliveryDates
@@ -564,6 +567,7 @@ type TranslationId
     | EnterPairingCode
     | EntryStatusAntenatal PaneEntryStatus
     | EntryStatusDiagnosis PaneEntryStatus
+    | EPDSPreformedOn
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
@@ -700,6 +704,8 @@ type TranslationId
     | LastSuccesfulContactLabel
     | Left
     | LegCrampsReliefMethod LegCrampsReliefMethod
+    | LegLeft
+    | LegRight
     | Legs
     | LegsCPESign LegsCPESign
     | LevelOfEducationLabel
@@ -926,6 +932,7 @@ type TranslationId
     | PrenatalEncounterType PrenatalEncounterType
     | PrenatalFlankPainSign PrenatalFlankPainSign
     | PrenatalHealthEducationAppropriateProvided
+    | PrenatalHealthEducationSignsDiagnosis Bool String PrenatalHealthEducationSign
     | PrenatalHealthEducationLabel PrenatalHealthEducationSign
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
     | PrenatalHealthEducationHivDetectableViralLoadInform
@@ -1234,7 +1241,6 @@ type TranslationId
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
     | TreatedWith
-    | TreatedWithMethyldopa
     | TreatedWithNot
     | Treatment
     | TreatmentDetailsAnemia
@@ -1254,6 +1260,7 @@ type TranslationId
     | TuberculosisPast
     | TuberculosisPresent
     | TuberculosisInstructions
+    | TuberculosisInstructionsFollowed
     | TuberculosisWarning
     | TwoVisits
     | Type
@@ -1822,6 +1829,11 @@ translationSet trans =
         AddContact ->
             { english = "Add Contact"
             , kinyarwanda = Just "Ongeraho uwo bahuye"
+            }
+
+        AddedToPatientRecordOn ->
+            { english = "Added to patient record on"
+            , kinyarwanda = Nothing
             }
 
         AddFamilyMember ->
@@ -3050,6 +3062,11 @@ translationSet trans =
             , kinyarwanda = Just "Waba warigeze uhura n'abantu bagaragaje ibimenyetso bya covid-19 cyangwa n'abari bafite ibyago byo kuyandura"
             }
 
+        Continued ->
+            { english = "Continued"
+            , kinyarwanda = Nothing
+            }
+
         ContributingFactor factor ->
             case factor of
                 FactorLackOfBreastMilk ->
@@ -3580,6 +3597,11 @@ translationSet trans =
 
         DiagnosedAtAnotherFacilitySuffix ->
             { english = "at another facility and were given medication. Which medication was given?"
+            , kinyarwanda = Nothing
+            }
+
+        DiagnosedByOutsideCare ->
+            { english = "Diagnosed by outside care"
             , kinyarwanda = Nothing
             }
 
@@ -4153,6 +4175,11 @@ translationSet trans =
         SubmitPairingCode ->
             { english = "Submit Pairing Code"
             , kinyarwanda = Just "Umubare uhuza igikoresho cy'ikoranabuhanga na apulikasiyo"
+            }
+
+        EPDSPreformedOn ->
+            { english = "EPDS performed on"
+            , kinyarwanda = Nothing
             }
 
         ErrorCheckLocalConfig ->
@@ -5570,6 +5597,16 @@ translationSet trans =
                     { english = "Massage"
                     , kinyarwanda = Nothing
                     }
+
+        LegLeft ->
+            { english = "Left leg"
+            , kinyarwanda = Nothing
+            }
+
+        LegRight ->
+            { english = "Right leg"
+            , kinyarwanda = Nothing
+            }
 
         Legs ->
             { english = "Legs"
@@ -8063,6 +8100,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPelvicPainContinued ->
+                    { english = "Persistent Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisUrinaryTractInfection ->
                     { english = "Urinary Tract Infection"
                     , kinyarwanda = Nothing
@@ -8078,13 +8120,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisCandidiasisContinued ->
-                    { english = "Candidiasis Continued"
+                DiagnosisCandidiasis ->
+                    { english = "Candidiasis"
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisCandidiasis ->
-                    { english = "Candidiasis"
+                DiagnosisCandidiasisContinued ->
+                    { english = "Candidiasis Continued"
                     , kinyarwanda = Nothing
                     }
 
@@ -8113,6 +8155,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionNotLikely ->
+                    { english = "Depression not Likely"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDepressionPossible ->
                     { english = "Depression Possible"
                     , kinyarwanda = Nothing
@@ -8130,6 +8177,11 @@ translationSet trans =
 
                 DiagnosisSuicideRisk ->
                     { english = "Suicide Risk"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisOther ->
+                    { english = "Other"
                     , kinyarwanda = Nothing
                     }
 
@@ -8341,37 +8393,42 @@ translationSet trans =
                     }
 
                 DiagnosisHeartburn ->
-                    { english = "Heartburn"
+                    { english = "Heartburn in pregnancy"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisHeartburnPersistent ->
-                    { english = "Persistent Heartburn"
+                    { english = "Heartburn in pregnancy (persistent)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisDeepVeinThrombosis ->
-                    { english = "Deep Vein Thrombosis"
+                    { english = "Possible DVT"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPelvicPainIntense ->
-                    { english = "Intense Pelvic Pain"
+                    { english = "Severe pelvic pain in pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPelvicPainContinued ->
+                    { english = "Persistent pelvic pain in pregnancy"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisUrinaryTractInfection ->
-                    { english = "Urinary Tract Infection"
+                    { english = "Lower urinary tract infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisUrinaryTractInfectionContinued ->
-                    { english = "Urinary Tract Infection Continued"
+                    { english = "Lower urinary tract infection (continued)"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPyelonephritis ->
-                    { english = "Pyelonephritis"
+                    { english = "Possible Pyelonephritis"
                     , kinyarwanda = Nothing
                     }
 
@@ -8381,7 +8438,7 @@ translationSet trans =
                     }
 
                 DiagnosisCandidiasisContinued ->
-                    { english = "Candidiasis Continued"
+                    { english = "Candidiasis (continued)"
                     , kinyarwanda = Nothing
                     }
 
@@ -8391,7 +8448,7 @@ translationSet trans =
                     }
 
                 DiagnosisGonorrheaContinued ->
-                    { english = "Gonorrhea Continued"
+                    { english = "Gonorrhea (continued)"
                     , kinyarwanda = Nothing
                     }
 
@@ -8401,12 +8458,17 @@ translationSet trans =
                     }
 
                 DiagnosisTrichomonasOrBacterialVaginosisContinued ->
-                    { english = "Trichomonas or Bacterial Vaginosis Continued"
+                    { english = "Trichomonas or Bacterial Vaginosis (continued)"
                     , kinyarwanda = Nothing
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
-                    { english = "Tuberculosis"
+                    { english = "Possible Active Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDepressionNotLikely ->
+                    { english = "Depression not Likely"
                     , kinyarwanda = Nothing
                     }
 
@@ -8427,6 +8489,11 @@ translationSet trans =
 
                 DiagnosisSuicideRisk ->
                     { english = "Suicide Risk"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisOther ->
+                    { english = "Received a diagnosis from a different health care facility - please follow up with patient"
                     , kinyarwanda = Nothing
                     }
 
@@ -8572,6 +8639,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPelvicPainContinued ->
+                    { english = "Persistent Pelvic Pain"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisUrinaryTractInfection ->
                     { english = "Urinary Tract Infection"
                     , kinyarwanda = Nothing
@@ -8622,6 +8694,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisDepressionNotLikely ->
+                    { english = "Depression not Likely"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDepressionPossible ->
                     { english = "Patient shows signs of possible depression"
                     , kinyarwanda = Nothing
@@ -8639,6 +8716,11 @@ translationSet trans =
 
                 DiagnosisSuicideRisk ->
                     { english = "Patient shows signs of being a suicide risk"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisOther ->
+                    { english = "Other"
                     , kinyarwanda = Nothing
                     }
 
@@ -8694,6 +8776,91 @@ translationSet trans =
 
                 NoFlankPain ->
                     { english = "None"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalHealthEducationSignsDiagnosis isInitial date sign ->
+            case sign of
+                EducationNausiaVomiting ->
+                    if isInitial then
+                        { english = "Nausea + vomitting in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent nausea + vomitting in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationLegCramps ->
+                    if isInitial then
+                        { english = "Leg cramps in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent leg cramps in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationLowBackPain ->
+                    if isInitial then
+                        { english = "Low back pain in pregancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent low back pain in pregancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationConstipation ->
+                    if isInitial then
+                        { english = "Constipation in pregnacy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent constipation in pregnacy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationVaricoseVeins ->
+                    if isInitial then
+                        { english = "Varicose veins during pregnancy provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent varicose veins during pregnancy provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationLegPainRedness ->
+                    if isInitial then
+                        { english = "Leg pain during pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent leg pain during pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                EducationPelvicPain ->
+                    if isInitial then
+                        { english = "Pelvic pain in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Persistent pelvic pain in pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Nothing
+                        }
+
+                -- Other signs do not reflect a diagnosis.
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -9439,7 +9606,7 @@ translationSet trans =
             }
 
         PrenatalLaboratoryHIVPCRViralLoadStatusQuestion ->
-            { english = "Are there <20 copies/mm3"
+            { english = "Are there less than 20 copies/mm3"
             , kinyarwanda = Nothing
             }
 
@@ -12386,11 +12553,6 @@ translationSet trans =
             , kinyarwanda = Just "Ntibivurwa na"
             }
 
-        TreatedWithMethyldopa ->
-            { english = "treated with Methyldopa"
-            , kinyarwanda = Just "Bivurwa na Metilidopa"
-            }
-
         Treatment ->
             { english = "Treatment"
             , kinyarwanda = Just "Ubuvuzi"
@@ -12588,6 +12750,11 @@ translationSet trans =
 
         TuberculosisInstructions ->
             { english = "Follow TB protocols"
+            , kinyarwanda = Nothing
+            }
+
+        TuberculosisInstructionsFollowed ->
+            { english = "followed TB protocols"
             , kinyarwanda = Nothing
             }
 

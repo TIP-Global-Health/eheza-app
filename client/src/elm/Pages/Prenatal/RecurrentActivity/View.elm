@@ -741,7 +741,7 @@ viewNextStepsContent language currentDate assembled data =
             case activeTask of
                 Just NextStepsSendToHC ->
                     getMeasurementValueFunc measurements.sendToHC
-                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
                         |> viewSendToHospitalForm language
                             currentDate
                             SetReferToHealthCenter

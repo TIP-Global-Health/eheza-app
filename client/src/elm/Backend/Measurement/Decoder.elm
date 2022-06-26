@@ -394,7 +394,7 @@ decodePrenatalAssesment =
 
 decodePrenatalSendToHc : Decoder PrenatalSendToHC
 decodePrenatalSendToHc =
-    decodePrenatalMeasurement decodeSendToHCValue
+    decodePrenatalMeasurement decodePrenatalSendToHCValue
 
 
 decodeAppointmentConfirmation : Decoder PrenatalAppointmentConfirmation
@@ -2722,6 +2722,14 @@ decodeSendToHCValue =
         |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
 
 
+decodePrenatalSendToHCValue : Decoder PrenatalSendToHCValue
+decodePrenatalSendToHCValue =
+    succeed PrenatalSendToHCValue
+        |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
+        |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
+        |> optional "referral_facility" (nullable decodeReferralFacility) Nothing
+
+
 decodeSendToHCSign : Decoder SendToHCSign
 decodeSendToHCSign =
     string
@@ -2781,6 +2789,31 @@ decodeReasonForNotSendingToHC =
                         fail <|
                             event
                                 ++ "is not a recognized ReasonForNotSendingToHC"
+            )
+
+
+decodeReferralFacility : Decoder ReferralFacility
+decodeReferralFacility =
+    string
+        |> andThen
+            (\facility ->
+                case facility of
+                    "health-center" ->
+                        succeed FacilityHealthCenter
+
+                    "hospital" ->
+                        succeed FacilityHospital
+
+                    "hiv-program" ->
+                        succeed FacilityHIVProgram
+
+                    "mental-health-specialist" ->
+                        succeed FacilityMentalHealthSpecialist
+
+                    _ ->
+                        fail <|
+                            facility
+                                ++ " is not a recognized ReferralFacility"
             )
 
 
