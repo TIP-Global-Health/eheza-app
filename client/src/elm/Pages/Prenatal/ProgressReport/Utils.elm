@@ -131,6 +131,8 @@ proteinResultNormal =
 
 phResultNormal : PHValue -> Bool
 phResultNormal =
+    -- @todo: revise after https://github.com/TIP-Global-Health/eheza-app/issues/308
+    -- is implemented.
     (/=) Ph85
 
 
@@ -182,8 +184,7 @@ randomBloodSugarResultNormal value =
 
 hemoglobinResultNormal : Float -> Bool
 hemoglobinResultNormal value =
-    -- @todo
-    True
+    value >= 11 && value <= 16.5
 
 
 rhesusResultsNormal : Rhesus -> Bool
