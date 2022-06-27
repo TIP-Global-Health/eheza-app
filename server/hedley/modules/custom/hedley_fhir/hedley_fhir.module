@@ -26,7 +26,7 @@ function hedley_fhir_node_update($node) {
 }
 
 /**
- * Upload measurements to OpenMRS.
+ * Upload measurements to FHIR datastore.
  *
  * @param object $node
  *   The saved node.
