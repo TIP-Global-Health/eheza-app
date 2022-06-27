@@ -1401,12 +1401,13 @@ bilirubinValueFromString value =
             Nothing
 
 
-{-| If lab results are not provided within 14 days, we consider the expired,
-and do not provide option of filling the results.
+{-| If lab results are not provided within this period, we consider them
+expired, and do not provide option of filling the results.
+Note: HIV PCR can take up to one month to get a result.
 -}
 prenatalLabExpirationPeriod : Int
 prenatalLabExpirationPeriod =
-    14
+    34
 
 
 prenatalHIVSignToString : PrenatalHIVSign -> String
