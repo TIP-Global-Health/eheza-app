@@ -459,6 +459,7 @@ type Revision
     | PrenatalSendToHCRevision PrenatalSendToHCId PrenatalSendToHC
     | PrenatalSymptomReviewRevision PrenatalSymptomReviewId PrenatalSymptomReview
     | PrenatalSyphilisTestRevision PrenatalSyphilisTestId PrenatalSyphilisTest
+    | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation
     | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest
     | RelationshipRevision RelationshipId Relationship
     | SendToHCRevision SendToHCId SendToHC

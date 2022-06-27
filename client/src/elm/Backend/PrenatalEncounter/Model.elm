@@ -96,6 +96,7 @@ type alias Model =
     , saveOutsideCare : WebData ()
     , saveHIVPCRTest : WebData ()
     , saveMentalHealth : WebData ()
+    , saveTetanusImmunisation : WebData ()
     }
 
 
@@ -137,6 +138,7 @@ emptyModel =
     , saveOutsideCare = NotAsked
     , saveHIVPCRTest = NotAsked
     , saveMentalHealth = NotAsked
+    , saveTetanusImmunisation = NotAsked
     }
 
 
@@ -214,3 +216,5 @@ type Msg
     | HandleSavedHIVPCRTest (WebData ())
     | SaveMentalHealth PersonId (Maybe PrenatalMentalHealthId) PrenatalMentalHealthValue
     | HandleSavedMentalHealth (WebData ())
+    | SaveTetanusImmunisation PersonId (Maybe PrenatalTetanusImmunisationId) VaccinationValue
+    | HandleSavedTetanusImmunisation (WebData ())

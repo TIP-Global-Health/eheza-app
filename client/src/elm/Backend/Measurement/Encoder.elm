@@ -834,6 +834,11 @@ encodePrenatalMentalHealthValue value =
            ]
 
 
+encodePrenatalTetanusImmunisation : PrenatalTetanusImmunisation -> List ( String, Value )
+encodePrenatalTetanusImmunisation =
+    encodePrenatalMeasurement (encodeVaccinationValueWithType "prenatal_tetanus_immunisation")
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")

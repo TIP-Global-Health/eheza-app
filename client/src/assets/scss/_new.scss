@@ -1858,6 +1858,76 @@ div.page-activity.prenatal {
           margin-bottom: 40px;
         }
       }
+
+      .ui.form.vaccination .header.icon-label {
+        align-items: flex-start;
+        font-weight: 500;
+
+        .description,
+        .dosage {
+          margin-bottom: 30px;
+        }
+      }
+
+      .ui.form.vaccination .history {
+        padding: 20px 0;
+
+        .label {
+          font-weight: 500;
+          margin-left: 10px;
+        }
+      }
+
+      .ui.form.vaccination .history .history-entry {
+        align-items: flex-start;
+        display: flex;
+        font-weight: normal;
+        margin-left: 55px;
+
+        .dose {
+          background: $color-primary;
+          border-radius: 5px;
+          color: $color-white;
+          font-size: 17px;
+          padding: 0 10px;
+        }
+
+        .date {
+          margin-bottom: 20px;
+          margin-left: 30px;
+          width: 150px;
+        }
+
+        .update,
+        .delete {
+          border-radius: 3px;
+          color: $color-white;
+          font-size: 17px;
+          padding: 0 20px;
+          text-transform: uppercase;
+        }
+
+        .update {
+          background: $color-primary;
+        }
+
+        .delete {
+          background: $color-velvet;
+        }
+      }
+
+      .ui.form.vaccination .update.actions {
+        display: flex;
+        justify-content: space-evenly;
+        margin-bottom: 40px;
+
+        .button {
+          font-size: 18px;
+          font-weight: 600;
+          padding: 15px;
+          width: 250px;
+        }
+      }
     }
   }
 }

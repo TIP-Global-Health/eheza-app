@@ -53,6 +53,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Utils
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.Activity.Utils
@@ -2057,7 +2058,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                     (\value_ ->
                                         let
                                             nonAdministrationReasons =
-                                                Pages.Utils.resolveMedicationsNonAdministrationReasons value_
+                                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value_
                                         in
                                         Maybe.map2
                                             (\tdf3TCTreatmentMessage dolutegravirTreatmentmessage ->
@@ -2113,7 +2114,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     (\value ->
                         let
                             nonAdministrationReasons =
-                                Pages.Utils.resolveMedicationsNonAdministrationReasons value
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
                         in
                         treatmentMessageForMedication value.distributionSigns nonAdministrationReasons TDF3TC
                             |> Maybe.map
@@ -2229,7 +2230,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     (\value ->
                         let
                             nonAdministrationReasons =
-                                Pages.Utils.resolveMedicationsNonAdministrationReasons value
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
                         in
                         Maybe.map2
                             (\ironTreatmentMessage folicAcidTreatmentMessage ->
@@ -2435,7 +2436,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     (\value ->
                         let
                             nonAdministrationReasons =
-                                Pages.Utils.resolveMedicationsNonAdministrationReasons value
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
                         in
                         Maybe.map2
                             (\ceftriaxoneMessage azithromycinMessage ->
@@ -2468,7 +2469,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     (\value ->
                         let
                             nonAdministrationReasons =
-                                Pages.Utils.resolveMedicationsNonAdministrationReasons value
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
                         in
                         treatmentMessageForMedicationLower value.distributionSigns nonAdministrationReasons Metronidazole
                             |> Maybe.map

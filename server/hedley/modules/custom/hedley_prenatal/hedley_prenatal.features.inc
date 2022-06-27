@@ -147,6 +147,14 @@ function hedley_prenatal_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatal_tetanus_immunisation' => array(
+      'name' => t('Prenatal Tetanus Immunisation'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'prenatal_urine_dipstick_test' => array(
       'name' => t('Prenatal Urine Dipstick Test'),
       'base' => 'node_content',
