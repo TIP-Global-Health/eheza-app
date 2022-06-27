@@ -59,6 +59,11 @@ decodeEverySet decoder =
     decodeWithFallback EverySet.empty (map EverySet.fromList <| list decoder)
 
 
+decodeWithFallback : a -> Decoder a -> Decoder a
+decodeWithFallback fallback decoder =
+    oneOf [ decoder, succeed fallback ]
+
+
 encodeIfExists : String -> Maybe a -> (a -> Value) -> List ( String, Value )
 encodeIfExists name maybeVal encoder =
     maybeVal
@@ -66,6 +71,7 @@ encodeIfExists name maybeVal encoder =
         |> Maybe.withDefault []
 
 
-decodeWithFallback : a -> Decoder a -> Decoder a
-decodeWithFallback fallback decoder =
-    oneOf [ decoder, succeed fallback ]
+encodeEverySet : (a -> Value) -> EverySet a -> Value
+encodeEverySet encoder set =
+    EverySet.toList set
+        |> Json.Encode.list encoder

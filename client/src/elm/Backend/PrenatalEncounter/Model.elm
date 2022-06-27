@@ -14,6 +14,8 @@ type alias PrenatalEncounter =
     , endDate : Maybe NominalDate
     , encounterType : PrenatalEncounterType
     , diagnoses : EverySet PrenatalDiagnosis
+    , pastDiagnoses : EverySet PrenatalDiagnosis
+    , indicators : EverySet PrenatalIndicator
     , shard : Maybe HealthCenterId
     }
 
@@ -25,6 +27,8 @@ emptyPrenatalEncounter participant startDate encounterType shard =
     , endDate = Nothing
     , encounterType = encounterType
     , diagnoses = EverySet.empty
+    , pastDiagnoses = EverySet.empty
+    , indicators = EverySet.empty
     , shard = shard
     }
 
@@ -54,6 +58,11 @@ type PrenatalEncounterPostCreateDestination
     = DestinationEncounterPage
     | DestinationEncounterPageWithWarningPopup
     | DestinationClinicalProgressReportPage
+
+
+type PrenatalIndicator
+    = IndicatorHistoryLabsCompleted
+    | NoPrenatalIndicators
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress

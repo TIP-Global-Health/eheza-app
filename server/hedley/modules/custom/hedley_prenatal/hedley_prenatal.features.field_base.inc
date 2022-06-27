@@ -868,7 +868,7 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'past-diagnoses-completed' => 'Past diagnoses completed',
+        'past-labs-completed' => 'Past labs completed',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

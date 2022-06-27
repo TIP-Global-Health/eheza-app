@@ -15,12 +15,7 @@ import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, s
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityUuid(..), encodeEntityUuid, fromEntityUuid)
 import Translate.Utils exposing (encodeLanguage)
-
-
-encodeEverySet : (a -> Value) -> EverySet a -> Value
-encodeEverySet encoder set =
-    EverySet.toList set
-        |> list encoder
+import Utils.Json exposing (encodeEverySet)
 
 
 encodeHeight : Height -> List ( String, Value )
