@@ -1,0 +1,156 @@
+<?php
+
+/**
+ * @file
+ * Code for the FHIR integration.
+ */
+
+use Firebase\JWT\JWT;
+
+/**
+ * Implements hook_node_insert().
+ */
+function hedley_fhir_node_insert($node) {
+  hedley_fhir_upload_to_datastore($node);
+}
+/**
+ * Upload measurements to OpenMRS.
+ *
+ * @param object $node
+ *   The saved node.
+ */
+function hedley_fhir_upload_to_datastore($node) {
+  $func = 'hedley_fhir_prepare_data__' . $node->type;
+  if (!function_exists($func)) {
+    // Not a node type we need to upload.
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // The FHIR bundle resource.
+  $bundle = [
+    'resourceType' => 'Bundle',
+    'type' => 'transaction',
+    'entry' => [],
+  ];
+
+  $bundle['entry'][] = hedley_fhir_prepare_data__person($wrapper);
+  $bundle['entry'][] = $func($wrapper);
+
+}
+
+/**
+ * Prepare a Bundle resource entry for Person.
+ *
+ * @param \EntityMetadataWrapper $wrapper
+ *   The wrapped node.
+ *
+ * @return array
+ *   Entry to be added to the FHIR bundle resource.
+ */
+function hedley_fhir_prepare_data__person(EntityMetadataWrapper $wrapper) {
+  $person_wrapper = $wrapper->field_person;
+
+  $uuid = $person_wrapper->field_uuid->value();
+
+  return [
+    'fullUrl' => 'urn:uuid:' . $uuid,
+    'resource' => [
+      'resourceType' => 'Patient',
+      'identifier' => [
+        0 => [
+          'use' => 'usual',
+          'system' => 'https://e-heza.example/Patient',
+          'value' => $uuid,
+        ],
+      ],
+      'name' => [
+        0 => [
+          'family' => $person_wrapper->field_first_name->value(),
+          'given' => [
+            0 => $person_wrapper->field_first_name->value(),
+          ],
+        ],
+      ],
+      'gender' => $person_wrapper->field_gender->value(),
+    ],
+    'request' => [
+      'method' => 'PUT',
+      'url' => 'Patient?identifier=' . $uuid,
+    ],
+  ];
+}
+
+/**
+ * Prepare a Bundle resource entry for Observation of type Height.
+ *
+ * @param \EntityMetadataWrapper $wrapper
+ *   The wrapped node.
+ *
+ * @return array
+ *   Entry to be added to the FHIR bundle resource.
+ */
+function hedley_fhir_prepare_data__height(EntityMetadataWrapper $wrapper) {
+  $person_wrapper = $wrapper->field_person;
+  $person_uuid = $person_wrapper->field_uuid->value();
+
+  $uuid = $wrapper->field_uuid->value();
+  $value = $wrapper->field_height->value();
+
+  return [
+    'fullUrl' => 'urn:uuid:' . $uuid,
+    'resource' => [
+      'resourceType' => 'Observation',
+      'identifier' => [
+        0 => [
+          'use' => 'usual',
+          'system' => 'https://e-heza.example/Height',
+          'value' => $uuid,
+        ],
+      ],
+      'meta' => [
+        'profile' => [
+          0 => 'http://hl7.org/fhir/StructureDefinition/vitalsigns',
+        ],
+      ],
+      'status' => 'final',
+      'category' => [
+        0 => [
+          'coding' => [
+            0 => [
+              'system' => 'http://terminology.hl7.org/CodeSystem/observation-category',
+              'code' => 'vital-signs',
+              'display' => 'Vital Signs',
+            ],
+          ],
+          'text' => 'Vital Signs',
+        ],
+      ],
+      'code' => [
+        'coding' => [
+          0 => [
+            'system' => 'http://loinc.org',
+            'code' => '8302-2',
+            'display' => 'Body height',
+          ],
+        ],
+        'text' => 'Body height',
+      ],
+      'subject' => [
+        'reference' => 'Patient/' . $person_uuid,
+      ],
+      'effectiveDateTime' => date('Y-m-d', $wrapper->value()->updated),
+      'valueQuantity' => [
+        'value' => $value,
+        'unit' => 'cm',
+        'system' => 'http://unitsofmeasure.org',
+        'code' => '[cm]',
+      ],
+    ],
+    'request' => [
+      'method' => 'PUT',
+      'url' => 'Observation?identifier=' . $uuid,
+    ],
+  ];
+}
