@@ -2202,7 +2202,7 @@ sendToHCDueToMedicationNonAdministration measurements =
 resolveMedicationsNonAdministrationReasons : AcuteIllnessMeasurements -> Dict MedicationDistributionSign AdministrationNote
 resolveMedicationsNonAdministrationReasons measurements =
     getMeasurementValueFunc measurements.medicationDistribution
-        |> Maybe.map Pages.Utils.resolveMedicationsNonAdministrationReasons
+        |> Maybe.map Measurement.Utils.resolveMedicationsNonAdministrationReasons
         |> Maybe.withDefault Dict.empty
 
 

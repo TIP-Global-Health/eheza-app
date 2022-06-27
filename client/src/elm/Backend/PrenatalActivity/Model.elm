@@ -22,6 +22,7 @@ type PrenatalActivity
     | SymptomReview
     | PrenatalTreatmentReview
     | MaternalMentalHealth
+    | PrenatalImmunisation
 
 
 type PrenatalRecurrentActivity

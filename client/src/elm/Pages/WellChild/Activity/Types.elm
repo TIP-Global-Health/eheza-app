@@ -22,11 +22,6 @@ type NutritionAssessmentTask
     | TaskWeight
 
 
-type VaccinationFormViewMode
-    = ViewModeInitial
-    | ViewModeVaccinationUpdate VaccineDose
-
-
 type ImmunisationTask
     = TaskBCG
     | TaskDTP

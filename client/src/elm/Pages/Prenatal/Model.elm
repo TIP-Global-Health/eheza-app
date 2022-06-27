@@ -1,5 +1,6 @@
 module Pages.Prenatal.Model exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model
@@ -8,7 +9,9 @@ import Backend.Measurement.Model
         , MedicationNonAdministrationSign
         , ObstetricHistoryValue
         , PrenatalMeasurements
+        , PrenatalVaccineType
         , RecommendedTreatmentSign
+        , VaccineDose
         )
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (..)
@@ -27,7 +30,15 @@ type alias AssembledData =
     , chwPreviousMeasurementsWithDates : List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements )
     , globalLmpDate : Maybe NominalDate
     , globalObstetricHistory : Maybe ObstetricHistoryValue
+    , vaccinationHistory : VaccinationProgressDict
+
+    -- Similar to vaccinationHistory, but includes immunisation data of current encounter.
+    , vaccinationProgress : VaccinationProgressDict
     }
+
+
+type alias VaccinationProgressDict =
+    Dict PrenatalVaccineType (Dict VaccineDose NominalDate)
 
 
 type alias MedicationDistributionForm =

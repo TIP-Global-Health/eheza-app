@@ -7,7 +7,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
 import Date exposing (Date)
-import DateSelector.SelectorPopup exposing (DateSelectorConfig)
+import DateSelector.Model exposing (DateSelectorConfig)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
 import Form

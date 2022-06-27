@@ -1016,3 +1016,9 @@ prenatalMentalHealthEndpoint : ReadWriteEndPoint Error PrenatalMentalHealthId Pr
 prenatalMentalHealthEndpoint =
     swEndpoint "nodes/prenatal_mental_health" decodePrenatalMentalHealth
         |> withValueEncoder (object << encodePrenatalMentalHealth)
+
+
+prenatalTetanusImmunisationEndpoint : ReadWriteEndPoint Error PrenatalTetanusImmunisationId PrenatalTetanusImmunisation PrenatalTetanusImmunisation ()
+prenatalTetanusImmunisationEndpoint =
+    swEndpoint "nodes/prenatal_tetanus_immunisation" decodePrenatalTetanusImmunisation
+        |> withValueEncoder (object << encodePrenatalTetanusImmunisation)

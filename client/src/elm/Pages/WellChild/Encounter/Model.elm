@@ -3,7 +3,7 @@ module Pages.WellChild.Encounter.Model exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (VaccineDose, VaccineType, WellChildMeasurements)
+import Backend.Measurement.Model exposing (VaccineDose, WellChildMeasurements, WellChildVaccineType)
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildEncounter.Model exposing (..)
@@ -64,4 +64,4 @@ type alias AssembledData =
 
 
 type alias VaccinationProgressDict =
-    Dict VaccineType (Dict VaccineDose NominalDate)
+    Dict WellChildVaccineType (Dict VaccineDose NominalDate)

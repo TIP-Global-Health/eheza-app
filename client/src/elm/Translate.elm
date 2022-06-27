@@ -823,7 +823,8 @@ type TranslationId
     | NutritionSigns
     | ReasonForNotSendingToHC ReasonForNotSendingToHC
     | AdministrationNote AdministrationNote
-    | AdministrationNoteForWellChild AdministrationNote
+    | AdministrationNoteForPrenatalImmunisation AdministrationNote
+    | AdministrationNoteForWellChildImmunisation AdministrationNote
     | NoParticipantsPending
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
@@ -950,6 +951,10 @@ type TranslationId
     | PrenatalHealthEducationMentalHealthInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
+    | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
+    | PrenatalImmunisationDescription PrenatalVaccineType
+    | PrenatalImmunisationHeader PrenatalVaccineType
+    | PrenatalImmunisationHistory PrenatalVaccineType
     | PrenatalLaboratoryBloodGroupLabel
     | PrenatalLaboratoryBloodGroupTestResult
     | PrenatalLaboratoryBloodGroup BloodGroup
@@ -1017,6 +1022,7 @@ type TranslationId
     | PrenatalTestResult PrenatalTestResult
     | PrenatalUrineDipstickTestLabel PrenatalTestVariant
     | PrenatalUrineDipstickTestVariant PrenatalTestVariant
+    | PrenatalVaccineLabel PrenatalVaccineType
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -1282,8 +1288,10 @@ type TranslationId
     | VaccinationCatchUpRequiredQuestion
     | VaccinationStatus VaccinationStatus
     | VaccinationNoDosesAdministered
-    | VaccineDoseAdministeredPreviouslyQuestion String
-    | VaccineDoseAdministeredTodayQuestion String
+    | VaccineDoseAdministeredPreviouslyPrenatalQuestion String
+    | VaccineDoseAdministeredPreviouslyWellChildQuestion String
+    | VaccineDoseAdministeredTodayPrenatalQuestion String
+    | VaccineDoseAdministeredTodayWellChildQuestion String
     | VaccineType VaccineType
     | ValidationErrors
     | Version
@@ -1304,15 +1312,15 @@ type TranslationId
     | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
-    | WellChildImmunisationDescription VaccineType
-    | WellChildImmunisationDosage VaccineType
-    | WellChildImmunisationHeader VaccineType
-    | WellChildImmunisationHistory VaccineType
+    | WellChildImmunisationDescription WellChildVaccineType
+    | WellChildImmunisationDosage WellChildVaccineType
+    | WellChildImmunisationHeader WellChildVaccineType
+    | WellChildImmunisationHistory WellChildVaccineType
     | WellChildImmunisationTask Pages.WellChild.Activity.Types.ImmunisationTask
     | WellChildMedicationTask Pages.WellChild.Activity.Types.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChild.Activity.Types.NextStepsTask
     | WellChildSymptom WellChildSymptom
-    | WellChildVaccineLabel VaccineType
+    | WellChildVaccineLabel WellChildVaccineType
     | WhatDoYouWantToDo
     | WhatType
     | WhatWasTheirResponse
@@ -6843,7 +6851,45 @@ translationSet trans =
                     , kinyarwanda = Just "Byamaze kwakirwa"
                     }
 
-        AdministrationNoteForWellChild note ->
+        AdministrationNoteForPrenatalImmunisation note ->
+            case note of
+                NonAdministrationLackOfStock ->
+                    { english = "Out of Stock"
+                    , kinyarwanda = Just "Byashize mu bubiko"
+                    }
+
+                NonAdministrationKnownAllergy ->
+                    { english = "Known Allergy or Reaction"
+                    , kinyarwanda = Just "Agira ingaruka zizwi kubera uru rukingo/umuti"
+                    }
+
+                NonAdministrationPatientDeclined ->
+                    { english = "Patient Declined"
+                    , kinyarwanda = Just "Umurwayi yanze"
+                    }
+
+                NonAdministrationPatientUnableToAfford ->
+                    { english = "Patient Unable to Afford"
+                    , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
+                    }
+
+                NonAdministrationTooIll ->
+                    { english = "Too Sick"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonAdministrationOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    }
+
+                -- Other options are not relevant for Immunisation.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        AdministrationNoteForWellChildImmunisation note ->
             case note of
                 NonAdministrationLackOfStock ->
                     { english = "Out of Stock"
@@ -6865,11 +6911,6 @@ translationSet trans =
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
                     }
 
-                NonAdministrationHomeBirth ->
-                    { english = "Home Birth"
-                    , kinyarwanda = Nothing
-                    }
-
                 NonAdministrationTooIll ->
                     { english = "Too Sick"
                     , kinyarwanda = Nothing
@@ -6880,13 +6921,9 @@ translationSet trans =
                     , kinyarwanda = Just "Ibindi"
                     }
 
-                AdministeredToday ->
-                    { english = "Administered Today"
-                    , kinyarwanda = Nothing
-                    }
-
-                AdministeredPreviously ->
-                    { english = "Administered Previously"
+                -- Other options are not relevant for Immunisation.
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -7972,6 +8009,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PrenatalImmunisation ->
+                    { english = "Immunizations"
+                    , kinyarwanda = Just "Ikingira"
+                    }
+
         PrenatalRecurrentActivitiesTitle activity ->
             case activity of
                 Backend.PrenatalActivity.Model.LabResults ->
@@ -8823,22 +8865,22 @@ translationSet trans =
                     }
 
                 DiagnosisDepressionPossible ->
-                    { english = "Patient show signs of possible depression"
+                    { english = "Patient shows signs of possible depression"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisDepressionHighlyPossible ->
-                    { english = "Patient show signs of fairly hight possiblity of depression"
+                    { english = "Patient shows signs of fairly high possibility of depression"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisDepressionProbable ->
-                    { english = "Patient show signs of probable depression"
+                    { english = "Patient shows signs of probable depression"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisSuicideRisk ->
-                    { english = "Patient show signs of being a suicide risk"
+                    { english = "Patient shows signs of being a suicide risk"
                     , kinyarwanda = Nothing
                     }
 
@@ -9266,6 +9308,34 @@ translationSet trans =
 
                 NoPrenatalHIVSign ->
                     { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalImmunisationTask task ->
+            case task of
+                Pages.Prenatal.Activity.Types.TaskTetanus ->
+                    { english = "Tetanus"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalImmunisationDescription task ->
+            case task of
+                VaccineTetanus ->
+                    { english = "The Tetanus vaccine prevents the patient from getting Tetanus which causes muscle spasms, fever, high blood pressure, and death."
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalImmunisationHeader task ->
+            case task of
+                VaccineTetanus ->
+                    { english = "Tetanus"
+                    , kinyarwanda = Nothing
+                    }
+
+        PrenatalImmunisationHistory task ->
+            case task of
+                VaccineTetanus ->
+                    { english = "Tetanus History"
                     , kinyarwanda = Nothing
                     }
 
@@ -10720,6 +10790,13 @@ translationSet trans =
                 VariantLongTest ->
                     { english = "Long Dip"
                     , kinyarwanda = Just "Ikizamini gitanga ibisubizo byinshi"
+                    }
+
+        PrenatalVaccineLabel value ->
+            case value of
+                VaccineTetanus ->
+                    { english = "Tetanus"
+                    , kinyarwanda = Nothing
                     }
 
         PreTerm ->
@@ -13017,57 +13094,76 @@ translationSet trans =
             , kinyarwanda = Just "Nta makuru ku nkigo agaragara"
             }
 
-        VaccineDoseAdministeredPreviouslyQuestion vaccineType ->
+        VaccineDoseAdministeredPreviouslyPrenatalQuestion vaccineType ->
+            { english = "Did the patient receive any " ++ vaccineType ++ " immunizations prior to today that are not recorded above"
+            , kinyarwanda = Nothing
+            }
+
+        VaccineDoseAdministeredPreviouslyWellChildQuestion vaccineType ->
             { english = "Did the child receive any " ++ vaccineType ++ " immunizations prior to today that are not recorded above"
             , kinyarwanda = Just <| "Umwana yaba yarabonye " ++ vaccineType ++ " bakaba batarabyanditse"
             }
 
-        VaccineDoseAdministeredTodayQuestion vaccineType ->
+        VaccineDoseAdministeredTodayPrenatalQuestion vaccineType ->
+            { english = "Will the patient receive the " ++ vaccineType ++ " immunization today"
+            , kinyarwanda = Nothing
+            }
+
+        VaccineDoseAdministeredTodayWellChildQuestion vaccineType ->
             { english = "Will the child receive the " ++ vaccineType ++ " immunization today"
             , kinyarwanda = Just <| "Umwana arahabwa " ++ vaccineType ++ " uyu munsi"
             }
 
         VaccineType vaccineType ->
             case vaccineType of
-                VaccineBCG ->
-                    { english = "BCG Bacilius Calmette - Guérin Vaccine (BCG)"
-                    , kinyarwanda = Just "Urukingo rw'igituntu"
-                    }
+                WellChildVaccine wellChildVaccineType ->
+                    case wellChildVaccineType of
+                        VaccineBCG ->
+                            { english = "BCG Bacilius Calmette - Guérin Vaccine (BCG)"
+                            , kinyarwanda = Just "Urukingo rw'igituntu"
+                            }
 
-                VaccineOPV ->
-                    { english = "Oral Polio Vaccine (OPV)"
-                    , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu kanwa"
-                    }
+                        VaccineOPV ->
+                            { english = "Oral Polio Vaccine (OPV)"
+                            , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu kanwa"
+                            }
 
-                VaccineDTP ->
-                    { english = "DTP - HepB - Hib Vaccine"
-                    , kinyarwanda = Just "Urukingo rwa Kokorishi, Agakwega (Tetanosi), Akaniga,indwara zifata imyanya y'ubuhumekero, Umwijima wo mu bwoko bwa B"
-                    }
+                        VaccineDTP ->
+                            { english = "DTP - HepB - Hib Vaccine"
+                            , kinyarwanda = Just "Urukingo rwa Kokorishi, Agakwega (Tetanosi), Akaniga,indwara zifata imyanya y'ubuhumekero, Umwijima wo mu bwoko bwa B"
+                            }
 
-                VaccinePCV13 ->
-                    { english = "Pneumoccocal Vaccine (PCV 13)"
-                    , kinyarwanda = Just "Urukingo rw'umusonga"
-                    }
+                        VaccinePCV13 ->
+                            { english = "Pneumoccocal Vaccine (PCV 13)"
+                            , kinyarwanda = Just "Urukingo rw'umusonga"
+                            }
 
-                VaccineRotarix ->
-                    { english = "Rotavirus (Rotarix) Vaccine"
-                    , kinyarwanda = Just "Urukingo rw'impiswi"
-                    }
+                        VaccineRotarix ->
+                            { english = "Rotavirus (Rotarix) Vaccine"
+                            , kinyarwanda = Just "Urukingo rw'impiswi"
+                            }
 
-                VaccineIPV ->
-                    { english = "Inactivated Polio Vaccine"
-                    , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
-                    }
+                        VaccineIPV ->
+                            { english = "Inactivated Polio Vaccine"
+                            , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
+                            }
 
-                VaccineMR ->
-                    { english = "Measles-Rubella Vaccine"
-                    , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
-                    }
+                        VaccineMR ->
+                            { english = "Measles-Rubella Vaccine"
+                            , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
+                            }
 
-                VaccineHPV ->
-                    { english = "HPV Vaccine"
-                    , kinyarwanda = Just "Urukingo rw'Inkondo y'umura"
-                    }
+                        VaccineHPV ->
+                            { english = "HPV Vaccine"
+                            , kinyarwanda = Just "Urukingo rw'Inkondo y'umura"
+                            }
+
+                PrenatalVaccine prenatalVaccineType ->
+                    case prenatalVaccineType of
+                        VaccineTetanus ->
+                            { english = "Tetanus"
+                            , kinyarwanda = Nothing
+                            }
 
         ValidationErrors ->
             { english = "Validation Errors"

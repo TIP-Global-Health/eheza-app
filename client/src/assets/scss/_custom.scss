@@ -2648,6 +2648,20 @@ input::placeholder {
   }
 }
 
+.icon-tetanus-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-tetanus-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-tetanus-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-tetanus-gray.svg);
+  }
+}
+
 // Lists
 
 .ui.list {

@@ -131,6 +131,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_outside_care" (decodeHead decodePrenatalOutsideCare) Nothing
         |> optional "prenatal_hiv_pcr_test" (decodeHead decodePrenatalHIVPCRTest) Nothing
         |> optional "prenatal_mental_health" (decodeHead decodePrenatalMentalHealth) Nothing
+        |> optional "prenatal_tetanus_immunisation" (decodeHead decodePrenatalTetanusImmunisation) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -931,6 +932,11 @@ decodePrenatalMentalHealthQuestionOption =
                                 ++ " is not a recognized PrenatalMentalHealthQuestionOption"
                         )
             )
+
+
+decodePrenatalTetanusImmunisation : Decoder PrenatalTetanusImmunisation
+decodePrenatalTetanusImmunisation =
+    decodePrenatalMeasurement decodeVaccinationValue
 
 
 decodeHeight : Decoder Height
@@ -2798,7 +2804,7 @@ decodeReferralFacility =
         |> andThen
             (\facility ->
                 case facility of
-                    "healh-center" ->
+                    "health-center" ->
                         succeed FacilityHealthCenter
 
                     "hospital" ->
@@ -4083,17 +4089,6 @@ decodeMeasurementNote =
                         fail <|
                             sign
                                 ++ " is not a recognized MeasurementNote"
-            )
-
-
-decodeVaccineType : Decoder VaccineType
-decodeVaccineType =
-    string
-        |> andThen
-            (\type_ ->
-                vaccineTypeFromString type_
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| type_ ++ " is not a recognized VaccineType")
             )
 
 

@@ -1,20 +1,12 @@
 module DateSelector.SelectorPopup exposing (..)
 
 import Date exposing (Date)
+import DateSelector.Model exposing (..)
 import DateSelector.Selector
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Translate exposing (Language, translate)
-
-
-type alias DateSelectorConfig msg =
-    { select : Date -> msg
-    , close : msg
-    , dateFrom : Date
-    , dateTo : Date
-    , dateDefault : Maybe Date
-    }
 
 
 view : Language -> (Date -> msg) -> msg -> Date -> Date -> Maybe Date -> Html msg

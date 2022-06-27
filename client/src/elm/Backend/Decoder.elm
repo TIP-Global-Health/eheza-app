@@ -301,6 +301,9 @@ decodeRevision =
                     "prenatal_syphilis_test" ->
                         decodeWithUuid PrenatalSyphilisTestRevision decodePrenatalSyphilisTest
 
+                    "prenatal_tetanus_immunisation" ->
+                        decodeWithUuid PrenatalTetanusImmunisationRevision decodePrenatalTetanusImmunisation
+
                     "prenatal_urine_dipstick_test" ->
                         decodeWithUuid PrenatalUrineDipstickTestRevision decodePrenatalUrineDipstickTest
 

@@ -5,10 +5,20 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Date exposing (Date)
-import DateSelector.SelectorPopup exposing (DateSelectorConfig)
+import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (DropZoneFile, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
+import Measurement.Model
+    exposing
+        ( DropZoneFile
+        , SendToHCForm
+        , VaccinationForm
+        , VaccinationFormViewMode
+        , VitalsForm
+        , emptySendToHCForm
+        , emptyVaccinationForm
+        , emptyVitalsForm
+        )
 import Pages.Page exposing (Page)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Model exposing (..)
@@ -201,6 +211,17 @@ type Msg
     | SetSpecialistAtHC Bool
     | SetMentalHealthWarningPopupState (Maybe Msg)
     | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
+      -- IMMUNISATION
+    | SetActiveImmunisationTask ImmunisationTask
+    | SetVaccinationFormViewMode PrenatalVaccineType VaccinationFormViewMode
+    | SetUpdatePreviousVaccines PrenatalVaccineType VaccineDose Bool
+    | SetWillReceiveVaccineToday PrenatalVaccineType VaccineDose Bool
+    | SetAdministrationNote PrenatalVaccineType AdministrationNote
+    | SetVaccinationUpdateDateSelectorState PrenatalVaccineType (Maybe (DateSelectorConfig Msg))
+    | SetVaccinationUpdateDate PrenatalVaccineType NominalDate
+    | SaveVaccinationUpdateDate PrenatalVaccineType VaccineDose
+    | DeleteVaccinationUpdateDate PrenatalVaccineType VaccineDose NominalDate
+    | SaveTetanusImmunisation PersonId (Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation ))
 
 
 type alias Model =
@@ -218,6 +239,7 @@ type alias Model =
     , symptomReviewData : SymptomReviewData
     , treatmentReviewData : TreatmentReviewData
     , mentalHealthData : MentalHealthData
+    , immunisationData : ImmunisationData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe ( String, String )
@@ -240,6 +262,7 @@ emptyModel =
     , symptomReviewData = emptySymptomReviewData
     , treatmentReviewData = emptyTreatmentReviewData
     , mentalHealthData = emptyMentalHealthData
+    , immunisationData = emptyImmunisationData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -575,6 +598,23 @@ emptyMentalHealthData : MentalHealthData
 emptyMentalHealthData =
     { form = emptyMentalHealthForm
     , warningPopupState = Nothing
+    }
+
+
+type alias ImmunisationData =
+    { tetanusForm : PrenatalVaccinationForm
+    , activeTask : Maybe ImmunisationTask
+    }
+
+
+type alias PrenatalVaccinationForm =
+    VaccinationForm Msg
+
+
+emptyImmunisationData : ImmunisationData
+emptyImmunisationData =
+    { tetanusForm = emptyVaccinationForm
+    , activeTask = Nothing
     }
 
 

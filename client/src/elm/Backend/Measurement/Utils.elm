@@ -580,65 +580,6 @@ headCircumferenceValueFunc =
     \(HeadCircumferenceInCm cm) -> cm
 
 
-vaccineTypeFromString : String -> Maybe VaccineType
-vaccineTypeFromString type_ =
-    case type_ of
-        "bcg" ->
-            Just VaccineBCG
-
-        "opv" ->
-            Just VaccineOPV
-
-        "dtp" ->
-            Just VaccineDTP
-
-        "pcv13" ->
-            Just VaccinePCV13
-
-        "rotarix" ->
-            Just VaccineRotarix
-
-        "ipv" ->
-            Just VaccineIPV
-
-        "mr" ->
-            Just VaccineMR
-
-        "hpv" ->
-            Just VaccineHPV
-
-        _ ->
-            Nothing
-
-
-vaccineTypeToString : VaccineType -> String
-vaccineTypeToString type_ =
-    case type_ of
-        VaccineBCG ->
-            "bcg"
-
-        VaccineOPV ->
-            "opv"
-
-        VaccineDTP ->
-            "dtp"
-
-        VaccinePCV13 ->
-            "pcv13"
-
-        VaccineRotarix ->
-            "rotarix"
-
-        VaccineIPV ->
-            "ipv"
-
-        VaccineMR ->
-            "mr"
-
-        VaccineHPV ->
-            "hpv"
-
-
 vaccineDoseFromString : String -> Maybe VaccineDose
 vaccineDoseFromString dose =
     case dose of
@@ -653,6 +594,9 @@ vaccineDoseFromString dose =
 
         "dose-4" ->
             Just VaccineDoseFourth
+
+        "dose-5" ->
+            Just VaccineDoseFifth
 
         _ ->
             Nothing
@@ -672,6 +616,9 @@ vaccineDoseToString dose =
 
         VaccineDoseFourth ->
             "dose-4"
+
+        VaccineDoseFifth ->
+            "dose-5"
 
 
 getMeasurementValueFunc : Maybe ( id, { measurement | value : v } ) -> Maybe v
