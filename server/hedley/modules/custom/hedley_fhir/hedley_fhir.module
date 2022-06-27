@@ -15,6 +15,13 @@ function hedley_fhir_node_insert($node) {
 }
 
 /**
+ * Implements hook_node_update().
+ */
+function hedley_fhir_node_update($node) {
+  hedley_fhir_upload_to_datastore($node);
+}
+
+/**
  * Upload measurements to OpenMRS.
  *
  * @param object $node
