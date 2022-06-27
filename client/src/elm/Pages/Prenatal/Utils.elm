@@ -700,6 +700,7 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                 newTreatmentLabel =
                     div [ class "label overview" ]
                         [ text <| translate language <| Translate.HypertensionRecommendedTreatmentUpdateNewTreatment recommendationDosageUpdate
+                        , text " "
                         , span [ class "highlight" ]
                             [ text <| translate language <| Translate.RecommendedTreatmentSignLabel recommendedMedication
                             , text " "
@@ -999,7 +1000,7 @@ hypertensionTreatementUpdateRecommendationBySys value =
     else if value < 160 then
         TreatementUpdateIncreaseOneDose
 
-    else if value < 160 then
+    else if value < 180 then
         TreatementUpdateIncreaseTwoDoses
 
     else
