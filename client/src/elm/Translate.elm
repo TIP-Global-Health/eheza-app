@@ -1914,8 +1914,8 @@ translationSet trans =
             }
 
         AdministerIronHelper ->
-            { english = "Take 2 60 mg tabs 2x a day x 3 months"
-            , kinyarwanda = Just "Fata mg 260 inshuro 2 ku munsi mu mezi atatu"
+            { english = "Take 1 60 mg tabs 2x a day x 3 months"
+            , kinyarwanda = Just "Fata mg 1 60 inshuro 2 ku munsi mu mezi atatu"
             }
 
         AdministeVitaminAHelper ->
