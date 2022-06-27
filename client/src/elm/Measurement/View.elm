@@ -31,8 +31,8 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
         ( currentValues
-        , getMeasurementValueFunc
         , getHeightValue
+        , getMeasurementValueFunc
         , mapMeasurementData
         , muacIndication
         , muacValueFunc

@@ -6,8 +6,8 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
-        ( headCircumferenceValueFunc
-        , getHeightValue
+        ( getHeightValue
+        , headCircumferenceValueFunc
         , muacIndication
         , muacValueFunc
         , nutritionSignToString
