@@ -418,7 +418,7 @@ type alias VaccinationForm msg =
 
     -- This is the note for suggesed dose for encounter.
     -- There are situations where there will be no suggested dose,
-    -- due to ability to uodate previous doses.
+    -- due to the ability to update previous doses.
     -- In this case, we'll set 'AdministeredPreviously' value.
     , administrationNote : Maybe AdministrationNote
     , administrationNoteDirty : Bool
