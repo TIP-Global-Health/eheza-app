@@ -95,9 +95,7 @@ function hedley_fhir_upload_to_datastore($node) {
     'data' => drupal_json_encode($data),
   ];
 
-  $response = drupal_http_request($url, $options);
-
-  return $response;
+  return drupal_http_request($url, $options);
 }
 
 /**
@@ -127,7 +125,7 @@ function hedley_fhir_prepare_data__person(EntityMetadataWrapper $wrapper) {
       ],
       'name' => [
         0 => [
-          'family' => $person_wrapper->field_first_name->value(),
+          'family' => $person_wrapper->field_second_name->value(),
           'given' => [
             0 => $person_wrapper->field_first_name->value(),
           ],
