@@ -1,0 +1,214 @@
+<?php
+
+/**
+ * @file
+ * Code for the FHIR integration.
+ */
+
+
+include '/var/www/html/server/www/sites/all/vendor/autoload.php';
+
+use Firebase\JWT\JWT;
+
+
+/**
+ * Implements hook_node_insert().
+ */
+function hedley_fhir_node_insert($node) {
+  hedley_fhir_upload_to_datastore($node);
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function hedley_fhir_node_update($node) {
+  hedley_fhir_upload_to_datastore($node);
+}
+
+/**
+ * Upload measurements to FHIR datastore.
+ *
+ * @param object $node
+ *   The saved node.
+ *
+ * @return StdClass|NULL
+ *   The response object, or NULL if it could not be sent.
+ *
+ * @throws \Exception
+ */
+function hedley_fhir_upload_to_datastore($node) {
+  $func = 'hedley_fhir_prepare_data__' . $node->type;
+  if (!function_exists($func)) {
+    // Not a node type we need to upload.
+    return NULL;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // The FHIR bundle resource.
+  $data = [
+    'resourceType' => 'Bundle',
+    'type' => 'transaction',
+    'entry' => [],
+  ];
+
+  $data['entry'][] = hedley_fhir_prepare_data__person($wrapper);
+  $data['entry'][] = $func($wrapper);
+
+  $private_key = variable_get('hedley_fhir_private_key');
+  $service_account_email = variable_get('hedley_fhir_service_account_email');
+
+  $project_id = variable_get('hedley_fhir_project_id');
+  $location = variable_get('hedley_fhir_location');
+  $dataset_id = variable_get('hedley_fhir_dataset_id');
+  $fhir_store_id = variable_get('hedley_fhir_fhir_store_id');
+
+  if (empty($private_key) || empty($service_account_email)) {
+    throw new Exception('Private key or Service account email are missing. They should be present in settings.php or settings.ddev.php');
+  }
+
+  if (empty($project_id) || empty($location) || empty($dataset_id) || empty($fhir_store_id)) {
+    throw new Exception('Project info of the cloud is missing');
+  }
+
+  $payload = [
+    'iss' => $service_account_email,
+    'sub'=> $service_account_email,
+    'aud'=> "https://healthcare.googleapis.com/",
+    'iat' => time(),
+    'exp' => time() + 3600,
+  ];
+
+  $jwt_access_token = JWT::encode($payload, $private_key, 'RS256');
+
+  // Only for create we use `v1beta1`, so we can have condition PUt or add
+  // `If-None-Exist` header. Otherwise, we'll use `v1`
+  $api_service = 'v1beta1';
+  $url = 'https://healthcare.googleapis.com/' . $api_service . '/projects/e-heza/locations/us-central1/datasets/my-dataset/fhirStores/my-fhir-store/fhir';
+
+  $options = [
+    'method' => 'POST',
+    'headers' => [
+      'Content-Type' => 'application/fhir+json',
+      'Authorization' => 'Bearer ' . $jwt_access_token,
+    ],
+    'data' => drupal_json_encode($data),
+  ];
+
+  return drupal_http_request($url, $options);
+}
+
+/**
+ * Prepare a Bundle resource entry for Person.
+ *
+ * @param \EntityMetadataWrapper $wrapper
+ *   The wrapped node.
+ *
+ * @return array
+ *   Entry to be added to the FHIR bundle resource.
+ */
+function hedley_fhir_prepare_data__person(EntityMetadataWrapper $wrapper) {
+  $person_wrapper = $wrapper->field_person;
+
+  $uuid = $person_wrapper->field_uuid->value();
+
+  return [
+    'fullUrl' => 'urn:uuid:' . $uuid,
+    'resource' => [
+      'resourceType' => 'Patient',
+      'identifier' => [
+        0 => [
+          'use' => 'usual',
+          'system' => 'https://e-heza.example/Patient',
+          'value' => $uuid,
+        ],
+      ],
+      'name' => [
+        0 => [
+          'family' => $person_wrapper->field_second_name->value(),
+          'given' => [
+            0 => $person_wrapper->field_first_name->value(),
+          ],
+        ],
+      ],
+      'gender' => $person_wrapper->field_gender->value(),
+    ],
+    'request' => [
+      'method' => 'PUT',
+      'url' => 'Patient?identifier=' . $uuid,
+    ],
+  ];
+}
+
+/**
+ * Prepare a Bundle resource entry for Observation of type Height.
+ *
+ * @param \EntityMetadataWrapper $wrapper
+ *   The wrapped node.
+ *
+ * @return array
+ *   Entry to be added to the FHIR bundle resource.
+ */
+function hedley_fhir_prepare_data__height(EntityMetadataWrapper $wrapper) {
+  $person_wrapper = $wrapper->field_person;
+  $person_uuid = $person_wrapper->field_uuid->value();
+
+  $uuid = $wrapper->field_uuid->value();
+  $value = $wrapper->field_height->value();
+
+  return [
+    'fullUrl' => 'urn:uuid:' . $uuid,
+    'resource' => [
+      'resourceType' => 'Observation',
+      'identifier' => [
+        0 => [
+          'use' => 'usual',
+          'system' => 'https://e-heza.example/Height',
+          'value' => $uuid,
+        ],
+      ],
+      'meta' => [
+        'profile' => [
+          0 => 'http://hl7.org/fhir/StructureDefinition/vitalsigns',
+        ],
+      ],
+      'status' => 'final',
+      'category' => [
+        0 => [
+          'coding' => [
+            0 => [
+              'system' => 'http://terminology.hl7.org/CodeSystem/observation-category',
+              'code' => 'vital-signs',
+              'display' => 'Vital Signs',
+            ],
+          ],
+          'text' => 'Vital Signs',
+        ],
+      ],
+      'code' => [
+        'coding' => [
+          0 => [
+            'system' => 'http://loinc.org',
+            'code' => '8302-2',
+            'display' => 'Body height',
+          ],
+        ],
+        'text' => 'Body height',
+      ],
+      'subject' => [
+        'reference' => 'Patient/' . $person_uuid,
+      ],
+      'effectiveDateTime' => date('Y-m-d', $wrapper->value()->changed),
+      'valueQuantity' => [
+        'value' => $value,
+        'unit' => 'cm',
+        'system' => 'http://unitsofmeasure.org',
+        'code' => '[cm]',
+      ],
+    ],
+    'request' => [
+      'method' => 'PUT',
+      'url' => 'Observation?identifier=' . $uuid,
+    ],
+  ];
+}
