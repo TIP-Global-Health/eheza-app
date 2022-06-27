@@ -13,31 +13,79 @@ use Firebase\JWT\JWT;
 function hedley_fhir_node_insert($node) {
   hedley_fhir_upload_to_datastore($node);
 }
+
 /**
  * Upload measurements to OpenMRS.
  *
  * @param object $node
  *   The saved node.
+ *
+ * @return StdClass|NULL
+ *   The response object, or NULL if it could not be sent.
+ *
+ * @throws \Exception
  */
 function hedley_fhir_upload_to_datastore($node) {
   $func = 'hedley_fhir_prepare_data__' . $node->type;
   if (!function_exists($func)) {
     // Not a node type we need to upload.
-    return;
+    return NULL;
   }
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // The FHIR bundle resource.
-  $bundle = [
+  $data = [
     'resourceType' => 'Bundle',
     'type' => 'transaction',
     'entry' => [],
   ];
 
-  $bundle['entry'][] = hedley_fhir_prepare_data__person($wrapper);
-  $bundle['entry'][] = $func($wrapper);
+  $data['entry'][] = hedley_fhir_prepare_data__person($wrapper);
+  $data['entry'][] = $func($wrapper);
 
+  $private_key = variable_get('hedley_fhir_private_key');
+  $service_account_email = variable_get('hedley_fhir_service_account_email');
+
+  $project_id = variable_get('hedley_fhir_project_id');
+  $location = variable_get('hedley_fhir_location');
+  $dataset_id = variable_get('hedley_fhir_dataset_id');
+  $fhir_store_id = variable_get('hedley_fhir_fhir_store_id');
+
+  if (empty($private_key) || empty($service_account_email)) {
+    throw new Exception('Private key or Service account email are missing. They should be present in settings.php or settings.ddev.php');
+  }
+
+  if (empty($project_id) || empty($location) || empty($dataset_id) || empty($fhir_store_id)) {
+    throw new Exception('Project info of the cloud is missing');
+  }
+
+  $payload = [
+    'iss' => $service_account_email,
+    'sub'=> $service_account_email,
+    'aud'=> "https://healthcare.googleapis.com/",
+    'iat' => time(),
+    'exp' => time() + 3600,
+  ];
+
+  $jwt_access_token = JWT::encode($payload, $private_key, 'RS256');
+
+  // Only for create we use `v1beta1`, so we can have condition PUt or add
+  // `If-None-Exist` header. Otherwise, we'll use `v1`
+  $api_service = 'v1beta1';
+  $url = 'https://healthcare.googleapis.com/' . $api_service . '/projects/e-heza/locations/us-central1/datasets/my-dataset/fhirStores/my-fhir-store/fhir/Patient';
+
+  $options = [
+    'method' => 'POST',
+    'headers' => [
+      'Content-Type' => 'application/fhir+json',
+      'Authorization' => 'Bearer ' . $jwt_access_token,
+    ],
+    'data' => $data,
+  ];
+
+  $response = drupal_http_request($url, $options);
+  return $response;
 }
 
 /**
