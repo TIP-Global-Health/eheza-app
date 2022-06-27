@@ -195,7 +195,7 @@ function hedley_fhir_prepare_data__height(EntityMetadataWrapper $wrapper) {
       'subject' => [
         'reference' => 'Patient/' . $person_uuid,
       ],
-      'effectiveDateTime' => date('Y-m-d', $wrapper->value()->updated),
+      'effectiveDateTime' => date('Y-m-d', $wrapper->value()->changed),
       'valueQuantity' => [
         'value' => $value,
         'unit' => 'cm',
