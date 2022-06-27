@@ -5,7 +5,11 @@
  * Code for the FHIR integration.
  */
 
+
+include '/var/www/html/server/www/sites/all/vendor/autoload.php';
+
 use Firebase\JWT\JWT;
+
 
 /**
  * Implements hook_node_insert().
@@ -80,7 +84,7 @@ function hedley_fhir_upload_to_datastore($node) {
   // Only for create we use `v1beta1`, so we can have condition PUt or add
   // `If-None-Exist` header. Otherwise, we'll use `v1`
   $api_service = 'v1beta1';
-  $url = 'https://healthcare.googleapis.com/' . $api_service . '/projects/e-heza/locations/us-central1/datasets/my-dataset/fhirStores/my-fhir-store/fhir/Patient';
+  $url = 'https://healthcare.googleapis.com/' . $api_service . '/projects/e-heza/locations/us-central1/datasets/my-dataset/fhirStores/my-fhir-store/fhir';
 
   $options = [
     'method' => 'POST',
@@ -88,10 +92,11 @@ function hedley_fhir_upload_to_datastore($node) {
       'Content-Type' => 'application/fhir+json',
       'Authorization' => 'Bearer ' . $jwt_access_token,
     ],
-    'data' => $data,
+    'data' => drupal_json_encode($data),
   ];
 
   $response = drupal_http_request($url, $options);
+
   return $response;
 }
 
