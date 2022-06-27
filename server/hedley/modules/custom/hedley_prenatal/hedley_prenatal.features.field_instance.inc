@@ -809,7 +809,7 @@ function hedley_prenatal_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_prenatal_diagnoses',
-    'label' => 'Prenatal Diagnosis',
+    'label' => 'Prenatal Diagnoses',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -819,7 +819,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 4,
+      'weight' => 5,
     ),
   );
 
@@ -7914,7 +7914,6 @@ function hedley_prenatal_field_default_field_instances() {
   t('Person');
   t('Prenatal Assesment');
   t('Prenatal Diagnoses');
-  t('Prenatal Diagnosis');
   t('Prenatal Encounter');
   t('Prenatal Symptom Questions');
   t('Prenatal Symptoms');

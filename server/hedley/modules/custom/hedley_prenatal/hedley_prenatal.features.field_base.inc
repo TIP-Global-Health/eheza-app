@@ -629,6 +629,34 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_past_prenatal_diagnoses'.
+  $field_bases['field_past_prenatal_diagnoses'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_past_prenatal_diagnoses',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'syphilis' => 'Syphilis',
+        'syphilis-complications' => 'Syphilis with Complications',
+        'neurosyphilis' => 'Neurosyphilis',
+        'hepatitis-b' => 'Hepatitis B',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_patient_notified'.
   $field_bases['field_patient_notified'] = array(
     'active' => 1,
@@ -816,6 +844,31 @@ function hedley_prenatal_field_default_field_bases() {
         'depression-probable' => 'Depression Probable',
         'suicide-risk' => 'Suicide Risk',
         'other' => 'Other',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_prenatal_indicators'.
+  $field_bases['field_prenatal_indicators'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prenatal_indicators',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'past-diagnoses-completed' => 'Past diagnoses completed',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
