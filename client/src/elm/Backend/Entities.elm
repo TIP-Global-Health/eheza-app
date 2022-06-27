@@ -1141,3 +1141,11 @@ type alias PrenatalMentalHealthId =
 
 type PrenatalMentalHealthUuidType
     = PrenatalMentalHealthUuidType
+
+
+type alias PrenatalTetanusImmunisationId =
+    EntityUuid PrenatalTetanusImmunisationUuidType
+
+
+type PrenatalTetanusImmunisationUuidType
+    = PrenatalTetanusImmunisationUuidType

@@ -12,9 +12,10 @@ import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date exposing (Unit(..))
-import DateSelector.SelectorPopup exposing (DateSelectorConfig, viewCalendarPopup)
+import DateSelector.Model exposing (DateSelectorConfig)
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -22,8 +23,8 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Utils exposing (sendToHCFormWithDefault, vaccinationFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewSendToMentalSpecialistForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
@@ -197,6 +198,9 @@ viewActivity language currentDate isChw activity assembled db model =
 
         MaternalMentalHealth ->
             viewMentalHealthContent language currentDate assembled model.mentalHealthData
+
+        PrenatalImmunisation ->
+            viewImmunisationContent language currentDate assembled model.immunisationData
 
         NextSteps ->
             viewNextStepsContent language currentDate isChw assembled model.nextStepsData
@@ -2244,8 +2248,149 @@ treatmentReviewWarningPopup language actionMsg =
         actionMsg
 
 
+viewImmunisationContent :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ImmunisationData
+    -> List (Html Msg)
+viewImmunisationContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
 
--- Forms
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            List.filter (expectImmunisationTask currentDate assembled) immunisationTasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskTetanus ->
+                            ( "tetanus-vaccine"
+                            , isJust measurements.tetanusImmunisation
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveImmunisationTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalImmunisationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, immunisationTasksCompletedFromTotal language currentDate assembled data task )) tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        ( formForView, fullScreen, allowSave ) =
+            Maybe.map immunisationTaskToVaccineType activeTask
+                |> Maybe.map
+                    (\vaccineType ->
+                        let
+                            vaccinationForm =
+                                case vaccineType of
+                                    VaccineTetanus ->
+                                        measurements.tetanusImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.tetanusForm
+                        in
+                        ( viewVaccinationForm language currentDate assembled vaccineType vaccinationForm
+                        , False
+                        , vaccinationForm.viewMode == ViewModeInitial
+                        )
+                    )
+                |> Maybe.withDefault ( emptyNode, False, False )
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                TaskTetanus ->
+                                    SaveTetanusImmunisation personId measurements.tetanusImmunisation
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+                |> showIf allowSave
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div
+        [ classList
+            [ ( "tasks-count", True )
+            , ( "full-screen", fullScreen )
+            ]
+        ]
+        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div
+        [ classList
+            [ ( "ui full segment", True )
+            , ( "full-screen", fullScreen )
+            ]
+        ]
+        [ div [ class "full content" ]
+            [ formForView
+            , actions
+            ]
+        ]
+    ]
+
+
+viewVaccinationForm : Language -> NominalDate -> AssembledData -> PrenatalVaccineType -> PrenatalVaccinationForm -> Html Msg
+viewVaccinationForm language currentDate assembled vaccineType form =
+    let
+        ( contentByViewMode, _, _ ) =
+            vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form
+    in
+    div [ class "ui form vaccination" ] <|
+        [ h2 [] [ text <| translate language <| Translate.PrenatalImmunisationHeader vaccineType ]
+        , div [ class "instructions" ] <|
+            [ div [ class "header icon-label" ] <|
+                [ i [ class "icon-open-book" ] []
+                , div [ class "description" ] [ text <| translate language <| Translate.PrenatalImmunisationDescription vaccineType ]
+                ]
+            , viewLabel language (Translate.PrenatalImmunisationHistory vaccineType)
+            ]
+                ++ contentByViewMode
+        ]
 
 
 viewObstetricFormFirstStep : Language -> NominalDate -> AssembledData -> ObstetricFormFirstStep -> Html Msg

@@ -33,6 +33,7 @@ getAllActivities assembled =
                 , Medication
                 , Backend.PrenatalActivity.Model.MalariaPrevention
                 , DangerSigns
+                , PrenatalImmunisation
                 , Laboratory
                 , MaternalMentalHealth
                 , PrenatalPhoto
@@ -47,6 +48,7 @@ getAllActivities assembled =
                 , FamilyPlanning
                 , PrenatalTreatmentReview
                 , Backend.PrenatalActivity.Model.MalariaPrevention
+                , PrenatalImmunisation
                 , Laboratory
                 , MaternalMentalHealth
                 , PrenatalPhoto
@@ -333,6 +335,14 @@ generateAssembledData id db =
             measurements
                 |> RemoteData.map (resolveGlobalObstetricHistory nursePreviousMeasurements)
                 |> RemoteData.withDefault Nothing
+
+        ( vaccinationHistory, vaccinationProgress ) =
+            ( generateVaccinationProgress nursePreviousMeasurements
+            , RemoteData.toMaybe measurements
+                |> Maybe.map (\measurements_ -> measurements_ :: nursePreviousMeasurements)
+                |> Maybe.withDefault nursePreviousMeasurements
+                |> generateVaccinationProgress
+            )
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
@@ -343,6 +353,8 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success chwPreviousMeasurementsWithDates)
         |> RemoteData.andMap (Success globalLmpDate)
         |> RemoteData.andMap (Success globalObstetricHistory)
+        |> RemoteData.andMap (Success vaccinationHistory)
+        |> RemoteData.andMap (Success vaccinationProgress)
 
 
 getFirstEncounterMeasurements : Bool -> AssembledData -> PrenatalMeasurements

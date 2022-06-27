@@ -132,6 +132,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalSendToHC (BackendEntity PrenatalSendToHC)
     | BackendAuthorityPrenatalSymptomReview (BackendEntity PrenatalSymptomReview)
     | BackendAuthorityPrenatalSyphilisTest (BackendEntity PrenatalSyphilisTest)
+    | BackendAuthorityPrenatalTetanusImmunisation (BackendEntity PrenatalTetanusImmunisation)
     | BackendAuthorityPrenatalUrineDipstickTest (BackendEntity PrenatalUrineDipstickTest)
     | BackendAuthorityRelationship (BackendEntity Relationship)
     | BackendAuthorityMalariaPrevention (BackendEntity MalariaPrevention)

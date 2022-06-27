@@ -1359,6 +1359,10 @@ type PrenatalMentalHealthQuestionOption
     | MentalHealthQuestionOption3
 
 
+type alias PrenatalTetanusImmunisation =
+    PrenatalMeasurement VaccinationValue
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -2012,6 +2016,11 @@ type ECDSign
 
 
 type VaccineType
+    = WellChildVaccine WellChildVaccineType
+    | PrenatalVaccine PrenatalVaccineType
+
+
+type WellChildVaccineType
     = VaccineBCG
     | VaccineOPV
     | VaccineDTP
@@ -2022,11 +2031,16 @@ type VaccineType
     | VaccineHPV
 
 
+type PrenatalVaccineType
+    = VaccineTetanus
+
+
 type VaccineDose
     = VaccineDoseFirst
     | VaccineDoseSecond
     | VaccineDoseThird
     | VaccineDoseFourth
+    | VaccineDoseFifth
 
 
 type alias WellChildMebendezole =
@@ -2231,6 +2245,7 @@ type alias PrenatalMeasurements =
     , outsideCare : Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )
     , hivPCRTest : Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )
     , mentalHealth : Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth )
+    , tetanusImmunisation : Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation )
     }
 
 
@@ -2271,6 +2286,7 @@ emptyPrenatalMeasurements =
     , outsideCare = Nothing
     , hivPCRTest = Nothing
     , mentalHealth = Nothing
+    , tetanusImmunisation = Nothing
     }
 
 
