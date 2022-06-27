@@ -1356,6 +1356,10 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> getMeasurementValueFunc
                                 |> prenatalNonRDTFormWithDefault data.hivPCRTestForm
                                 |> viewPrenatalNonRDTForm language currentDate TaskHIVPCRTest
+
+                        TaskCompletePreviousTests ->
+                            -- @todo
+                            ( emptyNode, 0, 0 )
                     )
                 )
                 tasks
@@ -1412,6 +1416,10 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRTest personId measurements.hivPCRTest nextTask
+
+                                TaskCompletePreviousTests ->
+                                    -- @todo
+                                    NoOp
                     in
                     viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
                 )
@@ -3975,6 +3983,10 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
                 TaskHIVPCRTest ->
                     -- Known as positive is not applicable for this test.
                     always NoOp
+
+                TaskCompletePreviousTests ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
     in
     ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
       , viewBoolInput
@@ -4059,6 +4071,12 @@ contentAndTasksLaboratoryTestInitial language currentDate task form =
                 TaskHIVPCRTest ->
                     { setBoolInputMsg = SetHIVPCRTestFormBoolInput boolInputUpdateFunc
                     , setExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                    }
+
+                TaskCompletePreviousTests ->
+                    -- @todo
+                    { setBoolInputMsg = always NoOp
+                    , setExecutionNoteMsg = always NoOp
                     }
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
@@ -4196,6 +4214,13 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                         { setBoolInputMsg = SetHIVPCRTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetHIVPCRTestExecutionDate
                         , setDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
+                        }
+
+                    TaskCompletePreviousTests ->
+                        -- @todo
+                        { setBoolInputMsg = always NoOp
+                        , setExecutionDateMsg = always NoOp
+                        , setDateSelectorStateMsg = always NoOp
                         }
 
             ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =

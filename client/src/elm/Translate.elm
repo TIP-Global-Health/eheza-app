@@ -5409,6 +5409,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         KnownPositive ->
             { english = "Known Positive"
             , kinyarwanda = Just "Asanzwe arwaye"
@@ -9850,6 +9857,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
+                    { english = "History"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLaboratoryTaskLabel task ->
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
@@ -9894,6 +9906,12 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
                     { english = "HIV PCR"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Not in use, so no translation is needed.
+                Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -9944,6 +9962,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                -- Not in use, so no translation is needed.
+                Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLaboratoryTaskResult task ->
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
@@ -9988,6 +10012,12 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
                     { english = "HIV PCR Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Not in use, so no translation is needed.
+                Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 

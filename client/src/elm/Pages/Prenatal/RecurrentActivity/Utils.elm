@@ -130,6 +130,9 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
 
+        TaskCompletePreviousTests ->
+            not <| taskExpected TaskCompletePreviousTests
+
 
 expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
 expectLaboratoryResultTask currentDate assembled task =
@@ -170,6 +173,9 @@ expectLaboratoryResultTask currentDate assembled task =
 
         TaskHIVPCRTest ->
             wasTestPerformed .hivPCRTest
+
+        TaskCompletePreviousTests ->
+            False
 
 
 hepatitisBFormWithDefault : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm

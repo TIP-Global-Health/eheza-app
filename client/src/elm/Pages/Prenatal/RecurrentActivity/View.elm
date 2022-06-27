@@ -208,6 +208,9 @@ viewLabResultsContent language currentDate assembled model =
                                 |> getMeasurementValueFunc
                                 |> prenatalHIVPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
                                 |> prenatalHIVPCRResultFormAndTasks language currentDate
+
+                        TaskCompletePreviousTests ->
+                            ( emptyNode, 0, 0 )
                     )
                 )
                 tasks
@@ -264,6 +267,9 @@ viewLabResultsContent language currentDate assembled model =
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRResult personId measurements.hivPCRTest nextTask |> Just
+
+                                TaskCompletePreviousTests ->
+                                    Nothing
                     in
                     Maybe.map
                         (\msg ->

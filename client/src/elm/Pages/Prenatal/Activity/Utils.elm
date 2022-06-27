@@ -4521,6 +4521,7 @@ laboratoryTasks =
     , TaskUrineDipstickTest
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
+    , TaskCompletePreviousTests
     ]
 
 
@@ -4561,6 +4562,9 @@ laboratoryTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || isJust measurements.hivPCRTest
 
+        TaskCompletePreviousTests ->
+            not <| taskExpected TaskCompletePreviousTests
+
 
 expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
 expectLaboratoryTask currentDate assembled task =
@@ -4569,81 +4573,116 @@ expectLaboratoryTask currentDate assembled task =
 
     else
         let
-            testsDates =
-                generatePreviousLaboratoryTestsDatesDict currentDate assembled
+            pendingTestsFromPreviousEncounters =
+                List.filterMap
+                    (\( date, _, measurements ) ->
+                        getMeasurementValueFunc measurements.labsResults
+                            |> Maybe.andThen
+                                (\value ->
+                                    let
+                                        pendingTests =
+                                            EverySet.diff value.performedTests value.completedTests
+                                                |> EverySet.toList
+                                                |> List.filter ((/=) TestVitalsRecheck)
+                                    in
+                                    if List.isEmpty pendingTests then
+                                        Nothing
 
-            isInitialTest test =
-                Dict.get test testsDates
-                    |> Maybe.map List.isEmpty
-                    |> Maybe.withDefault True
-
-            isRepeatingTestOnWeek week test =
-                Maybe.map
-                    (\lmpDate ->
-                        if diffWeeks lmpDate currentDate < week then
-                            isInitialTest test
-
-                        else
-                            let
-                                lastTestWeek =
-                                    Dict.get test testsDates
-                                        |> Maybe.map (List.map (\testsDate -> diffWeeks lmpDate testsDate))
-                                        |> Maybe.withDefault []
-                                        |> List.sort
-                                        |> List.reverse
-                                        |> List.head
-                            in
-                            Maybe.map (\testWeek -> testWeek < week) lastTestWeek
-                                |> Maybe.withDefault True
-                    )
-                    assembled.globalLmpDate
-                    |> Maybe.withDefault (isInitialTest test)
-
-            -- This function checks if patient has reported of having a disease.
-            -- HIV and Hepatitis B are considered chronical diseases.
-            -- If patient declared to have one of them, there's no point
-            -- in testing for it.
-            isKnownAsPositive getMeasurementFunc =
-                List.filter
-                    (\( _, _, measurements ) ->
-                        getMeasurementFunc measurements
-                            |> getMeasurementValueFunc
-                            |> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
-                            |> Maybe.withDefault False
+                                    else
+                                        Just ( date, pendingTests )
+                                )
                     )
                     assembled.nursePreviousMeasurementsWithDates
-                    |> List.isEmpty
-                    |> not
         in
-        case task of
-            TaskHIVTest ->
-                (not <| isKnownAsPositive .hivTest)
-                    && isInitialTest TaskHIVTest
+        if
+            not <|
+                List.isEmpty pendingTestsFromPreviousEncounters
+                    || -- @todo: indication that history task is done
+                       False
+        then
+            task == TaskCompletePreviousTests
 
-            TaskSyphilisTest ->
-                isRepeatingTestOnWeek 38 TaskSyphilisTest
+        else
+            let
+                testsDates =
+                    generatePreviousLaboratoryTestsDatesDict currentDate assembled
 
-            TaskHepatitisBTest ->
-                (not <| isKnownAsPositive .hepatitisBTest)
-                    && isInitialTest TaskHepatitisBTest
+                isInitialTest test =
+                    Dict.get test testsDates
+                        |> Maybe.map List.isEmpty
+                        |> Maybe.withDefault True
 
-            TaskMalariaTest ->
-                True
+                isRepeatingTestOnWeek week test =
+                    Maybe.map
+                        (\lmpDate ->
+                            if diffWeeks lmpDate currentDate < week then
+                                isInitialTest test
 
-            TaskBloodGpRsTest ->
-                isInitialTest TaskBloodGpRsTest
+                            else
+                                let
+                                    lastTestWeek =
+                                        Dict.get test testsDates
+                                            |> Maybe.map (List.map (\testsDate -> diffWeeks lmpDate testsDate))
+                                            |> Maybe.withDefault []
+                                            |> List.sort
+                                            |> List.reverse
+                                            |> List.head
+                                in
+                                Maybe.map (\testWeek -> testWeek < week) lastTestWeek
+                                    |> Maybe.withDefault True
+                        )
+                        assembled.globalLmpDate
+                        |> Maybe.withDefault (isInitialTest test)
 
-            TaskUrineDipstickTest ->
-                True
+                -- This function checks if patient has reported of having a disease.
+                -- HIV and Hepatitis B are considered chronical diseases.
+                -- If patient declared to have one of them, there's no point
+                -- in testing for it.
+                isKnownAsPositive getMeasurementFunc =
+                    List.filter
+                        (\( _, _, measurements ) ->
+                            getMeasurementFunc measurements
+                                |> getMeasurementValueFunc
+                                |> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
+                                |> Maybe.withDefault False
+                        )
+                        assembled.nursePreviousMeasurementsWithDates
+                        |> List.isEmpty
+                        |> not
+            in
+            case task of
+                TaskHIVTest ->
+                    (not <| isKnownAsPositive .hivTest)
+                        && isInitialTest TaskHIVTest
 
-            TaskHemoglobinTest ->
-                True
+                TaskSyphilisTest ->
+                    isRepeatingTestOnWeek 38 TaskSyphilisTest
 
-            TaskRandomBloodSugarTest ->
-                isInitialTest TaskRandomBloodSugarTest
+                TaskHepatitisBTest ->
+                    (not <| isKnownAsPositive .hepatitisBTest)
+                        && isInitialTest TaskHepatitisBTest
 
-            TaskHIVPCRTest ->
-                isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
+                TaskMalariaTest ->
+                    True
+
+                TaskBloodGpRsTest ->
+                    isInitialTest TaskBloodGpRsTest
+
+                TaskUrineDipstickTest ->
+                    True
+
+                TaskHemoglobinTest ->
+                    True
+
+                TaskRandomBloodSugarTest ->
+                    isInitialTest TaskRandomBloodSugarTest
+
+                TaskHIVPCRTest ->
+                    isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
+
+                TaskCompletePreviousTests ->
+                    -- If we got this far, history task was completed.
+                    False
 
 
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
@@ -4741,6 +4780,9 @@ laboratoryTaskIconClass task =
 
         TaskHIVPCRTest ->
             "laboratory-hiv"
+
+        TaskCompletePreviousTests ->
+            "laboratory-history"
 
 
 symptomReviewFormWithDefault : SymptomReviewForm -> Maybe PrenatalSymptomReviewValue -> SymptomReviewForm
