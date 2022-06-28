@@ -976,3 +976,17 @@ childHasAnyCompletedActivity childId session =
     getChildMeasurementData2 childId session
         |> LocalData.map (hasAnyCompletedChildActivity session)
         |> LocalData.withDefault False
+
+
+isCaregiver : OfflineSession -> PersonId -> Bool
+isCaregiver offlineSession personId =
+    Dict.get personId offlineSession.participants.byMotherId
+        |> Maybe.withDefault []
+        |> List.all
+            (\participant ->
+                if personId == participant.adult && List.member participant.adultActivities [ CaregiverActivities ] then
+                    True
+
+                else
+                    False
+            )
