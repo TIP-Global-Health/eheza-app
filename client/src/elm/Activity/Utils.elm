@@ -979,12 +979,12 @@ childHasAnyCompletedActivity childId session =
 
 
 isCaregiver : OfflineSession -> PersonId -> Bool
-isCaregiver offlineSession motherId =
-    Dict.get motherId offlineSession.participants.byMotherId
+isCaregiver offlineSession personId =
+    Dict.get personId offlineSession.participants.byMotherId
         |> Maybe.withDefault []
         |> List.all
             (\participant ->
-                if List.member participant.adultActivities [ CaregiverActivities ] then
+                if personId == participant.adult && List.member participant.adultActivities [ CaregiverActivities ] then
                     True
 
                 else
