@@ -1928,6 +1928,47 @@ div.page-activity.prenatal {
           width: 250px;
         }
       }
+
+      .ui.form.labs-history {
+
+        .instructions,
+        .completed {
+          font-weight: 600;
+        }
+
+        .history-entries {
+          margin-bottom: 30px;
+        }
+
+        .history-entry {
+          align-items: flex-start;
+          display: flex;
+          font-weight: normal;
+          justify-content: space-around;
+
+          .index {
+            background: $color-primary;
+            border-radius: 5px;
+            color: $color-white;
+            font-size: 17px;
+            padding: 0 10px;
+          }
+
+          .name,
+          .date {
+            width: 150px;
+          }
+
+          .action {
+            background: $color-velvet;
+            border-radius: 3px;
+            color: $color-white;
+            font-size: 17px;
+            padding: 0 20px;
+            text-transform: uppercase;
+          }
+        }
+      }
     }
   }
 }

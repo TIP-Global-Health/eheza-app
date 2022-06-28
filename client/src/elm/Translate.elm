@@ -1000,9 +1000,13 @@ type TranslationId
     | PrenatalLaboratoryTaskDate Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskResult Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskResultsHelper
+    | PrenatalLaboratoryTest PrenatalLaboratoryTest
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
     | PrenatalLabsEntryState PrenatalLabsEntryState
+    | PrenatalLabsHistoryCompletedQuestion
+    | PrenatalLabsHistoryInstructions
+    | PrenatalLabsHistoryLabel
     | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
     | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | PrenatalMentalHealthSpecialistHelper
@@ -10026,6 +10030,48 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PrenatalLaboratoryTest value ->
+            case value of
+                TestBloodGpRs ->
+                    { english = "Blood Group"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestHemoglobin ->
+                    { english = "Hemoglobin"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestHepatitisB ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestRandomBloodSugar ->
+                    { english = "Blood Sugar"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestSyphilis ->
+                    { english = "Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestUrineDipstick ->
+                    { english = "Urine Dipstick"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestVitalsRecheck ->
+                    { english = "Vitals Recheck"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestHIVPCR ->
+                    { english = "HIV PCR"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
             , kinyarwanda = Nothing
@@ -10047,6 +10093,21 @@ translationSet trans =
                     { english = "Closing Soon"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLabsHistoryCompletedQuestion ->
+            { english = "Have you updated all results that have been returned for this patient"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLabsHistoryInstructions ->
+            { english = "Please update all outstanding lab results before proceeding"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLabsHistoryLabel ->
+            { english = "This patient has pending lab results"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalMentalHealthQuestion question ->
             case question of

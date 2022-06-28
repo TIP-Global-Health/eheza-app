@@ -1358,8 +1358,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> viewPrenatalNonRDTForm language currentDate TaskHIVPCRTest
 
                         TaskCompletePreviousTests ->
-                            -- @todo
-                            ( emptyNode, 0, 0 )
+                            viewLabsHistoryForm language currentDate assembled data.labsHistoryForm
                     )
                 )
                 tasks
@@ -1420,8 +1419,15 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 TaskCompletePreviousTests ->
                                     -- @todo
                                     NoOp
+
+                        disableSave =
+                            if task == TaskCompletePreviousTests then
+                                data.labsHistoryForm.completed /= Just True
+
+                            else
+                                tasksCompleted /= totalTasks
                     in
-                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+                    viewSaveAction language saveMsg disableSave
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -3916,6 +3922,54 @@ prenatalNonRDTFormInputsAndTasks language currentDate task form =
     ( initialSection ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
+    )
+
+
+viewLabsHistoryForm : Language -> NominalDate -> AssembledData -> LabsHistoryForm -> ( Html Msg, Int, Int )
+viewLabsHistoryForm language currentDate assembled form =
+    let
+        entries =
+            List.indexedMap (\index ( date, encounterId, lab ) -> viewEntry date encounterId lab index) pendingLabs
+                |> div [ class "history-entries" ]
+
+        input =
+            [ viewQuestionLabel language Translate.PrenatalLabsHistoryCompletedQuestion
+            , viewBoolInput
+                language
+                form.completed
+                SetLabsHistoryCompleted
+                "completed"
+                Nothing
+            ]
+
+        pendingLabs =
+            generatePendingLabsFromPreviousEncounters assembled
+                |> List.map
+                    (\( date, encounterId, labs ) ->
+                        List.map (\lab -> ( date, encounterId, lab )) labs
+                    )
+                |> List.concat
+
+        viewEntry date encounterId lab index =
+            div [ class "history-entry" ]
+                [ div [ class "index" ] [ text <| String.fromInt (index + 1) ]
+                , div [ class "name" ] [ text <| translate language <| Translate.PrenatalLaboratoryTest lab ]
+                , div [ class "date" ] [ text <| formatDDMMYYYY date ]
+                , div
+                    [ class "action"
+
+                    -- , onClick <| config.setVaccinationFormViewModeMsg (ViewModeVaccinationUpdate dose)
+                    ]
+                    [ text <| translate language Translate.Update ]
+                ]
+    in
+    ( div [ class "ui form laboratory labs-history" ] <|
+        [ viewCustomLabel language Translate.PrenatalLabsHistoryLabel "." "label"
+        , viewCustomLabel language Translate.PrenatalLabsHistoryInstructions "." "instructions"
+        ]
+            ++ (entries :: input)
+    , taskCompleted form.completed
+    , 1
     )
 
 

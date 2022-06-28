@@ -1,12 +1,13 @@
 module Pages.Prenatal.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (PrenatalEncounterId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, prenatalLabExpirationPeriod, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
@@ -4573,32 +4574,14 @@ expectLaboratoryTask currentDate assembled task =
 
     else
         let
-            pendingTestsFromPreviousEncounters =
-                List.filterMap
-                    (\( date, _, measurements ) ->
-                        getMeasurementValueFunc measurements.labsResults
-                            |> Maybe.andThen
-                                (\value ->
-                                    let
-                                        pendingTests =
-                                            EverySet.diff value.performedTests value.completedTests
-                                                |> EverySet.toList
-                                                |> List.filter ((/=) TestVitalsRecheck)
-                                    in
-                                    if List.isEmpty pendingTests then
-                                        Nothing
-
-                                    else
-                                        Just ( date, pendingTests )
-                                )
-                    )
-                    assembled.nursePreviousMeasurementsWithDates
+            pendingLabs =
+                generatePendingLabsFromPreviousEncounters assembled
         in
         if
-            not <|
-                List.isEmpty pendingTestsFromPreviousEncounters
-                    || -- @todo: indication that history task is done
-                       False
+            -- No pending tests left, or, nurse has indicated that there're no
+            -- additional results record.
+            (not <| List.isEmpty pendingLabs)
+                || EverySet.member IndicatorHistoryLabsCompleted assembled.encounter.indicators
         then
             task == TaskCompletePreviousTests
 
@@ -4683,6 +4666,35 @@ expectLaboratoryTask currentDate assembled task =
                 TaskCompletePreviousTests ->
                     -- If we got this far, history task was completed.
                     False
+
+
+generatePendingLabsFromPreviousEncounters : AssembledData -> List ( NominalDate, Maybe PrenatalEncounterId, List PrenatalLaboratoryTest )
+generatePendingLabsFromPreviousEncounters assembled =
+    List.filterMap
+        (\( date, _, measurements ) ->
+            getMeasurementValueFunc measurements.labsResults
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            encounterId =
+                                Maybe.map (Tuple.second >> .encounterId) measurements.labsResults
+
+                            pendingTests =
+                                EverySet.diff value.performedTests value.completedTests
+                                    |> EverySet.toList
+                                    |> -- Vitals recheck should ne completed on same day
+                                       -- it was scheduled, and therefore we're not
+                                       -- catching up with it.
+                                       List.filter ((/=) TestVitalsRecheck)
+                        in
+                        if List.isEmpty pendingTests then
+                            Nothing
+
+                        else
+                            Maybe.map (\id -> ( date, id, pendingTests )) encounterId
+                    )
+        )
+        assembled.nursePreviousMeasurementsWithDates
 
 
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)

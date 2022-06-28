@@ -2630,6 +2630,23 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
+        SetLabsHistoryCompleted value ->
+            let
+                form =
+                    model.laboratoryData.labsHistoryForm
+
+                updatedForm =
+                    { form | completed = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | labsHistoryForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetHealthEducationBoolInput formUpdateFunc value ->
             let
                 updatedForm =
