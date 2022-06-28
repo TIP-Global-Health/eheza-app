@@ -14278,6 +14278,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                PrenatalLabsHistoryPage _ _ _ ->
+                    { english = "Labs History"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =

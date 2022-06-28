@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Update exposing (update)
+module Pages.Prenatal.RecurrentActivity.Update exposing (update, updateLabsHistory)
 
 import App.Model
 import AssocList as Dict
@@ -20,6 +20,11 @@ import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
+
+
+updateLabsHistory : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> LabResultsData -> ( LabResultsData, Cmd Msg, List App.Model.Msg )
+updateLabsHistory language currentDate id db msg data =
+    ( data, Cmd.none, [] )
 
 
 update : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
