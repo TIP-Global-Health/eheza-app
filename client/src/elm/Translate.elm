@@ -5593,7 +5593,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryProtein _ ->
-                    { english = "@todo"
+                    { english = "0"
                     , kinyarwanda = Nothing
                     }
 
@@ -5648,7 +5648,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryHemoglobin _ ->
-                    { english = "@todo"
+                    { english = "11-16.5 g/dL"
                     , kinyarwanda = Nothing
                     }
 
