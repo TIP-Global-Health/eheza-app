@@ -24,7 +24,15 @@ import Translate exposing (Language, translate)
 
 updateLabsHistory : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> LabResultsData -> ( LabResultsData, Cmd Msg, List App.Model.Msg )
 updateLabsHistory language currentDate id db msg data =
-    ( data, Cmd.none, [] )
+    case msg of
+        SetActivePage page ->
+            ( data
+            , Cmd.none
+            , [ App.Model.SetActivePage page ]
+            )
+
+        _ ->
+            ( data, Cmd.none, [] )
 
 
 update : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

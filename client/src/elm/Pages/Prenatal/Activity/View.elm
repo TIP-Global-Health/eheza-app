@@ -3957,8 +3957,7 @@ viewLabsHistoryForm language currentDate assembled form =
                 , div [ class "date" ] [ text <| formatDDMMYYYY date ]
                 , div
                     [ class "action"
-
-                    -- , onClick <| config.setVaccinationFormViewModeMsg (ViewModeVaccinationUpdate dose)
+                    , onClick <| SetActivePage <| UserPage <| PrenatalLabsHistoryPage assembled.id encounterId lab
                     ]
                     [ text <| translate language Translate.Update ]
                 ]

@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.View exposing (view)
+module Pages.Prenatal.RecurrentActivity.View exposing (view, viewLabsHistory)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -58,6 +58,29 @@ import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
+viewLabsHistory : Language -> NominalDate -> PrenatalEncounterId -> PrenatalEncounterId -> PrenatalLaboratoryTest -> ModelIndexedDb -> LabResultsData -> Html Msg
+viewLabsHistory language currentDate originatingEncounterId labEncounterId lab db data =
+    let
+        assembled =
+            generateAssembledData labEncounterId db
+    in
+    viewWebData language (viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data) identity assembled
+
+
+viewLabsHistoryHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> PrenatalEncounterId -> PrenatalLaboratoryTest -> ModelIndexedDb -> LabResultsData -> AssembledData -> Html Msg
+viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db model assembled =
+    div [ class "page-activity prenatal labs-history" ] <|
+        [ viewHeader language
+            (PrenatalActivityPage originatingEncounterId Backend.PrenatalActivity.Model.Laboratory)
+            (Translate.PrenatalLaboratoryTest lab)
+            assembled
+
+        -- , viewContent language currentDate activity db model assembled
+        -- , viewModal <|
+        --     warningPopup language currentDate False SetWarningPopupState model.warningPopupState
+        ]
+
+
 view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id activity db model =
     let
@@ -70,22 +93,22 @@ view language currentDate id activity db model =
 viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate id activity db model assembled =
     div [ class "page-activity prenatal" ] <|
-        [ viewHeader language id activity assembled
+        [ viewHeader language (PrenatalRecurrentEncounterPage id) (Translate.PrenatalRecurrentActivitiesTitle activity) assembled
         , viewContent language currentDate activity db model assembled
         , viewModal <|
             warningPopup language currentDate False SetWarningPopupState model.warningPopupState
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> PrenatalRecurrentActivity -> AssembledData -> Html Msg
-viewHeader language id activity assembled =
+viewHeader : Language -> UserPage -> TranslationId -> AssembledData -> Html Msg
+viewHeader language goBackPage labelTransId assembled =
     div
         [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
-            [ text <| translate language <| Translate.PrenatalRecurrentActivitiesTitle activity ]
+            [ text <| translate language labelTransId ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id
+            , onClick <| SetActivePage <| UserPage goBackPage
             ]
             [ span [ class "icon-back" ] [] ]
         ]
