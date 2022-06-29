@@ -8702,7 +8702,7 @@ translationSet trans =
                     }
 
                 DiagnosisCandidiasis ->
-                    { english = "Candidiasis"
+                    { english = "Patient shows signs of a yeast infection"
                     , kinyarwanda = Nothing
                     }
 
