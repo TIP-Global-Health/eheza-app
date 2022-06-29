@@ -9087,7 +9087,7 @@ translationSet trans =
             }
 
         PrenatalHealthEducationSaferSexInform ->
-            { english = "Counsel patient on safer sex parctices"
+            { english = "Council patient on safer sex parctices"
             , kinyarwanda = Nothing
             }
 
