@@ -1011,6 +1011,12 @@ proteinValueFromString value =
 phValueToString : PHValue -> String
 phValueToString value =
     case value of
+        Ph40 ->
+            "4.0"
+
+        Ph45 ->
+            "4.5"
+
         Ph50 ->
             "5.0"
 
@@ -1036,6 +1042,12 @@ phValueToString value =
 phValueFromString : String -> Maybe PHValue
 phValueFromString value =
     case value of
+        "4.0" ->
+            Just Ph40
+
+        "4.5" ->
+            Just Ph45
+
         "5.0" ->
             Just Ph50
 

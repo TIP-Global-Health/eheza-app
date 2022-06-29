@@ -1070,7 +1070,9 @@ type ProteinValue
 
 
 type PHValue
-    = Ph50
+    = Ph40
+    | Ph45
+    | Ph50
     | Ph60
     | Ph65
     | Ph70
