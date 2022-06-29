@@ -368,7 +368,7 @@ type MsgLoggedIn
     | MsgPageWellChildEncounter WellChildEncounterId Pages.WellChild.Encounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.Prenatal.Activity.Model.Msg
     | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg
-    | MsgPrenatalLabsHistoryPage PrenatalEncounterId PrenatalEncounterId PrenatalLaboratoryTest Pages.Prenatal.RecurrentActivity.Model.Msg
+    | MsgPagePrenatalLabsHistory PrenatalEncounterId PrenatalEncounterId PrenatalLaboratoryTest Pages.Prenatal.RecurrentActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.Nutrition.Activity.Model.Msg
     | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllness.Activity.Model.Msg
     | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisit.Activity.Model.Msg

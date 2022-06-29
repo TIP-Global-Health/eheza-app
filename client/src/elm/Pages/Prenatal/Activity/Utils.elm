@@ -4668,7 +4668,7 @@ expectLaboratoryTask currentDate assembled task =
                     False
 
 
-generatePendingLabsFromPreviousEncounters : AssembledData -> List ( NominalDate, Maybe PrenatalEncounterId, List PrenatalLaboratoryTest )
+generatePendingLabsFromPreviousEncounters : AssembledData -> List ( NominalDate, PrenatalEncounterId, List PrenatalLaboratoryTest )
 generatePendingLabsFromPreviousEncounters assembled =
     List.filterMap
         (\( date, _, measurements ) ->
@@ -4677,7 +4677,7 @@ generatePendingLabsFromPreviousEncounters assembled =
                     (\value ->
                         let
                             encounterId =
-                                Maybe.map (Tuple.second >> .encounterId) measurements.labsResults
+                                Maybe.andThen (Tuple.second >> .encounterId) measurements.labsResults
 
                             pendingTests =
                                 EverySet.diff value.performedTests value.completedTests

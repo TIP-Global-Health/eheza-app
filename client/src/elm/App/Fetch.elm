@@ -216,8 +216,8 @@ fetch model =
                 Pages.Prenatal.RecurrentActivity.Fetch.fetch prenatalEncounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (PrenatalLabsHistoryPage prenatalEncounterId _ _) ->
-                Pages.Prenatal.RecurrentActivity.Fetch.fetch prenatalEncounterId model.indexedDb
+            UserPage (PrenatalLabsHistoryPage originatingEncounterId labEncounterId _) ->
+                Pages.Prenatal.RecurrentActivity.Fetch.fetch labEncounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage IndividualEncounterTypesPage ->

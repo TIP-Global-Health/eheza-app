@@ -484,7 +484,7 @@ update msg model =
                             , extraMsgs
                             )
 
-                        MsgPrenatalLabsHistoryPage id labEncounterId lab subMsg ->
+                        MsgPagePrenatalLabsHistory id labEncounterId lab subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalLabsHistoryPages
@@ -493,7 +493,7 @@ update msg model =
                                         |> Pages.Prenatal.RecurrentActivity.Update.updateLabsHistory model.language currentDate id model.indexedDb subMsg
                             in
                             ( { data | prenatalLabsHistoryPages = Dict.insert ( id, labEncounterId, lab ) subModel data.prenatalLabsHistoryPages }
-                            , Cmd.map (MsgLoggedIn << MsgPrenatalLabsHistoryPage id labEncounterId lab) subCmd
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalLabsHistory id labEncounterId lab) subCmd
                             , extraMsgs
                             )
 
