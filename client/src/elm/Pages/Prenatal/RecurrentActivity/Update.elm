@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (IllnessSymptom(..), ViralLoadStatus(..))
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -22,8 +23,20 @@ import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 
 
-updateLabsHistory : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> LabResultsData -> ( LabResultsData, Cmd Msg, List App.Model.Msg )
-updateLabsHistory language currentDate id db msg data =
+updateLabsHistory :
+    Language
+    -> NominalDate
+    -> PrenatalEncounterId
+    -> PrenatalEncounterId
+    -> ModelIndexedDb
+    -> Msg
+    -> LabResultsData
+    -> ( LabResultsData, Cmd Msg, List App.Model.Msg )
+updateLabsHistory language currentDate originEncounterId labEncounterId db msg data =
+    let
+        extraMsgs =
+            [ SetActivePage <| UserPage <| PrenatalActivityPage originEncounterId Backend.PrenatalActivity.Model.Laboratory ]
+    in
     case msg of
         SetActivePage page ->
             ( data
@@ -31,6 +44,440 @@ updateLabsHistory language currentDate id db msg data =
             , [ App.Model.SetActivePage page ]
             )
 
+        SetSyphilisTestResult value ->
+            let
+                form =
+                    data.syphilisTestForm
+
+                updatedForm =
+                    { form | testResult = prenatalTestResultFromString value, symptoms = Nothing, symptomsDirty = True }
+            in
+            ( { data | syphilisTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetIllnessSymptom symptom ->
+            let
+                form =
+                    Dict.get labEncounterId db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.syphilisTest
+                                >> getMeasurementValueFunc
+                                >> syphilisResultFormWithDefault data.syphilisTestForm
+                            )
+                        |> Maybe.withDefault data.syphilisTestForm
+
+                updatedForm =
+                    setMultiSelectInputValue .symptoms
+                        (\symptoms -> { form | symptoms = symptoms, symptomsDirty = True })
+                        NoIllnessSymptoms
+                        symptom
+                        form
+            in
+            ( { data | syphilisTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveSyphilisResult personlabEncounterId saved _ ->
+            let
+                measurementlabEncounterId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    toSyphilisResultValueWithDefault measurement data.syphilisTestForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveSyphilisTest personlabEncounterId measurementlabEncounterId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+
+        SetHepatitisBTestResult value ->
+            let
+                form =
+                    data.hepatitisBTestForm
+
+                updatedForm =
+                    { form | testResult = prenatalTestResultFromString value }
+            in
+            ( { data | hepatitisBTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveHepatitisBResult personlabEncounterId saved _ ->
+            let
+                measurementlabEncounterId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    toHepatitisBValueWithDefault measurement data.hepatitisBTestForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personlabEncounterId measurementlabEncounterId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+
+        SetBloodGroup value ->
+            let
+                form =
+                    data.bloodGpRsTestForm
+
+                updatedForm =
+                    { form | bloodGroup = bloodGroupFromString value }
+            in
+            ( { data | bloodGpRsTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetRhesus value ->
+            let
+                form =
+                    data.bloodGpRsTestForm
+
+                updatedForm =
+                    { form | rhesus = rhesusFromString value }
+            in
+            ( { data | bloodGpRsTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveBloodGpRsResult personlabEncounterId saved _ ->
+            let
+                measurementlabEncounterId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    toPrenatalBloodGpRsResultsValueWithDefault measurement data.bloodGpRsTestForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personlabEncounterId measurementlabEncounterId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+
+        SetProtein value ->
+            let
+                form =
+                    data.urineDipstickTestForm
+
+                updatedForm =
+                    { form | protein = proteinValueFromString value }
+            in
+            ( { data | urineDipstickTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetPH value ->
+            let
+                form =
+                    data.urineDipstickTestForm
+
+                updatedForm =
+                    { form | ph = phValueFromString value }
+            in
+            ( { data | urineDipstickTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetGlucose value ->
+            let
+                form =
+                    data.urineDipstickTestForm
+
+                updatedForm =
+                    { form | glucose = glucoseValueFromString value }
+            in
+            ( { data | urineDipstickTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetLeukocytes value ->
+            let
+                form =
+                    data.urineDipstickTestForm
+
+                updatedForm =
+                    { form | leukocytes = leukocytesValueFromString value }
+            in
+            ( { data | urineDipstickTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetNitrite value ->
+            let
+                form =
+                    data.urineDipstickTestForm
+
+                updatedForm =
+                    { form | nitrite = nitriteValueFromString value }
+            in
+            ( { data | urineDipstickTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetUrobilinogen value ->
+            let
+                form =
+                    data.urineDipstickTestForm
+
+                updatedForm =
+                    { form | urobilinogen = urobilinogenValueFromString value }
+            in
+            ( { data | urineDipstickTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetHaemoglobin value ->
+            let
+                form =
+                    data.urineDipstickTestForm
+
+                updatedForm =
+                    { form | haemoglobin = haemoglobinValueFromString value }
+            in
+            ( { data | urineDipstickTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetSpecificGravity value ->
+            let
+                form =
+                    data.urineDipstickTestForm
+
+                updatedForm =
+                    { form | specificGravity = specificGravityValueFromString value }
+            in
+            ( { data | urineDipstickTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetKetone value ->
+            let
+                form =
+                    data.urineDipstickTestForm
+
+                updatedForm =
+                    { form | ketone = ketoneValueFromString value }
+            in
+            ( { data | urineDipstickTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetBilirubin value ->
+            let
+                form =
+                    data.urineDipstickTestForm
+
+                updatedForm =
+                    { form | bilirubin = bilirubinValueFromString value }
+            in
+            ( { data | urineDipstickTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveUrineDipstickResult personlabEncounterId saved _ ->
+            let
+                measurementlabEncounterId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    toPrenatalUrineDipstickResultsValueWithDefault measurement data.urineDipstickTestForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personlabEncounterId measurementlabEncounterId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+
+        SetHemoglobin value ->
+            let
+                form =
+                    data.hemoglobinTestForm
+
+                updatedForm =
+                    { form | hemoglobinCount = String.toFloat value }
+            in
+            ( { data | hemoglobinTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveHemoglobinResult personlabEncounterId saved _ ->
+            let
+                measurementlabEncounterId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    toPrenatalHemoglobinResultsValueWithDefault measurement data.hemoglobinTestForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personlabEncounterId measurementlabEncounterId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+
+        SetRandomBloodSugar value ->
+            let
+                form =
+                    data.randomBloodSugarTestForm
+
+                updatedForm =
+                    { form | sugarCount = String.toFloat value }
+            in
+            ( { data | randomBloodSugarTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveRandomBloodSugarResult personlabEncounterId saved _ ->
+            let
+                measurementlabEncounterId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    toPrenatalRandomBloodSugarResultsValueWithDefault measurement data.randomBloodSugarTestForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personlabEncounterId measurementlabEncounterId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+
+        SetHIVViralLoadUndetectable undetectable ->
+            let
+                form =
+                    data.hivPCRTestForm
+
+                status =
+                    if undetectable then
+                        ViralLoadUndetectable
+
+                    else
+                        ViralLoadDetectable
+
+                updatedForm =
+                    { form | hivViralLoadStatus = Just status }
+            in
+            ( { data | hivPCRTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVViralLoad value ->
+            let
+                form =
+                    data.hivPCRTestForm
+
+                updatedForm =
+                    { form | hivViralLoad = String.toFloat value }
+            in
+            ( { data | hivPCRTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveHIVPCRResult personlabEncounterId saved _ ->
+            let
+                measurementlabEncounterId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    toPrenatalHIVPCRResultsValueWithDefault measurement data.hivPCRTestForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personlabEncounterId measurementlabEncounterId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+
+        -- Other messages are not related to Labs History, and will not be sent.
         _ ->
             ( data, Cmd.none, [] )
 

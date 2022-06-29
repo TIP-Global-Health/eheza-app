@@ -99,8 +99,107 @@ viewLabsHistoryContent : Language -> NominalDate -> PrenatalLaboratoryTest -> Mo
 viewLabsHistoryContent language currentDate lab db data assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate False assembled Nothing
-            -- ++ viewActivity language currentDate activity assembled db model
+            ++ viewLab language currentDate lab assembled data
             ++ []
+
+
+viewLab : Language -> NominalDate -> PrenatalLaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
+viewLab language currentDate lab assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            case lab of
+                TestSyphilis ->
+                    measurements.syphilisTest
+                        |> getMeasurementValueFunc
+                        |> syphilisResultFormWithDefault data.syphilisTestForm
+                        |> prenatalSyphilisResultFormAndTasks language currentDate TaskSyphilisTest
+
+                TestHepatitisB ->
+                    measurements.hepatitisBTest
+                        |> getMeasurementValueFunc
+                        |> hepatitisBFormWithDefault data.hepatitisBTestForm
+                        |> prenatalHepatitisBResultFormAndTasks language currentDate TaskHepatitisBTest
+
+                TestBloodGpRs ->
+                    measurements.bloodGpRsTest
+                        |> getMeasurementValueFunc
+                        |> prenatalBloodGpRsResultFormWithDefault data.bloodGpRsTestForm
+                        |> prenatalBloodGpRsResultFormAndTasks language currentDate
+
+                TestUrineDipstick ->
+                    measurements.urineDipstickTest
+                        |> getMeasurementValueFunc
+                        |> prenatalUrineDipstickResultFormWithDefault data.urineDipstickTestForm
+                        |> prenatalUrineDipstickResultFormAndTasks language currentDate
+
+                TestHemoglobin ->
+                    measurements.hemoglobinTest
+                        |> getMeasurementValueFunc
+                        |> prenatalHemoglobinResultFormWithDefault data.hemoglobinTestForm
+                        |> prenatalHemoglobinResultFormAndTasks language currentDate
+
+                TestRandomBloodSugar ->
+                    measurements.randomBloodSugarTest
+                        |> getMeasurementValueFunc
+                        |> prenatalRandomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
+                        |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
+
+                TestHIVPCR ->
+                    measurements.hivPCRTest
+                        |> getMeasurementValueFunc
+                        |> prenatalHIVPCRResultFormWithDefault data.hivPCRTestForm
+                        |> prenatalHIVPCRResultFormAndTasks language currentDate
+
+                TestVitalsRecheck ->
+                    ( emptyNode, 0, 0 )
+
+        actions =
+            let
+                saveMsg =
+                    case lab of
+                        TestSyphilis ->
+                            SaveSyphilisResult personId measurements.syphilisTest Nothing
+
+                        TestHepatitisB ->
+                            SaveHepatitisBResult personId measurements.hepatitisBTest Nothing
+
+                        TestBloodGpRs ->
+                            SaveBloodGpRsResult personId measurements.bloodGpRsTest Nothing
+
+                        TestUrineDipstick ->
+                            SaveUrineDipstickResult personId measurements.urineDipstickTest Nothing
+
+                        TestHemoglobin ->
+                            SaveHemoglobinResult personId measurements.hemoglobinTest Nothing
+
+                        TestRandomBloodSugar ->
+                            SaveRandomBloodSugarResult personId measurements.randomBloodSugarTest Nothing
+
+                        TestHIVPCR ->
+                            SaveHIVPCRResult personId measurements.hivPCRTest Nothing
+
+                        TestVitalsRecheck ->
+                            NoOp
+            in
+            viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
 
 
 view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg

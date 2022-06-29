@@ -484,16 +484,21 @@ update msg model =
                             , extraMsgs
                             )
 
-                        MsgPagePrenatalLabsHistory id labEncounterId lab subMsg ->
+                        MsgPagePrenatalLabsHistory originEncounterId labEncounterId lab subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalLabsHistoryPages
-                                        |> Dict.get ( id, labEncounterId, lab )
+                                        |> Dict.get ( originEncounterId, labEncounterId, lab )
                                         |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyLabResultsData
-                                        |> Pages.Prenatal.RecurrentActivity.Update.updateLabsHistory model.language currentDate labEncounterId model.indexedDb subMsg
+                                        |> Pages.Prenatal.RecurrentActivity.Update.updateLabsHistory model.language
+                                            currentDate
+                                            originEncounterId
+                                            labEncounterId
+                                            model.indexedDb
+                                            subMsg
                             in
-                            ( { data | prenatalLabsHistoryPages = Dict.insert ( id, labEncounterId, lab ) subModel data.prenatalLabsHistoryPages }
-                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalLabsHistory id labEncounterId lab) subCmd
+                            ( { data | prenatalLabsHistoryPages = Dict.insert ( originEncounterId, labEncounterId, lab ) subModel data.prenatalLabsHistoryPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalLabsHistory originEncounterId labEncounterId lab) subCmd
                             , extraMsgs
                             )
 
