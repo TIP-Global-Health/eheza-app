@@ -58,7 +58,15 @@ import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-viewLabsHistory : Language -> NominalDate -> PrenatalEncounterId -> PrenatalEncounterId -> PrenatalLaboratoryTest -> ModelIndexedDb -> LabResultsData -> Html Msg
+viewLabsHistory :
+    Language
+    -> NominalDate
+    -> PrenatalEncounterId
+    -> PrenatalEncounterId
+    -> PrenatalLaboratoryTest
+    -> ModelIndexedDb
+    -> LabResultsData
+    -> Html Msg
 viewLabsHistory language currentDate originatingEncounterId labEncounterId lab db data =
     let
         assembled =
@@ -67,18 +75,32 @@ viewLabsHistory language currentDate originatingEncounterId labEncounterId lab d
     viewWebData language (viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data) identity assembled
 
 
-viewLabsHistoryHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> PrenatalEncounterId -> PrenatalLaboratoryTest -> ModelIndexedDb -> LabResultsData -> AssembledData -> Html Msg
-viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db model assembled =
+viewLabsHistoryHeaderAndContent :
+    Language
+    -> NominalDate
+    -> PrenatalEncounterId
+    -> PrenatalEncounterId
+    -> PrenatalLaboratoryTest
+    -> ModelIndexedDb
+    -> LabResultsData
+    -> AssembledData
+    -> Html Msg
+viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data assembled =
     div [ class "page-activity prenatal labs-history" ] <|
         [ viewHeader language
             (PrenatalActivityPage originatingEncounterId Backend.PrenatalActivity.Model.Laboratory)
             (Translate.PrenatalLaboratoryTest lab)
             assembled
-
-        -- , viewContent language currentDate activity db model assembled
-        -- , viewModal <|
-        --     warningPopup language currentDate False SetWarningPopupState model.warningPopupState
+        , viewLabsHistoryContent language currentDate lab db data assembled
         ]
+
+
+viewLabsHistoryContent : Language -> NominalDate -> PrenatalLaboratoryTest -> ModelIndexedDb -> LabResultsData -> AssembledData -> Html Msg
+viewLabsHistoryContent language currentDate lab db data assembled =
+    div [ class "ui unstackable items" ] <|
+        viewMotherAndMeasurements language currentDate False assembled Nothing
+            -- ++ viewActivity language currentDate activity assembled db model
+            ++ []
 
 
 view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
