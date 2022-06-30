@@ -143,24 +143,26 @@ type alias SyphilisResultForm =
     , testResult : Maybe PrenatalTestResult
     , symptoms : Maybe (List IllnessSymptom)
     , symptomsDirty : Bool
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 emptySyphilisResultForm : SyphilisResultForm
 emptySyphilisResultForm =
-    SyphilisResultForm Nothing Nothing Nothing Nothing False
+    SyphilisResultForm Nothing Nothing Nothing Nothing False Nothing
 
 
 type alias HepatitisBResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 emptyHepatitisBResultForm : HepatitisBResultForm
 emptyHepatitisBResultForm =
-    HepatitisBResultForm Nothing Nothing Nothing
+    HepatitisBResultForm Nothing Nothing Nothing Nothing
 
 
 type alias PrenatalBloodGpRsResultForm =

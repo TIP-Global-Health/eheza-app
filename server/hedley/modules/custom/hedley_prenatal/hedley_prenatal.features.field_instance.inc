@@ -1801,6 +1801,51 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_hepatitis_b_test-field_originating_encounter'.
+  $field_instances['node-prenatal_hepatitis_b_test-field_originating_encounter'] = array(
+    'bundle' => 'prenatal_hepatitis_b_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_originating_encounter',
+    'label' => 'Originating encounter',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 14,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_hepatitis_b_test-field_person'.
   $field_instances['node-prenatal_hepatitis_b_test-field_person'] = array(
     'bundle' => 'prenatal_hepatitis_b_test',
@@ -6348,6 +6393,51 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_syphilis_test-field_originating_encounter'.
+  $field_instances['node-prenatal_syphilis_test-field_originating_encounter'] = array(
+    'bundle' => 'prenatal_syphilis_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_originating_encounter',
+    'label' => 'Originating encounter',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 15,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_syphilis_test-field_person'.
   $field_instances['node-prenatal_syphilis_test-field_person'] = array(
     'bundle' => 'prenatal_syphilis_test',
@@ -7906,6 +7996,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Nitrite');
   t('Non Administration reason');
   t('Nurse');
+  t('Originating encounter');
   t('Outside Care Medications');
   t('Outside Care Signs');
   t('PH');

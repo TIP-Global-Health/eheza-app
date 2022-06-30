@@ -556,6 +556,41 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_originating_encounter'.
+  $field_bases['field_originating_encounter'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_originating_encounter',
+    'indexes' => array(
+      'target_id' => array(
+        0 => 'target_id',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'entityreference',
+    'settings' => array(
+      'handler' => 'base',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 0,
+          ),
+        ),
+        'sort' => array(
+          'type' => 'none',
+        ),
+        'target_bundles' => array(
+          'prenatal_encounter' => 'prenatal_encounter',
+        ),
+      ),
+      'target_type' => 'node',
+    ),
+    'translatable' => 0,
+    'type' => 'entityreference',
+  );
+
   // Exported field_base: 'field_outside_care_medications'.
   $field_bases['field_outside_care_medications'] = array(
     'active' => 1,

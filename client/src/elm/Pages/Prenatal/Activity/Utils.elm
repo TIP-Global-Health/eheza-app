@@ -4483,12 +4483,12 @@ toPrenatalNonRDTValueWithDefault saved withEmptyResultsFunc form =
 
 toHepatitisBTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHepatitisBTestValue
 toHepatitisBTestValueWithEmptyResults note date =
-    PrenatalHepatitisBTestValue note date Nothing
+    PrenatalHepatitisBTestValue note date Nothing Nothing
 
 
 toSyphilisTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalSyphilisTestValue
 toSyphilisTestValueWithEmptyResults note date =
-    PrenatalSyphilisTestValue note date Nothing Nothing
+    PrenatalSyphilisTestValue note date Nothing Nothing Nothing
 
 
 toHemoglobinTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHemoglobinTestValue

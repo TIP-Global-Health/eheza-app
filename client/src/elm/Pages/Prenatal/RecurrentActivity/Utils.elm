@@ -187,6 +187,7 @@ hepatitisBFormWithDefault form saved =
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
                 , testResult = or form.testResult value.testResult
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -204,6 +205,7 @@ toHepatitisBValue form =
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote
@@ -220,6 +222,7 @@ syphilisResultFormWithDefault form saved =
                 , testResult = or form.testResult value.testResult
                 , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms (Maybe.map EverySet.toList value.symptoms)
                 , symptomsDirty = form.symptomsDirty
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -238,6 +241,7 @@ toSyphilisResultValue form =
             , executionDate = form.executionDate
             , testResult = form.testResult
             , symptoms = Maybe.map EverySet.fromList form.symptoms
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote

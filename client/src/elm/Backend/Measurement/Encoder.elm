@@ -386,10 +386,19 @@ encodePrenatalHepatitisBTestValue value =
                 )
                 value.testResult
                 |> Maybe.withDefault []
+
+        originatingEncounter =
+            Maybe.map
+                (\originEncounter ->
+                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
+                )
+                value.originatingEncounter
+                |> Maybe.withDefault []
     in
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
+        ++ originatingEncounter
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_hepatitis_b_test" )
            ]
@@ -571,11 +580,20 @@ encodePrenatalSyphilisTestValue value =
                 (\symptoms -> [ ( "illness_symptoms", encodeEverySet encodeIllnessSymptom symptoms ) ])
                 value.symptoms
                 |> Maybe.withDefault []
+
+        originatingEncounter =
+            Maybe.map
+                (\originEncounter ->
+                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
+                )
+                value.originatingEncounter
+                |> Maybe.withDefault []
     in
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ illnessSymptoms
+        ++ originatingEncounter
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_syphilis_test" )
            ]

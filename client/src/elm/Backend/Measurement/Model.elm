@@ -970,6 +970,7 @@ type alias PrenatalHepatitisBTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
@@ -982,6 +983,7 @@ type alias PrenatalSyphilisTestValue =
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
     , symptoms : Maybe (EverySet IllnessSymptom)
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 

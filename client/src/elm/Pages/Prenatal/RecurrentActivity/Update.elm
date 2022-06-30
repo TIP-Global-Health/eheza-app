@@ -89,8 +89,11 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 measurement =
                     getMeasurementValueFunc saved
 
+                form =
+                    data.syphilisTestForm
+
                 appMsgs =
-                    toSyphilisResultValueWithDefault measurement data.syphilisTestForm
+                    toSyphilisResultValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -126,8 +129,11 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 measurement =
                     getMeasurementValueFunc saved
 
+                form =
+                    data.hepatitisBTestForm
+
                 appMsgs =
-                    toHepatitisBValueWithDefault measurement data.hepatitisBTestForm
+                    toHepatitisBValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
