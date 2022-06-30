@@ -2557,6 +2557,14 @@ div.page-report.clinical .ui.unstackable.items {
   .lab-results,
   .lab-results-history {
 
+    .pane-heading {
+      text-align: center;
+    }
+
+    .pane-content {
+      border-bottom: 1px solid $color-text;
+    }
+
     .heading,
     .entry {
       display: flex;
@@ -2567,6 +2575,7 @@ div.page-report.clinical .ui.unstackable.items {
     }
 
     .entry {
+      border-bottom: 1px solid $color-text;
       font-weight: 500;
       line-height: 60px;
 
@@ -2587,38 +2596,21 @@ div.page-report.clinical .ui.unstackable.items {
         padding: 3px 8px;
         text-transform: uppercase;
       }
-    }
-  }
-
-  .lab-results {
-
-    .heading,
-    .entry {
-
-      .name,
-      .date,
-      .result {
-        width: 215px;
-      }
-    }
-
-    .entry {
-      border-bottom: 1px solid $color-text;
 
       &:last-child {
         border-bottom: none;
       }
-
-      .name {
-        margin-left: 20px;
-      }
     }
 
-    .group-heading {
-      background: $color-primary;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 0 10px;
+    .entry.warning {
+      color: $color-velvet;
+
+      .icon-forward {
+        background: url(#{$img-path}icon-forward-red.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        width: 45px;
+      }
     }
 
     .group-content {
@@ -2629,23 +2621,60 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
+  .lab-results {
+
+    .heading,
+    .entry {
+
+      .name {
+        width: 190px;
+      }
+
+      .date {
+        width: 120px;
+      }
+
+      .result {
+        text-align: center;
+        width:180px;
+      }
+
+      .normal-range {
+        width:160px;
+      }
+    }
+
+    .entry .name {
+      margin-left: 20px;
+    }
+  }
+
   .lab-results-history {
 
     .heading,
     .entry {
 
-      .date,
-      .result {
-        width: 50%;
+      .date{
+        width: 20%;
+      }
+
+      .result,
+      .normal-range {
+        text-align: center;
+        width: 35%;
       }
     }
 
-    .heading {
-      margin-bottom: 10px;
-    }
-
     .entry {
-      border-top: 1px solid $color-text;
+
+      .date {
+        margin-left: 20px;
+      }
+
+      img.icon-warning {
+        height: 46px;
+        margin-top: 6px;
+      }
     }
   }
 
