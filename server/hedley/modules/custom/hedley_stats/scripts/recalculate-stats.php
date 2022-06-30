@@ -63,7 +63,7 @@ while (TRUE) {
   foreach ($ids as $id) {
     hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_NUTRITION);
     hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_PRENATAL);
-    hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE);
+    hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_ACUTE_ILLNESS);
 
     // Add AQ item to re-calculate all the stats offline.
     hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $id, [
