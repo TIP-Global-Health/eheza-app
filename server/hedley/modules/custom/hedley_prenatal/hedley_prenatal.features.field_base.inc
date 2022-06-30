@@ -701,6 +701,8 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        '4.0' => '4.0',
+        '4.5' => 4.5,
         '5.0' => '5.0',
         '6.0' => '6.0',
         '6.5' => 6.5,
