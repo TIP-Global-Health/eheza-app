@@ -81,9 +81,9 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , []
             )
 
-        SaveSyphilisResult personlabEncounterId saved _ ->
+        SaveSyphilisResult personId saved _ ->
             let
-                measurementlabEncounterId =
+                measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
@@ -92,7 +92,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 appMsgs =
                     toSyphilisResultValueWithDefault measurement data.syphilisTestForm
                         |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveSyphilisTest personlabEncounterId measurementlabEncounterId
+                            (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
@@ -118,9 +118,9 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , []
             )
 
-        SaveHepatitisBResult personlabEncounterId saved _ ->
+        SaveHepatitisBResult personId saved _ ->
             let
-                measurementlabEncounterId =
+                measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
@@ -129,7 +129,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 appMsgs =
                     toHepatitisBValueWithDefault measurement data.hepatitisBTestForm
                         |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personlabEncounterId measurementlabEncounterId
+                            (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
@@ -168,9 +168,9 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , []
             )
 
-        SaveBloodGpRsResult personlabEncounterId saved _ ->
+        SaveBloodGpRsResult personId saved _ ->
             let
-                measurementlabEncounterId =
+                measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
@@ -179,7 +179,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 appMsgs =
                     toPrenatalBloodGpRsResultsValueWithDefault measurement data.bloodGpRsTestForm
                         |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personlabEncounterId measurementlabEncounterId
+                            (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
@@ -322,9 +322,9 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , []
             )
 
-        SaveUrineDipstickResult personlabEncounterId saved _ ->
+        SaveUrineDipstickResult personId saved _ ->
             let
-                measurementlabEncounterId =
+                measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
@@ -333,7 +333,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 appMsgs =
                     toPrenatalUrineDipstickResultsValueWithDefault measurement data.urineDipstickTestForm
                         |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personlabEncounterId measurementlabEncounterId
+                            (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
@@ -359,9 +359,9 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , []
             )
 
-        SaveHemoglobinResult personlabEncounterId saved _ ->
+        SaveHemoglobinResult personId saved _ ->
             let
-                measurementlabEncounterId =
+                measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
@@ -370,7 +370,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 appMsgs =
                     toPrenatalHemoglobinResultsValueWithDefault measurement data.hemoglobinTestForm
                         |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personlabEncounterId measurementlabEncounterId
+                            (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
@@ -396,9 +396,9 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , []
             )
 
-        SaveRandomBloodSugarResult personlabEncounterId saved _ ->
+        SaveRandomBloodSugarResult personId saved _ ->
             let
-                measurementlabEncounterId =
+                measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
@@ -407,7 +407,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 appMsgs =
                     toPrenatalRandomBloodSugarResultsValueWithDefault measurement data.randomBloodSugarTestForm
                         |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personlabEncounterId measurementlabEncounterId
+                            (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
@@ -453,9 +453,9 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , []
             )
 
-        SaveHIVPCRResult personlabEncounterId saved _ ->
+        SaveHIVPCRResult personId saved _ ->
             let
-                measurementlabEncounterId =
+                measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
@@ -464,7 +464,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 appMsgs =
                     toPrenatalHIVPCRResultsValueWithDefault measurement data.hivPCRTestForm
                         |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personlabEncounterId measurementlabEncounterId
+                            (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
