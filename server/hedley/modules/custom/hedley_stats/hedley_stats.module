@@ -538,6 +538,17 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there was one case where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $fever_by_signs = !empty($row->fever_period) && $row->fever_period > 0;
     $fever_by_vitals = !empty($row->body_temperature) && (float) $row->body_temperature >= 37.5;
 
