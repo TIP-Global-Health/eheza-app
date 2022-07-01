@@ -27,7 +27,11 @@ class HedleyRestfulPrenatalHepatitisBTest extends HedleyRestfulPrenatalActivityB
     'field_execution_date',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $entityFields = [
     'field_originating_encounter',
   ];
+
 }
