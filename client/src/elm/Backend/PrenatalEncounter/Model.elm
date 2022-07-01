@@ -154,6 +154,7 @@ emptyModel =
 type Msg
     = ClosePrenatalEncounter
     | SetPrenatalDiagnoses (EverySet PrenatalDiagnosis)
+    | SetPastPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | HandleUpdatedPrenatalEncounter (WebData ())
     | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())

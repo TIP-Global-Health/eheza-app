@@ -4247,6 +4247,26 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                             :: -- For urgent diagnoses, we show warning popup and
                                -- navigate to Next Steps activity.
                                additionalMsgs
+
+                    reportToOriginMsgs =
+                        Maybe.map
+                            (\( originatingEncounterId, targetDiagnoses ) ->
+                                let
+                                    reportedDiagnoses =
+                                        List.filter (\diagnosis -> List.member diagnosis targetDiagnoses) addedDiagnoses
+                                            |> EverySet.fromList
+                                in
+                                if not <| EverySet.isEmpty reportedDiagnoses then
+                                    [ Backend.PrenatalEncounter.Model.SetPastPrenatalDiagnoses reportedDiagnoses
+                                        |> Backend.Model.MsgPrenatalEncounter originatingEncounterId
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                else
+                                    []
+                            )
+                            originData
+                            |> Maybe.withDefault []
                 in
                 if everySetsEqual diagnosesBefore diagnosesAfter then
                     []
@@ -4257,7 +4277,11 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                             initialEncounterMsgs
 
                         UserPage (PrenatalActivityPage _ _) ->
-                            initialEncounterMsgs
+                            -- reportToOriginMsgs are sent when nurse enters
+                            -- of test from one of previous encounters, and
+                            -- on save, APP navigates back to Labs History
+                            -- sub activity.
+                            initialEncounterMsgs ++ reportToOriginMsgs
 
                         UserPage (PrenatalRecurrentEncounterPage _) ->
                             recurrentEncounterMsgs

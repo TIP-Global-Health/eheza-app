@@ -16,11 +16,11 @@ encodePrenatalEncounter : PrenatalEncounter -> List ( String, Value )
 encodePrenatalEncounter encounter =
     let
         diagnosesWithDefault diagnoses =
-            if EverySet.isEmpty encounter.diagnoses then
+            if EverySet.isEmpty diagnoses then
                 List.singleton NoPrenatalDiagnosis
 
             else
-                EverySet.toList encounter.diagnoses
+                EverySet.toList diagnoses
 
         prenatalIndicators =
             if not <| EverySet.isEmpty encounter.indicators then
