@@ -2404,6 +2404,18 @@ diagnosedSyphilis =
         ]
 
 
+syphilisDiagnosesIncludingNeurosyphilis : List PrenatalDiagnosis
+syphilisDiagnosesIncludingNeurosyphilis =
+    DiagnosisNeurosyphilis :: syphilisDiagnoses
+
+
+syphilisDiagnoses : List PrenatalDiagnosis
+syphilisDiagnoses =
+    [ DiagnosisSyphilis
+    , DiagnosisSyphilisWithComplications
+    ]
+
+
 outsideCareDiagnoses : List PrenatalDiagnosis
 outsideCareDiagnoses =
     DiagnosisOther :: outsideCareDiagnosesLeftColumn ++ outsideCareDiagnosesRightColumn

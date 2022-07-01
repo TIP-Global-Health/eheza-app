@@ -4639,10 +4639,13 @@ expectLaboratoryTask currentDate assembled task =
                         && isInitialTest TaskHIVTest
 
                 TaskSyphilisTest ->
-                    isRepeatingTestOnWeek 38 TaskSyphilisTest
+                    List.all (\diagnosis -> not <| EverySet.member diagnosis assembled.encounter.pastDiagnoses)
+                        syphilisDiagnosesIncludingNeurosyphilis
+                        && isRepeatingTestOnWeek 38 TaskSyphilisTest
 
                 TaskHepatitisBTest ->
                     (not <| isKnownAsPositive .hepatitisBTest)
+                        && (not <| EverySet.member DiagnosisHepatitisB assembled.encounter.pastDiagnoses)
                         && isInitialTest TaskHepatitisBTest
 
                 TaskMalariaTest ->
