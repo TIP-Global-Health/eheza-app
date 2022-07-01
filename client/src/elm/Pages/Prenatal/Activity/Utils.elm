@@ -358,6 +358,7 @@ expectNextStepsTask currentDate assembled task =
                 NurseEncounter ->
                     referToHospitalForNonHIVDiagnosis assembled
                         || referToHospitalDueToAdverseEvent assembled
+                        || referToHospitalDueToPastDiagnosis assembled
                         || referToHIVProgram assembled
                         || referToMentalHealthSpecialist assembled
 

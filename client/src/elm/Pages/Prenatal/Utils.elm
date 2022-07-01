@@ -1562,6 +1562,12 @@ referToHospitalDueToAdverseEventForDiagnosesTreatment diagnoses assembled =
         |> Maybe.withDefault False
 
 
+referToHospitalDueToPastDiagnosis : AssembledData -> Bool
+referToHospitalDueToPastDiagnosis assembled =
+    (DiagnosisHepatitisB :: syphilisDiagnosesIncludingNeurosyphilis)
+        |> List.any (\diagnosis -> EverySet.member diagnosis assembled.encounter.pastDiagnoses)
+
+
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
 showMebendazoleQuestion currentDate assembled =
     assembled.globalLmpDate
