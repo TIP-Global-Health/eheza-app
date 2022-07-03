@@ -1417,8 +1417,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     SaveHIVPCRTest personId measurements.hivPCRTest nextTask
 
                                 TaskCompletePreviousTests ->
-                                    -- @todo
-                                    NoOp
+                                    SaveLabsHistory
 
                         disableSave =
                             if task == TaskCompletePreviousTests then

@@ -155,6 +155,7 @@ type Msg
     = ClosePrenatalEncounter
     | SetPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetPastPrenatalDiagnoses (EverySet PrenatalDiagnosis)
+    | SetLabsHistoryCompleted
     | HandleUpdatedPrenatalEncounter (WebData ())
     | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())

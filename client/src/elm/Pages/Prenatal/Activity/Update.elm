@@ -2647,6 +2647,20 @@ update language currentDate id db msg model =
             , []
             )
 
+        SaveLabsHistory ->
+            let
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | activeTask = Nothing })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , [ Backend.PrenatalEncounter.Model.SetLabsHistoryCompleted
+                    |> Backend.Model.MsgPrenatalEncounter id
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
+
         SetHealthEducationBoolInput formUpdateFunc value ->
             let
                 updatedForm =
