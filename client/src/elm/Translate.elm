@@ -300,7 +300,6 @@ type TranslationId
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | AcuteIllnessExisting
     | AcuteIllnessHistory
-    | AcuteIllnessHighRiskCaseHelper
     | AcuteIllnessLowRiskCaseHelper
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
@@ -642,6 +641,7 @@ type TranslationId
     | Height
     | High
     | HighRiskCase
+    | HighRiskCaseHelper
     | HighRiskFactor HighRiskFactor
     | HighRiskFactors
     | HighSeverityAlert HighSeverityAlert
@@ -885,6 +885,7 @@ type TranslationId
     | PartnerHivTestResult
     | PartnerReceivedHivCounseling
     | PartnerReceivedHivTesting
+    | PatientDiagnosedWithLabel
     | PatientExhibitAnyFindings
     | PatientExhibitAnyRespiratoryFindings
     | PatientGotAnySymptoms
@@ -1759,11 +1760,6 @@ translationSet trans =
         AcuteIllnessHistory ->
             { english = "Acute Illness History"
             , kinyarwanda = Just "Amakuru ku ndwara ifatiyeho"
-            }
-
-        AcuteIllnessHighRiskCaseHelper ->
-            { english = "This patient is a high risk case and should be sent to a hospital for further treatment"
-            , kinyarwanda = Just "Uyu murwayi afite ibyago byinshi, agomba koherezwa ku bitaro bakamuha ubuvuzi bwimbitse"
             }
 
         AcuteIllnessLowRiskCaseHelper ->
@@ -4812,6 +4808,11 @@ translationSet trans =
             , kinyarwanda = Just "afite ibyago byinshi byo kuba yaranduye"
             }
 
+        HighRiskCaseHelper ->
+            { english = "This patient is a high risk case and should be sent to a hospital for further treatment"
+            , kinyarwanda = Just "Uyu murwayi afite ibyago byinshi, agomba koherezwa ku bitaro bakamuha ubuvuzi bwimbitse"
+            }
+
         HighRiskFactor factor ->
             case factor of
                 HighRiskConvulsionsAndUnconsciousPreviousDelivery ->
@@ -7550,6 +7551,11 @@ translationSet trans =
         PartnerReceivedHivTesting ->
             { english = "Did partner receive HIV Testing during this pregnancy"
             , kinyarwanda = Just "Umugabo  yasuzumwe Virusi itera SIDA?"
+            }
+
+        PatientDiagnosedWithLabel ->
+            { english = "The patient has been diagnosed with"
+            , kinyarwanda = Nothing
             }
 
         PatientExhibitAnyFindings ->

@@ -43,7 +43,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
-import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -1210,16 +1210,38 @@ viewSendToFacilityForm language currentDate facility referralReasons setReferToH
         headerHelper =
             case facility of
                 FacilityHealthCenter ->
-                    emptyNode
+                    []
 
                 FacilityHospital ->
-                    viewCustomLabel language Translate.AcuteIllnessHighRiskCaseHelper "." "instructions"
+                    let
+                        referralContext =
+                            if not <| List.isEmpty referralReasons then
+                                let
+                                    diagnosisTransId diagnosis =
+                                        if diagnosis == DiagnosisChronicHypertensionImmediate then
+                                            Translate.Hypertension
+
+                                        else
+                                            Translate.PrenatalDiagnosis diagnosis
+
+                                    reasons =
+                                        List.map (diagnosisTransId >> translate language) referralReasons
+                                            |> String.join ", "
+                                in
+                                div [ class "label" ] [ text <| translate language Translate.PatientDiagnosedWithLabel ++ " " ++ reasons ++ "." ]
+
+                            else
+                                emptyNode
+                    in
+                    [ referralContext
+                    , viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions"
+                    ]
 
                 FacilityHIVProgram ->
-                    viewCustomLabel language Translate.PrenatalHIVProgramHelper "." "instructions"
+                    [ viewCustomLabel language Translate.PrenatalHIVProgramHelper "." "instructions" ]
 
                 FacilityMentalHealthSpecialist ->
-                    viewCustomLabel language Translate.PrenatalMentalHealthSpecialistHelper "." "instructions"
+                    [ viewCustomLabel language Translate.PrenatalMentalHealthSpecialistHelper "." "instructions" ]
 
         sendToHCSection =
             let
@@ -1297,11 +1319,11 @@ viewSendToFacilityForm language currentDate facility referralReasons setReferToH
                     ]
     in
     div [ class "ui form send-to-hc" ] <|
-        [ headerHelper
-        , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            instructions
-        ]
+        headerHelper
+            ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+               , div [ class "instructions" ]
+                    instructions
+               ]
             ++ sendToHCSection
             ++ handReferralFormSection
             ++ accompanyToHCSection
