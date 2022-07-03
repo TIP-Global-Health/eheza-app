@@ -892,8 +892,7 @@ viewNextStepsContent language currentDate assembled data =
                 Just NextStepsSendToHC ->
                     let
                         referralReasons =
-                            -- @todo
-                            []
+                            diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
                     in
                     getMeasurementValueFunc measurements.sendToHC
                         |> prenatalSendToHCFormWithDefault data.sendToHCForm
