@@ -1228,7 +1228,7 @@ viewSendToFacilityForm language currentDate facility referralReasons setReferToH
                                         List.map (diagnosisTransId >> translate language) referralReasons
                                             |> String.join ", "
                                 in
-                                div [ class "label" ] [ text <| translate language Translate.PatientDiagnosedWithLabel ++ " " ++ reasons ++ "." ]
+                                div [ class "label" ] [ text <| translate language Translate.PatientDiagnosedWithLabel ++ ": " ++ reasons ++ "." ]
 
                             else
                                 emptyNode

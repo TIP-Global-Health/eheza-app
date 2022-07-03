@@ -1848,7 +1848,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                         diagnosesCausingHospitalReferral assembled
                             |> EverySet.toList
                 in
-                if List.isEmpty hospitalReferralDiagnoses then
+                if not <| List.isEmpty hospitalReferralDiagnoses then
                     ( FacilityHospital, hospitalReferralDiagnoses )
 
                 else if referToMentalHealthSpecialist assembled then
