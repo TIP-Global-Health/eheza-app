@@ -4127,7 +4127,7 @@ contentAndTasksLaboratoryTestInitial language currentDate task form =
                     }
 
                 TaskCompletePreviousTests ->
-                    -- @todo
+                    -- Not in use, as this task got a proprietary form.
                     { setBoolInputMsg = always NoOp
                     , setExecutionNoteMsg = always NoOp
                     }
@@ -4270,7 +4270,7 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                         }
 
                     TaskCompletePreviousTests ->
-                        -- @todo
+                        -- Not in use, as this task got a proprietary form.
                         { setBoolInputMsg = always NoOp
                         , setExecutionDateMsg = always NoOp
                         , setDateSelectorStateMsg = always NoOp
