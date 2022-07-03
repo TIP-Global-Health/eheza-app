@@ -2555,6 +2555,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     else if
                         referToHospitalForNonHIVDiagnosis assembled
                             || referToHospitalDueToAdverseEvent assembled
+                            || referToHospitalDueToPastDiagnosis assembled
                             || referToMentalHealthSpecialist assembled
                     then
                         ( 0, 0 )

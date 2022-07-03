@@ -1845,6 +1845,7 @@ viewNextStepsContent language currentDate isChw assembled data =
             else if
                 referToHospitalForNonHIVDiagnosis assembled
                     || referToHospitalDueToAdverseEvent assembled
+                    || referToHospitalDueToPastDiagnosis assembled
             then
                 FacilityHospital
 
