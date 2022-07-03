@@ -890,9 +890,15 @@ viewNextStepsContent language currentDate assembled data =
         viewForm =
             case activeTask of
                 Just NextStepsSendToHC ->
+                    let
+                        referralReasons =
+                            -- @todo
+                            []
+                    in
                     getMeasurementValueFunc measurements.sendToHC
                         |> prenatalSendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHospitalForm language
+                        |> viewSendToHospitalForm referralReasons
+                            language
                             currentDate
                             SetReferToHealthCenter
                             SetReasonForNotSendingToHC

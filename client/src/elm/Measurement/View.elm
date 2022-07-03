@@ -43,6 +43,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -1150,11 +1151,12 @@ viewSendToHealthCenterForm :
     -> SendToHCForm
     -> Html msg
 viewSendToHealthCenterForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHealthCenter
+    viewSendToFacilityForm language currentDate FacilityHealthCenter []
 
 
 viewSendToHospitalForm :
-    Language
+    List PrenatalDiagnosis
+    -> Language
     -> NominalDate
     -> (Bool -> msg)
     -> (ReasonForNotSendingToHC -> msg)
@@ -1162,8 +1164,8 @@ viewSendToHospitalForm :
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToHospitalForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHospital
+viewSendToHospitalForm referralReasons language currentDate =
+    viewSendToFacilityForm language currentDate FacilityHospital referralReasons
 
 
 viewSendToHIVProgramForm :
@@ -1176,7 +1178,7 @@ viewSendToHIVProgramForm :
     -> SendToHCForm
     -> Html msg
 viewSendToHIVProgramForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHIVProgram
+    viewSendToFacilityForm language currentDate FacilityHIVProgram []
 
 
 viewSendToMentalSpecialistForm :
@@ -1189,20 +1191,21 @@ viewSendToMentalSpecialistForm :
     -> SendToHCForm
     -> Html msg
 viewSendToMentalSpecialistForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityMentalHealthSpecialist
+    viewSendToFacilityForm language currentDate FacilityMentalHealthSpecialist []
 
 
 viewSendToFacilityForm :
     Language
     -> NominalDate
     -> ReferralFacility
+    -> List PrenatalDiagnosis
     -> (Bool -> msg)
     -> (ReasonForNotSendingToHC -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+viewSendToFacilityForm language currentDate facility referralReasons setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
         headerHelper =
             case facility of
