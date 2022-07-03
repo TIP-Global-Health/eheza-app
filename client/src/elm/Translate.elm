@@ -9144,7 +9144,7 @@ translationSet trans =
                     , kinyarwanda = Just "Waba wasobanuriye umurwayi (umubyeyi) icyo bisibanuye kugira ibisubizo biri positifu ku bwandu bw'agakoko gatera SIDA"
                     }
 
-                EducationSaferSex ->
+                EducationSaferSexHIV ->
                     { english = "Have you counseled patient on safer sex practices"
                     , kinyarwanda = Just "Wagiriye inama umubyeyi ku bijyanye no gukora imibonano mpuzabitsina ikingiye"
                     }
