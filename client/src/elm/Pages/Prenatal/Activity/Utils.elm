@@ -695,7 +695,7 @@ diagnosesCausingHospitalReferral assembled =
             -- 1. HIV-positive patients, while there's an HIV program, at the health center.
             -- 2. Patient with a mental health diagnosis, and available mental health
             --   specialist at helath center.
-            -- In both cases, since we have a need to refer to hospital, it must
+            -- In both cases, since we have a need to refer to the hospital, it must
             -- be more urgent, and therefore, treatment for (HIV/Mental health) will
             -- be given at the hospital.
             if not <| List.isEmpty overall then
