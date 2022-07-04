@@ -48,6 +48,7 @@ type alias BottomActionData msg =
     , closeEncounterMsg : msg
     , setEndEncounterDialogStateMsg : Bool -> msg
     , startEncounterMsg : msg
+    , sendViaWhatsAppMsg : msg
     }
 
 

@@ -1165,6 +1165,7 @@ type TranslationId
     | SelectedHCNotSynced
     | SelectedHCSyncing
     | SelectedHCUploading
+    | SendViaWhatsApp
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -12207,6 +12208,11 @@ translationSet trans =
 
         SelectedHCUploading ->
             { english = "Uploading data for selected Health Center. Please wait until completed."
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsApp ->
+            { english = "Send via WhatsApp"
             , kinyarwanda = Nothing
             }
 

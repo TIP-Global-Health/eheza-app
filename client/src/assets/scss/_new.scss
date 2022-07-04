@@ -2247,6 +2247,19 @@ div.page-outcome.pregnancy {
   }
 }
 
+div.page-report {
+
+  .ui.unstackable.items .actions.two button {
+    width: 50%;
+    float: left;
+    margin: 0;
+
+    &.active {
+      border-left: 1px solid $color-white;
+    }
+  }
+}
+
 div.page-report.clinical,
 div.page-report.demographics {
   padding: 0 20px 35px 20px;

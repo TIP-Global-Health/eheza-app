@@ -53,7 +53,7 @@ import Pages.Nutrition.Activity.View exposing (translateNutritionAssement)
 import Pages.Nutrition.Encounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewStartEncounterButton)
+import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProgressReport, viewStartEncounterButton)
 import Pages.WellChild.Activity.Types exposing (VaccinationStatus(..))
 import Pages.WellChild.Activity.Utils exposing (expectedECDSignsOnMilestone, generateCompletedECDSigns, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChild.Activity.View exposing (viewVaccinationOverview)
@@ -120,6 +120,7 @@ view language currentDate zscores id isChw db model =
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
+                        , sendViaWhatsAppMsg = NoOp
                         }
                     , mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db
                     )
@@ -302,7 +303,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                             viewStartEncounterButton language data.startEncounterMsg
 
                         _ ->
-                            viewEndEncounterButton language data.allowEndEcounter data.setEndEncounterDialogStateMsg
+                            viewEndEncounterMenuForProgressReport language data.allowEndEcounter data.setEndEncounterDialogStateMsg data.sendViaWhatsAppMsg
                     )
                 )
                 bottomActionData

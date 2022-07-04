@@ -72,6 +72,7 @@ view language currentDate zscores id isChw db model =
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
+                        , sendViaWhatsAppMsg = NoOp
                         }
                     , mandatoryActivitiesCompleted currentDate zscores child isChw assembled db
                     )

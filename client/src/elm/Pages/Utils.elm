@@ -618,12 +618,12 @@ viewStartEncounterButton language action =
 
 
 viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
-viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
+viewEndEncounterButton language allowEndEcounter setDialogStateMsg =
     let
         attributes =
             if allowEndEcounter then
                 [ class "ui fluid primary button"
-                , onClick <| setDialogStateMsgs True
+                , onClick <| setDialogStateMsg True
                 ]
 
             else
@@ -632,6 +632,29 @@ viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
     div [ class "actions" ]
         [ button attributes
             [ text <| translate language Translate.EndEncounter ]
+        ]
+
+
+viewEndEncounterMenuForProgressReport : Language -> Bool -> (Bool -> msg) -> msg -> Html msg
+viewEndEncounterMenuForProgressReport language allowEndEcounter setDialogStateMsg sendViaWhatsAppMsg =
+    let
+        attributes =
+            if allowEndEcounter then
+                [ class "ui fluid velvet button"
+                , onClick <| setDialogStateMsg True
+                ]
+
+            else
+                [ class "ui fluid velvet button disabled" ]
+    in
+    div [ class "actions two" ]
+        [ button attributes
+            [ text <| translate language Translate.EndEncounter ]
+        , button
+            [ class "ui fluid primary button"
+            , onClick sendViaWhatsAppMsg
+            ]
+            [ text <| translate language Translate.SendViaWhatsApp ]
         ]
 
 

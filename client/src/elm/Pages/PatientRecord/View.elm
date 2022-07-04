@@ -137,6 +137,7 @@ viewContentForChild language currentDate zscores childId child isChw initiator d
                         , closeEncounterMsg = NoOp
                         , setEndEncounterDialogStateMsg = always NoOp
                         , startEncounterMsg = SetViewMode ViewStartEncounter
+                        , sendViaWhatsAppMsg = NoOp
                         }
             in
             viewProgressReport language
