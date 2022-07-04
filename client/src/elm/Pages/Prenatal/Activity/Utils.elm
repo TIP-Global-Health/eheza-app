@@ -692,7 +692,7 @@ diagnosesCausingHospitalReferral assembled =
         additional =
             -- There are 2 cases where patient is referred to hospital, skipping
             -- referals to other facilities:
-            -- 1. HIV positive patient, while there's HIV program, at health center.
+            -- 1. HIV-positive patients, while there's an HIV program, at the health center.
             -- 2. Patient with mental health diagnosis, and available mental health
             --   specialist at helath center.
             -- In both cases, since we have a need to refer to hospital, it must
