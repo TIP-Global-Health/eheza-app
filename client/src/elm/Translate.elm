@@ -8825,7 +8825,7 @@ translationSet trans =
                     }
 
                 DiagnosisCandidiasis ->
-                    { english = "Candidiasis"
+                    { english = "Patient shows signs of a yeast infection"
                     , kinyarwanda = Nothing
                     }
 
@@ -9210,7 +9210,7 @@ translationSet trans =
             }
 
         PrenatalHealthEducationSaferSexInform ->
-            { english = "Council patient on safer sex parctices"
+            { english = "Counsel patient on safer sex practices"
             , kinyarwanda = Nothing
             }
 
