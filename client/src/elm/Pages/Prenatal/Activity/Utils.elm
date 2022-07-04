@@ -4582,12 +4582,9 @@ expectLaboratoryTask currentDate assembled task =
         if
             -- No pending tests left, or, nurse has indicated that there're no
             -- additional results record.
-            (not <| List.isEmpty pendingLabs)
+            List.isEmpty pendingLabs
                 || EverySet.member IndicatorHistoryLabsCompleted assembled.encounter.indicators
         then
-            task == TaskCompletePreviousTests
-
-        else
             let
                 testsDates =
                     generatePreviousLaboratoryTestsDatesDict currentDate assembled
@@ -4671,6 +4668,9 @@ expectLaboratoryTask currentDate assembled task =
                 TaskCompletePreviousTests ->
                     -- If we got this far, history task was completed.
                     False
+
+        else
+            task == TaskCompletePreviousTests
 
 
 generatePendingLabsFromPreviousEncounters : AssembledData -> List ( NominalDate, PrenatalEncounterId, List PrenatalLaboratoryTest )
