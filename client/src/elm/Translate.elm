@@ -8151,7 +8151,7 @@ translationSet trans =
                     }
 
                 DiagnosisModerateAnemia ->
-                    { english = "Mild to Mederate Anemia"
+                    { english = "Mild to Moderate Anemia"
                     , kinyarwanda = Just "Amaraso Macye byoroheje"
                     }
 
@@ -8463,7 +8463,7 @@ translationSet trans =
                     }
 
                 DiagnosisModerateAnemia ->
-                    { english = "Anemia (Mild to Mederate)"
+                    { english = "Anemia (Mild to Moderate)"
                     , kinyarwanda = Just "Amaraso Macye (byoroheje)"
                     }
 
