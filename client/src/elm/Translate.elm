@@ -4762,7 +4762,7 @@ translationSet trans =
             }
 
         HeartburnRecommendedTreatmentHelper ->
-            { english = "Select the best treatment option for the patient bellow"
+            { english = "Select the best treatment option for the patient below"
             , kinyarwanda = Nothing
             }
 
@@ -5017,7 +5017,7 @@ translationSet trans =
             }
 
         HypertensionRecommendedTreatmentHelper ->
-            { english = "Select the best treatment option for the patient bellow"
+            { english = "Select the best treatment option for the patient below"
             , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
             }
 
@@ -11382,12 +11382,12 @@ translationSet trans =
                     }
 
                 TreatmentAluminiumHydroxide ->
-                    { english = "Aluminium Hydroxide"
+                    { english = "Aluminium Hydroxide (500mg)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHealthEducationForHeartburn ->
-                    { english = "Not dispencing medicine. Follow health education protocols."
+                    { english = "Not dispensing medicine. Follow health education protocols."
                     , kinyarwanda = Nothing
                     }
 

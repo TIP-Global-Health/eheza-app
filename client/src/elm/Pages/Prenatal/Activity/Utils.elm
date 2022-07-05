@@ -4880,7 +4880,7 @@ symptomReviewFormInputsAndTasks language step form =
 symptomReviewFormInputsAndTasksSymptoms : Language -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
 symptomReviewFormInputsAndTasksSymptoms language form =
     ( [ div [ class "ui form symptom-review" ]
-            [ viewQuestionLabel language Translate.SelectIllnessSymptoms
+            [ viewLabel language Translate.SelectIllnessSymptoms
             , viewCheckBoxMultipleSelectInput language
                 [ BurningWithUrination, AbnormalVaginalDischarge, NauseaAndVomiting, Heartburn, LegCramps, LowBackPain ]
                 [ CoughContinuous, PelvicPain, Constipation, VaricoseVeins, LegPainRedness ]

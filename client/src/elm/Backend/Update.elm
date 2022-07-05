@@ -1762,7 +1762,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processVitalsRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1791,7 +1791,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1812,7 +1812,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1833,7 +1833,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1864,7 +1864,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1900,7 +1900,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
