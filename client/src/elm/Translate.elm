@@ -8680,8 +8680,8 @@ translationSet trans =
                     }
 
                 DiagnosisDiscordantPartnership ->
-                    { english = "HIV Negative with a discordant partner"
-                    , kinyarwanda = Just "Nta bwandu afite ariko uwo babana afite ubwandu bwa Virusi itera SIDA"
+                    { english = "Patient is HIV Negative with a discordant partner"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisSyphilis ->
@@ -8710,38 +8710,38 @@ translationSet trans =
                     }
 
                 DiagnosisMalariaMedicatedContinued ->
-                    { english = "Patient has tested positive for Malaria Continued"
+                    { english = "Patient has tested positive for persistent Malaria"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisMalariaWithAnemia ->
-                    { english = "Malaria with Anemia"
+                    { english = "Patient has tested positive for Malaria with Anemia"
                     , kinyarwanda = Just "Afite Malariya n'amaraso macye"
                     }
 
                 DiagnosisMalariaWithAnemiaMedicatedContinued ->
-                    { english = "Malaria with Anemia Continued"
+                    { english = "Patient has tested positive for persistent Malaria with Anemia"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisMalariaWithSevereAnemia ->
-                    { english = "Malaria with Severe Anemia"
-                    , kinyarwanda = Just "Afite Malariya n'amaraso macye cyane"
+                    { english = "Patient has tested positive for Malaria with Severe Anemia"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisModerateAnemia ->
-                    { english = "Mild to Moderate Anemia"
-                    , kinyarwanda = Just "Afite amaraso macye byoroheje"
+                    { english = "Patient hshows signs of Mild to Moderate Anemia"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisSevereAnemia ->
-                    { english = "Severe Anemia"
-                    , kinyarwanda = Just "Afite amaraso macye bikabije"
+                    { english = "Patient shows signs of Severe Anemia"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisSevereAnemiaWithComplications ->
-                    { english = "Severe Anemia with Complications"
-                    , kinyarwanda = Just "Afite amaraso macye cyane n'ibibazo bishamikiyeho"
+                    { english = "Patient has tested positive for Severe Anemia with Complications"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisChronicHypertensionImmediate ->
@@ -8785,77 +8785,77 @@ translationSet trans =
                     }
 
                 DiagnosisHeartburn ->
-                    { english = "Persistent Heartburn"
+                    { english = "Patient shows signs of Persistent Heartburn"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisHeartburnPersistent ->
-                    { english = "Persistent Heartburn that is not responding to treatment"
+                    { english = "Patient shows signs of Persistent Heartburn that is not responding to treatment"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisDeepVeinThrombosis ->
-                    { english = "Deep Vein Thrombosis"
+                    { english = "Patient shows signs of Deep Vein Thrombosis"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPelvicPainIntense ->
-                    { english = "Intense Pelvic Pain"
+                    { english = "Patient shows signs of Intense Pelvic Pain"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPelvicPainContinued ->
-                    { english = "Persistent Pelvic Pain"
+                    { english = "Patient shows signs of Persistent Pelvic Pain"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisUrinaryTractInfection ->
-                    { english = "Urinary Tract Infection"
+                    { english = "Patient shows signs of Urinary Tract Infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisUrinaryTractInfectionContinued ->
-                    { english = "Urinary Tract Infection Continued"
+                    { english = "Patient shows signs of Persistant Urinary Tract Infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPyelonephritis ->
-                    { english = "Pyelonephritis"
+                    { english = "Patient shows signs of Pyelonephritis"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisCandidiasis ->
-                    { english = "Candidiasis"
+                    { english = "Patient shows signs of Candidiasis"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisCandidiasisContinued ->
-                    { english = "Candidiasis Continued"
-                    , kinyarwanda = Nothing
-                    }
-
-                DiagnosisGonorrheaContinued ->
-                    { english = "Gonorrhea Continued"
+                    { english = "Patient shows signs of Persistant Candidiasis"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisGonorrhea ->
-                    { english = "Gonorrhea"
+                    { english = "Patient shows signs of Gonorrhea"
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisTrichomonasOrBacterialVaginosisContinued ->
-                    { english = "Trichomonas or Bacterial Vaginosis Continued"
+                DiagnosisGonorrheaContinued ->
+                    { english = "Patient shows signs of Persistant Gonorrhea"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisTrichomonasOrBacterialVaginosis ->
-                    { english = "Trichomonas or Bacterial Vaginosis"
+                    { english = "Patient shows signs ofTrichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosisContinued ->
+                    { english = "Patient shows signs of Persistant Trichomonas or Bacterial Vaginosis"
                     , kinyarwanda = Nothing
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
-                    { english = "Tuberculosis"
+                    { english = "Patient shows signs of  Tuberculosis"
                     , kinyarwanda = Nothing
                     }
 
