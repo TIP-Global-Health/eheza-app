@@ -761,7 +761,8 @@ hospitalizeDueToNauseaAndVomiting assembled =
 
         -- NauseaAndVomiting was reported at any of previous encounters.
         byPreviousEncounters =
-            symptomRecordedPreviously assembled NauseaAndVomiting
+            symptomRecorded assembled.measurements NauseaAndVomiting
+                && symptomRecordedPreviously assembled NauseaAndVomiting
     in
     byCurrentEncounter || byPreviousEncounters
 
