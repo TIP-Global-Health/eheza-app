@@ -2676,11 +2676,11 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.andThen .recommendedTreatmentSigns
                 |> Maybe.map
                     (\signs ->
-                        if EverySet.member TreatmentNitrfurantion signs then
-                            diagnosisTreatedWithOnDateMessage TreatmentNitrfurantion
+                        if EverySet.member TreatmentNitrofurantoin signs then
+                            diagnosisTreatedWithOnDateMessage TreatmentNitrofurantoin
 
-                        else if EverySet.member TreatmentAmoxicilin signs then
-                            diagnosisTreatedWithOnDateMessage TreatmentAmoxicilin
+                        else if EverySet.member TreatmentAmoxicillin signs then
+                            diagnosisTreatedWithOnDateMessage TreatmentAmoxicillin
 
                         else
                             noTreatmentRecordedMessage

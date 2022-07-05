@@ -1210,8 +1210,8 @@ type RecommendedTreatmentSign
     | TreatmentAluminiumHydroxide
     | TreatmentHealthEducationForHeartburn
       -- For Urinary Tract Infection:
-    | TreatmentNitrfurantion
-    | TreatmentAmoxicilin
+    | TreatmentNitrofurantoin
+    | TreatmentAmoxicillin
       -- For Candidiasis:
     | TreatmentClotrimaxazole200
     | TreatmentClotrimaxazole500

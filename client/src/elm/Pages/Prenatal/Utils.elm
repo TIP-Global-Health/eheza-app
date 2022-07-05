@@ -1312,8 +1312,8 @@ resolveRecommendedTreatmentForUrinaryTractInfectionInputsAndTasks language curre
 
 recommendedTreatmentSignsForUrinaryTractInfection : List RecommendedTreatmentSign
 recommendedTreatmentSignsForUrinaryTractInfection =
-    [ TreatmentNitrfurantion
-    , TreatmentAmoxicilin
+    [ TreatmentNitrofurantoin
+    , TreatmentAmoxicillin
     ]
 
 

@@ -11242,12 +11242,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TreatmentNitrfurantion ->
+                TreatmentNitrofurantoin ->
                     { english = "by mouth 2x a day for 7 days"
                     , kinyarwanda = Nothing
                     }
 
-                TreatmentAmoxicilin ->
+                TreatmentAmoxicillin ->
                     { english = "by mouth 3x a day for 7 days"
                     , kinyarwanda = Nothing
                     }
@@ -11391,13 +11391,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TreatmentNitrfurantion ->
-                    { english = "Nitrfurantion (100mg)"
+                TreatmentNitrofurantoin ->
+                    { english = "Nitrofurantoin (100mg)"
                     , kinyarwanda = Nothing
                     }
 
-                TreatmentAmoxicilin ->
-                    { english = "Amoxicilin (500mg)"
+                TreatmentAmoxicillin ->
+                    { english = "Amoxicillin (500mg)"
                     , kinyarwanda = Nothing
                     }
 
