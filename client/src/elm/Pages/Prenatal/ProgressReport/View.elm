@@ -461,7 +461,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                         else
                                             Nothing
                                 in
-                                [ signRecord EducationNausiaVomiting
+                                [ signRecord EducationNauseaVomiting
                                 , signRecord EducationLegCramps
                                 , signRecord EducationLowBackPain
                                 , signRecord EducationConstipation
@@ -528,7 +528,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                                 else
                                                     Nothing
                                         in
-                                        [ messageForSign EducationNausiaVomiting
+                                        [ messageForSign EducationNauseaVomiting
                                         , messageForSign EducationLegCramps
                                         , messageForSign EducationLowBackPain
                                         , messageForSign EducationConstipation
@@ -2676,11 +2676,11 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.andThen .recommendedTreatmentSigns
                 |> Maybe.map
                     (\signs ->
-                        if EverySet.member TreatmentNitrfurantion signs then
-                            diagnosisTreatedWithOnDateMessage TreatmentNitrfurantion
+                        if EverySet.member TreatmentNitrofurantoin signs then
+                            diagnosisTreatedWithOnDateMessage TreatmentNitrofurantoin
 
-                        else if EverySet.member TreatmentAmoxicilin signs then
-                            diagnosisTreatedWithOnDateMessage TreatmentAmoxicilin
+                        else if EverySet.member TreatmentAmoxicillin signs then
+                            diagnosisTreatedWithOnDateMessage TreatmentAmoxicillin
 
                         else
                             noTreatmentRecordedMessage

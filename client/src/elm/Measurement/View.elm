@@ -31,8 +31,8 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
         ( currentValues
+        , getHeightValue
         , getMeasurementValueFunc
-        , heightValueFunc
         , mapMeasurementData
         , muacIndication
         , muacValueFunc
@@ -164,7 +164,7 @@ heightFormConfig =
     , constraints = getInputConstraintsHeight
     , unit = Translate.CentimeterShorthand
     , inputValue = .height
-    , storedValue = .value >> heightValueFunc
+    , storedValue = .value >> getHeightValue
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
