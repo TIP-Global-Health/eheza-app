@@ -174,7 +174,10 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'create prenatal_tetanus_immunisation content'.
   $permissions['create prenatal_tetanus_immunisation content'] = array(
     'name' => 'create prenatal_tetanus_immunisation content',
-    'roles' => array(),
+      'roles' => array(
+          'administrator' => 'administrator',
+          'sync' => 'sync',
+      ),
     'module' => 'node',
   );
 
@@ -335,7 +338,9 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete any prenatal_tetanus_immunisation content'.
   $permissions['delete any prenatal_tetanus_immunisation content'] = array(
     'name' => 'delete any prenatal_tetanus_immunisation content',
-    'roles' => array(),
+      'roles' => array(
+          'administrator' => 'administrator',
+      ),
     'module' => 'node',
   );
 
@@ -495,7 +500,9 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete own prenatal_tetanus_immunisation content'.
   $permissions['delete own prenatal_tetanus_immunisation content'] = array(
     'name' => 'delete own prenatal_tetanus_immunisation content',
-    'roles' => array(),
+      'roles' => array(
+          'administrator' => 'administrator',
+      ),
     'module' => 'node',
   );
 
@@ -671,7 +678,9 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit any prenatal_tetanus_immunisation content'.
   $permissions['edit any prenatal_tetanus_immunisation content'] = array(
     'name' => 'edit any prenatal_tetanus_immunisation content',
-    'roles' => array(),
+      'roles' => array(
+          'administrator' => 'administrator',
+      ),
     'module' => 'node',
   );
 
@@ -848,7 +857,9 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit own prenatal_tetanus_immunisation content'.
   $permissions['edit own prenatal_tetanus_immunisation content'] = array(
     'name' => 'edit own prenatal_tetanus_immunisation content',
-    'roles' => array(),
+      'roles' => array(
+          'administrator' => 'administrator',
+      ),
     'module' => 'node',
   );
 
