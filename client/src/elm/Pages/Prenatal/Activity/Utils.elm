@@ -693,6 +693,7 @@ referToHospitalForNonHIVDiagnosis assembled =
             , DiagnosisCandidiasisContinued
             , DiagnosisGonorrheaContinued
             , DiagnosisTrichomonasOrBacterialVaginosisContinued
+            , DiagnosisHyperemesisGravidumBySymptoms
             ]
             assembled
         || updateHypertensionTreatmentWithHospitalization assembled

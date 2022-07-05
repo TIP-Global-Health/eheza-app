@@ -8855,7 +8855,12 @@ translationSet trans =
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
-                    { english = "Patient shows signs of  Tuberculosis"
+                    { english = "Patient shows signs of Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHyperemesisGravidumBySymptoms ->
+                    { english = "Patient shows signs of Hyperemesis Gravidum"
                     , kinyarwanda = Nothing
                     }
 
