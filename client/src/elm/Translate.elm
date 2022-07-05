@@ -9442,6 +9442,16 @@ translationSet trans =
 
         PrenatalLaboratoryPHValue value ->
             case value of
+                Ph40 ->
+                    { english = "4.0"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph45 ->
+                    { english = "4.5"
+                    , kinyarwanda = Nothing
+                    }
+
                 Ph50 ->
                     { english = "5.0"
                     , kinyarwanda = Nothing
