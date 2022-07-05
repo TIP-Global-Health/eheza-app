@@ -1961,7 +1961,7 @@ healthEducationFormInputsAndTasksForNurse language assembled form =
 
         nauseaVomiting =
             if provideNauseaAndVomitingEducation assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNausiaVomiting) "" "label header"
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNauseaVomiting) "" "label header"
                   , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingInform "." "label paragraph"
                   , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingAdvise "." "label paragraph"
                   , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided

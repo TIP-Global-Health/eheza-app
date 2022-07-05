@@ -830,7 +830,7 @@ type PrenatalHealthEducationSign
     | EducationPositiveHIV
     | EducationSaferSexHIV
     | EducationPartnerTesting
-    | EducationNausiaVomiting
+    | EducationNauseaVomiting
     | EducationLegCramps
     | EducationLowBackPain
     | EducationConstipation

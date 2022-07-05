@@ -374,7 +374,7 @@ healthEducationFormWithDefaultInitialPhase form saved =
                 , positiveHIV = or form.positiveHIV (EverySet.member EducationPositiveHIV signs |> Just)
                 , saferSexHIV = or form.saferSexHIV (EverySet.member EducationSaferSexHIV signs |> Just)
                 , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting signs |> Just)
-                , nauseaVomiting = or form.nauseaVomiting (EverySet.member EducationNausiaVomiting signs |> Just)
+                , nauseaVomiting = or form.nauseaVomiting (EverySet.member EducationNauseaVomiting signs |> Just)
                 , legCramps = or form.legCramps (EverySet.member EducationLegCramps signs |> Just)
                 , lowBackPain = or form.lowBackPain (EverySet.member EducationLowBackPain signs |> Just)
                 , constipation = or form.constipation (EverySet.member EducationConstipation signs |> Just)
@@ -414,7 +414,7 @@ healthEducationFormWithDefaultRecurrentPhase form saved =
                 , positiveHIV = EverySet.member EducationPositiveHIV signs |> Just
                 , saferSexHIV = EverySet.member EducationSaferSexHIV signs |> Just
                 , partnerTesting = EverySet.member EducationPartnerTesting signs |> Just
-                , nauseaVomiting = EverySet.member EducationNausiaVomiting signs |> Just
+                , nauseaVomiting = EverySet.member EducationNauseaVomiting signs |> Just
                 , legCramps = EverySet.member EducationLegCramps signs |> Just
                 , lowBackPain = EverySet.member EducationLowBackPain signs |> Just
                 , constipation = EverySet.member EducationConstipation signs |> Just
@@ -444,7 +444,7 @@ toHealthEducationValue valueForNone form =
     , ifNullableTrue EducationPositiveHIV form.positiveHIV
     , ifNullableTrue EducationSaferSexHIV form.saferSexHIV
     , ifNullableTrue EducationPartnerTesting form.partnerTesting
-    , ifNullableTrue EducationNausiaVomiting form.nauseaVomiting
+    , ifNullableTrue EducationNauseaVomiting form.nauseaVomiting
     , ifNullableTrue EducationLegCramps form.legCramps
     , ifNullableTrue EducationLowBackPain form.lowBackPain
     , ifNullableTrue EducationConstipation form.constipation

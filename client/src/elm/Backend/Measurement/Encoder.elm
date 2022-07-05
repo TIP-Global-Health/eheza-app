@@ -204,8 +204,8 @@ encodePrenatalHealthEducationSign sign =
             EducationPartnerTesting ->
                 "partner-testing"
 
-            EducationNausiaVomiting ->
-                "nausia-vomiting"
+            EducationNauseaVomiting ->
+                "nausea-vomiting"
 
             EducationLegCramps ->
                 "leg-cramps"

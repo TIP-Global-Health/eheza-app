@@ -1493,7 +1493,7 @@ function hedley_activity_field_default_field_bases() {
         'positive-hiv' => 'Positive HIV',
         'safer-sex-hiv' => 'Safer sex HIV',
         'partner-testing' => 'Partner testing',
-        'nausia-vomiting' => 'Nausia and Vomiting',
+        'nausea-vomiting' => 'Nausea and Vomiting',
         'leg-cramps' => 'Leg Cramps',
         'low-back-pain' => 'Lower Back Pain',
         'constipation' => 'Constipation',

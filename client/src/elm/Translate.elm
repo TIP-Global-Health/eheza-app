@@ -8946,7 +8946,7 @@ translationSet trans =
 
         PrenatalHealthEducationSignsDiagnosis isInitial date sign ->
             case sign of
-                EducationNausiaVomiting ->
+                EducationNauseaVomiting ->
                     if isInitial then
                         { english = "Nausea + vomitting in pregnancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
@@ -9031,8 +9031,8 @@ translationSet trans =
 
         PrenatalHealthEducationLabel sign ->
             case sign of
-                EducationNausiaVomiting ->
-                    { english = "Nausia and Vomiting"
+                EducationNauseaVomiting ->
+                    { english = "Nausea and Vomiting"
                     , kinyarwanda = Nothing
                     }
 
