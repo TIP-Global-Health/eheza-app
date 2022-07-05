@@ -657,7 +657,6 @@ encodePrenatalUrineDipstickTestValue value =
         ++ nitrite
         ++ urobilinogen
         ++ haemoglobin
-        ++ specificGravity
         ++ ketone
         ++ bilirubin
         ++ [ ( "deleted", bool False )

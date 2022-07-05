@@ -161,13 +161,6 @@ urineHaemoglobinValueResultNormal =
     (==) HaemoglobinNegative
 
 
-specificGravityResultNormal : SpecificGravityValue -> Bool
-specificGravityResultNormal value =
-    -- @todo : remove, since Specific Gravity will not be used anymore.
-    -- See https://github.com/TIP-Global-Health/eheza-app/issues/309.
-    True
-
-
 ketoneResultNormal : KetoneValue -> Bool
 ketoneResultNormal =
     (==) KetoneNegative
