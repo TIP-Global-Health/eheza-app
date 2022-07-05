@@ -193,8 +193,6 @@ viewContentForAdult language currentDate isChw personId person initiator db mode
 
                         FilterDemographics ->
                             emptyNode
-
-                -- startEncounterButton =
             in
             div [ class "page-activity patient-record" ]
                 [ viewHeader language model
