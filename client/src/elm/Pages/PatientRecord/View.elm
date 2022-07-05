@@ -13,7 +13,7 @@ import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -56,6 +56,8 @@ view language currentDate zscores id isChw initiator db model =
                     viewContentForChild language currentDate zscores id person isChw initiator db model
 
                 else
+                    -- Note that this is also a fallback for cases where we don't
+                    -- have birth date set, and therefore, can't figure out the age.
                     viewContentForAdult language currentDate isChw id person initiator db model
             )
         |> Maybe.withDefault spinner
@@ -191,6 +193,8 @@ viewContentForAdult language currentDate isChw personId person initiator db mode
 
                         FilterDemographics ->
                             emptyNode
+
+                -- startEncounterButton =
             in
             div [ class "page-activity patient-record" ]
                 [ viewHeader language model
@@ -209,6 +213,9 @@ viewContentForAdult language currentDate isChw personId person initiator db mode
                         ]
                     , selectedPane
                     , viewStartEncounterButton language (SetViewMode ViewStartEncounter)
+                        |> -- Allow staritng encounter only if we can figure
+                           -- out the age of the person.
+                           showIf (isJust person.birthDate)
                     ]
                 ]
 
