@@ -8992,12 +8992,12 @@ translationSet trans =
 
                 EducationLowBackPain ->
                     if isInitial then
-                        { english = "Lower backer pain in pregancy - provided health education on " ++ date
+                        { english = "Lower back pain in pregnancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
                         }
 
                     else
-                        { english = "Persistent lower back pain in pregancy - provided health education on " ++ date
+                        { english = "Persistent lower back pain in pregnancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
                         }
 
