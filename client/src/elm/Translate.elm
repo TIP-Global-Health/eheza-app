@@ -10695,7 +10695,7 @@ translationSet trans =
                     }
 
                 CoughContinuous ->
-                    { english = "Cough for >3 weeks"
+                    { english = "Cough for >2 weeks"
                     , kinyarwanda = Nothing
                     }
 

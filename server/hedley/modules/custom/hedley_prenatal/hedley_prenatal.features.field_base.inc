@@ -977,7 +977,7 @@ function hedley_prenatal_field_default_field_bases() {
         'heartburn' => 'Heartburn',
         'leg-cramps' => 'Leg Cramps',
         'low-back-pain' => 'Lower Back Pain',
-        'cough-continuous' => 'Cough for >3 weeks',
+        'cough-continuous' => 'Cough for >2 weeks',
         'pelvic-pain' => 'Pelvic Pain',
         'constipation' => 'Constipation',
         'varicose-veins' => 'Varicose Veins',
