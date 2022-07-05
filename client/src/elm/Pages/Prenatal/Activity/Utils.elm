@@ -898,11 +898,27 @@ nextStepsMeasurementTaken assembled task =
 
                     else
                         True
+
+                candidiasisTreatmentCompleted =
+                    if diagnosed DiagnosisCandidiasis assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForCandidiasis assembled.measurements
+
+                    else
+                        True
+
+                urinaryTractInfectionTreatmentCompleted =
+                    if diagnosed DiagnosisUrinaryTractInfection assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForUrinaryTractInfection assembled.measurements
+
+                    else
+                        True
             in
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
                 && malariaTreatmentCompleted
                 && heartburnTreatmentCompleted
                 && hypertensionTreatmentCompleted
+                && candidiasisTreatmentCompleted
+                && urinaryTractInfectionTreatmentCompleted
 
         NextStepsWait ->
             getMeasurementValueFunc assembled.measurements.labsResults
