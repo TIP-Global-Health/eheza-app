@@ -532,7 +532,7 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                 + taskCompleted form.haemoglobin
                                 + taskCompleted form.ketone
                                 + taskCompleted form.bilirubin
-                            , commonTasksTotal + 7
+                            , commonTasksTotal + 6
                             )
                 )
                 form.testVariant
