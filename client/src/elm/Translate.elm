@@ -9062,7 +9062,7 @@ translationSet trans =
                     }
 
                 EducationLegPainRedness ->
-                    { english = "Leg Pain Redness"
+                    { english = "Leg Pain or Redness"
                     , kinyarwanda = Nothing
                     }
 
