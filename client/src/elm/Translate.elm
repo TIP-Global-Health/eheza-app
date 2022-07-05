@@ -5586,7 +5586,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryProtein _ ->
-                    { english = "@todo"
+                    { english = "0"
                     , kinyarwanda = Nothing
                     }
 
@@ -5641,7 +5641,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryHemoglobin _ ->
-                    { english = "@todo"
+                    { english = "11-16.5 g/dL"
                     , kinyarwanda = Nothing
                     }
 
@@ -8825,12 +8825,12 @@ translationSet trans =
                     }
 
                 DiagnosisCandidiasis ->
-                    { english = "Patient shows signs of Candidiasis"
+                    { english = "Patient shows signs of a Yeast infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisCandidiasisContinued ->
-                    { english = "Patient shows signs of Persistant Candidiasis"
+                    { english = "Patient shows signs of a Persistant Yeast infection"
                     , kinyarwanda = Nothing
                     }
 
@@ -9215,7 +9215,7 @@ translationSet trans =
             }
 
         PrenatalHealthEducationSaferSexInform ->
-            { english = "Councel patient on safer sex practices"
+            { english = "Counsel patient on safer sex practices"
             , kinyarwanda = Nothing
             }
 
