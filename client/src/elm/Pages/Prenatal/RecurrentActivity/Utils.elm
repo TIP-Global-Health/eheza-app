@@ -404,15 +404,9 @@ expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
-            emergencyReferalRequired assembled
-                || diagnosedAnyOf
-                    [ DiagnosisHepatitisB
-                    , DiagnosisNeurosyphilis
-                    , DiagnosisMalariaWithSevereAnemia
-                    , DiagnosisSevereAnemia
-                    , DiagnosisModeratePreeclampsiaAfterRecheck
-                    ]
-                    assembled
+            diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
+                |> List.isEmpty
+                |> not
 
         NextStepsMedicationDistribution ->
             -- Emergency referral is not required.
@@ -427,6 +421,18 @@ expectNextStepsTask currentDate assembled task =
 
         NextStepsHealthEducation ->
             diagnosed DiagnosisHIVDetectableViralLoad assembled
+
+
+diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
+    emergencyReferralDiagnosesRecurrent
+        ++ [ DiagnosisHepatitisB
+           , DiagnosisNeurosyphilis
+           , DiagnosisMalariaWithSevereAnemia
+           , DiagnosisSevereAnemia
+           , DiagnosisModeratePreeclampsiaAfterRecheck
+           ]
+        |> List.filter (\diagnosis -> diagnosed diagnosis assembled)
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool

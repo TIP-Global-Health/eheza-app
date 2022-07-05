@@ -1837,22 +1837,24 @@ viewNextStepsContent language currentDate isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        referralFacility =
+        ( referralFacility, referralReasons ) =
             if isChw then
-                FacilityHealthCenter
-
-            else if
-                referToHospitalForNonHIVDiagnosis assembled
-                    || referToHospitalDueToAdverseEvent assembled
-                    || referToHospitalDueToPastDiagnosis assembled
-            then
-                FacilityHospital
-
-            else if referToMentalHealthSpecialist assembled then
-                FacilityMentalHealthSpecialist
+                ( FacilityHealthCenter, [] )
 
             else
-                FacilityHIVProgram
+                let
+                    hospitalReferralDiagnoses =
+                        diagnosesCausingHospitalReferral assembled
+                            |> EverySet.toList
+                in
+                if not <| List.isEmpty hospitalReferralDiagnoses then
+                    ( FacilityHospital, hospitalReferralDiagnoses )
+
+                else if referToMentalHealthSpecialist assembled then
+                    ( FacilityMentalHealthSpecialist, [] )
+
+                else
+                    ( FacilityHIVProgram, [] )
 
         viewForm =
             case activeTask of
@@ -1876,7 +1878,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                                     ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
 
                                 FacilityHospital ->
-                                    ( viewSendToHospitalForm, Nothing )
+                                    ( viewSendToHospitalForm referralReasons, Nothing )
 
                                 FacilityMentalHealthSpecialist ->
                                     ( viewSendToMentalSpecialistForm, Nothing )
