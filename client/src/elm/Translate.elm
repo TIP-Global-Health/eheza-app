@@ -8970,12 +8970,12 @@ translationSet trans =
 
                 EducationLowBackPain ->
                     if isInitial then
-                        { english = "Low back pain in pregancy - provided health education on " ++ date
+                        { english = "Lower backer pain in pregancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
                         }
 
                     else
-                        { english = "Persistent low back pain in pregancy - provided health education on " ++ date
+                        { english = "Persistent lower back pain in pregancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
                         }
 
@@ -9042,7 +9042,7 @@ translationSet trans =
                     }
 
                 EducationLowBackPain ->
-                    { english = "Low Back Pain"
+                    { english = "Lower Back Pain"
                     , kinyarwanda = Nothing
                     }
 
@@ -10578,7 +10578,7 @@ translationSet trans =
                     }
 
                 LowBackPain ->
-                    { english = "Low Back Pain"
+                    { english = "Lower Back Pain"
                     , kinyarwanda = Nothing
                     }
 

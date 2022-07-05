@@ -1495,7 +1495,7 @@ function hedley_activity_field_default_field_bases() {
         'partner-testing' => 'Partner testing',
         'nausia-vomiting' => 'Nausia and Vomiting',
         'leg-cramps' => 'Leg Cramps',
-        'low-back-pain' => 'Low Back Pain',
+        'low-back-pain' => 'Lower Back Pain',
         'constipation' => 'Constipation',
         'heartburn' => 'Heartburn',
         'varicose-veins' => 'Varicose Veins',

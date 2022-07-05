@@ -886,7 +886,7 @@ function hedley_prenatal_field_default_field_bases() {
         'nausea-and-vomiting' => 'Nausea and Vomiting',
         'heartburn' => 'Heartburn',
         'leg-cramps' => 'Leg Cramps',
-        'low-back-pain' => 'Low Back Pain',
+        'low-back-pain' => 'Lower Back Pain',
         'cough-continuous' => 'Cough for >3 weeks',
         'pelvic-pain' => 'Pelvic Pain',
         'constipation' => 'Constipation',
