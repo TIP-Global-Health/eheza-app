@@ -1084,6 +1084,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         ( newModel, extraMsgs )
 
                 processRevisionAndAssessPrenatal participantId encounterId updateAssesment =
+                    processRevisionAndAssessPrenatalWithReportToOrigin participantId encounterId updateAssesment Nothing
+
+                processRevisionAndAssessPrenatalWithReportToOrigin participantId encounterId updateAssesment originData =
                     if downloadingContent then
                         ( model, [] )
 
@@ -1093,7 +1096,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment newModel)
+                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment originData newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1822,7 +1825,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 (isJust data.value.testResult)
 
                         ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                            Maybe.map
+                                (\originatingEncounterId ->
+                                    ( originatingEncounterId, Pages.Prenatal.Utils.syphilisDiagnosesIncludingNeurosyphilis )
+                                )
+                                data.value.originatingEncounter
+                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
@@ -1843,7 +1851,10 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 (isJust data.value.testResult)
 
                         ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                            Maybe.map
+                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisHepatitisB ] ))
+                                data.value.originatingEncounter
+                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
@@ -4046,8 +4057,17 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
 
-generatePrenatalAssessmentMsgs : NominalDate -> Language -> Bool -> Page -> Bool -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
-generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment after id =
+generatePrenatalAssessmentMsgs :
+    NominalDate
+    -> Language
+    -> Bool
+    -> Page
+    -> Bool
+    -> Maybe ( PrenatalEncounterId, List PrenatalDiagnosis )
+    -> ModelIndexedDb
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment originData after id =
     Maybe.map
         (\assembledAfter ->
             let
@@ -4228,6 +4248,26 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                             :: -- For urgent diagnoses, we show warning popup and
                                -- navigate to Next Steps activity.
                                additionalMsgs
+
+                    reportToOriginMsgs =
+                        Maybe.map
+                            (\( originatingEncounterId, targetDiagnoses ) ->
+                                let
+                                    reportedDiagnoses =
+                                        List.filter (\diagnosis -> List.member diagnosis targetDiagnoses) addedDiagnoses
+                                            |> EverySet.fromList
+                                in
+                                if not <| EverySet.isEmpty reportedDiagnoses then
+                                    [ Backend.PrenatalEncounter.Model.SetPastPrenatalDiagnoses reportedDiagnoses
+                                        |> Backend.Model.MsgPrenatalEncounter originatingEncounterId
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                else
+                                    []
+                            )
+                            originData
+                            |> Maybe.withDefault []
                 in
                 if everySetsEqual diagnosesBefore diagnosesAfter then
                     []
@@ -4238,7 +4278,11 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                             initialEncounterMsgs
 
                         UserPage (PrenatalActivityPage _ _) ->
-                            initialEncounterMsgs
+                            -- reportToOriginMsgs are sent when nurse enters
+                            -- of test from one of previous encounters, and
+                            -- on save, APP navigates back to Labs History
+                            -- sub activity.
+                            initialEncounterMsgs ++ reportToOriginMsgs
 
                         UserPage (PrenatalRecurrentEncounterPage _) ->
                             recurrentEncounterMsgs

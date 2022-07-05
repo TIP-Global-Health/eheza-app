@@ -970,6 +970,7 @@ type alias PrenatalHepatitisBTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
@@ -982,6 +983,7 @@ type alias PrenatalSyphilisTestValue =
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
     , symptoms : Maybe (EverySet IllnessSymptom)
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
@@ -1075,7 +1077,9 @@ type ProteinValue
 
 
 type PHValue
-    = Ph50
+    = Ph40
+    | Ph45
+    | Ph50
     | Ph60
     | Ph65
     | Ph70

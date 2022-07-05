@@ -7,18 +7,14 @@ import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
-import Utils.Json exposing (decodeWithFallback)
+import Utils.Json exposing (decodeEverySet, decodeWithFallback)
 
 
 decodePrenatalEncounter : Decoder PrenatalEncounter
 decodePrenatalEncounter =
-    succeed PrenatalEncounter
-        |> required "individual_participant" decodeEntityUuid
-        |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
-        |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
-        |> required "prenatal_encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType)
-        |> optional "prenatal_diagnoses"
-            (map
+    let
+        decodeDiagnoses =
+            map
                 (\items ->
                     if List.isEmpty items then
                         EverySet.singleton NoPrenatalDiagnosis
@@ -26,10 +22,17 @@ decodePrenatalEncounter =
                     else
                         EverySet.fromList items
                 )
-             <|
+            <|
                 list (decodeWithFallback NoPrenatalDiagnosis decodePrenatalDiagnosis)
-            )
-            (EverySet.singleton NoPrenatalDiagnosis)
+    in
+    succeed PrenatalEncounter
+        |> required "individual_participant" decodeEntityUuid
+        |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
+        |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
+        |> required "prenatal_encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType)
+        |> optional "prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
+        |> optional "past_prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
+        |> optional "prenatal_indicators" (decodeEverySet decodePrenatalIndicator) EverySet.empty
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 
@@ -254,4 +257,23 @@ decodePrenatalDiagnosis =
                         fail <|
                             diagnosis
                                 ++ " is not a recognized PrenatalDiagnosis"
+            )
+
+
+decodePrenatalIndicator : Decoder PrenatalIndicator
+decodePrenatalIndicator =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "past-labs-completed" ->
+                        succeed IndicatorHistoryLabsCompleted
+
+                    "none" ->
+                        succeed NoPrenatalIndicators
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized PrenatalIndicator"
             )

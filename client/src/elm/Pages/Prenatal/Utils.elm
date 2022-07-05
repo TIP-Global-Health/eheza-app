@@ -1500,32 +1500,46 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 []
 
 
+diagnosesCausingHospitalReferralByAdverseEventForTreatment : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled =
+    filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
+        [ DiagnosisHIV, DiagnosisChronicHypertensionImmediate, DiagnosisMalaria, DiagnosisModerateAnemia, DiagnosisSyphilis ]
+        assembled
+
+
 referToHospitalDueToAdverseEvent : AssembledData -> Bool
 referToHospitalDueToAdverseEvent =
-    referToHospitalDueToAdverseEventForDiagnosesTreatment
-        [ DiagnosisHIV, DiagnosisChronicHypertensionImmediate, DiagnosisMalaria, DiagnosisModerateAnemia, DiagnosisSyphilis ]
+    diagnosesCausingHospitalReferralByAdverseEventForTreatment
+        >> List.isEmpty
+        >> not
 
 
 referToHospitalDueToAdverseEventForHypertensionTreatment : AssembledData -> Bool
 referToHospitalDueToAdverseEventForHypertensionTreatment =
-    referToHospitalDueToAdverseEventForDiagnosesTreatment
+    filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
         [ DiagnosisChronicHypertensionImmediate ]
+        >> List.isEmpty
+        >> not
 
 
 referToHospitalDueToAdverseEventForAnemiaTreatment : AssembledData -> Bool
 referToHospitalDueToAdverseEventForAnemiaTreatment =
-    referToHospitalDueToAdverseEventForDiagnosesTreatment
+    filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
         [ DiagnosisModerateAnemia ]
+        >> List.isEmpty
+        >> not
 
 
 referToHospitalDueToAdverseEventForMalariaTreatment : AssembledData -> Bool
 referToHospitalDueToAdverseEventForMalariaTreatment =
-    referToHospitalDueToAdverseEventForDiagnosesTreatment
+    filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
         [ DiagnosisMalaria ]
+        >> List.isEmpty
+        >> not
 
 
-referToHospitalDueToAdverseEventForDiagnosesTreatment : List PrenatalDiagnosis -> AssembledData -> Bool
-referToHospitalDueToAdverseEventForDiagnosesTreatment diagnoses assembled =
+filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment : List PrenatalDiagnosis -> AssembledData -> List PrenatalDiagnosis
+filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment diagnoses assembled =
     getMeasurementValueFunc assembled.measurements.medication
         |> Maybe.map
             (\value ->
@@ -1557,10 +1571,24 @@ referToHospitalDueToAdverseEventForDiagnosesTreatment diagnoses assembled =
                         Maybe.map (EverySet.member MedicationTreatmentAdverseEventsHospitalization)
                             >> Maybe.withDefault False
                 in
-                List.map conditionByDiagnosis diagnoses
-                    |> List.any ((==) True)
+                List.filter conditionByDiagnosis diagnoses
             )
-        |> Maybe.withDefault False
+        |> Maybe.withDefault []
+
+
+referToHospitalDueToPastDiagnosis : AssembledData -> Bool
+referToHospitalDueToPastDiagnosis =
+    diagnosesCausingHospitalReferralByPastDiagnoses >> List.isEmpty >> not
+
+
+diagnosesCausingHospitalReferralByPastDiagnoses : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByPastDiagnoses assembled =
+    let
+        allowedPastDiagnoses =
+            DiagnosisHepatitisB :: syphilisDiagnosesIncludingNeurosyphilis
+    in
+    EverySet.toList assembled.encounter.pastDiagnoses
+        |> List.filter (\diagnosis -> List.member diagnosis allowedPastDiagnoses)
 
 
 showMebendazoleQuestion : NominalDate -> AssembledData -> Bool
@@ -2403,6 +2431,18 @@ diagnosedSyphilis =
         [ DiagnosisSyphilis
         , DiagnosisSyphilisWithComplications
         ]
+
+
+syphilisDiagnosesIncludingNeurosyphilis : List PrenatalDiagnosis
+syphilisDiagnosesIncludingNeurosyphilis =
+    DiagnosisNeurosyphilis :: syphilisDiagnoses
+
+
+syphilisDiagnoses : List PrenatalDiagnosis
+syphilisDiagnoses =
+    [ DiagnosisSyphilis
+    , DiagnosisSyphilisWithComplications
+    ]
 
 
 outsideCareDiagnoses : List PrenatalDiagnosis

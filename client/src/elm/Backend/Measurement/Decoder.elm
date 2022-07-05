@@ -465,6 +465,7 @@ decodePrenatalHepatitisBTestValue =
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+        |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
 
 
 decodePrenatalHIVTest : Decoder PrenatalHIVTest
@@ -563,6 +564,7 @@ decodePrenatalSyphilisTestValue =
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
         |> optional "illness_symptoms" (nullable (decodeEverySet decodeIllnessSymptom)) Nothing
+        |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
 
 
 decodeIllnessSymptom : Decoder IllnessSymptom

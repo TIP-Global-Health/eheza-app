@@ -1334,6 +1334,9 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> getMeasurementValueFunc
                                 |> prenatalNonRDTFormWithDefault data.hivPCRTestForm
                                 |> viewPrenatalNonRDTForm language currentDate TaskHIVPCRTest
+
+                        TaskCompletePreviousTests ->
+                            viewLabsHistoryForm language currentDate assembled data.labsHistoryForm
                     )
                 )
                 tasks
@@ -1390,8 +1393,18 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRTest personId measurements.hivPCRTest nextTask
+
+                                TaskCompletePreviousTests ->
+                                    SaveLabsHistory
+
+                        disableSave =
+                            if task == TaskCompletePreviousTests then
+                                data.labsHistoryForm.completed /= Just True
+
+                            else
+                                tasksCompleted /= totalTasks
                     in
-                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+                    viewSaveAction language saveMsg disableSave
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -1802,21 +1815,24 @@ viewNextStepsContent language currentDate isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        referralFacility =
+        ( referralFacility, referralReasons ) =
             if isChw then
-                FacilityHealthCenter
-
-            else if
-                referToHospitalForNonHIVDiagnosis assembled
-                    || referToHospitalDueToAdverseEvent assembled
-            then
-                FacilityHospital
-
-            else if referToMentalHealthSpecialist assembled then
-                FacilityMentalHealthSpecialist
+                ( FacilityHealthCenter, [] )
 
             else
-                FacilityHIVProgram
+                let
+                    hospitalReferralDiagnoses =
+                        diagnosesCausingHospitalReferral assembled
+                            |> EverySet.toList
+                in
+                if not <| List.isEmpty hospitalReferralDiagnoses then
+                    ( FacilityHospital, hospitalReferralDiagnoses )
+
+                else if referToMentalHealthSpecialist assembled then
+                    ( FacilityMentalHealthSpecialist, [] )
+
+                else
+                    ( FacilityHIVProgram, [] )
 
         viewForm =
             case activeTask of
@@ -1840,7 +1856,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                                     ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
 
                                 FacilityHospital ->
-                                    ( viewSendToHospitalForm, Nothing )
+                                    ( viewSendToHospitalForm referralReasons, Nothing )
 
                                 FacilityMentalHealthSpecialist ->
                                     ( viewSendToMentalSpecialistForm, Nothing )
@@ -3889,6 +3905,53 @@ prenatalNonRDTFormInputsAndTasks language currentDate task form =
     )
 
 
+viewLabsHistoryForm : Language -> NominalDate -> AssembledData -> LabsHistoryForm -> ( Html Msg, Int, Int )
+viewLabsHistoryForm language currentDate assembled form =
+    let
+        entries =
+            List.indexedMap (\index ( date, encounterId, lab ) -> viewEntry date encounterId lab index) pendingLabs
+                |> div [ class "history-entries" ]
+
+        input =
+            [ viewQuestionLabel language Translate.PrenatalLabsHistoryCompletedQuestion
+            , viewBoolInput
+                language
+                form.completed
+                SetLabsHistoryCompleted
+                "completed"
+                Nothing
+            ]
+
+        pendingLabs =
+            generatePendingLabsFromPreviousEncounters assembled
+                |> List.map
+                    (\( date, encounterId, labs ) ->
+                        List.map (\lab -> ( date, encounterId, lab )) labs
+                    )
+                |> List.concat
+
+        viewEntry date encounterId lab index =
+            div [ class "history-entry" ]
+                [ div [ class "index" ] [ text <| String.fromInt (index + 1) ]
+                , div [ class "name" ] [ text <| translate language <| Translate.PrenatalLaboratoryTest lab ]
+                , div [ class "date" ] [ text <| formatDDMMYYYY date ]
+                , div
+                    [ class "action"
+                    , onClick <| SetActivePage <| UserPage <| PrenatalLabsHistoryPage assembled.id encounterId lab
+                    ]
+                    [ text <| translate language Translate.Update ]
+                ]
+    in
+    ( div [ class "ui form laboratory labs-history" ] <|
+        [ viewCustomLabel language Translate.PrenatalLabsHistoryLabel "." "label"
+        , viewCustomLabel language Translate.PrenatalLabsHistoryInstructions "." "instructions"
+        ]
+            ++ (entries :: input)
+    , taskCompleted form.completed
+    , 1
+    )
+
+
 contentAndTasksLaboratoryTestKnownAsPositive :
     Language
     -> NominalDate
@@ -3951,6 +4014,10 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
                     always NoOp
 
                 TaskHIVPCRTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+
+                TaskCompletePreviousTests ->
                     -- Known as positive is not applicable for this test.
                     always NoOp
     in
@@ -4037,6 +4104,12 @@ contentAndTasksLaboratoryTestInitial language currentDate task form =
                 TaskHIVPCRTest ->
                     { setBoolInputMsg = SetHIVPCRTestFormBoolInput boolInputUpdateFunc
                     , setExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                    }
+
+                TaskCompletePreviousTests ->
+                    -- Not in use, as this task got a proprietary form.
+                    { setBoolInputMsg = always NoOp
+                    , setExecutionNoteMsg = always NoOp
                     }
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
@@ -4174,6 +4247,13 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                         { setBoolInputMsg = SetHIVPCRTestFormBoolInput boolInputUpdateFunc
                         , setExecutionDateMsg = SetHIVPCRTestExecutionDate
                         , setDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
+                        }
+
+                    TaskCompletePreviousTests ->
+                        -- Not in use, as this task got a proprietary form.
+                        { setBoolInputMsg = always NoOp
+                        , setExecutionDateMsg = always NoOp
+                        , setDateSelectorStateMsg = always NoOp
                         }
 
             ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
