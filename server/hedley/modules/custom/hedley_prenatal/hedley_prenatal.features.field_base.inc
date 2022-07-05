@@ -1049,36 +1049,6 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_boolean',
   );
 
-  // Exported field_base: 'field_specific_gravity'.
-  $field_bases['field_specific_gravity'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_specific_gravity',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        '1.000' => '1.000',
-        '1.005' => 1.005,
-        '1.010' => '1.010',
-        '1.015' => 1.015,
-        '1.020' => '1.020',
-        '1.025' => 1.025,
-        '1.030' => '1.030',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
   // Exported field_base: 'field_sugar_count'.
   $field_bases['field_sugar_count'] = array(
     'active' => 1,
