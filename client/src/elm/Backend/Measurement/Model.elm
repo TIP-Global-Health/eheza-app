@@ -1055,7 +1055,6 @@ type alias PrenatalUrineDipstickTestValue =
     , nitrite : Maybe NitriteValue
     , urobilinogen : Maybe UrobilinogenValue
     , haemoglobin : Maybe HaemoglobinValue
-    , specificGravity : Maybe SpecificGravityValue
     , ketone : Maybe KetoneValue
     , bilirubin : Maybe BilirubinValue
     }

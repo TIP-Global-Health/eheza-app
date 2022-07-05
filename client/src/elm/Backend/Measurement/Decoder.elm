@@ -594,7 +594,6 @@ decodePrenatalUrineDipstickTestValue =
         |> optional "nitrite" (nullable decodeNitriteValue) Nothing
         |> optional "urobilinogen" (nullable decodeUrobilinogenValue) Nothing
         |> optional "haemoglobin" (nullable decodeHaemoglobinValue) Nothing
-        |> optional "specific_gravity" (nullable decodeSpecificGravityValue) Nothing
         |> optional "ketone" (nullable decodeKetoneValue) Nothing
         |> optional "bilirubin" (nullable decodeBilirubinValue) Nothing
 
@@ -692,17 +691,6 @@ decodeHaemoglobinValue =
                 haemoglobinValueFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized HaemoglobinValue")
-            )
-
-
-decodeSpecificGravityValue : Decoder SpecificGravityValue
-decodeSpecificGravityValue =
-    string
-        |> andThen
-            (\s ->
-                specificGravityValueFromString s
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| s ++ " is not a recognized SpecificGravityValue")
             )
 
 
