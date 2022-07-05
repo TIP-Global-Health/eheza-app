@@ -130,6 +130,9 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
 
+        TaskCompletePreviousTests ->
+            not <| taskExpected TaskCompletePreviousTests
+
 
 expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
 expectLaboratoryResultTask currentDate assembled task =
@@ -171,6 +174,9 @@ expectLaboratoryResultTask currentDate assembled task =
         TaskHIVPCRTest ->
             wasTestPerformed .hivPCRTest
 
+        TaskCompletePreviousTests ->
+            False
+
 
 hepatitisBFormWithDefault : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm
 hepatitisBFormWithDefault form saved =
@@ -181,6 +187,7 @@ hepatitisBFormWithDefault form saved =
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
                 , testResult = or form.testResult value.testResult
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -198,6 +205,7 @@ toHepatitisBValue form =
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote
@@ -214,6 +222,7 @@ syphilisResultFormWithDefault form saved =
                 , testResult = or form.testResult value.testResult
                 , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms (Maybe.map EverySet.toList value.symptoms)
                 , symptomsDirty = form.symptomsDirty
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -232,6 +241,7 @@ toSyphilisResultValue form =
             , executionDate = form.executionDate
             , testResult = form.testResult
             , symptoms = Maybe.map EverySet.fromList form.symptoms
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote
@@ -394,15 +404,9 @@ expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
-            emergencyReferalRequired assembled
-                || diagnosedAnyOf
-                    [ DiagnosisHepatitisB
-                    , DiagnosisNeurosyphilis
-                    , DiagnosisMalariaWithSevereAnemia
-                    , DiagnosisSevereAnemia
-                    , DiagnosisModeratePreeclampsiaAfterRecheck
-                    ]
-                    assembled
+            diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
+                |> List.isEmpty
+                |> not
 
         NextStepsMedicationDistribution ->
             -- Emergency referral is not required.
@@ -417,6 +421,18 @@ expectNextStepsTask currentDate assembled task =
 
         NextStepsHealthEducation ->
             diagnosed DiagnosisHIVDetectableViralLoad assembled
+
+
+diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
+    emergencyReferralDiagnosesRecurrent
+        ++ [ DiagnosisHepatitisB
+           , DiagnosisNeurosyphilis
+           , DiagnosisMalariaWithSevereAnemia
+           , DiagnosisSevereAnemia
+           , DiagnosisModeratePreeclampsiaAfterRecheck
+           ]
+        |> List.filter (\diagnosis -> diagnosed diagnosis assembled)
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool

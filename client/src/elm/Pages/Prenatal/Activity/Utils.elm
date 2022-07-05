@@ -1,12 +1,13 @@
 module Pages.Prenatal.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (PrenatalEncounterId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, prenatalLabExpirationPeriod, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
@@ -357,6 +358,7 @@ expectNextStepsTask currentDate assembled task =
                 NurseEncounter ->
                     referToHospitalForNonHIVDiagnosis assembled
                         || referToHospitalDueToAdverseEvent assembled
+                        || referToHospitalDueToPastDiagnosis assembled
                         || referToHIVProgram assembled
                         || referToMentalHealthSpecialist assembled
 
@@ -670,43 +672,135 @@ historyTaskCompleted assembled task =
             isJust assembled.measurements.outsideCare
 
 
+diagnosesCausingHospitalReferral : AssembledData -> EverySet PrenatalDiagnosis
+diagnosesCausingHospitalReferral assembled =
+    let
+        nonHIV =
+            nonHIVDiagnosesCausingHospitalReferral assembled
+
+        byAdverseEvent =
+            diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled
+
+        byPastDiagnoses =
+            diagnosesCausingHospitalReferralByPastDiagnoses assembled
+
+        overall =
+            nonHIV
+                ++ byAdverseEvent
+                ++ byPastDiagnoses
+
+        additional =
+            -- There are 2 cases where patient is referred to hospital, skipping
+            -- referals to other facilities:
+            -- 1. HIV-positive patients, while there's an HIV program, at the health center.
+            -- 2. Patient with a mental health diagnosis, and available mental health
+            --   specialist at helath center.
+            -- In both cases, since we have a need to refer to the hospital, it must
+            -- be more urgent, and therefore, treatment for (HIV/Mental health) will
+            -- be given at the hospital.
+            if not <| List.isEmpty overall then
+                let
+                    hiv =
+                        if diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements then
+                            [ DiagnosisHIV ]
+
+                        else
+                            []
+
+                    mentalHealth =
+                        if mentalHealthSpecialistAtHC assembled then
+                            List.filter (\diagnosis -> diagnosed diagnosis assembled) mentalHealthDiagnosesRequiringTreatment
+
+                        else
+                            []
+                in
+                hiv
+
+            else
+                []
+    in
+    overall
+        ++ additional
+        |> EverySet.fromList
+
+
 referToHospitalForNonHIVDiagnosis : AssembledData -> Bool
-referToHospitalForNonHIVDiagnosis assembled =
+referToHospitalForNonHIVDiagnosis =
+    nonHIVDiagnosesCausingHospitalReferral >> List.isEmpty >> not
+
+
+nonHIVDiagnosesCausingHospitalReferral : AssembledData -> List PrenatalDiagnosis
+nonHIVDiagnosesCausingHospitalReferral assembled =
+    diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
+        ++ diagnosesCausingHospitalReferralByMentalHealth assembled
+        ++ diagnosesCausingHospitalReferralByOtherReasons assembled
+
+
+diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
+    let
+        immediateReferralDiagnoses =
+            emergencyReferralDiagnosesInitial
+                ++ [ DiagnosisModeratePreeclampsiaImmediate
+                   , DiagnosisHeartburnPersistent
+                   , DiagnosisDeepVeinThrombosis
+                   , DiagnosisPelvicPainIntense
+                   , DiagnosisPelvicPainContinued
+                   , DiagnosisPyelonephritis
+                   , DiagnosisMalariaMedicatedContinued
+                   , DiagnosisMalariaWithAnemiaMedicatedContinued
+                   , DiagnosisUrinaryTractInfectionContinued
+                   , DiagnosisCandidiasisContinued
+                   , DiagnosisGonorrheaContinued
+                   , DiagnosisTrichomonasOrBacterialVaginosisContinued
+                   ]
+    in
+    List.filter (\diagnosis -> diagnosed diagnosis assembled)
+        immediateReferralDiagnoses
+
+
+diagnosesCausingHospitalReferralByMentalHealth : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByMentalHealth assembled =
+    if mentalHealthSpecialistAtHC assembled then
+        []
+
+    else
+        List.filter (\diagnosis -> diagnosed diagnosis assembled) mentalHealthDiagnosesRequiringTreatment
+
+
+diagnosesCausingHospitalReferralByOtherReasons : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByOtherReasons assembled =
     let
         severeMalariaTreatment =
             getMeasurementValueFunc assembled.measurements.medicationDistribution
                 |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
                 |> Maybe.withDefault False
+
+        malaria =
+            if diagnosedMalaria assembled && severeMalariaTreatment then
+                [ DiagnosisMalaria ]
+
+            else
+                []
+
+        hypertension =
+            if updateHypertensionTreatmentWithHospitalization assembled then
+                [ DiagnosisChronicHypertensionImmediate ]
+
+            else
+                []
     in
-    emergencyReferalRequired assembled
-        || (diagnosedMalaria assembled && severeMalariaTreatment)
-        || diagnosedAnyOf
-            [ DiagnosisModeratePreeclampsiaImmediate
-            , DiagnosisHeartburnPersistent
-            , DiagnosisDeepVeinThrombosis
-            , DiagnosisPelvicPainIntense
-            , DiagnosisPelvicPainContinued
-            , DiagnosisPyelonephritis
-            , DiagnosisMalariaMedicatedContinued
-            , DiagnosisMalariaWithAnemiaMedicatedContinued
-            , DiagnosisUrinaryTractInfectionContinued
-            , DiagnosisCandidiasisContinued
-            , DiagnosisGonorrheaContinued
-            , DiagnosisTrichomonasOrBacterialVaginosisContinued
-            ]
-            assembled
-        || updateHypertensionTreatmentWithHospitalization assembled
-        || referToHospitalForMentalHealthDiagnosis assembled
+    malaria ++ hypertension
 
 
 referToHospitalForMentalHealthDiagnosis : AssembledData -> Bool
-referToHospitalForMentalHealthDiagnosis assembled =
-    not (mentalHealthSpecialistAtHC assembled) && diagnosedAnyOf mentalHealthDiagnoses assembled
+referToHospitalForMentalHealthDiagnosis =
+    diagnosesCausingHospitalReferralByMentalHealth >> List.isEmpty >> not
 
 
 referToMentalHealthSpecialist : AssembledData -> Bool
 referToMentalHealthSpecialist assembled =
-    mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnoses assembled
+    mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnosesRequiringTreatment assembled
 
 
 mentalHealthSpecialistAtHC : AssembledData -> Bool
@@ -819,7 +913,7 @@ provideMentalHealthEducation assembled =
     -- Mental health survey was taken and none of
     -- mental health diagnoses was determined.
     isJust assembled.measurements.mentalHealth
-        && diagnosedNoneOf mentalHealthDiagnoses assembled
+        && diagnosedNoneOf mentalHealthDiagnosesRequiringTreatment assembled
 
 
 hospitalizeDueToPelvicPain : AssembledData -> Bool
@@ -1905,8 +1999,12 @@ symptomsDiagnoses =
 
 mentalHealthDiagnoses : List PrenatalDiagnosis
 mentalHealthDiagnoses =
-    [ DiagnosisDepressionNotLikely
-    , DiagnosisDepressionPossible
+    DiagnosisDepressionNotLikely :: mentalHealthDiagnosesRequiringTreatment
+
+
+mentalHealthDiagnosesRequiringTreatment : List PrenatalDiagnosis
+mentalHealthDiagnosesRequiringTreatment =
+    [ DiagnosisDepressionPossible
     , DiagnosisDepressionHighlyPossible
     , DiagnosisDepressionProbable
     , DiagnosisSuicideRisk
@@ -2553,6 +2651,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                     else if
                         referToHospitalForNonHIVDiagnosis assembled
                             || referToHospitalDueToAdverseEvent assembled
+                            || referToHospitalDueToPastDiagnosis assembled
                             || referToMentalHealthSpecialist assembled
                     then
                         ( 0, 0 )
@@ -4482,12 +4581,12 @@ toPrenatalNonRDTValueWithDefault saved withEmptyResultsFunc form =
 
 toHepatitisBTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHepatitisBTestValue
 toHepatitisBTestValueWithEmptyResults note date =
-    PrenatalHepatitisBTestValue note date Nothing
+    PrenatalHepatitisBTestValue note date Nothing Nothing
 
 
 toSyphilisTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalSyphilisTestValue
 toSyphilisTestValueWithEmptyResults note date =
-    PrenatalSyphilisTestValue note date Nothing Nothing
+    PrenatalSyphilisTestValue note date Nothing Nothing Nothing
 
 
 toHemoglobinTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHemoglobinTestValue
@@ -4521,6 +4620,7 @@ laboratoryTasks =
     , TaskUrineDipstickTest
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
+    , TaskCompletePreviousTests
     ]
 
 
@@ -4561,6 +4661,9 @@ laboratoryTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || isJust measurements.hivPCRTest
 
+        TaskCompletePreviousTests ->
+            not <| taskExpected TaskCompletePreviousTests
+
 
 expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
 expectLaboratoryTask currentDate assembled task =
@@ -4569,81 +4672,130 @@ expectLaboratoryTask currentDate assembled task =
 
     else
         let
-            testsDates =
-                generatePreviousLaboratoryTestsDatesDict currentDate assembled
+            pendingLabs =
+                generatePendingLabsFromPreviousEncounters assembled
+        in
+        if
+            -- No pending tests left, or, nurse has indicated that there're no
+            -- additional results record.
+            List.isEmpty pendingLabs
+                || EverySet.member IndicatorHistoryLabsCompleted assembled.encounter.indicators
+        then
+            let
+                testsDates =
+                    generatePreviousLaboratoryTestsDatesDict currentDate assembled
 
-            isInitialTest test =
-                Dict.get test testsDates
-                    |> Maybe.map List.isEmpty
-                    |> Maybe.withDefault True
+                isInitialTest test =
+                    Dict.get test testsDates
+                        |> Maybe.map List.isEmpty
+                        |> Maybe.withDefault True
 
-            isRepeatingTestOnWeek week test =
-                Maybe.map
-                    (\lmpDate ->
-                        if diffWeeks lmpDate currentDate < week then
-                            isInitialTest test
+                isRepeatingTestOnWeek week test =
+                    Maybe.map
+                        (\lmpDate ->
+                            if diffWeeks lmpDate currentDate < week then
+                                isInitialTest test
+
+                            else
+                                let
+                                    lastTestWeek =
+                                        Dict.get test testsDates
+                                            |> Maybe.map (List.map (\testsDate -> diffWeeks lmpDate testsDate))
+                                            |> Maybe.withDefault []
+                                            |> List.sort
+                                            |> List.reverse
+                                            |> List.head
+                                in
+                                Maybe.map (\testWeek -> testWeek < week) lastTestWeek
+                                    |> Maybe.withDefault True
+                        )
+                        assembled.globalLmpDate
+                        |> Maybe.withDefault (isInitialTest test)
+
+                -- This function checks if patient has reported of having a disease.
+                -- HIV and Hepatitis B are considered chronical diseases.
+                -- If patient declared to have one of them, there's no point
+                -- in testing for it.
+                isKnownAsPositive getMeasurementFunc =
+                    List.filter
+                        (\( _, _, measurements ) ->
+                            getMeasurementFunc measurements
+                                |> getMeasurementValueFunc
+                                |> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
+                                |> Maybe.withDefault False
+                        )
+                        assembled.nursePreviousMeasurementsWithDates
+                        |> List.isEmpty
+                        |> not
+            in
+            case task of
+                TaskHIVTest ->
+                    (not <| isKnownAsPositive .hivTest)
+                        && isInitialTest TaskHIVTest
+
+                TaskSyphilisTest ->
+                    List.all (\diagnosis -> not <| EverySet.member diagnosis assembled.encounter.pastDiagnoses)
+                        syphilisDiagnosesIncludingNeurosyphilis
+                        && isRepeatingTestOnWeek 38 TaskSyphilisTest
+
+                TaskHepatitisBTest ->
+                    (not <| isKnownAsPositive .hepatitisBTest)
+                        && (not <| EverySet.member DiagnosisHepatitisB assembled.encounter.pastDiagnoses)
+                        && isInitialTest TaskHepatitisBTest
+
+                TaskMalariaTest ->
+                    True
+
+                TaskBloodGpRsTest ->
+                    isInitialTest TaskBloodGpRsTest
+
+                TaskUrineDipstickTest ->
+                    True
+
+                TaskHemoglobinTest ->
+                    True
+
+                TaskRandomBloodSugarTest ->
+                    isInitialTest TaskRandomBloodSugarTest
+
+                TaskHIVPCRTest ->
+                    isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
+
+                TaskCompletePreviousTests ->
+                    -- If we got this far, history task was completed.
+                    False
+
+        else
+            task == TaskCompletePreviousTests
+
+
+generatePendingLabsFromPreviousEncounters : AssembledData -> List ( NominalDate, PrenatalEncounterId, List PrenatalLaboratoryTest )
+generatePendingLabsFromPreviousEncounters assembled =
+    List.filterMap
+        (\( date, _, measurements ) ->
+            getMeasurementValueFunc measurements.labsResults
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            encounterId =
+                                Maybe.andThen (Tuple.second >> .encounterId) measurements.labsResults
+
+                            pendingTests =
+                                EverySet.diff value.performedTests value.completedTests
+                                    |> EverySet.toList
+                                    |> -- Vitals recheck should ne completed on same day
+                                       -- it was scheduled, and therefore we're not
+                                       -- catching up with it.
+                                       List.filter ((/=) TestVitalsRecheck)
+                        in
+                        if List.isEmpty pendingTests then
+                            Nothing
 
                         else
-                            let
-                                lastTestWeek =
-                                    Dict.get test testsDates
-                                        |> Maybe.map (List.map (\testsDate -> diffWeeks lmpDate testsDate))
-                                        |> Maybe.withDefault []
-                                        |> List.sort
-                                        |> List.reverse
-                                        |> List.head
-                            in
-                            Maybe.map (\testWeek -> testWeek < week) lastTestWeek
-                                |> Maybe.withDefault True
+                            Maybe.map (\id -> ( date, id, pendingTests )) encounterId
                     )
-                    assembled.globalLmpDate
-                    |> Maybe.withDefault (isInitialTest test)
-
-            -- This function checks if patient has reported of having a disease.
-            -- HIV and Hepatitis B are considered chronical diseases.
-            -- If patient declared to have one of them, there's no point
-            -- in testing for it.
-            isKnownAsPositive getMeasurementFunc =
-                List.filter
-                    (\( _, _, measurements ) ->
-                        getMeasurementFunc measurements
-                            |> getMeasurementValueFunc
-                            |> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
-                            |> Maybe.withDefault False
-                    )
-                    assembled.nursePreviousMeasurementsWithDates
-                    |> List.isEmpty
-                    |> not
-        in
-        case task of
-            TaskHIVTest ->
-                (not <| isKnownAsPositive .hivTest)
-                    && isInitialTest TaskHIVTest
-
-            TaskSyphilisTest ->
-                isRepeatingTestOnWeek 38 TaskSyphilisTest
-
-            TaskHepatitisBTest ->
-                (not <| isKnownAsPositive .hepatitisBTest)
-                    && isInitialTest TaskHepatitisBTest
-
-            TaskMalariaTest ->
-                True
-
-            TaskBloodGpRsTest ->
-                isInitialTest TaskBloodGpRsTest
-
-            TaskUrineDipstickTest ->
-                True
-
-            TaskHemoglobinTest ->
-                True
-
-            TaskRandomBloodSugarTest ->
-                isInitialTest TaskRandomBloodSugarTest
-
-            TaskHIVPCRTest ->
-                isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
+        )
+        assembled.nursePreviousMeasurementsWithDates
 
 
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
@@ -4741,6 +4893,9 @@ laboratoryTaskIconClass task =
 
         TaskHIVPCRTest ->
             "laboratory-hiv"
+
+        TaskCompletePreviousTests ->
+            "laboratory-history"
 
 
 symptomReviewFormWithDefault : SymptomReviewForm -> Maybe PrenatalSymptomReviewValue -> SymptomReviewForm

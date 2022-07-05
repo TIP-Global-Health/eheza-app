@@ -15,12 +15,7 @@ import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, s
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityUuid(..), encodeEntityUuid, fromEntityUuid)
 import Translate.Utils exposing (encodeLanguage)
-
-
-encodeEverySet : (a -> Value) -> EverySet a -> Value
-encodeEverySet encoder set =
-    EverySet.toList set
-        |> list encoder
+import Utils.Json exposing (encodeEverySet)
 
 
 encodeHeight : Height -> List ( String, Value )
@@ -391,10 +386,19 @@ encodePrenatalHepatitisBTestValue value =
                 )
                 value.testResult
                 |> Maybe.withDefault []
+
+        originatingEncounter =
+            Maybe.map
+                (\originEncounter ->
+                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
+                )
+                value.originatingEncounter
+                |> Maybe.withDefault []
     in
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
+        ++ originatingEncounter
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_hepatitis_b_test" )
            ]
@@ -576,11 +580,20 @@ encodePrenatalSyphilisTestValue value =
                 (\symptoms -> [ ( "illness_symptoms", encodeEverySet encodeIllnessSymptom symptoms ) ])
                 value.symptoms
                 |> Maybe.withDefault []
+
+        originatingEncounter =
+            Maybe.map
+                (\originEncounter ->
+                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
+                )
+                value.originatingEncounter
+                |> Maybe.withDefault []
     in
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ illnessSymptoms
+        ++ originatingEncounter
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_syphilis_test" )
            ]

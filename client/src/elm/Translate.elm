@@ -300,7 +300,6 @@ type TranslationId
     | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | AcuteIllnessExisting
     | AcuteIllnessHistory
-    | AcuteIllnessHighRiskCaseHelper
     | AcuteIllnessLowRiskCaseHelper
     | AcuteIllnessNew
     | AcuteIllnessOutcome AcuteIllnessOutcome
@@ -642,6 +641,7 @@ type TranslationId
     | Height
     | High
     | HighRiskCase
+    | HighRiskCaseHelper
     | HighRiskFactor HighRiskFactor
     | HighRiskFactors
     | HighSeverityAlert HighSeverityAlert
@@ -885,6 +885,7 @@ type TranslationId
     | PartnerHivTestResult
     | PartnerReceivedHivCounseling
     | PartnerReceivedHivTesting
+    | PatientDiagnosedWithLabel
     | PatientExhibitAnyFindings
     | PatientExhibitAnyRespiratoryFindings
     | PatientGotAnySymptoms
@@ -1000,9 +1001,13 @@ type TranslationId
     | PrenatalLaboratoryTaskDate Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskResult Pages.Prenatal.Activity.Types.LaboratoryTask
     | PrenatalLaboratoryTaskResultsHelper
+    | PrenatalLaboratoryTest PrenatalLaboratoryTest
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
     | PrenatalLabsEntryState PrenatalLabsEntryState
+    | PrenatalLabsHistoryCompletedQuestion
+    | PrenatalLabsHistoryInstructions
+    | PrenatalLabsHistoryLabel
     | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
     | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | PrenatalMentalHealthSpecialistHelper
@@ -1755,11 +1760,6 @@ translationSet trans =
         AcuteIllnessHistory ->
             { english = "Acute Illness History"
             , kinyarwanda = Just "Amakuru ku ndwara ifatiyeho"
-            }
-
-        AcuteIllnessHighRiskCaseHelper ->
-            { english = "This patient is a high risk case and should be sent to a hospital for further treatment"
-            , kinyarwanda = Just "Uyu murwayi afite ibyago byinshi, agomba koherezwa ku bitaro bakamuha ubuvuzi bwimbitse"
             }
 
         AcuteIllnessLowRiskCaseHelper ->
@@ -4808,6 +4808,11 @@ translationSet trans =
             , kinyarwanda = Just "afite ibyago byinshi byo kuba yaranduye"
             }
 
+        HighRiskCaseHelper ->
+            { english = "This patient is a high risk case and should be sent to a hospital for further treatment"
+            , kinyarwanda = Just "Uyu murwayi afite ibyago byinshi, agomba koherezwa ku bitaro bakamuha ubuvuzi bwimbitse"
+            }
+
         HighRiskFactor factor ->
             case factor of
                 HighRiskConvulsionsAndUnconsciousPreviousDelivery ->
@@ -5405,6 +5410,13 @@ translationSet trans =
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
@@ -7539,6 +7551,11 @@ translationSet trans =
         PartnerReceivedHivTesting ->
             { english = "Did partner receive HIV Testing during this pregnancy"
             , kinyarwanda = Just "Umugabo  yasuzumwe Virusi itera SIDA?"
+            }
+
+        PatientDiagnosedWithLabel ->
+            { english = "The patient has been diagnosed with"
+            , kinyarwanda = Nothing
             }
 
         PatientExhibitAnyFindings ->
@@ -9860,6 +9877,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
+                    { english = "History"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLaboratoryTaskLabel task ->
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
@@ -9904,6 +9926,12 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
                     { english = "HIV PCR"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Not in use, so no translation is needed.
+                Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -9954,6 +9982,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                -- Not in use, so no translation is needed.
+                Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLaboratoryTaskResult task ->
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
@@ -10001,10 +10035,58 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                -- Not in use, so no translation is needed.
+                Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLaboratoryTaskResultsHelper ->
             { english = "When ready, update test results via case management"
             , kinyarwanda = Nothing
             }
+
+        PrenatalLaboratoryTest value ->
+            case value of
+                TestBloodGpRs ->
+                    { english = "Blood Group"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestHemoglobin ->
+                    { english = "Hemoglobin"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestHepatitisB ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestRandomBloodSugar ->
+                    { english = "Blood Sugar"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestSyphilis ->
+                    { english = "Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestUrineDipstick ->
+                    { english = "Urine Dipstick"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestVitalsRecheck ->
+                    { english = "Vitals Recheck"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestHIVPCR ->
+                    { english = "HIV PCR"
+                    , kinyarwanda = Nothing
+                    }
 
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
@@ -10027,6 +10109,21 @@ translationSet trans =
                     { english = "Closing Soon"
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalLabsHistoryCompletedQuestion ->
+            { english = "Have you updated all results that have been returned for this patient"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLabsHistoryInstructions ->
+            { english = "Please update all outstanding lab results before proceeding"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLabsHistoryLabel ->
+            { english = "This patient has pending lab results"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalMentalHealthQuestion question ->
             case question of
@@ -14194,6 +14291,11 @@ translateActivePage page =
 
                 PatientRecordPage _ _ ->
                     { english = "Patient Record"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalLabsHistoryPage _ _ _ ->
+                    { english = "Labs History"
                     , kinyarwanda = Nothing
                     }
 
