@@ -10,7 +10,15 @@ expected (and not completed).
 
 -}
 
-import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), PrenatalMeasurements, PreviousDeliverySign(..), WeightInKg(..))
+import Backend.Measurement.Model
+    exposing
+        ( HeightInCm(..)
+        , MuacInCm(..)
+        , PrenatalLaboratoryTest(..)
+        , PrenatalMeasurements
+        , PreviousDeliverySign(..)
+        , WeightInKg(..)
+        )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacValueFunc, weightValueFunc)
 import Backend.PrenatalActivity.Model exposing (..)
 import EverySet
@@ -163,6 +171,65 @@ recurrentActivityFromString s =
 
         "examination" ->
             Just RecurrentExamination
+
+        _ ->
+            Nothing
+
+
+prenatalLaboratoryTestToString : PrenatalLaboratoryTest -> String
+prenatalLaboratoryTestToString value =
+    case value of
+        TestBloodGpRs ->
+            "blood-gp-rs"
+
+        TestHemoglobin ->
+            "hemopglobin"
+
+        TestHepatitisB ->
+            "hepatitis-b"
+
+        TestRandomBloodSugar ->
+            "blood-sugar"
+
+        TestSyphilis ->
+            "syphilis"
+
+        TestUrineDipstick ->
+            "urine-dipstick"
+
+        TestVitalsRecheck ->
+            "vitals"
+
+        TestHIVPCR ->
+            "hiv-pcr"
+
+
+prenatalLaboratoryTestFromString : String -> Maybe PrenatalLaboratoryTest
+prenatalLaboratoryTestFromString value =
+    case value of
+        "blood-gp-rs" ->
+            Just TestBloodGpRs
+
+        "hemopglobin" ->
+            Just TestHemoglobin
+
+        "hepatitis-b" ->
+            Just TestHepatitisB
+
+        "blood-sugar" ->
+            Just TestRandomBloodSugar
+
+        "syphilis" ->
+            Just TestSyphilis
+
+        "urine-dipstick" ->
+            Just TestUrineDipstick
+
+        "vitals" ->
+            Just TestVitalsRecheck
+
+        "hiv-pcr" ->
+            Just TestHIVPCR
 
         _ ->
             Nothing

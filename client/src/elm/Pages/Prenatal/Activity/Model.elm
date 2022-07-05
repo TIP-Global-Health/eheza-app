@@ -169,6 +169,8 @@ type Msg
     | SetHIVPCRTestExecutionDate NominalDate
     | SetHIVPCRTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHIVPCRTest PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
+    | SetLabsHistoryCompleted Bool
+    | SaveLabsHistory
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
@@ -485,6 +487,7 @@ type alias LaboratoryData =
     , syphilisTestForm : PrenatalLabsNonRDTForm
     , urineDipstickTestForm : PrenatalUrineDipstickForm
     , hivPCRTestForm : PrenatalLabsNonRDTForm
+    , labsHistoryForm : LabsHistoryForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -501,6 +504,7 @@ emptyLaboratoryData =
     , syphilisTestForm = emptyPrenatalLabsNonRDTForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
     , hivPCRTestForm = emptyPrenatalLabsNonRDTForm
+    , labsHistoryForm = emptyLabsHistoryForm
     , activeTask = Nothing
     }
 
@@ -1077,6 +1081,16 @@ emptyPrenatalHIVTestForm =
     , partnerSurpressedViralLoadDirty = False
     , dateSelectorPopupState = Nothing
     }
+
+
+type alias LabsHistoryForm =
+    { completed : Maybe Bool
+    }
+
+
+emptyLabsHistoryForm : LabsHistoryForm
+emptyLabsHistoryForm =
+    LabsHistoryForm Nothing
 
 
 type alias AppointmentConfirmationForm =

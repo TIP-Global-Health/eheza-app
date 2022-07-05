@@ -47,6 +47,7 @@ type LaboratoryTask
     | TaskSyphilisTest
     | TaskUrineDipstickTest
     | TaskHIVPCRTest
+    | TaskCompletePreviousTests
 
 
 type SymptomReviewStep
