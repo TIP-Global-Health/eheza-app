@@ -1609,7 +1609,8 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
 
         DiagnosisPelvicPainContinued ->
             -- Pelvic pain was reported previously.
-            symptomRecordedPreviously assembled PelvicPain
+            symptomRecorded assembled.measurements PelvicPain
+                && symptomRecordedPreviously assembled PelvicPain
 
         DiagnosisUrinaryTractInfection ->
             urinaryTractInfectionDiagnosed
