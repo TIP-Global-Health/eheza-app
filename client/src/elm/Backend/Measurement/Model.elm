@@ -1122,16 +1122,6 @@ type HaemoglobinValue
     | HaemoglobinLarge
 
 
-type SpecificGravityValue
-    = SpecificGravity1000
-    | SpecificGravity1005
-    | SpecificGravity1010
-    | SpecificGravity1015
-    | SpecificGravity1020
-    | SpecificGravity1025
-    | SpecificGravity1030
-
-
 type KetoneValue
     = KetoneNegative
     | Ketone5

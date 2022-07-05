@@ -435,23 +435,6 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetSpecificGravity value ->
-            let
-                form =
-                    model.labResultsData.urineDipstickTestForm
-
-                updatedForm =
-                    { form | specificGravity = specificGravityValueFromString value }
-
-                updatedData =
-                    model.labResultsData
-                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
-            in
-            ( { model | labResultsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SetKetone value ->
             let
                 form =

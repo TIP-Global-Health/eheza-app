@@ -501,20 +501,6 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                     ]
                                     SetHaemoglobin
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratorySpecificGravityTestResult
-                                    form.specificGravity
-                                    Translate.PrenatalLaboratorySpecificGravityValue
-                                    specificGravityValueToString
-                                    [ SpecificGravity1000
-                                    , SpecificGravity1005
-                                    , SpecificGravity1010
-                                    , SpecificGravity1015
-                                    , SpecificGravity1020
-                                    , SpecificGravity1025
-                                    , SpecificGravity1030
-                                    ]
-                                    SetSpecificGravity
-                                ++ viewSelectInput language
                                     Translate.PrenatalLaboratoryKetoneTestResult
                                     form.ketone
                                     Translate.PrenatalLaboratoryKetoneValue
@@ -544,7 +530,6 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                 + taskCompleted form.nitrite
                                 + taskCompleted form.urobilinogen
                                 + taskCompleted form.haemoglobin
-                                + taskCompleted form.specificGravity
                                 + taskCompleted form.ketone
                                 + taskCompleted form.bilirubin
                             , commonTasksTotal + 7

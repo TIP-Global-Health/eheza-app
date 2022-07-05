@@ -4425,7 +4425,6 @@ toPrenatalUrineDipstickTestValue form =
             , nitrite = Nothing
             , urobilinogen = Nothing
             , haemoglobin = Nothing
-            , specificGravity = Nothing
             , ketone = Nothing
             , bilirubin = Nothing
             }

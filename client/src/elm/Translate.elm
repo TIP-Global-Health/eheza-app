@@ -982,9 +982,6 @@ type TranslationId
     | PrenatalLaboratoryHaemoglobinLabel
     | PrenatalLaboratoryHaemoglobinTestResult
     | PrenatalLaboratoryHaemoglobinValue HaemoglobinValue
-    | PrenatalLaboratorySpecificGravityLabel
-    | PrenatalLaboratorySpecificGravityTestResult
-    | PrenatalLaboratorySpecificGravityValue SpecificGravityValue
     | PrenatalLaboratoryKetoneLabel
     | PrenatalLaboratoryKetoneTestResult
     | PrenatalLaboratoryKetoneValue KetoneValue
@@ -5523,11 +5520,6 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru ku kizamini cy'ingano y'amaraso"
                     }
 
-                LabResultsHistorySpecificGravity _ ->
-                    { english = "Specific Gravity Test History"
-                    , kinyarwanda = Just "Amakuru ku kizamini cy'Uburemere bw'inkari bwihariye"
-                    }
-
                 LabResultsHistoryKetone _ ->
                     { english = "Ketone Test History"
                     , kinyarwanda = Just "Amakuru ku kizamini cya Ketone mu nkari"
@@ -5617,11 +5609,6 @@ translationSet trans =
 
                 LabResultsHistoryHaemoglobin _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
-                    }
-
-                LabResultsHistorySpecificGravity _ ->
-                    { english = "@todo"
                     , kinyarwanda = Nothing
                     }
 
@@ -9655,53 +9642,6 @@ translationSet trans =
                 HaemoglobinLarge ->
                     { english = "Large"
                     , kinyarwanda = Just "Ikigero kinini cy'amaraso (hemoglobini)  agaragara mu nkari"
-                    }
-
-        PrenatalLaboratorySpecificGravityLabel ->
-            { english = "Specific Gravity"
-            , kinyarwanda = Just "Uburemere bw'inkari bwihariye"
-            }
-
-        PrenatalLaboratorySpecificGravityTestResult ->
-            { english = "Specific Gravity Test Result"
-            , kinyarwanda = Just "Igisubizo cy'uburemere bw'inkari bwihariye"
-            }
-
-        PrenatalLaboratorySpecificGravityValue value ->
-            case value of
-                SpecificGravity1000 ->
-                    { english = "1.000"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1005 ->
-                    { english = "1.005"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1010 ->
-                    { english = "1.010"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1015 ->
-                    { english = "1.015"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1020 ->
-                    { english = "1.020"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1025 ->
-                    { english = "1.025"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1030 ->
-                    { english = "1.030"
-                    , kinyarwanda = Nothing
                     }
 
         PrenatalLaboratoryKetoneLabel ->
