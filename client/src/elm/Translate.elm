@@ -6185,17 +6185,17 @@ translationSet trans =
             }
 
         MedicationDistributionNoticeGonorrhea ->
-            { english = "Note: It is also recommend to prescribe the partner"
+            { english = "Note: It is also recommended to prescribe the partner"
             , kinyarwanda = Nothing
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed1 ->
-            { english = "Ciproflaxcin (1000mg): by mouth as a single dose"
+            { english = "Ciprofloxacin (1000mg): by mouth as a single dose"
             , kinyarwanda = Nothing
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed2 ->
-            { english = "Doxycyline (100mg): by moth 2x a day for 7 days"
+            { english = "Doxycycline (100mg): by moth 2x a day for 7 days"
             , kinyarwanda = Nothing
             }
 
@@ -9215,7 +9215,7 @@ translationSet trans =
             }
 
         PrenatalHealthEducationSaferSexInform ->
-            { english = "Council patient on safer sex parctices"
+            { english = "Councel patient on safer sex practices"
             , kinyarwanda = Nothing
             }
 
