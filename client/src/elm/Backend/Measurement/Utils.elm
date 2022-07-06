@@ -560,8 +560,8 @@ postpartumChildDangerSignFromString sign =
             Nothing
 
 
-heightValueFunc : HeightInCm -> Float
-heightValueFunc =
+getHeightValue : HeightInCm -> Float
+getHeightValue =
     \(HeightInCm cm) -> cm
 
 
@@ -1011,6 +1011,12 @@ proteinValueFromString value =
 phValueToString : PHValue -> String
 phValueToString value =
     case value of
+        Ph40 ->
+            "4.0"
+
+        Ph45 ->
+            "4.5"
+
         Ph50 ->
             "5.0"
 
@@ -1036,6 +1042,12 @@ phValueToString value =
 phValueFromString : String -> Maybe PHValue
 phValueFromString value =
     case value of
+        "4.0" ->
+            Just Ph40
+
+        "4.5" ->
+            Just Ph45
+
         "5.0" ->
             Just Ph50
 
@@ -1511,11 +1523,11 @@ recommendedTreatmentSignToString sign =
         TreatmentHealthEducationForHeartburn ->
             "education-heartburn"
 
-        TreatmentNitrfurantion ->
-            "nitrfurantion"
+        TreatmentNitrofurantoin ->
+            "nitrofurantoin"
 
-        TreatmentAmoxicilin ->
-            "amoxicilin"
+        TreatmentAmoxicillin ->
+            "amoxicillin"
 
         TreatmentClotrimaxazole200 ->
             "clotrimaxazole-200"
@@ -1584,11 +1596,11 @@ recommendedTreatmentSignFromString sign =
         "education-heartburn" ->
             Just TreatmentHealthEducationForHeartburn
 
-        "nitrfurantion" ->
-            Just TreatmentNitrfurantion
+        "nitrofurantoin" ->
+            Just TreatmentNitrofurantoin
 
-        "amoxicilin" ->
-            Just TreatmentAmoxicilin
+        "amoxicillin" ->
+            Just TreatmentAmoxicillin
 
         "clotrimaxazole-200" ->
             Just TreatmentClotrimaxazole200

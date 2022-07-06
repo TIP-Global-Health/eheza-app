@@ -572,7 +572,9 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                     form.ph
                                     Translate.PrenatalLaboratoryPHValue
                                     phValueToString
-                                    [ Ph50
+                                    [ Ph40
+                                    , Ph45
+                                    , Ph50
                                     , Ph60
                                     , Ph65
                                     , Ph70

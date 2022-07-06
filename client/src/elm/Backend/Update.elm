@@ -1096,7 +1096,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment originData model newModel)
+                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment originData newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1765,7 +1765,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processVitalsRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1794,7 +1794,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1815,7 +1815,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1841,7 +1841,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1875,7 +1875,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1911,7 +1911,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -4065,12 +4065,11 @@ generatePrenatalAssessmentMsgs :
     -> Bool
     -> Maybe ( PrenatalEncounterId, List PrenatalDiagnosis )
     -> ModelIndexedDb
-    -> ModelIndexedDb
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment originData before after id =
-    Maybe.map2
-        (\assembledBefore assembledAfter ->
+generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment originData after id =
+    Maybe.map
+        (\assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
                     Pages.Prenatal.Activity.Utils.mandatoryActivitiesForNextStepsCompleted
@@ -4150,7 +4149,9 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
             then
                 let
                     diagnosesBefore =
-                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledBefore
+                        -- At this stage new diagnoses were not updated yet, therefore,
+                        -- we can use the dignoses set for the encounter.
+                        assembledAfter.encounter.diagnoses
 
                     diagnosesAfter =
                         Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
@@ -4295,7 +4296,6 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
             else
                 []
         )
-        (RemoteData.toMaybe <| Pages.Prenatal.Encounter.Utils.generateAssembledData id before)
         (RemoteData.toMaybe <| Pages.Prenatal.Encounter.Utils.generateAssembledData id after)
         |> Maybe.withDefault []
 

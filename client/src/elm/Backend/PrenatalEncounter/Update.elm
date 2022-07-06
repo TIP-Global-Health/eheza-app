@@ -40,6 +40,9 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                 )
                 model
 
+        SetLabsHistoryCompleted ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | indicators = EverySet.insert IndicatorHistoryLabsCompleted encounter.indicators }) model
+
         HandleUpdatedPrenatalEncounter data ->
             ( { model | updatePrenatalEncounter = data }
             , Cmd.none

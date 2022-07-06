@@ -170,6 +170,7 @@ type Msg
     | SetHIVPCRTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHIVPCRTest PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
     | SetLabsHistoryCompleted Bool
+    | SaveLabsHistory
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
