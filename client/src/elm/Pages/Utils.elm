@@ -636,7 +636,7 @@ viewEndEncounterButton language allowEndEcounter setDialogStateMsg =
 
 
 viewEndEncounterMenuForProgressReport : Language -> Bool -> (Bool -> msg) -> msg -> Html msg
-viewEndEncounterMenuForProgressReport language allowEndEcounter setDialogStateMsg sendViaWhatsAppMsg =
+viewEndEncounterMenuForProgressReport language allowEndEcounter setDialogStateMsg setSendViaWhatsAppDialogStateMsg =
     let
         attributes =
             if allowEndEcounter then
@@ -652,7 +652,7 @@ viewEndEncounterMenuForProgressReport language allowEndEcounter setDialogStateMs
             [ text <| translate language Translate.EndEncounter ]
         , button
             [ class "ui fluid primary button"
-            , onClick sendViaWhatsAppMsg
+            , onClick setSendViaWhatsAppDialogStateMsg
             ]
             [ text <| translate language Translate.SendViaWhatsApp ]
         ]

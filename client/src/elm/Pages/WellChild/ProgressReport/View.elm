@@ -32,6 +32,8 @@ import Backend.WellChildEncounter.Model
         , headCircumferenceWarnings
         , pediatricCareMilestones
         )
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.View
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -120,7 +122,6 @@ view language currentDate zscores id isChw db model =
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
-                        , sendViaWhatsAppMsg = NoOp
                         }
                     , mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db
                     )
@@ -140,8 +141,10 @@ view language currentDate zscores id isChw db model =
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
+            model.sendViaWhatsAppDialog
             SetActivePage
             SetDiagnosisMode
+            MsgSendViaWhatsAppDialog
             bottomActionData
         )
         identity
@@ -157,12 +160,14 @@ viewProgressReport :
     -> Bool
     -> ModelIndexedDb
     -> DiagnosisMode
+    -> Components.SendViaWhatsAppDialog.Model.Model
     -> (Page -> msg)
     -> (DiagnosisMode -> msg)
+    -> (Components.SendViaWhatsAppDialog.Model.Msg -> msg)
     -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg bottomActionData ( childId, child ) =
+viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg bottomActionData ( childId, child ) =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -303,7 +308,13 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                             viewStartEncounterButton language data.startEncounterMsg
 
                         _ ->
-                            viewEndEncounterMenuForProgressReport language data.allowEndEcounter data.setEndEncounterDialogStateMsg data.sendViaWhatsAppMsg
+                            viewEndEncounterMenuForProgressReport language
+                                data.allowEndEcounter
+                                data.setEndEncounterDialogStateMsg
+                                (msgSendViaWhatsAppDialogMsg <|
+                                    Components.SendViaWhatsAppDialog.Model.SetState <|
+                                        Just Components.SendViaWhatsAppDialog.Model.Consent
+                                )
                     )
                 )
                 bottomActionData
@@ -333,6 +344,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 ++ derivedContent
                 ++ [ bottomActionButton ]
         , viewModal endEncounterDialog
+        , Html.map msgSendViaWhatsAppDialogMsg (Components.SendViaWhatsAppDialog.View.view language currentDate sendViaWhatsAppDialog)
         ]
 
 

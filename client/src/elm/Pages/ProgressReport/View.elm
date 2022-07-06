@@ -6,6 +6,8 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild)
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.View
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -43,8 +45,10 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
+            model.sendViaWhatsAppDialog
             SetActivePage
             SetDiagnosisMode
+            MsgSendViaWhatsAppDialog
             Nothing
         )
         identity

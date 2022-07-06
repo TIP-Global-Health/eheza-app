@@ -7,6 +7,8 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.View
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -72,7 +74,6 @@ view language currentDate zscores id isChw db model =
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
-                        , sendViaWhatsAppMsg = NoOp
                         }
                     , mandatoryActivitiesCompleted currentDate zscores child isChw assembled db
                     )
@@ -93,8 +94,10 @@ view language currentDate zscores id isChw db model =
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
+            model.sendViaWhatsAppDialog
             SetActivePage
             SetDiagnosisMode
+            MsgSendViaWhatsAppDialog
             bottomActionData
         )
         identity

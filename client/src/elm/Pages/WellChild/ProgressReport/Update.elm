@@ -3,6 +3,7 @@ module Pages.WellChild.ProgressReport.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.WellChildEncounter.Model
+import Components.SendViaWhatsAppDialog.Update
 import Pages.Page exposing (Page(..))
 import Pages.WellChild.ProgressReport.Model exposing (..)
 
@@ -31,3 +32,10 @@ update msg model =
 
         SetDiagnosisMode mode ->
             ( { model | diagnosisMode = mode }, Cmd.none, [] )
+
+        MsgSendViaWhatsAppDialog subMsg ->
+            let
+                ( dialogUpdated, appMsgs ) =
+                    Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
+            in
+            ( { model | sendViaWhatsAppDialog = dialogUpdated }, Cmd.none, appMsgs )

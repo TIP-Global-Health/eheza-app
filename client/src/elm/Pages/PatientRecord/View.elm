@@ -11,6 +11,8 @@ import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAd
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.View
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -137,7 +139,6 @@ viewContentForChild language currentDate zscores childId child isChw initiator d
                         , closeEncounterMsg = NoOp
                         , setEndEncounterDialogStateMsg = always NoOp
                         , startEncounterMsg = SetViewMode ViewStartEncounter
-                        , sendViaWhatsAppMsg = NoOp
                         }
             in
             viewProgressReport language
@@ -148,8 +149,10 @@ viewContentForChild language currentDate zscores childId child isChw initiator d
                 False
                 db
                 model.diagnosisMode
+                model.sendViaWhatsAppDialog
                 SetActivePage
                 SetDiagnosisMode
+                MsgSendViaWhatsAppDialog
                 bottomActionData
                 ( childId, child )
 

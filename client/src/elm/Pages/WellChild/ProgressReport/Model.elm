@@ -2,12 +2,14 @@ module Pages.WellChild.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
+import Components.SendViaWhatsAppDialog.Model
 import Pages.Page exposing (Page)
 
 
 type alias Model =
     { diagnosisMode : DiagnosisMode
     , showEndEncounterDialog : Bool
+    , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
     }
 
 
@@ -15,6 +17,7 @@ emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , showEndEncounterDialog = False
+    , sendViaWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
     }
 
 
@@ -48,7 +51,6 @@ type alias BottomActionData msg =
     , closeEncounterMsg : msg
     , setEndEncounterDialogStateMsg : Bool -> msg
     , startEncounterMsg : msg
-    , sendViaWhatsAppMsg : msg
     }
 
 
@@ -58,3 +60,4 @@ type Msg
     | SetActivePage Page
     | SetEndEncounterDialogState Bool
     | SetDiagnosisMode DiagnosisMode
+    | MsgSendViaWhatsAppDialog Components.SendViaWhatsAppDialog.Model.Msg
