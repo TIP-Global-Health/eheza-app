@@ -2258,6 +2258,10 @@ div.page-report {
       border-left: 1px solid $color-white;
     }
   }
+
+  .send-via-whatsapp.ui.active.modal .content {
+    text-align: left;
+  }
 }
 
 div.page-report.clinical,

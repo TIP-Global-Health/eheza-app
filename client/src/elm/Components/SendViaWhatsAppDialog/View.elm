@@ -21,29 +21,25 @@ view language currentDate model =
 
 viewDialog : Language -> NominalDate -> DialogState -> Html Msg
 viewDialog language currentDate state =
-    div [ class "ui tiny active modal" ]
-        [ div [ class "header" ]
-            -- [ text <| translate language heading ]
-            [ text "XXX" ]
-        , div
-            [ class "content" ]
-            -- [ p [] [ text <| translate language message ]            ]
-            [ p [] [ text "YYY" ] ]
+    div [ class "ui tiny active modal send-via-whatsapp" ]
+        [ div [ class "content" ]
+            [ p [] [ text <| translate language Translate.SendViaWhatsAppConsentQuestion ]
+            , p [] [ text <| translate language Translate.SendViaWhatsAppNoticeOfNonRespobsibility ]
+            ]
         , div
             [ class "actions" ]
             [ div [ class "two ui buttons" ]
                 [ button
-                    [ class "ui fluid button"
-
-                    -- , onClick cancelAction
+                    [ class "ui velvet fluid button"
+                    , onClick <| SetState Nothing
                     ]
-                    [ text <| translate language Translate.Cancel ]
+                    [ text <| translate language Translate.No ]
                 , button
                     [ class "ui primary fluid button"
 
                     -- , onClick confirmAction
                     ]
-                    [ text <| translate language Translate.Continue ]
+                    [ text <| translate language Translate.Yes ]
                 ]
             ]
         ]

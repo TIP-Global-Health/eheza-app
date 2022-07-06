@@ -1166,6 +1166,8 @@ type TranslationId
     | SelectedHCSyncing
     | SelectedHCUploading
     | SendViaWhatsApp
+    | SendViaWhatsAppConsentQuestion
+    | SendViaWhatsAppNoticeOfNonRespobsibility
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -12228,6 +12230,16 @@ translationSet trans =
 
         SendViaWhatsApp ->
             { english = "Send via WhatsApp"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppConsentQuestion ->
+            { english = "Does the patient consent to having their medical records sent via WhatsApp?"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppNoticeOfNonRespobsibility ->
+            { english = "Please note that the medical professional and E-Heza will not be liable for what happens to these medical reports once released."
             , kinyarwanda = Nothing
             }
 
