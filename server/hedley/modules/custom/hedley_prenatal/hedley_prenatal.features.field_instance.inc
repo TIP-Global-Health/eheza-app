@@ -847,7 +847,7 @@ function hedley_prenatal_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_past_prenatal_diagnoses',
-    'label' => 'Prenatal Diagnoses',
+    'label' => 'Past Prenatal Diagnoses',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -858,6 +858,44 @@ function hedley_prenatal_field_default_field_instances() {
       'settings' => array(),
       'type' => 'options_select',
       'weight' => 15,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_encounter-field_prenatal_indicators'.
+  $field_instances['node-prenatal_encounter-field_prenatal_indicators'] = array(
+    'bundle' => 'prenatal_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 17,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_prenatal_indicators',
+    'label' => 'Prenatal Indicators',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 16,
     ),
   );
 
