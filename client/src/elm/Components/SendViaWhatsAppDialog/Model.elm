@@ -20,8 +20,9 @@ type DialogState
     | PhoneVerification String
     | PhoneInput String
     | PhoneUpdateAtProfile String
+    | PhoneUpdateConfirmation String
 
 
 type Msg
     = SetState (Maybe DialogState)
-    | UpdatePhoneAtProfile PersonId Person
+    | UpdatePhoneAtProfile PersonId Person String

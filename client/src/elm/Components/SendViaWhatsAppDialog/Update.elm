@@ -12,13 +12,9 @@ update msg model =
         SetState state ->
             ( { model | state = state }, [] )
 
-        UpdatePhoneAtProfile personId person ->
-            let
-                _ =
-                    Debug.log "UpdatePhoneAtProfile" UpdatePhoneAtProfile
-            in
-            ( model
-            , [ Backend.Model.PatchPerson InitiatorProgressReport personId person
+        UpdatePhoneAtProfile personId person phoneNumber ->
+            ( { model | state = Just <| PhoneUpdateConfirmation phoneNumber }
+            , [ Backend.Model.PatchPerson InitiatorProgressReport personId { person | telephoneNumber = Just phoneNumber }
                     |> App.Model.MsgIndexedDb
               ]
             )

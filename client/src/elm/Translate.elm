@@ -1173,6 +1173,7 @@ type TranslationId
     | SendViaWhatsAppPhoneVerificationQuestion
     | SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix
     | SendViaWhatsAppPhoneUpdateAtProfileQuestionSuffix
+    | SendViaWhatsAppPhoneUpdateConfirmationMessasge
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -12270,6 +12271,11 @@ translationSet trans =
 
         SendViaWhatsAppPhoneUpdateAtProfileQuestionSuffix ->
             { english = "with the number"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneUpdateConfirmationMessasge ->
+            { english = "The patient record has been updated."
             , kinyarwanda = Nothing
             }
 

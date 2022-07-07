@@ -2259,24 +2259,32 @@ div.page-report {
     }
   }
 
-  .send-via-whatsapp.ui.active.modal .content {
-    padding-top: 30px;
-    text-align: left;
+  .send-via-whatsapp.ui.active.modal {
 
-    input {
-      border: 2px solid $color-gray-border;
-      background-color: $color-white;
-      width: 100%;
-      text-align: center;
-      text-align: -webkit-center;
+    .content {
+      padding-top: 30px;
+      text-align: left;
+
+      input {
+        border: 2px solid $color-gray-border;
+        background-color: $color-white;
+        width: 100%;
+        text-align: center;
+        text-align: -webkit-center;
+      }
+
+      span {
+        color: $color-primary;
+        margin-left: 5px;
+        margin-right: 5px;
+      }
     }
 
-    span {
-      color: $color-primary;
-      margin-left: 5px;
-      margin-right: 5px;
+    .actions > button {
+      margin-left: 0;
     }
   }
+
 }
 
 div.page-report.clinical,

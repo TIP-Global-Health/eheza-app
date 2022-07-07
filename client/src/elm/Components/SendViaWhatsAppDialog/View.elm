@@ -37,6 +37,9 @@ viewDialog language currentDate ( personId, person ) state =
 
                 PhoneUpdateAtProfile phoneNumber ->
                     viewPhoneUpdateAtProfile language currentDate personId person phoneNumber
+
+                PhoneUpdateConfirmation _ ->
+                    viewPhoneUpdateConfirmation language currentDate
     in
     div [ class "ui tiny active modal send-via-whatsapp" ]
         content
@@ -149,9 +152,24 @@ viewPhoneUpdateAtProfile language currentDate personId person phoneNumber =
                 [ text <| translate language Translate.No ]
             , button
                 [ class "ui primary fluid button"
-                , onClick <| UpdatePhoneAtProfile personId { person | telephoneNumber = Just phoneNumber }
+                , onClick <| UpdatePhoneAtProfile personId person phoneNumber
                 ]
                 [ text <| translate language Translate.Yes ]
             ]
+        ]
+    ]
+
+
+viewPhoneUpdateConfirmation : Language -> NominalDate -> List (Html Msg)
+viewPhoneUpdateConfirmation language currentDate =
+    [ div [ class "content" ]
+        [ translateText language Translate.SendViaWhatsAppPhoneUpdateConfirmationMessasge ]
+    , div [ class "actions" ]
+        [ button
+            [ class "ui primary fluid button"
+
+            -- , onClick <| SetState <| Just (PhoneInput "")
+            ]
+            [ text <| translate language Translate.Continue ]
         ]
     ]
