@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, birthDate, validatePerson)
-import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
+import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), PatchPersonInitator(..), Person)
 import Backend.Village.Utils exposing (getVillageById)
 import Date
 import Form
@@ -92,7 +92,7 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
                                                     -- `NotAsked` (to reset network errors
                                                     -- etc.)
                                                     |> Maybe.withDefault
-                                                        [ Backend.Model.HandlePatchedPerson personId NotAsked
+                                                        [ Backend.Model.HandlePatchedPerson InitiatorEditForm personId NotAsked
                                                             |> App.Model.MsgIndexedDb
                                                         ]
                                             )
@@ -212,16 +212,14 @@ generateMsgsForPersonEdit currentDate personId person form db =
                 updatedChildren
                     |> List.map
                         (\( childId, child ) ->
-                            child
-                                |> Backend.Model.PatchPerson childId
+                            Backend.Model.PatchPerson InitiatorEditForm childId child
                                 |> App.Model.MsgIndexedDb
                         )
 
             else
                 []
     in
-    (person
-        |> Backend.Model.PatchPerson personId
+    (Backend.Model.PatchPerson InitiatorEditForm personId person
         |> App.Model.MsgIndexedDb
     )
         :: updateChildrenMsgs

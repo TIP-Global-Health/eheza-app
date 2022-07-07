@@ -273,6 +273,10 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         individualWellChildMeasurementsWithDates
                         db
 
+                    -- @todo:
+                    -- Drawing SVG charts causes major slowness, specially when
+                    -- typing new phone number. Need to decide how to
+                    -- solve this.
                     -- , viewGrowthPane language
                     --     currentDate
                     --     zscores

@@ -30,7 +30,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
-import Backend.Person.Model exposing (Initiator, Person)
+import Backend.Person.Model exposing (Initiator, PatchPersonInitator, Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
@@ -324,7 +324,7 @@ type MsgIndexedDb
     | HandleFetchedTraceContact AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) Initiator Person -- The first person is a person we ought to offer setting a relationship to.
-    | PatchPerson PersonId Person
+    | PatchPerson PatchPersonInitator PersonId Person
     | PostRelationship PersonId MyRelationship (Maybe ClinicId) Initiator
     | PostPmtctParticipant Initiator PmtctParticipant
     | PostSession Session
@@ -336,7 +336,7 @@ type MsgIndexedDb
     | PostWellChildEncounter WellChildEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
-    | HandlePatchedPerson PersonId (WebData Person)
+    | HandlePatchedPerson PatchPersonInitator PersonId (WebData Person)
     | HandlePostedRelationship PersonId Initiator (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId Initiator (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession ClinicType (WebData SessionId)

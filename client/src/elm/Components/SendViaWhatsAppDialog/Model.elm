@@ -1,6 +1,7 @@
 module Components.SendViaWhatsAppDialog.Model exposing (..)
 
 import Backend.Entities exposing (..)
+import Backend.Person.Model exposing (Person)
 
 
 type alias Model =
@@ -18,8 +19,9 @@ type DialogState
     = Consent
     | PhoneVerification String
     | PhoneInput String
+    | PhoneUpdateAtProfile String
 
 
 type Msg
     = SetState (Maybe DialogState)
-    | SetInputNumber String
+    | UpdatePhoneAtProfile PersonId Person

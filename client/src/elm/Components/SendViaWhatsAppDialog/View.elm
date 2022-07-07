@@ -11,7 +11,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Utils exposing (viewTextInput)
-import Translate exposing (Language, translate)
+import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewModal)
 
 
@@ -34,6 +34,9 @@ viewDialog language currentDate ( personId, person ) state =
 
                 PhoneInput inputValue ->
                     viewPhoneInput language currentDate inputValue
+
+                PhoneUpdateAtProfile phoneNumber ->
+                    viewPhoneUpdateAtProfile language currentDate personId person phoneNumber
     in
     div [ class "ui tiny active modal send-via-whatsapp" ]
         content
@@ -104,7 +107,11 @@ viewPhoneInput : Language -> NominalDate -> String -> List (Html Msg)
 viewPhoneInput language currentDate inputValue =
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppPhoneInputHeader ]
-        , viewTextInput language inputValue SetInputNumber Nothing (Just "phone-number")
+        , viewTextInput language
+            inputValue
+            (PhoneInput >> Just >> SetState)
+            Nothing
+            (Just "phone-number")
         ]
     , div [ class "actions" ]
         [ div [ class "two ui buttons" ]
@@ -115,10 +122,36 @@ viewPhoneInput language currentDate inputValue =
                 [ text <| translate language Translate.Cancel ]
             , button
                 [ class "ui primary fluid button"
-
-                -- , onClick <| SetState <| Just nextState
+                , onClick <| SetState <| Just (PhoneUpdateAtProfile inputValue)
                 ]
                 [ text <| translate language Translate.Continue ]
+            ]
+        ]
+    ]
+
+
+viewPhoneUpdateAtProfile : Language -> NominalDate -> PersonId -> Person -> String -> List (Html Msg)
+viewPhoneUpdateAtProfile language currentDate personId person phoneNumber =
+    [ div [ class "content" ]
+        [ translateText language Translate.SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix
+        , span [] [ text person.name ]
+        , translateText language Translate.SendViaWhatsAppPhoneUpdateAtProfileQuestionSuffix
+        , span [] [ text phoneNumber ]
+        , text "?"
+        ]
+    , div [ class "actions" ]
+        [ div [ class "two ui buttons" ]
+            [ button
+                [ class "ui velvet fluid button"
+
+                -- , onClick <| SetState <| Just (PhoneInput "")
+                ]
+                [ text <| translate language Translate.No ]
+            , button
+                [ class "ui primary fluid button"
+                , onClick <| UpdatePhoneAtProfile personId { person | telephoneNumber = Just phoneNumber }
+                ]
+                [ text <| translate language Translate.Yes ]
             ]
         ]
     ]

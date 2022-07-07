@@ -1171,6 +1171,8 @@ type TranslationId
     | SendViaWhatsAppPhoneInputHeader
     | SendViaWhatsAppPhoneVerificationHeader
     | SendViaWhatsAppPhoneVerificationQuestion
+    | SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix
+    | SendViaWhatsAppPhoneUpdateAtProfileQuestionSuffix
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -12258,6 +12260,16 @@ translationSet trans =
 
         SendViaWhatsAppPhoneVerificationQuestion ->
             { english = "Is this the correct number for the patients WhatsApp?"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix ->
+            { english = "Would you like to update the patient profile for"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneUpdateAtProfileQuestionSuffix ->
+            { english = "with the number"
             , kinyarwanda = Nothing
             }
 
