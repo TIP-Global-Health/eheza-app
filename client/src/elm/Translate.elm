@@ -1168,6 +1168,9 @@ type TranslationId
     | SendViaWhatsApp
     | SendViaWhatsAppConsentQuestion
     | SendViaWhatsAppNoticeOfNonRespobsibility
+    | SendViaWhatsAppPhoneInputHeader
+    | SendViaWhatsAppPhoneVerificationHeader
+    | SendViaWhatsAppPhoneVerificationQuestion
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -12240,6 +12243,21 @@ translationSet trans =
 
         SendViaWhatsAppNoticeOfNonRespobsibility ->
             { english = "Please note that the medical professional and E-Heza will not be liable for what happens to these medical reports once released."
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneInputHeader ->
+            { english = "Enter the correct phone number for the patient:"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneVerificationHeader ->
+            { english = "The phone number we have on file for this patient is:"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneVerificationQuestion ->
+            { english = "Is this the correct number for the patients WhatsApp?"
             , kinyarwanda = Nothing
             }
 

@@ -13,3 +13,6 @@ update msg model =
                     Debug.log "state" state
             in
             ( { model | state = state }, [] )
+
+        SetInputNumber value ->
+            update (SetState <| Just <| PhoneInput value) model

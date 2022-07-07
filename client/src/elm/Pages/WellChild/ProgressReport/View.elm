@@ -272,14 +272,15 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         wellChildEncounters
                         individualWellChildMeasurementsWithDates
                         db
-                    , viewGrowthPane language
-                        currentDate
-                        zscores
-                        ( childId, child )
-                        expectedSessions
-                        groupNutritionMeasurements
-                        individualNutritionMeasurementsWithDates
-                        individualWellChildMeasurementsWithDates
+
+                    -- , viewGrowthPane language
+                    --     currentDate
+                    --     zscores
+                    --     ( childId, child )
+                    --     expectedSessions
+                    --     groupNutritionMeasurements
+                    --     individualNutritionMeasurementsWithDates
+                    --     individualWellChildMeasurementsWithDates
                     , viewNextAppointmentPane language
                         currentDate
                         child
@@ -344,7 +345,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 ++ derivedContent
                 ++ [ bottomActionButton ]
         , viewModal endEncounterDialog
-        , Html.map msgSendViaWhatsAppDialogMsg (Components.SendViaWhatsAppDialog.View.view language currentDate sendViaWhatsAppDialog)
+        , Html.map msgSendViaWhatsAppDialogMsg (Components.SendViaWhatsAppDialog.View.view language currentDate ( childId, child ) sendViaWhatsAppDialog)
         ]
 
 

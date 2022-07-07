@@ -16,8 +16,10 @@ emptyModel =
 
 type DialogState
     = Consent
-    | PhoneVerification
+    | PhoneVerification String
+    | PhoneInput String
 
 
 type Msg
     = SetState (Maybe DialogState)
+    | SetInputNumber String
