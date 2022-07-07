@@ -153,6 +153,7 @@ viewContentForChild language currentDate zscores childId child isChw initiator d
                 SetActivePage
                 SetDiagnosisMode
                 MsgSendViaWhatsAppDialog
+                Nothing
                 bottomActionData
                 ( childId, child )
 

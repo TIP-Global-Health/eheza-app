@@ -2,6 +2,7 @@ module Pages.ProgressReport.Update exposing (update)
 
 import App.Model
 import Backend.Model
+import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Update
 import Pages.Page exposing (Page(..))
 import Pages.ProgressReport.Model exposing (..)
@@ -26,3 +27,21 @@ update msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetReportComponents maybeComponents ->
+            let
+                updatedModel =
+                    Maybe.map
+                        (\components ->
+                            case components of
+                                Components.SendViaWhatsAppDialog.Model.WellChild wellChildComponents ->
+                                    { model | components = Just wellChildComponents }
+
+                                -- We should never get here.
+                                Components.SendViaWhatsAppDialog.Model.Antnatal _ ->
+                                    model
+                        )
+                        maybeComponents
+                        |> Maybe.withDefault { model | components = Nothing }
+            in
+            ( updatedModel, Cmd.none, [] )

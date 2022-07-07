@@ -84,6 +84,12 @@ view language currentDate zscores id isChw db model =
 
         initiator =
             InitiatorNutritionIndividual id
+
+        componentsConfig =
+            Just
+                { reportType = Components.SendViaWhatsAppDialog.Model.ReportWellChild
+                , setReportComponentsFunc = SetReportComponents
+                }
     in
     viewWebData language
         (viewProgressReport language
@@ -98,6 +104,7 @@ view language currentDate zscores id isChw db model =
             SetActivePage
             SetDiagnosisMode
             MsgSendViaWhatsAppDialog
+            componentsConfig
             bottomActionData
         )
         identity

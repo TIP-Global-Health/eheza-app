@@ -10,6 +10,7 @@ type alias Model =
     { diagnosisMode : DiagnosisMode
     , showEndEncounterDialog : Bool
     , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
+    , components : Maybe (List Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
     }
 
 
@@ -18,6 +19,7 @@ emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , showEndEncounterDialog = False
     , sendViaWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , components = Nothing
     }
 
 
@@ -61,3 +63,4 @@ type Msg
     | SetEndEncounterDialogState Bool
     | SetDiagnosisMode DiagnosisMode
     | MsgSendViaWhatsAppDialog Components.SendViaWhatsAppDialog.Model.Msg
+    | SetReportComponents (Maybe Components.SendViaWhatsAppDialog.Model.ReportComponentsList)

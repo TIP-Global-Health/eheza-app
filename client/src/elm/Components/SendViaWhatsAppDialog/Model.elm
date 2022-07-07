@@ -23,6 +23,42 @@ type DialogState
     | PhoneUpdateConfirmation String
 
 
+type alias ReportComponentsConfig msg =
+    { reportType : ReportType
+    , setReportComponentsFunc : Maybe ReportComponentsList -> msg
+    }
+
+
+type ReportType
+    = ReportWellChild
+    | ReportAntenatal
+
+
+type ReportComponentsList
+    = WellChild (List ReportComponentWellChild)
+    | Antnatal (List ReportComponentAntnatal)
+
+
+type ReportComponentWellChild
+    = ComponentWellChildActiveDiagnoses
+    | ComponentWellChildImmunizationHistory
+    | ComponentWellChildECD
+    | ComponentWellChildGrowth
+    | ComponentWellChildNextAppointment
+
+
+type ReportComponentAntnatal
+    = ComponentAntnatalRiskFactors
+    | ComponentAntnatalMedicalDiagnoses
+    | ComponentAntnatalObstetricalDiagnoses
+    | ComponentAntnatalMedicalHistory
+      -- @todo: implemnt after pane is developed.
+      -- | ComponentAntnatalCHWActivity
+    | ComponentAntnatalPatientProgress
+    | ComponentAntnatalLabsResults
+    | ComponentAntnatalProgressPhotos
+
+
 type Msg
     = SetState (Maybe DialogState)
     | UpdatePhoneAtProfile PersonId Person String

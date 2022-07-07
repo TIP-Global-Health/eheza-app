@@ -12,6 +12,12 @@ import Pages.PatientRecord.Model exposing (..)
 update : NominalDate -> PersonId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id msg model =
     case msg of
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -46,9 +52,3 @@ update currentDate id msg model =
                     Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
             in
             ( { model | sendViaWhatsAppDialog = dialogUpdated }, Cmd.none, appMsgs )
-
-        NoOp ->
-            ( model
-            , Cmd.none
-            , []
-            )

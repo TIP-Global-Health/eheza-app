@@ -131,6 +131,12 @@ view language currentDate zscores id isChw db model =
 
         initiator =
             InitiatorWellChild id
+
+        componentsConfig =
+            Just
+                { reportType = Components.SendViaWhatsAppDialog.Model.ReportWellChild
+                , setReportComponentsFunc = SetReportComponents
+                }
     in
     viewWebData language
         (viewProgressReport language
@@ -145,6 +151,7 @@ view language currentDate zscores id isChw db model =
             SetActivePage
             SetDiagnosisMode
             MsgSendViaWhatsAppDialog
+            componentsConfig
             bottomActionData
         )
         identity
@@ -164,10 +171,11 @@ viewProgressReport :
     -> (Page -> msg)
     -> (DiagnosisMode -> msg)
     -> (Components.SendViaWhatsAppDialog.Model.Msg -> msg)
+    -> Maybe (Components.SendViaWhatsAppDialog.Model.ReportComponentsConfig msg)
     -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg bottomActionData ( childId, child ) =
+viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig bottomActionData ( childId, child ) =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -349,7 +357,14 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 ++ derivedContent
                 ++ [ bottomActionButton ]
         , viewModal endEncounterDialog
-        , Html.map msgSendViaWhatsAppDialogMsg (Components.SendViaWhatsAppDialog.View.view language currentDate ( childId, child ) sendViaWhatsAppDialog)
+        , Html.map msgSendViaWhatsAppDialogMsg
+            (Components.SendViaWhatsAppDialog.View.view
+                language
+                currentDate
+                ( childId, child )
+                componentsConfig
+                sendViaWhatsAppDialog
+            )
         ]
 
 

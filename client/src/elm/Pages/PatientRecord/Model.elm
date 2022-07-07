@@ -26,12 +26,12 @@ emptyModel =
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
     | SetDiagnosisMode DiagnosisMode
     | SetViewMode ViewMode
     | SetFilter PatientRecordFilter
     | MsgSendViaWhatsAppDialog Components.SendViaWhatsAppDialog.Model.Msg
-    | NoOp
 
 
 type ViewMode

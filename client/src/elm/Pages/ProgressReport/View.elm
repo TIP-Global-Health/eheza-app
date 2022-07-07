@@ -34,6 +34,12 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
 
         mandatoryNutritionAssessmentMeasurementsTaken =
             mandatoryActivitiesCompleted currentDate zscores session.offlineSession childId isChw db
+
+        componentsConfig =
+            Just
+                { reportType = Components.SendViaWhatsAppDialog.Model.ReportWellChild
+                , setReportComponentsFunc = SetReportComponents
+                }
     in
     viewWebData language
         (viewProgressReport
@@ -49,6 +55,7 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
             SetActivePage
             SetDiagnosisMode
             MsgSendViaWhatsAppDialog
+            componentsConfig
             Nothing
         )
         identity

@@ -9,6 +9,7 @@ import Pages.WellChild.ProgressReport.Model exposing (DiagnosisMode(..))
 type alias Model =
     { diagnosisMode : DiagnosisMode
     , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
+    , components : Maybe (List Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
     }
 
 
@@ -16,6 +17,7 @@ emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , sendViaWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , components = Nothing
     }
 
 
@@ -23,3 +25,4 @@ type Msg
     = SetActivePage Page
     | SetDiagnosisMode DiagnosisMode
     | MsgSendViaWhatsAppDialog Components.SendViaWhatsAppDialog.Model.Msg
+    | SetReportComponents (Maybe Components.SendViaWhatsAppDialog.Model.ReportComponentsList)

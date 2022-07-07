@@ -3,6 +3,7 @@ module Pages.WellChild.ProgressReport.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.WellChildEncounter.Model
+import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Update
 import Pages.Page exposing (Page(..))
 import Pages.WellChild.ProgressReport.Model exposing (..)
@@ -39,3 +40,21 @@ update msg model =
                     Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
             in
             ( { model | sendViaWhatsAppDialog = dialogUpdated }, Cmd.none, appMsgs )
+
+        SetReportComponents maybeComponents ->
+            let
+                updatedModel =
+                    Maybe.map
+                        (\components ->
+                            case components of
+                                Components.SendViaWhatsAppDialog.Model.WellChild wellChildComponents ->
+                                    { model | components = Just wellChildComponents }
+
+                                -- We should never get here.
+                                Components.SendViaWhatsAppDialog.Model.Antnatal _ ->
+                                    model
+                        )
+                        maybeComponents
+                        |> Maybe.withDefault { model | components = Nothing }
+            in
+            ( updatedModel, Cmd.none, [] )

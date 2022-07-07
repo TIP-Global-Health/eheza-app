@@ -15,14 +15,14 @@ import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewModal)
 
 
-view : Language -> NominalDate -> ( PersonId, Person ) -> Model -> Html Msg
-view language currentDate ( personId, person ) model =
+view : Language -> NominalDate -> ( PersonId, Person ) -> Maybe (ReportComponentsConfig msg) -> Model -> Html Msg
+view language currentDate ( personId, person ) componentsConfig model =
     viewModal <|
-        Maybe.map (viewDialog language currentDate ( personId, person )) model.state
+        Maybe.map (viewDialog language currentDate ( personId, person ) componentsConfig) model.state
 
 
-viewDialog : Language -> NominalDate -> ( PersonId, Person ) -> DialogState -> Html Msg
-viewDialog language currentDate ( personId, person ) state =
+viewDialog : Language -> NominalDate -> ( PersonId, Person ) -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html Msg
+viewDialog language currentDate ( personId, person ) componentsConfig state =
     let
         content =
             case state of
