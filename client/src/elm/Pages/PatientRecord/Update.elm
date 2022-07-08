@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Components.SendViaWhatsAppDialog.Update
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (..)
 
@@ -48,7 +49,8 @@ update currentDate id msg model =
 
         MsgSendViaWhatsAppDialog subMsg ->
             let
-                ( dialogUpdated, appMsgs ) =
+                ( dialogUpdated, extraMsgs, appMsgs ) =
                     Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
             in
             ( { model | sendViaWhatsAppDialog = dialogUpdated }, Cmd.none, appMsgs )
+                |> sequenceExtra (update currentDate id) extraMsgs

@@ -2,6 +2,7 @@ module Components.SendViaWhatsAppDialog.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
+import EverySet exposing (EverySet)
 
 
 type alias Model =
@@ -21,6 +22,8 @@ type DialogState
     | PhoneInput String
     | PhoneUpdateAtProfile String
     | PhoneUpdateConfirmation String
+    | ComponentsSelection String (Maybe ReportComponentsList)
+    | ConfirmationBeforeSending String
 
 
 type alias ReportComponentsConfig msg =
@@ -35,8 +38,8 @@ type ReportType
 
 
 type ReportComponentsList
-    = WellChild (List ReportComponentWellChild)
-    | Antnatal (List ReportComponentAntnatal)
+    = WellChild (EverySet ReportComponentWellChild)
+    | Antenatal (EverySet ReportComponentAntenatal)
 
 
 type ReportComponentWellChild
@@ -47,18 +50,19 @@ type ReportComponentWellChild
     | ComponentWellChildNextAppointment
 
 
-type ReportComponentAntnatal
-    = ComponentAntnatalRiskFactors
-    | ComponentAntnatalMedicalDiagnoses
-    | ComponentAntnatalObstetricalDiagnoses
-    | ComponentAntnatalMedicalHistory
-      -- @todo: implemnt after pane is developed.
-      -- | ComponentAntnatalCHWActivity
-    | ComponentAntnatalPatientProgress
-    | ComponentAntnatalLabsResults
-    | ComponentAntnatalProgressPhotos
+type ReportComponentAntenatal
+    = ComponentAntenatalRiskFactors
+    | ComponentAntenatalMedicalDiagnoses
+    | ComponentAntenatalObstetricalDiagnoses
+    | ComponentAntenatalMedicalHistory
+      -- @todo: implement after pane is developed.
+      -- | ComponentAntenatalCHWActivity
+    | ComponentAntenatalPatientProgress
+    | ComponentAntenatalLabsResults
+    | ComponentAntenatalProgressPhotos
 
 
-type Msg
+type Msg msg
     = SetState (Maybe DialogState)
     | UpdatePhoneAtProfile PersonId Person String
+    | SetReportComponents msg String

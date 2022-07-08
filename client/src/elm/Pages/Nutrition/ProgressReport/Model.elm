@@ -2,6 +2,7 @@ module Pages.Nutrition.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Components.SendViaWhatsAppDialog.Model
+import EverySet exposing (EverySet)
 import Pages.Page exposing (Page)
 import Pages.WellChild.ProgressReport.Model exposing (DiagnosisMode(..))
 
@@ -10,7 +11,7 @@ type alias Model =
     { diagnosisMode : DiagnosisMode
     , showEndEncounterDialog : Bool
     , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
-    , components : Maybe (List Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
+    , components : Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
     }
 
 
@@ -29,5 +30,5 @@ type Msg
     | SetActivePage Page
     | SetEndEncounterDialogState Bool
     | SetDiagnosisMode DiagnosisMode
-    | MsgSendViaWhatsAppDialog Components.SendViaWhatsAppDialog.Model.Msg
+    | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
     | SetReportComponents (Maybe Components.SendViaWhatsAppDialog.Model.ReportComponentsList)

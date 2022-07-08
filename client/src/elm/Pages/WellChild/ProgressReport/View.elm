@@ -170,7 +170,7 @@ viewProgressReport :
     -> Components.SendViaWhatsAppDialog.Model.Model
     -> (Page -> msg)
     -> (DiagnosisMode -> msg)
-    -> (Components.SendViaWhatsAppDialog.Model.Msg -> msg)
+    -> (Components.SendViaWhatsAppDialog.Model.Msg msg -> msg)
     -> Maybe (Components.SendViaWhatsAppDialog.Model.ReportComponentsConfig msg)
     -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )

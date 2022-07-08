@@ -4,6 +4,7 @@ import App.Model
 import Backend.Model
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Update
+import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..))
 import Pages.ProgressReport.Model exposing (..)
 import Pages.Session.Model
@@ -20,13 +21,14 @@ update msg model =
 
         MsgSendViaWhatsAppDialog subMsg ->
             let
-                ( dialogUpdated, appMsgs ) =
+                ( dialogUpdated, extraMsgs, appMsgs ) =
                     Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
             in
             ( { model | sendViaWhatsAppDialog = dialogUpdated }
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra update extraMsgs
 
         SetReportComponents maybeComponents ->
             let
@@ -38,7 +40,7 @@ update msg model =
                                     { model | components = Just wellChildComponents }
 
                                 -- We should never get here.
-                                Components.SendViaWhatsAppDialog.Model.Antnatal _ ->
+                                Components.SendViaWhatsAppDialog.Model.Antenatal _ ->
                                     model
                         )
                         maybeComponents

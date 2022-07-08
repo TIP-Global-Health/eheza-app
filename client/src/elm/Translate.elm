@@ -60,6 +60,7 @@ import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
+import Components.SendViaWhatsAppDialog.Model exposing (ReportComponentAntenatal(..), ReportComponentWellChild(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Gizra.NominalDate exposing (NominalDate)
@@ -1098,6 +1099,8 @@ type TranslationId
     | RemainingTotalToUpload
     | RenalDisease
     | ReportAge String
+    | ReportComponentAntenatal ReportComponentAntenatal
+    | ReportComponentWellChild ReportComponentWellChild
     | ReportDOB String
     | ReportRemaining Int
     | ReportResultsOfContactsSearch Int
@@ -1166,6 +1169,7 @@ type TranslationId
     | SelectedHCSyncing
     | SelectedHCUploading
     | SendViaWhatsApp
+    | SendViaWhatsAppComponentsSelectionHeader Components.SendViaWhatsAppDialog.Model.ReportType
     | SendViaWhatsAppConsentQuestion
     | SendViaWhatsAppNoticeOfNonRespobsibility
     | SendViaWhatsAppPhoneInputHeader
@@ -11720,6 +11724,70 @@ translationSet trans =
             , kinyarwanda = Just <| "Imyaka: " ++ age
             }
 
+        ReportComponentAntenatal component ->
+            case component of
+                ComponentAntenatalRiskFactors ->
+                    { english = "Risk Factors"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalMedicalDiagnoses ->
+                    { english = "Medical Diagnoses"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalObstetricalDiagnoses ->
+                    { english = "Obstetrical Diagnoses"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalMedicalHistory ->
+                    { english = "Medical History"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalPatientProgress ->
+                    { english = "Patient Progress"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalLabsResults ->
+                    { english = "Labs Results"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalProgressPhotos ->
+                    { english = "Progress Photos"
+                    , kinyarwanda = Nothing
+                    }
+
+        ReportComponentWellChild component ->
+            case component of
+                ComponentWellChildActiveDiagnoses ->
+                    { english = "Acute Illness History"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentWellChildImmunizationHistory ->
+                    { english = "Immunization Histor"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentWellChildECD ->
+                    { english = "Early Childhood Development"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentWellChildGrowth ->
+                    { english = "Growth"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentWellChildNextAppointment ->
+                    { english = "Next Appointment"
+                    , kinyarwanda = Nothing
+                    }
+
         ReportDOB dob ->
             { english = "DOB: " ++ dob
             , kinyarwanda = Just <| "Itariki y'amavuko: " ++ dob
@@ -12238,6 +12306,18 @@ translationSet trans =
             { english = "Send via WhatsApp"
             , kinyarwanda = Nothing
             }
+
+        SendViaWhatsAppComponentsSelectionHeader reportType ->
+            case reportType of
+                Components.SendViaWhatsAppDialog.Model.ReportWellChild ->
+                    { english = "Please select which sections of the Standard Pediatric Visit Report you would like to send:"
+                    , kinyarwanda = Nothing
+                    }
+
+                Components.SendViaWhatsAppDialog.Model.ReportAntenatal ->
+                    { english = "Please select which sections of the Antenatal Report you would like to send:"
+                    , kinyarwanda = Nothing
+                    }
 
         SendViaWhatsAppConsentQuestion ->
             { english = "Does the patient consent to having their medical records sent via WhatsApp?"

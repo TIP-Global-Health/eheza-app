@@ -2278,6 +2278,18 @@ div.page-report {
         margin-left: 5px;
         margin-right: 5px;
       }
+
+      .checkbox-select-input {
+        margin-left: -25px;
+
+        .ui.checkbox.activity {
+          margin-bottom: 15px;
+
+          input {
+            border: 1px solid $color-gray-border;
+          }
+        }
+      }
     }
 
     .actions > button {

@@ -31,7 +31,7 @@ type Msg
     | SetDiagnosisMode DiagnosisMode
     | SetViewMode ViewMode
     | SetFilter PatientRecordFilter
-    | MsgSendViaWhatsAppDialog Components.SendViaWhatsAppDialog.Model.Msg
+    | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
 
 
 type ViewMode
