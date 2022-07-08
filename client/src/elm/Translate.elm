@@ -1168,8 +1168,11 @@ type TranslationId
     | SelectedHCNotSynced
     | SelectedHCSyncing
     | SelectedHCUploading
+    | Send
     | SendViaWhatsApp
     | SendViaWhatsAppComponentsSelectionHeader Components.SendViaWhatsAppDialog.Model.ReportType
+    | SendViaWhatsAppConfirmationBeforeSendingHeader
+    | SendViaWhatsAppConfirmationBeforeSendingQuestion
     | SendViaWhatsAppConsentQuestion
     | SendViaWhatsAppNoticeOfNonRespobsibility
     | SendViaWhatsAppPhoneInputHeader
@@ -12302,6 +12305,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Send ->
+            { english = "Send"
+            , kinyarwanda = Nothing
+            }
+
         SendViaWhatsApp ->
             { english = "Send via WhatsApp"
             , kinyarwanda = Nothing
@@ -12318,6 +12326,16 @@ translationSet trans =
                     { english = "Please select which sections of the Antenatal Report you would like to send:"
                     , kinyarwanda = Nothing
                     }
+
+        SendViaWhatsAppConfirmationBeforeSendingHeader ->
+            { english = "By pressing send you are releasing the selected documents to:"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppConfirmationBeforeSendingQuestion ->
+            { english = "Would you like to send?"
+            , kinyarwanda = Nothing
+            }
 
         SendViaWhatsAppConsentQuestion ->
             { english = "Does the patient consent to having their medical records sent via WhatsApp?"
