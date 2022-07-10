@@ -224,9 +224,6 @@ viewContent language currentDate isChw initiator model assembled =
         firstEncounterMeasurements =
             getFirstEncounterMeasurements isChw assembled
 
-        _ =
-            Debug.log "" model.components
-
         labsPane =
             Maybe.map
                 (\components ->
