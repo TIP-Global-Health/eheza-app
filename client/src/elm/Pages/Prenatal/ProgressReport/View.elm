@@ -47,9 +47,10 @@ import Backend.PrenatalActivity.Utils
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
+import Components.SendViaWhatsAppDialog.Model
 import Date exposing (Interval(..), Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -205,73 +206,107 @@ viewHeader language id initiator model =
 viewContent : Language -> NominalDate -> Bool -> PrenatalProgressReportInitiator -> Model -> AssembledData -> Html Msg
 viewContent language currentDate isChw initiator model assembled =
     let
-        derivedContent =
-            case model.labResultsMode of
-                Just mode ->
-                    case mode of
-                        LabResultsCurrent currentMode ->
-                            [ viewLabResultsPane language currentDate currentMode assembled ]
+        firstEncounterMeasurements =
+            getFirstEncounterMeasurements isChw assembled
 
-                        LabResultsHistory historyMode ->
-                            [ viewLabResultsHistoryPane language currentDate historyMode ]
+        labsPane =
+            Maybe.map
+                (\components ->
+                    viewLabResultsPane language currentDate LabResultsCurrentMain assembled
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalLabsResults)
+                )
+                model.components
+                |> Maybe.withDefault
+                    (case model.labResultsMode of
+                        Just mode ->
+                            case mode of
+                                LabResultsCurrent currentMode ->
+                                    viewLabResultsPane language currentDate currentMode assembled
 
-                Nothing ->
+                                LabResultsHistory historyMode ->
+                                    viewLabResultsHistoryPane language currentDate historyMode
+
+                        Nothing ->
+                            viewLabsPane language currentDate assembled
+                    )
+
+        actions =
+            case initiator of
+                InitiatorEncounterPage _ ->
                     let
-                        firstEncounterMeasurements =
-                            getFirstEncounterMeasurements isChw assembled
-
-                        actions =
-                            case initiator of
-                                InitiatorEncounterPage _ ->
-                                    let
-                                        ( completedActivities, pendingActivities ) =
-                                            getAllActivities assembled
-                                                |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
-                                                |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
-                                    in
-                                    viewActionButton language
-                                        pendingActivities
-                                        completedActivities
-                                        (SetActivePage PinCodePage)
-                                        SetEndEncounterDialogState
-                                        assembled
-
-                                InitiatorRecurrentEncounterPage _ ->
-                                    let
-                                        ( completedActivities, pendingActivities ) =
-                                            Pages.Prenatal.RecurrentEncounter.Utils.allActivities
-                                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
-                                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
-
-                                        allowEndEcounter =
-                                            List.isEmpty pendingActivities
-                                    in
-                                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
-
-                                InitiatorNewEncounter encounterId ->
-                                    div [ class "actions" ]
-                                        [ button
-                                            [ class "ui fluid primary button"
-                                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
-                                            ]
-                                            [ text <| translate language Translate.Reviewed ]
-                                        ]
-
-                                Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
-                                    emptyNode
+                        ( completedActivities, pendingActivities ) =
+                            getAllActivities assembled
+                                |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
+                                |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
                     in
-                    [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
-                    , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                    , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                    , viewPatientProgressPane language currentDate isChw assembled
-                    , viewLabsPane language currentDate assembled
-                    , viewProgressPhotosPane language currentDate isChw assembled
-                    , actions
-                    ]
+                    viewActionButton language
+                        pendingActivities
+                        completedActivities
+                        (SetActivePage PinCodePage)
+                        SetEndEncounterDialogState
+                        assembled
+
+                InitiatorRecurrentEncounterPage _ ->
+                    let
+                        ( completedActivities, pendingActivities ) =
+                            Pages.Prenatal.RecurrentEncounter.Utils.allActivities
+                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
+                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+
+                        allowEndEcounter =
+                            List.isEmpty pendingActivities
+                    in
+                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+
+                InitiatorNewEncounter encounterId ->
+                    div [ class "actions" ]
+                        [ button
+                            [ class "ui fluid primary button"
+                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
+                            ]
+                            [ text <| translate language Translate.Reviewed ]
+                        ]
+
+                Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
+                    emptyNode
+
+        showComponent component =
+            -- Show component if it was selected to be shared via WhatsApp,
+            -- or, if viewing not for sharing via WhatsApp.
+            Maybe.map (EverySet.member component) model.components
+                |> Maybe.withDefault True
     in
-    div [ class "ui unstackable items" ] <|
-        viewHeaderPane language currentDate assembled
-            :: derivedContent
+    div [ class "ui unstackable items" ]
+        [ viewHeaderPane language currentDate assembled
+        , viewRiskFactorsPane language currentDate firstEncounterMeasurements
+            |> showIf
+                (isNothing model.labResultsMode
+                    || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalRiskFactors
+                )
+        , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+            |> showIf
+                (isNothing model.labResultsMode
+                    || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnoses
+                )
+        , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+            |> showIf
+                (isNothing model.labResultsMode
+                    || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnoses
+                )
+        , viewPatientProgressPane language currentDate isChw assembled
+            |> showIf
+                (isNothing model.labResultsMode
+                    || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalPatientProgress
+                )
+        , labsPane
+        , viewProgressPhotosPane language currentDate isChw assembled
+            |> showIf
+                (isNothing model.labResultsMode
+                    || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalProgressPhotos
+                )
+        , -- Actions are hidden when viewing for sharing via WhatsApp.
+          showIf (isNothing model.components) actions
+        ]
 
 
 viewHeaderPane : Language -> NominalDate -> AssembledData -> Html Msg
