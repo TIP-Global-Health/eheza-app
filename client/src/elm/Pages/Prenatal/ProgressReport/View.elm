@@ -48,6 +48,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProg
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.View
 import Date exposing (Interval(..), Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
@@ -89,7 +90,7 @@ import Pages.Prenatal.Utils
         , recommendedTreatmentSignsForSyphilis
         , resolvePreviousHypertensionDiagnosis
         )
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
+import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProgressReport, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate, translateText)
@@ -102,29 +103,43 @@ view language currentDate id isChw initiator db model =
     let
         assembled =
             generateAssembledData id db
+    in
+    viewWebData language (viewContentAndHeader language currentDate isChw initiator model) identity assembled
 
-        header =
-            viewHeader language id initiator model
 
-        content =
-            viewWebData language (viewContent language currentDate isChw initiator model) identity assembled
-
+viewContentAndHeader : Language -> NominalDate -> Bool -> PrenatalProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContentAndHeader language currentDate isChw initiator model assembled =
+    let
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
                     viewEndEncounterDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
-                        (CloseEncounter id)
+                        (CloseEncounter assembled.id)
                         (SetEndEncounterDialogState False)
 
             else
                 Nothing
+
+        componentsConfig =
+            Just
+                { reportType = Components.SendViaWhatsAppDialog.Model.ReportAntenatal
+                , setReportComponentsFunc = SetReportComponents
+                }
     in
     div [ class "page-report clinical" ] <|
-        [ header
-        , content
+        [ viewHeader language assembled.id initiator model
+        , viewContent language currentDate isChw initiator model assembled
         , viewModal endEncounterDialog
+        , Html.map MsgSendViaWhatsAppDialog
+            (Components.SendViaWhatsAppDialog.View.view
+                language
+                currentDate
+                ( assembled.participant.person, assembled.person )
+                componentsConfig
+                model.sendViaWhatsAppDialog
+            )
         ]
 
 
@@ -209,6 +224,9 @@ viewContent language currentDate isChw initiator model assembled =
         firstEncounterMeasurements =
             getFirstEncounterMeasurements isChw assembled
 
+        _ =
+            Debug.log "" model.components
+
         labsPane =
             Maybe.map
                 (\components ->
@@ -239,12 +257,22 @@ viewContent language currentDate isChw initiator model assembled =
                                 |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
                                 |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
                     in
-                    viewActionButton language
-                        pendingActivities
-                        completedActivities
-                        (SetActivePage PinCodePage)
-                        SetEndEncounterDialogState
-                        assembled
+                    div [ class "actions two" ]
+                        [ viewActionButton language
+                            pendingActivities
+                            completedActivities
+                            (SetActivePage PinCodePage)
+                            SetEndEncounterDialogState
+                            assembled
+                        , button
+                            [ class "ui fluid primary button"
+                            , onClick <|
+                                MsgSendViaWhatsAppDialog <|
+                                    Components.SendViaWhatsAppDialog.Model.SetState <|
+                                        Just Components.SendViaWhatsAppDialog.Model.Consent
+                            ]
+                            [ text <| translate language Translate.SendViaWhatsApp ]
+                        ]
 
                 InitiatorRecurrentEncounterPage _ ->
                     let
@@ -256,7 +284,13 @@ viewContent language currentDate isChw initiator model assembled =
                         allowEndEcounter =
                             List.isEmpty pendingActivities
                     in
-                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                    viewEndEncounterMenuForProgressReport language
+                        allowEndEcounter
+                        SetEndEncounterDialogState
+                        (MsgSendViaWhatsAppDialog <|
+                            Components.SendViaWhatsAppDialog.Model.SetState <|
+                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                        )
 
                 InitiatorNewEncounter encounterId ->
                     div [ class "actions" ]
@@ -270,42 +304,45 @@ viewContent language currentDate isChw initiator model assembled =
                 Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
                     emptyNode
 
+        regularViewMode =
+            isNothing model.components
+
         showComponent component =
             -- Show component if it was selected to be shared via WhatsApp,
             -- or, if viewing not for sharing via WhatsApp.
             Maybe.map (EverySet.member component) model.components
-                |> Maybe.withDefault True
+                |> Maybe.withDefault False
     in
     div [ class "ui unstackable items" ]
         [ viewHeaderPane language currentDate assembled
         , viewRiskFactorsPane language currentDate firstEncounterMeasurements
             |> showIf
-                (isNothing model.labResultsMode
+                ((regularViewMode && isNothing model.labResultsMode)
                     || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalRiskFactors
                 )
         , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
             |> showIf
-                (isNothing model.labResultsMode
+                ((regularViewMode && isNothing model.labResultsMode)
                     || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnoses
                 )
         , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
             |> showIf
-                (isNothing model.labResultsMode
+                ((regularViewMode && isNothing model.labResultsMode)
                     || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnoses
                 )
         , viewPatientProgressPane language currentDate isChw assembled
             |> showIf
-                (isNothing model.labResultsMode
+                ((regularViewMode && isNothing model.labResultsMode)
                     || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalPatientProgress
                 )
         , labsPane
         , viewProgressPhotosPane language currentDate isChw assembled
             |> showIf
-                (isNothing model.labResultsMode
+                ((regularViewMode && isNothing model.labResultsMode)
                     || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalProgressPhotos
                 )
         , -- Actions are hidden when viewing for sharing via WhatsApp.
-          showIf (isNothing model.components) actions
+          showIf regularViewMode actions
         ]
 
 

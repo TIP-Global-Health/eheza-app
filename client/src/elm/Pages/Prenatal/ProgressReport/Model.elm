@@ -139,3 +139,5 @@ type Msg
     | SetActivePage Page
     | SetLabResultsMode (Maybe LabResultsMode)
     | SetEndEncounterDialogState Bool
+    | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
+    | SetReportComponents (Maybe Components.SendViaWhatsAppDialog.Model.ReportComponentsList)
