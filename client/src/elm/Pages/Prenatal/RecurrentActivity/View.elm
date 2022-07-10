@@ -631,7 +631,7 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                     form.urobilinogen
                                     Translate.PrenatalLaboratoryUrobilinogenValue
                                     urobilinogenValueToString
-                                    [ Urobilinogen02
+                                    [ Urobilinogen002
                                     , Urobilinogen10
                                     , Urobilinogen20
                                     , Urobilinogen40

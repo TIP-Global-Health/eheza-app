@@ -9617,8 +9617,8 @@ translationSet trans =
 
         PrenatalLaboratoryUrobilinogenValue value ->
             case value of
-                Urobilinogen02 ->
-                    { english = "0.2"
+                Urobilinogen002 ->
+                    { english = "0-0.2"
                     , kinyarwanda = Nothing
                     }
 

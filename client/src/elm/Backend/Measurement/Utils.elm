@@ -1181,8 +1181,8 @@ nitriteValueFromString value =
 urobilinogenValueToString : UrobilinogenValue -> String
 urobilinogenValueToString value =
     case value of
-        Urobilinogen02 ->
-            "0.2"
+        Urobilinogen002 ->
+            "0-0.2"
 
         Urobilinogen10 ->
             "1"
@@ -1200,8 +1200,8 @@ urobilinogenValueToString value =
 urobilinogenValueFromString : String -> Maybe UrobilinogenValue
 urobilinogenValueFromString value =
     case value of
-        "0.2" ->
-            Just Urobilinogen02
+        "0-0.2" ->
+            Just Urobilinogen002
 
         "1" ->
             Just Urobilinogen10

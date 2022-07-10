@@ -1110,7 +1110,7 @@ type NitriteValue
 
 
 type UrobilinogenValue
-    = Urobilinogen02
+    = Urobilinogen002
     | Urobilinogen10
     | Urobilinogen20
     | Urobilinogen40
