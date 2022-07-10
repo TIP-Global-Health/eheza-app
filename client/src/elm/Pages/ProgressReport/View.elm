@@ -56,6 +56,7 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
             SetDiagnosisMode
             MsgSendViaWhatsAppDialog
             componentsConfig
+            model.components
             Nothing
         )
         identity

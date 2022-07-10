@@ -105,6 +105,7 @@ view language currentDate zscores id isChw db model =
             SetDiagnosisMode
             MsgSendViaWhatsAppDialog
             componentsConfig
+            model.components
             bottomActionData
         )
         identity
