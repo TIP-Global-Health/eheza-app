@@ -299,7 +299,6 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
                         [ ComponentAntenatalRiskFactors
                         , ComponentAntenatalMedicalDiagnoses
                         , ComponentAntenatalObstetricalDiagnoses
-                        , ComponentAntenatalMedicalHistory
                         , ComponentAntenatalPatientProgress
                         , ComponentAntenatalLabsResults
                         , ComponentAntenatalProgressPhotos

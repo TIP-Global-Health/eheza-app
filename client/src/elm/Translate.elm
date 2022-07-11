@@ -11744,11 +11744,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                ComponentAntenatalMedicalHistory ->
-                    { english = "Medical History"
-                    , kinyarwanda = Nothing
-                    }
-
                 ComponentAntenatalPatientProgress ->
                     { english = "Patient Progress"
                     , kinyarwanda = Nothing
