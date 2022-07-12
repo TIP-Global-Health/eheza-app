@@ -654,9 +654,6 @@ encodePrenatalUrineDipstickTestValue value =
         haemoglobin =
             encodeField encodeHaemoglobinValue "haemoglobin" value.haemoglobin
 
-        specificGravity =
-            encodeField encodeSpecificGravityValue "specific_gravity" value.specificGravity
-
         ketone =
             encodeField encodeKetoneValue "ketone" value.ketone
 
@@ -673,7 +670,6 @@ encodePrenatalUrineDipstickTestValue value =
         ++ nitrite
         ++ urobilinogen
         ++ haemoglobin
-        ++ specificGravity
         ++ ketone
         ++ bilirubin
         ++ [ ( "deleted", bool False )
@@ -725,11 +721,6 @@ encodeUrobilinogenValue =
 encodeHaemoglobinValue : HaemoglobinValue -> Value
 encodeHaemoglobinValue =
     haemoglobinValueToString >> string
-
-
-encodeSpecificGravityValue : SpecificGravityValue -> Value
-encodeSpecificGravityValue =
-    specificGravityValueToString >> string
 
 
 encodeKetoneValue : KetoneValue -> Value

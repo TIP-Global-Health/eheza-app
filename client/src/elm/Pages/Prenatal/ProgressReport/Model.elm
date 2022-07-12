@@ -51,7 +51,6 @@ type LabResultsHistoryMode
     | LabResultsHistoryNitrite (List ( NominalDate, Maybe NitriteValue ))
     | LabResultsHistoryUrobilinogen (List ( NominalDate, Maybe UrobilinogenValue ))
     | LabResultsHistoryHaemoglobin (List ( NominalDate, Maybe HaemoglobinValue ))
-    | LabResultsHistorySpecificGravity (List ( NominalDate, Maybe SpecificGravityValue ))
     | LabResultsHistoryKetone (List ( NominalDate, Maybe KetoneValue ))
     | LabResultsHistoryBilirubin (List ( NominalDate, Maybe BilirubinValue ))
     | LabResultsHistoryRandomBloodSugar (List ( NominalDate, Maybe Float ))

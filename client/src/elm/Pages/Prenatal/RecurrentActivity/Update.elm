@@ -289,19 +289,6 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , []
             )
 
-        SetSpecificGravity value ->
-            let
-                form =
-                    data.urineDipstickTestForm
-
-                updatedForm =
-                    { form | specificGravity = specificGravityValueFromString value }
-            in
-            ( { data | urineDipstickTestForm = updatedForm }
-            , Cmd.none
-            , []
-            )
-
         SetKetone value ->
             let
                 form =
@@ -891,23 +878,6 @@ update language currentDate id db msg model =
 
                 updatedForm =
                     { form | haemoglobin = haemoglobinValueFromString value }
-
-                updatedData =
-                    model.labResultsData
-                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
-            in
-            ( { model | labResultsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetSpecificGravity value ->
-            let
-                form =
-                    model.labResultsData.urineDipstickTestForm
-
-                updatedForm =
-                    { form | specificGravity = specificGravityValueFromString value }
 
                 updatedData =
                     model.labResultsData

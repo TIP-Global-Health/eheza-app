@@ -1272,59 +1272,6 @@ haemoglobinValueFromString value =
             Nothing
 
 
-specificGravityValueToString : SpecificGravityValue -> String
-specificGravityValueToString value =
-    case value of
-        SpecificGravity1000 ->
-            "1.000"
-
-        SpecificGravity1005 ->
-            "1.005"
-
-        SpecificGravity1010 ->
-            "1.010"
-
-        SpecificGravity1015 ->
-            "1.015"
-
-        SpecificGravity1020 ->
-            "1.020"
-
-        SpecificGravity1025 ->
-            "1.025"
-
-        SpecificGravity1030 ->
-            "1.030"
-
-
-specificGravityValueFromString : String -> Maybe SpecificGravityValue
-specificGravityValueFromString value =
-    case value of
-        "1.000" ->
-            Just SpecificGravity1000
-
-        "1.005" ->
-            Just SpecificGravity1005
-
-        "1.010" ->
-            Just SpecificGravity1010
-
-        "1.015" ->
-            Just SpecificGravity1015
-
-        "1.020" ->
-            Just SpecificGravity1020
-
-        "1.025" ->
-            Just SpecificGravity1025
-
-        "1.030" ->
-            Just SpecificGravity1030
-
-        _ ->
-            Nothing
-
-
 ketoneValueToString : KetoneValue -> String
 ketoneValueToString value =
     case value of

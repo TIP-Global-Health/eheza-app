@@ -1057,7 +1057,6 @@ type alias PrenatalUrineDipstickTestValue =
     , nitrite : Maybe NitriteValue
     , urobilinogen : Maybe UrobilinogenValue
     , haemoglobin : Maybe HaemoglobinValue
-    , specificGravity : Maybe SpecificGravityValue
     , ketone : Maybe KetoneValue
     , bilirubin : Maybe BilirubinValue
     }
@@ -1125,16 +1124,6 @@ type HaemoglobinValue
     | HaemoglobinSmall
     | HaemoglobinModerate
     | HaemoglobinLarge
-
-
-type SpecificGravityValue
-    = SpecificGravity1000
-    | SpecificGravity1005
-    | SpecificGravity1010
-    | SpecificGravity1015
-    | SpecificGravity1020
-    | SpecificGravity1025
-    | SpecificGravity1030
 
 
 type KetoneValue

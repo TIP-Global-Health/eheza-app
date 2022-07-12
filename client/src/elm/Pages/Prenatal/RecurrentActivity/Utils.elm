@@ -358,7 +358,6 @@ prenatalUrineDipstickResultFormWithDefault form saved =
                 , nitrite = or form.nitrite value.nitrite
                 , urobilinogen = or form.urobilinogen value.urobilinogen
                 , haemoglobin = or form.haemoglobin value.haemoglobin
-                , specificGravity = or form.specificGravity value.specificGravity
                 , ketone = or form.ketone value.ketone
                 , bilirubin = or form.bilirubin value.bilirubin
                 }
@@ -385,7 +384,6 @@ toPrenatalUrineDipstickResultsValue form =
             , nitrite = form.nitrite
             , urobilinogen = form.urobilinogen
             , haemoglobin = form.haemoglobin
-            , specificGravity = form.specificGravity
             , ketone = form.ketone
             , bilirubin = form.bilirubin
             }

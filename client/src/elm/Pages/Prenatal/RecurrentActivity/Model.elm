@@ -38,7 +38,6 @@ type Msg
     | SetNitrite String
     | SetUrobilinogen String
     | SetHaemoglobin String
-    | SetSpecificGravity String
     | SetKetone String
     | SetBilirubin String
     | SaveUrineDipstickResult PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
@@ -189,7 +188,6 @@ type alias PrenatalUrineDipstickResultForm =
     , nitrite : Maybe NitriteValue
     , urobilinogen : Maybe UrobilinogenValue
     , haemoglobin : Maybe HaemoglobinValue
-    , specificGravity : Maybe SpecificGravityValue
     , ketone : Maybe KetoneValue
     , bilirubin : Maybe BilirubinValue
     }
@@ -207,7 +205,6 @@ emptyPrenatalUrineDipstickResultForm =
     , nitrite = Nothing
     , urobilinogen = Nothing
     , haemoglobin = Nothing
-    , specificGravity = Nothing
     , ketone = Nothing
     , bilirubin = Nothing
     }
