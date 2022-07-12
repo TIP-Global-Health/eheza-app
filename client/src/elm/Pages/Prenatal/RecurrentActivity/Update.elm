@@ -289,19 +289,6 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , []
             )
 
-        SetSpecificGravity value ->
-            let
-                form =
-                    data.urineDipstickTestForm
-
-                updatedForm =
-                    { form | specificGravity = specificGravityValueFromString value }
-            in
-            ( { data | urineDipstickTestForm = updatedForm }
-            , Cmd.none
-            , []
-            )
-
         SetKetone value ->
             let
                 form =
