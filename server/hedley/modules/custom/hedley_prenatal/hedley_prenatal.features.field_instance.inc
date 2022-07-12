@@ -786,44 +786,6 @@ function hedley_prenatal_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-prenatal_encounter-field_prenatal_diagnoses'.
-  $field_instances['node-prenatal_encounter-field_prenatal_diagnoses'] = array(
-    'bundle' => 'prenatal_encounter',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 6,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_prenatal_diagnoses',
-    'label' => 'Prenatal Diagnoses',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 5,
-    ),
-  );
-
-  // Exported field_instance:
   // 'node-prenatal_encounter-field_past_prenatal_diagnoses'.
   $field_instances['node-prenatal_encounter-field_past_prenatal_diagnoses'] = array(
     'bundle' => 'prenatal_encounter',
@@ -858,6 +820,44 @@ function hedley_prenatal_field_default_field_instances() {
       'settings' => array(),
       'type' => 'options_select',
       'weight' => 15,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_encounter-field_prenatal_diagnoses'.
+  $field_instances['node-prenatal_encounter-field_prenatal_diagnoses'] = array(
+    'bundle' => 'prenatal_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_prenatal_diagnoses',
+    'label' => 'Prenatal Diagnoses',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 5,
     ),
   );
 
@@ -5134,7 +5134,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -5191,7 +5191,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 11,
+      'weight' => 9,
     ),
   );
 
@@ -5236,7 +5236,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -5281,7 +5281,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -5326,7 +5326,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -5371,7 +5371,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -5418,7 +5418,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 12,
+      'weight' => 10,
     ),
   );
 
@@ -5456,7 +5456,45 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 9,
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_random_blood_sugar_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_random_blood_sugar_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_random_blood_sugar_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 8,
     ),
   );
 
@@ -8038,12 +8076,14 @@ function hedley_prenatal_field_default_field_instances() {
   t('Outside Care Medications');
   t('Outside Care Signs');
   t('PH');
+  t('Past Prenatal Diagnoses');
   t('Patient Notified');
   t('Performed tests');
   t('Person');
   t('Prenatal Assesment');
   t('Prenatal Diagnoses');
   t('Prenatal Encounter');
+  t('Prenatal Indicators');
   t('Prenatal Symptom Questions');
   t('Prenatal Symptoms');
   t('Prescribed medication');
@@ -8058,6 +8098,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Sugar Count');
   t('Sys Repeated');
   t('Test Execution Note');
+  t('Test Prerequisites');
   t('Test Result');
   t('Test variant');
   t('UUID');
