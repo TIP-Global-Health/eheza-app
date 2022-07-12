@@ -24,7 +24,6 @@ class HedleyRestfulPrenatalUrineDipstickTest extends HedleyRestfulPrenatalActivi
     'field_nitrite',
     'field_urobilinogen',
     'field_haemoglobin',
-    'field_specific_gravity',
     'field_ketone',
     'field_bilirubin',
   ];
