@@ -153,7 +153,7 @@ nitriteResultNormal =
 
 urobilinogenResultNormal : UrobilinogenValue -> Bool
 urobilinogenResultNormal value =
-    List.member value [ Urobilinogen02, Urobilinogen10 ]
+    List.member value [ Urobilinogen002, Urobilinogen10 ]
 
 
 urineHaemoglobinValueResultNormal : HaemoglobinValue -> Bool

@@ -1919,8 +1919,8 @@ translationSet trans =
             }
 
         AdministerIronHelper ->
-            { english = "Take 2 60 mg tabs 2x a day x 3 months"
-            , kinyarwanda = Just "Fata mg 260 inshuro 2 ku munsi mu mezi atatu"
+            { english = "Take 1 60 mg tabs 2x a day x 3 months"
+            , kinyarwanda = Just "Fata mg 1 60 inshuro 2 ku munsi mu mezi atatu"
             }
 
         AdministeVitaminAHelper ->
@@ -4759,7 +4759,7 @@ translationSet trans =
             }
 
         HeartburnRecommendedTreatmentHelper ->
-            { english = "Select the best treatment option for the patient bellow"
+            { english = "Select the best treatment option for the patient below"
             , kinyarwanda = Nothing
             }
 
@@ -5019,7 +5019,7 @@ translationSet trans =
             }
 
         HypertensionRecommendedTreatmentHelper ->
-            { english = "Select the best treatment option for the patient bellow"
+            { english = "Select the best treatment option for the patient below"
             , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
             }
 
@@ -6184,17 +6184,17 @@ translationSet trans =
             }
 
         MedicationDistributionNoticeGonorrhea ->
-            { english = "Note: It is also recommend to prescribe the partner"
+            { english = "Note: It is also recommended to prescribe the partner"
             , kinyarwanda = Nothing
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed1 ->
-            { english = "Ciproflaxcin (1000mg): by mouth as a single dose"
+            { english = "Ciprofloxacin (1000mg): by mouth as a single dose"
             , kinyarwanda = Nothing
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed2 ->
-            { english = "Doxycyline (100mg): by moth 2x a day for 7 days"
+            { english = "Doxycycline (100mg): by moth 2x a day for 7 days"
             , kinyarwanda = Nothing
             }
 
@@ -8155,7 +8155,7 @@ translationSet trans =
                     }
 
                 DiagnosisModerateAnemia ->
-                    { english = "Mild to Mederate Anemia"
+                    { english = "Mild to Moderate Anemia"
                     , kinyarwanda = Just "Amaraso Macye byoroheje"
                     }
 
@@ -8467,7 +8467,7 @@ translationSet trans =
                     }
 
                 DiagnosisModerateAnemia ->
-                    { english = "Anemia (Mild to Mederate)"
+                    { english = "Anemia (Mild to Moderate)"
                     , kinyarwanda = Just "Amaraso Macye (byoroheje)"
                     }
 
@@ -8684,8 +8684,8 @@ translationSet trans =
                     }
 
                 DiagnosisDiscordantPartnership ->
-                    { english = "HIV Negative with a discordant partner"
-                    , kinyarwanda = Just "Nta bwandu afite ariko uwo babana afite ubwandu bwa Virusi itera SIDA"
+                    { english = "Patient is HIV Negative with a discordant partner"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisSyphilis ->
@@ -8714,38 +8714,38 @@ translationSet trans =
                     }
 
                 DiagnosisMalariaMedicatedContinued ->
-                    { english = "Patient has tested positive for Malaria Continued"
+                    { english = "Patient has tested positive for persistent Malaria"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisMalariaWithAnemia ->
-                    { english = "Malaria with Anemia"
+                    { english = "Patient has tested positive for Malaria with Anemia"
                     , kinyarwanda = Just "Afite Malariya n'amaraso macye"
                     }
 
                 DiagnosisMalariaWithAnemiaMedicatedContinued ->
-                    { english = "Malaria with Anemia Continued"
+                    { english = "Patient has tested positive for persistent Malaria with Anemia"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisMalariaWithSevereAnemia ->
-                    { english = "Malaria with Severe Anemia"
-                    , kinyarwanda = Just "Afite Malariya n'amaraso macye cyane"
+                    { english = "Patient has tested positive for Malaria with Severe Anemia"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisModerateAnemia ->
-                    { english = "Mild to Moderate Anemia"
-                    , kinyarwanda = Just "Afite amaraso macye byoroheje"
+                    { english = "Patient hshows signs of Mild to Moderate Anemia"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisSevereAnemia ->
-                    { english = "Severe Anemia"
-                    , kinyarwanda = Just "Afite amaraso macye bikabije"
+                    { english = "Patient shows signs of Severe Anemia"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisSevereAnemiaWithComplications ->
-                    { english = "Severe Anemia with Complications"
-                    , kinyarwanda = Just "Afite amaraso macye cyane n'ibibazo bishamikiyeho"
+                    { english = "Patient has tested positive for Severe Anemia with Complications"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisChronicHypertensionImmediate ->
@@ -8789,77 +8789,82 @@ translationSet trans =
                     }
 
                 DiagnosisHeartburn ->
-                    { english = "Persistent Heartburn"
+                    { english = "Patient shows signs of Persistent Heartburn"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisHeartburnPersistent ->
-                    { english = "Persistent Heartburn that is not responding to treatment"
+                    { english = "Patient shows signs of Persistent Heartburn that is not responding to treatment"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisDeepVeinThrombosis ->
-                    { english = "Deep Vein Thrombosis"
+                    { english = "Patient shows signs of Deep Vein Thrombosis"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPelvicPainIntense ->
-                    { english = "Intense Pelvic Pain"
+                    { english = "Patient shows signs of Intense Pelvic Pain"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPelvicPainContinued ->
-                    { english = "Persistent Pelvic Pain"
+                    { english = "Patient shows signs of Persistent Pelvic Pain"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisUrinaryTractInfection ->
-                    { english = "Urinary Tract Infection"
+                    { english = "Patient shows signs of Urinary Tract Infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisUrinaryTractInfectionContinued ->
-                    { english = "Urinary Tract Infection Continued"
+                    { english = "Patient shows signs of Persistant Urinary Tract Infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPyelonephritis ->
-                    { english = "Pyelonephritis"
+                    { english = "Patient shows signs of Pyelonephritis"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisCandidiasis ->
-                    { english = "Patient shows signs of a yeast infection"
+                    { english = "Patient shows signs of a Yeast infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisCandidiasisContinued ->
-                    { english = "Candidiasis Continued"
-                    , kinyarwanda = Nothing
-                    }
-
-                DiagnosisGonorrheaContinued ->
-                    { english = "Gonorrhea Continued"
+                    { english = "Patient shows signs of a Persistant Yeast infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisGonorrhea ->
-                    { english = "Gonorrhea"
+                    { english = "Patient shows signs of Gonorrhea"
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisTrichomonasOrBacterialVaginosisContinued ->
-                    { english = "Trichomonas or Bacterial Vaginosis Continued"
+                DiagnosisGonorrheaContinued ->
+                    { english = "Patient shows signs of Persistant Gonorrhea"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisTrichomonasOrBacterialVaginosis ->
-                    { english = "Trichomonas or Bacterial Vaginosis"
+                    { english = "Patient shows signs ofTrichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosisContinued ->
+                    { english = "Patient shows signs of Persistant Trichomonas or Bacterial Vaginosis"
                     , kinyarwanda = Nothing
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
-                    { english = "Tuberculosis"
+                    { english = "Patient shows signs of Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHyperemesisGravidumBySymptoms ->
+                    { english = "Patient shows signs of Hyperemesis Gravidum"
                     , kinyarwanda = Nothing
                     }
 
@@ -8950,7 +8955,7 @@ translationSet trans =
 
         PrenatalHealthEducationSignsDiagnosis isInitial date sign ->
             case sign of
-                EducationNausiaVomiting ->
+                EducationNauseaVomiting ->
                     if isInitial then
                         { english = "Nausea + vomitting in pregnancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
@@ -8974,12 +8979,12 @@ translationSet trans =
 
                 EducationLowBackPain ->
                     if isInitial then
-                        { english = "Low back pain in pregancy - provided health education on " ++ date
+                        { english = "Lower back pain in pregnancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
                         }
 
                     else
-                        { english = "Persistent low back pain in pregancy - provided health education on " ++ date
+                        { english = "Persistent lower back pain in pregnancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
                         }
 
@@ -9035,8 +9040,8 @@ translationSet trans =
 
         PrenatalHealthEducationLabel sign ->
             case sign of
-                EducationNausiaVomiting ->
-                    { english = "Nausia and Vomiting"
+                EducationNauseaVomiting ->
+                    { english = "Nausea and Vomiting"
                     , kinyarwanda = Nothing
                     }
 
@@ -9046,7 +9051,7 @@ translationSet trans =
                     }
 
                 EducationLowBackPain ->
-                    { english = "Low Back Pain"
+                    { english = "Lower Back Pain"
                     , kinyarwanda = Nothing
                     }
 
@@ -9066,7 +9071,7 @@ translationSet trans =
                     }
 
                 EducationLegPainRedness ->
-                    { english = "Leg Pain Redness"
+                    { english = "Leg Pain or Redness"
                     , kinyarwanda = Nothing
                     }
 
@@ -9148,7 +9153,7 @@ translationSet trans =
                     , kinyarwanda = Just "Waba wasobanuriye umurwayi (umubyeyi) icyo bisibanuye kugira ibisubizo biri positifu ku bwandu bw'agakoko gatera SIDA"
                     }
 
-                EducationSaferSex ->
+                EducationSaferSexHIV ->
                     { english = "Have you counseled patient on safer sex practices"
                     , kinyarwanda = Just "Wagiriye inama umubyeyi ku bijyanye no gukora imibonano mpuzabitsina ikingiye"
                     }
@@ -9599,8 +9604,8 @@ translationSet trans =
 
         PrenatalLaboratoryUrobilinogenValue value ->
             case value of
-                Urobilinogen02 ->
-                    { english = "0.2"
+                Urobilinogen002 ->
+                    { english = "0-0.2"
                     , kinyarwanda = Nothing
                     }
 
@@ -10625,12 +10630,12 @@ translationSet trans =
                     }
 
                 LowBackPain ->
-                    { english = "Low Back Pain"
+                    { english = "Lower Back Pain"
                     , kinyarwanda = Nothing
                     }
 
                 CoughContinuous ->
-                    { english = "Cough for >3 weeks"
+                    { english = "Cough for >2 weeks"
                     , kinyarwanda = Nothing
                     }
 
@@ -11289,12 +11294,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TreatmentNitrfurantion ->
+                TreatmentNitrofurantoin ->
                     { english = "by mouth 2x a day for 7 days"
                     , kinyarwanda = Nothing
                     }
 
-                TreatmentAmoxicilin ->
+                TreatmentAmoxicillin ->
                     { english = "by mouth 3x a day for 7 days"
                     , kinyarwanda = Nothing
                     }
@@ -11429,22 +11434,22 @@ translationSet trans =
                     }
 
                 TreatmentAluminiumHydroxide ->
-                    { english = "Aluminium Hydroxide"
+                    { english = "Aluminium Hydroxide (500mg)"
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHealthEducationForHeartburn ->
-                    { english = "Not dispencing medicine. Follow health education protocols."
+                    { english = "Not dispensing medicine. Follow health education protocols."
                     , kinyarwanda = Nothing
                     }
 
-                TreatmentNitrfurantion ->
-                    { english = "Nitrfurantion (100mg)"
+                TreatmentNitrofurantoin ->
+                    { english = "Nitrofurantoin (100mg)"
                     , kinyarwanda = Nothing
                     }
 
-                TreatmentAmoxicilin ->
-                    { english = "Amoxicilin (500mg)"
+                TreatmentAmoxicillin ->
+                    { english = "Amoxicillin (500mg)"
                     , kinyarwanda = Nothing
                     }
 
@@ -12818,23 +12823,23 @@ translationSet trans =
             }
 
         TreatmentDetailsAnemia ->
-            { english = "At the previous visit you were given Iron (120mg) take one 60mg tablet 2x a day for 3 months and Folic Acid (400 IU) take daily for 3 months."
+            { english = "At the previous visit you were given Iron (120mg), one 60mg tablet 2x a day for 3 months and Folic Acid (400 IU) take daily for 3 months."
             , kinyarwanda = Nothing
             }
 
         TreatmentDetailsHIV dolutegravir arvs ->
             if dolutegravir && arvs then
-                { english = "At the previous visit you were given TDF + 3TC (1 tablet) by mouth 1x a day and Doltegravir (50mg) by mouth 1x a day."
+                { english = "At the previous visit you were given TDF + 3TC (1 tablet), by mouth 1x a day and Doltegravir (50mg) by mouth 1x a day."
                 , kinyarwanda = Nothing
                 }
 
             else if dolutegravir then
-                { english = "At the previous visit you were given Doltegravir (50mg) by mouth 1x a day."
+                { english = "At the previous visit you were given Doltegravir (50mg), by mouth 1x a day."
                 , kinyarwanda = Nothing
                 }
 
             else if arvs then
-                { english = "At the previous visit you were given TDF + 3TC (1 tablet) by mouth 1x a day."
+                { english = "At the previous visit you were given TDF + 3TC (1 tablet), by mouth 1x a day."
                 , kinyarwanda = Nothing
                 }
 
@@ -12846,27 +12851,27 @@ translationSet trans =
         TreatmentDetailsHypertension sign ->
             case sign of
                 TreatmentMethyldopa2 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 2x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 2x a day for hypertension."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa3 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 3x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 3x a day for hypertension."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa4 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 4x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day for hypertension."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
-                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 4x a day and Carvedilol (6.25mg) by mouth 2x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day and Carvedilol (6.25mg), by mouth 2x a day for hypertension."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
-                    { english = "At the previous visit you were given Methyldopa (250mg) by mouth 4x a day, Carvedilol (6.25mg) by mouth 2x a day and Amlodipine (5mg) by mouth 1x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg,) by mouth 4x a day, Carvedilol (6.25mg), by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for hypertension."
                     , kinyarwanda = Nothing
                     }
 
@@ -12884,7 +12889,7 @@ translationSet trans =
                     }
 
                 TreatmentCoartem ->
-                    { english = "At the previous visit you were given Coartem 4 tablets by mouth twice per day x 3 days."
+                    { english = "At the previous visit you were given Coartem, 4 tablets by mouth twice per day x 3 days."
                     , kinyarwanda = Nothing
                     }
 
@@ -12896,27 +12901,27 @@ translationSet trans =
         TreatmentDetailsSyphilis sign ->
             case sign of
                 TreatmentPenecilin1 ->
-                    { english = "At the previous visit you were given Penicillin (2.4 million units) IM x 1."
+                    { english = "At the previous visit you were given Penicillin (2.4 million units), IM x 1."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentPenecilin3 ->
-                    { english = "At the previous visit you were given Penicillin (2.4 million units) IM 1x a week for 3 weeks."
+                    { english = "At the previous visit you were given Penicillin (2.4 million units), IM 1x a week for 3 weeks."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentErythromycin ->
-                    { english = "At the previous visit you were given Erythromycin (500mg) by mouth 4x a day for 14 days."
+                    { english = "At the previous visit you were given Erythromycin (500mg), by mouth 4x a day for 14 days."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentAzithromycin ->
-                    { english = "At the previous visit you were given Azithromycin (2g) 4 tabs by mouth x one day."
+                    { english = "At the previous visit you were given Azithromycin (2g), 4 tabs by mouth x one day."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentCeftriaxon ->
-                    { english = "At the previous visit you were given Ceftriaxone (1g) IM daily x 10 days."
+                    { english = "At the previous visit you were given Ceftriaxone (1g), IM daily x 10 days."
                     , kinyarwanda = Nothing
                     }
 

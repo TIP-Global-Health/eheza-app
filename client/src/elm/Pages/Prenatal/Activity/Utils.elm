@@ -3,7 +3,7 @@ module Pages.Prenatal.Activity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PrenatalEncounterId)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, prenatalLabExpirationPeriod, weightValueFunc)
+import Backend.Measurement.Utils exposing (getHeightValue, getMeasurementValueFunc, muacIndication, muacValueFunc, prenatalLabExpirationPeriod, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
@@ -854,7 +854,8 @@ hospitalizeDueToNauseaAndVomiting assembled =
 
         -- NauseaAndVomiting was reported at any of previous encounters.
         byPreviousEncounters =
-            symptomRecordedPreviously assembled NauseaAndVomiting
+            symptomRecorded assembled.measurements NauseaAndVomiting
+                && symptomRecordedPreviously assembled NauseaAndVomiting
     in
     byCurrentEncounter || byPreviousEncounters
 
@@ -990,11 +991,27 @@ nextStepsMeasurementTaken assembled task =
 
                     else
                         True
+
+                candidiasisTreatmentCompleted =
+                    if diagnosed DiagnosisCandidiasis assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForCandidiasis assembled.measurements
+
+                    else
+                        True
+
+                urinaryTractInfectionTreatmentCompleted =
+                    if diagnosed DiagnosisUrinaryTractInfection assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForUrinaryTractInfection assembled.measurements
+
+                    else
+                        True
             in
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
                 && malariaTreatmentCompleted
                 && heartburnTreatmentCompleted
                 && hypertensionTreatmentCompleted
+                && candidiasisTreatmentCompleted
+                && urinaryTractInfectionTreatmentCompleted
 
         NextStepsWait ->
             getMeasurementValueFunc assembled.measurements.labsResults
@@ -1200,10 +1217,30 @@ getDangerSignsListForType getFunc mappingFunc noSignsValue measurements =
         |> Maybe.withDefault []
 
 
-getMotherHeightMeasurement : PrenatalMeasurements -> Maybe HeightInCm
-getMotherHeightMeasurement measurements =
-    getMeasurementValueFunc measurements.nutrition
-        |> Maybe.map .height
+resolveMeasuredHeight : AssembledData -> Maybe HeightInCm
+resolveMeasuredHeight assembled =
+    let
+        resolveHeight measurements =
+            getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .height
+
+        heightMeasuredByNurse =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveHeight measurements
+                )
+                assembled.nursePreviousMeasurementsWithDates
+                |> List.head
+
+        heightMeasuredByCHW =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveHeight measurements
+                )
+                assembled.chwPreviousMeasurementsWithDates
+                |> List.head
+    in
+    Maybe.Extra.or heightMeasuredByNurse heightMeasuredByCHW
 
 
 generatePrenatalAssesmentForChw : AssembledData -> PrenatalAssesment
@@ -1681,7 +1718,8 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
 
         DiagnosisPelvicPainContinued ->
             -- Pelvic pain was reported previously.
-            symptomRecordedPreviously assembled PelvicPain
+            symptomRecorded assembled.measurements PelvicPain
+                && symptomRecordedPreviously assembled PelvicPain
 
         DiagnosisUrinaryTractInfection ->
             urinaryTractInfectionDiagnosed
@@ -2039,7 +2077,7 @@ healthEducationFormInputsAndTasksForNurse language assembled form =
 
         nauseaVomiting =
             if provideNauseaAndVomitingEducation assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNausiaVomiting) "" "label header"
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNauseaVomiting) "" "label header"
                   , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingInform "." "label paragraph"
                   , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingAdvise "." "label paragraph"
                   , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
@@ -3593,7 +3631,7 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
 
 fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
 fromObstetricalExamValue saved =
-    { fundalHeight = Maybe.map (.fundalHeight >> heightValueFunc) saved
+    { fundalHeight = Maybe.map (.fundalHeight >> getHeightValue) saved
     , fundalHeightDirty = False
     , fetalPresentation = Maybe.map .fetalPresentation saved
     , fetalMovement = Maybe.map .fetalMovement saved
@@ -3609,7 +3647,7 @@ obstetricalExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (heightValueFunc value.fundalHeight)
+                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (getHeightValue value.fundalHeight)
                 , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
@@ -3787,7 +3825,7 @@ toFamilyPlanningValue form =
 
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
 fromPrenatalNutritionValue saved =
-    { height = Maybe.map (.height >> heightValueFunc) saved
+    { height = Maybe.map (.height >> getHeightValue) saved
     , heightDirty = False
     , weight = Maybe.map (.weight >> weightValueFunc) saved
     , weightDirty = False
@@ -3802,7 +3840,7 @@ prenatalNutritionFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { height = valueConsideringIsDirtyField form.heightDirty form.height (heightValueFunc value.height)
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (getHeightValue value.height)
                 , heightDirty = form.heightDirty
                 , weight = valueConsideringIsDirtyField form.weightDirty form.weight (weightValueFunc value.weight)
                 , weightDirty = form.weightDirty
@@ -4085,8 +4123,8 @@ historyTasksCompletedFromTotal assembled data task =
             ( 0, 0 )
 
 
-examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> Bool -> ExaminationTask -> ( Int, Int )
-examinationTasksCompletedFromTotal assembled data firstEncounter task =
+examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
+examinationTasksCompletedFromTotal assembled data task =
     case task of
         Vitals ->
             let
@@ -4108,8 +4146,11 @@ examinationTasksCompletedFromTotal assembled data firstEncounter task =
 
         NutritionAssessment ->
             let
+                measuredHeight =
+                    resolveMeasuredHeight assembled
+
                 hideHeightInput =
-                    not firstEncounter
+                    isJust measuredHeight
 
                 form_ =
                     assembled.measurements.nutrition
@@ -4118,10 +4159,7 @@ examinationTasksCompletedFromTotal assembled data firstEncounter task =
 
                 form =
                     if hideHeightInput then
-                        assembled.nursePreviousMeasurementsWithDates
-                            |> List.head
-                            |> Maybe.andThen (\( _, _, measurements ) -> getMotherHeightMeasurement measurements)
-                            |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
+                        Maybe.map (\(HeightInCm height) -> { form_ | height = Just height }) measuredHeight
                             |> Maybe.withDefault form_
 
                     else
@@ -5014,7 +5052,7 @@ symptomReviewFormInputsAndTasks language step form =
 symptomReviewFormInputsAndTasksSymptoms : Language -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
 symptomReviewFormInputsAndTasksSymptoms language form =
     ( [ div [ class "ui form symptom-review" ]
-            [ viewQuestionLabel language Translate.SelectIllnessSymptoms
+            [ viewLabel language Translate.SelectIllnessSymptoms
             , viewCheckBoxMultipleSelectInput language
                 [ BurningWithUrination, AbnormalVaginalDischarge, NauseaAndVomiting, Heartburn, LegCramps, LowBackPain ]
                 [ CoughContinuous, PelvicPain, Constipation, VaricoseVeins, LegPainRedness ]

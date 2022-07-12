@@ -316,8 +316,8 @@ decodePrenatalHealthEducationSign =
                     "partner-testing" ->
                         succeed EducationPartnerTesting
 
-                    "nausia-vomiting" ->
-                        succeed EducationNausiaVomiting
+                    "nausea-vomiting" ->
+                        succeed EducationNauseaVomiting
 
                     "leg-cramps" ->
                         succeed EducationLegCramps

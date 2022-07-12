@@ -560,8 +560,8 @@ postpartumChildDangerSignFromString sign =
             Nothing
 
 
-heightValueFunc : HeightInCm -> Float
-heightValueFunc =
+getHeightValue : HeightInCm -> Float
+getHeightValue =
     \(HeightInCm cm) -> cm
 
 
@@ -1181,8 +1181,8 @@ nitriteValueFromString value =
 urobilinogenValueToString : UrobilinogenValue -> String
 urobilinogenValueToString value =
     case value of
-        Urobilinogen02 ->
-            "0.2"
+        Urobilinogen002 ->
+            "0-0.2"
 
         Urobilinogen10 ->
             "1"
@@ -1200,8 +1200,8 @@ urobilinogenValueToString value =
 urobilinogenValueFromString : String -> Maybe UrobilinogenValue
 urobilinogenValueFromString value =
     case value of
-        "0.2" ->
-            Just Urobilinogen02
+        "0-0.2" ->
+            Just Urobilinogen002
 
         "1" ->
             Just Urobilinogen10
@@ -1470,11 +1470,11 @@ recommendedTreatmentSignToString sign =
         TreatmentHealthEducationForHeartburn ->
             "education-heartburn"
 
-        TreatmentNitrfurantion ->
-            "nitrfurantion"
+        TreatmentNitrofurantoin ->
+            "nitrofurantoin"
 
-        TreatmentAmoxicilin ->
-            "amoxicilin"
+        TreatmentAmoxicillin ->
+            "amoxicillin"
 
         TreatmentClotrimaxazole200 ->
             "clotrimaxazole-200"
@@ -1543,11 +1543,11 @@ recommendedTreatmentSignFromString sign =
         "education-heartburn" ->
             Just TreatmentHealthEducationForHeartburn
 
-        "nitrfurantion" ->
-            Just TreatmentNitrfurantion
+        "nitrofurantoin" ->
+            Just TreatmentNitrofurantoin
 
-        "amoxicilin" ->
-            Just TreatmentAmoxicilin
+        "amoxicillin" ->
+            Just TreatmentAmoxicillin
 
         "clotrimaxazole-200" ->
             Just TreatmentClotrimaxazole200

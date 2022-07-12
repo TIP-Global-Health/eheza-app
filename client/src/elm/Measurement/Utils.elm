@@ -82,7 +82,7 @@ fromChildMeasurementData data =
                 |> Maybe.map mappingFunc
     in
     { height =
-        fromData .height (.value >> heightValueFunc >> String.fromFloat)
+        fromData .height (.value >> getHeightValue >> String.fromFloat)
             |> Maybe.withDefault ""
     , muac =
         fromData .muac (.value >> muacValueFunc >> String.fromFloat)
@@ -281,7 +281,7 @@ resolveIndividualWellChildValue measurementsWithDates measurementFunc valueFunc 
 
 fromHeightValue : Maybe HeightInCm -> HeightForm
 fromHeightValue saved =
-    { height = Maybe.map heightValueFunc saved
+    { height = Maybe.map getHeightValue saved
     , heightDirty = False
     }
 
@@ -292,7 +292,7 @@ heightFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> heightValueFunc)
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> getHeightValue)
                 , heightDirty = form.heightDirty
                 }
             )

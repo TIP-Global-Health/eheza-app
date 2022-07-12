@@ -830,7 +830,7 @@ type PrenatalHealthEducationSign
     | EducationPositiveHIV
     | EducationSaferSexHIV
     | EducationPartnerTesting
-    | EducationNausiaVomiting
+    | EducationNauseaVomiting
     | EducationLegCramps
     | EducationLowBackPain
     | EducationConstipation
@@ -1109,7 +1109,7 @@ type NitriteValue
 
 
 type UrobilinogenValue
-    = Urobilinogen02
+    = Urobilinogen002
     | Urobilinogen10
     | Urobilinogen20
     | Urobilinogen40
@@ -1203,8 +1203,8 @@ type RecommendedTreatmentSign
     | TreatmentAluminiumHydroxide
     | TreatmentHealthEducationForHeartburn
       -- For Urinary Tract Infection:
-    | TreatmentNitrfurantion
-    | TreatmentAmoxicilin
+    | TreatmentNitrofurantoin
+    | TreatmentAmoxicillin
       -- For Candidiasis:
     | TreatmentClotrimaxazole200
     | TreatmentClotrimaxazole500
