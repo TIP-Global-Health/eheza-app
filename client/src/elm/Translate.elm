@@ -8734,7 +8734,7 @@ translationSet trans =
                     }
 
                 DiagnosisModerateAnemia ->
-                    { english = "Patient hshows signs of Mild to Moderate Anemia"
+                    { english = "Patient shows signs of Mild to Moderate Anemia"
                     , kinyarwanda = Nothing
                     }
 
