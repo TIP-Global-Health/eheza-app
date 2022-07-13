@@ -178,6 +178,12 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisHyperemesisGravidumBySymptoms ->
                 "hyperemesis-gravidum-by-symptoms"
 
+            DiagnosisSevereVomiting ->
+                "severe-vomiting"
+
+            DiagnosisSevereVomitingBySymptoms ->
+                "severe-vomiting-by-symptoms"
+
             DiagnosisMaternalComplications ->
                 "maternal-complications"
 

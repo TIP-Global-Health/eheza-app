@@ -856,6 +856,8 @@ function hedley_prenatal_field_default_field_bases() {
         'pprom' => 'PPROM',
         'hyperemesis-gravidum' => 'Hyperemesis Gravidum',
         'hyperemesis-gravidum-by-symptoms' => 'Hyperemesis Gravidum by Symptoms',
+        'severe-vomiting' => 'Severe Vomiting',
+        'severe-vomiting-by-symptoms' => 'Severe Vomiting by Symptoms',
         'maternal-complications' => 'Maternal Complications',
         'infection' => 'Infection',
         'imminent-delivery' => 'Imminent delivery',
