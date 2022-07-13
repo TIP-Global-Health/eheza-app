@@ -79,6 +79,9 @@ obstetricalDiagnoses =
     , DiagnosisPROM
     , DiagnosisPPROM
     , DiagnosisHyperemesisGravidum
+    , DiagnosisHyperemesisGravidumBySymptoms
+    , DiagnosisSevereVomiting
+    , DiagnosisSevereVomitingBySymptoms
     , DiagnosisMaternalComplications
     , DiagnosisInfection
     , DiagnosisImminentDelivery

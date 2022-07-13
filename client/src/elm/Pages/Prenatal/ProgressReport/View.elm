@@ -2470,6 +2470,15 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisHyperemesisGravidum ->
             referredToHospitalMessage
 
+        DiagnosisHyperemesisGravidumBySymptoms ->
+            referredToHospitalMessage
+
+        DiagnosisSevereVomiting ->
+            referredToHospitalMessage
+
+        DiagnosisSevereVomitingBySymptoms ->
+            referredToHospitalMessage
+
         DiagnosisMaternalComplications ->
             referredToHospitalMessage
 
@@ -2601,9 +2610,6 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisSeverePreeclampsiaAfterRecheck ->
-            referredToHospitalMessage
-
-        DiagnosisHyperemesisGravidumBySymptoms ->
             referredToHospitalMessage
 
         DiagnosisHeartburn ->
