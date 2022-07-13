@@ -1289,7 +1289,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 |> Maybe.withDefault EverySet.empty
 
         diagnosesBySymptoms =
-            List.filter (matchSymptomsPrenatalDiagnosis assembled)
+            List.filter (matchSymptomsPrenatalDiagnosis egaInWeeks assembled)
                 symptomsDiagnoses
                 |> EverySet.fromList
 
@@ -1379,7 +1379,20 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 |> Maybe.withDefault False
 
         DiagnosisHyperemesisGravidum ->
-            List.member SevereVomiting signs
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks < 20) && List.member SevereVomiting signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisSevereVomiting ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks >= 20) && List.member SevereVomiting signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
 
         DiagnosisMaternalComplications ->
             List.member ExtremeWeakness signs
@@ -1646,8 +1659,8 @@ matchExaminationPrenatalDiagnosis egaInWeeks assembled diagnosis =
             False
 
 
-matchSymptomsPrenatalDiagnosis : AssembledData -> PrenatalDiagnosis -> Bool
-matchSymptomsPrenatalDiagnosis assembled diagnosis =
+matchSymptomsPrenatalDiagnosis : Maybe Int -> AssembledData -> PrenatalDiagnosis -> Bool
+matchSymptomsPrenatalDiagnosis egaInWeeks assembled diagnosis =
     let
         heartburnDiagnosed =
             symptomRecorded assembled.measurements Heartburn
@@ -1700,7 +1713,20 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
     in
     case diagnosis of
         DiagnosisHyperemesisGravidumBySymptoms ->
-            hospitalizeDueToNauseaAndVomiting assembled
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks < 20) && hospitalizeDueToNauseaAndVomiting assembled
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisSevereVomitingBySymptoms ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks >= 20) && hospitalizeDueToNauseaAndVomiting assembled
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
 
         DiagnosisHeartburn ->
             heartburnDiagnosed
@@ -2017,6 +2043,7 @@ examinationDiagnoses =
 symptomsDiagnoses : List PrenatalDiagnosis
 symptomsDiagnoses =
     [ DiagnosisHyperemesisGravidumBySymptoms
+    , DiagnosisSevereVomitingBySymptoms
     , DiagnosisHeartburn
     , DiagnosisHeartburnPersistent
     , DiagnosisDeepVeinThrombosis

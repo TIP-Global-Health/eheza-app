@@ -125,6 +125,7 @@ emergencyReferralDiagnosesInitial =
     , DiagnosisImminentDelivery
     , DiagnosisLaborAndDelivery
     , DiagnosisHyperemesisGravidum
+    , DiagnosisSevereVomiting
 
     -- Infection diagnosis will be available at latter phase.
     -- , DiagnosisInfection
