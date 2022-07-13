@@ -1238,6 +1238,7 @@ type TranslationId
     | TestName
     | TestPerformedQuestion
     | TestPerformedTodayQuestion
+    | TestPrerequisiteQuestion TestPrerequisite
     | TestResultQuestion
     | TestVariantUrineDipstickQuestion
     | ThisActionCannotBeUndone
@@ -11011,6 +11012,18 @@ translationSet trans =
             { english = "Did you perform this test today"
             , kinyarwanda = Just "Waba wakoze iki kizamini uyu munsi"
             }
+
+        TestPrerequisiteQuestion value ->
+            case value of
+                PrerequisiteFastFor12h ->
+                    { english = "Has the patient fasted for this test (no food for 12 hours)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoTestPrerequisites ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
 
         TestVariantUrineDipstickQuestion ->
             { english = "Which type of urine dipstick test was run"

@@ -549,7 +549,25 @@ decodePrenatalRandomBloodSugarTestValue =
     succeed PrenatalRandomBloodSugarTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "sugar_count" (nullable decodeIntAsFloat) Nothing
+
+
+decodeTestPrerequisite : Decoder TestPrerequisite
+decodeTestPrerequisite =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "fasting-12h" ->
+                        succeed PrerequisiteFastFor12h
+
+                    "none" ->
+                        succeed NoTestPrerequisites
+
+                    _ ->
+                        fail <| value ++ " is not a recognized TestPrerequisite"
+            )
 
 
 decodePrenatalSyphilisTest : Decoder PrenatalSyphilisTest

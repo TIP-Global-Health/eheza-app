@@ -319,6 +319,7 @@ prenatalRandomBloodSugarResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , sugarCount = or form.sugarCount value.sugarCount
                 }
             )
@@ -336,6 +337,7 @@ toPrenatalRandomBloodSugarResultsValue form =
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
             , sugarCount = form.sugarCount
             }
         )

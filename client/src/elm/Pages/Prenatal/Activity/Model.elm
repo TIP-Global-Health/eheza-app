@@ -159,7 +159,7 @@ type Msg
     | SetHemoglobinTestExecutionDate NominalDate
     | SetHemoglobinTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
-    | SetRandomBloodSugarTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
+    | SetRandomBloodSugarTestFormBoolInput (Bool -> PrenatalRandomBloodSugarForm -> PrenatalRandomBloodSugarForm) Bool
     | SetRandomBloodSugarTestExecutionNote PrenatalTestExecutionNote
     | SetRandomBloodSugarTestExecutionDate NominalDate
     | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
@@ -483,7 +483,7 @@ type alias LaboratoryData =
     , hepatitisBTestForm : PrenatalLabsNonRDTForm
     , hivTestForm : PrenatalHIVTestForm
     , malariaTestForm : PrenatalMalariaTestForm
-    , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
+    , randomBloodSugarTestForm : PrenatalRandomBloodSugarForm
     , syphilisTestForm : PrenatalLabsNonRDTForm
     , urineDipstickTestForm : PrenatalUrineDipstickForm
     , hivPCRTestForm : PrenatalLabsNonRDTForm
@@ -500,7 +500,7 @@ emptyLaboratoryData =
     , hepatitisBTestForm = emptyPrenatalLabsNonRDTForm
     , hivTestForm = emptyPrenatalHIVTestForm
     , malariaTestForm = emptyPrenatalMalariaTestForm
-    , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
+    , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarForm
     , syphilisTestForm = emptyPrenatalLabsNonRDTForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
     , hivPCRTestForm = emptyPrenatalLabsNonRDTForm
@@ -996,6 +996,35 @@ type alias PrenatalMalariaTestForm =
 emptyPrenatalMalariaTestForm : PrenatalMalariaTestForm
 emptyPrenatalMalariaTestForm =
     PrenatalMalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
+
+
+type alias PrenatalRandomBloodSugarForm =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , patientFasted : Maybe Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe PrenatalTestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    }
+
+
+emptyPrenatalRandomBloodSugarForm : PrenatalRandomBloodSugarForm
+emptyPrenatalRandomBloodSugarForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , patientFasted = Nothing
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , dateSelectorPopupState = Nothing
+    }
 
 
 type alias PrenatalLabsNonRDTForm =
