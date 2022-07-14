@@ -20,11 +20,11 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
-import Pages.AcuteIllnessParticipant.Utils exposing (isAcuteIllnessActive)
+import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (..)
-import Pages.PrenatalEncounter.Utils exposing (getPrenatalEncountersForParticipant)
-import Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
+import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
+import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -38,9 +38,9 @@ import Pages.Utils
         , viewSaveAction
         , viewStartEncounterButton
         )
-import Pages.WellChildEncounter.View exposing (thumbnailDimensions)
-import Pages.WellChildProgressReport.Model exposing (DiagnosisMode(..), PaneEntryStatus(..), WellChildProgressReportInitiator(..))
-import Pages.WellChildProgressReport.View exposing (diagnosisEntryStatusToString, viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
+import Pages.WellChild.Encounter.View exposing (thumbnailDimensions)
+import Pages.WellChild.ProgressReport.Model exposing (PaneEntryStatus(..), WellChildProgressReportInitiator(..))
+import Pages.WellChild.ProgressReport.View exposing (diagnosisEntryStatusToString, viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage, viewModal)
@@ -162,7 +162,7 @@ viewContentForChild language currentDate zscores childId child isChw initiator d
         currentDate
         zscores
         isChw
-        (Pages.WellChildProgressReport.Model.InitiatorPatientRecord initiator childId)
+        (Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId)
         False
         db
         model.diagnosisMode
@@ -400,7 +400,7 @@ viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db =
                 (Tuple.first
                     >> viewAcuteIllnessDiagnosisEntry
                         language
-                        (Pages.WellChildProgressReport.Model.InitiatorPatientRecord initiator personId)
+                        (Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator personId)
                         db
                         SetActivePage
                 )

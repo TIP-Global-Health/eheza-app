@@ -1101,3 +1101,11 @@ type alias PrenatalLabsResultsId =
 
 type PrenatalLabsResultsUuidType
     = PrenatalLabsResultsUuidType
+
+
+type alias PrenatalMedicationDistributionId =
+    EntityUuid PrenatalMedicationDistributionUuidType
+
+
+type PrenatalMedicationDistributionUuidType
+    = PrenatalMedicationDistributionUuidType

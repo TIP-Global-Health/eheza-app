@@ -45,6 +45,9 @@ progressReportInitiatorToUrlFragmemt initiator =
         InitiatorEncounterPage encounterId ->
             "encounter-page-" ++ fromEntityUuid encounterId
 
+        InitiatorRecurrentEncounterPage encounterId ->
+            "recurrent-encounter-page-" ++ fromEntityUuid encounterId
+
         InitiatorNewEncounter encounterId ->
             "encounter-" ++ fromEntityUuid encounterId
 
@@ -58,6 +61,12 @@ progressReportInitiatorFromUrlFragmemt s =
         String.dropLeft (String.length "encounter-page-") s
             |> toEntityUuid
             |> InitiatorEncounterPage
+            |> Just
+
+    else if String.startsWith "recurrent-encounter-page-" s then
+        String.dropLeft (String.length "recurrent-encounter-page-") s
+            |> toEntityUuid
+            |> InitiatorRecurrentEncounterPage
             |> Just
 
     else if String.startsWith "encounter-" s then

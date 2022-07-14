@@ -20,7 +20,7 @@ import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
-import Pages.NutritionActivity.View exposing (warningPopup)
+import Pages.Nutrition.Activity.View exposing (warningPopup)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model

@@ -120,11 +120,29 @@ function hedley_prenatal_field_default_field_bases() {
         'urine-dipstick' => 'Urine Dipstick',
         'hemoglobin' => 'Hemoglobin',
         'random-blood-sugar' => 'Random Blood Sugar',
+        'vitals-recheck' => 'Vitals Recheck',
       ),
       'allowed_values_function' => '',
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_dia_repeated'.
+  $field_bases['field_dia_repeated'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_dia_repeated',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
   );
 
   // Exported field_base: 'field_execution_date'.
@@ -176,7 +194,7 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => 0,
+        '0' => '0',
         '+1' => '+1',
         '+2' => '+2',
         '+3' => '+3',
@@ -233,6 +251,63 @@ function hedley_prenatal_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_hiv_signs'.
+  $field_bases['field_hiv_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hiv_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hiv-program-hc' => 'HIV program at Health Center',
+        'partner-hiv-positive' => 'Partner HIV posiitve',
+        'partner-taking-arv' => 'Partner taking ARVs',
+        'partner-surpressed-viral-load' => 'Partner got surpressed viral load',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_illness_symptoms'.
+  $field_bases['field_illness_symptoms'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_illness_symptoms',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'headache' => 'Headache',
+        'vision-changes' => 'Vision Changes',
+        'rash' => 'Rash',
+        'painless-ulcer-mouth' => 'Painless ulcer in Mouth',
+        'painless-ulcer-genitals' => 'Painless ulcer in genital area',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_ketone'.
@@ -318,6 +393,31 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_patient_notified'.
+  $field_bases['field_patient_notified'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_patient_notified',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        0 => '',
+        1 => '',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_boolean',
+  );
+
   // Exported field_base: 'field_performed_tests'.
   $field_bases['field_performed_tests'] = array(
     'active' => 1,
@@ -340,6 +440,7 @@ function hedley_prenatal_field_default_field_bases() {
         'urine-dipstick' => 'Urine Dipstick',
         'hemoglobin' => 'Hemoglobin',
         'random-blood-sugar' => 'Random Blood Sugar',
+        'vitals-recheck' => 'Vitals Recheck',
       ),
       'allowed_values_function' => '',
     ),
@@ -402,6 +503,66 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_prenatal_diagnoses'.
+  $field_bases['field_prenatal_diagnoses'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prenatal_diagnoses',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'chronic-hypertension-immediate' => 'Chronic Hypertension Immediate',
+        'chronic-hypertension-recheck' => 'Chronic Hypertension After Recheck',
+        'gestational-hypertension-immediate' => 'Gestational Hypertension Immediate',
+        'gestational-hypertension-recheck' => 'Gestational Hypertension After Recheck',
+        'moderate-preeclampsia-immediate' => 'Moderate Preeclampsia Immediate',
+        'moderate-preeclampsia-recheck' => 'Moderate Preeclampsia After Recheck',
+        'severe-preeclampsia-immediate' => 'Severe Preeclampsia Immediate',
+        'severe-preeclampsia-recheck' => 'Severe Preeclampsia After Recheck',
+        'eclampsia' => 'Eclampsia',
+        'hiv' => 'HIV',
+        'partner-hiv' => 'HIV positive partner',
+        'syphilis' => 'Syphilis',
+        'syphilis-complications' => 'Syphilis with Complications',
+        'neurosyphilis' => 'Neurosyphilis',
+        'hepatitis-b' => 'Hepatitis B',
+        'malaria' => 'Malaria',
+        'malaria-anemia' => 'Malaria with Anemia',
+        'malaria-severe-anemia' => 'Malaria with Severe Anemia',
+        'anemia' => 'Mild to Moderate Anemia',
+        'severe-anemia' => 'Severe Anemia',
+        'severe-anemia-complications' => 'Severe Anemia with Complications',
+        'miscarriage' => 'Miscarriage',
+        'molar-pregnancy' => 'Molar Pregnancy',
+        'placenta-previa' => 'Placenta Previa',
+        'placental-abruption' => 'Placental Abruption',
+        'uterine-rupture' => 'Uterine Rupture',
+        'obstructed-labor' => 'Obstructed Labor',
+        'post-abortion-sepsis' => 'Post Abortion Sepsis',
+        'ectopic-pregnancy' => 'Ectopic Pregnancy',
+        'prom' => 'PROM',
+        'pprom' => 'PPROM',
+        'hyperemesis-gravidum' => 'Hyperemesis Gravidum',
+        'maternal-complications' => 'Maternal Complications',
+        'infection' => 'Infection',
+        'imminent-delivery' => 'Imminent delivery',
+        'labor' => 'Labor + Delivery',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_protein'.
   $field_bases['field_protein'] = array(
     'active' => 1,
@@ -418,11 +579,49 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'negative' => 'Negative',
-        30 => 30,
-        100 => 100,
-        300 => 300,
-        2000 => 2000,
+        '0' => '0',
+        '+1' => '+1',
+        '+2' => '+2',
+        '+3' => '+3',
+        '+4' => '+4',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_recommended_treatment'.
+  $field_bases['field_recommended_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_recommended_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'quinine-sulphate' => 'Quinine Sulphate',
+        'coartem' => 'Coartem',
+        'written-protocols' => 'Written Protocols',
+        'refer-to-hospital' => 'Refer to Hospital',
+        'no-treatment-malaria' => 'No Treatment for Malaria',
+        'penecilin-1' => 'Penecilin 1',
+        'penecilin-3' => 'Penecilin 3',
+        'erythromycin' => 'Erythromycin',
+        'azithromycin' => 'Azithromycin',
+        'ceftriaxon' => 'Ceftriaxon',
+        'no-treatment-syphilis' => 'No Treatment for Syphilis',
+        'methyldopa-2' => 'Methyldopa twice a day',
+        'methyldopa-3' => 'Methyldopa three times a day',
+        'methyldopa-4' => 'Methyldopa four times a day',
+        'no-treatment-hypertension' => 'No Treatment for Hypertension',
       ),
       'allowed_values_function' => '',
     ),
@@ -498,6 +697,23 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_sys_repeated'.
+  $field_bases['field_sys_repeated'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_sys_repeated',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
   );
 
   // Exported field_base: 'field_test_execution_note'.

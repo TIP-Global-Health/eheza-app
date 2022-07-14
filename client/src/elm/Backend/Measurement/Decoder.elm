@@ -125,6 +125,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_syphilis_test" (decodeHead decodePrenatalSyphilisTest) Nothing
         |> optional "prenatal_urine_dipstick_test" (decodeHead decodePrenatalUrineDipstickTest) Nothing
         |> optional "prenatal_labs_results" (decodeHead decodePrenatalLabsResults) Nothing
+        |> optional "prenatal_medication_distribution" (decodeHead decodePrenatalMedicationDistribution) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -300,6 +301,15 @@ decodePrenatalHealthEducationSign =
                     "hygiene" ->
                         succeed EducationHygiene
 
+                    "positive-hiv" ->
+                        succeed EducationPositiveHIV
+
+                    "safer-sex" ->
+                        succeed EducationSaferSex
+
+                    "partner-testing" ->
+                        succeed EducationPartnerTesting
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 
@@ -414,20 +424,40 @@ decodePrenatalHepatitisBTestValue =
 
 decodePrenatalHIVTest : Decoder PrenatalHIVTest
 decodePrenatalHIVTest =
-    decodePrenatalMeasurement decodePrenatalRapidTestValue
+    decodePrenatalMeasurement decodePrenatalHIVTestValue
 
 
-decodePrenatalRapidTestValue : Decoder PrenatalRapidTestValue
-decodePrenatalRapidTestValue =
-    succeed PrenatalRapidTestValue
+decodePrenatalMalariaTestValue : Decoder PrenatalMalariaTestValue
+decodePrenatalMalariaTestValue =
+    succeed PrenatalMalariaTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
 
 
+decodePrenatalHIVTestValue : Decoder PrenatalHIVTestValue
+decodePrenatalHIVTestValue =
+    succeed PrenatalHIVTestValue
+        |> required "test_execution_note" decodePrenatalTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+        |> optional "hiv_signs" (nullable (decodeEverySet decodePrenatalHIVSign)) Nothing
+
+
+decodePrenatalHIVSign : Decoder PrenatalHIVSign
+decodePrenatalHIVSign =
+    string
+        |> andThen
+            (\value ->
+                prenatalHIVSignFromString value
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| value ++ " is not a recognized PrenatalHIVSign")
+            )
+
+
 decodePrenatalMalariaTest : Decoder PrenatalMalariaTest
 decodePrenatalMalariaTest =
-    decodePrenatalMeasurement decodePrenatalRapidTestValue
+    decodePrenatalMeasurement decodePrenatalMalariaTestValue
 
 
 decodePrenatalRandomBloodSugarTest : Decoder PrenatalRandomBloodSugarTest
@@ -454,6 +484,18 @@ decodePrenatalSyphilisTestValue =
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+        |> optional "illness_symptoms" (nullable (decodeEverySet decodeIllnessSymptom)) Nothing
+
+
+decodeIllnessSymptom : Decoder IllnessSymptom
+decodeIllnessSymptom =
+    string
+        |> andThen
+            (\value ->
+                illnessSymptomFromString value
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| value ++ " is not a recognized IllnessSymptom")
+            )
 
 
 decodePrenatalUrineDipstickTest : Decoder PrenatalUrineDipstickTest
@@ -667,6 +709,7 @@ decodePrenatalLabsResultsValue =
         |> required "performed_tests" (decodeEverySet decodePrenatalLaboratoryTest)
         |> required "completed_tests" (decodeEverySet decodePrenatalLaboratoryTest)
         |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "patient_notified" bool False
 
 
 decodePrenatalLaboratoryTest : Decoder PrenatalLaboratoryTest
@@ -693,10 +736,37 @@ decodePrenatalLaboratoryTest =
                     "random-blood-sugar" ->
                         succeed TestRandomBloodSugar
 
+                    "vitals-recheck" ->
+                        succeed TestVitalsRecheck
+
                     _ ->
                         fail <|
                             value
                                 ++ " is not a recognized PrenatalLaboratoryTest"
+            )
+
+
+decodePrenatalMedicationDistribution : Decoder PrenatalMedicationDistribution
+decodePrenatalMedicationDistribution =
+    decodePrenatalMeasurement decodePrenatalMedicationDistributionValue
+
+
+decodePrenatalMedicationDistributionValue : Decoder PrenatalMedicationDistributionValue
+decodePrenatalMedicationDistributionValue =
+    succeed PrenatalMedicationDistributionValue
+        |> required "prescribed_medication" (decodeEverySet decodeMedicationDistributionSign)
+        |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
+        |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
+
+
+decodeRecommendedTreatmentSign : Decoder RecommendedTreatmentSign
+decodeRecommendedTreatmentSign =
+    string
+        |> andThen
+            (\s ->
+                recommendedTreatmentSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized RecommendedTreatmentSign")
             )
 
 
@@ -1259,6 +1329,24 @@ decodeDangerSign =
                     "extreme-weakness" ->
                         succeed ExtremeWeakness
 
+                    "imminent-delivery" ->
+                        succeed ImminentDelivery
+
+                    "labor" ->
+                        succeed Labor
+
+                    "looks-very-ill" ->
+                        succeed LooksVeryIll
+
+                    "severe-vomiting" ->
+                        succeed SevereVomiting
+
+                    "unconscious" ->
+                        succeed Unconscious
+
+                    "gush-leaking-vaginal-fluid" ->
+                        succeed GushLeakingVaginalFluid
+
                     "none" ->
                         succeed NoDangerSign
 
@@ -1371,6 +1459,9 @@ decodeMedicationSign =
 
                     "deworming-pill" ->
                         succeed DewormingPill
+
+                    "mebendezole" ->
+                        succeed Mebendazole
 
                     "none" ->
                         succeed NoMedication
@@ -1540,6 +1631,8 @@ decodeVitalsValue =
         |> optional "heart_rate" (nullable decodeInt) Nothing
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
+        |> optional "sys_repeated" (nullable decodeFloat) Nothing
+        |> optional "dia_repeated" (nullable decodeFloat) Nothing
 
 
 decodeCSectionReason : Decoder CSectionReason
@@ -2435,6 +2528,9 @@ decodeReasonForNotSendingToHC =
                     "unable-to-afford-fee" ->
                         succeed ClientUnableToAffordFees
 
+                    "already-in-care" ->
+                        succeed ClientAlreadyInCare
+
                     "other" ->
                         succeed ReasonForNotSendingToHCOther
 
@@ -2512,10 +2608,14 @@ decodeFollowUpOption =
 
 decodeMedicationDistribution : Decoder MedicationDistribution
 decodeMedicationDistribution =
+    decodeAcuteIllnessMeasurement decodeMedicationDistributionValue
+
+
+decodeMedicationDistributionValue : Decoder MedicationDistributionValue
+decodeMedicationDistributionValue =
     succeed MedicationDistributionValue
         |> required "prescribed_medication" (decodeEverySet decodeMedicationDistributionSign)
         |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
-        |> decodeAcuteIllnessMeasurement
 
 
 decodeMedicationDistributionSign : Decoder MedicationDistributionSign
@@ -2551,8 +2651,32 @@ decodeMedicationDistributionSign =
                     "paracetamol" ->
                         succeed Paracetamol
 
+                    "tenofovir" ->
+                        succeed Tenofovir
+
+                    "lamivudine" ->
+                        succeed Lamivudine
+
+                    "dolutegravir" ->
+                        succeed Dolutegravir
+
+                    "tdf3tc" ->
+                        succeed TDF3TC
+
+                    "iron" ->
+                        succeed Iron
+
+                    "folicacid" ->
+                        succeed FolicAcid
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
+
+                    "none-initial" ->
+                        succeed NoMedicationDistributionSignsInitialPhase
+
+                    "none-recurrent" ->
+                        succeed NoMedicationDistributionSignsRecurrentPhase
 
                     _ ->
                         fail <| sign ++ " is not a recognized MedicationDistributionSign"
@@ -2608,6 +2732,41 @@ decodeMedicationNonAdministrationSign =
                                     "paracetamol" ->
                                         administrationNote
                                             |> Maybe.map (MedicationParacetamol >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "mebendezole" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationMebendezole >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "tenofovir" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationTenofovir >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "lamivudine" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationLamivudine >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "dolutegravir" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationDolutegravir >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "tdf3tc" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationTDF3TC >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "iron" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationIron >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "folicacid" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationFolicAcid >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->

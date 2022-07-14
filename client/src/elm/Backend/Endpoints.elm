@@ -986,3 +986,9 @@ prenatalLabsResultsEndpoint : ReadWriteEndPoint Error PrenatalLabsResultsId Pren
 prenatalLabsResultsEndpoint =
     swEndpoint "nodes/prenatal_labs_results" decodePrenatalLabsResults
         |> withValueEncoder (object << encodePrenatalLabsResults)
+
+
+prenatalMedicationDistributionEndpoint : ReadWriteEndPoint Error PrenatalMedicationDistributionId PrenatalMedicationDistribution PrenatalMedicationDistribution ()
+prenatalMedicationDistributionEndpoint =
+    swEndpoint "nodes/prenatal_medication_distribution" decodePrenatalMedicationDistribution
+        |> withValueEncoder (object << encodePrenatalMedicationDistribution)

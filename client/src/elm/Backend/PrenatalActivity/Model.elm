@@ -21,6 +21,12 @@ type PrenatalActivity
     | Medication
 
 
+type PrenatalRecurrentActivity
+    = LabResults
+    | RecurrentNextSteps
+    | RecurrentExamination
+
+
 type RiskFactor
     = FactorNumberOfCSections Int
     | FactorCSectionInPreviousDelivery
@@ -81,7 +87,7 @@ type MedicalDiagnosis
     | DiagnosisTuberculosis
     | DiagnosisAsthma
     | DiagnosisBowedLegs
-    | DiagnosisHIV
+    | DiagnosisKnownHIV
     | DiagnosisMentalHealthHistory
 
 
@@ -156,7 +162,7 @@ allMedicalDiagnosis =
     , DiagnosisTuberculosis
     , DiagnosisAsthma
     , DiagnosisBowedLegs
-    , DiagnosisHIV
+    , DiagnosisKnownHIV
     , DiagnosisMentalHealthHistory
     ]
 

@@ -101,6 +101,23 @@
           height: 36px;
           width: 52px;
         }
+
+        &.icon-labs {
+          background: url(#{$img-path}icon-laboratory-blue.svg) center center no-repeat;
+          background-size: 36px 50px;
+          height: 50px;
+          margin-right: 20px;
+          width: 65px;
+        }
+
+        &.icon-vitals {
+          background: url(#{$img-path}icon-physical-exam-blue.svg) center center no-repeat;
+          background-size: 40px 54px;
+          height: 50px;
+          margin-right: 18px;
+          width: 80px;
+        }
+
       }
     }
 
@@ -1433,6 +1450,12 @@ div.page-activity.home-visit {
             width: 24px;
           }
         }
+
+        .recommendation .marker {
+          color: $color-primary;
+          font-size: 22px;
+          margin-top: 5px;
+        }
       }
     }
 
@@ -1701,6 +1724,63 @@ div.page-activity.home-visit {
 
         .test-date {
           font-size: 23px;
+        }
+      }
+
+      .form.send-to-hc,
+      .form.medication-distribution,
+      .form.recommended-treatment {
+
+        h2 {
+          text-transform: uppercase;
+        }
+      }
+    }
+  }
+}
+
+div.page-activity.prenatal {
+
+  .ui.full.segment {
+
+    .full.content {
+
+      .form.medication-distribution {
+
+        .separator:last-of-type {
+          display: none;
+        }
+
+        .instructions-warning {
+          margin-left: 50px;
+          margin-top: 15px;
+        }
+
+        label {
+
+          .treatment {
+            color: $color-primary;
+            font-size: 23px;
+            font-weight: 500;
+            margin-right: 10px;
+          }
+
+          .dosage {
+            font-size: 22px;
+          }
+        }
+
+        .warning {
+          display: flex;
+          font-size: 20px;
+          line-height: 25px;
+          padding: 20px;
+
+          img {
+            height: 30px;
+            margin-left: 5px;
+            margin-right: 10px;
+          }
         }
       }
     }
@@ -2115,6 +2195,12 @@ div.page-report.clinical .ui.unstackable.items {
       line-height: 32px;
       margin-bottom: 5px;
     }
+
+    .pane-content ul {
+      font-size: 24px;
+      line-height: 35px;
+      padding: 0 20px;
+    }
   }
 
   .risk-factors > .pane-heading {
@@ -2341,6 +2427,15 @@ div.page-report.clinical .ui.unstackable.items {
 
       .result .uncompleted {
         background: $color-velvet;
+        border-radius: 6px;
+        color: $color-white;
+        font-size: 15px;
+        padding: 3px 8px;
+        text-transform: uppercase;
+      }
+
+      .result .known-positive {
+        background: $color-orange-light;
         border-radius: 6px;
         color: $color-white;
         font-size: 15px;
@@ -2616,7 +2711,8 @@ div.page-participant.prenatal {
       text-align: left;
 
       .encounter-label {
-        margin-bottom: 15px;
+        line-height: 25px;
+        margin-bottom: 10px;
       }
     }
 
