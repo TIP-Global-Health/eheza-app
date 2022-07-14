@@ -2308,6 +2308,9 @@ medicationsInitialPhase =
     [ Mebendezole
     , TDF3TC
     , Dolutegravir
+    , Ceftriaxone
+    , Azithromycin
+    , Metronidazole
     ]
 
 
