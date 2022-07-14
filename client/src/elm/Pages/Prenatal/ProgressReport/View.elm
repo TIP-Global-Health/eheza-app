@@ -1604,7 +1604,7 @@ viewLabResultsEntry language currentDate results =
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
-                    { label = Translate.PrenatalLaboratoryGlucoseLabel
+                    { label = Translate.PrenatalLaboratoryLeukocytesLabel
                     , recentResult = Maybe.map (Translate.PrenatalLaboratoryLeukocytesValue >> translate language) recentResultValue
                     , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
