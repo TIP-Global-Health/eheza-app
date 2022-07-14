@@ -162,7 +162,7 @@ viewContentForChild language currentDate zscores childId child isChw initiator d
         currentDate
         zscores
         isChw
-        (Pages.WellChildProgressReport.Model.InitiatorPatientRecord initiator childId)
+        (Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId)
         False
         db
         model.diagnosisMode
