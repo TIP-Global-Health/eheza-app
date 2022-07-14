@@ -689,6 +689,9 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                                 let
                                     recommendationDosageUpdateLabel =
                                         if
+                                            -- This is a special usecase, where previously no treatment is given, and
+                                            -- currently BP is normal. Nevertheless, we still recommend starting tratement
+                                            -- sinve Hypertension was diagnosed previously.
                                             (currentTreatment == NoTreatmentForHypertension)
                                                 && (recommendationDosageUpdate == TreatementUpdateMaintainCurrentDoasage)
                                         then
