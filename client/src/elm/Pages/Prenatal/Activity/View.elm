@@ -4277,7 +4277,7 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                                             in
                                             { select = msgs.setExecutionDateMsg
                                             , close = msgs.setDateSelectorStateMsg Nothing
-                                            , dateFrom = Date.add Days -30 currentDate
+                                            , dateFrom = Date.add Days -35 currentDate
                                             , dateTo = dateTo
                                             , dateDefault = Just dateTo
                                             }
