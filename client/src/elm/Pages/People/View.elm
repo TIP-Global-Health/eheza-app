@@ -4,17 +4,18 @@ import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, graduatingAgeInMonth, isPersonAnAdult)
 import Backend.PrenatalActivity.Model
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (unwrap)
+import Maybe.Extra exposing (isNothing, unwrap)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Model exposing (..)
 import Pages.Utils
@@ -96,7 +97,7 @@ viewHeader initiator relation title =
         [ h1
             [ class "ui header" ]
             [ text title ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage goBackPage
             ]
@@ -299,7 +300,13 @@ viewParticipant language currentDate initiator relation db id person =
 
         action =
             div [ class "action" ]
-                [ div [ class "action-icon-wrapper" ]
+                [ showIf (isNothing relation) <|
+                    span
+                        [ class "patient-record"
+                        , onClick <| SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory id
+                        ]
+                        []
+                , div [ class "action-icon-wrapper blue" ]
                     [ span
                         [ class "action-icon forward"
                         , onClick <| SetActivePage <| UserPage <| nextPage

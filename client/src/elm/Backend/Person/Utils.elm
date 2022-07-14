@@ -167,13 +167,13 @@ initiatorFromUrlFragmemt s =
             IndividualEncounterOrigin WellChildEncounter |> Just
 
         _ ->
-            if String.startsWith "session" s then
+            if String.startsWith "session-" s then
                 String.dropLeft (String.length "session-") s
                     |> toEntityUuid
                     |> GroupEncounterOrigin
                     |> Just
 
-            else if String.startsWith "prenatal-next-steps" s then
+            else if String.startsWith "prenatal-next-steps-" s then
                 String.dropLeft (String.length "prenatal-next-steps-") s
                     |> toEntityUuid
                     |> PrenatalNextStepsActivityOrigin

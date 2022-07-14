@@ -76,7 +76,7 @@ viewHeader language id assembled =
         [ h1
             [ class "ui header" ]
             [ text <| translate language label ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
             ]

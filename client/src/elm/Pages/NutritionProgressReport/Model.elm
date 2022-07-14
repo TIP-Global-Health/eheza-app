@@ -19,7 +19,8 @@ emptyModel =
 
 
 type Msg
-    = CloseEncounter NutritionEncounterId
+    = NoOp
+    | CloseEncounter NutritionEncounterId
     | SetActivePage Page
     | SetEndEncounterDialogState Bool
     | SetDiagnosisMode DiagnosisMode

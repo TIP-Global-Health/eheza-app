@@ -2,7 +2,7 @@ module Pages.NutritionEncounter.View exposing (allowEndingEcounter, partitionAct
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Measurement.Model exposing (NutritionMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
@@ -78,9 +78,9 @@ viewHeader language isChw data =
                         Backend.IndividualEncounterParticipant.Model.NutritionEncounter
                         isChw
             ]
-        , a
+        , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| NutritionParticipantPage data.participant.person
+            , onClick <| SetActivePage <| UserPage <| NutritionParticipantPage InitiatorParticipantsPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []

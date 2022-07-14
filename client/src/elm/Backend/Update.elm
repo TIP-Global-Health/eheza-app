@@ -16,7 +16,7 @@ import Backend.Fetch
 import Backend.HomeVisitActivity.Model
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..), IndividualParticipantInitiator(..))
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (ChildMeasurements, ChildNutritionSign, HistoricalMeasurements, Measurements, WellChildSymptom(..))
 import Backend.Measurement.Utils
@@ -37,7 +37,7 @@ import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalActivity.Model
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..), emptyPrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..), PrenatalProgressReportInitiator(..), emptyPrenatalEncounter)
 import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
@@ -2261,16 +2261,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                             nextPage =
                                                 case encounterType of
                                                     AcuteIllnessEncounter ->
-                                                        AcuteIllnessParticipantPage personId
+                                                        AcuteIllnessParticipantPage InitiatorParticipantsPage personId
 
                                                     AntenatalEncounter ->
-                                                        PrenatalParticipantPage personId
+                                                        PrenatalParticipantPage InitiatorParticipantsPage personId
 
                                                     NutritionEncounter ->
-                                                        NutritionParticipantPage personId
+                                                        NutritionParticipantPage InitiatorParticipantsPage personId
 
                                                     WellChildEncounter ->
-                                                        WellChildParticipantPage personId
+                                                        WellChildParticipantPage InitiatorParticipantsPage personId
 
                                                     -- We do not have a direct access to Home Visit
                                                     -- encounter, since it resides under Nutrition menu.

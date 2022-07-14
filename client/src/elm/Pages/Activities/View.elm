@@ -136,7 +136,7 @@ view language nurse ( sessionId, session ) model =
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Trans.Activities ]
-            , a
+            , span
                 [ class "link-back"
                 , onClick <| SetRedirectPage goBackPage
                 ]

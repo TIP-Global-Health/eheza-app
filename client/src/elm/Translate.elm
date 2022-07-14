@@ -40,6 +40,7 @@ import Backend.Person.Model
         , HIVStatus(..)
         , MaritalStatus(..)
         , ModeOfDelivery(..)
+        , Ubudehe(..)
         , VaginalDelivery(..)
         )
 import Backend.PrenatalActivity.Model
@@ -89,6 +90,7 @@ import Pages.Dashboard.Model as Dashboard
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
 import Pages.NutritionActivity.Model
 import Pages.Page exposing (..)
+import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.PrenatalActivity.Types
     exposing
         ( ExaminationTask(..)
@@ -98,7 +100,7 @@ import Pages.PrenatalActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChildActivity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChildEncounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChildProgressReport.Model exposing (DiagnosisEntryStatus(..), ECDStatus(..))
+import Pages.WellChildProgressReport.Model exposing (ECDStatus(..), PaneEntryStatus(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -347,6 +349,7 @@ type TranslationId
     | AmbulancArrivalPeriodQuestion
     | And
     | AndSentence
+    | AntenatalProgressReport
     | AppName
     | AppointmentConfirmation
     | AppointmentConfirmationInstrunction
@@ -498,7 +501,6 @@ type TranslationId
     | Diabetes
     | Diagnosis
     | DiagnosisDate
-    | DiagnosisEntryStatus DiagnosisEntryStatus
     | DifferenceBetweenDueAndDeliveryDates
     | Disabled
     | DistributionNotice DistributionNotice
@@ -531,6 +533,8 @@ type TranslationId
     | EnrollToProgramQuestion
     | EnterAmountDistributed
     | EnterPairingCode
+    | EntryStatusAntenatal PaneEntryStatus
+    | EntryStatusDiagnosis PaneEntryStatus
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
@@ -813,9 +817,11 @@ type TranslationId
     | PatientExhibitAnyRespiratoryFindings
     | PatientGotAnySymptoms
     | PatientProgress
+    | PatientRecord
     | PatientInformation
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
+    | PatientRecordFilter PatientRecordFilter
     | PatientShowsNoSignsOfCovid
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
@@ -841,6 +847,8 @@ type TranslationId
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
+    | PregnancyConclusion
+    | PregnancyStart
     | PregnancyTestResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
     | PregnancyUrineTest
@@ -912,6 +920,7 @@ type TranslationId
     | Programs
     | ProgressPhotos
     | ProgressReport
+    | ProgressReports
     | ProgressTimeline
     | ProgressTrends
     | ProvideHealthEducationAndInstructToIsolate
@@ -1072,6 +1081,7 @@ type TranslationId
     | GroupEncounterUnauthorized2
     | SendPatientToFacility ReferralFacility
     | ShowAll
+    | StartEncounter
     | StartEndDate
     | StrartNewAcuteIllnessHelper
     | StartDate
@@ -1114,6 +1124,7 @@ type TranslationId
     | TwoVisits
     | Type
     | UbudeheLabel
+    | UbudeheNumber Ubudehe
     | UnitGramsPerDeciliter
     | UnitMilliGramsPerDeciliter
     | Unknown
@@ -2201,6 +2212,11 @@ translationSet trans =
             , kinyarwanda = Just "maze"
             }
 
+        AntenatalProgressReport ->
+            { english = "Antenatal Progress Report"
+            , kinyarwanda = Nothing
+            }
+
         AmbulancArrivalPeriodQuestion ->
             { english = "How long did it take the ambulance to arrive"
             , kinyarwanda = Just "Bitwara igihe kingana gute ngo imbangukiragutabara ihagere"
@@ -2458,12 +2474,12 @@ translationSet trans =
 
         CaseManagementFilterLabel filter ->
             case filter of
-                FilterAcuteIllness ->
+                Pages.GlobalCaseManagement.Model.FilterAcuteIllness ->
                     { english = "Acute Illness"
                     , kinyarwanda = Just "Uburwayi butunguranye"
                     }
 
-                FilterAntenatal ->
+                Pages.GlobalCaseManagement.Model.FilterAntenatal ->
                     { english = "Antenatal Care"
                     , kinyarwanda = Just "Isuzuma ku mugore utwite"
                     }
@@ -2485,12 +2501,12 @@ translationSet trans =
 
         CaseManagementPaneHeader encounterType ->
             case encounterType of
-                FilterAcuteIllness ->
+                Pages.GlobalCaseManagement.Model.FilterAcuteIllness ->
                     { english = "Acute Illness Follow Up"
                     , kinyarwanda = Just "Gukurikirana umurwayi wavuwe indwara zifatiyeho"
                     }
 
-                FilterAntenatal ->
+                Pages.GlobalCaseManagement.Model.FilterAntenatal ->
                     { english = "Antenatal Care Follow Up"
                     , kinyarwanda = Just "Gukurikirana umugore utwite"
                     }
@@ -3281,18 +3297,6 @@ translationSet trans =
             , kinyarwanda = Just "Itariki y'Isuzuma"
             }
 
-        DiagnosisEntryStatus status ->
-            case status of
-                StatusOngoing ->
-                    { english = "Ongoing"
-                    , kinyarwanda = Just "Ararwaye"
-                    }
-
-                StatusResolved ->
-                    { english = "Resolved"
-                    , kinyarwanda = Just "Yarakize"
-                    }
-
         DifferenceBetweenDueAndDeliveryDates ->
             { english = "Difference between due date and delivery date"
             , kinyarwanda = Just "Ikinyuranyo kiri hagati y'amatariki"
@@ -3780,6 +3784,30 @@ translationSet trans =
             { english = "Enter pairing code"
             , kinyarwanda = Just "Umubare uhuza igikoresho cy'ikoranabuhanga na apulikasiyo"
             }
+
+        EntryStatusAntenatal status ->
+            case status of
+                StatusOngoing ->
+                    { english = "Open"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusResolved ->
+                    { english = "Concluded"
+                    , kinyarwanda = Nothing
+                    }
+
+        EntryStatusDiagnosis status ->
+            case status of
+                StatusOngoing ->
+                    { english = "Ongoing"
+                    , kinyarwanda = Nothing
+                    }
+
+                StatusResolved ->
+                    { english = "Resolved"
+                    , kinyarwanda = Nothing
+                    }
 
         MemoryQuota quota ->
             { english = "Memory used " ++ String.fromInt (quota.usedJSHeapSize // (1024 * 1024)) ++ " MB of available " ++ String.fromInt (quota.jsHeapSizeLimit // (1024 * 1024)) ++ " MB"
@@ -6618,6 +6646,11 @@ translationSet trans =
             , kinyarwanda = Just "Uruhererekane rw'ibyakorewe umubyeyi"
             }
 
+        PatientRecord ->
+            { english = "Patient Record"
+            , kinyarwanda = Nothing
+            }
+
         PatientInformation ->
             { english = "Patient Information"
             , kinyarwanda = Just "Amakuru k'umurwayi"
@@ -6638,6 +6671,23 @@ translationSet trans =
             { english = " has not yet been seen at the health center for this pregnancy"
             , kinyarwanda = Just " ntiyigeze asuzumwa ku kigo nderabuzima kuri iyi nda atwite"
             }
+
+        PatientRecordFilter filter ->
+            case filter of
+                Pages.PatientRecord.Model.FilterAcuteIllness ->
+                    { english = "Acute Illness"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PatientRecord.Model.FilterAntenatal ->
+                    { english = "Antenatal Care"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterDemographics ->
+                    { english = "Demographics"
+                    , kinyarwanda = Nothing
+                    }
 
         PatientShowsNoSignsOfCovid ->
             { english = "Patient shows no signs of Covid"
@@ -6901,6 +6951,16 @@ translationSet trans =
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
+            }
+
+        PregnancyConclusion ->
+            { english = "Pregnancy Conclusion"
+            , kinyarwanda = Nothing
+            }
+
+        PregnancyStart ->
+            { english = "Pregnancy Start"
+            , kinyarwanda = Nothing
             }
 
         PregnancyTestResult result ->
@@ -7953,6 +8013,11 @@ translationSet trans =
             , kinyarwanda = Just "Raporo y’ibyakozwe"
             }
 
+        ProgressReports ->
+            { english = "Progress Reports"
+            , kinyarwanda = Nothing
+            }
+
         ProgressTimeline ->
             { english = "Progress Timeline"
             , kinyarwanda = Just "Uko inda igenda ikura"
@@ -8807,7 +8872,7 @@ translationSet trans =
             }
 
         SelectEncounterType ->
-            { english = "Select encounter type"
+            { english = "Select an encounter type"
             , kinyarwanda = Just "Hitamo ubwoko bw'icyiciro cyo gukorera"
             }
 
@@ -9320,6 +9385,11 @@ translationSet trans =
             , kinyarwanda = Just "Erekana amazina yose"
             }
 
+        StartEncounter ->
+            { english = "Start an encounter"
+            , kinyarwanda = Nothing
+            }
+
         StartEndDate ->
             { english = "Start - End"
             , kinyarwanda = Nothing
@@ -9498,9 +9568,31 @@ translationSet trans =
             }
 
         UbudeheLabel ->
-            { english = "Ubudehe: "
+            { english = "Ubudehe"
             , kinyarwanda = Nothing
             }
+
+        UbudeheNumber ubudehe ->
+            case ubudehe of
+                Ubudehe1 ->
+                    { english = "1"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ubudehe2 ->
+                    { english = "2"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ubudehe3 ->
+                    { english = "3"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ubudehe4 ->
+                    { english = "4"
+                    , kinyarwanda = Nothing
+                    }
 
         UnitGramsPerDeciliter ->
             { english = "g/dL"
@@ -10394,7 +10486,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Gukurikirana Umurwayi"
                     }
 
-                DemographicsReportPage _ ->
+                DemographicsReportPage _ _ ->
                     { english = "Demographics Report"
                     , kinyarwanda = Just "Raporo y'umwirondoro"
                     }
@@ -10419,7 +10511,7 @@ translateActivePage page =
                     , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
                     }
 
-                PrenatalParticipantPage _ ->
+                PrenatalParticipantPage _ _ ->
                     { english = "Antenatal Participant"
                     , kinyarwanda = Nothing
                     }
@@ -10528,7 +10620,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                NutritionParticipantPage _ ->
+                NutritionParticipantPage _ _ ->
                     { english = "Nutrition Encounter"
                     , kinyarwanda = Just "Isuzuma ry’imirire"
                     }
@@ -10548,7 +10640,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                AcuteIllnessParticipantPage _ ->
+                AcuteIllnessParticipantPage _ _ ->
                     { english = "Acute Illness Encounter"
                     , kinyarwanda = Just "Isuzuma  ry'uburwayi butunguranye"
                     }
@@ -10583,7 +10675,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                WellChildParticipantPage _ ->
+                WellChildParticipantPage _ _ ->
                     { english = "Standard Pediatric Visit Encounter"
                     , kinyarwanda = Just "Isura risanzwe ry'Umwana"
                     }
@@ -10605,6 +10697,11 @@ translateActivePage page =
 
                 TraceContactPage _ ->
                     { english = "Trace Contact"
+                    , kinyarwanda = Nothing
+                    }
+
+                PatientRecordPage _ _ ->
+                    { english = "Patient Record"
                     , kinyarwanda = Nothing
                     }
 

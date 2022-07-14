@@ -72,7 +72,7 @@ view language nurse ( sessionId, session ) model =
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.Attendance ]
-            , a
+            , span
                 [ class "link-back"
                 , onClick <| SetActivePage goBackPage
                 ]

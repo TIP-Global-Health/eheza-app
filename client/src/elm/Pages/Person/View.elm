@@ -95,7 +95,7 @@ viewHeader language initiator name =
         [ h1
             [ class "ui header" ]
             [ text name ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| App.Model.SetActivePage goBackPage
             ]
@@ -695,7 +695,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 [ h1
                     [ class "ui header" ]
                     [ text <| translate language originBasedSettings.title ]
-                , a
+                , span
                     [ class "link-back"
                     , onClick <| SetActivePage originBasedSettings.goBackPage
                     ]

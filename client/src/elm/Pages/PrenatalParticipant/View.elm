@@ -2,7 +2,7 @@ module Pages.PrenatalParticipant.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
@@ -32,8 +32,8 @@ import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate selectedHealthCenter id isChw db model =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> IndividualParticipantInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate selectedHealthCenter id isChw initiator db model =
     let
         prenatalSessions =
             Dict.get id db.individualParticipantsByPerson
@@ -41,7 +41,7 @@ view language currentDate selectedHealthCenter id isChw db model =
     in
     div
         [ class "wrap wrap-alt-2 page-participant prenatal" ]
-        [ viewHeader language id isChw
+        [ viewHeader language isChw initiator
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewPrenatalActions language currentDate selectedHealthCenter id isChw db model) identity prenatalSessions
@@ -49,16 +49,25 @@ view language currentDate selectedHealthCenter id isChw db model =
         ]
 
 
-viewHeader : Language -> PersonId -> Bool -> Html Msg
-viewHeader language id isChw =
+viewHeader : Language -> Bool -> IndividualParticipantInitiator -> Html Msg
+viewHeader language isChw initiator =
+    let
+        goBackPage =
+            case initiator of
+                InitiatorParticipantsPage ->
+                    IndividualEncounterParticipantsPage AntenatalEncounter
+
+                InitiatorPatientRecord patientRecordInitiator personId ->
+                    PatientRecordPage patientRecordInitiator personId
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
             [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter isChw ]
-        , a
+        , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter
+            , onClick <| SetActivePage <| UserPage goBackPage
             ]
             [ span [ class "icon-back" ] []
             , span [] []
