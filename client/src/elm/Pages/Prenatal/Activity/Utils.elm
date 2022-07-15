@@ -2077,6 +2077,8 @@ labResultsDiagnoses =
     , DiagnosisModerateAnemia
     , DiagnosisSevereAnemia
     , DiagnosisSevereAnemiaWithComplications
+    , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
+    , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
     ]
 
 
