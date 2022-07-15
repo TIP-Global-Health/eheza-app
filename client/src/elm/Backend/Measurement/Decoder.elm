@@ -551,6 +551,7 @@ decodePrenatalRandomBloodSugarTestValue =
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "sugar_count" (nullable decodeIntAsFloat) Nothing
+        |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
 
 
 decodeTestPrerequisite : Decoder TestPrerequisite

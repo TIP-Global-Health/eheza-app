@@ -321,6 +321,7 @@ prenatalRandomBloodSugarResultFormWithDefault form saved =
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , sugarCount = or form.sugarCount value.sugarCount
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -339,6 +340,7 @@ toPrenatalRandomBloodSugarResultsValue form =
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , sugarCount = form.sugarCount
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote

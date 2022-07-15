@@ -227,12 +227,13 @@ type alias PrenatalRandomBloodSugarResultForm =
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 emptyPrenatalRandomBloodSugarResultForm : PrenatalRandomBloodSugarResultForm
 emptyPrenatalRandomBloodSugarResultForm =
-    PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing Nothing
+    PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias PrenatalHIVPCRResultForm =

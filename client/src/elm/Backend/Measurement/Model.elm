@@ -1016,6 +1016,7 @@ type alias PrenatalRandomBloodSugarTestValue =
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 

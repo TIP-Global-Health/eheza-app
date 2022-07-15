@@ -397,8 +397,11 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 measurement =
                     getMeasurementValueFunc saved
 
+                form =
+                    data.randomBloodSugarTestForm
+
                 appMsgs =
-                    toPrenatalRandomBloodSugarResultsValueWithDefault measurement data.randomBloodSugarTestForm
+                    toPrenatalRandomBloodSugarResultsValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId

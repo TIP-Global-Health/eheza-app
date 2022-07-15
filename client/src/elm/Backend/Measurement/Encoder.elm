@@ -545,6 +545,14 @@ encodePrenatalRandomBloodSugarTestValue value =
                 value.testPrerequisites
                 |> Maybe.withDefault []
 
+        originatingEncounter =
+            Maybe.map
+                (\originEncounter ->
+                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
+                )
+                value.originatingEncounter
+                |> Maybe.withDefault []
+
         result =
             Maybe.map
                 (\sugarCount ->
@@ -556,6 +564,7 @@ encodePrenatalRandomBloodSugarTestValue value =
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
         ++ testPrerequisites
+        ++ originatingEncounter
         ++ result
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_random_blood_sugar_test" )
