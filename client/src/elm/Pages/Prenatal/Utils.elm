@@ -1586,7 +1586,7 @@ diagnosesCausingHospitalReferralByPastDiagnoses : AssembledData -> List Prenatal
 diagnosesCausingHospitalReferralByPastDiagnoses assembled =
     let
         allowedPastDiagnoses =
-            DiagnosisHepatitisB :: syphilisDiagnosesIncludingNeurosyphilis
+            (DiagnosisHepatitisB :: syphilisDiagnosesIncludingNeurosyphilis) ++ diabetesDiagnoses
     in
     EverySet.toList assembled.encounter.pastDiagnoses
         |> List.filter (\diagnosis -> List.member diagnosis allowedPastDiagnoses)
@@ -2441,9 +2441,12 @@ syphilisDiagnosesIncludingNeurosyphilis =
 
 syphilisDiagnoses : List PrenatalDiagnosis
 syphilisDiagnoses =
-    [ DiagnosisSyphilis
-    , DiagnosisSyphilisWithComplications
-    ]
+    [ DiagnosisSyphilis, DiagnosisSyphilisWithComplications ]
+
+
+diabetesDiagnoses : List PrenatalDiagnosis
+diabetesDiagnoses =
+    [ DiagnosisDiabetes, DiagnosisGestationalDiabetes ]
 
 
 outsideCareDiagnoses : List PrenatalDiagnosis

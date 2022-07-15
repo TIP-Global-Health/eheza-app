@@ -1943,7 +1943,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                         ( newModel, extraMsgsForAssessment ) =
                             Maybe.map
-                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisDiabetes, DiagnosisGestationalDiabetes ] ))
+                                (\originatingEncounterId -> ( originatingEncounterId, Pages.Prenatal.Utils.diabetesDiagnoses ))
                                 data.value.originatingEncounter
                                 |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in

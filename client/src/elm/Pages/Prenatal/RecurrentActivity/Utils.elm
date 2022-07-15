@@ -433,6 +433,8 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
            , DiagnosisMalariaWithSevereAnemia
            , DiagnosisSevereAnemia
            , DiagnosisModeratePreeclampsiaAfterRecheck
+           , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
+           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
            ]
         |> List.filter (\diagnosis -> diagnosed diagnosis assembled)
 
