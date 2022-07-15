@@ -153,7 +153,6 @@ allObstetricalDiagnosis =
     , DiagnosisHypotension
     , DiagnosisPregnancyInducedHypertension
     , DiagnosisPreeclampsiaHighRisk
-    , DiagnosisGestationalDiabetes
     ]
 
 

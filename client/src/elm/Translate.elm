@@ -6099,7 +6099,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibibyimba byo mu mura/Nyababyeyi"
                     }
 
-                DiagnosisDiabetes ->
+                Backend.PrenatalActivity.Model.DiagnosisDiabetes ->
                     { english = "Diabetes"
                     , kinyarwanda = Just "Diyabete (Indwara y'igisukari)"
                     }
@@ -8335,6 +8335,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+                    { english = "Gestational Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDepressionNotLikely ->
                     { english = "Depression not Likely"
                     , kinyarwanda = Nothing
@@ -8657,6 +8667,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+                    { english = "Gestational Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDepressionNotLikely ->
                     { english = "Depression not Likely"
                     , kinyarwanda = Nothing
@@ -8881,6 +8901,16 @@ translationSet trans =
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Patient shows signs of Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+                    { english = "Patient shows signs of Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+                    { english = "Patient shows signs of Gestational Diabetes"
                     , kinyarwanda = Nothing
                     }
 
