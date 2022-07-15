@@ -1091,6 +1091,7 @@ viewVitalsForm language currentDate assembled form =
 
 viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
 viewHealthEducationForm language currentDate assembled form =
+    -- @todo: extend for diabetes
     div [ class "ui form health-education" ]
         [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
         , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
