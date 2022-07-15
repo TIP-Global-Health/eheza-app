@@ -876,6 +876,8 @@ function hedley_prenatal_field_default_field_bases() {
         'gonorrhea-continued' => 'Gonorrhea Continued',
         'trichomonas-or-bv' => 'Trichomonas or Bacterial Vaginosis',
         'trichomonas-or-bv-continued' => 'Trichomonas or Bacterial Vaginosis Continued',
+        'diabetes' => 'Diabetes',
+        'gestational-diabetes' =>  'Gestational diabetes',
         'tuberculosis' => 'Tuberculosis',
         'depression-not-likely' => 'Depression Not Likely',
         'depression-possible' => 'Depression Possible',
