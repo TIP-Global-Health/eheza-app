@@ -80,7 +80,6 @@ type ObstetricalDiagnosis
     | DiagnosisHypotension
     | DiagnosisPregnancyInducedHypertension
     | DiagnosisPreeclampsiaHighRisk
-    | DiagnosisGestationalDiabetes
 
 
 type MedicalDiagnosis
@@ -94,7 +93,6 @@ type MedicalDiagnosis
     | DiagnosisBowedLegs
     | DiagnosisKnownHIV
     | DiagnosisMentalHealthHistory
-    | DiagnosisDiabetes
 
 
 type PregnancyTrimester
@@ -155,6 +153,7 @@ allObstetricalDiagnosis =
     , DiagnosisHypotension
     , DiagnosisPregnancyInducedHypertension
     , DiagnosisPreeclampsiaHighRisk
+    , DiagnosisGestationalDiabetes
     ]
 
 
@@ -170,6 +169,7 @@ allMedicalDiagnosis =
     , DiagnosisBowedLegs
     , DiagnosisKnownHIV
     , DiagnosisMentalHealthHistory
+    , DiagnosisDiabetes
     ]
 
 
