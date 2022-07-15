@@ -684,6 +684,8 @@ function hedley_prenatal_field_default_field_bases() {
         'syphilis-complications' => 'Syphilis with Complications',
         'neurosyphilis' => 'Neurosyphilis',
         'hepatitis-b' => 'Hepatitis B',
+        'diabetes' => 'Diabetes',
+        'gestational-diabetes' =>  'Gestational diabetes',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
