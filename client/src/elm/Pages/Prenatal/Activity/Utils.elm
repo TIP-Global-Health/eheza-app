@@ -4931,7 +4931,8 @@ expectLaboratoryTask currentDate assembled task =
                     True
 
                 TaskRandomBloodSugarTest ->
-                    True
+                    List.all (\diagnosis -> not <| EverySet.member diagnosis assembled.encounter.pastDiagnoses)
+                        diabetesDiagnoses
 
                 TaskHIVPCRTest ->
                     isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
