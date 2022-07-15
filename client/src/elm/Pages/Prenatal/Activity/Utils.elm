@@ -1479,6 +1479,41 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                 |> Maybe.withDefault False
             )
                 && anemiaComplicationSignsPresent
+
+        diabetesDiagnosed =
+            getMeasurementValueFunc measurements.randomBloodSugarTest
+                |> Maybe.map
+                    (\value ->
+                        let
+                            bySugarCount =
+                                Maybe.map2
+                                    (\testPrerequisites sugarCount ->
+                                        if EverySet.member PrerequisiteFastFor12h testPrerequisites then
+                                            sugarCount > 7
+
+                                        else
+                                            sugarCount >= 11.1
+                                    )
+                                    value.testPrerequisites
+                                    value.sugarCount
+                                    |> Maybe.withDefault False
+
+                            byUrineGlucose =
+                                if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                                    -- If random blood sugar test was perfomed, we determine by its results.
+                                    False
+
+                                else
+                                    -- If random blood sugar test was not perfomed, we determine by
+                                    -- glucose level at urine dipstick test.
+                                    getMeasurementValueFunc measurements.urineDipstickTest
+                                        |> Maybe.andThen .glucose
+                                        |> Maybe.map (\glucose -> List.member glucose [ GlucosePlus2, GlucosePlus3, GlucosePlus4 ])
+                                        |> Maybe.withDefault False
+                        in
+                        bySugarCount || byUrineGlucose
+                    )
+                |> Maybe.withDefault False
     in
     case diagnosis of
         DiagnosisSeverePreeclampsiaAfterRecheck ->
@@ -1616,6 +1651,22 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
 
         DiagnosisSevereAnemiaWithComplications ->
             severeAnemiaWithComplicationsDiagnosed
+
+        Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+            Maybe.map
+                (\egaWeeks ->
+                    egaWeeks <= 20 && diabetesDiagnosed
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+            Maybe.map
+                (\egaWeeks ->
+                    egaWeeks > 20 && diabetesDiagnosed
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
 
         -- Non Lab Results diagnoses.
         _ ->
@@ -4653,6 +4704,7 @@ toPrenatalRandomBloodSugarTestValue form =
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisites
             , sugarCount = Nothing
+            , originatingEncounter = Nothing
             }
         )
         form.executionNote
