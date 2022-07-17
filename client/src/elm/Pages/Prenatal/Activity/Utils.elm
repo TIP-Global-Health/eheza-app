@@ -1653,20 +1653,24 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
             severeAnemiaWithComplicationsDiagnosed
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
-            Maybe.map
-                (\egaWeeks ->
-                    egaWeeks <= 20 && diabetesDiagnosed
-                )
-                egaInWeeks
-                |> Maybe.withDefault False
+            (not <| diagnosedPreviouslyAnyOf diabetesDiagnosed assembled)
+                && (Maybe.map
+                        (\egaWeeks ->
+                            egaWeeks <= 20 && diabetesDiagnosed
+                        )
+                        egaInWeeks
+                        |> Maybe.withDefault False
+                   )
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
-            Maybe.map
-                (\egaWeeks ->
-                    egaWeeks > 20 && diabetesDiagnosed
-                )
-                egaInWeeks
-                |> Maybe.withDefault False
+            (not <| diagnosedPreviouslyAnyOf diabetesDiagnosed assembled)
+                && (Maybe.map
+                        (\egaWeeks ->
+                            egaWeeks > 20 && diabetesDiagnosed
+                        )
+                        egaInWeeks
+                        |> Maybe.withDefault False
+                   )
 
         -- Non Lab Results diagnoses.
         _ ->
