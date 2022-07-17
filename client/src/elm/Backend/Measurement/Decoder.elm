@@ -349,6 +349,9 @@ decodePrenatalHealthEducationSign =
                     "mental-health" ->
                         succeed EducationMentalHealth
 
+                    "diabetes" ->
+                        succeed EducationDiabetes
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

@@ -232,6 +232,9 @@ encodePrenatalHealthEducationSign sign =
             EducationMentalHealth ->
                 "mental-health"
 
+            EducationDiabetes ->
+                "diabetes"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

@@ -386,9 +386,10 @@ healthEducationFormWithDefaultInitialPhase form saved =
                 , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
                 , mentalHealth = or form.mentalHealth (EverySet.member EducationMentalHealth signs |> Just)
 
-                -- Only sign that does not participate at recurrent phase. Resolved directly
+                -- Only signs that do not participate at recurrent phase. Resolved directly
                 -- from value.
                 , hivDetectableViralLoad = EverySet.member EducationHIVDetectableViralLoad signs |> Just
+                , diabetes = EverySet.member EducationDiabetes signs |> Just
                 }
             )
 
@@ -426,8 +427,9 @@ healthEducationFormWithDefaultRecurrentPhase form saved =
                 , saferSex = EverySet.member EducationSaferSex signs |> Just
                 , mentalHealth = EverySet.member EducationMentalHealth signs |> Just
 
-                -- Only sign that participates at recurrent phase.
+                -- Only signs that participates at recurrent phase.
                 , hivDetectableViralLoad = or form.hivDetectableViralLoad (EverySet.member EducationHIVDetectableViralLoad signs |> Just)
+                , diabetes = or form.diabetes (EverySet.member EducationDiabetes signs |> Just)
                 }
             )
 
@@ -456,6 +458,7 @@ toHealthEducationValue valueForNone form =
     , ifNullableTrue EducationSaferSex form.saferSex
     , ifNullableTrue EducationMentalHealth form.mentalHealth
     , ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
+    , ifNullableTrue EducationDiabetes form.diabetes
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty valueForNone)

@@ -841,6 +841,7 @@ type PrenatalHealthEducationSign
     | EducationSaferSex
     | EducationHIVDetectableViralLoad
     | EducationMentalHealth
+    | EducationDiabetes
     | NoPrenatalHealthEducationSigns
     | NoPrenatalHealthEducationSignsInitialPhase
     | NoPrenatalHealthEducationSignsRecurrentPhase
