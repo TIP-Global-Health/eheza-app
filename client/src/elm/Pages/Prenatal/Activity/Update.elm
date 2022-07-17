@@ -53,6 +53,7 @@ import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
+import String.Extra
 import Translate exposing (Language, translate)
 
 
@@ -181,8 +182,7 @@ update language currentDate id db msg model =
                     else
                         let
                             message =
-                                List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) nonUrgentDiagnoses
-                                    |> String.join ", "
+                                String.join "\n ." (List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) nonUrgentDiagnoses)
                         in
                         [ SetWarningPopupState <| Just ( message, "" ) ]
             in
