@@ -2784,8 +2784,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
         NextStepsHealthEducation ->
             let
                 form =
-                    assembled.measurements.healthEducation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.healthEducation
                         |> healthEducationFormWithDefaultInitialPhase data.healthEducationForm
 
                 ( _, tasks ) =

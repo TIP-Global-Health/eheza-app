@@ -1299,13 +1299,10 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SetEducationHIVDetectableViralLoad value ->
+        SetHealthEducationBoolInput formUpdateFunc value ->
             let
-                form =
-                    model.nextStepsData.healthEducationForm
-
                 updatedForm =
-                    { form | hivDetectableViralLoad = Just value }
+                    formUpdateFunc value model.nextStepsData.healthEducationForm
 
                 updatedData =
                     model.nextStepsData

@@ -7,12 +7,14 @@ import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
-import Html exposing (Html)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.Utils exposing (..)
@@ -26,6 +28,7 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCustomLabel
         , viewQuestionLabel
         )
 import Translate exposing (Language, TranslationId, translate)
@@ -422,7 +425,7 @@ expectNextStepsTask currentDate assembled task =
                    )
 
         NextStepsHealthEducation ->
-            diagnosed DiagnosisHIVDetectableViralLoad assembled
+            diagnosedAnyOf (DiagnosisHIVDetectableViralLoad :: diabetesDiagnoses) assembled
 
 
 diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
@@ -532,9 +535,13 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 form =
                     getMeasurementValueFunc assembled.measurements.healthEducation
                         |> healthEducationFormWithDefaultRecurrentPhase data.healthEducationForm
+
+                ( _, tasks ) =
+                    healthEducationFormInputsAndTasks language assembled form
             in
-            ( taskCompleted form.hivDetectableViralLoad
-            , 1
+            ( List.map taskCompleted tasks
+                |> List.sum
+            , List.length tasks
             )
 
 
@@ -637,3 +644,62 @@ toPrenatalHIVPCRResultsValue form =
             }
         )
         form.executionNote
+
+
+healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasks language assembled form =
+    let
+        detectableViralLoad =
+            if diagnosed DiagnosisHIVDetectableViralLoad assembled then
+                ( [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.hivDetectableViralLoad
+                        (SetHealthEducationBoolInput (\value form_ -> { form_ | hivDetectableViralLoad = Just value }))
+                        "hiv-detectable-viral-load"
+                        Nothing
+                  ]
+                , Just form.hivDetectableViralLoad
+                )
+
+            else
+                ( [], Nothing )
+
+        diabetes =
+            if diagnosedAnyOf diabetesDiagnoses assembled then
+                let
+                    header =
+                        if diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetes assembled then
+                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisDiabetes
+
+                        else
+                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
+                in
+                ( [ viewCustomLabel language header "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationDiabetesInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.diabetes
+                        (SetHealthEducationBoolInput (\value form_ -> { form_ | diabetes = Just value }))
+                        "diabetes"
+                        Nothing
+                  ]
+                , Just form.diabetes
+                )
+
+            else
+                ( [], Nothing )
+
+        inputsAndTasks =
+            [ detectableViralLoad
+            , diabetes
+            ]
+    in
+    ( List.map Tuple.first inputsAndTasks
+        |> List.concat
+    , List.map Tuple.second inputsAndTasks
+        |> Maybe.Extra.values
+    )

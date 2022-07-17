@@ -2716,11 +2716,10 @@ update language currentDate id db msg model =
 
         SetHealthEducationSubActivityBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.nextStepsData.healthEducationForm
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.nextStepsData.healthEducationForm
-                    in
                     model.nextStepsData
                         |> (\data -> { data | healthEducationForm = updatedForm })
             in
