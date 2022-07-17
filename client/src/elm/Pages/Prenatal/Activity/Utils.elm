@@ -1653,7 +1653,7 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
             severeAnemiaWithComplicationsDiagnosed
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
-            (not <| diagnosedPreviouslyAnyOf diabetesDiagnosed assembled)
+            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
                 && (Maybe.map
                         (\egaWeeks ->
                             egaWeeks <= 20 && diabetesDiagnosed
@@ -1663,7 +1663,7 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                    )
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
-            (not <| diagnosedPreviouslyAnyOf diabetesDiagnosed assembled)
+            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
                 && (Maybe.map
                         (\egaWeeks ->
                             egaWeeks > 20 && diabetesDiagnosed
