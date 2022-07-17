@@ -5434,10 +5434,10 @@ function hedley_prenatal_field_default_field_instances() {
         'settings' => array(
           'decimal_separator' => '.',
           'prefix_suffix' => TRUE,
-          'scale' => 0,
+          'scale' => 2,
           'thousand_separator' => '',
         ),
-        'type' => 'number_integer',
+        'type' => 'number_decimal',
         'weight' => 8,
       ),
       'teaser' => array(
