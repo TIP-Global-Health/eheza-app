@@ -38,6 +38,8 @@ type PrenatalDiagnosis
     | DiagnosisPPROM
     | DiagnosisHyperemesisGravidum
     | DiagnosisHyperemesisGravidumBySymptoms
+    | DiagnosisSevereVomiting
+    | DiagnosisSevereVomitingBySymptoms
     | DiagnosisMaternalComplications
     | DiagnosisInfection
     | DiagnosisImminentDelivery
