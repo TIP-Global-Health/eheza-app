@@ -60,6 +60,7 @@ import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
+import Components.SendViaWhatsAppDialog.Model exposing (ReportComponentAntenatal(..), ReportComponentWellChild(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Gizra.NominalDate exposing (NominalDate)
@@ -1098,6 +1099,8 @@ type TranslationId
     | RemainingTotalToUpload
     | RenalDisease
     | ReportAge String
+    | ReportComponentAntenatal ReportComponentAntenatal
+    | ReportComponentWellChild ReportComponentWellChild
     | ReportDOB String
     | ReportRemaining Int
     | ReportResultsOfContactsSearch Int
@@ -1165,6 +1168,19 @@ type TranslationId
     | SelectedHCNotSynced
     | SelectedHCSyncing
     | SelectedHCUploading
+    | Send
+    | SendViaWhatsApp
+    | SendViaWhatsAppComponentsSelectionHeader Components.SendViaWhatsAppDialog.Model.ReportType
+    | SendViaWhatsAppConfirmationBeforeSendingHeader
+    | SendViaWhatsAppConfirmationBeforeSendingQuestion
+    | SendViaWhatsAppConsentQuestion
+    | SendViaWhatsAppNoticeOfNonRespobsibility
+    | SendViaWhatsAppPhoneInputHeader
+    | SendViaWhatsAppPhoneVerificationHeader
+    | SendViaWhatsAppPhoneVerificationQuestion
+    | SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix
+    | SendViaWhatsAppPhoneUpdateAtProfileQuestionSuffix
+    | SendViaWhatsAppPhoneUpdateConfirmationMessasge
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -11737,6 +11753,65 @@ translationSet trans =
             , kinyarwanda = Just <| "Imyaka: " ++ age
             }
 
+        ReportComponentAntenatal component ->
+            case component of
+                ComponentAntenatalRiskFactors ->
+                    { english = "Risk Factors"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalMedicalDiagnoses ->
+                    { english = "Medical Diagnoses"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalObstetricalDiagnoses ->
+                    { english = "Obstetrical Diagnoses"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalPatientProgress ->
+                    { english = "Patient Progress"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalLabsResults ->
+                    { english = "Labs Results"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentAntenatalProgressPhotos ->
+                    { english = "Progress Photos"
+                    , kinyarwanda = Nothing
+                    }
+
+        ReportComponentWellChild component ->
+            case component of
+                ComponentWellChildActiveDiagnoses ->
+                    { english = "Acute Illness History"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentWellChildImmunizationHistory ->
+                    { english = "Immunization Histor"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentWellChildECD ->
+                    { english = "Early Childhood Development"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentWellChildGrowth ->
+                    { english = "Growth"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentWellChildNextAppointment ->
+                    { english = "Next Appointment"
+                    , kinyarwanda = Nothing
+                    }
+
         ReportDOB dob ->
             { english = "DOB: " ++ dob
             , kinyarwanda = Just <| "Itariki y'amavuko: " ++ dob
@@ -12248,6 +12323,78 @@ translationSet trans =
 
         SelectedHCUploading ->
             { english = "Uploading data for selected Health Center. Please wait until completed."
+            , kinyarwanda = Nothing
+            }
+
+        Send ->
+            { english = "Send"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsApp ->
+            { english = "Send via WhatsApp"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppComponentsSelectionHeader reportType ->
+            case reportType of
+                Components.SendViaWhatsAppDialog.Model.ReportWellChild ->
+                    { english = "Please select which sections of the Standard Pediatric Visit Report you would like to send:"
+                    , kinyarwanda = Nothing
+                    }
+
+                Components.SendViaWhatsAppDialog.Model.ReportAntenatal ->
+                    { english = "Please select which sections of the Antenatal Report you would like to send:"
+                    , kinyarwanda = Nothing
+                    }
+
+        SendViaWhatsAppConfirmationBeforeSendingHeader ->
+            { english = "By pressing send you are releasing the selected documents to:"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppConfirmationBeforeSendingQuestion ->
+            { english = "Would you like to send?"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppConsentQuestion ->
+            { english = "Does the patient consent to having their medical records sent via WhatsApp?"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppNoticeOfNonRespobsibility ->
+            { english = "Please note that the medical professional and E-Heza will not be liable for what happens to these medical reports once released."
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneInputHeader ->
+            { english = "Enter the correct phone number for the patient:"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneVerificationHeader ->
+            { english = "The phone number we have on file for this patient is:"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneVerificationQuestion ->
+            { english = "Is this the correct number for the patients WhatsApp?"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix ->
+            { english = "Would you like to update the patient profile for"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneUpdateAtProfileQuestionSuffix ->
+            { english = "with the number"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppPhoneUpdateConfirmationMessasge ->
+            { english = "The patient record has been updated."
             , kinyarwanda = Nothing
             }
 

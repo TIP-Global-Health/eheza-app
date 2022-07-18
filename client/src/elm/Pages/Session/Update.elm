@@ -278,12 +278,12 @@ updateFoundSession currentDate zscores sessionId session db msg model =
                     Dict.get childId model.progressReportPages
                         |> Maybe.withDefault Pages.ProgressReport.Model.emptyModel
 
-                ( subModel, subCmd, extraMsgs ) =
+                ( subModel, subCmd, appMsgs ) =
                     Pages.ProgressReport.Update.update subMsg progressReportPage
             in
             ( { model | progressReportPages = Dict.insert childId subModel model.progressReportPages }
             , Cmd.map (MsgProgressReport childId) subCmd
-            , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
+            , appMsgs
             )
 
         SetActivePage page ->

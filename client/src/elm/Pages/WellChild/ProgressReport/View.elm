@@ -32,9 +32,11 @@ import Backend.WellChildEncounter.Model
         , headCircumferenceWarnings
         , pediatricCareMilestones
         )
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.View
 import Date
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffWeeks, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -53,7 +55,7 @@ import Pages.Nutrition.Activity.View exposing (translateNutritionAssement)
 import Pages.Nutrition.Encounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewStartEncounterButton)
+import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProgressReport, viewStartEncounterButton)
 import Pages.WellChild.Activity.Types exposing (VaccinationStatus(..))
 import Pages.WellChild.Activity.Utils exposing (expectedECDSignsOnMilestone, generateCompletedECDSigns, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChild.Activity.View exposing (viewVaccinationOverview)
@@ -129,6 +131,12 @@ view language currentDate zscores id isChw db model =
 
         initiator =
             InitiatorWellChild id
+
+        componentsConfig =
+            Just
+                { reportType = Components.SendViaWhatsAppDialog.Model.ReportWellChild
+                , setReportComponentsFunc = SetReportComponents
+                }
     in
     viewWebData language
         (viewProgressReport language
@@ -139,8 +147,12 @@ view language currentDate zscores id isChw db model =
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
+            model.sendViaWhatsAppDialog
             SetActivePage
             SetDiagnosisMode
+            MsgSendViaWhatsAppDialog
+            componentsConfig
+            model.components
             bottomActionData
         )
         identity
@@ -156,12 +168,16 @@ viewProgressReport :
     -> Bool
     -> ModelIndexedDb
     -> DiagnosisMode
+    -> Components.SendViaWhatsAppDialog.Model.Model
     -> (Page -> msg)
     -> (DiagnosisMode -> msg)
+    -> (Components.SendViaWhatsAppDialog.Model.Msg msg -> msg)
+    -> Maybe (Components.SendViaWhatsAppDialog.Model.ReportComponentsConfig msg)
+    -> Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
     -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg bottomActionData ( childId, child ) =
+viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -260,25 +276,34 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         child
                         vaccinationProgress
                         db
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildImmunizationHistory)
                     , viewECDPane language
                         currentDate
                         child
                         wellChildEncounters
                         individualWellChildMeasurementsWithDates
                         db
-                    , viewGrowthPane language
-                        currentDate
-                        zscores
-                        ( childId, child )
-                        expectedSessions
-                        groupNutritionMeasurements
-                        individualNutritionMeasurementsWithDates
-                        individualWellChildMeasurementsWithDates
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildECD)
+
+                    -- @todo:
+                    -- Drawing SVG charts causes major slowness, specially when
+                    -- typing new phone number. Need to decide how to
+                    -- solve this.
+                    -- , viewGrowthPane language
+                    --     currentDate
+                    --     zscores
+                    --     ( childId, child )
+                    --     expectedSessions
+                    --     groupNutritionMeasurements
+                    --     individualNutritionMeasurementsWithDates
+                    --     individualWellChildMeasurementsWithDates
+                    --     |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildGrowth)
                     , viewNextAppointmentPane language
                         currentDate
                         child
                         individualWellChildMeasurements
                         db
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildNextAppointment)
                     ]
 
                 ModeCompletedDiagnosis ->
@@ -302,11 +327,27 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                             viewStartEncounterButton language data.startEncounterMsg
 
                         _ ->
-                            viewEndEncounterButton language data.allowEndEcounter data.setEndEncounterDialogStateMsg
+                            viewEndEncounterMenuForProgressReport language
+                                data.allowEndEcounter
+                                data.setEndEncounterDialogStateMsg
+                                (msgSendViaWhatsAppDialogMsg <|
+                                    Components.SendViaWhatsAppDialog.Model.SetState <|
+                                        Just Components.SendViaWhatsAppDialog.Model.Consent
+                                )
                     )
                 )
                 bottomActionData
                 |> Maybe.withDefault ( Nothing, emptyNode )
+
+        showDiagnosisPaneForSendViaWhatsApp =
+            Maybe.map (EverySet.member Components.SendViaWhatsAppDialog.Model.ComponentWellChildActiveDiagnoses) selectedComponents
+                |> Maybe.withDefault False
+
+        showComponent component =
+            -- Show component if it was selected to be shared via WhatsApp,
+            -- or, if viewing not for sharing via WhatsApp.
+            Maybe.map (EverySet.member component) selectedComponents
+                |> Maybe.withDefault True
     in
     div [ class "page-report well-child" ]
         [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
@@ -327,11 +368,24 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 diagnosisMode
                 setActivePageMsg
                 setDiagnosisModeMsg
+                showDiagnosisPaneForSendViaWhatsApp
                 maybeAssembled
+                |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildActiveDiagnoses)
             ]
                 ++ derivedContent
-                ++ [ bottomActionButton ]
+                ++ [ -- Bottom actions are hidden when viewing for sharing
+                     -- via WhatsApp.
+                     showIf (isNothing selectedComponents) bottomActionButton
+                   ]
         , viewModal endEncounterDialog
+        , Html.map msgSendViaWhatsAppDialogMsg
+            (Components.SendViaWhatsAppDialog.View.view
+                language
+                currentDate
+                ( childId, child )
+                componentsConfig
+                sendViaWhatsAppDialog
+            )
         ]
 
 
@@ -413,9 +467,10 @@ viewDiagnosisPane :
     -> DiagnosisMode
     -> (Page -> msg)
     -> (DiagnosisMode -> msg)
+    -> Bool
     -> Maybe AssembledData
     -> Html msg
-viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg maybeAssembled =
+viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg viewForSendViaWhatsApp maybeAssembled =
     let
         ( activeIllnesses, completedIllnesses ) =
             List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
@@ -464,36 +519,34 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
                 ]
 
         ( label, priorDiagniosisButton ) =
-            case diagnosisMode of
-                ModeActiveDiagnosis ->
-                    ( Translate.ActiveDiagnosis
-                    , div [ class "pane-action" ]
-                        [ button
-                            [ class "ui primary button"
-                            , onClick <| setDiagnosisModeMsg ModeCompletedDiagnosis
-                            ]
-                            [ text <| translate language Translate.ReviewPriorDiagnosis ]
+            if viewForSendViaWhatsApp || diagnosisMode == ModeActiveDiagnosis then
+                ( Translate.ActiveDiagnosis
+                , div [ class "pane-action" ]
+                    [ button
+                        [ class "ui primary button"
+                        , onClick <| setDiagnosisModeMsg ModeCompletedDiagnosis
                         ]
-                    )
+                        [ text <| translate language Translate.ReviewPriorDiagnosis ]
+                    ]
+                )
 
-                ModeCompletedDiagnosis ->
-                    ( Translate.PriorDiagnosis
-                    , emptyNode
-                    )
+            else
+                ( Translate.PriorDiagnosis
+                , emptyNode
+                )
 
         ( selectedDiagnosisEntries, selectedAssessmentEntries, selectedWarningEntries ) =
-            case diagnosisMode of
-                ModeActiveDiagnosis ->
-                    ( List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activeIllnesses
-                    , List.map (\( date, data ) -> ( date, ( data, StatusOngoing ) )) activeAssessmentEntries
-                    , List.map (\( date, milestone, data ) -> ( date, ( milestone, data, StatusOngoing ) )) activeWarningEntries
-                    )
+            if viewForSendViaWhatsApp || diagnosisMode == ModeActiveDiagnosis then
+                ( List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activeIllnesses
+                , List.map (\( date, data ) -> ( date, ( data, StatusOngoing ) )) activeAssessmentEntries
+                , List.map (\( date, milestone, data ) -> ( date, ( milestone, data, StatusOngoing ) )) activeWarningEntries
+                )
 
-                ModeCompletedDiagnosis ->
-                    ( List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedIllnesses
-                    , List.map (\( date, data ) -> ( date, ( data, StatusResolved ) )) completedAssessmentEntries
-                    , List.map (\( date, milestone, data ) -> ( date, ( milestone, data, StatusResolved ) )) completedWarningEntries
-                    )
+            else
+                ( List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedIllnesses
+                , List.map (\( date, data ) -> ( date, ( data, StatusResolved ) )) completedAssessmentEntries
+                , List.map (\( date, milestone, data ) -> ( date, ( milestone, data, StatusResolved ) )) completedWarningEntries
+                )
 
         entries =
             (daignosisEntries ++ assessmentEntries ++ warningEntries)
@@ -515,7 +568,7 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
         , div [ class "pane-content" ] <|
             entriesHeading
                 :: viewEntries language entries
-        , priorDiagniosisButton
+        , priorDiagniosisButton |> showIf (not viewForSendViaWhatsApp)
         ]
 
 

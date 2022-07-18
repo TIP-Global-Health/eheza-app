@@ -9,6 +9,8 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicati
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.View
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -46,7 +48,7 @@ import Pages.AcuteIllness.Encounter.View exposing (allowEndingEcounter, partitio
 import Pages.AcuteIllness.ProgressReport.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
+import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProgressReport)
 import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -94,10 +96,16 @@ viewContent language currentDate id isChw initiator model assembled =
         allowEndEcounter =
             allowEndingEcounter currentDate isChw assembled pendingActivities
 
-        endEncounterButton =
+        endEncounterMenu =
             case initiator of
                 InitiatorEncounterPage ->
-                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                    viewEndEncounterMenuForProgressReport language
+                        allowEndEcounter
+                        SetEndEncounterDialogState
+                        (MsgSendViaWhatsAppDialog <|
+                            Components.SendViaWhatsAppDialog.Model.SetState <|
+                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                        )
 
                 _ ->
                     emptyNode
@@ -113,9 +121,17 @@ viewContent language currentDate id isChw initiator model assembled =
             , viewTreatmentPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
             , viewActionsTakenPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
             , viewNextStepsPane language currentDate assembled
-            , endEncounterButton
+            , endEncounterMenu
             ]
         , viewModal endEncounterDialog
+        , Html.map MsgSendViaWhatsAppDialog
+            (Components.SendViaWhatsAppDialog.View.view
+                language
+                currentDate
+                ( assembled.participant.person, assembled.person )
+                Nothing
+                model.sendViaWhatsAppDialog
+            )
         ]
 
 

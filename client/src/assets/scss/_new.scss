@@ -2247,6 +2247,58 @@ div.page-outcome.pregnancy {
   }
 }
 
+div.page-report {
+
+  .ui.unstackable.items .actions.two button {
+    width: 50%;
+    float: left;
+    margin: 0;
+
+    &.active {
+      border-left: 1px solid $color-white;
+    }
+  }
+
+  .send-via-whatsapp.ui.active.modal {
+
+    .content {
+      padding-top: 30px;
+      text-align: left;
+
+      input {
+        border: 2px solid $color-gray-border;
+        background-color: $color-white;
+        width: 100%;
+        text-align: center;
+        text-align: -webkit-center;
+      }
+
+      span {
+        color: $color-primary;
+        margin-left: 5px;
+        margin-right: 5px;
+      }
+
+      .checkbox-select-input {
+        margin-left: -25px;
+
+        .ui.checkbox.activity {
+          margin-bottom: 15px;
+
+          input {
+            border: 1px solid $color-gray-border;
+          }
+        }
+      }
+    }
+
+    .actions > button {
+      margin-left: 0;
+    }
+  }
+
+}
+
 div.page-report.clinical,
 div.page-report.demographics {
   padding: 0 20px 35px 20px;
