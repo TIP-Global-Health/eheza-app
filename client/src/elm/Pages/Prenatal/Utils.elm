@@ -682,32 +682,51 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                             )
                         |> Maybe.withDefault emptyNode
 
-                currentTreatmentLabel =
+                ( currentTreatmentLabel, newTreatmentLabel ) =
                     getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled
                         |> Maybe.map
                             (\currentTreatment ->
-                                div [ class "label overview" ]
-                                    [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateCurrentTreatment
-                                    , text " "
-                                    , text <| translate language <| Translate.RecommendedTreatmentSignLabel currentTreatment
-                                    , text " "
-                                    , text <| translate language <| Translate.RecommendedTreatmentSignDosage currentTreatment
-                                    , text "."
-                                    ]
-                            )
-                        |> Maybe.withDefault emptyNode
+                                let
+                                    recommendationDosageUpdateLabel =
+                                        if
+                                            -- This is a special usecase, where previously no treatment is given, and
+                                            -- currently BP is normal. Nevertheless, we still recommend starting tratement
+                                            -- sinve Hypertension was diagnosed previously.
+                                            (currentTreatment == NoTreatmentForHypertension)
+                                                && (recommendationDosageUpdate == TreatementUpdateMaintainCurrentDoasage)
+                                        then
+                                            Translate.HypertensionRecommendedTreatmentUpdateStartTreatment
 
-                newTreatmentLabel =
-                    div [ class "label overview" ]
-                        [ text <| translate language <| Translate.HypertensionRecommendedTreatmentUpdateNewTreatment recommendationDosageUpdate
-                        , text " "
-                        , span [ class "highlight" ]
-                            [ text <| translate language <| Translate.RecommendedTreatmentSignLabel recommendedMedication
-                            , text " "
-                            , text <| translate language <| Translate.RecommendedTreatmentSignDosage recommendedMedication
-                            , text "."
-                            ]
-                        ]
+                                        else
+                                            Translate.HypertensionRecommendedTreatmentUpdateNewTreatment recommendationDosageUpdate
+                                in
+                                ( div [ class "label overview" ] <|
+                                    if currentTreatment == NoTreatmentForHypertension then
+                                        [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateNoCurrentTreatment
+                                        , text "."
+                                        ]
+
+                                    else
+                                        [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateCurrentTreatment
+                                        , text " "
+                                        , text <| translate language <| Translate.RecommendedTreatmentSignLabel currentTreatment
+                                        , text " "
+                                        , text <| translate language <| Translate.RecommendedTreatmentSignDosage currentTreatment
+                                        , text "."
+                                        ]
+                                , div [ class "label overview" ]
+                                    [ text <| translate language recommendationDosageUpdateLabel
+                                    , text " "
+                                    , span [ class "highlight" ]
+                                        [ text <| translate language <| Translate.RecommendedTreatmentSignLabel recommendedMedication
+                                        , text " "
+                                        , text <| translate language <| Translate.RecommendedTreatmentSignDosage recommendedMedication
+                                        , text "."
+                                        ]
+                                    ]
+                                )
+                            )
+                        |> Maybe.withDefault ( emptyNode, emptyNode )
 
                 ( input, completed, active ) =
                     recommendedTreatmentForHypertensionInputAndTask language
@@ -2289,6 +2308,9 @@ medicationsInitialPhase =
     [ Mebendezole
     , TDF3TC
     , Dolutegravir
+    , Ceftriaxone
+    , Azithromycin
+    , Metronidazole
     ]
 
 

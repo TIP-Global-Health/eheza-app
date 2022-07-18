@@ -130,10 +130,8 @@ proteinResultNormal =
 
 
 phResultNormal : PHValue -> Bool
-phResultNormal =
-    -- @todo: revise after https://github.com/TIP-Global-Health/eheza-app/issues/308
-    -- is implemented.
-    (/=) Ph85
+phResultNormal value =
+    not <| List.member value [ Ph40, Ph85 ]
 
 
 glucoseResultNormal : GlucoseValue -> Bool

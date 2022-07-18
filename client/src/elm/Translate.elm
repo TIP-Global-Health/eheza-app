@@ -666,6 +666,8 @@ type TranslationId
     | HypertensionRecommendedTreatmentUpdateBPLabel
     | HypertensionRecommendedTreatmentUpdateCurrentTreatment
     | HypertensionRecommendedTreatmentUpdateNewTreatment HypertensionTreatementUpdateOption
+    | HypertensionRecommendedTreatmentUpdateNoCurrentTreatment
+    | HypertensionRecommendedTreatmentUpdateStartTreatment
     | IdleWaitingForSync
     | IllnessSymptom IllnessSymptom
     | Immunisation
@@ -5060,6 +5062,16 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        HypertensionRecommendedTreatmentUpdateNoCurrentTreatment ->
+            { english = "The patient is currently receiving no treatment"
+            , kinyarwanda = Nothing
+            }
+
+        HypertensionRecommendedTreatmentUpdateStartTreatment ->
+            { english = "It is recommend to start treatment with"
+            , kinyarwanda = Nothing
+            }
 
         IdleWaitingForSync ->
             { english = "Idle, waiting for next Sync cycle"
