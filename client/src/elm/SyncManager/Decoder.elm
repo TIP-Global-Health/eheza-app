@@ -685,6 +685,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalHIVTest
                             BackendAuthorityPrenatalHIVTest
 
+                    "prenatal_hiv_pcr_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHIVPCRTest
+                            BackendAuthorityPrenatalHIVPCRTest
+
                     "prenatal_labs_results" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalLabsResults
@@ -700,10 +705,20 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalMedicationDistribution
                             BackendAuthorityPrenatalMedicationDistribution
 
+                    "prenatal_mental_health" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalMentalHealth
+                            BackendAuthorityPrenatalMentalHealth
+
                     "prenatal_nutrition" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalNutrition
                             BackendAuthorityPrenatalNutrition
+
+                    "prenatal_outside_care" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalOutsideCare
+                            BackendAuthorityPrenatalOutsideCare
 
                     "prenatal_photo" ->
                         doDecode
@@ -720,10 +735,20 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalSendToHc
                             BackendAuthorityPrenatalSendToHC
 
+                    "prenatal_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSymptomReview
+                            BackendAuthorityPrenatalSymptomReview
+
                     "prenatal_syphilis_test" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalSyphilisTest
                             BackendAuthorityPrenatalSyphilisTest
+
+                    "prenatal_tetanus_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalTetanusImmunisation
+                            BackendAuthorityPrenatalTetanusImmunisation
 
                     "prenatal_urine_dipstick_test" ->
                         doDecode

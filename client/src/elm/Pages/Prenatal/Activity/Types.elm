@@ -13,6 +13,7 @@ type HistoryTask
     = Obstetric
     | Medical
     | Social
+    | OutsideCare
 
 
 type LmpRange
@@ -45,3 +46,44 @@ type LaboratoryTask
     | TaskRandomBloodSugarTest
     | TaskSyphilisTest
     | TaskUrineDipstickTest
+    | TaskHIVPCRTest
+    | TaskCompletePreviousTests
+
+
+type SymptomReviewStep
+    = SymptomReviewStepSymptoms
+    | SymptomReviewStepQuestions
+
+
+type LegCrampsReliefMethod
+    = ReliefMethodMuscleStretching
+    | ReliefMethodDorsiflexion
+    | ReliefMethodRelaxation
+    | ReliefMethodSleepWithPillowBetweenLegs
+    | ReliefMethodHeatTherapy
+    | ReliefMethodMassage
+
+
+type HeartburnReliefMethod
+    = ReliefMethodAvoidLargeMeals
+    | ReliefMethodCeaseSmoking
+    | ReliefMethodAvoidAlcohom
+    | ReliefMethodSleepWithHeadRaised
+
+
+type TreatmentReviewTask
+    = TreatmentReviewPrenatalMedication
+    | TreatmentReviewHIV
+    | TreatmentReviewHypertension
+    | TreatmentReviewMalaria
+    | TreatmentReviewAnemia
+    | TreatmentReviewSyphilis
+
+
+type OutsideCareStep
+    = OutsideCareStepDiagnoses
+    | OutsideCareStepMedications
+
+
+type ImmunisationTask
+    = TaskTetanus

@@ -12,6 +12,7 @@ module Measurement.View exposing
     , viewSendToHIVProgramForm
     , viewSendToHealthCenterForm
     , viewSendToHospitalForm
+    , viewSendToMentalSpecialistForm
     , viewVitalsForm
     , zScoreForHeightOrLength
     )
@@ -30,8 +31,8 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
         ( currentValues
+        , getHeightValue
         , getMeasurementValueFunc
-        , heightValueFunc
         , mapMeasurementData
         , muacIndication
         , muacValueFunc
@@ -42,6 +43,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -162,7 +164,7 @@ heightFormConfig =
     , constraints = getInputConstraintsHeight
     , unit = Translate.CentimeterShorthand
     , inputValue = .height
-    , storedValue = .value >> heightValueFunc
+    , storedValue = .value >> getHeightValue
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
@@ -1149,11 +1151,12 @@ viewSendToHealthCenterForm :
     -> SendToHCForm
     -> Html msg
 viewSendToHealthCenterForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHealthCenter
+    viewSendToFacilityForm language currentDate FacilityHealthCenter []
 
 
 viewSendToHospitalForm :
-    Language
+    List PrenatalDiagnosis
+    -> Language
     -> NominalDate
     -> (Bool -> msg)
     -> (ReasonForNotSendingToHC -> msg)
@@ -1161,8 +1164,8 @@ viewSendToHospitalForm :
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToHospitalForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHospital
+viewSendToHospitalForm referralReasons language currentDate =
+    viewSendToFacilityForm language currentDate FacilityHospital referralReasons
 
 
 viewSendToHIVProgramForm :
@@ -1175,31 +1178,70 @@ viewSendToHIVProgramForm :
     -> SendToHCForm
     -> Html msg
 viewSendToHIVProgramForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHIVProgram
+    viewSendToFacilityForm language currentDate FacilityHIVProgram []
 
 
-viewSendToFacilityForm :
+viewSendToMentalSpecialistForm :
     Language
     -> NominalDate
-    -> ReferralFacility
     -> (Bool -> msg)
     -> (ReasonForNotSendingToHC -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+viewSendToMentalSpecialistForm language currentDate =
+    viewSendToFacilityForm language currentDate FacilityMentalHealthSpecialist []
+
+
+viewSendToFacilityForm :
+    Language
+    -> NominalDate
+    -> ReferralFacility
+    -> List PrenatalDiagnosis
+    -> (Bool -> msg)
+    -> (ReasonForNotSendingToHC -> msg)
+    -> (Bool -> msg)
+    -> Maybe (Bool -> msg)
+    -> SendToHCForm
+    -> Html msg
+viewSendToFacilityForm language currentDate facility referralReasons setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
         headerHelper =
             case facility of
                 FacilityHealthCenter ->
-                    emptyNode
+                    []
 
                 FacilityHospital ->
-                    viewCustomLabel language Translate.AcuteIllnessHighRiskCaseHelper "." "instructions"
+                    let
+                        referralContext =
+                            if not <| List.isEmpty referralReasons then
+                                let
+                                    diagnosisTransId diagnosis =
+                                        if diagnosis == DiagnosisChronicHypertensionImmediate then
+                                            Translate.Hypertension
+
+                                        else
+                                            Translate.PrenatalDiagnosis diagnosis
+
+                                    reasons =
+                                        List.map (diagnosisTransId >> translate language) referralReasons
+                                            |> String.join ", "
+                                in
+                                div [ class "label" ] [ text <| translate language Translate.PatientDiagnosedWithLabel ++ ": " ++ reasons ++ "." ]
+
+                            else
+                                emptyNode
+                    in
+                    [ referralContext
+                    , viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions"
+                    ]
 
                 FacilityHIVProgram ->
-                    viewCustomLabel language Translate.PrenatalHIVProgramHelper "." "instructions"
+                    [ viewCustomLabel language Translate.PrenatalHIVProgramHelper "." "instructions" ]
+
+                FacilityMentalHealthSpecialist ->
+                    [ viewCustomLabel language Translate.PrenatalMentalHealthSpecialistHelper "." "instructions" ]
 
         sendToHCSection =
             let
@@ -1211,12 +1253,11 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
                     if not sentToHealthCenter then
                         let
                             options =
-                                case facility of
-                                    FacilityHIVProgram ->
-                                        [ ClientRefused, ClientAlreadyInCare, ReasonForNotSendingToHCOther ]
+                                if List.member facility [ FacilityHIVProgram, FacilityMentalHealthSpecialist ] then
+                                    [ ClientRefused, ClientAlreadyInCare, ReasonForNotSendingToHCOther ]
 
-                                    _ ->
-                                        [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                                else
+                                    [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
                         in
                         [ div [ class "why-not" ]
                             [ viewQuestionLabel language Translate.WhyNot
@@ -1266,15 +1307,23 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
                 )
                 setAccompanyToHCMsg
                 |> Maybe.withDefault []
+
+        instructions =
+            case facility of
+                FacilityMentalHealthSpecialist ->
+                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing ]
+
+                _ ->
+                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+                    , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
+                    ]
     in
     div [ class "ui form send-to-hc" ] <|
-        [ headerHelper
-        , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
-            , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
-            ]
-        ]
+        headerHelper
+            ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+               , div [ class "instructions" ]
+                    instructions
+               ]
             ++ sendToHCSection
             ++ handReferralFormSection
             ++ accompanyToHCSection

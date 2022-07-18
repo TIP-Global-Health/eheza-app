@@ -9,7 +9,6 @@ import Backend.Measurement.Encoder
     exposing
         ( encodeCall114Sign
         , encodeDangerSign
-        , encodeEverySet
         , encodeFamilyPlanningSign
         , encodeHCContactSign
         , encodeHCRecommendation
@@ -23,6 +22,7 @@ import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (fromEntityUuid)
+import Utils.Json exposing (encodeEverySet)
 
 
 encodeDashboardStatsRaw : DashboardStatsRaw -> List ( String, Value )

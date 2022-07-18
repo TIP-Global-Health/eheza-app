@@ -27,6 +27,8 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
    */
   protected $multiFields = [
     'field_prenatal_diagnoses',
+    'field_past_prenatal_diagnoses',
+    'field_prenatal_indicators',
   ];
 
   /**
@@ -35,13 +37,13 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $public_fields['prenatal_encounter_type'] = [
-      'property' => 'field_prenatal_encounter_type',
-    ];
+    foreach (array_merge($this->fields, $this->multiFields) as $field_name) {
+      $public_name = str_replace('field_', '', $field_name);
 
-    $public_fields['prenatal_diagnoses'] = [
-      'property' => 'field_prenatal_diagnoses',
-    ];
+      $public_fields[$public_name] = [
+        'property' => $field_name,
+      ];
+    }
 
     return $public_fields;
   }

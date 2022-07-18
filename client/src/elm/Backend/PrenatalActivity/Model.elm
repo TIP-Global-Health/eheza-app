@@ -19,6 +19,10 @@ type PrenatalActivity
     | PregnancyOutcome
     | MalariaPrevention
     | Medication
+    | SymptomReview
+    | PrenatalTreatmentReview
+    | MaternalMentalHealth
+    | PrenatalImmunisation
 
 
 type PrenatalRecurrentActivity
@@ -164,6 +168,7 @@ allMedicalDiagnosis =
     , DiagnosisBowedLegs
     , DiagnosisKnownHIV
     , DiagnosisMentalHealthHistory
+    , DiagnosisDiabetes
     ]
 
 

@@ -17,6 +17,7 @@ class HedleyRestfulPrenatalSyphilisTest extends HedleyRestfulPrenatalActivityBas
     'field_test_execution_note',
     'field_execution_date',
     'field_test_result',
+    'field_originating_encounter',
   ];
 
   /**
@@ -31,6 +32,13 @@ class HedleyRestfulPrenatalSyphilisTest extends HedleyRestfulPrenatalActivityBas
    */
   protected $dateFields = [
     'field_execution_date',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $entityFields = [
+    'field_originating_encounter',
   ];
 
 }

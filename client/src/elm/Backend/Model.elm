@@ -447,14 +447,19 @@ type Revision
     | PrenatalHemoglobinTestRevision PrenatalHemoglobinTestId PrenatalHemoglobinTest
     | PrenatalHepatitisBTestRevision PrenatalHepatitisBTestId PrenatalHepatitisBTest
     | PrenatalHIVTestRevision PrenatalHIVTestId PrenatalHIVTest
+    | PrenatalHIVPCRTestRevision PrenatalHIVPCRTestId PrenatalHIVPCRTest
     | PrenatalLabsResultsRevision PrenatalLabsResultsId PrenatalLabsResults
     | PrenatalMalariaTestRevision PrenatalMalariaTestId PrenatalMalariaTest
+    | PrenatalMentalHealthRevision PrenatalMentalHealthId PrenatalMentalHealth
     | PrenatalMedicationDistributionRevision PrenatalMedicationDistributionId PrenatalMedicationDistribution
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
+    | PrenatalOutsideCareRevision PrenatalOutsideCareId PrenatalOutsideCare
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | PrenatalRandomBloodSugarTestRevision PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest
-    | PrenatalSendToHCRevision PrenatalSendToHcId PrenatalSendToHC
+    | PrenatalSendToHCRevision PrenatalSendToHCId PrenatalSendToHC
+    | PrenatalSymptomReviewRevision PrenatalSymptomReviewId PrenatalSymptomReview
     | PrenatalSyphilisTestRevision PrenatalSyphilisTestId PrenatalSyphilisTest
+    | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation
     | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest
     | RelationshipRevision RelationshipId Relationship
     | SendToHCRevision SendToHCId SendToHC

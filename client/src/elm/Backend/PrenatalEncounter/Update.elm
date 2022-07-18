@@ -5,7 +5,9 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalEncounter)
 import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Utils exposing (saveMeasurementCmd, sw)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
@@ -22,6 +24,24 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SetPrenatalDiagnoses diagnoses ->
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnoses = diagnoses }) model
+
+        SetPastPrenatalDiagnoses pastDiagnoses ->
+            updateEncounter currentDate
+                encounterId
+                maybeEncounter
+                (\encounter ->
+                    { encounter
+                        | pastDiagnoses =
+                            -- If previously there were no diagnoses, we remove
+                            -- that indicator.
+                            EverySet.remove NoPrenatalDiagnosis encounter.pastDiagnoses
+                                |> EverySet.union pastDiagnoses
+                    }
+                )
+                model
+
+        SetLabsHistoryCompleted ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | indicators = EverySet.insert IndicatorHistoryLabsCompleted encounter.indicators }) model
 
         HandleUpdatedPrenatalEncounter data ->
             ( { model | updatePrenatalEncounter = data }
@@ -335,6 +355,56 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         HandleSavedMedicationDistribution data ->
             ( { model | saveMedicationDistribution = data }
+            , Cmd.none
+            )
+
+        SaveSymptomReview personId valueId value ->
+            ( { model | saveSymptomReview = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalSymptomReviewEndpoint HandleSavedSymptomReview
+            )
+
+        HandleSavedSymptomReview data ->
+            ( { model | saveSymptomReview = data }
+            , Cmd.none
+            )
+
+        SaveOutsideCare personId valueId value ->
+            ( { model | saveOutsideCare = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalOutsideCareEndpoint HandleSavedOutsideCare
+            )
+
+        HandleSavedOutsideCare data ->
+            ( { model | saveOutsideCare = data }
+            , Cmd.none
+            )
+
+        SaveHIVPCRTest personId valueId value ->
+            ( { model | saveHIVPCRTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalHIVPCRTestEndpoint HandleSavedHIVPCRTest
+            )
+
+        HandleSavedHIVPCRTest data ->
+            ( { model | saveHIVPCRTest = data }
+            , Cmd.none
+            )
+
+        SaveMentalHealth personId valueId value ->
+            ( { model | saveMentalHealth = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMentalHealthEndpoint HandleSavedMentalHealth
+            )
+
+        HandleSavedMentalHealth data ->
+            ( { model | saveMentalHealth = data }
+            , Cmd.none
+            )
+
+        SaveTetanusImmunisation personId valueId value ->
+            ( { model | saveTetanusImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalTetanusImmunisationEndpoint HandleSavedTetanusImmunisation
+            )
+
+        HandleSavedTetanusImmunisation data ->
+            ( { model | saveTetanusImmunisation = data }
             , Cmd.none
             )
 

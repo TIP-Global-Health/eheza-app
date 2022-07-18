@@ -4,15 +4,17 @@ import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.PrenatalActivity.Model exposing (..)
-import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
-import Html exposing (Html)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.Utils exposing (..)
@@ -26,9 +28,11 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCustomLabel
         , viewQuestionLabel
         )
 import Translate exposing (Language, TranslationId, translate)
+import Translate.Model exposing (Language(..))
 
 
 expectActivity : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
@@ -80,6 +84,7 @@ laboratoryResultTasks =
     , TaskUrineDipstickTest
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
+    , TaskHIVPCRTest
     ]
 
 
@@ -125,6 +130,12 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskRandomBloodSugarTest ->
             (not <| taskExpected TaskRandomBloodSugarTest) || testResultsCompleted .randomBloodSugarTest .sugarCount
 
+        TaskHIVPCRTest ->
+            (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
+
+        TaskCompletePreviousTests ->
+            not <| taskExpected TaskCompletePreviousTests
+
 
 expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
 expectLaboratoryResultTask currentDate assembled task =
@@ -163,6 +174,12 @@ expectLaboratoryResultTask currentDate assembled task =
         TaskRandomBloodSugarTest ->
             wasTestPerformed .randomBloodSugarTest
 
+        TaskHIVPCRTest ->
+            wasTestPerformed .hivPCRTest
+
+        TaskCompletePreviousTests ->
+            False
+
 
 hepatitisBFormWithDefault : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm
 hepatitisBFormWithDefault form saved =
@@ -173,6 +190,7 @@ hepatitisBFormWithDefault form saved =
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
                 , testResult = or form.testResult value.testResult
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -190,6 +208,7 @@ toHepatitisBValue form =
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote
@@ -206,6 +225,7 @@ syphilisResultFormWithDefault form saved =
                 , testResult = or form.testResult value.testResult
                 , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms (Maybe.map EverySet.toList value.symptoms)
                 , symptomsDirty = form.symptomsDirty
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -224,6 +244,7 @@ toSyphilisResultValue form =
             , executionDate = form.executionDate
             , testResult = form.testResult
             , symptoms = Maybe.map EverySet.fromList form.symptoms
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote
@@ -301,7 +322,9 @@ prenatalRandomBloodSugarResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , sugarCount = or form.sugarCount value.sugarCount
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -318,7 +341,9 @@ toPrenatalRandomBloodSugarResultsValue form =
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
             , sugarCount = form.sugarCount
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote
@@ -340,7 +365,6 @@ prenatalUrineDipstickResultFormWithDefault form saved =
                 , nitrite = or form.nitrite value.nitrite
                 , urobilinogen = or form.urobilinogen value.urobilinogen
                 , haemoglobin = or form.haemoglobin value.haemoglobin
-                , specificGravity = or form.specificGravity value.specificGravity
                 , ketone = or form.ketone value.ketone
                 , bilirubin = or form.bilirubin value.bilirubin
                 }
@@ -367,7 +391,6 @@ toPrenatalUrineDipstickResultsValue form =
             , nitrite = form.nitrite
             , urobilinogen = form.urobilinogen
             , haemoglobin = form.haemoglobin
-            , specificGravity = form.specificGravity
             , ketone = form.ketone
             , bilirubin = form.bilirubin
             }
@@ -378,7 +401,7 @@ toPrenatalUrineDipstickResultsValue form =
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate assembled =
     -- The order is important. Do not change.
-    [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
         |> List.filter (expectNextStepsTask currentDate assembled)
 
 
@@ -386,26 +409,37 @@ expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
-            emergencyReferalRequired assembled
-                || diagnosedAnyOf
-                    [ DiagnosisHepatitisB
-                    , DiagnosisNeurosyphilis
-                    , DiagnosisMalariaWithSevereAnemia
-                    , DiagnosisSevereAnemia
-                    , DiagnosisModeratePreeclampsiaAfterRecheck
-                    ]
-                    assembled
+            diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
+                |> List.isEmpty
+                |> not
 
         NextStepsMedicationDistribution ->
-            -- Emergency refferal is not required.
+            -- Emergency referral is not required.
             (not <| emergencyReferalRequired assembled)
-                && ((resolveMedicationsSetByDiagnoses currentDate PrenatalEncounterPhaseRecurrent assembled
+                && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
                         |> List.isEmpty
                         |> not
                     )
                         || diagnosedSyphilis assembled
                         || diagnosedHypertension PrenatalEncounterPhaseRecurrent assembled
                    )
+
+        NextStepsHealthEducation ->
+            diagnosedAnyOf (DiagnosisHIVDetectableViralLoad :: diabetesDiagnoses) assembled
+
+
+diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
+    emergencyReferralDiagnosesRecurrent
+        ++ [ DiagnosisHepatitisB
+           , DiagnosisNeurosyphilis
+           , DiagnosisMalariaWithSevereAnemia
+           , DiagnosisSevereAnemia
+           , DiagnosisModeratePreeclampsiaAfterRecheck
+           , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
+           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
+           ]
+        |> List.filter (\diagnosis -> diagnosed diagnosis assembled)
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -437,6 +471,15 @@ nextStepsMeasurementTaken assembled task =
                 && syphilisTreatmentCompleted
                 && hypertensionTreatmentCompleted
 
+        NextStepsHealthEducation ->
+            getMeasurementValueFunc assembled.measurements.healthEducation
+                |> Maybe.map
+                    (\signs ->
+                        List.any (\sign -> EverySet.member sign signs)
+                            [ EducationHIVDetectableViralLoad, NoPrenatalHealthEducationSignsRecurrentPhase ]
+                    )
+                |> Maybe.withDefault False
+
 
 nextStepsTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> NextStepsData -> NextStepsTask -> ( Int, Int )
 nextStepsTasksCompletedFromTotal language currentDate assembled data task =
@@ -446,7 +489,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 form =
                     assembled.measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
 
                 ( reasonForNotSentCompleted, reasonForNotSentActive ) =
                     form.referToHealthCenter
@@ -482,9 +525,24 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         SetMedicationDistributionBoolInput
                         SetMedicationDistributionAdministrationNote
                         SetRecommendedTreatmentSign
+                        (always NoOp)
                         form
             in
             ( completed, total )
+
+        NextStepsHealthEducation ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.healthEducation
+                        |> healthEducationFormWithDefaultRecurrentPhase data.healthEducationForm
+
+                ( _, tasks ) =
+                    healthEducationFormInputsAndTasks language assembled form
+            in
+            ( List.map taskCompleted tasks
+                |> List.sum
+            , List.length tasks
+            )
 
 
 emergencyReferalRequired : AssembledData -> Bool
@@ -511,15 +569,20 @@ expectExaminationTask : NominalDate -> AssembledData -> ExaminationTask -> Bool
 expectExaminationTask currentDate assembled task =
     case task of
         ExaminationVitals ->
-            getMeasurementValueFunc assembled.measurements.vitals
-                |> Maybe.andThen
-                    (\value ->
-                        Maybe.map2
-                            marginalBloodPressureCondition
-                            value.dia
-                            value.sys
-                    )
-                |> Maybe.withDefault False
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy. If diagnised, we do not need to recheck the BP.
+            -- Measurement taken at initial phase of encounter is sufficient.
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (getMeasurementValueFunc assembled.measurements.vitals
+                        |> Maybe.andThen
+                            (\value ->
+                                Maybe.map2
+                                    marginalBloodPressureCondition
+                                    value.dia
+                                    value.sys
+                            )
+                        |> Maybe.withDefault False
+                   )
 
 
 examinationMeasurementTaken : AssembledData -> ExaminationTask -> Bool
@@ -548,3 +611,95 @@ examinationTasksCompletedFromTotal assembled data task =
             ( taskAllCompleted [ form.sysRepeated, form.diaRepeated ]
             , 1
             )
+
+
+prenatalHIVPCRResultFormWithDefault : PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue -> PrenatalHIVPCRResultForm
+prenatalHIVPCRResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , hivViralLoadStatus = or form.hivViralLoadStatus value.hivViralLoadStatus
+                , hivViralLoad = or form.hivViralLoad value.hivViralLoad
+                }
+            )
+
+
+toPrenatalHIVPCRResultsValueWithDefault : Maybe PrenatalHIVPCRTestValue -> PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue
+toPrenatalHIVPCRResultsValueWithDefault saved form =
+    prenatalHIVPCRResultFormWithDefault form saved
+        |> toPrenatalHIVPCRResultsValue
+
+
+toPrenatalHIVPCRResultsValue : PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue
+toPrenatalHIVPCRResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , hivViralLoadStatus = form.hivViralLoadStatus
+            , hivViralLoad = form.hivViralLoad
+            }
+        )
+        form.executionNote
+
+
+healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasks language assembled form =
+    let
+        detectableViralLoad =
+            if diagnosed DiagnosisHIVDetectableViralLoad assembled then
+                ( [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.hivDetectableViralLoad
+                        (SetHealthEducationBoolInput (\value form_ -> { form_ | hivDetectableViralLoad = Just value }))
+                        "hiv-detectable-viral-load"
+                        Nothing
+                  ]
+                , Just form.hivDetectableViralLoad
+                )
+
+            else
+                ( [], Nothing )
+
+        diabetes =
+            if diagnosedAnyOf diabetesDiagnoses assembled then
+                let
+                    header =
+                        if diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetes assembled then
+                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisDiabetes
+
+                        else
+                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
+                in
+                ( [ viewCustomLabel language header "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationDiabetesInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.diabetes
+                        (SetHealthEducationBoolInput (\value form_ -> { form_ | diabetes = Just value }))
+                        "diabetes"
+                        Nothing
+                  ]
+                , Just form.diabetes
+                )
+
+            else
+                ( [], Nothing )
+
+        inputsAndTasks =
+            [ detectableViralLoad
+            , diabetes
+            ]
+    in
+    ( List.map Tuple.first inputsAndTasks
+        |> List.concat
+    , List.map Tuple.second inputsAndTasks
+        |> Maybe.Extra.values
+    )

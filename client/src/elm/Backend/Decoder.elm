@@ -262,6 +262,9 @@ decodeRevision =
                     "prenatal_hiv_test" ->
                         decodeWithUuid PrenatalHIVTestRevision decodePrenatalHIVTest
 
+                    "prenatal_hiv_pcr_test" ->
+                        decodeWithUuid PrenatalHIVPCRTestRevision decodePrenatalHIVPCRTest
+
                     "prenatal_follow_up" ->
                         decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
 
@@ -271,11 +274,17 @@ decodeRevision =
                     "prenatal_malaria_test" ->
                         decodeWithUuid PrenatalMalariaTestRevision decodePrenatalMalariaTest
 
+                    "prenatal_mental_health" ->
+                        decodeWithUuid PrenatalMentalHealthRevision decodePrenatalMentalHealth
+
                     "prenatal_medication_distribution" ->
                         decodeWithUuid PrenatalMedicationDistributionRevision decodePrenatalMedicationDistribution
 
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
+
+                    "prenatal_outside_care" ->
+                        decodeWithUuid PrenatalOutsideCareRevision decodePrenatalOutsideCare
 
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
@@ -286,8 +295,14 @@ decodeRevision =
                     "prenatal_send_to_hc" ->
                         decodeWithUuid PrenatalSendToHCRevision decodePrenatalSendToHc
 
+                    "prenatal_symptom_review" ->
+                        decodeWithUuid PrenatalSymptomReviewRevision decodePrenatalSymptomReview
+
                     "prenatal_syphilis_test" ->
                         decodeWithUuid PrenatalSyphilisTestRevision decodePrenatalSyphilisTest
+
+                    "prenatal_tetanus_immunisation" ->
+                        decodeWithUuid PrenatalTetanusImmunisationRevision decodePrenatalTetanusImmunisation
 
                     "prenatal_urine_dipstick_test" ->
                         decodeWithUuid PrenatalUrineDipstickTestRevision decodePrenatalUrineDipstickTest

@@ -1560,6 +1560,15 @@ nonAdministrationReasonToSign sign reason =
         FolicAcid ->
             MedicationFolicAcid reason
 
+        Ceftriaxone ->
+            MedicationCeftriaxone reason
+
+        Azithromycin ->
+            MedicationAzithromycin reason
+
+        Metronidazole ->
+            MedicationMetronidazole reason
+
         _ ->
             NoMedicationNonAdministrationSigns
 
@@ -2193,7 +2202,7 @@ sendToHCDueToMedicationNonAdministration measurements =
 resolveMedicationsNonAdministrationReasons : AcuteIllnessMeasurements -> Dict MedicationDistributionSign AdministrationNote
 resolveMedicationsNonAdministrationReasons measurements =
     getMeasurementValueFunc measurements.medicationDistribution
-        |> Maybe.map Pages.Utils.resolveMedicationsNonAdministrationReasons
+        |> Maybe.map Measurement.Utils.resolveMedicationsNonAdministrationReasons
         |> Maybe.withDefault Dict.empty
 
 

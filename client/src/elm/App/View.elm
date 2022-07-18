@@ -523,6 +523,16 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity)
                             |> flexPageWrapper model
 
+                    PrenatalLabsHistoryPage id labEncounterId lab ->
+                        let
+                            page_ =
+                                Dict.get ( id, labEncounterId, lab ) loggedInModel.prenatalLabsHistoryPages
+                                    |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyLabResultsData
+                        in
+                        Pages.Prenatal.RecurrentActivity.View.viewLabsHistory model.language currentDate id labEncounterId lab model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPagePrenatalLabsHistory id labEncounterId lab)
+                            |> flexPageWrapper model
+
                     IndividualEncounterTypesPage ->
                         Pages.IndividualEncounterTypes.View.view model.language currentDate healthCenterId isChw model
                             |> flexPageWrapper model

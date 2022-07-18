@@ -31,6 +31,7 @@ function hedley_well_child_field_default_field_bases() {
         'dose-2' => 'Dose 2',
         'dose-3' => 'Dose 3',
         'dose-4' => 'Dose 4',
+        'dose-5' => 'Dose 5',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

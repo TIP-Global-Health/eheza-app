@@ -8,6 +8,7 @@ import Backend.Measurement.Decoder exposing (pregnancyTestResultFromString)
 import Backend.Measurement.Model
     exposing
         ( AbdomenCPESign(..)
+        , AdministrationNote(..)
         , BreastExamSign(..)
         , CSectionReason(..)
         , DangerSign(..)
@@ -19,26 +20,37 @@ import Backend.Measurement.Model
         , PhotoUrl(..)
         , PostpartumChildDangerSign(..)
         , PostpartumMotherDangerSign(..)
+        , PrenatalOutsideCareMedication(..)
+        , PrenatalSymptom(..)
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
+import Measurement.Model exposing (VaccinationFormViewMode(..))
+import Measurement.Utils
+    exposing
+        ( toSendToHCValueWithDefault
+        , toVaccinationValueWithDefault
+        , toVitalsValueWithDefault
+        , vaccinationFormWithDefault
+        , vaccineDoseToComparable
+        )
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Activity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Utils exposing (setMultiSelectInputValue, tasksBarId)
+import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 import Translate exposing (Language, translate)
@@ -70,6 +82,37 @@ update language currentDate id db msg model =
                     )
                 |> Maybe.withDefault model.nextStepsData.medicationDistributionForm
 
+        symptomReviewForm =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.symptomReview
+                        >> getMeasurementValueFunc
+                        >> symptomReviewFormWithDefault model.symptomReviewData.form
+                    )
+                |> Maybe.withDefault model.symptomReviewData.form
+
+        outsideCareForm =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (.outsideCare
+                        >> getMeasurementValueFunc
+                        >> outsideCareFormWithDefault model.historyData.outsideCareForm
+                    )
+                |> Maybe.withDefault model.historyData.outsideCareForm
+
+        resolveVaccinationForm vaccineType form =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (getMeasurementByVaccineTypeFunc vaccineType
+                        >> vaccinationFormWithDefault form
+                    )
+                |> Maybe.withDefault form
+
         generateLaboratoryMsgs nextTask =
             Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
@@ -85,6 +128,16 @@ update language currentDate id db msg model =
             in
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage destinationPage ]
+
+        generateMedicationSubActivityMsgs nextTask =
+            SetTreatmentReviewWarningPopupState Nothing
+                :: (Maybe.map (\task -> [ SetActiveTreatmentReviewTask task ]) nextTask
+                        |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
+                   )
+
+        generateHistoryMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveHistoryTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
     in
     case msg of
         NoOp ->
@@ -128,7 +181,7 @@ update language currentDate id db msg model =
                     else
                         let
                             message =
-                                List.map (Translate.PrenatalDiagnosisLabResultsMessage >> translate language) nonUrgentDiagnoses
+                                List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) nonUrgentDiagnoses
                                     |> String.join ", "
                         in
                         [ SetWarningPopupState <| Just ( message, "" ) ]
@@ -259,7 +312,7 @@ update language currentDate id db msg model =
             let
                 updatedData =
                     model.historyData
-                        |> (\data -> { data | activeTask = task })
+                        |> (\data -> { data | activeTask = Just task })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -268,28 +321,15 @@ update language currentDate id db msg model =
 
         SetCurrentlyPregnant value ->
             let
+                form =
+                    model.historyData.obstetricFormFirstStep
+
+                updatedForm =
+                    { form | currentlyPregnant = Just value }
+
                 updatedData =
-                    case model.historyData.activeTask of
-                        Obstetric ->
-                            case model.historyData.obstetricHistoryStep of
-                                ObstetricHistoryFirstStep ->
-                                    let
-                                        form =
-                                            model.historyData.obstetricFormFirstStep
-
-                                        updatedForm =
-                                            { form | currentlyPregnant = Just value }
-                                    in
-                                    model.historyData
-                                        |> (\data -> { data | obstetricFormFirstStep = updatedForm })
-
-                                -- We should never get here.
-                                -- Input is set on first step.
-                                ObstetricHistorySecondStep ->
-                                    model.historyData
-
-                        _ ->
-                            model.historyData
+                    model.historyData
+                        |> (\data -> { data | obstetricFormFirstStep = updatedForm })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -298,28 +338,15 @@ update language currentDate id db msg model =
 
         SetOBIntInput formUpdateFunc value ->
             let
+                form =
+                    model.historyData.obstetricFormFirstStep
+
+                updatedForm =
+                    formUpdateFunc (String.toInt value) form
+
                 updatedData =
-                    case model.historyData.activeTask of
-                        Obstetric ->
-                            case model.historyData.obstetricHistoryStep of
-                                ObstetricHistoryFirstStep ->
-                                    let
-                                        form =
-                                            model.historyData.obstetricFormFirstStep
-
-                                        updatedForm =
-                                            formUpdateFunc (String.toInt value) form
-                                    in
-                                    model.historyData
-                                        |> (\data -> { data | obstetricFormFirstStep = updatedForm })
-
-                                -- We should never get here.
-                                -- Input is set on first step.
-                                ObstetricHistorySecondStep ->
-                                    model.historyData
-
-                        _ ->
-                            model.historyData
+                    model.historyData
+                        |> (\data -> { data | obstetricFormFirstStep = updatedForm })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -335,25 +362,18 @@ update language currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 ( appMsgs, updatedData ) =
-                    case model.historyData.obstetricHistoryStep of
-                        ObstetricHistoryFirstStep ->
-                            ( model.historyData.obstetricFormFirstStep
-                                |> toObstetricHistoryValueWithDefault measurement
-                                |> unwrap
-                                    []
-                                    (\value ->
-                                        [ Backend.PrenatalEncounter.Model.SaveObstetricHistory personId measurementId value
-                                            |> Backend.Model.MsgPrenatalEncounter id
-                                            |> App.Model.MsgIndexedDb
-                                        ]
-                                    )
-                            , model.historyData
-                                |> (\data -> { data | obstetricHistoryStep = ObstetricHistorySecondStep })
+                    ( model.historyData.obstetricFormFirstStep
+                        |> toObstetricHistoryValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveObstetricHistory personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
-
-                        -- Satisfy compiler.
-                        ObstetricHistorySecondStep ->
-                            ( [], model.historyData )
+                        |> Maybe.withDefault []
+                    , model.historyData
+                        |> (\data -> { data | obstetricHistoryStep = ObstetricHistorySecondStep })
+                    )
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -362,35 +382,22 @@ update language currentDate id db msg model =
 
         SetCSectionReason reason ->
             let
+                form =
+                    model.historyData.obstetricFormSecondStep
+
+                updatedReason =
+                    if form.cSectionReason == Just reason then
+                        Nothing
+
+                    else
+                        Just reason
+
+                updatedForm =
+                    { form | cSectionReason = updatedReason }
+
                 updatedData =
-                    case model.historyData.activeTask of
-                        Obstetric ->
-                            case model.historyData.obstetricHistoryStep of
-                                ObstetricHistorySecondStep ->
-                                    let
-                                        form =
-                                            model.historyData.obstetricFormSecondStep
-
-                                        updatedReason =
-                                            if form.cSectionReason == Just reason then
-                                                Nothing
-
-                                            else
-                                                Just reason
-
-                                        updatedForm =
-                                            { form | cSectionReason = updatedReason }
-                                    in
-                                    model.historyData
-                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
-
-                                -- We should never get here.
-                                -- Input is set on second step.
-                                ObstetricHistoryFirstStep ->
-                                    model.historyData
-
-                        _ ->
-                            model.historyData
+                    model.historyData
+                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -399,32 +406,19 @@ update language currentDate id db msg model =
 
         SetNumberOfCSections value ->
             let
+                form =
+                    model.historyData.obstetricFormSecondStep
+
+                updatedForm =
+                    let
+                        updatedValue =
+                            String.toInt value
+                    in
+                    { form | cSections = updatedValue, cSectionsDirty = True }
+
                 updatedData =
-                    case model.historyData.activeTask of
-                        Obstetric ->
-                            case model.historyData.obstetricHistoryStep of
-                                ObstetricHistorySecondStep ->
-                                    let
-                                        form =
-                                            model.historyData.obstetricFormSecondStep
-
-                                        updatedForm =
-                                            let
-                                                updatedValue =
-                                                    String.toInt value
-                                            in
-                                            { form | cSections = updatedValue, cSectionsDirty = True }
-                                    in
-                                    model.historyData
-                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
-
-                                -- We should never get here.
-                                -- Input is set on first step.
-                                ObstetricHistoryFirstStep ->
-                                    model.historyData
-
-                        _ ->
-                            model.historyData
+                    model.historyData
+                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -433,25 +427,12 @@ update language currentDate id db msg model =
 
         SetOBBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.historyData.obstetricFormSecondStep
+
                 updatedData =
-                    case model.historyData.activeTask of
-                        Obstetric ->
-                            case model.historyData.obstetricHistoryStep of
-                                ObstetricHistorySecondStep ->
-                                    let
-                                        updatedForm =
-                                            formUpdateFunc value model.historyData.obstetricFormSecondStep
-                                    in
-                                    model.historyData
-                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
-
-                                -- We should never get here.
-                                -- Input is set on second step.
-                                ObstetricHistoryFirstStep ->
-                                    model.historyData
-
-                        _ ->
-                            model.historyData
+                    model.historyData
+                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -460,35 +441,22 @@ update language currentDate id db msg model =
 
         SetPreviousDeliveryPeriod period ->
             let
+                form =
+                    model.historyData.obstetricFormSecondStep
+
+                updatedPeriod =
+                    if form.previousDeliveryPeriod == Just period then
+                        Nothing
+
+                    else
+                        Just period
+
+                updatedForm =
+                    { form | previousDeliveryPeriod = updatedPeriod }
+
                 updatedData =
-                    case model.historyData.activeTask of
-                        Obstetric ->
-                            case model.historyData.obstetricHistoryStep of
-                                ObstetricHistorySecondStep ->
-                                    let
-                                        form =
-                                            model.historyData.obstetricFormSecondStep
-
-                                        updatedPeriod =
-                                            if form.previousDeliveryPeriod == Just period then
-                                                Nothing
-
-                                            else
-                                                Just period
-
-                                        updatedForm =
-                                            { form | previousDeliveryPeriod = updatedPeriod }
-                                    in
-                                    model.historyData
-                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
-
-                                -- We should never get here.
-                                -- Input is set on second step.
-                                ObstetricHistoryFirstStep ->
-                                    model.historyData
-
-                        _ ->
-                            model.historyData
+                    model.historyData
+                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -506,7 +474,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveOBHistoryStep2 personId saved nextTask_ ->
+        SaveOBHistoryStep2 personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -514,40 +482,28 @@ update language currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Obstetric
-                            )
+                extraMsgs =
+                    generateHistoryMsgs nextTask
 
                 ( appMsgs, updatedData ) =
-                    case model.historyData.obstetricHistoryStep of
-                        -- Satisfy compiler.
-                        ObstetricHistoryFirstStep ->
-                            ( [], model.historyData )
-
-                        ObstetricHistorySecondStep ->
-                            ( model.historyData.obstetricFormSecondStep
-                                |> toObstetricHistoryStep2ValueWithDefault measurement
-                                |> unwrap
-                                    []
-                                    (\value ->
-                                        (Backend.PrenatalEncounter.Model.SaveObstetricHistoryStep2 personId measurementId value
-                                            |> Backend.Model.MsgPrenatalEncounter id
-                                            |> App.Model.MsgIndexedDb
-                                        )
-                                            :: backToActivitiesMsg
-                                    )
-                            , model.historyData
-                                |> (\data -> { data | obstetricHistoryStep = ObstetricHistoryFirstStep, activeTask = nextTask })
+                    ( model.historyData.obstetricFormSecondStep
+                        |> toObstetricHistoryStep2ValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveObstetricHistoryStep2 personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
+                    , model.historyData
+                        |> (\data -> { data | obstetricHistoryStep = ObstetricHistoryFirstStep })
+                    )
             in
             ( { model | historyData = updatedData }
             , Cmd.none
             , App.Model.ScrollToElement tasksBarId :: appMsgs
             )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetMedicalBoolInput formUpdateFunc value ->
             let
@@ -564,7 +520,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveMedicalHistory personId saved nextTask_ ->
+        SaveMedicalHistory personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -572,35 +528,25 @@ update language currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Obstetric
-                            )
+                extraMsgs =
+                    generateHistoryMsgs nextTask
 
                 appMsgs =
                     model.historyData.medicalForm
                         |> toMedicalHistoryValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveMedicalHistory personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMedicalHistory personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
-
-                updatedData =
-                    model.historyData
-                        |> (\data -> { data | activeTask = nextTask })
+                        |> Maybe.withDefault []
             in
-            ( { model | historyData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetSocialBoolInput formUpdateFunc value ->
             let
@@ -636,7 +582,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveSocialHistory personId saved nextTask_ ->
+        SaveSocialHistory personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -652,35 +598,184 @@ update language currentDate id db msg model =
                     else
                         model.historyData.socialForm
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Obstetric
-                            )
+                extraMsgs =
+                    generateHistoryMsgs nextTask
 
                 appMsgs =
-                    updatedForm
-                        |> toSocialHistoryValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveSocialHistory personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                    toSocialHistoryValueWithDefault measurement updatedForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveSocialHistory personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
-
-                updatedData =
-                    model.historyData
-                        |> (\data -> { data | activeTask = nextTask })
+                        |> Maybe.withDefault []
             in
-            ( { model | historyData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetOutsideCareStep step ->
+            let
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareStep = step })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareSignBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.historyData.outsideCareForm
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareDiagnosis diagnosis ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .diagnoses
+                        (\value -> { outsideCareForm | diagnoses = value })
+                        DiagnosisOther
+                        diagnosis
+                        outsideCareForm
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareMalariaMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .malariaMedications
+                        (\medication -> { outsideCareForm | malariaMedications = medication })
+                        NoOutsideCareMedicationForMalaria
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareHypertensionMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .hypertensionMedications
+                        (\medication -> { outsideCareForm | hypertensionMedications = medication })
+                        NoOutsideCareMedicationForHypertension
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareSyphilisMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .syphilisMedications
+                        (\medication -> { outsideCareForm | syphilisMedications = medication })
+                        NoOutsideCareMedicationForSyphilis
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareAnemiaMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .anemiaMedications
+                        (\medication -> { outsideCareForm | anemiaMedications = medication })
+                        NoOutsideCareMedicationForAnemia
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareHIVMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .hivMedications
+                        (\medication -> { outsideCareForm | hivMedications = medication })
+                        NoOutsideCareMedicationForHIV
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveOutsideCare personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateHistoryMsgs nextTask
+
+                appMsgs =
+                    toPrenatalOutsideCareValueWithDefault measurement model.historyData.outsideCareForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveOutsideCare personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetActiveExaminationTask task ->
             let
@@ -2421,7 +2516,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.randomBloodSugarTestForm
-                        |> toPrenatalNonRDTValueWithDefault measurement toRandomBloodSugarTestValueWithEmptyResults
+                        |> toPrenatalRandomBloodSugarValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2435,6 +2530,136 @@ update language currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetHIVPCRTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.hivPCRTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVPCRTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.hivPCRTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVPCRTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.hivPCRTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVPCRTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.hivPCRTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHIVPCRTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.hivPCRTestForm
+                        |> toPrenatalNonRDTValueWithDefault measurement toHIVPCRTestValueWithEmptyResults
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetLabsHistoryCompleted value ->
+            let
+                form =
+                    model.laboratoryData.labsHistoryForm
+
+                updatedForm =
+                    { form | completed = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | labsHistoryForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveLabsHistory ->
+            let
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | activeTask = Nothing })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , [ Backend.PrenatalEncounter.Model.SetLabsHistoryCompleted
+                    |> Backend.Model.MsgPrenatalEncounter id
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
 
         SetHealthEducationBoolInput formUpdateFunc value ->
             let
@@ -2460,7 +2685,9 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.healthEducationData.form
-                        |> toHealthEducationValueWithDefault measurement
+                        |> -- Health Education activity is explicitly for CHW,
+                           -- therefore we select CHW specific function.
+                           toHealthEducationValueWithDefaultChw measurement
                         |> unwrap
                             []
                             (\value ->
@@ -2489,11 +2716,10 @@ update language currentDate id db msg model =
 
         SetHealthEducationSubActivityBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.nextStepsData.healthEducationForm
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.nextStepsData.healthEducationForm
-                    in
                     model.nextStepsData
                         |> (\data -> { data | healthEducationForm = updatedForm })
             in
@@ -2515,7 +2741,9 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.healthEducationForm
-                        |> toHealthEducationValueWithDefault measurement
+                        |> -- Health Education sub activity is explicitly
+                           -- for nurses, therefore we select nurse specific function.
+                           toHealthEducationValueWithDefaultInitialPhase measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2654,7 +2882,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveSendToHC personId saved secondPhaseRequired nextTask ->
+        SaveSendToHC personId saved secondPhaseRequired referralFacility nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2667,7 +2895,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.sendToHCForm
-                        |> toSendToHCValueWithDefault measurement
+                        |> toPrenatalSendToHCValueWithDefault measurement referralFacility
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2799,7 +3027,28 @@ update language currentDate id db msg model =
                         |> Maybe.withDefault [ sign ]
 
                 updatedForm =
-                    { medicationDistributionForm | recommendedTreatmentSigns = Just updatedSigns }
+                    { medicationDistributionForm
+                        | recommendedTreatmentSigns = Just updatedSigns
+                        , hypertensionAvoidingGuidanceReason = Nothing
+                        , hypertensionAvoidingGuidanceReasonDirty = True
+                    }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAvoidingGuidanceReason value ->
+            let
+                updatedForm =
+                    { medicationDistributionForm
+                        | hypertensionAvoidingGuidanceReason = Just value
+                        , hypertensionAvoidingGuidanceReasonDirty = True
+                    }
 
                 updatedData =
                     model.nextStepsData
@@ -2856,3 +3105,549 @@ update language currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetSymptomReviewStep step ->
+            let
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | step = step })
+
+                warningPopupState =
+                    if step == SymptomReviewStepQuestions then
+                        Maybe.map
+                            (\symptoms ->
+                                if List.member CoughContinuous symptoms then
+                                    Just
+                                        ( translate language Translate.TuberculosisWarning
+                                        , translate language Translate.TuberculosisInstructions
+                                        )
+
+                                else
+                                    model.warningPopupState
+                            )
+                            symptomReviewForm.symptoms
+                            |> Maybe.withDefault model.warningPopupState
+
+                    else
+                        model.warningPopupState
+            in
+            ( { model | symptomReviewData = updatedData, warningPopupState = warningPopupState }
+            , Cmd.none
+            , []
+            )
+
+        SetPrenatalSymptom symptom ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.symptomReview
+                                >> getMeasurementValueFunc
+                                >> symptomReviewFormWithDefault model.symptomReviewData.form
+                            )
+                        |> Maybe.withDefault model.symptomReviewData.form
+
+                updatedForm =
+                    setMultiSelectInputValue .symptoms
+                        (Maybe.map (updateSymptomReviewFormWithSymptoms form)
+                            >> Maybe.withDefault form
+                        )
+                        NoPrenatalSymptoms
+                        symptom
+                        form
+
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPrenatalSymptomQuestionBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.symptomReviewData.form
+
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetFlankPainSign sign ->
+            let
+                form =
+                    model.symptomReviewData.form
+
+                updatedForm =
+                    { form | flankPainSign = Just sign }
+
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSymptomReview personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.symptomReviewData.form
+                        |> toSymptomReviewValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveSymptomReview personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | step = SymptomReviewStepSymptoms })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetActiveTreatmentReviewTask task ->
+            let
+                updatedData =
+                    model.treatmentReviewData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | treatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetTreatmentReviewWarningPopupState state ->
+            let
+                updatedData =
+                    model.treatmentReviewData
+                        |> (\data -> { data | warningPopupState = state })
+            in
+            ( { model | treatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationSubActivityBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.treatmentReviewData.medicationForm
+
+                updatedData =
+                    model.treatmentReviewData
+                        |> (\data -> { data | medicationForm = updatedForm })
+            in
+            ( { model | treatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVMedicationNotGivenReason value ->
+            let
+                updatedForm =
+                    model.treatmentReviewData.medicationForm
+                        |> (\form -> { form | hivMedicationNotGivenReason = Just value, hivMedicationNotGivenReasonDirty = True })
+
+                updatedData =
+                    model.treatmentReviewData
+                        |> (\data -> { data | medicationForm = updatedForm })
+            in
+            ( { model | treatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMedicationSubActivity personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicationSubActivityMsgs nextTask
+
+                appMsgs =
+                    model.treatmentReviewData.medicationForm
+                        |> toMedicationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMedication personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetMentalHealthStep step ->
+            let
+                updatedForm =
+                    model.mentalHealthData.form
+                        |> (\form -> { form | step = step })
+
+                updatedData =
+                    model.mentalHealthData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | mentalHealthData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMentalHealthOptionForQuestion question option ->
+            let
+                form =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.mentalHealth
+                                >> getMeasurementValueFunc
+                                >> mentalHealthFormWithDefault model.mentalHealthData.form
+                            )
+                        |> Maybe.withDefault model.mentalHealthData.form
+
+                updatedSigns =
+                    Maybe.map (Dict.insert question option) form.signs
+                        |> Maybe.withDefault (Dict.singleton question option)
+
+                updatedForm =
+                    { form | signs = Just updatedSigns }
+
+                updatedData =
+                    model.mentalHealthData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | mentalHealthData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSpecialistAtHC value ->
+            let
+                updatedForm =
+                    model.mentalHealthData.form
+                        |> (\form -> { form | specialistAtHC = Just value })
+
+                updatedData =
+                    model.mentalHealthData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | mentalHealthData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMentalHealthWarningPopupState state ->
+            let
+                updatedData =
+                    model.mentalHealthData
+                        |> (\data -> { data | warningPopupState = state })
+            in
+            ( { model | mentalHealthData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMentalHealth personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    if List.isEmpty appMsgs then
+                        []
+
+                    else
+                        [ SetActivePage <| UserPage <| PrenatalEncounterPage id
+                        , SetMentalHealthWarningPopupState Nothing
+                        ]
+
+                appMsgs =
+                    model.mentalHealthData.form
+                        |> toPrenatalMentalHealthValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMentalHealth personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetActiveImmunisationTask task ->
+            let
+                updatedData =
+                    model.immunisationData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | immunisationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetVaccinationFormViewMode vaccineType mode ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                updatedForm =
+                    { form | viewMode = mode }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SetUpdatePreviousVaccines vaccineType dose value ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
+
+                updatedForm =
+                    if value == True then
+                        { form
+                            | viewMode = ViewModeVaccinationUpdate dose
+                            , updatePreviousVaccines = Nothing
+                            , willReceiveVaccineToday = Nothing
+                            , administrationNote = Nothing
+                            , administrationNoteDirty = True
+                        }
+
+                    else
+                        { form | updatePreviousVaccines = Just False }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SetWillReceiveVaccineToday vaccineType dose willReceive ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
+
+                updatedForm =
+                    if willReceive then
+                        { form
+                            | willReceiveVaccineToday = Just True
+                            , administeredDoses = insertIntoSet dose form.administeredDoses
+                            , administeredDosesDirty = True
+                            , administrationDates = insertIntoSet currentDate form.administrationDates
+                            , administrationNote = Just AdministeredToday
+                            , administrationNoteDirty = True
+                        }
+
+                    else
+                        let
+                            administeredDoses =
+                                Maybe.map EverySet.toList form.administeredDoses
+                                    |> Maybe.withDefault []
+
+                            ( updatedDoses, updatedDates ) =
+                                if List.member dose administeredDoses then
+                                    ( Maybe.map
+                                        (EverySet.toList
+                                            >> List.sortBy vaccineDoseToComparable
+                                            >> List.reverse
+                                            >> List.drop 1
+                                            >> EverySet.fromList
+                                        )
+                                        form.administeredDoses
+                                    , Maybe.map
+                                        (EverySet.toList
+                                            >> List.sortWith Date.compare
+                                            >> List.reverse
+                                            >> List.drop 1
+                                            >> EverySet.fromList
+                                        )
+                                        form.administrationDates
+                                    )
+
+                                else
+                                    ( form.administeredDoses, form.administrationDates )
+                        in
+                        { form
+                            | willReceiveVaccineToday = Just False
+                            , administeredDoses = updatedDoses
+                            , administeredDosesDirty = True
+                            , administrationDates = updatedDates
+                            , administrationNote = Nothing
+                            , administrationNoteDirty = True
+                        }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SetAdministrationNote vaccineType note ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
+
+                updatedForm =
+                    { form | administrationNote = Just note, administrationNoteDirty = True }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SetVaccinationUpdateDateSelectorState vaccineType state ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+
+                defaultSelection =
+                    Maybe.Extra.or form.vaccinationUpdateDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, vaccinationUpdateDate = defaultSelection }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SetVaccinationUpdateDate vaccineType date ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
+
+                updatedForm =
+                    { form | vaccinationUpdateDate = Just date }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SaveVaccinationUpdateDate vaccineType dose ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
+
+                updatedModel =
+                    Maybe.map
+                        (\date ->
+                            let
+                                updatedForm =
+                                    { form
+                                        | administeredDoses = insertIntoSet dose form.administeredDoses
+                                        , administeredDosesDirty = True
+                                        , administrationDates = insertIntoSet date form.administrationDates
+                                        , vaccinationUpdateDate = Nothing
+                                        , viewMode = ViewModeInitial
+                                    }
+                            in
+                            { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+                        )
+                        form.vaccinationUpdateDate
+                        |> Maybe.withDefault model
+            in
+            ( updatedModel
+            , Cmd.none
+            , []
+            )
+
+        DeleteVaccinationUpdateDate vaccineType doseToDelete dateToDelete ->
+            let
+                form =
+                    getFormByVaccineTypeFunc vaccineType model.immunisationData
+                        |> resolveVaccinationForm vaccineType
+
+                updatedDoses =
+                    Maybe.map
+                        (EverySet.toList
+                            >> List.filter ((/=) doseToDelete)
+                            >> EverySet.fromList
+                        )
+                        form.administeredDoses
+
+                updatedDates =
+                    Maybe.map
+                        (EverySet.toList
+                            >> List.filter ((/=) dateToDelete)
+                            >> EverySet.fromList
+                        )
+                        form.administrationDates
+
+                updatedForm =
+                    { form
+                        | administeredDoses = updatedDoses
+                        , administeredDosesDirty = True
+                        , administrationDates = updatedDates
+                    }
+            in
+            ( { model | immunisationData = updateVaccinationFormByVaccineType vaccineType updatedForm model.immunisationData }
+            , Cmd.none
+            , []
+            )
+
+        SaveTetanusImmunisation personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.immunisationData.tetanusForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveTetanusImmunisation personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

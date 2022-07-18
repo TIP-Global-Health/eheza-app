@@ -46,12 +46,12 @@ import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model
     exposing
-        ( PrenatalDiagnosis(..)
-        , PrenatalEncounterPostCreateDestination(..)
+        ( PrenatalEncounterPostCreateDestination(..)
         , PrenatalEncounterType(..)
         , PrenatalProgressReportInitiator(..)
         , emptyPrenatalEncounter
         )
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
@@ -1084,6 +1084,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         ( newModel, extraMsgs )
 
                 processRevisionAndAssessPrenatal participantId encounterId updateAssesment =
+                    processRevisionAndAssessPrenatalWithReportToOrigin participantId encounterId updateAssesment Nothing
+
+                processRevisionAndAssessPrenatalWithReportToOrigin participantId encounterId updateAssesment originData =
                     if downloadingContent then
                         ( model, [] )
 
@@ -1093,7 +1096,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment model newModel)
+                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment originData newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1708,6 +1711,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ PrenatalSymptomReviewRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ CorePhysicalExamRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -1752,7 +1765,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processVitalsRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1777,11 +1790,32 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ PrenatalHIVPCRTestRevision uuid data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes below.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHIVPCR
+                                data.value.executionNote
+                                (isJust data.value.hivViralLoadStatus)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
                 [ PrenatalSyphilisTestRevision uid data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1791,7 +1825,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 (isJust data.value.testResult)
 
                         ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                            Maybe.map
+                                (\originatingEncounterId ->
+                                    ( originatingEncounterId, Pages.Prenatal.Utils.syphilisDiagnosesIncludingNeurosyphilis )
+                                )
+                                data.value.originatingEncounter
+                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
@@ -1802,7 +1841,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1812,7 +1851,10 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 (isJust data.value.testResult)
 
                         ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                            Maybe.map
+                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisHepatitisB ] ))
+                                data.value.originatingEncounter
+                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
@@ -1833,7 +1875,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1869,7 +1911,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
+                        -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
@@ -1888,13 +1930,32 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ PrenatalRandomBloodSugarTestRevision uid data ] ->
                     let
-                        ( newModel, extraMsgs ) =
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes below.
+                        ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestRandomBloodSugar
                                 data.value.executionNote
                                 (isJust data.value.sugarCount)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            Maybe.map
+                                (\originatingEncounterId -> ( originatingEncounterId, Pages.Prenatal.Utils.diabetesDiagnoses ))
+                                data.value.originatingEncounter
+                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalMentalHealthRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
@@ -3534,6 +3595,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalHIVPCRTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hivPCRTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalLabsResultsRevision uuid data ->
             let
                 modelWithMappedFollowUp =
@@ -3557,6 +3626,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalMentalHealthRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mentalHealth = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalMedicationDistributionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -3569,6 +3646,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalOutsideCareRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | outsideCare = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3597,10 +3682,26 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalSymptomReviewRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalSyphilisTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | syphilisTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalTetanusImmunisationRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | tetanusImmunisation = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3965,10 +4066,19 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
 
-generatePrenatalAssessmentMsgs : NominalDate -> Language -> Bool -> Page -> Bool -> ModelIndexedDb -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
-generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment before after id =
-    Maybe.map2
-        (\assembledBefore assembledAfter ->
+generatePrenatalAssessmentMsgs :
+    NominalDate
+    -> Language
+    -> Bool
+    -> Page
+    -> Bool
+    -> Maybe ( PrenatalEncounterId, List PrenatalDiagnosis )
+    -> ModelIndexedDb
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment originData after id =
+    Maybe.map
+        (\assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
                     Pages.Prenatal.Activity.Utils.mandatoryActivitiesForNextStepsCompleted
@@ -4048,7 +4158,9 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
             then
                 let
                     diagnosesBefore =
-                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledBefore
+                        -- At this stage new diagnoses were not updated yet, therefore,
+                        -- we can use the dignoses set for the encounter.
+                        assembledAfter.encounter.diagnoses
 
                     diagnosesAfter =
                         Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
@@ -4084,7 +4196,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             -- Instructions for Emergency Referral.
                                             ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
                                             , if List.member DiagnosisSeverePreeclampsiaImmediate urgentDiagnoses then
-                                                translate language Translate.EmergencyReferralHelperReferToHospital
+                                                translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
 
                                               else if
                                                 List.any
@@ -4126,7 +4238,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                 else
                                     let
                                         signs =
-                                            List.map (Translate.PrenatalDiagnosisLabResultsMessage >> translate language) urgentDiagnoses
+                                            List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) urgentDiagnoses
                                                 |> String.join ", "
                                     in
                                     [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
@@ -4134,7 +4246,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                         |> App.Model.SetActivePage
                                     , recurrentEncounterWarningPopupMsg
                                         ( signs
-                                        , translate language Translate.EmergencyReferralHelperReferToHospital
+                                        , translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
                                         )
                                     ]
                         in
@@ -4145,6 +4257,26 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                             :: -- For urgent diagnoses, we show warning popup and
                                -- navigate to Next Steps activity.
                                additionalMsgs
+
+                    reportToOriginMsgs =
+                        Maybe.map
+                            (\( originatingEncounterId, targetDiagnoses ) ->
+                                let
+                                    reportedDiagnoses =
+                                        List.filter (\diagnosis -> List.member diagnosis targetDiagnoses) addedDiagnoses
+                                            |> EverySet.fromList
+                                in
+                                if not <| EverySet.isEmpty reportedDiagnoses then
+                                    [ Backend.PrenatalEncounter.Model.SetPastPrenatalDiagnoses reportedDiagnoses
+                                        |> Backend.Model.MsgPrenatalEncounter originatingEncounterId
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                else
+                                    []
+                            )
+                            originData
+                            |> Maybe.withDefault []
                 in
                 if everySetsEqual diagnosesBefore diagnosesAfter then
                     []
@@ -4155,7 +4287,11 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                             initialEncounterMsgs
 
                         UserPage (PrenatalActivityPage _ _) ->
-                            initialEncounterMsgs
+                            -- reportToOriginMsgs are sent when nurse enters
+                            -- of test from one of previous encounters, and
+                            -- on save, APP navigates back to Labs History
+                            -- sub activity.
+                            initialEncounterMsgs ++ reportToOriginMsgs
 
                         UserPage (PrenatalRecurrentEncounterPage _) ->
                             recurrentEncounterMsgs
@@ -4169,7 +4305,6 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
             else
                 []
         )
-        (RemoteData.toMaybe <| Pages.Prenatal.Encounter.Utils.generateAssembledData id before)
         (RemoteData.toMaybe <| Pages.Prenatal.Encounter.Utils.generateAssembledData id after)
         |> Maybe.withDefault []
 

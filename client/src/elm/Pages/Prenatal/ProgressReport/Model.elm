@@ -2,13 +2,14 @@ module Pages.Prenatal.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
     { labResultsMode : Maybe LabResultsMode
+    , labResultsHistoryOrigin : Maybe LabResultsCurrentMode
     , showEndEncounterDialog : Bool
     }
 
@@ -16,13 +17,9 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { labResultsMode = Nothing
+    , labResultsHistoryOrigin = Nothing
     , showEndEncounterDialog = False
     }
-
-
-type LabResultsMode
-    = LabResultsCurrent
-    | LabResultsHistory LabResultsHistoryMode
 
 
 type PrenatalTestReport
@@ -30,8 +27,20 @@ type PrenatalTestReport
     | TestNotPerformedKnownAsPositive
 
 
+type LabResultsMode
+    = LabResultsCurrent LabResultsCurrentMode
+    | LabResultsHistory LabResultsHistoryMode
+
+
+type LabResultsCurrentMode
+    = LabResultsCurrentMain
+    | LabResultsCurrentDipstickShort
+    | LabResultsCurrentDipstickLong
+
+
 type LabResultsHistoryMode
     = LabResultsHistoryHIV (List ( NominalDate, Maybe PrenatalTestReport ))
+    | LabResultsHistoryHIVPCR (List ( NominalDate, Maybe HIVPCRResult ))
     | LabResultsHistorySyphilis (List ( NominalDate, Maybe PrenatalTestResult ))
     | LabResultsHistoryHepatitisB (List ( NominalDate, Maybe PrenatalTestReport ))
     | LabResultsHistoryMalaria (List ( NominalDate, Maybe PrenatalTestResult ))
@@ -42,7 +51,6 @@ type LabResultsHistoryMode
     | LabResultsHistoryNitrite (List ( NominalDate, Maybe NitriteValue ))
     | LabResultsHistoryUrobilinogen (List ( NominalDate, Maybe UrobilinogenValue ))
     | LabResultsHistoryHaemoglobin (List ( NominalDate, Maybe HaemoglobinValue ))
-    | LabResultsHistorySpecificGravity (List ( NominalDate, Maybe SpecificGravityValue ))
     | LabResultsHistoryKetone (List ( NominalDate, Maybe KetoneValue ))
     | LabResultsHistoryBilirubin (List ( NominalDate, Maybe BilirubinValue ))
     | LabResultsHistoryRandomBloodSugar (List ( NominalDate, Maybe Float ))
@@ -71,10 +79,24 @@ obstetricalDiagnoses =
     , DiagnosisPROM
     , DiagnosisPPROM
     , DiagnosisHyperemesisGravidum
+    , DiagnosisHyperemesisGravidumBySymptoms
+    , DiagnosisSevereVomiting
+    , DiagnosisSevereVomitingBySymptoms
     , DiagnosisMaternalComplications
     , DiagnosisInfection
     , DiagnosisImminentDelivery
     , DiagnosisLaborAndDelivery
+    , DiagnosisHeartburn
+    , DiagnosisHeartburnPersistent
+    , DiagnosisDeepVeinThrombosis
+    , DiagnosisPelvicPainIntense
+    , DiagnosisPelvicPainContinued
+    , DiagnosisGestationalDiabetes
+    , DiagnosisDepressionNotLikely
+    , DiagnosisDepressionPossible
+    , DiagnosisDepressionHighlyPossible
+    , DiagnosisDepressionProbable
+    , DiagnosisSuicideRisk
     ]
 
 
@@ -89,11 +111,24 @@ medicalDiagnoses =
     , DiagnosisSevereAnemia
     , DiagnosisSevereAnemiaWithComplications
     , DiagnosisHIV
+    , DiagnosisHIVDetectableViralLoad
     , DiagnosisDiscordantPartnership
     , DiagnosisHepatitisB
     , DiagnosisMalaria
     , DiagnosisMalariaWithAnemia
     , DiagnosisMalariaWithSevereAnemia
+    , DiagnosisUrinaryTractInfection
+    , DiagnosisUrinaryTractInfectionContinued
+    , DiagnosisPyelonephritis
+    , DiagnosisCandidiasis
+    , DiagnosisCandidiasisContinued
+    , DiagnosisGonorrhea
+    , DiagnosisGonorrheaContinued
+    , DiagnosisTuberculosis
+    , DiagnosisTrichomonasOrBacterialVaginosis
+    , DiagnosisTrichomonasOrBacterialVaginosisContinued
+    , DiagnosisDiabetes
+    , DiagnosisOther
     ]
 
 

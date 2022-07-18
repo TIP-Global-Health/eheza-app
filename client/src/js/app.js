@@ -269,7 +269,7 @@ dbSync.version(17).stores({
  *
  * When creating new DB version, update:
  *
- * 1. dbVersion constant bellow (app.js)
+ * 1. dbVersion constant below (app.js)
  * 2. dbVerno constant at sw.js
  * 3. HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION at hedley_restful.module
  */

@@ -1718,7 +1718,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                                 viewSendToHealthCenterForm
 
                             else
-                                viewSendToHospitalForm
+                                viewSendToHospitalForm []
                     in
                     measurements.sendToHC
                         |> getMeasurementValueFunc
