@@ -351,7 +351,11 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
     in
     div [ class "page-report well-child" ]
         [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
-        , div [ class "ui report unstackable items" ] <|
+        , div
+            [ class "ui report unstackable items"
+            , Html.Attributes.id "report-content"
+            ]
+          <|
             [ viewPersonInfoPane language currentDate child
             , viewDiagnosisPane language
                 currentDate

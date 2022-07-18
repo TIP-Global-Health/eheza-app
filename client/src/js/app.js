@@ -456,6 +456,7 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
   waitForElement(elementId, scrollToElement, null);
 });
 
+
 function scrollToElement(elementId) {
   var element = document.getElementById(elementId);
 
@@ -947,6 +948,53 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   const cache = await caches.open('photos-upload');
   await cache.delete(row.data.photo);
 });
+
+
+elmApp.ports.makeProgressReportScreenshot.subscribe(function(elementId) {
+  waitForElement(elementId, makeProgressReportScreenshot, null);
+});
+
+
+function makeProgressReportScreenshot(elementId) {
+  var element = document.getElementById(elementId);
+
+  (async () => {
+    const photosUploadCache = "photos-upload";
+    const cache = await caches.open(photosUploadCache);
+
+    const canvas = await html2canvas(element,{
+        width: 800,
+        windowHeight: 3200
+      });
+
+    canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      formData.set('file', blob, imageName);
+
+      const url = "cache-upload/images/" + Date.now();
+
+      try {
+        var response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          // This prevents attaching cookies to request, to prevent
+          // sending authentication cookie, as our desired
+          // authentication method is token.
+          credentials: 'omit'
+        });
+
+        if (response.ok) {
+         var json = await response.json();
+         console.log(json);
+        }
+      }
+      catch (e) {
+        console.log(e);
+      }
+    });
+   })();
+}
+
 
 function getRandom8Digits () {
   var timestamp = String(performance.timeOrigin + performance.now());

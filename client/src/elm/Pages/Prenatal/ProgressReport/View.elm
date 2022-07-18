@@ -310,7 +310,10 @@ viewContent language currentDate isChw initiator model assembled =
             Maybe.map (EverySet.member component) model.components
                 |> Maybe.withDefault False
     in
-    div [ class "ui unstackable items" ]
+    div
+        [ class "ui unstackable items"
+        , Html.Attributes.id "report-content"
+        ]
         [ viewHeaderPane language currentDate assembled
         , viewRiskFactorsPane language currentDate firstEncounterMeasurements
             |> showIf
