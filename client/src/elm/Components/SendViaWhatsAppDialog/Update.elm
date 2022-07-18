@@ -23,16 +23,18 @@ update msg model =
               )
             )
 
-        SetReportComponents setMsg phoneNumber ->
+        SetReportComponents setComponentsMsg phoneNumber ->
             ( { model | state = Just <| ConfirmationBeforeSending phoneNumber }
             , Cmd.none
-            , ( [ setMsg ]
+            , ( [ setComponentsMsg ]
               , []
               )
             )
 
-        Execute phoneNumber ->
+        Execute clearComponentsMsg phoneNumber ->
             ( { model | state = Nothing }
             , App.Ports.makeProgressReportScreenshot phoneNumber
-            , ( [], [] )
+            , ( [ clearComponentsMsg ]
+              , []
+              )
             )

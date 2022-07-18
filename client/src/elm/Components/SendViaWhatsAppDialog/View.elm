@@ -47,7 +47,9 @@ viewDialog language currentDate ( personId, person ) componentsConfig state =
                         |> Maybe.withDefault []
 
                 ConfirmationBeforeSending phoneNumber ->
-                    viewConfirmationBeforeSending language currentDate phoneNumber
+                    Maybe.map (viewConfirmationBeforeSending language currentDate phoneNumber)
+                        componentsConfig
+                        |> Maybe.withDefault []
 
         allowComponentsSelection =
             isJust componentsConfig
@@ -362,8 +364,8 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
     ]
 
 
-viewConfirmationBeforeSending : Language -> NominalDate -> String -> List (Html (Msg msg))
-viewConfirmationBeforeSending language currentDate phoneNumber =
+viewConfirmationBeforeSending : Language -> NominalDate -> String -> ReportComponentsConfig msg -> List (Html (Msg msg))
+viewConfirmationBeforeSending language currentDate phoneNumber config =
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeSendingHeader ]
         , p [] [ text phoneNumber ]
@@ -378,7 +380,7 @@ viewConfirmationBeforeSending language currentDate phoneNumber =
                 [ text <| translate language Translate.No ]
             , button
                 [ class "ui primary fluid button"
-                , onClick <| Execute phoneNumber
+                , onClick <| Execute (config.setReportComponentsFunc Nothing) phoneNumber
                 ]
                 [ text <| translate language Translate.Send ]
             ]
