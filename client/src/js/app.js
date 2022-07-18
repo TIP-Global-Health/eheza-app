@@ -955,19 +955,19 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
 });
 
 
-elmApp.ports.makeProgressReportScreenshot.subscribe(function(elementId) {
-  waitForElement(elementId, makeProgressReportScreenshot, null);
+elmApp.ports.makeProgressReportScreenshot.subscribe(function(phoneNumber) {
+  waitForElement('report-content', makeProgressReportScreenshot, phoneNumber);
 });
 
 
-function makeProgressReportScreenshot(elementId) {
+function makeProgressReportScreenshot(elementId, phoneNumber) {
   var element = document.getElementById(elementId);
 
   (async () => {
-    const photosUploadCache = "photos-upload";
+    const photosUploadCache = 'photos-upload';
     const cache = await caches.open(photosUploadCache);
 
-    const canvas = await html2canvas(element,{
+    const canvas = await html2canvas(element, {
         width: 800,
         windowHeight: 3200
       });
@@ -994,11 +994,9 @@ function makeProgressReportScreenshot(elementId) {
 
          var entry = {
              photo: json.url,
-             phoneNumber: '123',
+             phoneNumber: phoneNumber,
              isSynced: 0,
          };
-
-         console.log(entry);
 
          await dbSync.whatsAppUploads.add(entry);
         }

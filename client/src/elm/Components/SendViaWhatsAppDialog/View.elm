@@ -378,7 +378,7 @@ viewConfirmationBeforeSending language currentDate phoneNumber =
                 [ text <| translate language Translate.No ]
             , button
                 [ class "ui primary fluid button"
-                , onClick Execute
+                , onClick <| Execute phoneNumber
                 ]
                 [ text <| translate language Translate.Send ]
             ]

@@ -31,8 +31,8 @@ update msg model =
               )
             )
 
-        Execute ->
+        Execute phoneNumber ->
             ( { model | state = Nothing }
-            , App.Ports.makeProgressReportScreenshot "report-content"
+            , App.Ports.makeProgressReportScreenshot phoneNumber
             , ( [], [] )
             )
