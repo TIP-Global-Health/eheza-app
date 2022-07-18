@@ -2763,6 +2763,12 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ formatDDMMYYYY date
                 |> wrapWithLI
 
+        DiagnosisDiabetes ->
+            referredToHospitalMessage
+
+        DiagnosisGestationalDiabetes ->
+            referredToHospitalMessage
+
         DiagnosisDepressionNotLikely ->
             mentalHealthMessage
 

@@ -1504,6 +1504,7 @@ function hedley_activity_field_default_field_bases() {
         'safer-sex' => 'Safer sex',
         'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
         'mental-health' => 'Mental Health',
+        'diabetes' => 'Diabetes',
         'none' => 'None',
         'none-initial' => 'None Initial Phase',
         'none-recurrent' => 'None Recurrent Phase',

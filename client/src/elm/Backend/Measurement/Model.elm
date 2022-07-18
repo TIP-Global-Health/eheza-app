@@ -841,6 +841,7 @@ type PrenatalHealthEducationSign
     | EducationSaferSex
     | EducationHIVDetectableViralLoad
     | EducationMentalHealth
+    | EducationDiabetes
     | NoPrenatalHealthEducationSigns
     | NoPrenatalHealthEducationSignsInitialPhase
     | NoPrenatalHealthEducationSignsRecurrentPhase
@@ -1016,6 +1017,7 @@ type alias PrenatalRandomBloodSugarTestValue =
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 

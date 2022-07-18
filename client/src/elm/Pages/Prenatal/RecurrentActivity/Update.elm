@@ -397,8 +397,11 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                 measurement =
                     getMeasurementValueFunc saved
 
+                form =
+                    data.randomBloodSugarTestForm
+
                 appMsgs =
-                    toPrenatalRandomBloodSugarResultsValueWithDefault measurement data.randomBloodSugarTestForm
+                    toPrenatalRandomBloodSugarResultsValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -1296,13 +1299,10 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SetEducationHIVDetectableViralLoad value ->
+        SetHealthEducationBoolInput formUpdateFunc value ->
             let
-                form =
-                    model.nextStepsData.healthEducationForm
-
                 updatedForm =
-                    { form | hivDetectableViralLoad = Just value }
+                    formUpdateFunc value model.nextStepsData.healthEducationForm
 
                 updatedData =
                     model.nextStepsData

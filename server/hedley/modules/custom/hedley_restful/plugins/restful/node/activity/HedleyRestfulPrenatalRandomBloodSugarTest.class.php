@@ -17,7 +17,9 @@ class HedleyRestfulPrenatalRandomBloodSugarTest extends HedleyRestfulPrenatalAct
     'field_test_execution_note',
     'field_execution_date',
     'field_sugar_count',
+    'field_originating_encounter',
   ];
+
 
   /**
    * {@inheritdoc}
@@ -31,6 +33,13 @@ class HedleyRestfulPrenatalRandomBloodSugarTest extends HedleyRestfulPrenatalAct
    */
   protected $dateFields = [
     'field_execution_date',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $entityFields = [
+    'field_originating_encounter',
   ];
 
 }

@@ -91,6 +91,7 @@ obstetricalDiagnoses =
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense
     , DiagnosisPelvicPainContinued
+    , DiagnosisGestationalDiabetes
     , DiagnosisDepressionNotLikely
     , DiagnosisDepressionPossible
     , DiagnosisDepressionHighlyPossible
@@ -126,6 +127,7 @@ medicalDiagnoses =
     , DiagnosisTuberculosis
     , DiagnosisTrichomonasOrBacterialVaginosis
     , DiagnosisTrichomonasOrBacterialVaginosisContinued
+    , DiagnosisDiabetes
     , DiagnosisOther
     ]
 

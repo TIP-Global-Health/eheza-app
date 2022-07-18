@@ -238,6 +238,12 @@ decodePrenatalDiagnosis =
                     "tuberculosis" ->
                         succeed DiagnosisTuberculosis
 
+                    "diabetes" ->
+                        succeed DiagnosisDiabetes
+
+                    "gestational-diabetes" ->
+                        succeed DiagnosisGestationalDiabetes
+
                     "depression-not-likely" ->
                         succeed DiagnosisDepressionNotLikely
 

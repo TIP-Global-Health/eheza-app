@@ -10,7 +10,7 @@ import Backend.Person.Utils exposing (genderFromString)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntAsFloat, decodeIntDict, decodeStringWithDefault)
+import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
@@ -349,6 +349,9 @@ decodePrenatalHealthEducationSign =
                     "mental-health" ->
                         succeed EducationMentalHealth
 
+                    "diabetes" ->
+                        succeed EducationDiabetes
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 
@@ -550,7 +553,8 @@ decodePrenatalRandomBloodSugarTestValue =
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
-        |> optional "sugar_count" (nullable decodeIntAsFloat) Nothing
+        |> optional "sugar_count" (nullable decodeFloat) Nothing
+        |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
 
 
 decodeTestPrerequisite : Decoder TestPrerequisite

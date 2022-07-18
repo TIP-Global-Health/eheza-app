@@ -684,6 +684,8 @@ function hedley_prenatal_field_default_field_bases() {
         'syphilis-complications' => 'Syphilis with Complications',
         'neurosyphilis' => 'Neurosyphilis',
         'hepatitis-b' => 'Hepatitis B',
+        'diabetes' => 'Diabetes',
+        'gestational-diabetes' => 'Gestational diabetes',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -876,6 +878,8 @@ function hedley_prenatal_field_default_field_bases() {
         'gonorrhea-continued' => 'Gonorrhea Continued',
         'trichomonas-or-bv' => 'Trichomonas or Bacterial Vaginosis',
         'trichomonas-or-bv-continued' => 'Trichomonas or Bacterial Vaginosis Continued',
+        'diabetes' => 'Diabetes',
+        'gestational-diabetes' => 'Gestational diabetes',
         'tuberculosis' => 'Tuberculosis',
         'depression-not-likely' => 'Depression Not Likely',
         'depression-possible' => 'Depression Possible',
@@ -1151,9 +1155,11 @@ function hedley_prenatal_field_default_field_bases() {
     'indexes' => array(),
     'locked' => 0,
     'module' => 'number',
-    'settings' => array(),
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
     'translatable' => 0,
-    'type' => 'number_integer',
+    'type' => 'number_float',
   );
 
   // Exported field_base: 'field_sys_repeated'.
