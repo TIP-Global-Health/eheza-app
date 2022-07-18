@@ -265,7 +265,7 @@ dbSync.version(17).stores({
 });
 
 dbSync.version(18).stores({
-    whatsAppUploads: '&localId,photo,phoneNumber,isSynced',
+    whatsAppUploads: '++localId,photo,phoneNumber,isSynced',
 });
 
 
@@ -974,6 +974,7 @@ function makeProgressReportScreenshot(elementId) {
 
     canvas.toBlob(async function(blob) {
       const formData = new FormData();
+      const imageName = 'whatsapp-upload-' + getRandom8Digits() + '.jpg';
       formData.set('file', blob, imageName);
 
       const url = "cache-upload/images/" + Date.now();
@@ -990,7 +991,16 @@ function makeProgressReportScreenshot(elementId) {
 
         if (response.ok) {
          var json = await response.json();
-         console.log(json);
+
+         var entry = {
+             photo: json.url,
+             phoneNumber: '123',
+             isSynced: 0,
+         };
+
+         console.log(entry);
+
+         await dbSync.whatsAppUploads.add(entry);
         }
       }
       catch (e) {
