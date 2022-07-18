@@ -38,7 +38,6 @@ type Msg
     | SetNitrite String
     | SetUrobilinogen String
     | SetHaemoglobin String
-    | SetSpecificGravity String
     | SetKetone String
     | SetBilirubin String
     | SaveUrineDipstickResult PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
@@ -59,7 +58,7 @@ type Msg
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
-    | SetEducationHIVDetectableViralLoad Bool
+    | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
 
 
@@ -189,7 +188,6 @@ type alias PrenatalUrineDipstickResultForm =
     , nitrite : Maybe NitriteValue
     , urobilinogen : Maybe UrobilinogenValue
     , haemoglobin : Maybe HaemoglobinValue
-    , specificGravity : Maybe SpecificGravityValue
     , ketone : Maybe KetoneValue
     , bilirubin : Maybe BilirubinValue
     }
@@ -207,7 +205,6 @@ emptyPrenatalUrineDipstickResultForm =
     , nitrite = Nothing
     , urobilinogen = Nothing
     , haemoglobin = Nothing
-    , specificGravity = Nothing
     , ketone = Nothing
     , bilirubin = Nothing
     }
@@ -228,13 +225,15 @@ emptyPrenatalHemoglobinResultForm =
 type alias PrenatalRandomBloodSugarResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 emptyPrenatalRandomBloodSugarResultForm : PrenatalRandomBloodSugarResultForm
 emptyPrenatalRandomBloodSugarResultForm =
-    PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing
+    PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias PrenatalHIVPCRResultForm =

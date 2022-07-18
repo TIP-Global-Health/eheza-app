@@ -130,10 +130,8 @@ proteinResultNormal =
 
 
 phResultNormal : PHValue -> Bool
-phResultNormal =
-    -- @todo: revise after https://github.com/TIP-Global-Health/eheza-app/issues/308
-    -- is implemented.
-    (/=) Ph85
+phResultNormal value =
+    not <| List.member value [ Ph40, Ph85 ]
 
 
 glucoseResultNormal : GlucoseValue -> Bool
@@ -153,19 +151,12 @@ nitriteResultNormal =
 
 urobilinogenResultNormal : UrobilinogenValue -> Bool
 urobilinogenResultNormal value =
-    List.member value [ Urobilinogen02, Urobilinogen10 ]
+    List.member value [ Urobilinogen002, Urobilinogen10 ]
 
 
 urineHaemoglobinValueResultNormal : HaemoglobinValue -> Bool
 urineHaemoglobinValueResultNormal =
     (==) HaemoglobinNegative
-
-
-specificGravityResultNormal : SpecificGravityValue -> Bool
-specificGravityResultNormal value =
-    -- @todo : remove, since Specific Gravity will not be used anymore.
-    -- See https://github.com/TIP-Global-Health/eheza-app/issues/309.
-    True
 
 
 ketoneResultNormal : KetoneValue -> Bool

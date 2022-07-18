@@ -10,7 +10,7 @@ import Backend.Person.Utils exposing (genderFromString)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntAsFloat, decodeIntDict, decodeStringWithDefault)
+import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
@@ -349,6 +349,9 @@ decodePrenatalHealthEducationSign =
                     "mental-health" ->
                         succeed EducationMentalHealth
 
+                    "diabetes" ->
+                        succeed EducationDiabetes
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 
@@ -549,7 +552,26 @@ decodePrenatalRandomBloodSugarTestValue =
     succeed PrenatalRandomBloodSugarTestValue
         |> required "test_execution_note" decodePrenatalTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
-        |> optional "sugar_count" (nullable decodeIntAsFloat) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
+        |> optional "sugar_count" (nullable decodeFloat) Nothing
+        |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
+
+
+decodeTestPrerequisite : Decoder TestPrerequisite
+decodeTestPrerequisite =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "fasting-12h" ->
+                        succeed PrerequisiteFastFor12h
+
+                    "none" ->
+                        succeed NoTestPrerequisites
+
+                    _ ->
+                        fail <| value ++ " is not a recognized TestPrerequisite"
+            )
 
 
 decodePrenatalSyphilisTest : Decoder PrenatalSyphilisTest
@@ -596,7 +618,6 @@ decodePrenatalUrineDipstickTestValue =
         |> optional "nitrite" (nullable decodeNitriteValue) Nothing
         |> optional "urobilinogen" (nullable decodeUrobilinogenValue) Nothing
         |> optional "haemoglobin" (nullable decodeHaemoglobinValue) Nothing
-        |> optional "specific_gravity" (nullable decodeSpecificGravityValue) Nothing
         |> optional "ketone" (nullable decodeKetoneValue) Nothing
         |> optional "bilirubin" (nullable decodeBilirubinValue) Nothing
 
@@ -694,17 +715,6 @@ decodeHaemoglobinValue =
                 haemoglobinValueFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized HaemoglobinValue")
-            )
-
-
-decodeSpecificGravityValue : Decoder SpecificGravityValue
-decodeSpecificGravityValue =
-    string
-        |> andThen
-            (\s ->
-                specificGravityValueFromString s
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| s ++ " is not a recognized SpecificGravityValue")
             )
 
 

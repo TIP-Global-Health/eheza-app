@@ -38,6 +38,8 @@ type PrenatalDiagnosis
     | DiagnosisPPROM
     | DiagnosisHyperemesisGravidum
     | DiagnosisHyperemesisGravidumBySymptoms
+    | DiagnosisSevereVomiting
+    | DiagnosisSevereVomitingBySymptoms
     | DiagnosisMaternalComplications
     | DiagnosisInfection
     | DiagnosisImminentDelivery
@@ -57,6 +59,8 @@ type PrenatalDiagnosis
     | DiagnosisTrichomonasOrBacterialVaginosis
     | DiagnosisTrichomonasOrBacterialVaginosisContinued
     | DiagnosisTuberculosis
+    | DiagnosisDiabetes
+    | DiagnosisGestationalDiabetes
     | DiagnosisDepressionNotLikely
     | DiagnosisDepressionPossible
     | DiagnosisDepressionHighlyPossible

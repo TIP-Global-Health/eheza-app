@@ -232,6 +232,9 @@ encodePrenatalHealthEducationSign sign =
             EducationMentalHealth ->
                 "mental-health"
 
+            EducationDiabetes ->
+                "diabetes"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
@@ -539,20 +542,47 @@ encodePrenatalRandomBloodSugarTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
+                |> Maybe.withDefault []
+
+        originatingEncounter =
+            Maybe.map
+                (\originEncounter ->
+                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
+                )
+                value.originatingEncounter
+                |> Maybe.withDefault []
+
         result =
             Maybe.map
                 (\sugarCount ->
-                    [ ( "sugar_count", int <| truncate sugarCount ) ]
+                    [ ( "sugar_count", float sugarCount ) ]
                 )
                 value.sugarCount
                 |> Maybe.withDefault []
     in
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
+        ++ testPrerequisites
+        ++ originatingEncounter
         ++ result
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_random_blood_sugar_test" )
            ]
+
+
+encodeTestPrerequisite : TestPrerequisite -> Value
+encodeTestPrerequisite value =
+    string <|
+        case value of
+            PrerequisiteFastFor12h ->
+                "fasting-12h"
+
+            NoTestPrerequisites ->
+                "none"
 
 
 encodePrenatalSyphilisTest : PrenatalSyphilisTest -> List ( String, Value )
@@ -654,9 +684,6 @@ encodePrenatalUrineDipstickTestValue value =
         haemoglobin =
             encodeField encodeHaemoglobinValue "haemoglobin" value.haemoglobin
 
-        specificGravity =
-            encodeField encodeSpecificGravityValue "specific_gravity" value.specificGravity
-
         ketone =
             encodeField encodeKetoneValue "ketone" value.ketone
 
@@ -673,7 +700,6 @@ encodePrenatalUrineDipstickTestValue value =
         ++ nitrite
         ++ urobilinogen
         ++ haemoglobin
-        ++ specificGravity
         ++ ketone
         ++ bilirubin
         ++ [ ( "deleted", bool False )
@@ -725,11 +751,6 @@ encodeUrobilinogenValue =
 encodeHaemoglobinValue : HaemoglobinValue -> Value
 encodeHaemoglobinValue =
     haemoglobinValueToString >> string
-
-
-encodeSpecificGravityValue : SpecificGravityValue -> Value
-encodeSpecificGravityValue =
-    specificGravityValueToString >> string
 
 
 encodeKetoneValue : KetoneValue -> Value

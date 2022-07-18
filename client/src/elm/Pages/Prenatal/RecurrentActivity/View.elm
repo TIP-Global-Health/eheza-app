@@ -631,7 +631,7 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                     form.urobilinogen
                                     Translate.PrenatalLaboratoryUrobilinogenValue
                                     urobilinogenValueToString
-                                    [ Urobilinogen02
+                                    [ Urobilinogen002
                                     , Urobilinogen10
                                     , Urobilinogen20
                                     , Urobilinogen40
@@ -652,20 +652,6 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                     , HaemoglobinLarge
                                     ]
                                     SetHaemoglobin
-                                ++ viewSelectInput language
-                                    Translate.PrenatalLaboratorySpecificGravityTestResult
-                                    form.specificGravity
-                                    Translate.PrenatalLaboratorySpecificGravityValue
-                                    specificGravityValueToString
-                                    [ SpecificGravity1000
-                                    , SpecificGravity1005
-                                    , SpecificGravity1010
-                                    , SpecificGravity1015
-                                    , SpecificGravity1020
-                                    , SpecificGravity1025
-                                    , SpecificGravity1030
-                                    ]
-                                    SetSpecificGravity
                                 ++ viewSelectInput language
                                     Translate.PrenatalLaboratoryKetoneTestResult
                                     form.ketone
@@ -696,10 +682,9 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                 + taskCompleted form.nitrite
                                 + taskCompleted form.urobilinogen
                                 + taskCompleted form.haemoglobin
-                                + taskCompleted form.specificGravity
                                 + taskCompleted form.ketone
                                 + taskCompleted form.bilirubin
-                            , commonTasksTotal + 7
+                            , commonTasksTotal + 6
                             )
                 )
                 form.testVariant
@@ -1106,17 +1091,12 @@ viewVitalsForm language currentDate assembled form =
 
 viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
 viewHealthEducationForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            healthEducationFormInputsAndTasks language assembled form
+    in
     div [ class "ui form health-education" ]
-        [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
-        , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
-        , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-        , viewBoolInput
-            language
-            form.hivDetectableViralLoad
-            SetEducationHIVDetectableViralLoad
-            "hiv-detectable-viral-load"
-            Nothing
-        ]
+        inputs
 
 
 

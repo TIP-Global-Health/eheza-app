@@ -684,6 +684,8 @@ function hedley_prenatal_field_default_field_bases() {
         'syphilis-complications' => 'Syphilis with Complications',
         'neurosyphilis' => 'Neurosyphilis',
         'hepatitis-b' => 'Hepatitis B',
+        'diabetes' => 'Diabetes',
+        'gestational-diabetes' => 'Gestational diabetes',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -856,6 +858,8 @@ function hedley_prenatal_field_default_field_bases() {
         'pprom' => 'PPROM',
         'hyperemesis-gravidum' => 'Hyperemesis Gravidum',
         'hyperemesis-gravidum-by-symptoms' => 'Hyperemesis Gravidum by Symptoms',
+        'severe-vomiting' => 'Severe Vomiting',
+        'severe-vomiting-by-symptoms' => 'Severe Vomiting by Symptoms',
         'maternal-complications' => 'Maternal Complications',
         'infection' => 'Infection',
         'imminent-delivery' => 'Imminent delivery',
@@ -874,6 +878,8 @@ function hedley_prenatal_field_default_field_bases() {
         'gonorrhea-continued' => 'Gonorrhea Continued',
         'trichomonas-or-bv' => 'Trichomonas or Bacterial Vaginosis',
         'trichomonas-or-bv-continued' => 'Trichomonas or Bacterial Vaginosis Continued',
+        'diabetes' => 'Diabetes',
+        'gestational-diabetes' => 'Gestational diabetes',
         'tuberculosis' => 'Tuberculosis',
         'depression-not-likely' => 'Depression Not Likely',
         'depression-possible' => 'Depression Possible',
@@ -1139,36 +1145,6 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_boolean',
   );
 
-  // Exported field_base: 'field_specific_gravity'.
-  $field_bases['field_specific_gravity'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_specific_gravity',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        '1.000' => '1.000',
-        '1.005' => 1.005,
-        '1.010' => '1.010',
-        '1.015' => 1.015,
-        '1.020' => '1.020',
-        '1.025' => 1.025,
-        '1.030' => '1.030',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
   // Exported field_base: 'field_sugar_count'.
   $field_bases['field_sugar_count'] = array(
     'active' => 1,
@@ -1179,9 +1155,11 @@ function hedley_prenatal_field_default_field_bases() {
     'indexes' => array(),
     'locked' => 0,
     'module' => 'number',
-    'settings' => array(),
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
     'translatable' => 0,
-    'type' => 'number_integer',
+    'type' => 'number_float',
   );
 
   // Exported field_base: 'field_sys_repeated'.
@@ -1225,6 +1203,32 @@ function hedley_prenatal_field_default_field_bases() {
         'broken-equipment' => 'Broken Equipment',
         'not-indicated' => 'Not Indicated',
         'known-as-positive' => 'Known as Positive',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_test_prerequisites'.
+  $field_bases['field_test_prerequisites'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_test_prerequisites',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'fasting-12h' => 'Fasting for 12 hours',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
@@ -1299,7 +1303,7 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        '0.2' => 0.2,
+        '0-0.2' => '0-0.2',
         1 => 1,
         2 => 2,
         4 => 4,

@@ -1,7 +1,6 @@
 module Pages.PatientRecord.Model exposing (..)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model
 import Pages.Page exposing (Page)
@@ -39,22 +38,13 @@ type ViewMode
     | ViewStartEncounter
 
 
+type PatientType
+    = PatientAdult
+    | PatientChild
+    | PatientUnknown
+
+
 type PatientRecordFilter
     = FilterAcuteIllness
     | FilterAntenatal
     | FilterDemographics
-
-
-patientRecordFilters : Person -> List PatientRecordFilter
-patientRecordFilters person =
-    case person.gender of
-        Male ->
-            [ FilterAcuteIllness
-            , FilterDemographics
-            ]
-
-        Female ->
-            [ FilterAcuteIllness
-            , FilterAntenatal
-            , FilterDemographics
-            ]

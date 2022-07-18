@@ -667,6 +667,8 @@ type TranslationId
     | HypertensionRecommendedTreatmentUpdateBPLabel
     | HypertensionRecommendedTreatmentUpdateCurrentTreatment
     | HypertensionRecommendedTreatmentUpdateNewTreatment HypertensionTreatementUpdateOption
+    | HypertensionRecommendedTreatmentUpdateNoCurrentTreatment
+    | HypertensionRecommendedTreatmentUpdateStartTreatment
     | IdleWaitingForSync
     | IllnessSymptom IllnessSymptom
     | Immunisation
@@ -939,6 +941,7 @@ type TranslationId
     | PrenatalHealthEducationSignsDiagnosis Bool String PrenatalHealthEducationSign
     | PrenatalHealthEducationLabel PrenatalHealthEducationSign
     | PrenatalHealthEducationQuestion Bool PrenatalHealthEducationSign
+    | PrenatalHealthEducationDiabetesInform
     | PrenatalHealthEducationHivDetectableViralLoadInform
     | PrenatalHealthEducationNauseaAndVomitingAdvise
     | PrenatalHealthEducationNauseaAndVomitingInform
@@ -984,9 +987,6 @@ type TranslationId
     | PrenatalLaboratoryHaemoglobinLabel
     | PrenatalLaboratoryHaemoglobinTestResult
     | PrenatalLaboratoryHaemoglobinValue HaemoglobinValue
-    | PrenatalLaboratorySpecificGravityLabel
-    | PrenatalLaboratorySpecificGravityTestResult
-    | PrenatalLaboratorySpecificGravityValue SpecificGravityValue
     | PrenatalLaboratoryKetoneLabel
     | PrenatalLaboratoryKetoneTestResult
     | PrenatalLaboratoryKetoneValue KetoneValue
@@ -1257,6 +1257,7 @@ type TranslationId
     | TestName
     | TestPerformedQuestion
     | TestPerformedTodayQuestion
+    | TestPrerequisiteQuestion TestPrerequisite
     | TestResultQuestion
     | TestVariantUrineDipstickQuestion
     | ThisActionCannotBeUndone
@@ -5080,6 +5081,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        HypertensionRecommendedTreatmentUpdateNoCurrentTreatment ->
+            { english = "The patient is currently receiving no treatment"
+            , kinyarwanda = Nothing
+            }
+
+        HypertensionRecommendedTreatmentUpdateStartTreatment ->
+            { english = "It is recommend to start treatment with"
+            , kinyarwanda = Nothing
+            }
+
         IdleWaitingForSync ->
             { english = "Idle, waiting for next Sync cycle"
             , kinyarwanda = Nothing
@@ -5551,11 +5562,6 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru ku kizamini cy'ingano y'amaraso"
                     }
 
-                LabResultsHistorySpecificGravity _ ->
-                    { english = "Specific Gravity Test History"
-                    , kinyarwanda = Just "Amakuru ku kizamini cy'Uburemere bw'inkari bwihariye"
-                    }
-
                 LabResultsHistoryKetone _ ->
                     { english = "Ketone Test History"
                     , kinyarwanda = Just "Amakuru ku kizamini cya Ketone mu nkari"
@@ -5645,11 +5651,6 @@ translationSet trans =
 
                 LabResultsHistoryHaemoglobin _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
-                    }
-
-                LabResultsHistorySpecificGravity _ ->
-                    { english = "@todo"
                     , kinyarwanda = Nothing
                     }
 
@@ -6127,7 +6128,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibibyimba byo mu mura/Nyababyeyi"
                     }
 
-                DiagnosisDiabetes ->
+                Backend.PrenatalActivity.Model.DiagnosisDiabetes ->
                     { english = "Diabetes"
                     , kinyarwanda = Just "Diyabete (Indwara y'igisukari)"
                     }
@@ -8255,6 +8256,16 @@ translationSet trans =
 
                 DiagnosisHyperemesisGravidumBySymptoms ->
                     { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Just "Kuruka bikabije k'umugore utwite"
+                    }
+
+                DiagnosisSevereVomiting ->
+                    { english = "Severe Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereVomitingBySymptoms ->
+                    { english = "Severe Vomiting"
                     , kinyarwanda = Nothing
                     }
 
@@ -8350,6 +8361,16 @@ translationSet trans =
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+                    { english = "Gestational Diabetes"
                     , kinyarwanda = Nothing
                     }
 
@@ -8567,6 +8588,16 @@ translationSet trans =
 
                 DiagnosisHyperemesisGravidumBySymptoms ->
                     { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Just "Kuruka bikabije k'umugore utwite"
+                    }
+
+                DiagnosisSevereVomiting ->
+                    { english = "Severe Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereVomitingBySymptoms ->
+                    { english = "Severe Vomiting"
                     , kinyarwanda = Nothing
                     }
 
@@ -8662,6 +8693,16 @@ translationSet trans =
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Possible Active Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+                    { english = "Gestational Diabetes"
                     , kinyarwanda = Nothing
                     }
 
@@ -8763,7 +8804,7 @@ translationSet trans =
                     }
 
                 DiagnosisModerateAnemia ->
-                    { english = "Patient hshows signs of Mild to Moderate Anemia"
+                    { english = "Patient shows signs of Mild to Moderate Anemia"
                     , kinyarwanda = Nothing
                     }
 
@@ -8892,8 +8933,23 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+                    { english = "Patient shows signs of Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+                    { english = "Patient shows signs of Gestational Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisHyperemesisGravidumBySymptoms ->
                     { english = "Patient shows signs of Hyperemesis Gravidum"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereVomitingBySymptoms ->
+                    { english = "Patient shows signs of Severe Vomiting"
                     , kinyarwanda = Nothing
                     }
 
@@ -9196,6 +9252,11 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        PrenatalHealthEducationDiabetesInform ->
+            { english = "Council patient on healthy nutrituin and exercise practices"
+            , kinyarwanda = Nothing
+            }
 
         PrenatalHealthEducationHivDetectableViralLoadInform ->
             { english = "Instruct the patient on the importance of strict adherence to their medication and the dangers of transmission to their child during labor and delivery"
@@ -9633,8 +9694,8 @@ translationSet trans =
 
         PrenatalLaboratoryUrobilinogenValue value ->
             case value of
-                Urobilinogen02 ->
-                    { english = "0.2"
+                Urobilinogen002 ->
+                    { english = "0-0.2"
                     , kinyarwanda = Nothing
                     }
 
@@ -9703,53 +9764,6 @@ translationSet trans =
                 HaemoglobinLarge ->
                     { english = "Large"
                     , kinyarwanda = Just "Ikigero kinini cy'amaraso (hemoglobini)  agaragara mu nkari"
-                    }
-
-        PrenatalLaboratorySpecificGravityLabel ->
-            { english = "Specific Gravity"
-            , kinyarwanda = Just "Uburemere bw'inkari bwihariye"
-            }
-
-        PrenatalLaboratorySpecificGravityTestResult ->
-            { english = "Specific Gravity Test Result"
-            , kinyarwanda = Just "Igisubizo cy'uburemere bw'inkari bwihariye"
-            }
-
-        PrenatalLaboratorySpecificGravityValue value ->
-            case value of
-                SpecificGravity1000 ->
-                    { english = "1.000"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1005 ->
-                    { english = "1.005"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1010 ->
-                    { english = "1.010"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1015 ->
-                    { english = "1.015"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1020 ->
-                    { english = "1.020"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1025 ->
-                    { english = "1.025"
-                    , kinyarwanda = Nothing
-                    }
-
-                SpecificGravity1030 ->
-                    { english = "1.030"
-                    , kinyarwanda = Nothing
                     }
 
         PrenatalLaboratoryKetoneLabel ->
@@ -11087,6 +11101,18 @@ translationSet trans =
             { english = "Did you perform this test today"
             , kinyarwanda = Just "Waba wakoze iki kizamini uyu munsi"
             }
+
+        TestPrerequisiteQuestion value ->
+            case value of
+                PrerequisiteFastFor12h ->
+                    { english = "Has the patient fasted for this test (no food for 12 hours)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoTestPrerequisites ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
 
         TestVariantUrineDipstickQuestion ->
             { english = "Which type of urine dipstick test was run"
