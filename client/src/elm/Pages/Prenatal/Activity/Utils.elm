@@ -4569,6 +4569,68 @@ toPrenatalUrineDipstickTestValue form =
         form.executionNote
 
 
+prenatalRandomBloodSugarFormWithDefault : PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarForm
+prenatalRandomBloodSugarFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    testPerformedValue =
+                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
+
+                    patientFastedValue =
+                        Maybe.map (EverySet.member PrerequisiteFastFor12h)
+                            value.testPrerequisites
+                in
+                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
+                , patientFasted = or form.patientFasted patientFastedValue
+                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedTodayDirty = form.testPerformedTodayDirty
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
+                }
+            )
+
+
+toPrenatalRandomBloodSugarValueWithDefault : Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue
+toPrenatalRandomBloodSugarValueWithDefault saved form =
+    prenatalRandomBloodSugarFormWithDefault form saved
+        |> toPrenatalRandomBloodSugarTestValue
+
+
+toPrenatalRandomBloodSugarTestValue : PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue
+toPrenatalRandomBloodSugarTestValue form =
+    Maybe.map
+        (\executionNote ->
+            let
+                testPrerequisites =
+                    Maybe.map
+                        (\patientFasted ->
+                            if patientFasted then
+                                EverySet.singleton PrerequisiteFastFor12h
+
+                            else
+                                EverySet.singleton NoTestPrerequisites
+                        )
+                        form.patientFasted
+            in
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testPrerequisites = testPrerequisites
+            , sugarCount = Nothing
+            }
+        )
+        form.executionNote
+
+
 prenatalNonRDTFormWithDefault :
     PrenatalLabsNonRDTForm
     -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
@@ -4629,11 +4691,6 @@ toSyphilisTestValueWithEmptyResults note date =
 toHemoglobinTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHemoglobinTestValue
 toHemoglobinTestValueWithEmptyResults note date =
     PrenatalHemoglobinTestValue note date Nothing
-
-
-toRandomBloodSugarTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalRandomBloodSugarTestValue
-toRandomBloodSugarTestValueWithEmptyResults note date =
-    PrenatalRandomBloodSugarTestValue note date Nothing
 
 
 toBloodGpRsTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalBloodGpRsTestValue
@@ -4793,7 +4850,7 @@ expectLaboratoryTask currentDate assembled task =
                     True
 
                 TaskRandomBloodSugarTest ->
-                    isInitialTest TaskRandomBloodSugarTest
+                    True
 
                 TaskHIVPCRTest ->
                     isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled

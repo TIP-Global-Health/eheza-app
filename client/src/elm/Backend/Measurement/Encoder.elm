@@ -539,6 +539,12 @@ encodePrenatalRandomBloodSugarTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
+                |> Maybe.withDefault []
+
         result =
             Maybe.map
                 (\sugarCount ->
@@ -549,10 +555,22 @@ encodePrenatalRandomBloodSugarTestValue value =
     in
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
+        ++ testPrerequisites
         ++ result
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_random_blood_sugar_test" )
            ]
+
+
+encodeTestPrerequisite : TestPrerequisite -> Value
+encodeTestPrerequisite value =
+    string <|
+        case value of
+            PrerequisiteFastFor12h ->
+                "fasting-12h"
+
+            NoTestPrerequisites ->
+                "none"
 
 
 encodePrenatalSyphilisTest : PrenatalSyphilisTest -> List ( String, Value )

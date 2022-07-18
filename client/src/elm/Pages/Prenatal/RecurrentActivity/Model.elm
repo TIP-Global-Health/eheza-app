@@ -225,13 +225,14 @@ emptyPrenatalHemoglobinResultForm =
 type alias PrenatalRandomBloodSugarResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
     }
 
 
 emptyPrenatalRandomBloodSugarResultForm : PrenatalRandomBloodSugarResultForm
 emptyPrenatalRandomBloodSugarResultForm =
-    PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing
+    PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing Nothing
 
 
 type alias PrenatalHIVPCRResultForm =

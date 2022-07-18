@@ -1014,8 +1014,14 @@ type alias PrenatalRandomBloodSugarTest =
 type alias PrenatalRandomBloodSugarTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
     }
+
+
+type TestPrerequisite
+    = PrerequisiteFastFor12h
+    | NoTestPrerequisites
 
 
 type alias PrenatalBloodGpRsTest =
