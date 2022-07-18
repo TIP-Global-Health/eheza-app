@@ -1326,8 +1326,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
-                                |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
-                                |> viewPrenatalNonRDTForm language currentDate TaskRandomBloodSugarTest
+                                |> prenatalRandomBloodSugarFormWithDefault data.randomBloodSugarTestForm
+                                |> viewPrenatalRandomBloodSugarForm language currentDate
 
                         TaskHIVPCRTest ->
                             measurements.hivPCRTest
@@ -3834,6 +3834,56 @@ viewPrenatalUrineDipstickForm language currentDate form =
     )
 
 
+viewPrenatalRandomBloodSugarForm : Language -> NominalDate -> PrenatalRandomBloodSugarForm -> ( Html Msg, Int, Int )
+viewPrenatalRandomBloodSugarForm language currentDate form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial language currentDate TaskRandomBloodSugarTest form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.testPerformed == Just True then
+                let
+                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
+                        contentAndTasksForPerformedLaboratoryTest language currentDate TaskRandomBloodSugarTest form
+
+                    ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
+                        ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
+                          , viewBoolInput
+                                language
+                                form.patientFasted
+                                (SetRandomBloodSugarTestFormBoolInput (\value form_ -> { form_ | patientFasted = Just value }))
+                                "patient-fasted"
+                                Nothing
+                          ]
+                        , taskCompleted form.patientFasted
+                        , 1
+                        )
+
+                    testResultSection =
+                        if isNothing form.executionDate then
+                            []
+
+                        else
+                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
+                in
+                ( testPrerequisitesSection ++ performedTestSection ++ testResultSection
+                , performedTestTasksCompleted + testPrerequisitesTasksCompleted
+                , performedTestTasksTotal + testPrerequisitesTasksTotal
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( div [ class "ui form laboratory urine-dipstick" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
+        ]
+            ++ initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
 viewPrenatalNonRDTFormCheckKnownAsPositive : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( Html Msg, Int, Int )
 viewPrenatalNonRDTFormCheckKnownAsPositive language currentDate task form =
     let
@@ -4277,7 +4327,7 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                                             in
                                             { select = msgs.setExecutionDateMsg
                                             , close = msgs.setDateSelectorStateMsg Nothing
-                                            , dateFrom = Date.add Days -30 currentDate
+                                            , dateFrom = Date.add Days -35 currentDate
                                             , dateTo = dateTo
                                             , dateDefault = Just dateTo
                                             }

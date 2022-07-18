@@ -125,6 +125,7 @@ emergencyReferralDiagnosesInitial =
     , DiagnosisImminentDelivery
     , DiagnosisLaborAndDelivery
     , DiagnosisHyperemesisGravidum
+    , DiagnosisSevereVomiting
 
     -- Infection diagnosis will be available at latter phase.
     -- , DiagnosisInfection
@@ -385,9 +386,10 @@ healthEducationFormWithDefaultInitialPhase form saved =
                 , saferSex = or form.saferSex (EverySet.member EducationSaferSex signs |> Just)
                 , mentalHealth = or form.mentalHealth (EverySet.member EducationMentalHealth signs |> Just)
 
-                -- Only sign that does not participate at recurrent phase. Resolved directly
+                -- Only signs that do not participate at recurrent phase. Resolved directly
                 -- from value.
                 , hivDetectableViralLoad = EverySet.member EducationHIVDetectableViralLoad signs |> Just
+                , diabetes = EverySet.member EducationDiabetes signs |> Just
                 }
             )
 
@@ -425,8 +427,9 @@ healthEducationFormWithDefaultRecurrentPhase form saved =
                 , saferSex = EverySet.member EducationSaferSex signs |> Just
                 , mentalHealth = EverySet.member EducationMentalHealth signs |> Just
 
-                -- Only sign that participates at recurrent phase.
+                -- Only signs that participates at recurrent phase.
                 , hivDetectableViralLoad = or form.hivDetectableViralLoad (EverySet.member EducationHIVDetectableViralLoad signs |> Just)
+                , diabetes = or form.diabetes (EverySet.member EducationDiabetes signs |> Just)
                 }
             )
 
@@ -455,6 +458,7 @@ toHealthEducationValue valueForNone form =
     , ifNullableTrue EducationSaferSex form.saferSex
     , ifNullableTrue EducationMentalHealth form.mentalHealth
     , ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
+    , ifNullableTrue EducationDiabetes form.diabetes
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty valueForNone)
@@ -682,32 +686,51 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                             )
                         |> Maybe.withDefault emptyNode
 
-                currentTreatmentLabel =
+                ( currentTreatmentLabel, newTreatmentLabel ) =
                     getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled
                         |> Maybe.map
                             (\currentTreatment ->
-                                div [ class "label overview" ]
-                                    [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateCurrentTreatment
-                                    , text " "
-                                    , text <| translate language <| Translate.RecommendedTreatmentSignLabel currentTreatment
-                                    , text " "
-                                    , text <| translate language <| Translate.RecommendedTreatmentSignDosage currentTreatment
-                                    , text "."
-                                    ]
-                            )
-                        |> Maybe.withDefault emptyNode
+                                let
+                                    recommendationDosageUpdateLabel =
+                                        if
+                                            -- This is a special usecase, where previously no treatment is given, and
+                                            -- currently BP is normal. Nevertheless, we still recommend starting tratement
+                                            -- sinve Hypertension was diagnosed previously.
+                                            (currentTreatment == NoTreatmentForHypertension)
+                                                && (recommendationDosageUpdate == TreatementUpdateMaintainCurrentDoasage)
+                                        then
+                                            Translate.HypertensionRecommendedTreatmentUpdateStartTreatment
 
-                newTreatmentLabel =
-                    div [ class "label overview" ]
-                        [ text <| translate language <| Translate.HypertensionRecommendedTreatmentUpdateNewTreatment recommendationDosageUpdate
-                        , text " "
-                        , span [ class "highlight" ]
-                            [ text <| translate language <| Translate.RecommendedTreatmentSignLabel recommendedMedication
-                            , text " "
-                            , text <| translate language <| Translate.RecommendedTreatmentSignDosage recommendedMedication
-                            , text "."
-                            ]
-                        ]
+                                        else
+                                            Translate.HypertensionRecommendedTreatmentUpdateNewTreatment recommendationDosageUpdate
+                                in
+                                ( div [ class "label overview" ] <|
+                                    if currentTreatment == NoTreatmentForHypertension then
+                                        [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateNoCurrentTreatment
+                                        , text "."
+                                        ]
+
+                                    else
+                                        [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateCurrentTreatment
+                                        , text " "
+                                        , text <| translate language <| Translate.RecommendedTreatmentSignLabel currentTreatment
+                                        , text " "
+                                        , text <| translate language <| Translate.RecommendedTreatmentSignDosage currentTreatment
+                                        , text "."
+                                        ]
+                                , div [ class "label overview" ]
+                                    [ text <| translate language recommendationDosageUpdateLabel
+                                    , text " "
+                                    , span [ class "highlight" ]
+                                        [ text <| translate language <| Translate.RecommendedTreatmentSignLabel recommendedMedication
+                                        , text " "
+                                        , text <| translate language <| Translate.RecommendedTreatmentSignDosage recommendedMedication
+                                        , text "."
+                                        ]
+                                    ]
+                                )
+                            )
+                        |> Maybe.withDefault ( emptyNode, emptyNode )
 
                 ( input, completed, active ) =
                     recommendedTreatmentForHypertensionInputAndTask language
@@ -1585,7 +1608,7 @@ diagnosesCausingHospitalReferralByPastDiagnoses : AssembledData -> List Prenatal
 diagnosesCausingHospitalReferralByPastDiagnoses assembled =
     let
         allowedPastDiagnoses =
-            DiagnosisHepatitisB :: syphilisDiagnosesIncludingNeurosyphilis
+            (DiagnosisHepatitisB :: syphilisDiagnosesIncludingNeurosyphilis) ++ diabetesDiagnoses
     in
     EverySet.toList assembled.encounter.pastDiagnoses
         |> List.filter (\diagnosis -> List.member diagnosis allowedPastDiagnoses)
@@ -2289,6 +2312,9 @@ medicationsInitialPhase =
     [ Mebendezole
     , TDF3TC
     , Dolutegravir
+    , Ceftriaxone
+    , Azithromycin
+    , Metronidazole
     ]
 
 
@@ -2440,9 +2466,12 @@ syphilisDiagnosesIncludingNeurosyphilis =
 
 syphilisDiagnoses : List PrenatalDiagnosis
 syphilisDiagnoses =
-    [ DiagnosisSyphilis
-    , DiagnosisSyphilisWithComplications
-    ]
+    [ DiagnosisSyphilis, DiagnosisSyphilisWithComplications ]
+
+
+diabetesDiagnoses : List PrenatalDiagnosis
+diabetesDiagnoses =
+    [ DiagnosisDiabetes, DiagnosisGestationalDiabetes ]
 
 
 outsideCareDiagnoses : List PrenatalDiagnosis

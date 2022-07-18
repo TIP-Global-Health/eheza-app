@@ -680,7 +680,6 @@ function hedley_prenatal_user_default_permissions() {
     'name' => 'edit any prenatal_tetanus_immunisation content',
     'roles' => array(
       'administrator' => 'administrator',
-      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -860,7 +859,6 @@ function hedley_prenatal_user_default_permissions() {
     'name' => 'edit own prenatal_tetanus_immunisation content',
     'roles' => array(
       'administrator' => 'administrator',
-      'sync' => 'sync',
     ),
     'module' => 'node',
   );

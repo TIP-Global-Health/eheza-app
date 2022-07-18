@@ -1289,7 +1289,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 |> Maybe.withDefault EverySet.empty
 
         diagnosesBySymptoms =
-            List.filter (matchSymptomsPrenatalDiagnosis assembled)
+            List.filter (matchSymptomsPrenatalDiagnosis egaInWeeks assembled)
                 symptomsDiagnoses
                 |> EverySet.fromList
 
@@ -1379,7 +1379,20 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 |> Maybe.withDefault False
 
         DiagnosisHyperemesisGravidum ->
-            List.member SevereVomiting signs
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks < 20) && List.member SevereVomiting signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisSevereVomiting ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks >= 20) && List.member SevereVomiting signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
 
         DiagnosisMaternalComplications ->
             List.member ExtremeWeakness signs
@@ -1466,6 +1479,41 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                 |> Maybe.withDefault False
             )
                 && anemiaComplicationSignsPresent
+
+        diabetesDiagnosed =
+            getMeasurementValueFunc measurements.randomBloodSugarTest
+                |> Maybe.map
+                    (\value ->
+                        let
+                            bySugarCount =
+                                Maybe.map2
+                                    (\testPrerequisites sugarCount ->
+                                        if EverySet.member PrerequisiteFastFor12h testPrerequisites then
+                                            sugarCount > 7
+
+                                        else
+                                            sugarCount >= 11.1
+                                    )
+                                    value.testPrerequisites
+                                    value.sugarCount
+                                    |> Maybe.withDefault False
+
+                            byUrineGlucose =
+                                if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                                    -- If random blood sugar test was perfomed, we determine by its results.
+                                    False
+
+                                else
+                                    -- If random blood sugar test was not perfomed, we determine by
+                                    -- glucose level at urine dipstick test.
+                                    getMeasurementValueFunc measurements.urineDipstickTest
+                                        |> Maybe.andThen .glucose
+                                        |> Maybe.map (\glucose -> List.member glucose [ GlucosePlus2, GlucosePlus3, GlucosePlus4 ])
+                                        |> Maybe.withDefault False
+                        in
+                        bySugarCount || byUrineGlucose
+                    )
+                |> Maybe.withDefault False
     in
     case diagnosis of
         DiagnosisSeverePreeclampsiaAfterRecheck ->
@@ -1604,6 +1652,26 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
         DiagnosisSevereAnemiaWithComplications ->
             severeAnemiaWithComplicationsDiagnosed
 
+        Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+                && (Maybe.map
+                        (\egaWeeks ->
+                            egaWeeks <= 20 && diabetesDiagnosed
+                        )
+                        egaInWeeks
+                        |> Maybe.withDefault False
+                   )
+
+        Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+                && (Maybe.map
+                        (\egaWeeks ->
+                            egaWeeks > 20 && diabetesDiagnosed
+                        )
+                        egaInWeeks
+                        |> Maybe.withDefault False
+                   )
+
         -- Non Lab Results diagnoses.
         _ ->
             False
@@ -1646,8 +1714,8 @@ matchExaminationPrenatalDiagnosis egaInWeeks assembled diagnosis =
             False
 
 
-matchSymptomsPrenatalDiagnosis : AssembledData -> PrenatalDiagnosis -> Bool
-matchSymptomsPrenatalDiagnosis assembled diagnosis =
+matchSymptomsPrenatalDiagnosis : Maybe Int -> AssembledData -> PrenatalDiagnosis -> Bool
+matchSymptomsPrenatalDiagnosis egaInWeeks assembled diagnosis =
     let
         heartburnDiagnosed =
             symptomRecorded assembled.measurements Heartburn
@@ -1700,7 +1768,20 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
     in
     case diagnosis of
         DiagnosisHyperemesisGravidumBySymptoms ->
-            hospitalizeDueToNauseaAndVomiting assembled
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks < 20) && hospitalizeDueToNauseaAndVomiting assembled
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisSevereVomitingBySymptoms ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks >= 20) && hospitalizeDueToNauseaAndVomiting assembled
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
 
         DiagnosisHeartburn ->
             heartburnDiagnosed
@@ -2000,6 +2081,8 @@ labResultsDiagnoses =
     , DiagnosisModerateAnemia
     , DiagnosisSevereAnemia
     , DiagnosisSevereAnemiaWithComplications
+    , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
+    , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
     ]
 
 
@@ -2017,6 +2100,7 @@ examinationDiagnoses =
 symptomsDiagnoses : List PrenatalDiagnosis
 symptomsDiagnoses =
     [ DiagnosisHyperemesisGravidumBySymptoms
+    , DiagnosisSevereVomitingBySymptoms
     , DiagnosisHeartburn
     , DiagnosisHeartburnPersistent
     , DiagnosisDeepVeinThrombosis
@@ -2704,8 +2788,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
         NextStepsHealthEducation ->
             let
                 form =
-                    assembled.measurements.healthEducation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.healthEducation
                         |> healthEducationFormWithDefaultInitialPhase data.healthEducationForm
 
                 ( _, tasks ) =
@@ -4562,9 +4645,71 @@ toPrenatalUrineDipstickTestValue form =
             , nitrite = Nothing
             , urobilinogen = Nothing
             , haemoglobin = Nothing
-            , specificGravity = Nothing
             , ketone = Nothing
             , bilirubin = Nothing
+            }
+        )
+        form.executionNote
+
+
+prenatalRandomBloodSugarFormWithDefault : PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarForm
+prenatalRandomBloodSugarFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    testPerformedValue =
+                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
+
+                    patientFastedValue =
+                        Maybe.map (EverySet.member PrerequisiteFastFor12h)
+                            value.testPrerequisites
+                in
+                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
+                , patientFasted = or form.patientFasted patientFastedValue
+                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedTodayDirty = form.testPerformedTodayDirty
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
+                }
+            )
+
+
+toPrenatalRandomBloodSugarValueWithDefault : Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue
+toPrenatalRandomBloodSugarValueWithDefault saved form =
+    prenatalRandomBloodSugarFormWithDefault form saved
+        |> toPrenatalRandomBloodSugarTestValue
+
+
+toPrenatalRandomBloodSugarTestValue : PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue
+toPrenatalRandomBloodSugarTestValue form =
+    Maybe.map
+        (\executionNote ->
+            let
+                testPrerequisites =
+                    Maybe.map
+                        (\patientFasted ->
+                            if patientFasted then
+                                EverySet.singleton PrerequisiteFastFor12h
+
+                            else
+                                EverySet.singleton NoTestPrerequisites
+                        )
+                        form.patientFasted
+            in
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testPrerequisites = testPrerequisites
+            , sugarCount = Nothing
+            , originatingEncounter = Nothing
             }
         )
         form.executionNote
@@ -4630,11 +4775,6 @@ toSyphilisTestValueWithEmptyResults note date =
 toHemoglobinTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHemoglobinTestValue
 toHemoglobinTestValueWithEmptyResults note date =
     PrenatalHemoglobinTestValue note date Nothing
-
-
-toRandomBloodSugarTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalRandomBloodSugarTestValue
-toRandomBloodSugarTestValueWithEmptyResults note date =
-    PrenatalRandomBloodSugarTestValue note date Nothing
 
 
 toBloodGpRsTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalBloodGpRsTestValue
@@ -4794,7 +4934,8 @@ expectLaboratoryTask currentDate assembled task =
                     True
 
                 TaskRandomBloodSugarTest ->
-                    isInitialTest TaskRandomBloodSugarTest
+                    List.all (\diagnosis -> not <| EverySet.member diagnosis assembled.encounter.pastDiagnoses)
+                        diabetesDiagnoses
 
                 TaskHIVPCRTest ->
                     isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled

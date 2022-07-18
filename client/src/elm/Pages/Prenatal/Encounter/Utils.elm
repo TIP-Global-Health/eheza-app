@@ -33,6 +33,7 @@ getAllActivities assembled =
                 , Medication
                 , Backend.PrenatalActivity.Model.MalariaPrevention
                 , DangerSigns
+                , SymptomReview
                 , PrenatalImmunisation
                 , Laboratory
                 , MaternalMentalHealth
@@ -894,7 +895,7 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
         DiagnosisUterineMyoma ->
             generateAlertForDiagnosis [ Backend.Measurement.Model.UterineMyoma ]
 
-        DiagnosisDiabetes ->
+        Backend.PrenatalActivity.Model.DiagnosisDiabetes ->
             generateAlertForDiagnosis [ Backend.Measurement.Model.Diabetes ]
 
         DiagnosisCardiacDisease ->

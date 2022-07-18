@@ -1343,9 +1343,6 @@ viewLabResultsPane language currentDate mode assembled =
         haemoglobinResults =
             List.map (\( date, value ) -> ( date, value.haemoglobin )) longUrineDipstickTestResults
 
-        specificGravityResults =
-            List.map (\( date, value ) -> ( date, value.specificGravity )) longUrineDipstickTestResults
-
         ketoneResults =
             List.map (\( date, value ) -> ( date, value.ketone )) longUrineDipstickTestResults
 
@@ -1397,7 +1394,6 @@ viewLabResultsPane language currentDate mode assembled =
                     , viewLabResultsEntry language currentDate (LabResultsHistoryNitrite nitriteResults)
                     , viewLabResultsEntry language currentDate (LabResultsHistoryUrobilinogen urobilinogenResults)
                     , viewLabResultsEntry language currentDate (LabResultsHistoryHaemoglobin haemoglobinResults)
-                    , viewLabResultsEntry language currentDate (LabResultsHistorySpecificGravity specificGravityResults)
                     , viewLabResultsEntry language currentDate (LabResultsHistoryKetone ketoneResults)
                     , viewLabResultsEntry language currentDate (LabResultsHistoryBilirubin bilirubinResults)
                     ]
@@ -1488,15 +1484,13 @@ viewLabResultsPane language currentDate mode assembled =
                                                    Maybe.withDefault False
 
                                         secondGroupResultsNormal =
-                                            Maybe.map4
-                                                (\haemoglobinResult specificGravityResult ketoneResult bilirubinResult ->
+                                            Maybe.map3
+                                                (\haemoglobinResult ketoneResult bilirubinResult ->
                                                     urineHaemoglobinValueResultNormal haemoglobinResult
-                                                        && specificGravityResultNormal specificGravityResult
                                                         && ketoneResultNormal ketoneResult
                                                         && bilirubinResultNormal bilirubinResult
                                                 )
                                                 (List.head haemoglobinResults |> Maybe.andThen Tuple.second)
-                                                (List.head specificGravityResults |> Maybe.andThen Tuple.second)
                                                 (List.head ketoneResults |> Maybe.andThen Tuple.second)
                                                 (List.head bilirubinResults |> Maybe.andThen Tuple.second)
                                                 |> -- We should never get here since leukocytes result
@@ -1682,7 +1676,7 @@ viewLabResultsEntry language currentDate results =
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
-                    { label = Translate.PrenatalLaboratoryGlucoseLabel
+                    { label = Translate.PrenatalLaboratoryLeukocytesLabel
                     , recentResult = Maybe.map (Translate.PrenatalLaboratoryLeukocytesValue >> translate language) recentResultValue
                     , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
@@ -1734,21 +1728,6 @@ viewLabResultsEntry language currentDate results =
                     , totalResults = List.length assembled
                     , recentResultNormal =
                         Maybe.map urineHaemoglobinValueResultNormal recentResultValue
-                            |> Maybe.withDefault True
-                    }
-
-                LabResultsHistorySpecificGravity assembled ->
-                    let
-                        recentResultValue =
-                            List.head assembled |> Maybe.andThen Tuple.second
-                    in
-                    { label = Translate.PrenatalLaboratorySpecificGravityLabel
-                    , recentResult = Maybe.map (Translate.PrenatalLaboratorySpecificGravityValue >> translate language) recentResultValue
-                    , knownAsPositive = False
-                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
-                    , totalResults = List.length assembled
-                    , recentResultNormal =
-                        Maybe.map specificGravityResultNormal recentResultValue
                             |> Maybe.withDefault True
                     }
 
@@ -1959,9 +1938,6 @@ viewLabResultsHistoryPane language currentDate mode =
 
                 LabResultsHistoryHaemoglobin assembled ->
                     List.map (viewEntry (Translate.PrenatalLaboratoryHaemoglobinValue >> translate language) urineHaemoglobinValueResultNormal) assembled
-
-                LabResultsHistorySpecificGravity assembled ->
-                    List.map (viewEntry (Translate.PrenatalLaboratorySpecificGravityValue >> translate language) specificGravityResultNormal) assembled
 
                 LabResultsHistoryKetone assembled ->
                     List.map (viewEntry (Translate.PrenatalLaboratoryKetoneValue >> translate language) ketoneResultNormal) assembled
@@ -2566,6 +2542,15 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisHyperemesisGravidum ->
             referredToHospitalMessage
 
+        DiagnosisHyperemesisGravidumBySymptoms ->
+            referredToHospitalMessage
+
+        DiagnosisSevereVomiting ->
+            referredToHospitalMessage
+
+        DiagnosisSevereVomitingBySymptoms ->
+            referredToHospitalMessage
+
         DiagnosisMaternalComplications ->
             referredToHospitalMessage
 
@@ -2697,9 +2682,6 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisSeverePreeclampsiaAfterRecheck ->
-            referredToHospitalMessage
-
-        DiagnosisHyperemesisGravidumBySymptoms ->
             referredToHospitalMessage
 
         DiagnosisHeartburn ->
@@ -2852,6 +2834,12 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ " "
                 ++ formatDDMMYYYY date
                 |> wrapWithLI
+
+        DiagnosisDiabetes ->
+            referredToHospitalMessage
+
+        DiagnosisGestationalDiabetes ->
+            referredToHospitalMessage
 
         DiagnosisDepressionNotLikely ->
             mentalHealthMessage

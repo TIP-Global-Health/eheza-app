@@ -841,6 +841,7 @@ type PrenatalHealthEducationSign
     | EducationSaferSex
     | EducationHIVDetectableViralLoad
     | EducationMentalHealth
+    | EducationDiabetes
     | NoPrenatalHealthEducationSigns
     | NoPrenatalHealthEducationSignsInitialPhase
     | NoPrenatalHealthEducationSignsRecurrentPhase
@@ -1014,8 +1015,15 @@ type alias PrenatalRandomBloodSugarTest =
 type alias PrenatalRandomBloodSugarTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
+
+
+type TestPrerequisite
+    = PrerequisiteFastFor12h
+    | NoTestPrerequisites
 
 
 type alias PrenatalBloodGpRsTest =
@@ -1057,7 +1065,6 @@ type alias PrenatalUrineDipstickTestValue =
     , nitrite : Maybe NitriteValue
     , urobilinogen : Maybe UrobilinogenValue
     , haemoglobin : Maybe HaemoglobinValue
-    , specificGravity : Maybe SpecificGravityValue
     , ketone : Maybe KetoneValue
     , bilirubin : Maybe BilirubinValue
     }
@@ -1110,7 +1117,7 @@ type NitriteValue
 
 
 type UrobilinogenValue
-    = Urobilinogen02
+    = Urobilinogen002
     | Urobilinogen10
     | Urobilinogen20
     | Urobilinogen40
@@ -1125,16 +1132,6 @@ type HaemoglobinValue
     | HaemoglobinSmall
     | HaemoglobinModerate
     | HaemoglobinLarge
-
-
-type SpecificGravityValue
-    = SpecificGravity1000
-    | SpecificGravity1005
-    | SpecificGravity1010
-    | SpecificGravity1015
-    | SpecificGravity1020
-    | SpecificGravity1025
-    | SpecificGravity1030
 
 
 type KetoneValue

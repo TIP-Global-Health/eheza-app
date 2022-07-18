@@ -57,7 +57,6 @@ type LabResultsHistoryMode
     | LabResultsHistoryNitrite (List ( NominalDate, Maybe NitriteValue ))
     | LabResultsHistoryUrobilinogen (List ( NominalDate, Maybe UrobilinogenValue ))
     | LabResultsHistoryHaemoglobin (List ( NominalDate, Maybe HaemoglobinValue ))
-    | LabResultsHistorySpecificGravity (List ( NominalDate, Maybe SpecificGravityValue ))
     | LabResultsHistoryKetone (List ( NominalDate, Maybe KetoneValue ))
     | LabResultsHistoryBilirubin (List ( NominalDate, Maybe BilirubinValue ))
     | LabResultsHistoryRandomBloodSugar (List ( NominalDate, Maybe Float ))
@@ -86,6 +85,9 @@ obstetricalDiagnoses =
     , DiagnosisPROM
     , DiagnosisPPROM
     , DiagnosisHyperemesisGravidum
+    , DiagnosisHyperemesisGravidumBySymptoms
+    , DiagnosisSevereVomiting
+    , DiagnosisSevereVomitingBySymptoms
     , DiagnosisMaternalComplications
     , DiagnosisInfection
     , DiagnosisImminentDelivery
@@ -95,6 +97,7 @@ obstetricalDiagnoses =
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense
     , DiagnosisPelvicPainContinued
+    , DiagnosisGestationalDiabetes
     , DiagnosisDepressionNotLikely
     , DiagnosisDepressionPossible
     , DiagnosisDepressionHighlyPossible
@@ -130,6 +133,7 @@ medicalDiagnoses =
     , DiagnosisTuberculosis
     , DiagnosisTrichomonasOrBacterialVaginosis
     , DiagnosisTrichomonasOrBacterialVaginosisContinued
+    , DiagnosisDiabetes
     , DiagnosisOther
     ]
 
