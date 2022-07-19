@@ -125,7 +125,7 @@ viewContentAndHeader language currentDate isChw initiator model assembled =
         componentsConfig =
             Just
                 { reportType = Components.SendViaWhatsAppDialog.Model.ReportAntenatal
-                , setReportComponentsFunc = SetReportComponents
+                , setReportComponentsMsg = SetReportComponents
                 }
     in
     div [ class "page-report clinical" ] <|

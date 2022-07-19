@@ -24,17 +24,35 @@ update msg model =
             )
 
         SetReportComponents setComponentsMsg phoneNumber ->
-            ( { model | state = Just <| ConfirmationBeforeSending phoneNumber }
+            ( { model | state = Just <| ConfirmationBeforeExecuting phoneNumber }
             , Cmd.none
             , ( [ setComponentsMsg ]
               , []
               )
             )
 
-        Execute clearComponentsMsg phoneNumber ->
-            ( { model | state = Nothing }
+        Execute phoneNumber ->
+            ( { model | state = Just <| ExecutionResult Nothing }
             , App.Ports.makeProgressReportScreenshot phoneNumber
-            , ( [ clearComponentsMsg ]
+            , ( []
+              , []
+              )
+            )
+
+        CancelExecute clearComponentsMsg ->
+            ( { model | state = Nothing }
+            , Cmd.none
+            , ( Maybe.map List.singleton clearComponentsMsg
+                    |> Maybe.withDefault []
+              , []
+              )
+            )
+
+        SetExecutionResult clearComponentsMsg value ->
+            ( { model | state = Just <| ExecutionResult <| Just value }
+            , Cmd.none
+            , ( Maybe.map List.singleton clearComponentsMsg
+                    |> Maybe.withDefault []
               , []
               )
             )

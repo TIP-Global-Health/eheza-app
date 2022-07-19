@@ -135,7 +135,7 @@ view language currentDate zscores id isChw db model =
         componentsConfig =
             Just
                 { reportType = Components.SendViaWhatsAppDialog.Model.ReportWellChild
-                , setReportComponentsFunc = SetReportComponents
+                , setReportComponentsMsg = SetReportComponents
                 }
     in
     viewWebData language
@@ -289,15 +289,15 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                     -- Drawing SVG charts causes major slowness, specially when
                     -- typing new phone number. Need to decide how to
                     -- solve this.
-                    -- , viewGrowthPane language
-                    --     currentDate
-                    --     zscores
-                    --     ( childId, child )
-                    --     expectedSessions
-                    --     groupNutritionMeasurements
-                    --     individualNutritionMeasurementsWithDates
-                    --     individualWellChildMeasurementsWithDates
-                    --     |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildGrowth)
+                    , viewGrowthPane language
+                        currentDate
+                        zscores
+                        ( childId, child )
+                        expectedSessions
+                        groupNutritionMeasurements
+                        individualNutritionMeasurementsWithDates
+                        individualWellChildMeasurementsWithDates
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildGrowth)
                     , viewNextAppointmentPane language
                         currentDate
                         child

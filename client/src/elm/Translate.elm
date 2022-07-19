@@ -1171,9 +1171,13 @@ type TranslationId
     | Send
     | SendViaWhatsApp
     | SendViaWhatsAppComponentsSelectionHeader Components.SendViaWhatsAppDialog.Model.ReportType
-    | SendViaWhatsAppConfirmationBeforeSendingHeader
-    | SendViaWhatsAppConfirmationBeforeSendingQuestion
+    | SendViaWhatsAppConfirmationBeforeExecutingHeader
+    | SendViaWhatsAppConfirmationBeforeExecutingQuestion
     | SendViaWhatsAppConsentQuestion
+    | SendViaWhatsAppExecutionResultFailure
+    | SendViaWhatsAppExecutionResultPleaseWait
+    | SendViaWhatsAppExecutionResultSomethingWentWrong
+    | SendViaWhatsAppExecutionResultSuccess
     | SendViaWhatsAppNoticeOfNonRespobsibility
     | SendViaWhatsAppPhoneInputHeader
     | SendViaWhatsAppPhoneVerificationHeader
@@ -12348,18 +12352,38 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        SendViaWhatsAppConfirmationBeforeSendingHeader ->
+        SendViaWhatsAppConfirmationBeforeExecutingHeader ->
             { english = "By pressing send you are releasing the selected documents to:"
             , kinyarwanda = Nothing
             }
 
-        SendViaWhatsAppConfirmationBeforeSendingQuestion ->
+        SendViaWhatsAppConfirmationBeforeExecutingQuestion ->
             { english = "Would you like to send?"
             , kinyarwanda = Nothing
             }
 
         SendViaWhatsAppConsentQuestion ->
             { english = "Does the patient consent to having their medical records sent via WhatsApp?"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppExecutionResultFailure ->
+            { english = "Action Failed. Please try again. If problem persisits, please contact system administrator."
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppExecutionResultPleaseWait ->
+            { english = "Please allow up to one minute for action to complete ..."
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppExecutionResultSomethingWentWrong ->
+            { english = "Something went wrong. Please contact system administrator."
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppExecutionResultSuccess ->
+            { english = "Success. Report will be sent when device has internet conneciton."
             , kinyarwanda = Nothing
             }
 
@@ -12400,7 +12424,7 @@ translationSet trans =
 
         ServiceWorkerActive ->
             { english = "The app is installed on this device."
-            , kinyarwanda = Just "Apulikasiyo muri icyi cyuma cy'inkoranabuhanga yinjijwe."
+            , kinyarwanda = Just "Apulikasiyo muri icyi cyuma y'inkoranabuhanga yinjijwe."
             }
 
         ServiceWorkerCurrent ->

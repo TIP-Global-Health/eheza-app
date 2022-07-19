@@ -9,6 +9,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewTextInput)
 import Translate exposing (Language, translate, translateText)
@@ -46,10 +47,21 @@ viewDialog language currentDate ( personId, person ) componentsConfig state =
                         componentsConfig
                         |> Maybe.withDefault []
 
-                ConfirmationBeforeSending phoneNumber ->
-                    Maybe.map (viewConfirmationBeforeSending language currentDate phoneNumber)
+                ConfirmationBeforeExecuting phoneNumber ->
+                    Maybe.map
+                        (\config ->
+                            config.setReportComponentsMsg Nothing
+                        )
                         componentsConfig
-                        |> Maybe.withDefault []
+                        |> viewConfirmationBeforeExecuting language currentDate phoneNumber
+
+                ExecutionResult result ->
+                    Maybe.map
+                        (\config ->
+                            config.setReportComponentsMsg Nothing
+                        )
+                        componentsConfig
+                        |> viewExecutionResult language currentDate result
 
         allowComponentsSelection =
             isJust componentsConfig
@@ -102,7 +114,7 @@ viewPhoneVerification language currentDate allowComponentsSelection phoneNumber 
                 ComponentsSelection phoneNumber Nothing
 
             else
-                ConfirmationBeforeSending phoneNumber
+                ConfirmationBeforeExecuting phoneNumber
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppPhoneVerificationHeader ]
@@ -161,7 +173,7 @@ viewPhoneUpdateAtProfile language currentDate allowComponentsSelection personId 
                 ComponentsSelection phoneNumber Nothing
 
             else
-                ConfirmationBeforeSending phoneNumber
+                ConfirmationBeforeExecuting phoneNumber
     in
     [ div [ class "content" ]
         [ translateText language Translate.SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix
@@ -195,7 +207,7 @@ viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneN
                 ComponentsSelection phoneNumber Nothing
 
             else
-                ConfirmationBeforeSending phoneNumber
+                ConfirmationBeforeExecuting phoneNumber
     in
     [ div [ class "content" ]
         [ translateText language Translate.SendViaWhatsAppPhoneUpdateConfirmationMessasge ]
@@ -313,7 +325,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
 
         continueButtonAction =
             if componentsSelected then
-                [ onClick <| SetReportComponents (config.setReportComponentsFunc componentsList) phoneNumber ]
+                [ onClick <| SetReportComponents (config.setReportComponentsMsg componentsList) phoneNumber ]
 
             else
                 []
@@ -364,25 +376,63 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
     ]
 
 
-viewConfirmationBeforeSending : Language -> NominalDate -> String -> ReportComponentsConfig msg -> List (Html (Msg msg))
-viewConfirmationBeforeSending language currentDate phoneNumber config =
+viewConfirmationBeforeExecuting : Language -> NominalDate -> String -> Maybe msg -> List (Html (Msg msg))
+viewConfirmationBeforeExecuting language currentDate phoneNumber clearComponentsMsg =
     [ div [ class "content" ]
-        [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeSendingHeader ]
+        [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingHeader ]
         , p [] [ text phoneNumber ]
-        , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeSendingQuestion ]
+        , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingQuestion ]
         ]
     , div [ class "actions" ]
         [ div [ class "two ui buttons" ]
             [ button
                 [ class "ui velvet fluid button"
-                , onClick <| SetState Nothing
+                , onClick <| CancelExecute clearComponentsMsg
                 ]
                 [ text <| translate language Translate.No ]
             , button
                 [ class "ui primary fluid button"
-                , onClick <| Execute (config.setReportComponentsFunc Nothing) phoneNumber
+                , onClick <| Execute phoneNumber
                 ]
                 [ text <| translate language Translate.Send ]
             ]
         ]
+    ]
+
+
+viewExecutionResult : Language -> NominalDate -> Maybe String -> Maybe msg -> List (Html (Msg msg))
+viewExecutionResult language currentDate maybeResult clearComponentsMsg =
+    let
+        ( message, actions ) =
+            Maybe.map
+                (\result ->
+                    ( case result of
+                        "success" ->
+                            Translate.SendViaWhatsAppExecutionResultSuccess
+
+                        "failure" ->
+                            Translate.SendViaWhatsAppExecutionResultFailure
+
+                        -- We should never get here, since proper responses are set at app.js.
+                        _ ->
+                            Translate.SendViaWhatsAppExecutionResultSomethingWentWrong
+                    , div [ class "actions" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| SetState Nothing
+                            ]
+                            [ text <| translate language Translate.Close ]
+                        ]
+                    )
+                )
+                maybeResult
+                |> Maybe.withDefault ( Translate.SendViaWhatsAppExecutionResultPleaseWait, emptyNode )
+    in
+    [ div
+        [ class "content"
+        , Html.Attributes.id "execution-response"
+        , on "screenshotcomplete" (Json.Decode.map (SetExecutionResult clearComponentsMsg) (Json.Decode.at [ "detail", "result" ] Json.Decode.string))
+        ]
+        [ text <| translate language message ]
+    , actions
     ]
