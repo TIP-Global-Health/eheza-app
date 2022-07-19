@@ -88,7 +88,7 @@ view language currentDate zscores id isChw db model =
         componentsConfig =
             Just
                 { reportType = Components.SendViaWhatsAppDialog.Model.ReportWellChild
-                , setReportComponentsFunc = SetReportComponents
+                , setReportComponentsMsg = SetReportComponents
                 }
     in
     viewWebData language

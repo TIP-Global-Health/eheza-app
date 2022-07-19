@@ -112,7 +112,10 @@ viewContent language currentDate id isChw initiator model assembled =
     in
     div [ class "page-report acute-illness" ]
         [ viewHeader language id initiator
-        , div [ class "ui report unstackable items" ]
+        , div
+            [ class "ui report unstackable items"
+            , Html.Attributes.id "report-content"
+            ]
             [ viewPersonInfoPane language currentDate assembled.person
             , viewAssessmentPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
             , viewSymptomsPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
