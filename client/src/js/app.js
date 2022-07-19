@@ -967,14 +967,29 @@ function makeProgressReportScreenshot(elementId, phoneNumber) {
     const photosUploadCache = 'photos-upload';
     const cache = await caches.open(photosUploadCache);
 
+    let totalHeight = 0;
+    let children = element.childNodes;
+
+    for (let i = 0; i < children.length; i++) {
+      if (children[i].clientHeight == undefined) {
+        continue;
+      }
+
+      totalHeight += parseInt(children[i].clientHeight);
+    }
+
+    // Adding height to make sure we capture complete page.
+    // Without this, antenatal reports gets cut off at the top.
+    totalHeight += 500;
+
     const canvas = await html2canvas(element, {
-        width: 800,
-        windowHeight: 3200
+        width: element.clientWidth,
+        windowHeight: totalHeight
       });
 
     canvas.toBlob(async function(blob) {
       const formData = new FormData();
-      const imageName = 'whatsapp-upload-' + getRandom8Digits() + '.jpg';
+      const imageName = 'whatsapp-upload-' + getRandom8Digits() + '.png';
       formData.set('file', blob, imageName);
 
       const url = "cache-upload/images/" + Date.now();
@@ -999,13 +1014,26 @@ function makeProgressReportScreenshot(elementId, phoneNumber) {
          };
 
          await dbSync.whatsAppUploads.add(entry);
+
+         reportProgressReportScreenshotResult("success");
         }
       }
       catch (e) {
-        console.log(e);
+        reportProgressReportScreenshotResult("failure");
       }
     });
    })();
+}
+
+function reportProgressReportScreenshotResult(result) {
+  var element = document.getElementById('execution-response');
+  if (element) {
+    var event = makeCustomEvent("screenshotcomplete", {
+      result: result
+    });
+
+    element.dispatchEvent(event);
+  }
 }
 
 
