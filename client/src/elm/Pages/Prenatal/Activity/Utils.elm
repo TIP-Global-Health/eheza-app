@@ -3417,7 +3417,7 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
 
             else
                 -- No HIV program at heath center => patient was supposed to get medication.
-                resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task
+                resolveHIVMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task
 
         _ ->
             resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task
@@ -3448,28 +3448,7 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                     Nothing
 
                 TreatmentReviewHIV ->
-                    Just
-                        { latestMedicationTreatment = latestMedicationTreatmentForHIV assembled
-                        , stillTakingFormValue = form.hivStillTaking
-                        , missedDosesFormValue = form.hivMissedDoses
-                        , adverseEventsFormValue = form.hivAdverseEvents
-                        , adverseEventsHospitalizationFormValue = form.hivAdverseEventsHospitalization
-                        , stillTakingUpdateFunc = \value form_ -> { form_ | hivStillTaking = Just value }
-                        , missedDosesUpdateFunc = \value form_ -> { form_ | hivMissedDoses = Just value }
-                        , adverseEventsUpdateFunc =
-                            \value form_ ->
-                                { form_
-                                    | hivAdverseEvents = Just value
-                                    , hivAdverseEventsHospitalization = Nothing
-                                    , hivAdverseEventsHospitalizationDirty = True
-                                }
-                        , adverseEventsHospitalizationUpdateFunc =
-                            \value form_ ->
-                                { form_
-                                    | hivAdverseEventsHospitalization = Just value
-                                    , hivAdverseEventsHospitalizationDirty = True
-                                }
-                        }
+                    Nothing
 
                 TreatmentReviewHypertension ->
                     Just
@@ -3594,8 +3573,142 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                     else
                         ( [], [] )
             in
+            if form.hivStillTaking == Just False then
+                ( [ header
+                  , viewQuestionLabel language Translate.TreatmentReviewQuestionHIVStillTaking
+                  , viewBoolInput
+                        language
+                        config.stillTakingFormValue
+                        (setBoolInputMsg config.stillTakingUpdateFunc)
+                        "still-taking"
+                        Nothing
+                  , viewQuestionLabel language Translate.TreatmentReviewQuestionMissedDoses
+                  , viewBoolInput
+                        language
+                        config.missedDosesFormValue
+                        (setBoolInputMsg config.missedDosesUpdateFunc)
+                        "missed-doses"
+                        Nothing
+                  , viewQuestionLabel language Translate.TreatmentReviewQuestionAdverseEvents
+                  , viewBoolInput
+                        language
+                        config.adverseEventsFormValue
+                        (setBoolInputMsg config.adverseEventsUpdateFunc)
+                        "adverse-events"
+                        Nothing
+                  ]
+                    ++ derrivedInput
+                , [ config.stillTakingFormValue
+                  , config.missedDosesFormValue
+                  , config.adverseEventsFormValue
+                  ]
+                    ++ derrivedTask
+                )
+
+            else
+                ( [ header
+                  , viewQuestionLabel language Translate.TreatmentReviewQuestionStillTaking
+                  , viewBoolInput
+                        language
+                        config.stillTakingFormValue
+                        (setBoolInputMsg config.stillTakingUpdateFunc)
+                        "still-taking"
+                        Nothing
+                  , viewQuestionLabel language Translate.TreatmentReviewQuestionMissedDoses
+                  , viewBoolInput
+                        language
+                        config.missedDosesFormValue
+                        (setBoolInputMsg config.missedDosesUpdateFunc)
+                        "missed-doses"
+                        Nothing
+                  , viewQuestionLabel language Translate.TreatmentReviewQuestionAdverseEvents
+                  , viewBoolInput
+                        language
+                        config.adverseEventsFormValue
+                        (setBoolInputMsg config.adverseEventsUpdateFunc)
+                        "adverse-events"
+                        Nothing
+                  ]
+                    ++ derrivedInput
+                , [ config.stillTakingFormValue
+                  , config.missedDosesFormValue
+                  , config.adverseEventsFormValue
+                  ]
+                    ++ derrivedTask
+                )
+        )
+        configForTask
+        |> Maybe.withDefault ( [], [] )
+
+
+resolveHIVMedicationTreatmentFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
+    -> AssembledData
+    -> MedicationForm
+    -> TreatmentReviewTask
+    -> ( List (Html Msg), List (Maybe Bool) )
+resolveHIVMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task =
+    let
+        configForTask =
+            case task of
+                TreatmentReviewHIV ->
+                    Just
+                        { latestMedicationTreatment = latestMedicationTreatmentForHIV assembled
+                        , stillTakingFormValue = form.hivStillTaking
+                        , missedDosesFormValue = form.hivMissedDoses
+                        , adverseEventsFormValue = form.hivAdverseEvents
+                        , adverseEventsHospitalizationFormValue = form.hivAdverseEventsHospitalization
+                        , stillTakingUpdateFunc = \value form_ -> { form_ | hivStillTaking = Just value }
+                        , missedDosesUpdateFunc = \value form_ -> { form_ | hivMissedDoses = Just value }
+                        , adverseEventsUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | hivAdverseEvents = Just value
+                                    , hivAdverseEventsHospitalization = Nothing
+                                    , hivAdverseEventsHospitalizationDirty = True
+                                }
+                        , adverseEventsHospitalizationUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | hivAdverseEventsHospitalization = Just value
+                                    , hivAdverseEventsHospitalizationDirty = True
+                                }
+                        }
+
+                _ ->
+                    Nothing
+    in
+    Maybe.map
+        (\config ->
+            let
+                header =
+                    Maybe.map
+                        (\transId ->
+                            viewCustomLabel language transId "" "label header"
+                        )
+                        config.latestMedicationTreatment
+                        |> Maybe.withDefault emptyNode
+
+                ( derrivedInput, derrivedTask ) =
+                    if config.adverseEventsFormValue == Just True then
+                        ( [ viewQuestionLabel language Translate.TreatmentReviewQuestionAdverseEventsHospitalization
+                          , viewBoolInput
+                                language
+                                config.adverseEventsHospitalizationFormValue
+                                (setBoolInputMsg config.adverseEventsHospitalizationUpdateFunc)
+                                "adverse-events-hospitalization"
+                                Nothing
+                          ]
+                        , [ config.adverseEventsHospitalizationFormValue ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
             ( [ header
-              , viewQuestionLabel language Translate.TreatmentReviewQuestionStillTaking
+              , viewQuestionLabel language Translate.TreatmentReviewQuestionHIVStillTaking
               , viewBoolInput
                     language
                     config.stillTakingFormValue
