@@ -3573,69 +3573,36 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                     else
                         ( [], [] )
             in
-            if form.hivStillTaking == Just False then
-                ( [ header
-                  , viewQuestionLabel language Translate.TreatmentReviewQuestionHIVStillTaking
-                  , viewBoolInput
-                        language
-                        config.stillTakingFormValue
-                        (setBoolInputMsg config.stillTakingUpdateFunc)
-                        "still-taking"
-                        Nothing
-                  , viewQuestionLabel language Translate.TreatmentReviewQuestionMissedDoses
-                  , viewBoolInput
-                        language
-                        config.missedDosesFormValue
-                        (setBoolInputMsg config.missedDosesUpdateFunc)
-                        "missed-doses"
-                        Nothing
-                  , viewQuestionLabel language Translate.TreatmentReviewQuestionAdverseEvents
-                  , viewBoolInput
-                        language
-                        config.adverseEventsFormValue
-                        (setBoolInputMsg config.adverseEventsUpdateFunc)
-                        "adverse-events"
-                        Nothing
-                  ]
-                    ++ derrivedInput
-                , [ config.stillTakingFormValue
-                  , config.missedDosesFormValue
-                  , config.adverseEventsFormValue
-                  ]
-                    ++ derrivedTask
-                )
-
-            else
-                ( [ header
-                  , viewQuestionLabel language Translate.TreatmentReviewQuestionStillTaking
-                  , viewBoolInput
-                        language
-                        config.stillTakingFormValue
-                        (setBoolInputMsg config.stillTakingUpdateFunc)
-                        "still-taking"
-                        Nothing
-                  , viewQuestionLabel language Translate.TreatmentReviewQuestionMissedDoses
-                  , viewBoolInput
-                        language
-                        config.missedDosesFormValue
-                        (setBoolInputMsg config.missedDosesUpdateFunc)
-                        "missed-doses"
-                        Nothing
-                  , viewQuestionLabel language Translate.TreatmentReviewQuestionAdverseEvents
-                  , viewBoolInput
-                        language
-                        config.adverseEventsFormValue
-                        (setBoolInputMsg config.adverseEventsUpdateFunc)
-                        "adverse-events"
-                        Nothing
-                  ]
-                    ++ derrivedInput
-                , [ config.stillTakingFormValue
-                  , config.missedDosesFormValue
-                  , config.adverseEventsFormValue
-                  ]
-                    ++ derrivedTask
-                )
+            ( [ header
+              , viewQuestionLabel language Translate.TreatmentReviewQuestionStillTaking
+              , viewBoolInput
+                    language
+                    config.stillTakingFormValue
+                    (setBoolInputMsg config.stillTakingUpdateFunc)
+                    "still-taking"
+                    Nothing
+              , viewQuestionLabel language Translate.TreatmentReviewQuestionMissedDoses
+              , viewBoolInput
+                    language
+                    config.missedDosesFormValue
+                    (setBoolInputMsg config.missedDosesUpdateFunc)
+                    "missed-doses"
+                    Nothing
+              , viewQuestionLabel language Translate.TreatmentReviewQuestionAdverseEvents
+              , viewBoolInput
+                    language
+                    config.adverseEventsFormValue
+                    (setBoolInputMsg config.adverseEventsUpdateFunc)
+                    "adverse-events"
+                    Nothing
+              ]
+                ++ derrivedInput
+            , [ config.stillTakingFormValue
+              , config.missedDosesFormValue
+              , config.adverseEventsFormValue
+              ]
+                ++ derrivedTask
+            )
         )
         configForTask
         |> Maybe.withDefault ( [], [] )
