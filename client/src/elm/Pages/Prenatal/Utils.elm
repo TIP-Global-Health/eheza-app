@@ -99,11 +99,14 @@ filterNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
 filterNonUrgentDiagnoses diagnoses =
     let
         exclusions =
-            NoPrenatalDiagnosis
-                :: emergencyReferralDiagnosesInitial
-                ++ emergencyReferralDiagnosesRecurrent
+            NoPrenatalDiagnosis :: emergencyReferralDiagnoses
     in
     List.filter (\diagnosis -> not <| List.member diagnosis exclusions) diagnoses
+
+
+emergencyReferralDiagnoses : List PrenatalDiagnosis
+emergencyReferralDiagnoses =
+    emergencyReferralDiagnosesInitial ++ emergencyReferralDiagnosesRecurrent
 
 
 emergencyReferralDiagnosesInitial : List PrenatalDiagnosis

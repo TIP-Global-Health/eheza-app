@@ -1270,7 +1270,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                     dangerSignsList
                     assembled
                 )
-                emergencyReferralDiagnosesInitial
+                emergencyReferralDiagnoses
                 |> EverySet.fromList
 
         diagnosesByLabResultsAndExamination =
