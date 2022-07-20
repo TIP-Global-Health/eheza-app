@@ -1291,6 +1291,27 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
     EverySet.union emergencyReferalDiagnoses diagnosesByLabResultsAndExamination
         |> EverySet.union diagnosesBySymptoms
         |> EverySet.union diagnosesByMentalHealth
+        |> applyBloodPreasureDiagnosesHierarchy
+
+
+applyBloodPreasureDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyBloodPreasureDiagnosesHierarchy diagnoses =
+    let
+        ( bloodPreasureDiagnoses, others ) =
+            EverySet.toList diagnoses
+                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPreasureDiagnoses)
+
+        topBloodPreasureDiagnosis =
+            List.map hierarchalBloodPreasureDiagnosisToNumber bloodPreasureDiagnoses
+                |> Maybe.Extra.values
+                |> List.maximum
+                |> Maybe.andThen hierarchalBloodPreasureDiagnosisFromNumber
+                |> Maybe.map List.singleton
+                |> Maybe.withDefault []
+    in
+    topBloodPreasureDiagnosis
+        ++ others
+        |> EverySet.fromList
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
@@ -2254,6 +2275,119 @@ mentalHealthDiagnosesRequiringTreatment =
     , DiagnosisDepressionProbable
     , DiagnosisSuicideRisk
     ]
+
+
+hierarchalBloodPreasureDiagnoses : List PrenatalDiagnosis
+hierarchalBloodPreasureDiagnoses =
+    [ -- Emergency diagnoses.
+      DiagnosisEclampsia
+    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+
+    -- Non emergency diagnoses.
+    , DiagnosisSeverePreeclampsiaInitialPhase
+    , DiagnosisSeverePreeclampsiaRecurrentPhase
+    , DiagnosisModeratePreeclampsiaInitialPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
+    ]
+
+
+hierarchalBloodPreasureDiagnosisToNumber : PrenatalDiagnosis -> Maybe Int
+hierarchalBloodPreasureDiagnosisToNumber diagnosis =
+    case diagnosis of
+        DiagnosisEclampsia ->
+            Just 50
+
+        DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
+            Just 42
+
+        DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
+            Just 41
+
+        DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
+            Just 32
+
+        DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
+            Just 31
+
+        DiagnosisSeverePreeclampsiaInitialPhase ->
+            Just 22
+
+        DiagnosisSeverePreeclampsiaRecurrentPhase ->
+            Just 21
+
+        DiagnosisModeratePreeclampsiaInitialPhase ->
+            Just 12
+
+        DiagnosisModeratePreeclampsiaRecurrentPhase ->
+            Just 11
+
+        DiagnosisChronicHypertensionImmediate ->
+            Just 4
+
+        DiagnosisChronicHypertensionAfterRecheck ->
+            Just 3
+
+        DiagnosisGestationalHypertensionImmediate ->
+            Just 2
+
+        DiagnosisGestationalHypertensionAfterRecheck ->
+            Just 1
+
+        _ ->
+            Nothing
+
+
+hierarchalBloodPreasureDiagnosisFromNumber : Int -> Maybe PrenatalDiagnosis
+hierarchalBloodPreasureDiagnosisFromNumber number =
+    case number of
+        50 ->
+            Just DiagnosisEclampsia
+
+        42 ->
+            Just DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+
+        41 ->
+            Just DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+
+        32 ->
+            Just DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+
+        31 ->
+            Just DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+
+        22 ->
+            Just DiagnosisSeverePreeclampsiaInitialPhase
+
+        21 ->
+            Just DiagnosisSeverePreeclampsiaRecurrentPhase
+
+        12 ->
+            Just DiagnosisModeratePreeclampsiaInitialPhase
+
+        11 ->
+            Just DiagnosisModeratePreeclampsiaRecurrentPhase
+
+        4 ->
+            Just DiagnosisChronicHypertensionImmediate
+
+        3 ->
+            Just DiagnosisChronicHypertensionAfterRecheck
+
+        2 ->
+            Just DiagnosisGestationalHypertensionImmediate
+
+        1 ->
+            Just DiagnosisGestationalHypertensionAfterRecheck
+
+        _ ->
+            Nothing
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
