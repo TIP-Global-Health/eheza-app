@@ -1295,22 +1295,41 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
 matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
+    let
+        measurements =
+            assembled.measurements
+
+        resolveEGAWeeksAndThen func =
+            resolveEGAInWeeksAndThen func egaInWeeks
+    in
     case diagnosis of
         DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
-            -- @todo
-            False
+            resolveEGAWeeksAndThen
+                (\egaWeeks ->
+                    (egaWeeks >= 37)
+                        && moderatePreeclampsiaByMeasurements measurements
+                )
 
         DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
-            -- @todo
-            False
+            resolveEGAWeeksAndThen
+                (\egaWeeks ->
+                    (egaWeeks >= 37)
+                        && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                )
 
         DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
-            -- @todo
-            False
+            resolveEGAWeeksAndThen
+                (\egaWeeks ->
+                    (egaWeeks >= 37)
+                        && severePreeclampsiaByDangerSigns signs
+                )
 
         DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
-            -- @todo
-            False
+            resolveEGAWeeksAndThen
+                (\egaWeeks ->
+                    (egaWeeks >= 37)
+                        && severePreeclampsiaRecurrentPhase signs measurements
+                )
 
         DiagnosisEclampsia ->
             List.member Convulsions signs
@@ -1420,6 +1439,12 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
             False
 
 
+resolveEGAInWeeksAndThen : (Int -> Bool) -> Maybe Int -> Bool
+resolveEGAInWeeksAndThen func =
+    Maybe.map func
+        >> Maybe.withDefault False
+
+
 severeAnemiaWithComplicationsDiagnosed : List DangerSign -> PrenatalMeasurements -> Bool
 severeAnemiaWithComplicationsDiagnosed dangerSigns measurements =
     let
@@ -1461,10 +1486,6 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
     let
         measurements =
             assembled.measurements
-
-        resolveEGAInWeeksAndThen func =
-            Maybe.map func egaInWeeks
-                |> Maybe.withDefault False
 
         positiveMalariaTest =
             testedPositiveAt .malariaTest
@@ -1537,6 +1558,9 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                         bySugarCount || byUrineGlucose
                     )
                 |> Maybe.withDefault False
+
+        resolveEGAWeeksAndThen func =
+            resolveEGAInWeeksAndThen func egaInWeeks
     in
     case diagnosis of
         DiagnosisChronicHypertensionImmediate ->
@@ -1544,70 +1568,50 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- of pregnancy. Therefore, if diagnosed once, we do not need
             -- to diagnose it again.
             (not <| diagnosedHypertensionPrevoiusly assembled)
-                && resolveEGAInWeeksAndThen
-                    (\egaWeeks ->
-                        egaWeeks < 20 && immediateHypertensionByMeasurements measurements
-                    )
+                && resolveEGAWeeksAndThen (chronicHypertensionByMeasurements measurements)
 
         DiagnosisChronicHypertensionAfterRecheck ->
             (not <| diagnosedHypertensionPrevoiusly assembled)
-                && resolveEGAInWeeksAndThen
-                    (\egaWeeks ->
-                        egaWeeks < 20 && recheckedHypertensionByMeasurements measurements
-                    )
+                && resolveEGAWeeksAndThen (chronicHypertensionByMeasurementsAfterRecheck measurements)
 
         DiagnosisGestationalHypertensionImmediate ->
             (not <| diagnosedHypertensionPrevoiusly assembled)
-                && resolveEGAInWeeksAndThen
-                    (\egaWeeks ->
-                        egaWeeks >= 20 && immediateHypertensionByMeasurements measurements
-                    )
+                && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurements measurements)
 
         DiagnosisGestationalHypertensionAfterRecheck ->
             (not <| diagnosedHypertensionPrevoiusly assembled)
-                && resolveEGAInWeeksAndThen
-                    (\egaWeeks ->
-                        egaWeeks >= 20 && recheckedHypertensionByMeasurements measurements
-                    )
+                && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurementsAfterRecheck measurements)
 
         DiagnosisModeratePreeclampsiaInitialPhase ->
-            resolveEGAInWeeksAndThen
+            resolveEGAWeeksAndThen
                 (\egaWeeks ->
                     (egaWeeks >= 20)
                         && (egaWeeks < 37)
-                        && immediatePreeclampsiaByMeasurements measurements
+                        && moderatePreeclampsiaByMeasurements measurements
                 )
 
         DiagnosisModeratePreeclampsiaRecurrentPhase ->
-            resolveEGAInWeeksAndThen
+            resolveEGAWeeksAndThen
                 (\egaWeeks ->
                     (egaWeeks >= 20)
                         && (egaWeeks < 37)
-                        && recheckedPreeclampsiaByMeasurements measurements
+                        && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
                 )
 
         DiagnosisSeverePreeclampsiaInitialPhase ->
-            resolveEGAInWeeksAndThen
+            resolveEGAWeeksAndThen
                 (\egaWeeks ->
                     (egaWeeks >= 20)
                         && (egaWeeks < 37)
-                        && (highBloodPressure measurements
-                                || repeatedHighBloodPressure measurements
-                           )
-                        && highUrineProtein measurements
-                        && severePreeclampsiaSigns measurements
+                        && severePreeclampsiaByDangerSigns dangerSigns
                 )
 
         DiagnosisSeverePreeclampsiaRecurrentPhase ->
-            resolveEGAInWeeksAndThen
+            resolveEGAWeeksAndThen
                 (\egaWeeks ->
                     (egaWeeks >= 20)
                         && (egaWeeks < 37)
-                        && (highBloodPressure measurements
-                                || repeatedHighBloodPressure measurements
-                           )
-                        && highUrineProtein measurements
-                        && severePreeclampsiaSigns measurements
+                        && severePreeclampsiaRecurrentPhase dangerSigns measurements
                 )
 
         DiagnosisHIV ->
@@ -1732,14 +1736,14 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
             (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
-                && resolveEGAInWeeksAndThen
+                && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         egaWeeks <= 20 && diabetesDiagnosed
                     )
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
             (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
-                && resolveEGAInWeeksAndThen
+                && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         egaWeeks > 20 && diabetesDiagnosed
                     )
@@ -1971,32 +1975,111 @@ flankPainPresent sign =
             True
 
 
-immediateHypertensionByMeasurements : PrenatalMeasurements -> Bool
-immediateHypertensionByMeasurements =
-    highBloodPressure
+chronicHypertensionByMeasurements : PrenatalMeasurements -> Int -> Bool
+chronicHypertensionByMeasurements measurements egaWeeks =
+    -- There's no need to consider Preeclamsia diagnoses when
+    -- diagnosing Chronic Hypertension by blood preasure, because Preeclamsia
+    -- starts from EGA 20.
+    -- In case we also diagnose Severe Preeclampsia due to severe headaches
+    -- with blurry vision (danger signs) which is for any EGA, hypertension
+    -- diagnosis will be filtered out due to applied hierarchy.
+    egaWeeks < 20 && highBloodPressure measurements
 
 
-recheckedHypertensionByMeasurements : PrenatalMeasurements -> Bool
-recheckedHypertensionByMeasurements =
-    repeatedTestForMarginalBloodPressure
+chronicHypertensionByMeasurementsAfterRecheck : PrenatalMeasurements -> Int -> Bool
+chronicHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
+    egaWeeks < 20 && repeatedTestForMarginalBloodPressure measurements
 
 
-immediatePreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
-immediatePreeclampsiaByMeasurements measurements =
+gestationalHypertensionByMeasurements : PrenatalMeasurements -> Int -> Bool
+gestationalHypertensionByMeasurements measurements egaWeeks =
+    -- Here we have a risk of collision with Preeclamsia diagnoses.
+    -- To make Preeclampsia diagnosis, in most cases we need to wait until
+    -- recurrent pahse, for urinary protein result.
+    -- What we need to avoid is diagnosing Hypertension on initial phase,
+    -- prescribing medication, and then diagnosing Preeclamsia which
+    -- implies referring patient to hospital.
+    -- Therefore, we diagnose Gestational Hypertension on initial phase
+    -- only if urinary test was not run and reason for this was set.
+    -- In case we diagnose both Gestational Hypertension and Preeclamsia on
+    -- inital stage, hierarch will eliminate Gestational Hypertension, so
+    -- there's no problem.
+    (egaWeeks >= 20)
+        && highBloodPressure measurements
+        && (getMeasurementValueFunc measurements.urineDipstickTest
+                |> Maybe.map
+                    (\value ->
+                        List.all ((/=) value.executionNote)
+                            [ TestNoteRunToday, TestNoteRunPreviously ]
+                    )
+                |> Maybe.withDefault False
+           )
+
+
+gestationalHypertensionByMeasurementsAfterRecheck : PrenatalMeasurements -> Int -> Bool
+gestationalHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
+    -- On recurrent phase any collision with Preeclamsia will be handled by hierarchy.
+    egaWeeks >= 20 && repeatedTestForMarginalBloodPressure measurements
+
+
+moderatePreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
+moderatePreeclampsiaByMeasurements measurements =
     highBloodPressure measurements
         && edemaOnHandOrLegs measurements
 
 
-recheckedPreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
-recheckedPreeclampsiaByMeasurements measurements =
-    repeatedTestForMarginalBloodPressure measurements
-        && ((highUrineProtein measurements
-                && -- Adding this, so we would not have both Moderate and
-                   -- Severe Preeclapsia diagnoses.
-                   (not <| severePreeclampsiaSigns measurements)
-            )
-                || edemaOnHandOrLegs measurements
+moderatePreeclampsiaByMeasurementsRecurrentPhase : PrenatalMeasurements -> Bool
+moderatePreeclampsiaByMeasurementsRecurrentPhase measurements =
+    let
+        edema =
+            edemaOnHandOrLegs measurements
+
+        highProtein =
+            highUrineProtein measurements
+    in
+    (highBloodPressure measurements
+        && (-- Adding this to avoid collision with Moderate Preeclampsia
+            -- diagnosed at intial phase
+            not edema
            )
+        && highProtein
+    )
+        || (repeatedTestForMarginalBloodPressure measurements
+                && (edema || highProtein)
+           )
+
+
+severePreeclampsiaByDangerSigns : List DangerSign -> Bool
+severePreeclampsiaByDangerSigns =
+    List.member HeadacheBlurredVision
+
+
+severePreeclampsiaRecurrentPhase : List DangerSign -> PrenatalMeasurements -> Bool
+severePreeclampsiaRecurrentPhase dangerSigns measurements =
+    let
+        byBloodPreasure =
+            getMeasurementValueFunc measurements.vitals
+                |> Maybe.andThen
+                    (\value ->
+                        Maybe.map4
+                            (\dia sys diaRepeated sysRepeated ->
+                                (dia >= 110 && sys >= 160)
+                                    || (diaRepeated >= 110 && sys >= sysRepeated)
+                            )
+                            value.dia
+                            value.sys
+                            value.diaRepeated
+                            value.sysRepeated
+                    )
+                |> Maybe.withDefault False
+    in
+    (-- Adding this to avoid collision with Severe Preeclampsia
+     -- from initial phase of encounter.
+     not <| severePreeclampsiaByDangerSigns dangerSigns
+    )
+        && byBloodPreasure
+        && highUrineProtein measurements
+        && severePreeclampsiaSigns measurements
 
 
 highBloodPressure : PrenatalMeasurements -> Bool
@@ -2029,7 +2112,7 @@ highBloodPressureCondition dia sys =
 
 
 {-| We measure BP again when we suspect Hypertension or Preeclamsia
-(dia between 90 and 110, and dia between 140 and 160).
+(dia between 90 and 110, and sys between 140 and 160).
 We diagnose Hypertension if repeated measurements are within
 those boundries, or exceed them.
 -}
