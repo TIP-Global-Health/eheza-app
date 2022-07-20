@@ -4195,8 +4195,14 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             in
                                             -- Instructions for Emergency Referral.
                                             ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
-                                            , if List.member DiagnosisSeverePreeclampsiaImmediate urgentDiagnoses then
-                                                translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
+                                            , if
+                                                List.any
+                                                    (\immediateDeliveryDiagnosis ->
+                                                        List.member immediateDeliveryDiagnosis urgentDiagnoses
+                                                    )
+                                                    Pages.Prenatal.Activity.Utils.immediateDeliveryDiagnoses
+                                              then
+                                                translate language Translate.EmergencyReferralHelperReferToHospitalForImmediateDelivery
 
                                               else if
                                                 List.any

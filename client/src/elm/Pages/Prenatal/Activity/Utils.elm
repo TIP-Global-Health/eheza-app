@@ -1399,6 +1399,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 || List.member Unconscious signs
                 || List.member LooksVeryIll signs
 
+        -- Infection diagnosis will be available at latter phase.
         DiagnosisInfection ->
             List.member Fever signs
                 && (List.member ExtremeWeakness signs || respiratoryRateElevated assembled.measurements)
@@ -1409,9 +1410,48 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
         DiagnosisLaborAndDelivery ->
             List.member Labor signs
 
+        DiagnosisSevereAnemiaWithComplications ->
+            severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
+
         -- Non Emergency Referral diagnoses.
         _ ->
             False
+
+
+severeAnemiaWithComplicationsDiagnosed : List DangerSign -> PrenatalMeasurements -> Bool
+severeAnemiaWithComplicationsDiagnosed dangerSigns measurements =
+    let
+        hemoglobinCount =
+            resolveHemoglobinCount measurements
+    in
+    (-- Hemoglobin test was performed, and, hemoglobin
+     -- count indicates severe anemia.
+     Maybe.map (\count -> count < 7) hemoglobinCount
+        |> Maybe.withDefault False
+    )
+        && anemiaComplicationSignsPresent dangerSigns measurements
+
+
+anemiaComplicationSignsPresent : List DangerSign -> PrenatalMeasurements -> Bool
+anemiaComplicationSignsPresent dangerSigns measurements =
+    let
+        anemiaComplicationSignsByExamination =
+            getMeasurementValueFunc measurements.corePhysicalExam
+                |> Maybe.map
+                    (\exam ->
+                        EverySet.member PallorHands exam.hands || EverySet.member PaleConjuctiva exam.eyes
+                    )
+                |> Maybe.withDefault False
+    in
+    respiratoryRateElevated measurements
+        || List.member DifficultyBreathing dangerSigns
+        || anemiaComplicationSignsByExamination
+
+
+resolveHemoglobinCount : PrenatalMeasurements -> Maybe Float
+resolveHemoglobinCount measurements =
+    getMeasurementValueFunc measurements.hemoglobinTest
+        |> Maybe.andThen .hemoglobinCount
 
 
 matchLabResultsPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
@@ -1419,6 +1459,10 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
     let
         measurements =
             assembled.measurements
+
+        resolveEGAInWeeksAndThen func =
+            Maybe.map func egaInWeeks
+                |> Maybe.withDefault False
 
         positiveMalariaTest =
             testedPositiveAt .malariaTest
@@ -1433,21 +1477,7 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                 |> Maybe.withDefault False
 
         hemoglobinCount =
-            getMeasurementValueFunc measurements.hemoglobinTest
-                |> Maybe.andThen .hemoglobinCount
-
-        anemiaComplicationSignsPresent =
-            respiratoryRateElevated measurements
-                || List.member DifficultyBreathing dangerSigns
-                || anemiaComplicationSignsByExamination
-
-        anemiaComplicationSignsByExamination =
-            getMeasurementValueFunc measurements.corePhysicalExam
-                |> Maybe.map
-                    (\exam ->
-                        EverySet.member PallorHands exam.hands || EverySet.member PaleConjuctiva exam.eyes
-                    )
-                |> Maybe.withDefault False
+            resolveHemoglobinCount measurements
 
         malariaDiagnosed =
             positiveMalariaTest
@@ -1460,7 +1490,7 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                            -- we view Malaria as separate diagnosis.
                            -- There's not 'Malaria and Severe Anemia with
                            -- complications' diagnosis.
-                           severeAnemiaWithComplicationsDiagnosed
+                           severeAnemiaWithComplicationsDiagnosed dangerSigns measurements
                    )
 
         malariaWithAnemiaDiagnosed =
@@ -1470,15 +1500,6 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                     Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
                         |> Maybe.withDefault False
                    )
-
-        severeAnemiaWithComplicationsDiagnosed =
-            (-- No indication for being positive for malaria,
-             -- Hemoglobin test was performed, and, hemoglobin
-             -- count indicates severe anemia.
-             Maybe.map (\count -> count < 7) hemoglobinCount
-                |> Maybe.withDefault False
-            )
-                && anemiaComplicationSignsPresent
 
         diabetesDiagnosed =
             getMeasurementValueFunc measurements.randomBloodSugarTest
@@ -1517,7 +1538,7 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
     in
     case diagnosis of
         DiagnosisSeverePreeclampsiaAfterRecheck ->
-            Maybe.map
+            resolveEGAInWeeksAndThen
                 (\egaWeeks ->
                     (egaWeeks >= 20)
                         && (highBloodPressure measurements
@@ -1526,8 +1547,6 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                         && highUrineProtein measurements
                         && severePreeclampsiaSigns measurements
                 )
-                egaInWeeks
-                |> Maybe.withDefault False
 
         DiagnosisHIV ->
             testedPositiveAt .hivTest
@@ -1647,30 +1666,21 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                     Maybe.map (\count -> count < 7) hemoglobinCount
                         |> Maybe.withDefault False
                    )
-                && not anemiaComplicationSignsPresent
-
-        DiagnosisSevereAnemiaWithComplications ->
-            severeAnemiaWithComplicationsDiagnosed
+                && (not <| anemiaComplicationSignsPresent dangerSigns measurements)
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
             (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
-                && (Maybe.map
-                        (\egaWeeks ->
-                            egaWeeks <= 20 && diabetesDiagnosed
-                        )
-                        egaInWeeks
-                        |> Maybe.withDefault False
-                   )
+                && resolveEGAInWeeksAndThen
+                    (\egaWeeks ->
+                        egaWeeks <= 20 && diabetesDiagnosed
+                    )
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
             (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
-                && (Maybe.map
-                        (\egaWeeks ->
-                            egaWeeks > 20 && diabetesDiagnosed
-                        )
-                        egaInWeeks
-                        |> Maybe.withDefault False
-                   )
+                && resolveEGAInWeeksAndThen
+                    (\egaWeeks ->
+                        egaWeeks > 20 && diabetesDiagnosed
+                    )
 
         -- Non Lab Results diagnoses.
         _ ->
@@ -2060,6 +2070,15 @@ maternityWardDiagnoses : List PrenatalDiagnosis
 maternityWardDiagnoses =
     [ DiagnosisImminentDelivery
     , DiagnosisLaborAndDelivery
+    ]
+
+
+immediateDeliveryDiagnoses : List PrenatalDiagnosis
+immediateDeliveryDiagnoses =
+    [ DiagnosisModeratePreeclampsiaImmediateEGA37Plus
+    , DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus
+    , DiagnosisSeverePreeclampsiaImmediateEGA37Plus
+    , DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus
     ]
 
 

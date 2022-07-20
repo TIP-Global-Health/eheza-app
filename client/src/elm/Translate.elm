@@ -547,6 +547,7 @@ type TranslationId
     | ElevatedRespiratoryRate
     | EmergencyReferralHelperReferToHC
     | EmergencyReferralHelperReferToHospitalForEvaluation
+    | EmergencyReferralHelperReferToHospitalForImmediateDelivery
     | EmergencyReferralHelperReferToHospitalImmediately
     | EmergencyReferralHelperReferToMaternityWard
     | EmergencyReferralHelperReferToEmergencyObstetricCareServices
@@ -3974,6 +3975,11 @@ translationSet trans =
 
         EmergencyReferralHelperReferToHospitalForEvaluation ->
             { english = "Refer patient to hospital for further evaluation"
+            , kinyarwanda = Nothing
+            }
+
+        EmergencyReferralHelperReferToHospitalForImmediateDelivery ->
+            { english = "Refer patient to hospital for immediate delivery"
             , kinyarwanda = Nothing
             }
 

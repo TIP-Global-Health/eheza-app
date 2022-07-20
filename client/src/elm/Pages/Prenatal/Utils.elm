@@ -95,8 +95,8 @@ diagnosedPreviouslyAnyOf diagnoses assembled =
         |> not
 
 
-listNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
-listNonUrgentDiagnoses diagnoses =
+filterNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
+filterNonUrgentDiagnoses diagnoses =
     let
         exclusions =
             NoPrenatalDiagnosis
@@ -108,8 +108,8 @@ listNonUrgentDiagnoses diagnoses =
 
 emergencyReferralDiagnosesInitial : List PrenatalDiagnosis
 emergencyReferralDiagnosesInitial =
-    [ -- Diagnosed from Danger Signs.
-      DiagnosisSeverePreeclampsiaImmediate
+    [ DiagnosisModeratePreeclampsiaImmediateEGA37Plus
+    , DiagnosisSeverePreeclampsiaImmediateEGA37Plus
     , DiagnosisEclampsia
     , DiagnosisMiscarriage
     , DiagnosisMolarPregnancy
@@ -134,7 +134,8 @@ emergencyReferralDiagnosesInitial =
 
 emergencyReferralDiagnosesRecurrent : List PrenatalDiagnosis
 emergencyReferralDiagnosesRecurrent =
-    [ DiagnosisSeverePreeclampsiaAfterRecheck
+    [ DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus
+    , DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus
     , DiagnosisSevereAnemiaWithComplications
     ]
 
