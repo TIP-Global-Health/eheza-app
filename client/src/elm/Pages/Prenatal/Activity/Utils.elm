@@ -741,7 +741,7 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
     let
         immediateReferralDiagnoses =
             emergencyReferralDiagnosesInitial
-                ++ [ DiagnosisModeratePreeclampsiaImmediate
+                ++ [ DiagnosisModeratePreeclampsiaInitialPhase
                    , DiagnosisHeartburnPersistent
                    , DiagnosisDeepVeinThrombosis
                    , DiagnosisPelvicPainIntense
@@ -1260,11 +1260,6 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 (calculateEGAWeeks currentDate)
                 assembled.globalLmpDate
 
-        diagnosesByLabResults =
-            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
-                labResultsDiagnoses
-                |> EverySet.fromList
-
         dangerSignsList =
             generateDangerSignsListForNurse assembled
 
@@ -1278,15 +1273,10 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 emergencyReferralDiagnosesInitial
                 |> EverySet.fromList
 
-        diagnosesByExamination =
-            Maybe.map
-                (\egaWeeks ->
-                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled)
-                        examinationDiagnoses
-                        |> EverySet.fromList
-                )
-                egaInWeeks
-                |> Maybe.withDefault EverySet.empty
+        diagnosesByLabResultsAndExamination =
+            List.filter (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
+                labResultsAndExaminationDiagnoses
+                |> EverySet.fromList
 
         diagnosesBySymptoms =
             List.filter (matchSymptomsPrenatalDiagnosis egaInWeeks assembled)
@@ -1298,8 +1288,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 mentalHealthDiagnoses
                 |> EverySet.fromList
     in
-    EverySet.union diagnosesByLabResults emergencyReferalDiagnoses
-        |> EverySet.union diagnosesByExamination
+    EverySet.union emergencyReferalDiagnoses diagnosesByLabResultsAndExamination
         |> EverySet.union diagnosesBySymptoms
         |> EverySet.union diagnosesByMentalHealth
 
@@ -1307,8 +1296,21 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
 matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
     case diagnosis of
-        DiagnosisSeverePreeclampsiaImmediate ->
-            List.member HeadacheBlurredVision signs
+        DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
+            -- @todo
+            False
+
+        DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
+            -- @todo
+            False
+
+        DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
+            -- @todo
+            False
+
+        DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
+            -- @todo
+            False
 
         DiagnosisEclampsia ->
             List.member Convulsions signs
@@ -1454,8 +1456,8 @@ resolveHemoglobinCount measurements =
         |> Maybe.andThen .hemoglobinCount
 
 
-matchLabResultsPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
-matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
+matchLabResultsAndExaminationPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
+matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
     let
         measurements =
             assembled.measurements
@@ -1537,10 +1539,70 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                 |> Maybe.withDefault False
     in
     case diagnosis of
-        DiagnosisSeverePreeclampsiaAfterRecheck ->
+        DiagnosisChronicHypertensionImmediate ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && resolveEGAInWeeksAndThen
+                    (\egaWeeks ->
+                        egaWeeks < 20 && immediateHypertensionByMeasurements measurements
+                    )
+
+        DiagnosisChronicHypertensionAfterRecheck ->
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && resolveEGAInWeeksAndThen
+                    (\egaWeeks ->
+                        egaWeeks < 20 && recheckedHypertensionByMeasurements measurements
+                    )
+
+        DiagnosisGestationalHypertensionImmediate ->
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && resolveEGAInWeeksAndThen
+                    (\egaWeeks ->
+                        egaWeeks >= 20 && immediateHypertensionByMeasurements measurements
+                    )
+
+        DiagnosisGestationalHypertensionAfterRecheck ->
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && resolveEGAInWeeksAndThen
+                    (\egaWeeks ->
+                        egaWeeks >= 20 && recheckedHypertensionByMeasurements measurements
+                    )
+
+        DiagnosisModeratePreeclampsiaInitialPhase ->
             resolveEGAInWeeksAndThen
                 (\egaWeeks ->
                     (egaWeeks >= 20)
+                        && (egaWeeks < 37)
+                        && immediatePreeclampsiaByMeasurements measurements
+                )
+
+        DiagnosisModeratePreeclampsiaRecurrentPhase ->
+            resolveEGAInWeeksAndThen
+                (\egaWeeks ->
+                    (egaWeeks >= 20)
+                        && (egaWeeks < 37)
+                        && recheckedPreeclampsiaByMeasurements measurements
+                )
+
+        DiagnosisSeverePreeclampsiaInitialPhase ->
+            resolveEGAInWeeksAndThen
+                (\egaWeeks ->
+                    (egaWeeks >= 20)
+                        && (egaWeeks < 37)
+                        && (highBloodPressure measurements
+                                || repeatedHighBloodPressure measurements
+                           )
+                        && highUrineProtein measurements
+                        && severePreeclampsiaSigns measurements
+                )
+
+        DiagnosisSeverePreeclampsiaRecurrentPhase ->
+            resolveEGAInWeeksAndThen
+                (\egaWeeks ->
+                    (egaWeeks >= 20)
+                        && (egaWeeks < 37)
                         && (highBloodPressure measurements
                                 || repeatedHighBloodPressure measurements
                            )
@@ -1683,43 +1745,6 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                     )
 
         -- Non Lab Results diagnoses.
-        _ ->
-            False
-
-
-matchExaminationPrenatalDiagnosis : Int -> AssembledData -> PrenatalDiagnosis -> Bool
-matchExaminationPrenatalDiagnosis egaInWeeks assembled diagnosis =
-    let
-        measurements =
-            assembled.measurements
-    in
-    case diagnosis of
-        DiagnosisChronicHypertensionImmediate ->
-            -- Hypertension is a chronic diagnosis for whole duration
-            -- of pregnancy. Therefore, if diagnosed once, we do not need
-            -- to diagnose it again.
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (egaInWeeks < 20 && immediateHypertensionByMeasurements measurements)
-
-        DiagnosisChronicHypertensionAfterRecheck ->
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (egaInWeeks < 20 && recheckedHypertensionByMeasurements measurements)
-
-        DiagnosisGestationalHypertensionImmediate ->
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (egaInWeeks >= 20 && immediateHypertensionByMeasurements measurements)
-
-        DiagnosisGestationalHypertensionAfterRecheck ->
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (egaInWeeks >= 20 && recheckedHypertensionByMeasurements measurements)
-
-        DiagnosisModeratePreeclampsiaImmediate ->
-            egaInWeeks >= 20 && immediatePreeclampsiaByMeasurements measurements
-
-        DiagnosisModeratePreeclampsiaAfterRecheck ->
-            egaInWeeks >= 20 && recheckedPreeclampsiaByMeasurements measurements
-
-        -- Non Examination diagnoses.
         _ ->
             False
 
@@ -1998,6 +2023,11 @@ repeatedHighBloodPressure measurements =
         |> Maybe.withDefault False
 
 
+highBloodPressureCondition : Float -> Float -> Bool
+highBloodPressureCondition dia sys =
+    dia >= 110 || sys >= 160
+
+
 {-| We measure BP again when we suspect Hypertension or Preeclamsia
 (dia between 90 and 110, and dia between 140 and 160).
 We diagnose Hypertension if repeated measurements are within
@@ -2013,11 +2043,6 @@ repeatedTestForMarginalBloodPressure measurements =
                     value.sysRepeated
             )
         |> Maybe.withDefault False
-
-
-highBloodPressureCondition : Float -> Float -> Bool
-highBloodPressureCondition dia sys =
-    dia >= 110 || sys >= 160
 
 
 edemaOnHandOrLegs : PrenatalMeasurements -> Bool
@@ -2075,16 +2100,23 @@ maternityWardDiagnoses =
 
 immediateDeliveryDiagnoses : List PrenatalDiagnosis
 immediateDeliveryDiagnoses =
-    [ DiagnosisModeratePreeclampsiaImmediateEGA37Plus
-    , DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus
-    , DiagnosisSeverePreeclampsiaImmediateEGA37Plus
-    , DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus
+    [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
     ]
 
 
-labResultsDiagnoses : List PrenatalDiagnosis
-labResultsDiagnoses =
-    [ DiagnosisSeverePreeclampsiaAfterRecheck
+labResultsAndExaminationDiagnoses : List PrenatalDiagnosis
+labResultsAndExaminationDiagnoses =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
+    , DiagnosisModeratePreeclampsiaInitialPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisSeverePreeclampsiaInitialPhase
+    , DiagnosisSeverePreeclampsiaRecurrentPhase
     , DiagnosisHIV
     , DiagnosisHIVDetectableViralLoad
     , DiagnosisDiscordantPartnership
@@ -2102,17 +2134,6 @@ labResultsDiagnoses =
     , DiagnosisSevereAnemiaWithComplications
     , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
     , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
-    ]
-
-
-examinationDiagnoses : List PrenatalDiagnosis
-examinationDiagnoses =
-    [ DiagnosisChronicHypertensionImmediate
-    , DiagnosisChronicHypertensionAfterRecheck
-    , DiagnosisGestationalHypertensionImmediate
-    , DiagnosisGestationalHypertensionAfterRecheck
-    , DiagnosisModeratePreeclampsiaImmediate
-    , DiagnosisModeratePreeclampsiaAfterRecheck
     ]
 
 

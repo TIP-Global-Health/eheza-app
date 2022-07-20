@@ -108,8 +108,8 @@ filterNonUrgentDiagnoses diagnoses =
 
 emergencyReferralDiagnosesInitial : List PrenatalDiagnosis
 emergencyReferralDiagnosesInitial =
-    [ DiagnosisModeratePreeclampsiaImmediateEGA37Plus
-    , DiagnosisSeverePreeclampsiaImmediateEGA37Plus
+    [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
     , DiagnosisEclampsia
     , DiagnosisMiscarriage
     , DiagnosisMolarPregnancy
@@ -134,8 +134,8 @@ emergencyReferralDiagnosesInitial =
 
 emergencyReferralDiagnosesRecurrent : List PrenatalDiagnosis
 emergencyReferralDiagnosesRecurrent =
-    [ DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus
-    , DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus
+    [ DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
     , DiagnosisSevereAnemiaWithComplications
     ]
 
@@ -2498,7 +2498,7 @@ outsideCareDiagnosesRightColumn : List PrenatalDiagnosis
 outsideCareDiagnosesRightColumn =
     [ DiagnosisChronicHypertensionImmediate
     , DiagnosisGestationalHypertensionImmediate
-    , DiagnosisModeratePreeclampsiaImmediate
+    , DiagnosisModeratePreeclampsiaInitialPhase
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPyelonephritis
     , DiagnosisHeartburnPersistent

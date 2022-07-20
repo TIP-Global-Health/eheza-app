@@ -82,29 +82,29 @@ decodePrenatalDiagnosis =
                     "gestational-hypertension-recheck" ->
                         succeed DiagnosisGestationalHypertensionAfterRecheck
 
-                    "moderate-preeclampsia-immediate" ->
-                        succeed DiagnosisModeratePreeclampsiaImmediate
+                    "moderate-preeclampsia-initial" ->
+                        succeed DiagnosisModeratePreeclampsiaInitialPhase
 
-                    "moderate-preeclampsia-immediate-ega-37+" ->
-                        succeed DiagnosisModeratePreeclampsiaImmediateEGA37Plus
+                    "moderate-preeclampsia-initial-ega-37+" ->
+                        succeed DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
 
-                    "moderate-preeclampsia-recheck" ->
-                        succeed DiagnosisModeratePreeclampsiaAfterRecheck
+                    "moderate-preeclampsia-recurrent" ->
+                        succeed DiagnosisModeratePreeclampsiaRecurrentPhase
 
-                    "moderate-preeclampsia-recheck-ega-37+" ->
-                        succeed DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus
+                    "moderate-preeclampsia-recurrent-ega-37+" ->
+                        succeed DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
 
-                    "severe-preeclampsia-immediate" ->
-                        succeed DiagnosisSeverePreeclampsiaImmediate
+                    "severe-preeclampsia-initial" ->
+                        succeed DiagnosisSeverePreeclampsiaInitialPhase
 
-                    "severe-preeclampsia-immediate-ega-37+" ->
-                        succeed DiagnosisSeverePreeclampsiaImmediateEGA37Plus
+                    "severe-preeclampsia-initial-ega-37+" ->
+                        succeed DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
 
-                    "severe-preeclampsia-recheck" ->
-                        succeed DiagnosisSeverePreeclampsiaAfterRecheck
+                    "severe-preeclampsia-recurrent" ->
+                        succeed DiagnosisSeverePreeclampsiaRecurrentPhase
 
-                    "severe-preeclampsia-recheck-ega-37+" ->
-                        succeed DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus
+                    "severe-preeclampsia-recurrent-ega-37+" ->
+                        succeed DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
 
                     "eclampsia" ->
                         succeed DiagnosisEclampsia

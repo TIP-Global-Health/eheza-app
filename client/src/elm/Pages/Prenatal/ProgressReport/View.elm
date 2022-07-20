@@ -2600,28 +2600,28 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisNeurosyphilis ->
             referredToHospitalMessage
 
-        DiagnosisModeratePreeclampsiaImmediate ->
+        DiagnosisModeratePreeclampsiaInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisModeratePreeclampsiaImmediateEGA37Plus ->
+        DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
             referredToHospitalMessage
 
-        DiagnosisModeratePreeclampsiaAfterRecheck ->
+        DiagnosisModeratePreeclampsiaRecurrentPhase ->
             referredToHospitalMessage
 
-        DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus ->
+        DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
             referredToHospitalMessage
 
-        DiagnosisSeverePreeclampsiaImmediate ->
+        DiagnosisSeverePreeclampsiaInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisSeverePreeclampsiaImmediateEGA37Plus ->
+        DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
             referredToHospitalMessage
 
-        DiagnosisSeverePreeclampsiaAfterRecheck ->
+        DiagnosisSeverePreeclampsiaRecurrentPhase ->
             referredToHospitalMessage
 
-        DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus ->
+        DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
             referredToHospitalMessage
 
         DiagnosisHeartburn ->

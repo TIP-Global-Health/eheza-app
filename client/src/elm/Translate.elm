@@ -8089,42 +8089,42 @@ translationSet trans =
                     , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
                     }
 
-                DiagnosisModeratePreeclampsiaImmediate ->
+                DiagnosisModeratePreeclampsiaInitialPhase ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
-                DiagnosisModeratePreeclampsiaImmediateEGA37Plus ->
+                DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
-                DiagnosisModeratePreeclampsiaAfterRecheck ->
+                DiagnosisModeratePreeclampsiaRecurrentPhase ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
-                DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus ->
+                DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
-                DiagnosisSeverePreeclampsiaImmediate ->
+                DiagnosisSeverePreeclampsiaInitialPhase ->
                     { english = "Severe Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
-                DiagnosisSeverePreeclampsiaImmediateEGA37Plus ->
+                DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
                     { english = "Severe Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
-                DiagnosisSeverePreeclampsiaAfterRecheck ->
+                DiagnosisSeverePreeclampsiaRecurrentPhase ->
                     { english = "Severe Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
-                DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus ->
+                DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
                     { english = "Severe Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
@@ -8441,42 +8441,42 @@ translationSet trans =
                     , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
                     }
 
-                DiagnosisModeratePreeclampsiaImmediate ->
+                DiagnosisModeratePreeclampsiaInitialPhase ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
-                DiagnosisModeratePreeclampsiaImmediateEGA37Plus ->
+                DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
-                DiagnosisModeratePreeclampsiaAfterRecheck ->
+                DiagnosisModeratePreeclampsiaRecurrentPhase ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
-                DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus ->
+                DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
-                DiagnosisSeverePreeclampsiaImmediate ->
+                DiagnosisSeverePreeclampsiaInitialPhase ->
                     { english = "Severe Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
-                DiagnosisSeverePreeclampsiaImmediateEGA37Plus ->
+                DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
                     { english = "Severe Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
-                DiagnosisSeverePreeclampsiaAfterRecheck ->
+                DiagnosisSeverePreeclampsiaRecurrentPhase ->
                     { english = "Severe Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
-                DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus ->
+                DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
                     { english = "Severe Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
@@ -8868,22 +8868,22 @@ translationSet trans =
                     , kinyarwanda = Just "Afite ibimenyetso by'indwara y'umuvuduko w'amaraso uterwa no gutwita"
                     }
 
-                DiagnosisModeratePreeclampsiaImmediate ->
+                DiagnosisModeratePreeclampsiaInitialPhase ->
                     { english = "Patient shows signs of Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Agaragaza ibimenyetso byoroheje bya Preklampusi"
                     }
 
-                DiagnosisModeratePreeclampsiaAfterRecheck ->
+                DiagnosisModeratePreeclampsiaRecurrentPhase ->
                     { english = "Patient shows signs of Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Agaragaza ibimenyetso byoroheje bya Preklampusi"
                     }
 
-                DiagnosisSeverePreeclampsiaImmediate ->
+                DiagnosisSeverePreeclampsiaInitialPhase ->
                     { english = "Patient shows signs of Severe Preeclampsia"
                     , kinyarwanda = Just "Agaragaza ibimenyetso bikabije bya Preklampusi"
                     }
 
-                DiagnosisSeverePreeclampsiaAfterRecheck ->
+                DiagnosisSeverePreeclampsiaRecurrentPhase ->
                     { english = "Patient shows signs of Severe Preeclampsia"
                     , kinyarwanda = Just "Agaragaza ibimenyetso bikabije bya Preklampusi"
                     }

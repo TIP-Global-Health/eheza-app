@@ -435,7 +435,7 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
            , DiagnosisNeurosyphilis
            , DiagnosisMalariaWithSevereAnemia
            , DiagnosisSevereAnemia
-           , DiagnosisModeratePreeclampsiaAfterRecheck
+           , DiagnosisModeratePreeclampsiaRecurrentPhase
            , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
            ]
