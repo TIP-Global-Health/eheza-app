@@ -33,7 +33,7 @@ import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedication
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired)
+import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired, getAllActivities)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -1019,11 +1019,34 @@ nextStepsMeasurementTaken assembled task =
                 |> Maybe.withDefault False
 
 
+mandatoryActivitiesForAssessmentCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForAssessmentCompleted currentDate assembled =
+    case assembled.encounter.encounterType of
+        NurseEncounter ->
+            activityCompleted currentDate assembled DangerSigns
+
+        _ ->
+            mandatoryActivitiesForNextStepsCompleted currentDate assembled
+
+
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
-            activityCompleted currentDate assembled DangerSigns
+            -- If we have emergency diagnosis that require immediate referral,
+            -- we allow displaying Next steps right away.
+            diagnosedAnyOf emergencyReferralDiagnoses assembled
+                || (-- Otherwise, we need all activities that will appear at
+                    -- current encounter completed, besides Photo
+                    -- and Next Steps itself.
+                    getAllActivities assembled
+                        |> EverySet.fromList
+                        |> EverySet.remove PrenatalPhoto
+                        |> EverySet.remove NextSteps
+                        |> EverySet.toList
+                        |> List.filter (expectActivity currentDate assembled)
+                        |> List.all (activityCompleted currentDate assembled)
+                   )
 
         ChwFirstEncounter ->
             let
@@ -1263,7 +1286,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
         dangerSignsList =
             generateDangerSignsListForNurse assembled
 
-        emergencyReferalDiagnoses =
+        emergencyDiagnoses =
             List.filter
                 (matchEmergencyReferalPrenatalDiagnosis
                     egaInWeeks
@@ -1288,7 +1311,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 mentalHealthDiagnoses
                 |> EverySet.fromList
     in
-    EverySet.union emergencyReferalDiagnoses diagnosesByLabResultsAndExamination
+    EverySet.union emergencyDiagnoses diagnosesByLabResultsAndExamination
         |> EverySet.union diagnosesBySymptoms
         |> EverySet.union diagnosesByMentalHealth
         |> applyBloodPreasureDiagnosesHierarchy

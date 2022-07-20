@@ -4081,7 +4081,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
         (\assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
-                    Pages.Prenatal.Activity.Utils.mandatoryActivitiesForNextStepsCompleted
+                    Pages.Prenatal.Activity.Utils.mandatoryActivitiesForAssessmentCompleted
                         currentDate
                         assembledAfter
 
