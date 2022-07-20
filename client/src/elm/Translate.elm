@@ -1262,7 +1262,7 @@ type TranslationId
     | TreatmentReviewQuestionAdverseEventsHospitalization
     | TreatmentReviewQuestionMedicationByPMTCT
     | TreatmentReviewQuestionMissedDoses
-    | TreatmentReviewQuestionHIVStillTaking
+    | TreatmentReviewQuestionStillTakingForHIV
     | TreatmentReviewQuestionStillTaking
     | TreatmentReviewTask TreatmentReviewTask
     | TreatmentReviewWarningPopupMessage
@@ -12956,7 +12956,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TreatmentReviewQuestionHIVStillTaking ->
+        TreatmentReviewQuestionStillTakingForHIV ->
             { english = "Are you still taking ARV's"
             , kinyarwanda = Nothing
             }

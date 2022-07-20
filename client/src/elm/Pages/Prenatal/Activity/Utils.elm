@@ -3675,7 +3675,7 @@ resolveHIVMedicationTreatmentFormInputsAndTasks language currentDate setBoolInpu
                         ( [], [] )
             in
             ( [ header
-              , viewQuestionLabel language Translate.TreatmentReviewQuestionHIVStillTaking
+              , viewQuestionLabel language Translate.TreatmentReviewQuestionStillTakingForHIV
               , viewBoolInput
                     language
                     config.stillTakingFormValue
