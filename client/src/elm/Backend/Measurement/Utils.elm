@@ -1366,7 +1366,7 @@ Note: HIV PCR can take up to one month to get a result.
 -}
 prenatalLabExpirationPeriod : Int
 prenatalLabExpirationPeriod =
-    34
+    35
 
 
 prenatalHIVSignToString : PrenatalHIVSign -> String

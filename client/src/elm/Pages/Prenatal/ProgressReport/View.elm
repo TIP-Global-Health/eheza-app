@@ -1807,7 +1807,7 @@ viewUncompetedResult language currentDate resultDate =
         transId =
             Maybe.map
                 (\date ->
-                    if Date.diff Days date currentDate > prenatalLabExpirationPeriod then
+                    if Date.diff Days date currentDate >= prenatalLabExpirationPeriod then
                         Translate.ResultsMissing
 
                     else

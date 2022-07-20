@@ -4344,7 +4344,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
 
                                                     else
                                                         EverySet.remove test value.performedTests
-                                                , resolutionDate = Date.add Days (prenatalLabExpirationPeriod + 1) currentDate
+                                                , resolutionDate = Date.add Days prenatalLabExpirationPeriod currentDate
                                             }
                                        )
                         in
@@ -4366,7 +4366,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                                     Backend.Measurement.Model.PrenatalLabsResultsValue
                                         (EverySet.singleton test)
                                         EverySet.empty
-                                        (Date.add Days (prenatalLabExpirationPeriod + 1) currentDate)
+                                        (Date.add Days prenatalLabExpirationPeriod currentDate)
                                         False
                             in
                             [ saveLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
