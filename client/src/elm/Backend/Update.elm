@@ -4288,8 +4288,8 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
 
                         UserPage (PrenatalActivityPage _ _) ->
                             -- reportToOriginMsgs are sent when nurse enters
-                            -- of test from one of previous encounters, and
-                            -- on save, APP navigates back to Labs History
+                            -- results of test from one of previous encounters,
+                            -- and on save, APP navigates back to Labs History
                             -- sub activity.
                             initialEncounterMsgs ++ reportToOriginMsgs
 

@@ -85,14 +85,26 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisModeratePreeclampsiaImmediate ->
                 "moderate-preeclampsia-immediate"
 
+            DiagnosisModeratePreeclampsiaImmediateEGA37Plus ->
+                "moderate-preeclampsia-immediate-ega-37+"
+
             DiagnosisModeratePreeclampsiaAfterRecheck ->
                 "moderate-preeclampsia-recheck"
+
+            DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus ->
+                "moderate-preeclampsia-recheck-ega-37+"
 
             DiagnosisSeverePreeclampsiaImmediate ->
                 "severe-preeclampsia-immediate"
 
+            DiagnosisSeverePreeclampsiaImmediateEGA37Plus ->
+                "severe-preeclampsia-immediate-ega-37+"
+
             DiagnosisSeverePreeclampsiaAfterRecheck ->
                 "severe-preeclampsia-recheck"
+
+            DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus ->
+                "severe-preeclampsia-recheck-ega-37+"
 
             DiagnosisEclampsia ->
                 "eclampsia"

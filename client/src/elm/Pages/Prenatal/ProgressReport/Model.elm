@@ -64,9 +64,13 @@ obstetricalDiagnoses =
     [ DiagnosisGestationalHypertensionImmediate
     , DiagnosisGestationalHypertensionAfterRecheck
     , DiagnosisModeratePreeclampsiaImmediate
+    , DiagnosisModeratePreeclampsiaImmediateEGA37Plus
     , DiagnosisModeratePreeclampsiaAfterRecheck
+    , DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus
     , DiagnosisSeverePreeclampsiaImmediate
+    , DiagnosisSeverePreeclampsiaImmediateEGA37Plus
     , DiagnosisSeverePreeclampsiaAfterRecheck
+    , DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus
     , DiagnosisEclampsia
     , DiagnosisMiscarriage
     , DiagnosisMolarPregnancy

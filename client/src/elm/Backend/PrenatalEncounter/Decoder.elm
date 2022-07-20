@@ -85,14 +85,26 @@ decodePrenatalDiagnosis =
                     "moderate-preeclampsia-immediate" ->
                         succeed DiagnosisModeratePreeclampsiaImmediate
 
+                    "moderate-preeclampsia-immediate-ega-37+" ->
+                        succeed DiagnosisModeratePreeclampsiaImmediateEGA37Plus
+
                     "moderate-preeclampsia-recheck" ->
                         succeed DiagnosisModeratePreeclampsiaAfterRecheck
+
+                    "moderate-preeclampsia-recheck-ega-37+" ->
+                        succeed DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus
 
                     "severe-preeclampsia-immediate" ->
                         succeed DiagnosisSeverePreeclampsiaImmediate
 
+                    "severe-preeclampsia-immediate-ega-37+" ->
+                        succeed DiagnosisSeverePreeclampsiaImmediateEGA37Plus
+
                     "severe-preeclampsia-recheck" ->
                         succeed DiagnosisSeverePreeclampsiaAfterRecheck
+
+                    "severe-preeclampsia-recheck-ega-37+" ->
+                        succeed DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus
 
                     "eclampsia" ->
                         succeed DiagnosisEclampsia

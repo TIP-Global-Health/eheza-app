@@ -8088,7 +8088,17 @@ translationSet trans =
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
+                DiagnosisModeratePreeclampsiaImmediateEGA37Plus ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Just "Preklampusi Yoroheje"
+                    }
+
                 DiagnosisModeratePreeclampsiaAfterRecheck ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Just "Preklampusi Yoroheje"
+                    }
+
+                DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
@@ -8098,7 +8108,17 @@ translationSet trans =
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
+                DiagnosisSeverePreeclampsiaImmediateEGA37Plus ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Just "Preklampusi Ikabije"
+                    }
+
                 DiagnosisSeverePreeclampsiaAfterRecheck ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Just "Preklampusi Ikabije"
+                    }
+
+                DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus ->
                     { english = "Severe Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
@@ -8420,7 +8440,17 @@ translationSet trans =
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
 
+                DiagnosisModeratePreeclampsiaImmediateEGA37Plus ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Just "Preklampusi Yoroheje"
+                    }
+
                 DiagnosisModeratePreeclampsiaAfterRecheck ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Just "Preklampusi Yoroheje"
+                    }
+
+                DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
                     }
@@ -8430,7 +8460,17 @@ translationSet trans =
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }
 
+                DiagnosisSeverePreeclampsiaImmediateEGA37Plus ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Just "Preklampusi Ikabije"
+                    }
+
                 DiagnosisSeverePreeclampsiaAfterRecheck ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Just "Preklampusi Ikabije"
+                    }
+
+                DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus ->
                     { english = "Severe Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Ikabije"
                     }

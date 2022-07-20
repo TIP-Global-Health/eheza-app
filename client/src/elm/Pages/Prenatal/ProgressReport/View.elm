@@ -2603,13 +2603,25 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisModeratePreeclampsiaImmediate ->
             referredToHospitalMessage
 
+        DiagnosisModeratePreeclampsiaImmediateEGA37Plus ->
+            referredToHospitalMessage
+
         DiagnosisModeratePreeclampsiaAfterRecheck ->
+            referredToHospitalMessage
+
+        DiagnosisModeratePreeclampsiaAfterRecheckEGA37Plus ->
             referredToHospitalMessage
 
         DiagnosisSeverePreeclampsiaImmediate ->
             referredToHospitalMessage
 
+        DiagnosisSeverePreeclampsiaImmediateEGA37Plus ->
+            referredToHospitalMessage
+
         DiagnosisSeverePreeclampsiaAfterRecheck ->
+            referredToHospitalMessage
+
+        DiagnosisSeverePreeclampsiaAfterRecheckEGA37Plus ->
             referredToHospitalMessage
 
         DiagnosisHeartburn ->
