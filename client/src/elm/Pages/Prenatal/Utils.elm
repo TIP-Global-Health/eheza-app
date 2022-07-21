@@ -95,21 +95,24 @@ diagnosedPreviouslyAnyOf diagnoses assembled =
         |> not
 
 
-listNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
-listNonUrgentDiagnoses diagnoses =
+filterNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
+filterNonUrgentDiagnoses diagnoses =
     let
         exclusions =
-            NoPrenatalDiagnosis
-                :: emergencyReferralDiagnosesInitial
-                ++ emergencyReferralDiagnosesRecurrent
+            NoPrenatalDiagnosis :: emergencyReferralDiagnoses
     in
     List.filter (\diagnosis -> not <| List.member diagnosis exclusions) diagnoses
 
 
+emergencyReferralDiagnoses : List PrenatalDiagnosis
+emergencyReferralDiagnoses =
+    emergencyReferralDiagnosesInitial ++ emergencyReferralDiagnosesRecurrent
+
+
 emergencyReferralDiagnosesInitial : List PrenatalDiagnosis
 emergencyReferralDiagnosesInitial =
-    [ -- Diagnosed from Danger Signs.
-      DiagnosisSeverePreeclampsiaImmediate
+    [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
     , DiagnosisEclampsia
     , DiagnosisMiscarriage
     , DiagnosisMolarPregnancy
@@ -134,9 +137,123 @@ emergencyReferralDiagnosesInitial =
 
 emergencyReferralDiagnosesRecurrent : List PrenatalDiagnosis
 emergencyReferralDiagnosesRecurrent =
-    [ DiagnosisSeverePreeclampsiaAfterRecheck
+    [ DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
     , DiagnosisSevereAnemiaWithComplications
     ]
+
+
+hierarchalBloodPreasureDiagnoses : List PrenatalDiagnosis
+hierarchalBloodPreasureDiagnoses =
+    [ -- Emergency diagnoses.
+      DiagnosisEclampsia
+    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+
+    -- Non emergency diagnoses.
+    , DiagnosisSeverePreeclampsiaInitialPhase
+    , DiagnosisSeverePreeclampsiaRecurrentPhase
+    , DiagnosisModeratePreeclampsiaInitialPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
+    ]
+
+
+hierarchalBloodPreasureDiagnosisToNumber : PrenatalDiagnosis -> Maybe Int
+hierarchalBloodPreasureDiagnosisToNumber diagnosis =
+    case diagnosis of
+        DiagnosisEclampsia ->
+            Just 50
+
+        DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
+            Just 42
+
+        DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
+            Just 41
+
+        DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
+            Just 32
+
+        DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
+            Just 31
+
+        DiagnosisSeverePreeclampsiaInitialPhase ->
+            Just 22
+
+        DiagnosisSeverePreeclampsiaRecurrentPhase ->
+            Just 21
+
+        DiagnosisModeratePreeclampsiaInitialPhase ->
+            Just 12
+
+        DiagnosisModeratePreeclampsiaRecurrentPhase ->
+            Just 11
+
+        DiagnosisChronicHypertensionImmediate ->
+            Just 4
+
+        DiagnosisChronicHypertensionAfterRecheck ->
+            Just 3
+
+        DiagnosisGestationalHypertensionImmediate ->
+            Just 2
+
+        DiagnosisGestationalHypertensionAfterRecheck ->
+            Just 1
+
+        _ ->
+            Nothing
+
+
+hierarchalBloodPreasureDiagnosisFromNumber : Int -> Maybe PrenatalDiagnosis
+hierarchalBloodPreasureDiagnosisFromNumber number =
+    case number of
+        50 ->
+            Just DiagnosisEclampsia
+
+        42 ->
+            Just DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+
+        41 ->
+            Just DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+
+        32 ->
+            Just DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+
+        31 ->
+            Just DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+
+        22 ->
+            Just DiagnosisSeverePreeclampsiaInitialPhase
+
+        21 ->
+            Just DiagnosisSeverePreeclampsiaRecurrentPhase
+
+        12 ->
+            Just DiagnosisModeratePreeclampsiaInitialPhase
+
+        11 ->
+            Just DiagnosisModeratePreeclampsiaRecurrentPhase
+
+        4 ->
+            Just DiagnosisChronicHypertensionImmediate
+
+        3 ->
+            Just DiagnosisChronicHypertensionAfterRecheck
+
+        2 ->
+            Just DiagnosisGestationalHypertensionImmediate
+
+        1 ->
+            Just DiagnosisGestationalHypertensionAfterRecheck
+
+        _ ->
+            Nothing
 
 
 medicationDistributionFormWithDefault : MedicationDistributionSign -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
@@ -2497,7 +2614,7 @@ outsideCareDiagnosesRightColumn : List PrenatalDiagnosis
 outsideCareDiagnosesRightColumn =
     [ DiagnosisChronicHypertensionImmediate
     , DiagnosisGestationalHypertensionImmediate
-    , DiagnosisModeratePreeclampsiaImmediate
+    , DiagnosisModeratePreeclampsiaInitialPhase
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPyelonephritis
     , DiagnosisHeartburnPersistent

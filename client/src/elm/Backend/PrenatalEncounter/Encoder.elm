@@ -82,17 +82,29 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisGestationalHypertensionAfterRecheck ->
                 "gestational-hypertension-recheck"
 
-            DiagnosisModeratePreeclampsiaImmediate ->
-                "moderate-preeclampsia-immediate"
+            DiagnosisModeratePreeclampsiaInitialPhase ->
+                "moderate-preeclampsia-initial"
 
-            DiagnosisModeratePreeclampsiaAfterRecheck ->
-                "moderate-preeclampsia-recheck"
+            DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
+                "moderate-preeclampsia-initial-ega-37+"
 
-            DiagnosisSeverePreeclampsiaImmediate ->
-                "severe-preeclampsia-immediate"
+            DiagnosisModeratePreeclampsiaRecurrentPhase ->
+                "moderate-preeclampsia-recurrent"
 
-            DiagnosisSeverePreeclampsiaAfterRecheck ->
-                "severe-preeclampsia-recheck"
+            DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
+                "moderate-preeclampsia-recurrent-ega-37+"
+
+            DiagnosisSeverePreeclampsiaInitialPhase ->
+                "severe-preeclampsia-initial"
+
+            DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
+                "severe-preeclampsia-initial-ega-37+"
+
+            DiagnosisSeverePreeclampsiaRecurrentPhase ->
+                "severe-preeclampsia-recurrent"
+
+            DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
+                "severe-preeclampsia-recurrent-ega-37+"
 
             DiagnosisEclampsia ->
                 "eclampsia"

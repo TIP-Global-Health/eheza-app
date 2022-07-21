@@ -435,7 +435,7 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
            , DiagnosisNeurosyphilis
            , DiagnosisMalariaWithSevereAnemia
            , DiagnosisSevereAnemia
-           , DiagnosisModeratePreeclampsiaAfterRecheck
+           , DiagnosisModeratePreeclampsiaRecurrentPhase
            , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
            ]
@@ -573,6 +573,7 @@ expectExaminationTask currentDate assembled task =
             -- of pregnancy. If diagnised, we do not need to recheck the BP.
             -- Measurement taken at initial phase of encounter is sufficient.
             (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedAnyOf hierarchalBloodPreasureDiagnoses assembled)
                 && (getMeasurementValueFunc assembled.measurements.vitals
                         |> Maybe.andThen
                             (\value ->

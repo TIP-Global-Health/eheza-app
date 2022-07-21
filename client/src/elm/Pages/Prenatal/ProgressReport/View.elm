@@ -1807,7 +1807,7 @@ viewUncompetedResult language currentDate resultDate =
         transId =
             Maybe.map
                 (\date ->
-                    if Date.diff Days date currentDate > prenatalLabExpirationPeriod then
+                    if Date.diff Days date currentDate >= prenatalLabExpirationPeriod then
                         Translate.ResultsMissing
 
                     else
@@ -2600,16 +2600,28 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisNeurosyphilis ->
             referredToHospitalMessage
 
-        DiagnosisModeratePreeclampsiaImmediate ->
+        DiagnosisModeratePreeclampsiaInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisModeratePreeclampsiaAfterRecheck ->
+        DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
             referredToHospitalMessage
 
-        DiagnosisSeverePreeclampsiaImmediate ->
+        DiagnosisModeratePreeclampsiaRecurrentPhase ->
             referredToHospitalMessage
 
-        DiagnosisSeverePreeclampsiaAfterRecheck ->
+        DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
+            referredToHospitalMessage
+
+        DiagnosisSeverePreeclampsiaInitialPhase ->
+            referredToHospitalMessage
+
+        DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
+            referredToHospitalMessage
+
+        DiagnosisSeverePreeclampsiaRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
             referredToHospitalMessage
 
         DiagnosisHeartburn ->

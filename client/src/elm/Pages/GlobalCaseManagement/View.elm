@@ -13,6 +13,7 @@ import Backend.Measurement.Model
         , PrenatalLaboratoryTest(..)
         , PrenatalLabsResults
         )
+import Backend.Measurement.Utils exposing (prenatalLabExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.Person.Model
@@ -850,8 +851,24 @@ viewPrenatalLabsPane language currentDate itemsDict db model =
                             -- date is a future date.
                             Date.compare currentDate item.value.resolutionDate == LT
 
+                        pendingCompletedDiff =
+                            EverySet.diff item.value.performedTests item.value.completedTests
+                                |> EverySet.toList
+
                         labsResultsPending =
-                            EverySet.size item.value.completedTests < EverySet.size item.value.performedTests
+                            case pendingCompletedDiff of
+                                [] ->
+                                    False
+
+                                [ TestVitalsRecheck ] ->
+                                    -- Vitals recheck is supposed to be performed on
+                                    -- same day first vitals were taken.
+                                    -- Otherwise, running vitals recheck is not necessary,
+                                    -- and we consider this task as completed.
+                                    Date.diff Days currentDate item.dateMeasured == prenatalLabExpirationPeriod
+
+                                _ ->
+                                    True
                     in
                     itemNotResolved && labsResultsPending
                 )
