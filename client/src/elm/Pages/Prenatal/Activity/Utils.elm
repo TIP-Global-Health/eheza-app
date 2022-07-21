@@ -1792,6 +1792,12 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                         egaWeeks > 20 && diabetesDiagnosed
                     )
 
+        DiagnosisRhesusNegative ->
+            getMeasurementValueFunc measurements.bloodGpRsTest
+                |> Maybe.andThen .rhesus
+                |> Maybe.map ((==) RhesusNegative)
+                |> Maybe.withDefault False
+
         -- Non Lab Results diagnoses.
         _ ->
             False
