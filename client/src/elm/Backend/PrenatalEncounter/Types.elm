@@ -65,6 +65,7 @@ type PrenatalDiagnosis
     | DiagnosisTuberculosis
     | DiagnosisDiabetes
     | DiagnosisGestationalDiabetes
+    | DiagnosisRhesusNegative
     | DiagnosisDepressionNotLikely
     | DiagnosisDepressionPossible
     | DiagnosisDepressionHighlyPossible
