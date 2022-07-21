@@ -309,6 +309,14 @@ encodePrenatalBloodGpRsTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
+        originatingEncounter =
+            Maybe.map
+                (\originEncounter ->
+                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
+                )
+                value.originatingEncounter
+                |> Maybe.withDefault []
+
         results =
             Maybe.map2
                 (\bloodGroup rhesus ->
@@ -322,6 +330,7 @@ encodePrenatalBloodGpRsTestValue value =
     in
     ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
         :: executionDate
+        ++ originatingEncounter
         ++ results
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_blood_gprs_test" )

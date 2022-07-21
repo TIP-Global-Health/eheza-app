@@ -260,6 +260,7 @@ prenatalBloodGpRsResultFormWithDefault form saved =
                 , executionDate = or form.executionDate value.executionDate
                 , bloodGroup = or form.bloodGroup value.bloodGroup
                 , rhesus = or form.rhesus value.rhesus
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -278,6 +279,7 @@ toPrenatalBloodGpRsResultsValue form =
             , executionDate = form.executionDate
             , bloodGroup = form.bloodGroup
             , rhesus = form.rhesus
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote

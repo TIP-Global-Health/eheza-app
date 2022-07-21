@@ -420,6 +420,7 @@ decodePrenatalBloodGpRsTestValue =
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "blood_group" (nullable decodeBloodGroup) Nothing
         |> optional "rhesus" (nullable decodeRhesus) Nothing
+        |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
 
 
 decodeBloodGroup : Decoder BloodGroup

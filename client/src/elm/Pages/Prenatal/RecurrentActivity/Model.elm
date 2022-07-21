@@ -169,12 +169,13 @@ type alias PrenatalBloodGpRsResultForm =
     , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 emptyPrenatalBloodGpRsResultForm : PrenatalBloodGpRsResultForm
 emptyPrenatalBloodGpRsResultForm =
-    PrenatalBloodGpRsResultForm Nothing Nothing Nothing Nothing
+    PrenatalBloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias PrenatalUrineDipstickResultForm =

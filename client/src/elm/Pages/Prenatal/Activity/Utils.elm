@@ -4946,7 +4946,7 @@ toHemoglobinTestValueWithEmptyResults note date =
 
 toBloodGpRsTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalBloodGpRsTestValue
 toBloodGpRsTestValueWithEmptyResults note date =
-    PrenatalBloodGpRsTestValue note date Nothing Nothing
+    PrenatalBloodGpRsTestValue note date Nothing Nothing Nothing
 
 
 toHIVPCRTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHIVPCRTestValue
