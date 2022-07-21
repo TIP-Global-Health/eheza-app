@@ -4287,19 +4287,33 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                                 (\diagnosis ->
                                                     List.member diagnosis Pages.Prenatal.Utils.diabetesDiagnoses
                                                 )
+
+                                    rhNegativeDiagnosis =
+                                        EverySet.member DiagnosisRhesusNegative reportedDiagnoses
                                 in
                                 if EverySet.isEmpty reportedDiagnoses then
                                     []
 
                                 else if
-                                    -- Reporting back about previous diagnois results in hospital referral
-                                    -- at Next steps. For Diabetes, we have logic saying that when it's first
-                                    -- diagnosed, patient is referred to hospital.
-                                    -- On next occasions, no next steps are required.
-                                    -- Therefore, if we know that Diabetes was already diagnosed, we will not
-                                    -- report back of this diagnosis, to prevent unnecessary referral to hospital.
-                                    diabetesDiagnoses
+                                    (-- Reporting back about previous diagnois results in hospital referral
+                                     -- at Next steps. For Diabetes, we have logic saying that when it's first
+                                     -- diagnosed, patient is referred to hospital.
+                                     -- On next occasions, no next steps are required.
+                                     -- Therefore, if we know that Diabetes was already diagnosed, we will not
+                                     -- report back of this diagnosis, to prevent unnecessary referral to hospital.
+                                     diabetesDiagnoses
                                         && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
+                                    )
+                                        || (-- Reporting back about previous diagnois results in hospital referral
+                                            -- at Next steps.
+                                            -- Even though Blood group and rhesus test is supposed to run once,
+                                            -- we continue offering it until we get a result.
+                                            -- This way, theoretically, it's possible to have multiple tests pending,
+                                            -- and results can be entered multiple times.
+                                            -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
+                                            -- report back of this diagnosis, to prevent unnecessary referral to hospital.
+                                            rhNegativeDiagnosis && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembled
+                                           )
                                 then
                                     []
 
