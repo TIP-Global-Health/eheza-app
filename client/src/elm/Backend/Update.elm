@@ -4312,7 +4312,8 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             -- and results can be entered multiple times.
                                             -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
                                             -- report back of this diagnosis, to prevent unnecessary referral to hospital.
-                                            rhNegativeDiagnosis && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembled
+                                            rhNegativeDiagnosis
+                                                && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembledAfter
                                            )
                                 then
                                     []
