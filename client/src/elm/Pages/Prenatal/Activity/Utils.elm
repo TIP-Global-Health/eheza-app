@@ -2267,6 +2267,7 @@ labResultsAndExaminationDiagnoses =
     , DiagnosisSevereAnemiaWithComplications
     , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
     , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
+    , DiagnosisRhesusNegative
     ]
 
 

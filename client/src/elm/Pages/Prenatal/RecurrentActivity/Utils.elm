@@ -440,6 +440,7 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
            , DiagnosisModeratePreeclampsiaRecurrentPhase
            , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
+           , DiagnosisRhesusNegative
            ]
         |> List.filter (\diagnosis -> diagnosed diagnosis assembled)
 
