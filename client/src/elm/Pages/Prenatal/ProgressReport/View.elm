@@ -449,11 +449,11 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                 (\( date, _, measurements ) accum ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> Maybe.map
-                            (\signs ->
+                            (\value ->
                                 let
                                     signRecord sign =
                                         if
-                                            EverySet.member sign signs
+                                            EverySet.member sign value.signs
                                                 && (isNothing <| Dict.get sign accum)
                                         then
                                             Just ( sign, date )
@@ -506,13 +506,13 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                         healthEducationDiagnosesEntries =
                             getMeasurementValueFunc measurements.healthEducation
                                 |> Maybe.map
-                                    (\signs ->
+                                    (\value ->
                                         let
                                             formatedDate =
                                                 formatDDMMYYYY date
 
                                             messageForSign sign =
-                                                if EverySet.member sign signs then
+                                                if EverySet.member sign value.signs then
                                                     Dict.get sign initialHealthEducationOccurances
                                                         |> Maybe.map
                                                             (\initialDate ->

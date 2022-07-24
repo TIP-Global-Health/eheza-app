@@ -1329,7 +1329,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.healthEducationForm
-                        |> toHealthEducationValueWithDefaultRecurrentPhase measurement
+                        |> toHealthEducationValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

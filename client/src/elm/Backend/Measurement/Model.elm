@@ -815,7 +815,13 @@ type PregnancyTestResult
 
 
 type alias PrenatalHealthEducation =
-    PrenatalMeasurement (EverySet PrenatalHealthEducationSign)
+    PrenatalMeasurement PrenatalHealthEducationValue
+
+
+type alias PrenatalHealthEducationValue =
+    { signs : EverySet PrenatalHealthEducationSign
+    , signsPhase2 : Maybe (EverySet PrenatalHealthEducationSign)
+    }
 
 
 type PrenatalHealthEducationSign
@@ -843,8 +849,6 @@ type PrenatalHealthEducationSign
     | EducationMentalHealth
     | EducationDiabetes
     | NoPrenatalHealthEducationSigns
-    | NoPrenatalHealthEducationSignsInitialPhase
-    | NoPrenatalHealthEducationSignsRecurrentPhase
 
 
 type alias PrenatalFollowUp =

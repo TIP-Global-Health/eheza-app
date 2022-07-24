@@ -11625,6 +11625,44 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_health_education-field_health_education_signs_ph2'.
+  $field_instances['node-prenatal_health_education-field_health_education_signs_ph2'] = array(
+    'bundle' => 'prenatal_health_education',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_health_education_signs_ph2',
+    'label' => 'Health Education Signs_ph2',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_health_education-field_nurse'.
   $field_instances['node-prenatal_health_education-field_nurse'] = array(
     'bundle' => 'prenatal_health_education',
@@ -14357,6 +14395,7 @@ function hedley_activity_field_default_field_instances() {
   t('Has the mother attended for this session?');
   t('Head / hair');
   t('Health education signs');
+  t('Health Education signs phase 2');
   t('Heart');
   t('Heart Murmur');
   t('Heart rate');

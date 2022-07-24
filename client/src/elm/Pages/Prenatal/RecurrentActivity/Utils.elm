@@ -476,11 +476,7 @@ nextStepsMeasurementTaken assembled task =
 
         NextStepsHealthEducation ->
             getMeasurementValueFunc assembled.measurements.healthEducation
-                |> Maybe.map
-                    (\signs ->
-                        List.any (\sign -> EverySet.member sign signs)
-                            [ EducationHIVDetectableViralLoad, NoPrenatalHealthEducationSignsRecurrentPhase ]
-                    )
+                |> Maybe.map (.signsPhase2 >> isJust)
                 |> Maybe.withDefault False
 
 
@@ -537,7 +533,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             let
                 form =
                     getMeasurementValueFunc assembled.measurements.healthEducation
-                        |> healthEducationFormWithDefaultRecurrentPhase data.healthEducationForm
+                        |> healthEducationFormWithDefault data.healthEducationForm
 
                 ( _, tasks ) =
                     healthEducationFormInputsAndTasks language assembled form
@@ -707,3 +703,62 @@ healthEducationFormInputsAndTasks language assembled form =
     , List.map Tuple.second inputsAndTasks
         |> Maybe.Extra.values
     )
+
+
+toHealthEducationValueWithDefault : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue saved
+
+
+healthEducationFormWithDefault :
+    HealthEducationForm
+    -> Maybe PrenatalHealthEducationValue
+    -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { expectations = EverySet.member EducationExpectations value.signs |> Just
+                , visitsReview = EverySet.member EducationVisitsReview value.signs |> Just
+                , warningSigns = EverySet.member EducationWarningSigns value.signs |> Just
+                , hemorrhaging = EverySet.member EducationHemorrhaging value.signs |> Just
+                , familyPlanning = EverySet.member EducationFamilyPlanning value.signs |> Just
+                , breastfeeding = EverySet.member EducationBreastfeeding value.signs |> Just
+                , immunization = EverySet.member EducationImmunization value.signs |> Just
+                , hygiene = EverySet.member EducationHygiene value.signs |> Just
+                , positiveHIV = EverySet.member EducationPositiveHIV value.signs |> Just
+                , saferSexHIV = EverySet.member EducationSaferSexHIV value.signs |> Just
+                , partnerTesting = EverySet.member EducationPartnerTesting value.signs |> Just
+                , nauseaVomiting = EverySet.member EducationNauseaVomiting value.signs |> Just
+                , legCramps = EverySet.member EducationLegCramps value.signs |> Just
+                , lowBackPain = EverySet.member EducationLowBackPain value.signs |> Just
+                , constipation = EverySet.member EducationConstipation value.signs |> Just
+                , heartburn = EverySet.member EducationHeartburn value.signs |> Just
+                , varicoseVeins = EverySet.member EducationVaricoseVeins value.signs |> Just
+                , legPainRedness = EverySet.member EducationLegPainRedness value.signs |> Just
+                , pelvicPain = EverySet.member EducationPelvicPain value.signs |> Just
+                , saferSex = EverySet.member EducationSaferSex value.signs |> Just
+                , mentalHealth = EverySet.member EducationMentalHealth value.signs |> Just
+                , hivDetectableViralLoad = or form.hivDetectableViralLoad (Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2)
+                , diabetes = or form.diabetes (Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2)
+                }
+            )
+
+
+toHealthEducationValue : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
+toHealthEducationValue saved form =
+    [ ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
+    , ifNullableTrue EducationDiabetes form.diabetes
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
+        |> Maybe.map
+            (\signsPhase2 ->
+                { signs =
+                    Maybe.map .signs saved
+                        |> Maybe.withDefault (EverySet.singleton NoPrenatalHealthEducationSigns)
+                , signsPhase2 = Just signsPhase2
+                }
+            )

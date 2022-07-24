@@ -905,7 +905,7 @@ viewNextStepsContent language currentDate assembled data =
 
                 Just NextStepsHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
-                        |> healthEducationFormWithDefaultRecurrentPhase data.healthEducationForm
+                        |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate assembled
 
                 Nothing ->
