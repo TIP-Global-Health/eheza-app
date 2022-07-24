@@ -14394,7 +14394,6 @@ function hedley_activity_field_default_field_instances() {
   t('Hands');
   t('Has the mother attended for this session?');
   t('Head / hair');
-
   t('Health education signs');
   t('Health Education signs phase 2');
   t('Heart');
