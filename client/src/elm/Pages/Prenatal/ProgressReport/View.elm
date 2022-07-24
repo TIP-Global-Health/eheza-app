@@ -263,6 +263,7 @@ viewContent language currentDate isChw initiator model assembled =
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
                     , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                    , viewChwActivityPane language currentDate assembled
                     , viewPatientProgressPane language currentDate isChw assembled
                     , viewLabsPane language currentDate assembled
                     , viewProgressPhotosPane language currentDate isChw assembled
@@ -2903,3 +2904,12 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
     else
         -- Not an outside care diagnosis.
         []
+
+
+viewChwActivityPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewChwActivityPane language currentDate assembled =
+    div [ class "chw-activity" ]
+        [ viewItemHeading language Translate.ChwActivity "blue"
+        , div [ class "pane-content" ]
+            []
+        ]
