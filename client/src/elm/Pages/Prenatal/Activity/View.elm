@@ -1877,7 +1877,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation
                         |> getMeasurementValueFunc
-                        |> healthEducationFormWithDefaultInitialPhase data.healthEducationForm
+                        |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate assembled
 
                 Just NextStepsNewbornEnrolment ->

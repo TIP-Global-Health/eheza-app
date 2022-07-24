@@ -2313,7 +2313,7 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
         form =
             assembled.measurements.healthEducation
                 |> getMeasurementValueFunc
-                |> healthEducationFormWithDefaultInitialPhase healthEducationForm
+                |> healthEducationFormWithDefault healthEducationForm
     in
     case assembled.encounter.encounterType of
         NurseEncounter ->
@@ -2963,7 +2963,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             let
                 form =
                     getMeasurementValueFunc assembled.measurements.healthEducation
-                        |> healthEducationFormWithDefaultInitialPhase data.healthEducationForm
+                        |> healthEducationFormWithDefault data.healthEducationForm
 
                 ( _, tasks ) =
                     healthEducationFormInputsAndTasks language assembled form
@@ -6385,3 +6385,82 @@ getMeasurementByVaccineTypeFunc vaccineType measurements =
     case vaccineType of
         VaccineTetanus ->
             getMeasurementValueFunc measurements.tetanusImmunisation
+
+
+toHealthEducationValueWithDefault : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue saved
+
+
+healthEducationFormWithDefault :
+    HealthEducationForm
+    -> Maybe PrenatalHealthEducationValue
+    -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { expectations = or form.expectations (EverySet.member EducationExpectations value.signs |> Just)
+                , visitsReview = or form.visitsReview (EverySet.member EducationVisitsReview value.signs |> Just)
+                , warningSigns = or form.warningSigns (EverySet.member EducationWarningSigns value.signs |> Just)
+                , hemorrhaging = or form.hemorrhaging (EverySet.member EducationHemorrhaging value.signs |> Just)
+                , familyPlanning = or form.familyPlanning (EverySet.member EducationFamilyPlanning value.signs |> Just)
+                , breastfeeding = or form.breastfeeding (EverySet.member EducationBreastfeeding value.signs |> Just)
+                , immunization = or form.immunization (EverySet.member EducationImmunization value.signs |> Just)
+                , hygiene = or form.hygiene (EverySet.member EducationHygiene value.signs |> Just)
+                , positiveHIV = or form.positiveHIV (EverySet.member EducationPositiveHIV value.signs |> Just)
+                , saferSexHIV = or form.saferSexHIV (EverySet.member EducationSaferSexHIV value.signs |> Just)
+                , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting value.signs |> Just)
+                , nauseaVomiting = or form.nauseaVomiting (EverySet.member EducationNauseaVomiting value.signs |> Just)
+                , legCramps = or form.legCramps (EverySet.member EducationLegCramps value.signs |> Just)
+                , lowBackPain = or form.lowBackPain (EverySet.member EducationLowBackPain value.signs |> Just)
+                , constipation = or form.constipation (EverySet.member EducationConstipation value.signs |> Just)
+                , heartburn = or form.heartburn (EverySet.member EducationHeartburn value.signs |> Just)
+                , varicoseVeins = or form.varicoseVeins (EverySet.member EducationVaricoseVeins value.signs |> Just)
+                , legPainRedness = or form.legPainRedness (EverySet.member EducationLegPainRedness value.signs |> Just)
+                , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain value.signs |> Just)
+                , saferSex = or form.saferSex (EverySet.member EducationSaferSex value.signs |> Just)
+                , mentalHealth = or form.mentalHealth (EverySet.member EducationMentalHealth value.signs |> Just)
+
+                -- Only signs that do not participate at recurrent phase. Resolved directly
+                -- from value.
+                , hivDetectableViralLoad = Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2
+                , diabetes = Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2
+                }
+            )
+
+
+toHealthEducationValue : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
+toHealthEducationValue saved form =
+    [ ifNullableTrue EducationExpectations form.expectations
+    , ifNullableTrue EducationVisitsReview form.visitsReview
+    , ifNullableTrue EducationWarningSigns form.warningSigns
+    , ifNullableTrue EducationHemorrhaging form.hemorrhaging
+    , ifNullableTrue EducationFamilyPlanning form.familyPlanning
+    , ifNullableTrue EducationBreastfeeding form.breastfeeding
+    , ifNullableTrue EducationImmunization form.immunization
+    , ifNullableTrue EducationHygiene form.hygiene
+    , ifNullableTrue EducationPositiveHIV form.positiveHIV
+    , ifNullableTrue EducationSaferSexHIV form.saferSexHIV
+    , ifNullableTrue EducationPartnerTesting form.partnerTesting
+    , ifNullableTrue EducationNauseaVomiting form.nauseaVomiting
+    , ifNullableTrue EducationLegCramps form.legCramps
+    , ifNullableTrue EducationLowBackPain form.lowBackPain
+    , ifNullableTrue EducationConstipation form.constipation
+    , ifNullableTrue EducationHeartburn form.heartburn
+    , ifNullableTrue EducationVaricoseVeins form.varicoseVeins
+    , ifNullableTrue EducationLegPainRedness form.legPainRedness
+    , ifNullableTrue EducationPelvicPain form.pelvicPain
+    , ifNullableTrue EducationSaferSex form.saferSex
+    , ifNullableTrue EducationMentalHealth form.mentalHealth
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
+        |> Maybe.map
+            (\signs ->
+                { signs = signs
+                , signsPhase2 = Maybe.andThen .signsPhase2 saved
+                }
+            )
