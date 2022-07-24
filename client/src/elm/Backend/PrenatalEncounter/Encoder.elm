@@ -259,6 +259,9 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisGestationalDiabetes ->
                 "gestational-diabetes"
 
+            DiagnosisRhesusNegative ->
+                "rhesus-negative"
+
             DiagnosisDepressionNotLikely ->
                 "depression-not-likely"
 

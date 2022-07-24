@@ -1725,7 +1725,9 @@ diagnosesCausingHospitalReferralByPastDiagnoses : AssembledData -> List Prenatal
 diagnosesCausingHospitalReferralByPastDiagnoses assembled =
     let
         allowedPastDiagnoses =
-            (DiagnosisHepatitisB :: syphilisDiagnosesIncludingNeurosyphilis) ++ diabetesDiagnoses
+            syphilisDiagnosesIncludingNeurosyphilis
+                ++ diabetesDiagnoses
+                ++ [ DiagnosisHepatitisB, DiagnosisRhesusNegative ]
     in
     EverySet.toList assembled.encounter.pastDiagnoses
         |> List.filter (\diagnosis -> List.member diagnosis allowedPastDiagnoses)

@@ -96,6 +96,7 @@ obstetricalDiagnoses =
     , DiagnosisPelvicPainIntense
     , DiagnosisPelvicPainContinued
     , DiagnosisGestationalDiabetes
+    , DiagnosisRhesusNegative
     , DiagnosisDepressionNotLikely
     , DiagnosisDepressionPossible
     , DiagnosisDepressionHighlyPossible

@@ -18,6 +18,7 @@ class HedleyRestfulPrenatalBloodGpRsTest extends HedleyRestfulPrenatalActivityBa
     'field_execution_date',
     'field_blood_group',
     'field_rhesus',
+    'field_originating_encounter',
   ];
 
   /**
@@ -25,6 +26,13 @@ class HedleyRestfulPrenatalBloodGpRsTest extends HedleyRestfulPrenatalActivityBa
    */
   protected $dateFields = [
     'field_execution_date',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $entityFields = [
+    'field_originating_encounter',
   ];
 
 }

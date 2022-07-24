@@ -8384,6 +8384,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisRhesusNegative ->
+                    { english = "Rhesus Negative"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDepressionNotLikely ->
                     { english = "Depression not Likely"
                     , kinyarwanda = Nothing
@@ -8736,6 +8741,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisRhesusNegative ->
+                    { english = "Rhesus Negative"
+                    , kinyarwanda = Nothing
+                    }
+
                 DiagnosisDepressionNotLikely ->
                     { english = "Depression not Likely"
                     , kinyarwanda = Nothing
@@ -8970,6 +8980,11 @@ translationSet trans =
 
                 Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
                     { english = "Patient shows signs of Gestational Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRhesusNegative ->
+                    { english = "Patient has Rh-Negative status"
                     , kinyarwanda = Nothing
                     }
 

@@ -72,6 +72,7 @@ features[field_instance][] = node-prenatal_blood_gprs_test-field_blood_group
 features[field_instance][] = node-prenatal_blood_gprs_test-field_date_measured
 features[field_instance][] = node-prenatal_blood_gprs_test-field_execution_date
 features[field_instance][] = node-prenatal_blood_gprs_test-field_nurse
+features[field_instance][] = node-prenatal_blood_gprs_test-field_originating_encounter
 features[field_instance][] = node-prenatal_blood_gprs_test-field_person
 features[field_instance][] = node-prenatal_blood_gprs_test-field_prenatal_encounter
 features[field_instance][] = node-prenatal_blood_gprs_test-field_rhesus
