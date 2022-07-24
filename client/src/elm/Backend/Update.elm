@@ -4300,7 +4300,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                      -- diagnosed, patient is referred to hospital.
                                      -- On next occasions, no next steps are required.
                                      -- Therefore, if we know that Diabetes was already diagnosed, we will not
-                                     -- report back of this diagnosis, to prevent unnecessary referral to hospital.
+                                     -- report back about this diagnosis, to prevent unnecessary referral to hospital.
                                      diabetesDiagnoses
                                         && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
                                     )
@@ -4311,7 +4311,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             -- This way, theoretically, it's possible to have multiple tests pending,
                                             -- and results can be entered multiple times.
                                             -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
-                                            -- report back of this diagnosis, to prevent unnecessary referral to hospital.
+                                            -- report back about this diagnosis, to prevent unnecessary referral to hospital.
                                             rhNegativeDiagnosis
                                                 && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembledAfter
                                            )
