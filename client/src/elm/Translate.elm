@@ -103,7 +103,7 @@ import Pages.Prenatal.Activity.Types
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
-import Pages.Prenatal.ProgressReport.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..))
+import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), LabResultsCurrentMode(..), LabResultsHistoryMode(..))
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
@@ -289,6 +289,7 @@ type TranslationId
     | AccompaniedByPartner
     | AccompanyToFacilityQuestion ReferralFacility
     | AccessDenied
+    | Actions
     | ActionsTaken
     | ActionsToTake
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
@@ -430,6 +431,8 @@ type TranslationId
     | Children
     | ChildrenNames
     | ChildrenNationalId
+    | CHWAction CHWAction
+    | ChwActivity
     | Clear
     | ClickTheCheckMark
     | ClinicType ClinicType
@@ -1435,6 +1438,11 @@ translationSet trans =
         AccessDenied ->
             { english = "Access denied"
             , kinyarwanda = Just "Kwinjira ntibyemera"
+            }
+
+        Actions ->
+            { english = "Actions"
+            , kinyarwanda = Nothing
             }
 
         ActionsTaken ->
@@ -2913,6 +2921,48 @@ translationSet trans =
         ChildrenNationalId ->
             { english = "Children's National ID"
             , kinyarwanda = Just "Indangamuntu y'umwana"
+            }
+
+        CHWAction value ->
+            case value of
+                ActionPregnancyDating ->
+                    { english = "Pregnancy Dating"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionLabs ->
+                    { english = "Labs"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionDangerSignsPresent ->
+                    { english = "Danger Signs Present"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionReferredToHealthCenter ->
+                    { english = "Referred to Health Center"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionAppointmentConfirmation ->
+                    { english = "Appointment Confirmation"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionBirthPlan ->
+                    { english = "Birth Plan"
+                    , kinyarwanda = Nothing
+                    }
+
+        ChwActivity ->
+            { english = "Chw Activity"
+            , kinyarwanda = Nothing
             }
 
         ChildOf ->

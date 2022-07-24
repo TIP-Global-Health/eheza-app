@@ -2390,6 +2390,75 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
+  .chw-activities {
+
+    .heading,
+    .table-row {
+      display: grid;
+      grid-gap: 20px;
+      grid-template-columns: 20% auto;
+    }
+
+    .pane-content {
+      padding-left: 0;
+      padding-bottom: 0;
+    }
+
+    .heading {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .heading .date {
+      margin-left: 40px;
+    }
+
+    .heading .chw-actions {
+      margin-left: 20px;
+    }
+
+    .table-row {
+      padding: 20px 0;
+      border-top: 1px solid $color-text;
+    }
+
+    .table-row .date {
+      margin: auto 0 auto 40px;
+    }
+
+    .table-row ul {
+      display: inline-block;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .table-row ul li {
+      border-radius: 10px;
+      color: #FFFFFF;
+      float: left;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 3px 5px;
+      padding: 0 10px;
+      text-transform: uppercase;
+    }
+
+    .table-row ul li.purple {
+      background: $color-purple;
+    }
+
+    .table-row ul li.velvet {
+      background: $color-velvet;
+    }
+
+    .table-row ul li.cyan {
+      background: $color-cyan;
+    }
+
+  }
+
   .risk-factors > .pane-heading {
 
     img {
@@ -3088,7 +3157,7 @@ div.page-report.acute-illness {
       }
 
       &.gi {
-        background: $color-blue;
+        background: $color-purple;
       }
     }
 
@@ -3296,7 +3365,7 @@ div.page-activity.patient-record {
     text-transform: uppercase;
 
     &.completed {
-      background: $color-blue;
+      background: $color-purple;
     }
 
     &.behind,
@@ -3717,7 +3786,7 @@ div.page-case-management {
           }
 
           &.this-month {
-            background: $color-blue;
+            background: $color-purple;
           }
 
           &.next-month {

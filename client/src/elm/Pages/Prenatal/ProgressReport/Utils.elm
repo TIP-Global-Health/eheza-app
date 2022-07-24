@@ -207,3 +207,40 @@ diagnosisForProgressReportToString language diagnosis =
 wrapWithLI : String -> List (Html any)
 wrapWithLI =
     text >> List.singleton >> li [] >> List.singleton
+
+
+chwActionToColor : CHWAction -> String
+chwActionToColor action =
+    case action of
+        ActionPregnancyDating ->
+            "purple"
+
+        ActionLabs ->
+            "purple"
+
+        ActionDangerSignsPresent ->
+            "velvet"
+
+        ActionReferredToHealthCenter ->
+            "velvet"
+
+        ActionAppointmentConfirmation ->
+            "cyan"
+
+        ActionHealthEducation ->
+            "cyan"
+
+        ActionBirthPlan ->
+            "cyan"
+
+
+allCHWActions : List CHWAction
+allCHWActions =
+    [ ActionPregnancyDating
+    , ActionLabs
+    , ActionDangerSignsPresent
+    , ActionReferredToHealthCenter
+    , ActionAppointmentConfirmation
+    , ActionHealthEducation
+    , ActionBirthPlan
+    ]

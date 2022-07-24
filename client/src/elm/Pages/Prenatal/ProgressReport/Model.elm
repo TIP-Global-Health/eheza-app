@@ -137,6 +137,16 @@ medicalDiagnoses =
     ]
 
 
+type CHWAction
+    = ActionPregnancyDating
+    | ActionLabs
+    | ActionDangerSignsPresent
+    | ActionReferredToHealthCenter
+    | ActionAppointmentConfirmation
+    | ActionHealthEducation
+    | ActionBirthPlan
+
+
 type Msg
     = CloseEncounter PrenatalEncounterId
     | SetActivePage Page
