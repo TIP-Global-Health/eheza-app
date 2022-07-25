@@ -35,7 +35,8 @@ fetch currentDate personId db =
                                             )
                                         |> Maybe.withDefault []
                             in
-                            fetchChildrenMsgs
+                            FetchMotherMeasurements personId
+                                :: fetchChildrenMsgs
                                 ++ Pages.Prenatal.Participant.Fetch.fetch personId db
                     )
                 |> Maybe.withDefault []
