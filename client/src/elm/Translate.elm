@@ -5018,7 +5018,7 @@ translationSet trans =
             }
 
         HypertensionRecommendedTreatmentHeader ->
-            { english = "This patient shows signs of cronic hypertension"
+            { english = "This patient shows signs of Chronic hypertension"
             , kinyarwanda = Just "Uyu murwayi agaragaza ibimenyetso by'indwara y'umuvuduko w'amaraso imaze igihe kirekire"
             }
 
@@ -11530,7 +11530,7 @@ translationSet trans =
                     }
 
                 TreatmentNitrofurantoin ->
-                    { english = "Nitrofurantoin (100mg)"
+                    { english = "nitrofurantoin (100mg)"
                     , kinyarwanda = Nothing
                     }
 
