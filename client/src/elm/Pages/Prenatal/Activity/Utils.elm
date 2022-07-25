@@ -1792,6 +1792,12 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                         egaWeeks > 20 && diabetesDiagnosed
                     )
 
+        DiagnosisRhesusNegative ->
+            getMeasurementValueFunc measurements.bloodGpRsTest
+                |> Maybe.andThen .rhesus
+                |> Maybe.map ((==) RhesusNegative)
+                |> Maybe.withDefault False
+
         -- Non Lab Results diagnoses.
         _ ->
             False
@@ -2261,6 +2267,7 @@ labResultsAndExaminationDiagnoses =
     , DiagnosisSevereAnemiaWithComplications
     , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
     , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
+    , DiagnosisRhesusNegative
     ]
 
 
@@ -4946,7 +4953,7 @@ toHemoglobinTestValueWithEmptyResults note date =
 
 toBloodGpRsTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalBloodGpRsTestValue
 toBloodGpRsTestValueWithEmptyResults note date =
-    PrenatalBloodGpRsTestValue note date Nothing Nothing
+    PrenatalBloodGpRsTestValue note date Nothing Nothing Nothing
 
 
 toHIVPCRTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHIVPCRTestValue

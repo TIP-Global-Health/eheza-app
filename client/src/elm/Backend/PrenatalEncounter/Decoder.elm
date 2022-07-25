@@ -256,6 +256,9 @@ decodePrenatalDiagnosis =
                     "gestational-diabetes" ->
                         succeed DiagnosisGestationalDiabetes
 
+                    "rhesus-negative" ->
+                        succeed DiagnosisRhesusNegative
+
                     "depression-not-likely" ->
                         succeed DiagnosisDepressionNotLikely
 

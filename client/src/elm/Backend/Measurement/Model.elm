@@ -1035,6 +1035,7 @@ type alias PrenatalBloodGpRsTestValue =
     , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 

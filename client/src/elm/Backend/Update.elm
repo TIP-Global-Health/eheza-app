@@ -1894,17 +1894,26 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ PrenatalBloodGpRsTestRevision uid data ] ->
                     let
-                        ( newModel, extraMsgs ) =
+                        -- We do not catch changes done to the model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes below.
+                        ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestBloodGpRs
                                 data.value.executionNote
                                 (isJust data.value.bloodGroup)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            Maybe.map
+                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisRhesusNegative ] ))
+                                data.value.originatingEncounter
+                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
-                    , extraMsgs
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
                 [ PrenatalHemoglobinTestRevision uid data ] ->
@@ -4271,15 +4280,49 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                     reportedDiagnoses =
                                         List.filter (\diagnosis -> List.member diagnosis targetDiagnoses) addedDiagnoses
                                             |> EverySet.fromList
+
+                                    diabetesDiagnoses =
+                                        EverySet.toList reportedDiagnoses
+                                            |> List.any
+                                                (\diagnosis ->
+                                                    List.member diagnosis Pages.Prenatal.Utils.diabetesDiagnoses
+                                                )
+
+                                    rhNegativeDiagnosis =
+                                        EverySet.member DiagnosisRhesusNegative reportedDiagnoses
                                 in
-                                if not <| EverySet.isEmpty reportedDiagnoses then
-                                    [ Backend.PrenatalEncounter.Model.SetPastPrenatalDiagnoses reportedDiagnoses
-                                        |> Backend.Model.MsgPrenatalEncounter originatingEncounterId
-                                        |> App.Model.MsgIndexedDb
-                                    ]
+                                if EverySet.isEmpty reportedDiagnoses then
+                                    []
+
+                                else if
+                                    (-- Reporting back about previous diagnosis results in hospital referral
+                                     -- at Next steps. For Diabetes, we have logic saying that when it's first
+                                     -- diagnosed, the patient is referred to hospital.
+                                     -- On next occasions, no next steps are required.
+                                     -- Therefore, if we know that Diabetes was already diagnosed, we will not
+                                     -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
+                                     diabetesDiagnoses
+                                        && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
+                                    )
+                                        || (-- Reporting back about previous diagnosis results in hospital referral
+                                            -- at Next steps.
+                                            -- Even though the Blood group and rhesus test are supposed to be run once,
+                                            -- we continue offering it until we get a result.
+                                            -- This way, theoretically, it's possible to have multiple tests pending,
+                                            -- and results can be entered multiple times.
+                                            -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
+                                            -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
+                                            rhNegativeDiagnosis
+                                                && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembledAfter
+                                           )
+                                then
+                                    []
 
                                 else
-                                    []
+                                    Backend.PrenatalEncounter.Model.SetPastPrenatalDiagnoses reportedDiagnoses
+                                        |> Backend.Model.MsgPrenatalEncounter originatingEncounterId
+                                        |> App.Model.MsgIndexedDb
+                                        |> List.singleton
                             )
                             originData
                             |> Maybe.withDefault []

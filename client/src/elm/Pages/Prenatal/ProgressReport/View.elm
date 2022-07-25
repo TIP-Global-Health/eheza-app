@@ -2781,6 +2781,9 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisGestationalDiabetes ->
             referredToHospitalMessage
 
+        DiagnosisRhesusNegative ->
+            referredToHospitalMessage
+
         DiagnosisDepressionNotLikely ->
             mentalHealthMessage
 
