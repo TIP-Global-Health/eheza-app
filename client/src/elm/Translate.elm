@@ -5045,17 +5045,17 @@ translationSet trans =
         HypertensionRecommendedTreatmentUpdateNewTreatment value ->
             case value of
                 TreatementUpdateMaintainCurrentDoasage ->
-                    { english = "It is recommend that the medication remain unchanged -"
+                    { english = "It is recommended that the medication remain unchanged -"
                     , kinyarwanda = Nothing
                     }
 
                 TreatementUpdateIncreaseOneDose ->
-                    { english = "It is recommend that the medication increase one dosage level to"
+                    { english = "It is recommended that the medication increase one dosage level to"
                     , kinyarwanda = Nothing
                     }
 
                 TreatementUpdateIncreaseTwoDoses ->
-                    { english = "It is recommend that the medication increase two dosage levels to"
+                    { english = "It is recommended that the medication increase two dosage levels to"
                     , kinyarwanda = Nothing
                     }
 
@@ -5071,7 +5071,7 @@ translationSet trans =
             }
 
         HypertensionRecommendedTreatmentUpdateStartTreatment ->
-            { english = "It is recommend to start treatment with"
+            { english = "It is recommended to start treatment with"
             , kinyarwanda = Nothing
             }
 
@@ -6986,7 +6986,7 @@ translationSet trans =
             }
 
         NotFollowingRecommendationQuestion ->
-            { english = "Why recomendatoins were not followed"
+            { english = "Why recommendations were not followed"
             , kinyarwanda = Just "Nta bipimo byafashwe"
             }
 
