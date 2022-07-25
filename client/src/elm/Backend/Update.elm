@@ -1894,7 +1894,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ PrenatalBloodGpRsTestRevision uid data ] ->
                     let
-                        -- We do not catch changes done to model, because
+                        -- We do not catch changes done to the model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
