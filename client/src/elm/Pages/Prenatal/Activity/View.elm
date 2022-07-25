@@ -1732,7 +1732,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                             "next-steps-follow-up"
 
                         NextStepsSendToHC ->
-                            "next-steps-send-to-hc"
+                            "next-steps-referral"
 
                         NextStepsHealthEducation ->
                             "next-steps-health-education"

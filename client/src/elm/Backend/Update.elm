@@ -4081,7 +4081,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
         (\assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
-                    Pages.Prenatal.Activity.Utils.mandatoryActivitiesForNextStepsCompleted
+                    Pages.Prenatal.Activity.Utils.mandatoryActivitiesForAssessmentCompleted
                         currentDate
                         assembledAfter
 
@@ -4195,8 +4195,14 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             in
                                             -- Instructions for Emergency Referral.
                                             ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
-                                            , if List.member DiagnosisSeverePreeclampsiaImmediate urgentDiagnoses then
-                                                translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
+                                            , if
+                                                List.any
+                                                    (\immediateDeliveryDiagnosis ->
+                                                        List.member immediateDeliveryDiagnosis urgentDiagnoses
+                                                    )
+                                                    Pages.Prenatal.Activity.Utils.immediateDeliveryDiagnoses
+                                              then
+                                                translate language Translate.EmergencyReferralHelperReferToHospitalForImmediateDelivery
 
                                               else if
                                                 List.any
@@ -4288,8 +4294,8 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
 
                         UserPage (PrenatalActivityPage _ _) ->
                             -- reportToOriginMsgs are sent when nurse enters
-                            -- of test from one of previous encounters, and
-                            -- on save, APP navigates back to Labs History
+                            -- results of test from one of previous encounters,
+                            -- and on save, APP navigates back to Labs History
                             -- sub activity.
                             initialEncounterMsgs ++ reportToOriginMsgs
 
@@ -4338,7 +4344,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
 
                                                     else
                                                         EverySet.remove test value.performedTests
-                                                , resolutionDate = Date.add Days (prenatalLabExpirationPeriod + 1) currentDate
+                                                , resolutionDate = Date.add Days prenatalLabExpirationPeriod currentDate
                                             }
                                        )
                         in
@@ -4360,7 +4366,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                                     Backend.Measurement.Model.PrenatalLabsResultsValue
                                         (EverySet.singleton test)
                                         EverySet.empty
-                                        (Date.add Days (prenatalLabExpirationPeriod + 1) currentDate)
+                                        (Date.add Days prenatalLabExpirationPeriod currentDate)
                                         False
                             in
                             [ saveLabsResultsMsg id assembled.participant.person Nothing resultsValue ]

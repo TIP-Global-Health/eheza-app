@@ -6,10 +6,14 @@ type PrenatalDiagnosis
     | DiagnosisChronicHypertensionAfterRecheck
     | DiagnosisGestationalHypertensionImmediate
     | DiagnosisGestationalHypertensionAfterRecheck
-    | DiagnosisModeratePreeclampsiaImmediate
-    | DiagnosisModeratePreeclampsiaAfterRecheck
-    | DiagnosisSeverePreeclampsiaImmediate
-    | DiagnosisSeverePreeclampsiaAfterRecheck
+    | DiagnosisModeratePreeclampsiaInitialPhase
+    | DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    | DiagnosisModeratePreeclampsiaRecurrentPhase
+    | DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    | DiagnosisSeverePreeclampsiaInitialPhase
+    | DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+    | DiagnosisSeverePreeclampsiaRecurrentPhase
+    | DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
     | DiagnosisEclampsia
     | DiagnosisHIV
     | DiagnosisHIVDetectableViralLoad
