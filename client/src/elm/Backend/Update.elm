@@ -4304,14 +4304,14 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                      diabetesDiagnoses
                                         && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
                                     )
-                                        || (-- Reporting back about previous diagnois results in hospital referral
+                                        || (-- Reporting back about previous diagnosis results in hospital referral
                                             -- at Next steps.
-                                            -- Even though Blood group and rhesus test is supposed to run once,
+                                            -- Even though the Blood group and rhesus test are supposed to be run once,
                                             -- we continue offering it until we get a result.
                                             -- This way, theoretically, it's possible to have multiple tests pending,
                                             -- and results can be entered multiple times.
                                             -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
-                                            -- report back about this diagnosis, to prevent unnecessary referral to hospital.
+                                            -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
                                             rhNegativeDiagnosis
                                                 && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembledAfter
                                            )
