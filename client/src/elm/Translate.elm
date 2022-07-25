@@ -9238,7 +9238,7 @@ translationSet trans =
                     }
 
         PrenatalHealthEducationDiabetesInform ->
-            { english = "Council patient on healthy nutrituin and exercise practices"
+            { english = "Counsel patient on healthy nutrition and exercise practices"
             , kinyarwanda = Nothing
             }
 
