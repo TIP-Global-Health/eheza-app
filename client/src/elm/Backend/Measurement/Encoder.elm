@@ -154,12 +154,19 @@ encodePrenatalHealthEducation =
     encodePrenatalMeasurement encodePrenatalHealthEducationValue
 
 
-encodePrenatalHealthEducationValue : EverySet PrenatalHealthEducationSign -> List ( String, Value )
-encodePrenatalHealthEducationValue signs =
-    [ ( "prenatal_health_education", encodeEverySet encodePrenatalHealthEducationSign signs )
+encodePrenatalHealthEducationValue : PrenatalHealthEducationValue -> List ( String, Value )
+encodePrenatalHealthEducationValue value =
+    let
+        signsPhase2 =
+            Maybe.map (\signs -> [ ( "health_education_signs_ph2", encodeEverySet encodePrenatalHealthEducationSign signs ) ])
+                value.signsPhase2
+                |> Maybe.withDefault []
+    in
+    [ ( "prenatal_health_education", encodeEverySet encodePrenatalHealthEducationSign value.signs )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_health_education" )
     ]
+        ++ signsPhase2
 
 
 encodePrenatalHealthEducationSign : PrenatalHealthEducationSign -> Value
@@ -237,12 +244,6 @@ encodePrenatalHealthEducationSign sign =
 
             NoPrenatalHealthEducationSigns ->
                 "none"
-
-            NoPrenatalHealthEducationSignsInitialPhase ->
-                "none-initial"
-
-            NoPrenatalHealthEducationSignsRecurrentPhase ->
-                "none-recurrent"
 
 
 encodePrenatalFollowUp : PrenatalFollowUp -> List ( String, Value )

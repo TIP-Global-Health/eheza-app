@@ -272,9 +272,14 @@ pregnancyTestResultFromString result =
 
 decodePrenatalHealthEducation : Decoder PrenatalHealthEducation
 decodePrenatalHealthEducation =
-    decodeEverySet decodePrenatalHealthEducationSign
-        |> field "prenatal_health_education"
-        |> decodePrenatalMeasurement
+    decodePrenatalMeasurement decodePrenatalHealthEducationValue
+
+
+decodePrenatalHealthEducationValue : Decoder PrenatalHealthEducationValue
+decodePrenatalHealthEducationValue =
+    succeed PrenatalHealthEducationValue
+        |> required "prenatal_health_education" (decodeEverySet decodePrenatalHealthEducationSign)
+        |> optional "health_education_signs_ph2" (nullable (decodeEverySet decodePrenatalHealthEducationSign)) Nothing
 
 
 decodePrenatalHealthEducationSign : Decoder PrenatalHealthEducationSign
@@ -354,12 +359,6 @@ decodePrenatalHealthEducationSign =
 
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
-
-                    "none-initial" ->
-                        succeed NoPrenatalHealthEducationSignsInitialPhase
-
-                    "none-recurrent" ->
-                        succeed NoPrenatalHealthEducationSignsRecurrentPhase
 
                     _ ->
                         sign ++ " is not a recognized PrenatalHealthEducationSign" |> fail
