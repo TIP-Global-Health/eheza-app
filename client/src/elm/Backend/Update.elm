@@ -4295,12 +4295,12 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                     []
 
                                 else if
-                                    (-- Reporting back about previous diagnois results in hospital referral
+                                    (-- Reporting back about previous diagnosis results in hospital referral
                                      -- at Next steps. For Diabetes, we have logic saying that when it's first
-                                     -- diagnosed, patient is referred to hospital.
+                                     -- diagnosed, the patient is referred to hospital.
                                      -- On next occasions, no next steps are required.
                                      -- Therefore, if we know that Diabetes was already diagnosed, we will not
-                                     -- report back about this diagnosis, to prevent unnecessary referral to hospital.
+                                     -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
                                      diabetesDiagnoses
                                         && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
                                     )
