@@ -23,6 +23,8 @@ type PrenatalActivity
     | PrenatalTreatmentReview
     | MaternalMentalHealth
     | PrenatalImmunisation
+    | Breastfeeding
+    | SpecialityCare
 
 
 type PrenatalRecurrentActivity

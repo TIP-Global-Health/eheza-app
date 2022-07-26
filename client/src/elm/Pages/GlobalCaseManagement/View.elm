@@ -19,6 +19,7 @@ import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.Person.Model
 import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import EverySet
@@ -626,7 +627,7 @@ generatePrenatalFollowUpEntryData language currentDate limitDate db ( participan
                     |> List.sortWith sortEncounterTuplesDesc
 
             allChwEncountersWithIds =
-                List.filter (Tuple.second >> .encounterType >> (/=) NurseEncounter) allEncountersWithIds
+                List.filter (Tuple.second >> .encounterType >> isNurseEncounter >> not) allEncountersWithIds
         in
         List.head allChwEncountersWithIds
             |> Maybe.andThen

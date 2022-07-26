@@ -8038,6 +8038,16 @@ translationSet trans =
                     , kinyarwanda = Just "Ikingira"
                     }
 
+                Backend.PrenatalActivity.Model.Breastfeeding ->
+                    { english = "Breastfeeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpecialityCare ->
+                    { english = "Speciality Care"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalRecurrentActivitiesTitle activity ->
             case activity of
                 Backend.PrenatalActivity.Model.LabResults ->

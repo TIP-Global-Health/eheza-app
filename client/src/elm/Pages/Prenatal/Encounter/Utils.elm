@@ -9,7 +9,7 @@ import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples, sortEncou
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
+import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter, lmpToEDDDate)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
@@ -57,8 +57,16 @@ getAllActivities assembled =
                 ]
 
         NursePostpartumEncounter ->
-            -- @todo
-            []
+            [ PregnancyOutcome
+            , SymptomReview
+            , MaternalMentalHealth
+            , Backend.PrenatalActivity.Model.Breastfeeding
+            , Examination
+            , FamilyPlanning
+            , PrenatalTreatmentReview
+            , SpecialityCare
+            , NextSteps
+            ]
 
         ChwFirstEncounter ->
             [ PregnancyDating, Laboratory, DangerSigns, Backend.PrenatalActivity.Model.HealthEducation, NextSteps ]
@@ -272,7 +280,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
         |> (\previousEncounters ->
                 let
                     ( nurseEncounters, chwEncounters ) =
-                        List.partition (Tuple.second >> .encounterType >> (==) NurseEncounter) previousEncounters
+                        List.partition (Tuple.second >> .encounterType >> isNurseEncounter) previousEncounters
 
                     getEncounterDataForNurse ( encounterId, encounter ) =
                         case Dict.get encounterId db.prenatalMeasurements of

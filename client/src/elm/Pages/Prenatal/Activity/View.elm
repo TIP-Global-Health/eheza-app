@@ -202,6 +202,14 @@ viewActivity language currentDate isChw activity assembled db model =
         PrenatalImmunisation ->
             viewImmunisationContent language currentDate assembled model.immunisationData
 
+        Backend.PrenatalActivity.Model.Breastfeeding ->
+            -- @todo
+            []
+
+        SpecialityCare ->
+            -- @todo
+            []
+
         NextSteps ->
             viewNextStepsContent language currentDate isChw assembled model.nextStepsData
 

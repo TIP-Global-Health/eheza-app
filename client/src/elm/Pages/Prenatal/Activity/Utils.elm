@@ -9,6 +9,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -159,15 +160,47 @@ expectActivity currentDate assembled activity =
                         assembled.globalLmpDate
                         |> Maybe.withDefault False
 
-                -- Unique Chw activities.
+                -- Activities that do not participate at Nurse encounter.
                 _ ->
                     False
 
         NursePostpartumEncounter ->
             case activity of
-                -- @todo:
-                _ ->
+                PregnancyOutcome ->
                     True
+
+                SymptomReview ->
+                    True
+
+                MaternalMentalHealth ->
+                    True
+
+                Backend.PrenatalActivity.Model.Breastfeeding ->
+                    True
+
+                Examination ->
+                    True
+
+                FamilyPlanning ->
+                    True
+
+                PrenatalTreatmentReview ->
+                    True
+
+                SpecialityCare ->
+                    True
+
+                NextSteps ->
+                    mandatoryActivitiesForPostpartumNextStepsCompleted currentDate assembled
+                        && (resolveNextStepsTasks currentDate assembled
+                                |> List.filter (expectNextStepsTask currentDate assembled)
+                                |> List.isEmpty
+                                |> not
+                           )
+
+                -- Activities that do not participate at Nurse Postpartum encounter.
+                _ ->
+                    False
 
         ChwFirstEncounter ->
             case activity of
@@ -189,7 +222,7 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
 
-                -- Unique nurse activities.
+                -- Activities that do not participate at CHW encounter 1.
                 _ ->
                     False
 
@@ -209,7 +242,7 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
 
-                -- Unique nurse activities.
+                -- Activities that do not participate at CHW encounter 2.
                 _ ->
                     False
 
@@ -225,7 +258,7 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
 
-                -- Unique nurse activities.
+                -- Activities that do not participate at CHW encounter 3.
                 _ ->
                     False
 
@@ -240,7 +273,7 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
 
-                -- Unique nurse activities.
+                -- Activities that do not participate at CHW Postpartum encounter.
                 _ ->
                     False
 
@@ -287,7 +320,7 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.prenatalPhoto
 
         Laboratory ->
-            if assembled.encounter.encounterType == NurseEncounter then
+            if isNurseEncounter assembled.encounter.encounterType then
                 List.all (laboratoryTaskCompleted currentDate assembled) laboratoryTasks
 
             else
@@ -321,6 +354,14 @@ activityCompleted currentDate assembled activity =
             (not <| expectActivity currentDate assembled PrenatalImmunisation)
                 || List.all (immunisationTaskCompleted currentDate assembled) immunisationTasks
 
+        Backend.PrenatalActivity.Model.Breastfeeding ->
+            -- @todo
+            False
+
+        SpecialityCare ->
+            -- @todo
+            False
+
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate assembled =
@@ -330,6 +371,10 @@ resolveNextStepsTasks currentDate assembled =
                 NurseEncounter ->
                     -- The order is important. Do not change.
                     [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsWait ]
+
+                NursePostpartumEncounter ->
+                    -- @todo
+                    [ NextStepsSendToHC ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -368,6 +413,10 @@ expectNextStepsTask currentDate assembled task =
                         || referToHIVProgram assembled
                         || referToMentalHealthSpecialist assembled
 
+                NursePostpartumEncounter ->
+                    --@todo
+                    False
+
                 _ ->
                     dangerSigns
 
@@ -394,6 +443,10 @@ expectNextStepsTask currentDate assembled task =
                                 || provideMentalHealthEducation assembled
                            )
 
+                NursePostpartumEncounter ->
+                    --@todo
+                    False
+
                 ChwPostpartumEncounter ->
                     True
 
@@ -404,10 +457,11 @@ expectNextStepsTask currentDate assembled task =
         NextStepsNewbornEnrolment ->
             assembled.encounter.encounterType == ChwPostpartumEncounter
 
-        -- Exclusive Nurse task.
         NextStepsMedicationDistribution ->
-            -- Emergency referral is not required.
-            (not <| emergencyReferalRequired assembled)
+            -- Exclusive task for Nurse encounter.
+            (assembled.encounter.encounterType == NurseEncounter)
+                && -- Emergency referral is not required.
+                   (not <| emergencyReferalRequired assembled)
                 && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
                         |> List.isEmpty
                         |> not
@@ -430,8 +484,10 @@ expectNextStepsTask currentDate assembled task =
                    )
 
         NextStepsWait ->
-            -- If we refer patients somewhere, there's no need to wait.
-            (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
+            -- Exclusive task for Nurse encounter.
+            (assembled.encounter.encounterType == NurseEncounter)
+                && -- If we refer patients somewhere, there's no need to wait.
+                   (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
                 && -- We show Wait activity when there's at least one
                    -- test that was performed, or, 2 hours waiting is
                    -- required for blood preasure recheck.
@@ -1031,6 +1087,10 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
         NurseEncounter ->
             activityCompleted currentDate assembled DangerSigns
 
+        NursePostpartumEncounter ->
+            --@todo
+            False
+
         _ ->
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
 
@@ -1100,6 +1160,12 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         ChwPostpartumEncounter ->
             activityCompleted currentDate assembled PregnancyOutcome
                 && activityCompleted currentDate assembled DangerSigns
+
+
+mandatoryActivitiesForPostpartumNextStepsCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForPostpartumNextStepsCompleted currentDate assembled =
+    -- @todo
+    True
 
 
 expectPrenatalPhoto : NominalDate -> AssembledData -> Bool
@@ -1205,6 +1271,10 @@ generateDangerSignsListForNurse assembled =
                 NoDangerSign
                 assembled.measurements
 
+        NursePostpartumEncounter ->
+            --@todo
+            []
+
         _ ->
             []
 
@@ -1213,6 +1283,9 @@ generateDangerSignsListForChw : Language -> AssembledData -> List String
 generateDangerSignsListForChw language assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
+            []
+
+        NursePostpartumEncounter ->
             []
 
         ChwPostpartumEncounter ->
@@ -2327,6 +2400,10 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
     in
     case assembled.encounter.encounterType of
         NurseEncounter ->
+            healthEducationFormInputsAndTasksForNurse language assembled form
+
+        NursePostpartumEncounter ->
+            --@todo
             healthEducationFormInputsAndTasksForNurse language assembled form
 
         _ ->
