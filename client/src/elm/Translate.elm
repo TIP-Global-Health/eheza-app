@@ -11530,7 +11530,7 @@ translationSet trans =
                     }
 
                 TreatmentNitrofurantoin ->
-                    { english = "nitrofurantoin (100mg)"
+                    { english = "Nitrofurantoin (100mg)"
                     , kinyarwanda = Nothing
                     }
 
