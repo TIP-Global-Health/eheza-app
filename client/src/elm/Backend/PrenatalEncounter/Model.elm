@@ -35,6 +35,7 @@ emptyPrenatalEncounter participant startDate encounterType shard =
 
 type PrenatalEncounterType
     = NurseEncounter
+    | NursePostpartumEncounter
     | ChwFirstEncounter
     | ChwSecondEncounter
     | ChwThirdPlusEncounter

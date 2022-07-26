@@ -56,6 +56,10 @@ getAllActivities assembled =
                 , NextSteps
                 ]
 
+        NursePostpartumEncounter ->
+            -- @todo
+            []
+
         ChwFirstEncounter ->
             [ PregnancyDating, Laboratory, DangerSigns, Backend.PrenatalActivity.Model.HealthEducation, NextSteps ]
 
@@ -73,6 +77,9 @@ getSubsequentEncounterType : PrenatalEncounterType -> Maybe PrenatalEncounterTyp
 getSubsequentEncounterType currentEncounterType =
     case currentEncounterType of
         NurseEncounter ->
+            Nothing
+
+        NursePostpartumEncounter ->
             Nothing
 
         ChwFirstEncounter ->
@@ -117,6 +124,10 @@ generatePostCreateDestination encounterType hasNurseEncounter =
 
         -- We should never get here.
         NurseEncounter ->
+            DestinationEncounterPage
+
+        -- We should never get here.
+        NursePostpartumEncounter ->
             DestinationEncounterPage
 
 

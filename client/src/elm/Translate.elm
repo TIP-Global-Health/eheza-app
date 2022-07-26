@@ -9041,6 +9041,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NursePostpartumEncounter ->
+                    { english = "Postpartum"
+                    , kinyarwanda = Just "Igihe cya nyuma cyo kubyara"
+                    }
+
                 ChwFirstEncounter ->
                     { english = "First Antenatal Visit"
                     , kinyarwanda = Just "Gusura ku nshuro ya mbere umugore utwite"

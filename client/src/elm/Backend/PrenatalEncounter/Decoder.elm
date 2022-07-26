@@ -45,6 +45,9 @@ decodePrenatalEncounterType =
                     "nurse" ->
                         succeed NurseEncounter
 
+                    "nurse-postpartum" ->
+                        succeed NursePostpartumEncounter
+
                     "chw-1" ->
                         succeed ChwFirstEncounter
 

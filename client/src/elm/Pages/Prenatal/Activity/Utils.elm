@@ -163,6 +163,12 @@ expectActivity currentDate assembled activity =
                 _ ->
                     False
 
+        NursePostpartumEncounter ->
+            case activity of
+                -- @todo:
+                _ ->
+                    True
+
         ChwFirstEncounter ->
             case activity of
                 PregnancyDating ->
@@ -1047,6 +1053,10 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
                         |> List.filter (expectActivity currentDate assembled)
                         |> List.all (activityCompleted currentDate assembled)
                    )
+
+        NursePostpartumEncounter ->
+            -- @todo:
+            True
 
         ChwFirstEncounter ->
             let
@@ -2879,9 +2889,12 @@ healthEducationFormInputsAndTasksForChw language assembled form =
             , postpartumEnconterTasks
             )
 
-        -- We should never get here, as health
-        -- education is presented only for CHW.
+        -- We should never get here, as function is only for CHW.
         NurseEncounter ->
+            ( [], [] )
+
+        -- We should never get here, as function is only for CHW.
+        NursePostpartumEncounter ->
             ( [], [] )
 
 

@@ -53,6 +53,9 @@ encodePrenatalEncounterType encounterType =
             NurseEncounter ->
                 "nurse"
 
+            NursePostpartumEncounter ->
+                "nurse-postpartum"
+
             ChwFirstEncounter ->
                 "chw-1"
 
