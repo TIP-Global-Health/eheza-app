@@ -449,6 +449,9 @@ generateActivityData activity assembled =
                 NurseEncounter ->
                     default
 
+                NursePostpartumEncounter ->
+                    default
+
                 ChwPostpartumEncounter ->
                     default
 

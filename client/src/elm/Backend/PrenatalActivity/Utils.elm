@@ -87,7 +87,7 @@ activityToString activity =
             "immunisation"
 
         Breastfeeding ->
-            "breasfeeding"
+            "breastfeeding"
 
         SpecialityCare ->
             "speciality-care"
@@ -149,7 +149,7 @@ activityFromString s =
         "immunisation" ->
             Just PrenatalImmunisation
 
-        "breasfeeding" ->
+        "breastfeeding" ->
             Just Breastfeeding
 
         "speciality-care" ->

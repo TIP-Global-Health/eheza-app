@@ -453,7 +453,8 @@ h3.ui.header {
 }
 
 .icon-task-send-to-hc,
-.icon-task-appointment-confirmation {
+.icon-task-appointment-confirmation,
+.icon-task-speciality-care {
   background-image: url(#{$img-path}icon-health-center-white.svg);
   background-size: 78px 78px;
 }
@@ -463,7 +464,9 @@ h3.ui.header {
   background-size: 122px 122px;
 }
 
-.icon-task-feeding {
+.icon-task-feeding,
+// @todo - separate icon for icon-task-breastfeeding
+.icon-task-breastfeeding {
   background-image: url(#{$img-path}icon-feeding-white.svg);
   background-size: 122px 122px;
 }
