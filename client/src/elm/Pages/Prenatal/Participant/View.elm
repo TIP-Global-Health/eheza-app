@@ -224,9 +224,6 @@ viewPrenatalActionsForNurse :
     -> List (Html Msg)
 viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId encounters =
     let
-        activeEncounters =
-            List.filter (\( _, encounter ) -> isNothing encounter.endDate) encounters
-
         ( maybeActiveEncounterId, lastEncounterType, encounterWasCompletedToday ) =
             List.head encounters
                 |> Maybe.map
@@ -244,9 +241,12 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                 |> Maybe.withDefault ( Nothing, Nothing, False )
 
         -- Whether first prenatal encounter for person is in process.
-        -- This is True when there's only one encounter, and it's active.
+        -- This is True when there's only one encounter, it's active, and
+        -- it is of type NurseEncounter.
         firstEncounterInProcess =
-            List.length encounters == 1 && List.length activeEncounters == 1
+            (List.length encounters == 1)
+                && isJust maybeActiveEncounterId
+                && (Maybe.map ((==) NurseEncounter) lastEncounterType |> Maybe.withDefault False)
 
         encounterTypeButtonAction encounterType allowCreateNewSession =
             -- If there's an active encounter, navigate to it.
@@ -267,43 +267,47 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                             )
                     )
 
-        firstVisitButtonDisabled =
-            isJust maybeSessionId
-                && not (List.isEmpty encounters)
-                && not firstEncounterInProcess
-
         createFirstEncounterButton =
             viewButton language
                 (encounterTypeButtonAction NurseEncounter True)
                 (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
-                firstVisitButtonDisabled
+                (not firstEncounterButtonEnabled)
 
         createSubsequentEncounterButton =
+            let
+                buttonDisabled =
+                    firstEncounterButtonEnabled
+                        || postpartumEncounterButtonEnabled
+                        || encounterWasCompletedToday
+            in
             viewButton language
                 (encounterTypeButtonAction NurseEncounter False)
                 (Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
-                (not firstVisitButtonDisabled || encounterWasCompletedToday)
+                buttonDisabled
 
         createPostpartumEncounterButton =
-            let
-                buttonEnabled =
-                    Maybe.map
-                        (\encounterType ->
-                            -- Last encounter is not a postpartum encounter,
-                            -- and there's no encounter that was completed today.
-                            (encounterType /= NursePostpartumEncounter)
-                                && not encounterWasCompletedToday
-                        )
-                        lastEncounterType
-                        |> Maybe.withDefault
-                            -- When there're no encounters, we allow to
-                            -- create postpartum encounter.
-                            True
-            in
             viewButton language
                 (encounterTypeButtonAction NursePostpartumEncounter True)
                 (Translate.PrenatalEncounterType NursePostpartumEncounter)
-                (not buttonEnabled)
+                (not postpartumEncounterButtonEnabled)
+
+        firstEncounterButtonEnabled =
+            List.isEmpty encounters
+                || firstEncounterInProcess
+
+        postpartumEncounterButtonEnabled =
+            Maybe.map
+                (\encounterType ->
+                    -- Last encounter is not a postpartum encounter,
+                    -- and there's no encounter that was completed today.
+                    (encounterType /= NursePostpartumEncounter)
+                        && not encounterWasCompletedToday
+                )
+                lastEncounterType
+                |> Maybe.withDefault
+                    -- When there're no encounters, we allow to
+                    -- create postpartum encounter.
+                    True
     in
     [ createFirstEncounterButton
     , createSubsequentEncounterButton
