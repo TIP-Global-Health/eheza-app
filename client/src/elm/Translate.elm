@@ -8429,6 +8429,56 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPostpartumAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumUrinaryIncontinence ->
+                    { english = "Urinary Incontinence"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFatigue ->
+                    { english = "Fatigue"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumPerinealPainOrDischarge ->
+                    { english = "Perineal Pain or Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumInfection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumExcessiveBleeding ->
+                    { english = "Excessive Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+                    { english = "Early Mastitis or Engorgment"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumMastitis ->
+                    { english = "Mastitis"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8786,6 +8836,56 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPostpartumAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumUrinaryIncontinence ->
+                    { english = "Urinary Incontinence"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFatigue ->
+                    { english = "Fatigue"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumPerinealPainOrDischarge ->
+                    { english = "Perineal Pain or Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumInfection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumExcessiveBleeding ->
+                    { english = "Excessive Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+                    { english = "Early Mastitis or Engorgment"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumMastitis ->
+                    { english = "Mastitis"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -9030,6 +9130,56 @@ translationSet trans =
 
                 DiagnosisSuicideRisk ->
                     { english = "Patient shows signs of being a suicide risk"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumUrinaryIncontinence ->
+                    { english = "Urinary Incontinence"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFatigue ->
+                    { english = "Fatigue"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumPerinealPainOrDischarge ->
+                    { english = "Perineal Pain or Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumInfection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumExcessiveBleeding ->
+                    { english = "Excessive Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+                    { english = "Early Mastitis or Engorgment"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumMastitis ->
+                    { english = "Mastitis"
                     , kinyarwanda = Nothing
                     }
 

@@ -283,6 +283,36 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisOther ->
                 "other"
 
+            DiagnosisPostpartumAbdominalPain ->
+                "postpartum-abdominal-pain"
+
+            DiagnosisPostpartumUrinaryIncontinence ->
+                "postpartum-urinary-incontinence"
+
+            DiagnosisPostpartumHeadache ->
+                "postpartum-headache"
+
+            DiagnosisPostpartumFatigue ->
+                "postpartum-fatigue"
+
+            DiagnosisPostpartumFever ->
+                "postpartum-fever"
+
+            DiagnosisPostpartumPerinealPainOrDischarge ->
+                "postpartum-perineal-pain-discharge"
+
+            DiagnosisPostpartumInfection ->
+                "postpartum-infection"
+
+            DiagnosisPostpartumExcessiveBleeding ->
+                "postpartum-excessive-bleeding"
+
+            DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+                "postpartum-early-mastitis-engorgment"
+
+            DiagnosisPostpartumMastitis ->
+                "postpartum-mastitis"
+
             NoPrenatalDiagnosis ->
                 "none"
 
