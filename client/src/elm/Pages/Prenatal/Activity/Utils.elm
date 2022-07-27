@@ -3595,30 +3595,20 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         ( [], [] )
 
                 stillTakingValue =
-                    if config.stillTakingFormValue == form.hivStillTaking then
-                        div []
-                            [ viewQuestionLabel language Translate.TreatmentReviewQuestionStillTakingForHIV
-                            , viewBoolInput
-                                language
-                                config.stillTakingFormValue
-                                (setBoolInputMsg config.stillTakingUpdateFunc)
-                                "still-taking"
-                                Nothing
-                            ]
+                    if config.latestMedicationTreatment == latestMedicationTreatmentForHIV assembled then
+                        viewQuestionLabel language Translate.TreatmentReviewQuestionStillTakingForHIV
 
                     else
-                        div []
-                            [ viewQuestionLabel language Translate.TreatmentReviewQuestionStillTaking
-                            , viewBoolInput
-                                language
-                                config.stillTakingFormValue
-                                (setBoolInputMsg config.stillTakingUpdateFunc)
-                                "still-taking"
-                                Nothing
-                            ]
+                        viewQuestionLabel language Translate.TreatmentReviewQuestionStillTaking
             in
             ( [ header
               , stillTakingValue
+              , viewBoolInput
+                    language
+                    config.stillTakingFormValue
+                    (setBoolInputMsg config.stillTakingUpdateFunc)
+                    "still-taking"
+                    Nothing
               , viewQuestionLabel language Translate.TreatmentReviewQuestionMissedDoses
               , viewBoolInput
                     language
