@@ -3866,6 +3866,7 @@ div.page-case-management {
 
 div.page-activity.patient-record {
 
+  // This part is used by child view.
   .ui.full.segment {
     height: 90%;
 
@@ -3901,5 +3902,17 @@ div.page-activity.patient-record {
         transform: rotate(180deg);
       }
     }
+  }
+
+  // This part is used by adult view.
+  .heading.family-planning,
+  .entry.family-planning {
+    display: grid;
+    grid-gap: 20px;
+    grid-template-columns: 25% auto;
+  }
+
+  .entry.family-planning .date {
+    margin: auto 0;
   }
 }

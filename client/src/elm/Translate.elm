@@ -556,6 +556,7 @@ type TranslationId
     | EmergencyReferralHelperReferToEmergencyObstetricCareServices
     | DangerSignsTask DangerSignsTask
     | EmptyString
+    | EncounterDate
     | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterWarningForDiagnosisPane EncounterWarning String
@@ -1151,6 +1152,7 @@ type TranslationId
     | SelectAllSigns
     | SelectDangerSigns
     | SelectDate
+    | SelectedFamilyPlanningMethod
     | SelectIllnessSymptoms
     | SelectPostpartumChildDangerSigns
     | SelectPostpartumMotherDangerSigns
@@ -4050,6 +4052,11 @@ translationSet trans =
 
         EmptyString ->
             { english = ""
+            , kinyarwanda = Just ""
+            }
+
+        EncounterDate ->
+            { english = "Encounter Date"
             , kinyarwanda = Just ""
             }
 
@@ -7675,6 +7682,11 @@ translationSet trans =
 
                 FilterDemographics ->
                     { english = "Demographics"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterFamilyPlanning ->
+                    { english = "Family Planning"
                     , kinyarwanda = Nothing
                     }
 
@@ -12270,6 +12282,11 @@ translationSet trans =
         SelectDate ->
             { english = "Select Date"
             , kinyarwanda = Just "Hitamo Itariki"
+            }
+
+        SelectedFamilyPlanningMethod ->
+            { english = "Selected Family Planning Method"
+            , kinyarwanda = Nothing
             }
 
         SelectIllnessSymptoms ->
