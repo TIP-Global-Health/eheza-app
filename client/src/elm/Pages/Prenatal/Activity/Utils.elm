@@ -374,7 +374,7 @@ resolveNextStepsTasks currentDate assembled =
 
                 NursePostpartumEncounter ->
                     -- @todo
-                    [ NextStepsSendToHC ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -414,8 +414,7 @@ expectNextStepsTask currentDate assembled task =
                         || referToMentalHealthSpecialist assembled
 
                 NursePostpartumEncounter ->
-                    --@todo
-                    False
+                    referToHospitalForNonHIVDiagnosis assembled
 
                 _ ->
                     dangerSigns
@@ -444,8 +443,21 @@ expectNextStepsTask currentDate assembled task =
                            )
 
                 NursePostpartumEncounter ->
-                    --@todo
-                    False
+                    (not <| emergencyReferalRequired assembled)
+                        && (provideNauseaAndVomitingEducation assembled
+                                || List.any (symptomRecorded assembled.measurements)
+                                    [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
+                                || provideLegPainRednessEducation assembled
+                                || providePelvicPainEducation assembled
+                                || diagnosedAnyOf
+                                    [ DiagnosisHeartburn
+                                    , DiagnosisCandidiasis
+                                    , DiagnosisGonorrhea
+                                    , DiagnosisTrichomonasOrBacterialVaginosis
+                                    ]
+                                    assembled
+                                || provideMentalHealthEducation assembled
+                           )
 
                 ChwPostpartumEncounter ->
                     True
@@ -457,31 +469,53 @@ expectNextStepsTask currentDate assembled task =
         NextStepsNewbornEnrolment ->
             assembled.encounter.encounterType == ChwPostpartumEncounter
 
+        -- Exclusive task for Nurse encounter.
         NextStepsMedicationDistribution ->
-            -- Exclusive task for Nurse encounter.
-            (assembled.encounter.encounterType == NurseEncounter)
-                && -- Emergency referral is not required.
-                   (not <| emergencyReferalRequired assembled)
-                && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
-                        |> List.isEmpty
-                        |> not
-                    )
-                        || (diagnosedMalaria assembled
-                                && (not <| referToHospitalDueToAdverseEventForMalariaTreatment assembled)
+            case assembled.encounter.encounterType of
+                NurseEncounter ->
+                    -- Emergency referral is not required.
+                    (not <| emergencyReferalRequired assembled)
+                        && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
+                                |> List.isEmpty
+                                |> not
+                            )
+                                || (diagnosedMalaria assembled
+                                        && (not <| referToHospitalDueToAdverseEventForMalariaTreatment assembled)
+                                   )
+                                || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
+                                || diagnosedAnyOf
+                                    [ DiagnosisHeartburn
+                                    , DiagnosisUrinaryTractInfection
+                                    , DiagnosisCandidiasis
+                                    , DiagnosisGonorrhea
+                                    , DiagnosisTrichomonasOrBacterialVaginosis
+                                    ]
+                                    assembled
+                                || (updateHypertensionTreatmentWithMedication assembled
+                                        && (not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled)
+                                   )
                            )
-                        || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
-                        || diagnosedAnyOf
-                            [ DiagnosisHeartburn
-                            , DiagnosisUrinaryTractInfection
-                            , DiagnosisCandidiasis
-                            , DiagnosisGonorrhea
-                            , DiagnosisTrichomonasOrBacterialVaginosis
-                            ]
-                            assembled
-                        || (updateHypertensionTreatmentWithMedication assembled
-                                && (not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled)
+
+                NursePostpartumEncounter ->
+                    -- Emergency referral is not required.
+                    (not <| emergencyReferalRequired assembled)
+                        && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
+                                |> List.isEmpty
+                                |> not
+                            )
+                                || diagnosedAnyOf
+                                    [ DiagnosisHeartburn
+                                    , DiagnosisUrinaryTractInfection
+                                    , DiagnosisCandidiasis
+                                    , DiagnosisGonorrhea
+                                    , DiagnosisTrichomonasOrBacterialVaginosis
+                                    ]
+                                    assembled
                            )
-                   )
+
+                -- CHW encounter types where medication is not distributed.
+                _ ->
+                    False
 
         NextStepsWait ->
             -- Exclusive task for Nurse encounter.
@@ -1089,7 +1123,7 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
 
         NursePostpartumEncounter ->
             --@todo
-            False
+            True
 
         _ ->
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
@@ -1101,19 +1135,18 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         NurseEncounter ->
             -- If we have emergency diagnosis that require immediate referral,
             -- we allow displaying Next steps right away.
-            -- diagnosedAnyOf emergencyReferralDiagnoses assembled
-            --     || (-- Otherwise, we need all activities that will appear at
-            --         -- current encounter completed, besides Photo
-            --         -- and Next Steps itself.
-            --         getAllActivities assembled
-            --             |> EverySet.fromList
-            --             |> EverySet.remove PrenatalPhoto
-            --             |> EverySet.remove NextSteps
-            --             |> EverySet.toList
-            --             |> List.filter (expectActivity currentDate assembled)
-            --             |> List.all (activityCompleted currentDate assembled)
-            --        )
-            True
+            diagnosedAnyOf emergencyReferralDiagnoses assembled
+                || (-- Otherwise, we need all activities that will appear at
+                    -- current encounter completed, besides Photo
+                    -- and Next Steps itself.
+                    getAllActivities assembled
+                        |> EverySet.fromList
+                        |> EverySet.remove PrenatalPhoto
+                        |> EverySet.remove NextSteps
+                        |> EverySet.toList
+                        |> List.filter (expectActivity currentDate assembled)
+                        |> List.all (activityCompleted currentDate assembled)
+                   )
 
         NursePostpartumEncounter ->
             -- @todo:
@@ -2019,6 +2052,24 @@ matchSymptomsPrenatalDiagnosis egaInWeeks assembled diagnosis =
         Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
             symptomRecorded assembled.measurements CoughContinuous
 
+        DiagnosisPostpartumAbdominalPain ->
+            symptomRecorded assembled.measurements PostpartumAbdominalPain
+
+        DiagnosisPostpartumUrinaryIncontinence ->
+            symptomRecorded assembled.measurements PostpartumUrinaryIncontinence
+
+        DiagnosisPostpartumHeadache ->
+            symptomRecorded assembled.measurements PostpartumHeadache
+
+        DiagnosisPostpartumFatigue ->
+            symptomRecorded assembled.measurements PostpartumFatigue
+
+        DiagnosisPostpartumFever ->
+            symptomRecorded assembled.measurements PostpartumFever
+
+        DiagnosisPostpartumPerinealPainOrDischarge ->
+            symptomRecorded assembled.measurements PostpartumPerinealPainOrDischarge
+
         -- Non Symptoms diagnoses.
         _ ->
             False
@@ -2374,6 +2425,12 @@ symptomsDiagnoses =
     , DiagnosisTrichomonasOrBacterialVaginosis
     , DiagnosisTrichomonasOrBacterialVaginosisContinued
     , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
+    , DiagnosisPostpartumAbdominalPain
+    , DiagnosisPostpartumUrinaryIncontinence
+    , DiagnosisPostpartumHeadache
+    , DiagnosisPostpartumFatigue
+    , DiagnosisPostpartumFever
+    , DiagnosisPostpartumPerinealPainOrDischarge
     ]
 
 
