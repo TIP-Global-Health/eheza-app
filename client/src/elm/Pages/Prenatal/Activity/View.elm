@@ -2069,10 +2069,10 @@ viewSymptomReviewContent language currentDate assembled data =
                     ( inputsStep2, tasksCompletedStep2, totalTasksStep2 )
 
         ( inputsStep1, tasksCompletedStep1, totalTasksStep1 ) =
-            symptomReviewFormInputsAndTasks language SymptomReviewStepSymptoms form
+            symptomReviewFormInputsAndTasks language assembled.encounter.encounterType SymptomReviewStepSymptoms form
 
         ( inputsStep2, tasksCompletedStep2, totalTasksStep2 ) =
-            symptomReviewFormInputsAndTasks language SymptomReviewStepQuestions form
+            symptomReviewFormInputsAndTasks language assembled.encounter.encounterType SymptomReviewStepQuestions form
 
         actions =
             let

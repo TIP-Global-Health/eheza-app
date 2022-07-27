@@ -1689,6 +1689,24 @@ prenatalSymptomToString value =
         LegPainRedness ->
             "leg-pain-redness"
 
+        PostpartumAbdominalPain ->
+            "abdominal-pain"
+
+        PostpartumUrinaryIncontinence ->
+            "urinary-incontinence"
+
+        PostpartumHeadache ->
+            "headache"
+
+        PostpartumFatigue ->
+            "fatigue"
+
+        PostpartumFever ->
+            "fever"
+
+        PostpartumPerinealPainOrDischarge ->
+            "perineal-pain-discharge"
+
         NoPrenatalSymptoms ->
             "none"
 
@@ -1728,6 +1746,24 @@ prenatalSymptomFromString value =
 
         "leg-pain-redness" ->
             Just LegPainRedness
+
+        "abdominal-pain" ->
+            Just PostpartumAbdominalPain
+
+        "urinary-incontinence" ->
+            Just PostpartumUrinaryIncontinence
+
+        "headache" ->
+            Just PostpartumHeadache
+
+        "fatigue" ->
+            Just PostpartumFatigue
+
+        "fever" ->
+            Just PostpartumFever
+
+        "perineal-pain-discharge" ->
+            Just PostpartumPerinealPainOrDischarge
 
         "none" ->
             Just NoPrenatalSymptoms

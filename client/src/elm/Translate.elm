@@ -10809,8 +10809,38 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PostpartumAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumUrinaryIncontinence ->
+                    { english = "Urinary Incontinence"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumFatigue ->
+                    { english = "Fatigue"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumPerinealPainOrDischarge ->
+                    { english = "Perineal pain or Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalSymptoms ->
-                    { english = "None"
+                    { english = "None of these"
                     , kinyarwanda = Nothing
                     }
 

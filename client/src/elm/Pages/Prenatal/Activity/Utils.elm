@@ -2791,7 +2791,7 @@ healthEducationFormInputsAndTasksForChw language assembled form =
                             Nothing
                     )
                 -- There's a posibility to have more than one
-                -- 'Third' enciunter, therefore, the check
+                -- 'Third' encounter, therefore, the check
                 -- for ANY in list.
                 |> List.any (.healthEducation >> isJust)
 
@@ -5445,23 +5445,57 @@ updateSymptomReviewFormWithSymptoms form symptoms =
     }
 
 
-symptomReviewFormInputsAndTasks : Language -> SymptomReviewStep -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
-symptomReviewFormInputsAndTasks language step form =
+symptomReviewFormInputsAndTasks : Language -> PrenatalEncounterType -> SymptomReviewStep -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
+symptomReviewFormInputsAndTasks language encounterType step form =
     case step of
         SymptomReviewStepSymptoms ->
-            symptomReviewFormInputsAndTasksSymptoms language form
+            symptomReviewFormInputsAndTasksSymptoms language encounterType form
 
         SymptomReviewStepQuestions ->
             symptomReviewFormInputsAndTasksQuestions language form
 
 
-symptomReviewFormInputsAndTasksSymptoms : Language -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
-symptomReviewFormInputsAndTasksSymptoms language form =
+symptomReviewFormInputsAndTasksSymptoms : Language -> PrenatalEncounterType -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
+symptomReviewFormInputsAndTasksSymptoms language encounterType form =
+    let
+        ( symptomsLeft, symptomsRight ) =
+            case encounterType of
+                NurseEncounter ->
+                    ( [ BurningWithUrination, AbnormalVaginalDischarge, NauseaAndVomiting, Heartburn, LegCramps, LowBackPain ]
+                    , [ CoughContinuous, PelvicPain, Constipation, VaricoseVeins, LegPainRedness ]
+                    )
+
+                NursePostpartumEncounter ->
+                    ( [ BurningWithUrination
+                      , AbnormalVaginalDischarge
+                      , NauseaAndVomiting
+                      , Heartburn
+                      , LegCramps
+                      , LowBackPain
+                      , CoughContinuous
+                      , PostpartumAbdominalPain
+                      , PostpartumUrinaryIncontinence
+                      ]
+                    , [ PelvicPain
+                      , Constipation
+                      , VaricoseVeins
+                      , PostpartumHeadache
+                      , PostpartumFatigue
+                      , PostpartumFever
+                      , PostpartumPerinealPainOrDischarge
+                      , LegPainRedness
+                      ]
+                    )
+
+                -- We should never get here, as these are CHW encounter types.
+                _ ->
+                    ( [], [] )
+    in
     ( [ div [ class "ui form symptom-review" ]
             [ viewLabel language Translate.SelectIllnessSymptoms
             , viewCheckBoxMultipleSelectInput language
-                [ BurningWithUrination, AbnormalVaginalDischarge, NauseaAndVomiting, Heartburn, LegCramps, LowBackPain ]
-                [ CoughContinuous, PelvicPain, Constipation, VaricoseVeins, LegPainRedness ]
+                symptomsLeft
+                symptomsRight
                 (form.symptoms |> Maybe.withDefault [])
                 (Just NoPrenatalSymptoms)
                 SetPrenatalSymptom
