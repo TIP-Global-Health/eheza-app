@@ -3594,7 +3594,7 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                     else
                         ( [], [] )
 
-                stillTakingValue =
+                stillTaking =
                     if config.latestMedicationTreatment == latestMedicationTreatmentForHIV assembled then
                         viewQuestionLabel language Translate.TreatmentReviewQuestionStillTakingForHIV
 
@@ -3602,7 +3602,7 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         viewQuestionLabel language Translate.TreatmentReviewQuestionStillTaking
             in
             ( [ header
-              , stillTakingValue
+              , stillTaking
               , viewBoolInput
                     language
                     config.stillTakingFormValue
