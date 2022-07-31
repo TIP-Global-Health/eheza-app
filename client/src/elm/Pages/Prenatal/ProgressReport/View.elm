@@ -2808,8 +2808,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             []
 
         DiagnosisPostpartumUrinaryIncontinence ->
-            -- @todo
-            []
+            referredToHospitalMessage
 
         DiagnosisPostpartumHeadache ->
             -- @todo

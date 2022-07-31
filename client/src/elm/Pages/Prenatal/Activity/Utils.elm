@@ -849,6 +849,7 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
                    , DiagnosisCandidiasisContinued
                    , DiagnosisGonorrheaContinued
                    , DiagnosisTrichomonasOrBacterialVaginosisContinued
+                   , DiagnosisPostpartumUrinaryIncontinence
                    ]
     in
     List.filter (\diagnosis -> diagnosed diagnosis assembled)

@@ -9139,7 +9139,7 @@ translationSet trans =
                     }
 
                 DiagnosisPostpartumUrinaryIncontinence ->
-                    { english = "Urinary Incontinence"
+                    { english = "Patient shows signs of Urinary Incontinence"
                     , kinyarwanda = Nothing
                     }
 
