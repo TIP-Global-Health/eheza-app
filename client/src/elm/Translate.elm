@@ -12957,7 +12957,7 @@ translationSet trans =
             }
 
         TreatmentReviewQuestionStillTakingForHIV ->
-            { english = "Are you still taking ARV's"
+            { english = "Are you still taking ARVs"
             , kinyarwanda = Nothing
             }
 
