@@ -130,7 +130,7 @@ update language currentDate id db msg model =
                 |> Maybe.withDefault [ SetActivePage destinationPage ]
 
         generateMedicationSubActivityMsgs nextTask =
-            SetTreatmentReviewWarningPopupState Nothing
+            SetWarningPopupState Nothing
                 :: (Maybe.map (\task -> [ SetActiveTreatmentReviewTask task ]) nextTask
                         |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
                    )
@@ -3205,17 +3205,6 @@ update language currentDate id db msg model =
                 updatedData =
                     model.treatmentReviewData
                         |> (\data -> { data | activeTask = Just task })
-            in
-            ( { model | treatmentReviewData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetTreatmentReviewWarningPopupState state ->
-            let
-                updatedData =
-                    model.treatmentReviewData
-                        |> (\data -> { data | warningPopupState = state })
             in
             ( { model | treatmentReviewData = updatedData }
             , Cmd.none

@@ -212,6 +212,13 @@ warningPopup language currentDate isChw diagnoses setStateMsg state =
                                 , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
                                 , mentalHealthAction
                                 )
+
+                        WarningPopupTreatmentReview treatmentReviewAtion ->
+                            Just <|
+                                ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
+                                , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
+                                , treatmentReviewAtion
+                                )
             in
             Maybe.map (customWarningPopup language) data
         )
@@ -2297,7 +2304,7 @@ viewTreatmentReviewContent language currentDate assembled data =
                                 case task of
                                     TreatmentReviewSyphilis ->
                                         if form.syphilisMissedDoses == Just True then
-                                            SetTreatmentReviewWarningPopupState (Just saveMsg)
+                                            SetWarningPopupState (Just (WarningPopupTreatmentReview saveMsg))
 
                                         else
                                             saveMsg
@@ -2327,22 +2334,7 @@ viewTreatmentReviewContent language currentDate assembled data =
             , actions
             ]
         ]
-    , viewModal <|
-        treatmentReviewWarningPopup language data.warningPopupState
     ]
-
-
-treatmentReviewWarningPopup : Language -> Maybe msg -> Maybe (Html msg)
-treatmentReviewWarningPopup language actionMsg =
-    Maybe.map
-        (\action ->
-            customWarningPopup language
-                ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
-                , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
-                , action
-                )
-        )
-        actionMsg
 
 
 viewImmunisationContent :

@@ -94,3 +94,4 @@ type WarningPopupType msg
     | WarningPopupRegular
     | WarningPopupTuberculosis
     | WarningPopupMentalHealth msg
+    | WarningPopupTreatmentReview msg
