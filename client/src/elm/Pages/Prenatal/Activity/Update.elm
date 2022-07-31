@@ -3338,17 +3338,6 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetMentalHealthWarningPopupState state ->
-            let
-                updatedData =
-                    model.mentalHealthData
-                        |> (\data -> { data | warningPopupState = state })
-            in
-            ( { model | mentalHealthData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SaveMentalHealth personId saved ->
             let
                 measurementId =
@@ -3363,7 +3352,7 @@ update language currentDate id db msg model =
 
                     else
                         [ SetActivePage <| UserPage <| PrenatalEncounterPage id
-                        , SetMentalHealthWarningPopupState Nothing
+                        , SetWarningPopupState Nothing
                         ]
 
                 appMsgs =

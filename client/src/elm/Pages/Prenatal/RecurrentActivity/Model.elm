@@ -16,7 +16,7 @@ type Msg
     = NoOp
     | SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetWarningPopupState (Maybe WarningPopupType)
+    | SetWarningPopupState (Maybe (WarningPopupType Msg))
       -- ExaminationMsgs
     | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
     | SaveVitals PersonId (Maybe ( VitalsId, Vitals ))
@@ -66,7 +66,7 @@ type alias Model =
     , labResultsData : LabResultsData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
-    , warningPopupState : Maybe WarningPopupType
+    , warningPopupState : Maybe (WarningPopupType Msg)
     }
 
 

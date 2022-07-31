@@ -89,7 +89,8 @@ type ImmunisationTask
     = TaskTetanus
 
 
-type WarningPopupType
+type WarningPopupType msg
     = WarningPopupUrgent ( String, String )
     | WarningPopupRegular
     | WarningPopupTuberculosis
+    | WarningPopupMentalHealth msg

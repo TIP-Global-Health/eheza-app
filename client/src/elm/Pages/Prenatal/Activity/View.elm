@@ -126,8 +126,8 @@ warningPopup :
     -> NominalDate
     -> Bool
     -> EverySet PrenatalDiagnosis
-    -> (Maybe WarningPopupType -> msg)
-    -> Maybe WarningPopupType
+    -> (Maybe (WarningPopupType msg) -> msg)
+    -> Maybe (WarningPopupType msg)
     -> Maybe (Html msg)
 warningPopup language currentDate isChw diagnoses setStateMsg state =
     Maybe.andThen
@@ -189,27 +189,37 @@ warningPopup language currentDate isChw diagnoses setStateMsg state =
                                 Just <|
                                     ( top
                                     , bottom
+                                    , setStateMsg Nothing
                                     )
 
                         WarningPopupUrgent ( top, bottom ) ->
                             Just <|
                                 ( p [] [ text top ]
                                 , p [] [ text bottom ]
+                                , setStateMsg Nothing
                                 )
 
                         WarningPopupTuberculosis ->
                             Just <|
                                 ( p [] [ text <| translate language Translate.TuberculosisWarning ]
                                 , p [] [ text <| translate language Translate.TuberculosisInstructions ]
+                                , setStateMsg Nothing
+                                )
+
+                        WarningPopupMentalHealth mentalHealthAction ->
+                            Just <|
+                                ( p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupMessage ]
+                                , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
+                                , mentalHealthAction
                                 )
             in
-            Maybe.map (customWarningPopup language (setStateMsg Nothing)) data
+            Maybe.map (customWarningPopup language) data
         )
         state
 
 
-customWarningPopup : Language -> msg -> ( Html msg, Html msg ) -> Html msg
-customWarningPopup language action ( topMessage, bottomMessage ) =
+customWarningPopup : Language -> ( Html msg, Html msg, msg ) -> Html msg
+customWarningPopup language ( topMessage, bottomMessage, action ) =
     div [ class "ui active modal diagnosis-popup" ]
         [ div [ class "content" ] <|
             [ div [ class "popup-heading-wrapper" ]
@@ -1686,7 +1696,7 @@ viewMentalHealthContent language currentDate assembled data =
                             SaveMentalHealth assembled.participant.person assembled.measurements.mentalHealth
                      in
                      if suicideRiskDiagnosed then
-                        SetMentalHealthWarningPopupState (Just saveMsg)
+                        SetWarningPopupState (Just <| WarningPopupMentalHealth saveMsg)
 
                      else
                         saveMsg
@@ -1774,22 +1784,7 @@ viewMentalHealthContent language currentDate assembled data =
             ]
         , actions
         ]
-    , viewModal <|
-        mentalHealthWarningPopup language data.warningPopupState
     ]
-
-
-mentalHealthWarningPopup : Language -> Maybe msg -> Maybe (Html msg)
-mentalHealthWarningPopup language actionMsg =
-    Maybe.map
-        (\action ->
-            customWarningPopup language
-                action
-                ( p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupMessage ]
-                , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
-                )
-        )
-        actionMsg
 
 
 viewNextStepsContent : Language -> NominalDate -> Bool -> AssembledData -> NextStepsData -> List (Html Msg)
@@ -2342,9 +2337,9 @@ treatmentReviewWarningPopup language actionMsg =
     Maybe.map
         (\action ->
             customWarningPopup language
-                action
                 ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
                 , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
+                , action
                 )
         )
         actionMsg

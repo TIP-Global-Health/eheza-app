@@ -29,7 +29,7 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetWarningPopupState (Maybe WarningPopupType)
+    | SetWarningPopupState (Maybe (WarningPopupType Msg))
       -- PregnancyDatingMsgs
     | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetConfirmLmpDate NominalDate Bool
@@ -210,7 +210,6 @@ type Msg
     | SetMentalHealthStep MentalHealthStep
     | SetMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | SetSpecialistAtHC Bool
-    | SetMentalHealthWarningPopupState (Maybe Msg)
     | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask
@@ -243,7 +242,7 @@ type alias Model =
     , immunisationData : ImmunisationData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
-    , warningPopupState : Maybe WarningPopupType
+    , warningPopupState : Maybe (WarningPopupType Msg)
     }
 
 
@@ -593,14 +592,12 @@ emptyTreatmentReviewData =
 
 type alias MentalHealthData =
     { form : MentalHealthForm
-    , warningPopupState : Maybe Msg
     }
 
 
 emptyMentalHealthData : MentalHealthData
 emptyMentalHealthData =
     { form = emptyMentalHealthForm
-    , warningPopupState = Nothing
     }
 
 
