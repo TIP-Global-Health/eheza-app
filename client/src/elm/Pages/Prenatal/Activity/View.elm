@@ -82,7 +82,7 @@ viewHeaderAndContent language currentDate id isChw activity db model assembled =
         [ viewHeader language id activity assembled
         , viewContent language currentDate isChw activity db model assembled
         , viewModal <|
-            warningPopup language currentDate isChw SetWarningPopupState model.warningPopupState
+            warningPopup language currentDate isChw assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
 
 
@@ -121,37 +121,115 @@ viewContent language currentDate isChw activity db model assembled =
             ++ viewActivity language currentDate isChw activity assembled db model
 
 
-warningPopup : Language -> NominalDate -> Bool -> (Maybe ( String, String ) -> msg) -> Maybe ( String, String ) -> Maybe (Html msg)
-warningPopup language currentDate isChw setStateMsg state =
-    customWarningPopup language (setStateMsg Nothing) state
+warningPopup :
+    Language
+    -> NominalDate
+    -> Bool
+    -> EverySet PrenatalDiagnosis
+    -> (Maybe WarningPopupType -> msg)
+    -> Maybe WarningPopupType
+    -> Maybe (Html msg)
+warningPopup language currentDate isChw diagnoses setStateMsg state =
+    Maybe.andThen
+        (\popupType ->
+            let
+                data =
+                    case popupType of
+                        WarningPopupRegular ->
+                            let
+                                nonUrgentDiagnoses =
+                                    EverySet.toList diagnoses |> filterNonUrgentDiagnoses
+                            in
+                            if List.isEmpty nonUrgentDiagnoses then
+                                Nothing
 
+                            else
+                                let
+                                    ( undetermined, determined ) =
+                                        List.partition (\diagnosis -> List.member diagnosis undeterminedPostpartumDiagnoses) nonUrgentDiagnoses
 
-customWarningPopup : Language -> msg -> Maybe ( String, String ) -> Maybe (Html msg)
-customWarningPopup language action state =
-    Maybe.map
-        (\( message, instructions ) ->
-            div [ class "ui active modal diagnosis-popup" ]
-                [ div [ class "content" ] <|
-                    [ div [ class "popup-heading-wrapper" ]
-                        [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
-                        ]
-                    , div [ class "popup-title" ]
-                        [ p [] [ text message ]
-                        , p [] [ text instructions ]
-                        ]
-                    ]
-                , div
-                    [ class "actions" ]
-                    [ button
-                        [ class "ui primary fluid button"
-                        , onClick action
-                        ]
-                        [ text <| translate language Translate.Continue ]
-                    ]
-                ]
+                                    top =
+                                        case determined of
+                                            [] ->
+                                                emptyNode
+
+                                            [ diagnosis ] ->
+                                                p [] [ text <| translate language <| Translate.PrenatalDiagnosisNonUrgentMessage diagnosis ]
+
+                                            _ ->
+                                                List.map
+                                                    (Translate.PrenatalDiagnosisNonUrgentMessage
+                                                        >> translate language
+                                                        >> text
+                                                        >> List.singleton
+                                                        >> li []
+                                                    )
+                                                    determined
+                                                    |> ul []
+
+                                    bottom =
+                                        if List.isEmpty undetermined then
+                                            emptyNode
+
+                                        else
+                                            let
+                                                undeterminedDiagnoses =
+                                                    List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) undetermined
+                                                        |> String.join ", "
+                                            in
+                                            div [ class "bottom-message" ]
+                                                [ p []
+                                                    [ text <| translate language Translate.UndeterminedDiagnoses
+                                                    , text " - "
+                                                    , text undeterminedDiagnoses
+                                                    ]
+                                                , p [] [ text <| translate language Translate.FollowPostpartumProtocols ]
+                                                ]
+                                in
+                                Just <|
+                                    ( top
+                                    , bottom
+                                    )
+
+                        WarningPopupUrgent ( top, bottom ) ->
+                            Just <|
+                                ( p [] [ text top ]
+                                , p [] [ text bottom ]
+                                )
+
+                        WarningPopupTuberculosis ->
+                            Just <|
+                                ( p [] [ text <| translate language Translate.TuberculosisWarning ]
+                                , p [] [ text <| translate language Translate.TuberculosisInstructions ]
+                                )
+            in
+            Maybe.map (customWarningPopup language (setStateMsg Nothing)) data
         )
         state
+
+
+customWarningPopup : Language -> msg -> ( Html msg, Html msg ) -> Html msg
+customWarningPopup language action ( topMessage, bottomMessage ) =
+    div [ class "ui active modal diagnosis-popup" ]
+        [ div [ class "content" ] <|
+            [ div [ class "popup-heading-wrapper" ]
+                [ img [ src "assets/images/exclamation-red.png" ] []
+                , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                ]
+            , div [ class "popup-title" ]
+                [ topMessage
+                , bottomMessage
+                ]
+            ]
+        , div
+            [ class "actions" ]
+            [ button
+                [ class "ui primary fluid button"
+                , onClick action
+                ]
+                [ text <| translate language Translate.Continue ]
+            ]
+        ]
 
 
 viewActivity : Language -> NominalDate -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
@@ -1703,14 +1781,14 @@ viewMentalHealthContent language currentDate assembled data =
 
 mentalHealthWarningPopup : Language -> Maybe msg -> Maybe (Html msg)
 mentalHealthWarningPopup language actionMsg =
-    let
-        state =
-            Just
-                ( translate language Translate.PrenatalMentalHealthWarningPopupMessage
-                , translate language Translate.PrenatalMentalHealthWarningPopupInstructions
+    Maybe.map
+        (\action ->
+            customWarningPopup language
+                action
+                ( p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupMessage ]
+                , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
                 )
-    in
-    Maybe.andThen (\action -> customWarningPopup language action state)
+        )
         actionMsg
 
 
@@ -2261,14 +2339,14 @@ viewTreatmentReviewContent language currentDate assembled data =
 
 treatmentReviewWarningPopup : Language -> Maybe msg -> Maybe (Html msg)
 treatmentReviewWarningPopup language actionMsg =
-    let
-        state =
-            Just
-                ( translate language Translate.TreatmentReviewWarningPopupMessage
-                , translate language Translate.TreatmentReviewWarningPopupInstructions
+    Maybe.map
+        (\action ->
+            customWarningPopup language
+                action
+                ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
+                , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
                 )
-    in
-    Maybe.andThen (\action -> customWarningPopup language action state)
+        )
         actionMsg
 
 

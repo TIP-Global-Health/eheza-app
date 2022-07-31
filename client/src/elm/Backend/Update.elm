@@ -99,6 +99,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Person.Model
 import Pages.Prenatal.Activity.Model
+import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.Activity.Utils
 import Pages.Prenatal.Encounter.Model
 import Pages.Prenatal.Encounter.Utils
@@ -4100,12 +4101,12 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                         |> App.Model.SetActivePage
 
                 initialEncounterWarningPopupMsg state =
-                    Pages.Prenatal.Activity.Model.SetWarningPopupState (Just state)
+                    Pages.Prenatal.Activity.Model.SetWarningPopupState (Just <| WarningPopupUrgent state)
                         |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
                         |> App.Model.MsgLoggedIn
 
                 recurrentEncounterWarningPopupMsg state =
-                    Pages.Prenatal.RecurrentActivity.Model.SetWarningPopupState (Just state)
+                    Pages.Prenatal.RecurrentActivity.Model.SetWarningPopupState (Just <| WarningPopupUrgent state)
                         |> App.Model.MsgPagePrenatalRecurrentActivity id Backend.PrenatalActivity.Model.RecurrentNextSteps
                         |> App.Model.MsgLoggedIn
             in

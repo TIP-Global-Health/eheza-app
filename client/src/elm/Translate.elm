@@ -597,7 +597,7 @@ type TranslationId
     | FirstAntenatalVisit
     | FirstName
     | FiveVisits
-    | ForIllustrativePurposesOnly
+    | FollowPostpartumProtocols
     | FollowUpWithPatientIn
     | FollowUpWithPatientOn
     | FollowUpByChwLabel
@@ -605,6 +605,7 @@ type TranslationId
     | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
     | FollowUpDueOption FollowUpDueOption
+    | ForIllustrativePurposesOnly
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
@@ -1281,6 +1282,7 @@ type TranslationId
     | Type
     | UbudeheLabel
     | UbudeheNumber Ubudehe
+    | UndeterminedDiagnoses
     | UnitCopiesPerMM3
     | UnitGramsPerDeciliter
     | UnitMilliGramsPerDeciliter
@@ -4476,8 +4478,8 @@ translationSet trans =
             , kinyarwanda = Just "Inshuro eshanu"
             }
 
-        ForIllustrativePurposesOnly ->
-            { english = "For illustrative purposes only"
+        FollowPostpartumProtocols ->
+            { english = "Follow Postpartum Protocols"
             , kinyarwanda = Nothing
             }
 
@@ -4569,6 +4571,11 @@ translationSet trans =
                     { english = "Next Month"
                     , kinyarwanda = Just "Ukwezi gutaha"
                     }
+
+        ForIllustrativePurposesOnly ->
+            { english = "For illustrative purposes only"
+            , kinyarwanda = Nothing
+            }
 
         FormError errorValue ->
             translateFormError errorValue
@@ -13405,6 +13412,11 @@ translationSet trans =
                     { english = "4"
                     , kinyarwanda = Nothing
                     }
+
+        UndeterminedDiagnoses ->
+            { english = "Undetermined Diagnoses"
+            , kinyarwanda = Nothing
+            }
 
         UnitCopiesPerMM3 ->
             { english = "copies/mm3"

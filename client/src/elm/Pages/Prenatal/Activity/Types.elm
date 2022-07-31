@@ -87,3 +87,9 @@ type OutsideCareStep
 
 type ImmunisationTask
     = TaskTetanus
+
+
+type WarningPopupType
+    = WarningPopupUrgent ( String, String )
+    | WarningPopupRegular
+    | WarningPopupTuberculosis

@@ -29,8 +29,7 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetWarningPopupState (Maybe ( String, String ))
-    | ViewWarningPopupForNonUrgentDiagnoses
+    | SetWarningPopupState (Maybe WarningPopupType)
       -- PregnancyDatingMsgs
     | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetConfirmLmpDate NominalDate Bool
@@ -244,7 +243,7 @@ type alias Model =
     , immunisationData : ImmunisationData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
-    , warningPopupState : Maybe ( String, String )
+    , warningPopupState : Maybe WarningPopupType
     }
 
 

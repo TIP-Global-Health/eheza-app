@@ -15,6 +15,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
@@ -524,28 +525,6 @@ update language currentDate id db msg model =
 
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
-
-        ViewWarningPopupForNonUrgentDiagnoses ->
-            let
-                nonUrgentDiagnoses =
-                    Dict.get id db.prenatalEncounters
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map (.diagnoses >> EverySet.toList >> filterNonUrgentDiagnoses)
-                        |> Maybe.withDefault []
-
-                extraMsgs =
-                    if List.isEmpty nonUrgentDiagnoses then
-                        []
-
-                    else
-                        let
-                            message =
-                                List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) nonUrgentDiagnoses
-                                    |> String.join ", "
-                        in
-                        [ SetWarningPopupState <| Just ( message, "" ) ]
-            in
-            sequenceExtra (update language currentDate id db) extraMsgs noChange
 
         SetVitalsFloatInput formUpdateFunc value ->
             let

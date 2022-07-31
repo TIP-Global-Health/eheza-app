@@ -166,28 +166,6 @@ update language currentDate id db msg model =
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
 
-        ViewWarningPopupForNonUrgentDiagnoses ->
-            let
-                nonUrgentDiagnoses =
-                    Dict.get id db.prenatalEncounters
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map (.diagnoses >> EverySet.toList >> filterNonUrgentDiagnoses)
-                        |> Maybe.withDefault []
-
-                extraMsgs =
-                    if List.isEmpty nonUrgentDiagnoses then
-                        []
-
-                    else
-                        let
-                            message =
-                                List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) nonUrgentDiagnoses
-                                    |> String.join ", "
-                        in
-                        [ SetWarningPopupState <| Just ( message, "" ) ]
-            in
-            sequenceExtra (update language currentDate id db) extraMsgs noChange
-
         SetLmpDateSelectorState state ->
             let
                 form =
@@ -3108,29 +3086,27 @@ update language currentDate id db msg model =
                     model.symptomReviewData
                         |> (\data -> { data | step = step })
 
-                warningPopupState =
+                extraMsgs =
                     if step == SymptomReviewStepQuestions then
                         Maybe.map
                             (\symptoms ->
                                 if List.member CoughContinuous symptoms then
-                                    Just
-                                        ( translate language Translate.TuberculosisWarning
-                                        , translate language Translate.TuberculosisInstructions
-                                        )
+                                    [ SetWarningPopupState (Just WarningPopupTuberculosis) ]
 
                                 else
-                                    model.warningPopupState
+                                    []
                             )
                             symptomReviewForm.symptoms
-                            |> Maybe.withDefault model.warningPopupState
+                            |> Maybe.withDefault []
 
                     else
-                        model.warningPopupState
+                        []
             in
-            ( { model | symptomReviewData = updatedData, warningPopupState = warningPopupState }
+            ( { model | symptomReviewData = updatedData }
             , Cmd.none
             , []
             )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetPrenatalSymptom symptom ->
             let

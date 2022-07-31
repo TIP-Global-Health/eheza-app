@@ -2449,6 +2449,16 @@ mentalHealthDiagnosesRequiringTreatment =
     ]
 
 
+undeterminedPostpartumDiagnoses : List PrenatalDiagnosis
+undeterminedPostpartumDiagnoses =
+    [ DiagnosisPostpartumAbdominalPain
+    , DiagnosisPostpartumHeadache
+    , DiagnosisPostpartumFatigue
+    , DiagnosisPostpartumFever
+    , DiagnosisPostpartumPerinealPainOrDischarge
+    ]
+
+
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled healthEducationForm =
     let
