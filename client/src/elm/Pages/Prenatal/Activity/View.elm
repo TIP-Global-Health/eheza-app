@@ -4521,7 +4521,7 @@ viewPostpartumTreatmentReviewContent language currentDate assembled data =
                 |> medicationFormWithDefault data.form
 
         ( tasksCompleted, totalTasks ) =
-            ( taskCompleted form.receivedFolicAcid + taskCompleted form.receivedVitamineA
+            ( taskCompleted form.receivedFolicAcid + taskCompleted form.receivedVitaminA
             , 2
             )
 
@@ -4538,24 +4538,24 @@ viewPostpartumTreatmentReviewContent language currentDate assembled data =
         receivedFolicAcidUpdateFunc value form_ =
             { form_ | receivedFolicAcid = Just value }
 
-        receivedVitamineAInput =
-            [ viewQuestionLabel language Translate.ReceivedVitamineA
+        receivedVitaminAInput =
+            [ viewQuestionLabel language Translate.ReceivedVitaminA
             , viewBoolInput
                 language
-                form.receivedVitamineA
-                (SetPostpartumTreatmentReviewBoolInput receivedVitamineAUpdateFunc)
-                "vitamine-a"
+                form.receivedVitaminA
+                (SetPostpartumTreatmentReviewBoolInput receivedVitaminAUpdateFunc)
+                "vitamin-a"
                 Nothing
             ]
 
-        receivedVitamineAUpdateFunc value form_ =
-            { form_ | receivedVitamineA = Just value }
+        receivedVitaminAUpdateFunc value form_ =
+            { form_ | receivedVitaminA = Just value }
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form medication" ] <|
-                receivedVitamineAInput
+                receivedVitaminAInput
                     ++ receivedFolicAcidInput
             ]
         , div [ class "actions" ]

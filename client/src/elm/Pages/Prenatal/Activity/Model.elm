@@ -384,7 +384,7 @@ type alias MedicationForm =
 
     -- Following 2 are for Postpartum encounter
     , receivedFolicAcid : Maybe Bool
-    , receivedVitamineA : Maybe Bool
+    , receivedVitaminA : Maybe Bool
     , hivMedicationByPMTCT : Maybe Bool
     , hivMedicationNotGivenReason : Maybe HIVTreatmentSign
     , hivMedicationNotGivenReasonDirty : Bool
@@ -422,7 +422,7 @@ emptyMedicationForm =
     , receivedDewormingPill = Nothing
     , receivedMebendazole = Nothing
     , receivedFolicAcid = Nothing
-    , receivedVitamineA = Nothing
+    , receivedVitaminA = Nothing
     , hivMedicationByPMTCT = Nothing
     , hivMedicationNotGivenReason = Nothing
     , hivMedicationNotGivenReasonDirty = False

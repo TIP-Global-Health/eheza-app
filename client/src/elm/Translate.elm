@@ -1068,7 +1068,7 @@ type TranslationId
     | ReceivedIronFolicAcid
     | ReceivedMebendazole
     | ReceivedMosquitoNet
-    | ReceivedVitamineA
+    | ReceivedVitaminA
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
     | Recommended
@@ -7327,7 +7327,7 @@ translationSet trans =
             case type_ of
                 FortifiedPorridge ->
                     { english = "Fortified Porridge"
-                    , kinyarwanda = Just "Igikoma kirimo Imyunyu ngugu na Vitamine"
+                    , kinyarwanda = Just "Igikoma kirimo Imyunyu ngugu na Vitamin"
                     }
 
                 Rutf ->
@@ -11534,8 +11534,8 @@ translationSet trans =
             , kinyarwanda = Just "Umubyeyi yahawe inzitiramubu"
             }
 
-        ReceivedVitamineA ->
-            { english = "Have you received Vitamine A"
+        ReceivedVitaminA ->
+            { english = "Have you received Vitamin A"
             , kinyarwanda = Nothing
             }
 
@@ -12728,7 +12728,7 @@ translationSet trans =
 
                 SymptomReliefVitaminC ->
                     { english = "Effervescent Vitamin C tablets"
-                    , kinyarwanda = Just "Ibinini bya Vitamine C"
+                    , kinyarwanda = Just "Ibinini bya Vitamin C"
                     }
 
                 SymptomReliefPaidoterineSyrup ->

@@ -1647,8 +1647,8 @@ decodeMedicationSign =
                     "folic-acid" ->
                         succeed PostpartumFolicAcid
 
-                    "vitamine-a" ->
-                        succeed PostpartumVitamineA
+                    "vitamin-a" ->
+                        succeed PostpartumVitaminA
 
                     "none" ->
                         succeed NoMedication
@@ -2942,7 +2942,7 @@ decodeMedicationDistributionSign =
                     "mebendezole" ->
                         succeed Mebendezole
 
-                    "vitamin-a" ->
+                    "vitamina" ->
                         succeed VitaminA
 
                     "paracetamol" ->

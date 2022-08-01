@@ -1159,7 +1159,7 @@ function hedley_activity_field_default_field_bases() {
         'deworming-pill' => 'Deworming pill',
         'mebendezole' => 'Mebendazole',
         'folic-acid' => 'Folic Acid',
-        'vitamine-a' => 'Vitamine A',
+        'vitamin-a' => 'Vitamin A',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

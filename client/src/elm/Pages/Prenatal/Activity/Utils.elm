@@ -3478,7 +3478,7 @@ medicationFormWithDefault form saved =
                 , receivedDewormingPill = or form.receivedDewormingPill (Maybe.map (EverySet.member DewormingPill) value.signs)
                 , receivedMebendazole = or form.receivedMebendazole (Maybe.map (EverySet.member Mebendazole) value.signs)
                 , receivedFolicAcid = or form.receivedFolicAcid (Maybe.map (EverySet.member PostpartumFolicAcid) value.signs)
-                , receivedVitamineA = or form.receivedVitamineA (Maybe.map (EverySet.member PostpartumVitamineA) value.signs)
+                , receivedVitaminA = or form.receivedVitaminA (Maybe.map (EverySet.member PostpartumVitaminA) value.signs)
                 , hivMedicationByPMTCT = or form.hivMedicationByPMTCT (Maybe.map (EverySet.member HIVTreatmentMedicineByPMTCT) value.hivTreatment)
                 , hivMedicationNotGivenReason =
                     maybeValueConsideringIsDirtyField form.hivMedicationNotGivenReasonDirty
@@ -3545,7 +3545,7 @@ toMedicationValue form =
                     , form.receivedDewormingPill
                     , form.receivedMebendazole
                     , form.receivedFolicAcid
-                    , form.receivedVitamineA
+                    , form.receivedVitaminA
                     ]
             then
                 Nothing
@@ -3555,7 +3555,7 @@ toMedicationValue form =
                 , ifNullableTrue DewormingPill form.receivedDewormingPill
                 , ifNullableTrue Mebendazole form.receivedMebendazole
                 , ifNullableTrue PostpartumFolicAcid form.receivedFolicAcid
-                , ifNullableTrue PostpartumVitamineA form.receivedVitamineA
+                , ifNullableTrue PostpartumVitaminA form.receivedVitaminA
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)

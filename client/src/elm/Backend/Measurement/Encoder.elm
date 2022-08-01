@@ -1421,8 +1421,8 @@ encodeMedicationSign sign =
             PostpartumFolicAcid ->
                 "folic-acid"
 
-            PostpartumVitamineA ->
-                "vitamine-a"
+            PostpartumVitaminA ->
+                "vitamin-a"
 
             NoMedication ->
                 "none"
@@ -2775,7 +2775,7 @@ encondeMedicationDistributionSign sign =
                 "mebendezole"
 
             VitaminA ->
-                "vitamin-a"
+                "vitamina"
 
             Paracetamol ->
                 "paracetamol"

@@ -591,7 +591,7 @@ type MedicationSign
     | DewormingPill
     | Mebendazole
     | PostpartumFolicAcid
-    | PostpartumVitamineA
+    | PostpartumVitaminA
     | NoMedication
 
 
