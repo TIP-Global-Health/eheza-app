@@ -63,7 +63,7 @@ getAllActivities assembled =
             , Backend.PrenatalActivity.Model.Breastfeeding
             , Examination
             , FamilyPlanning
-            , PrenatalTreatmentReview
+            , PostpartumTreatmentReview
             , SpecialityCare
             , NextSteps
             ]

@@ -1644,6 +1644,12 @@ decodeMedicationSign =
                     "mebendezole" ->
                         succeed Mebendazole
 
+                    "folic-acid" ->
+                        succeed PostpartumFolicAcid
+
+                    "vitamine-a" ->
+                        succeed PostpartumVitamineA
+
                     "none" ->
                         succeed NoMedication
 

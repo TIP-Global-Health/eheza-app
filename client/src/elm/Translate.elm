@@ -1064,9 +1064,11 @@ type TranslationId
     | ReasonForNotTaking ReasonForNotTaking
     | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | ReceivedDewormingPill
+    | ReceivedFolicAcid
     | ReceivedIronFolicAcid
     | ReceivedMebendazole
     | ReceivedMosquitoNet
+    | ReceivedVitamineA
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
     | Recommended
@@ -8055,6 +8057,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PostpartumTreatmentReview ->
+                    { english = "Treatment Review"
+                    , kinyarwanda = Just "Kureba imiti yahawe"
+                    }
+
         PrenatalRecurrentActivitiesTitle activity ->
             case activity of
                 Backend.PrenatalActivity.Model.LabResults ->
@@ -11507,9 +11514,14 @@ translationSet trans =
             , kinyarwanda = Just "Umubyeyi yahawe ikinini cy'inzoka"
             }
 
+        ReceivedFolicAcid ->
+            { english = "Have you received Folic Acid"
+            , kinyarwanda = Nothing
+            }
+
         ReceivedIronFolicAcid ->
             { english = "Has the mother received iron and folic acid supplement"
-            , kinyarwanda = Just "Umubyeyi yahawe ibinini bya Fer cg Folic Acid byongera amaraso?"
+            , kinyarwanda = Just "Umubyeyi yahawe ibinini bya Fer cg Folic Acid byongera amaraso"
             }
 
         ReceivedMebendazole ->
@@ -11519,7 +11531,12 @@ translationSet trans =
 
         ReceivedMosquitoNet ->
             { english = "Has the mother received a mosquito net"
-            , kinyarwanda = Just "Umubyeyi yahawe inzitiramubu?"
+            , kinyarwanda = Just "Umubyeyi yahawe inzitiramubu"
+            }
+
+        ReceivedVitamineA ->
+            { english = "Have you received Vitamine A"
+            , kinyarwanda = Nothing
             }
 
         Recommendation114 recommendation ->

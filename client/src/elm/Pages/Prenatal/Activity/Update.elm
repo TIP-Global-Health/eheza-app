@@ -3601,3 +3601,44 @@ update language currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetPostpartumTreatmentReviewBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.postpartumTreatmentReviewData.form
+                    in
+                    model.postpartumTreatmentReviewData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | postpartumTreatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SavePostpartumTreatmentReview personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.postpartumTreatmentReviewData.form
+                        |> toMedicationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveMedication personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

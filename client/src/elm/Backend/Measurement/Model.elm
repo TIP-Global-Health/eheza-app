@@ -590,6 +590,8 @@ type MedicationSign
       -- safe to remove starting Jan 2023.
     | DewormingPill
     | Mebendazole
+    | PostpartumFolicAcid
+    | PostpartumVitamineA
     | NoMedication
 
 

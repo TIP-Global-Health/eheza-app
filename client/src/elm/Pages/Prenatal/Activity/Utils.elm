@@ -184,7 +184,7 @@ expectActivity currentDate assembled activity =
                 FamilyPlanning ->
                     True
 
-                PrenatalTreatmentReview ->
+                PostpartumTreatmentReview ->
                     True
 
                 SpecialityCare ->
@@ -361,6 +361,9 @@ activityCompleted currentDate assembled activity =
         SpecialityCare ->
             -- @todo
             False
+
+        PostpartumTreatmentReview ->
+            isJust assembled.measurements.medication
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
@@ -3474,6 +3477,8 @@ medicationFormWithDefault form saved =
                 { receivedIronFolicAcid = or form.receivedIronFolicAcid (Maybe.map (EverySet.member IronAndFolicAcidSupplement) value.signs)
                 , receivedDewormingPill = or form.receivedDewormingPill (Maybe.map (EverySet.member DewormingPill) value.signs)
                 , receivedMebendazole = or form.receivedMebendazole (Maybe.map (EverySet.member Mebendazole) value.signs)
+                , receivedFolicAcid = or form.receivedFolicAcid (Maybe.map (EverySet.member PostpartumFolicAcid) value.signs)
+                , receivedVitamineA = or form.receivedVitamineA (Maybe.map (EverySet.member PostpartumVitamineA) value.signs)
                 , hivMedicationByPMTCT = or form.hivMedicationByPMTCT (Maybe.map (EverySet.member HIVTreatmentMedicineByPMTCT) value.hivTreatment)
                 , hivMedicationNotGivenReason =
                     maybeValueConsideringIsDirtyField form.hivMedicationNotGivenReasonDirty
@@ -3534,13 +3539,23 @@ toMedicationValue : MedicationForm -> Maybe MedicationValue
 toMedicationValue form =
     let
         signs =
-            if List.all isNothing [ form.receivedIronFolicAcid, form.receivedDewormingPill, form.receivedMebendazole ] then
+            if
+                List.all isNothing
+                    [ form.receivedIronFolicAcid
+                    , form.receivedDewormingPill
+                    , form.receivedMebendazole
+                    , form.receivedFolicAcid
+                    , form.receivedVitamineA
+                    ]
+            then
                 Nothing
 
             else
                 [ ifNullableTrue IronAndFolicAcidSupplement form.receivedIronFolicAcid
                 , ifNullableTrue DewormingPill form.receivedDewormingPill
                 , ifNullableTrue Mebendazole form.receivedMebendazole
+                , ifNullableTrue PostpartumFolicAcid form.receivedFolicAcid
+                , ifNullableTrue PostpartumVitamineA form.receivedVitamineA
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)

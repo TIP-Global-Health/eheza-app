@@ -1418,6 +1418,12 @@ encodeMedicationSign sign =
             Mebendazole ->
                 "mebendezole"
 
+            PostpartumFolicAcid ->
+                "folic-acid"
+
+            PostpartumVitamineA ->
+                "vitamine-a"
+
             NoMedication ->
                 "none"
 
