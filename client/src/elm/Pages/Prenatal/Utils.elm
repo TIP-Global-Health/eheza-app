@@ -1379,12 +1379,14 @@ resolveRequiredMedicationsSet :
     -> List ( TranslationId, List MedicationDistributionSign, List (Html any) )
 resolveRequiredMedicationsSet language currentDate phase assembled =
     case phase of
+        -- Not for Postpartum encounter.
         PrenatalEncounterPhaseInitial ->
             let
                 mebendazoleSet =
                     let
                         prescribeMebendazole =
-                            showMebendazoleQuestion currentDate assembled
+                            (assembled.encounter.encounterType == NurseEncounter)
+                                && showMebendazoleQuestion currentDate assembled
                                 && (getMeasurementValueFunc assembled.measurements.medication
                                         |> Maybe.andThen .signs
                                         |> Maybe.map (EverySet.member Mebendazole >> not)
@@ -1474,7 +1476,7 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                     else
                         Nothing
 
-                -- Only at Postpartum encounter.
+                -- Only for Postpartum encounter.
                 vitaminA =
                     let
                         prescribeVitaminA =
