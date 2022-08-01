@@ -240,14 +240,6 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                     )
                 |> Maybe.withDefault ( Nothing, Nothing, False )
 
-        -- Whether first prenatal encounter for person is in process.
-        -- This is True when there's only one encounter, it's active, and
-        -- it is of type NurseEncounter.
-        firstEncounterInProcess =
-            (List.length encounters == 1)
-                && isJust maybeActiveEncounterId
-                && (Maybe.map ((==) NurseEncounter) lastEncounterType |> Maybe.withDefault False)
-
         encounterTypeButtonAction encounterType allowCreateNewSession =
             -- If there's an active encounter, navigate to it.
             Maybe.map navigateToEncounterAction maybeActiveEncounterId
@@ -277,7 +269,7 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
             let
                 buttonDisabled =
                     firstEncounterButtonEnabled
-                        || postpartumEncounterButtonEnabled
+                        || postpartumEncounterInProcess
                         || encounterWasCompletedToday
             in
             viewButton language
@@ -308,6 +300,21 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                     -- When there're no encounters, we allow to
                     -- create postpartum encounter.
                     True
+
+        -- Whether first prenatal encounter for person is in process.
+        -- This is True when there's only one encounter, it's active, and
+        -- it is of type NurseEncounter.
+        firstEncounterInProcess =
+            (List.length encounters == 1)
+                && isJust maybeActiveEncounterId
+                && (Maybe.map ((==) NurseEncounter) lastEncounterType |> Maybe.withDefault False)
+
+        -- Whether postpartum encounter for person is in process.
+        -- This is True when current active encounter is of
+        -- NursePostpartumEncounter type.
+        postpartumEncounterInProcess =
+            isJust maybeActiveEncounterId
+                && (Maybe.map ((==) NursePostpartumEncounter) lastEncounterType |> Maybe.withDefault False)
     in
     [ createFirstEncounterButton
     , createSubsequentEncounterButton
