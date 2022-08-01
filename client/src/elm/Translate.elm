@@ -336,7 +336,8 @@ type TranslationId
     | AdministerFolicAcidHelper
     | AdministerHIVARVHelper
     | AdministerIronHelper
-    | AdministeVitaminAHelper
+    | AdministerVitaminAHelperPrenatal
+    | AdministerVitaminAHelperWellChild
     | Administered
     | AdministeredMedicationQuestion
     | AdministeredOneOfAboveMedicinesQuestion
@@ -1933,7 +1934,12 @@ translationSet trans =
             , kinyarwanda = Just "Fata mg 1 60 inshuro 2 ku munsi mu mezi atatu"
             }
 
-        AdministeVitaminAHelper ->
+        AdministerVitaminAHelperPrenatal ->
+            { english = "Vitamin A is given once"
+            , kinyarwanda = Nothing
+            }
+
+        AdministerVitaminAHelperWellChild ->
             { english = "Put the correct number of drops directly into the mouth of the child"
             , kinyarwanda = Just "Shyira mu kanwa k'umwana ibitonyanga bigenwe"
             }
