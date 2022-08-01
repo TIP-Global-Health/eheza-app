@@ -17,15 +17,16 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (SendToHCForm)
 import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, vitalsFormWithDefault)
-import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Utils
     exposing
-        ( ifEverySetEmpty
+        ( getCurrentReasonForMedicationNonAdministration
+        , ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
         , maybeValueConsideringIsDirtyField
+        , nonAdministrationReasonToSign
         , taskAllCompleted
         , taskCompleted
         , valueConsideringIsDirtyField
@@ -1469,8 +1470,29 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
 
                     else
                         Nothing
+
+                -- Only at Postpartum encounter.
+                vitaminA =
+                    let
+                        prescribeVitaminA =
+                            (assembled.encounter.encounterType == NursePostpartumEncounter)
+                                && (getMeasurementValueFunc assembled.measurements.medication
+                                        |> Maybe.andThen .signs
+                                        |> Maybe.map (EverySet.member PostpartumVitaminA >> not)
+                                        |> Maybe.withDefault False
+                                   )
+                    in
+                    if prescribeVitaminA then
+                        Just
+                            ( Translate.MedicationDistributionHelperVitaminA
+                            , [ VitaminA ]
+                            , []
+                            )
+
+                    else
+                        Nothing
             in
-            Maybe.Extra.values [ mebendazoleSet, hivPositiveSet, discordantPartnershipSet, gonorheaSet, trichomonasOrBVSet ]
+            Maybe.Extra.values [ mebendazoleSet, hivPositiveSet, discordantPartnershipSet, gonorheaSet, trichomonasOrBVSet, vitaminA ]
 
         PrenatalEncounterPhaseRecurrent ->
             if

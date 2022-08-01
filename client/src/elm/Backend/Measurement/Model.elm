@@ -1711,6 +1711,7 @@ type MedicationNonAdministrationSign
     | MedicationCeftriaxone AdministrationNote
     | MedicationAzithromycin AdministrationNote
     | MedicationMetronidazole AdministrationNote
+    | MedicationVitaminA AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 

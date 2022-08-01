@@ -757,6 +757,7 @@ type TranslationId
     | MedicationDistributionHelperMebendazole
     | MedicationDistributionHelperGonorrhea
     | MedicationDistributionHelperTrichomonasOrBacterialVaginosis
+    | MedicationDistributionHelperVitaminA
     | MedicationDistributionNoticeGonorrhea
     | MedicationDistributionNoticeGonorrheaPartnerMed1
     | MedicationDistributionNoticeGonorrheaPartnerMed2
@@ -6209,6 +6210,11 @@ translationSet trans =
 
         MedicationDistributionHelperTrichomonasOrBacterialVaginosis ->
             { english = "This patient has signs of possible Trichomonas or Bacterial Vaginosis"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationDistributionHelperVitaminA ->
+            { english = "This patient did not receive Vitamin A"
             , kinyarwanda = Nothing
             }
 

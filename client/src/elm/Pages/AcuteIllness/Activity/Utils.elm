@@ -22,7 +22,17 @@ import Measurement.Utils
 import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, maybeValueConsideringIsDirtyField, taskCompleted, valueConsideringIsDirtyField, viewInstructionsLabel)
+import Pages.Utils
+    exposing
+        ( getCurrentReasonForMedicationNonAdministration
+        , ifEverySetEmpty
+        , ifNullableTrue
+        , ifTrue
+        , maybeValueConsideringIsDirtyField
+        , taskCompleted
+        , valueConsideringIsDirtyField
+        , viewInstructionsLabel
+        )
 import Translate exposing (TranslationId)
 
 
@@ -1498,79 +1508,6 @@ resolveAmoxicillinDosage currentDate person =
                 else
                     Just ( "1", "500", Translate.ByMouthThreeTimesADayForXDays 5 )
             )
-
-
-getCurrentReasonForMedicationNonAdministration :
-    (AdministrationNote -> MedicationNonAdministrationSign)
-    -> { f | nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign) }
-    -> Maybe AdministrationNote
-getCurrentReasonForMedicationNonAdministration reasonToSignFunc form =
-    let
-        nonAdministrationSigns =
-            form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
-    in
-    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
-        |> List.filterMap
-            (\reason ->
-                if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then
-                    Just reason
-
-                else
-                    Nothing
-            )
-        |> List.head
-
-
-nonAdministrationReasonToSign : MedicationDistributionSign -> AdministrationNote -> MedicationNonAdministrationSign
-nonAdministrationReasonToSign sign reason =
-    case sign of
-        Amoxicillin ->
-            MedicationAmoxicillin reason
-
-        Coartem ->
-            MedicationCoartem reason
-
-        ORS ->
-            MedicationORS reason
-
-        Zinc ->
-            MedicationZinc reason
-
-        Paracetamol ->
-            MedicationParacetamol reason
-
-        Mebendezole ->
-            MedicationMebendezole reason
-
-        Tenofovir ->
-            MedicationTenofovir reason
-
-        Lamivudine ->
-            MedicationLamivudine reason
-
-        Dolutegravir ->
-            MedicationDolutegravir reason
-
-        TDF3TC ->
-            MedicationTDF3TC reason
-
-        Iron ->
-            MedicationIron reason
-
-        FolicAcid ->
-            MedicationFolicAcid reason
-
-        Ceftriaxone ->
-            MedicationCeftriaxone reason
-
-        Azithromycin ->
-            MedicationAzithromycin reason
-
-        Metronidazole ->
-            MedicationMetronidazole reason
-
-        _ ->
-            NoMedicationNonAdministrationSigns
 
 
 fromOngoingTreatmentReviewValue : Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm

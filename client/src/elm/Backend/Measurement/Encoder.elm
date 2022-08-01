@@ -2774,9 +2774,6 @@ encondeMedicationDistributionSign sign =
             Mebendezole ->
                 "mebendezole"
 
-            VitaminA ->
-                "vitamina"
-
             Paracetamol ->
                 "paracetamol"
 
@@ -2806,6 +2803,9 @@ encondeMedicationDistributionSign sign =
 
             Metronidazole ->
                 "metronidazole"
+
+            VitaminA ->
+                "vitamina"
 
             NoMedicationDistributionSigns ->
                 "none"
@@ -2865,6 +2865,9 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationMetronidazole reason ->
                 "metronidazole-" ++ administrationNoteToString reason
+
+            MedicationVitaminA reason ->
+                "vitamina-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"

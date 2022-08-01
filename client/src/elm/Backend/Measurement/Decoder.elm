@@ -3090,6 +3090,11 @@ decodeMedicationNonAdministrationSign =
                                             |> Maybe.map (MedicationMetronidazole >> succeed)
                                             |> Maybe.withDefault failure
 
+                                    "vitamina" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationVitaminA >> succeed)
+                                            |> Maybe.withDefault failure
+
                                     _ ->
                                         failure
                             )

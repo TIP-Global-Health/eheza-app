@@ -44,13 +44,12 @@ import Measurement.Utils
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         )
-import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Activity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue, tasksBarId)
+import Pages.Utils exposing (insertIntoSet, nonAdministrationReasonToSign, setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 import Translate exposing (Language, translate)
