@@ -1348,17 +1348,29 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
     in
     case diagnosis of
         DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 37)
-                        && moderatePreeclampsiaByMeasurements measurements
-                )
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 37)
+                            && moderatePreeclampsiaByMeasurements measurements
+                    )
 
         DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
-            (-- If diagnosed Moderate Preeclampsia at initial stage, we do not
-             -- need to diagnose again.
-             not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus assembled
-            )
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && (-- If diagnosed Moderate Preeclampsia at initial stage, we do not
+                    -- need to diagnose again.
+                    not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus assembled
+                   )
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 37)
@@ -1617,36 +1629,80 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
     case diagnosis of
         DiagnosisChronicHypertensionImmediate ->
             -- Hypertension is a chronic diagnosis for whole duration
-            -- of pregnancy. Therefore, if diagnosed once, we do not need
-            -- to diagnose it again.
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
             (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && resolveEGAWeeksAndThen (chronicHypertensionByMeasurements measurements)
 
         DiagnosisChronicHypertensionAfterRecheck ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
             (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && resolveEGAWeeksAndThen (chronicHypertensionByMeasurementsAfterRecheck measurements)
 
         DiagnosisGestationalHypertensionImmediate ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
             (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurements measurements)
 
         DiagnosisGestationalHypertensionAfterRecheck ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
             (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurementsAfterRecheck measurements)
 
         DiagnosisModeratePreeclampsiaInitialPhase ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 20)
-                        && (egaWeeks < 37)
-                        && moderatePreeclampsiaByMeasurements measurements
-                )
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 20)
+                            && (egaWeeks < 37)
+                            && moderatePreeclampsiaByMeasurements measurements
+                    )
 
         DiagnosisModeratePreeclampsiaRecurrentPhase ->
-            (-- If diagnosed Moderate Preeclampsia at initial stage, we do not
-             -- need to diagnose again.
-             not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhase assembled
-            )
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && -- If diagnosed Moderate Preeclampsia at initial stage, we do not
+                   -- need to diagnose again.
+                   (not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhase assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 20)

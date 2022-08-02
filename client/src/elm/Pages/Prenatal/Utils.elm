@@ -2408,6 +2408,20 @@ hypertensionDiagnoses =
     ]
 
 
+diagnosedModeratePreeclampsiaPrevoiusly : AssembledData -> Bool
+diagnosedModeratePreeclampsiaPrevoiusly assembled =
+    diagnosedPreviouslyAnyOf moderatePreeclampsiaDiagnoses assembled
+
+
+moderatePreeclampsiaDiagnoses : List PrenatalDiagnosis
+moderatePreeclampsiaDiagnoses =
+    [ DiagnosisModeratePreeclampsiaInitialPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    ]
+
+
 diagnosedMalaria : AssembledData -> Bool
 diagnosedMalaria =
     diagnosedAnyOf
