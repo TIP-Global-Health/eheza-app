@@ -667,7 +667,7 @@ type TranslationId
     | HypertensionBeforePregnancy
     | HypertensionRecommendedTreatmentHeader
     | HypertensionRecommendedTreatmentHelper
-    | HypertensionRecommendedTreatmentUpdateHeader
+    | HypertensionRecommendedTreatmentUpdateHeader Bool
     | HypertensionRecommendedTreatmentUpdateBPLabel
     | HypertensionRecommendedTreatmentUpdateCurrentTreatment
     | HypertensionRecommendedTreatmentUpdateNewTreatment HypertensionTreatementUpdateOption
@@ -1265,7 +1265,7 @@ type TranslationId
     | Treatment
     | TreatmentDetailsAnemia
     | TreatmentDetailsHIV Bool Bool
-    | TreatmentDetailsHypertension RecommendedTreatmentSign
+    | TreatmentDetailsHypertension Bool RecommendedTreatmentSign
     | TreatmentDetailsMalaria RecommendedTreatmentSign
     | TreatmentDetailsSyphilis RecommendedTreatmentSign
     | TreatmentReviewQuestionAdverseEvents
@@ -1273,7 +1273,7 @@ type TranslationId
     | TreatmentReviewQuestionMedicationByPMTCT
     | TreatmentReviewQuestionMissedDoses
     | TreatmentReviewQuestionStillTaking
-    | TreatmentReviewTask TreatmentReviewTask
+    | TreatmentReviewTask Bool TreatmentReviewTask
     | TreatmentReviewWarningPopupMessage
     | TreatmentReviewWarningPopupInstructions
     | TrySyncing
@@ -5090,10 +5090,16 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
             }
 
-        HypertensionRecommendedTreatmentUpdateHeader ->
-            { english = "This patient was previously diagnosed with Hypertension"
-            , kinyarwanda = Nothing
-            }
+        HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia ->
+            if forModeratePreeclamsia then
+                { english = "This patient was previously diagnosed with Moderate Preeclamsia"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "This patient was previously diagnosed with Hypertension"
+                , kinyarwanda = Nothing
+                }
 
         HypertensionRecommendedTreatmentUpdateBPLabel ->
             { english = "The patients current BP is"
@@ -13062,30 +13068,38 @@ translationSet trans =
                 , kinyarwanda = Nothing
                 }
 
-        TreatmentDetailsHypertension sign ->
+        TreatmentDetailsHypertension forModeratePreeclamsia sign ->
+            let
+                diagnosis =
+                    if forModeratePreeclamsia then
+                        "Moderate Preeclampsia"
+
+                    else
+                        "Hypertension"
+            in
             case sign of
                 TreatmentMethyldopa2 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 2x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 2x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa3 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 3x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 3x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa4 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day and Carvedilol (6.25mg), by mouth 2x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day and Carvedilol (6.25mg), by mouth 2x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
-                    { english = "At the previous visit you were given Methyldopa (250mg,) by mouth 4x a day, Carvedilol (6.25mg), by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg,) by mouth 4x a day, Carvedilol (6.25mg), by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
@@ -13169,7 +13183,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TreatmentReviewTask task ->
+        TreatmentReviewTask forModeratePreeclamsia task ->
             case task of
                 TreatmentReviewPrenatalMedication ->
                     { english = "Prenatal Medication"
@@ -13182,9 +13196,15 @@ translationSet trans =
                     }
 
                 TreatmentReviewHypertension ->
-                    { english = "Hypertension Medication"
-                    , kinyarwanda = Nothing
-                    }
+                    if forModeratePreeclamsia then
+                        { english = "Moderate Preeclamsia Medication"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Hypertension Medication"
+                        , kinyarwanda = Nothing
+                        }
 
                 TreatmentReviewMalaria ->
                     { english = "Malaria Medication"

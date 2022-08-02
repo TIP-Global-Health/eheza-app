@@ -487,7 +487,7 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                             assembled
                             form
 
-                    else if diagnosedHypertensionPrevoiusly assembled then
+                    else if diagnosedHypertensionPrevoiusly assembled || diagnosedModeratePreeclampsiaPrevoiusly assembled then
                         resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language
                             currentDate
                             (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
@@ -628,6 +628,9 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
     Maybe.map2
         (\recommendationDosageUpdate recommendedMedication ->
             let
+                forModeratePreeclamsia =
+                    diagnosedModeratePreeclampsiaPrevoiusly assembled
+
                 currentBPLabel =
                     getMeasurementValueFunc assembled.measurements.vitals
                         |> Maybe.andThen
@@ -732,7 +735,7 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                         form.recommendedTreatmentSigns
                         |> Maybe.withDefault ( [], 0, 0 )
             in
-            ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentUpdateHeader "." "label"
+            ( [ viewCustomLabel language (Translate.HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia) "." "label"
               , currentBPLabel
               , currentTreatmentLabel
               , newTreatmentLabel
@@ -787,6 +790,8 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate options set
     )
 
 
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 viewTreatmentOptionForHypertension : Language -> RecommendedTreatmentSign -> Html any
 viewTreatmentOptionForHypertension language sign =
     let
@@ -814,24 +819,16 @@ viewTreatmentOptionForHypertension language sign =
             viewTreatmentOptionWithDosage language sign
 
 
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 updateHypertensionTreatmentWithMedication : AssembledData -> Bool
 updateHypertensionTreatmentWithMedication assembled =
     resolveHypertensionTreatementUpdateMedication assembled
         |> isJust
 
 
-updateHypertensionTreatmentWithHospitalization : AssembledData -> Bool
-updateHypertensionTreatmentWithHospitalization assembled =
-    resolveHypertensionTreatementUpdateRecommendation assembled
-        |> Maybe.map ((==) hypertensionTreatementHospitalizationOption)
-        |> Maybe.withDefault False
-
-
-hypertensionTreatementHospitalizationOption : ( RecommendedTreatmentSign, Bool )
-hypertensionTreatementHospitalizationOption =
-    ( NoTreatmentForHypertension, True )
-
-
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 resolveHypertensionTreatementUpdateMedication : AssembledData -> Maybe RecommendedTreatmentSign
 resolveHypertensionTreatementUpdateMedication assembled =
     resolveHypertensionTreatementUpdateRecommendation assembled
@@ -845,6 +842,24 @@ resolveHypertensionTreatementUpdateMedication assembled =
             )
 
 
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
+updateHypertensionTreatmentWithHospitalization : AssembledData -> Bool
+updateHypertensionTreatmentWithHospitalization assembled =
+    resolveHypertensionTreatementUpdateRecommendation assembled
+        |> Maybe.map ((==) hypertensionTreatementHospitalizationOption)
+        |> Maybe.withDefault False
+
+
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
+hypertensionTreatementHospitalizationOption : ( RecommendedTreatmentSign, Bool )
+hypertensionTreatementHospitalizationOption =
+    ( NoTreatmentForHypertension, True )
+
+
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 resolveHypertensionTreatementUpdateRecommendation : AssembledData -> Maybe ( RecommendedTreatmentSign, Bool )
 resolveHypertensionTreatementUpdateRecommendation assembled =
     Maybe.map2
@@ -950,9 +965,11 @@ resolveHypertensionTreatementUpdateRecommendation assembled =
         (hypertensionTreatementUpdateRecommendationByBP assembled)
 
 
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 hypertensionTreatementUpdateRecommendationByBP : AssembledData -> Maybe HypertensionTreatementUpdateOption
 hypertensionTreatementUpdateRecommendationByBP assembled =
-    if diagnosedHypertensionPrevoiusly assembled then
+    if diagnosedHypertensionPrevoiusly assembled || diagnosedModeratePreeclampsiaPrevoiusly assembled then
         getMeasurementValueFunc assembled.measurements.vitals
             |> Maybe.andThen
                 (\value ->
@@ -963,7 +980,7 @@ hypertensionTreatementUpdateRecommendationByBP assembled =
                                     hypertensionTreatementUpdateRecommendationBySys sys
 
                                 byDia =
-                                    hypertensionTreatementUpdateRecommendationBySys dia
+                                    hypertensionTreatementUpdateRecommendationByDia dia
                             in
                             if hypertensionTreatementUpdateToNumber bySys < hypertensionTreatementUpdateToNumber byDia then
                                 byDia
@@ -979,6 +996,8 @@ hypertensionTreatementUpdateRecommendationByBP assembled =
         Nothing
 
 
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 hypertensionTreatementUpdateRecommendationBySys : Float -> HypertensionTreatementUpdateOption
 hypertensionTreatementUpdateRecommendationBySys value =
     if value < 140 then
@@ -994,6 +1013,8 @@ hypertensionTreatementUpdateRecommendationBySys value =
         TreatementUpdateHospitalize
 
 
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 hypertensionTreatementUpdateRecommendationByDia : Float -> HypertensionTreatementUpdateOption
 hypertensionTreatementUpdateRecommendationByDia value =
     if value < 90 then
@@ -1487,13 +1508,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 []
 
 
-diagnosesCausingHospitalReferralByAdverseEventForTreatment : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled =
-    filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
-        [ DiagnosisHIV, DiagnosisChronicHypertensionImmediate, DiagnosisMalaria, DiagnosisModerateAnemia, DiagnosisSyphilis ]
-        assembled
-
-
 referToHospitalDueToAdverseEvent : AssembledData -> Bool
 referToHospitalDueToAdverseEvent =
     diagnosesCausingHospitalReferralByAdverseEventForTreatment
@@ -1501,10 +1515,31 @@ referToHospitalDueToAdverseEvent =
         >> not
 
 
+diagnosesCausingHospitalReferralByAdverseEventForTreatment : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled =
+    filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
+        [ DiagnosisHIV
+        , -- Since treatment for Hypertension and Moderate Preeclampsia
+          -- is identical, we use this indicator for both.
+          DiagnosisChronicHypertensionImmediate
+        , DiagnosisMalaria
+        , DiagnosisModerateAnemia
+        , DiagnosisSyphilis
+        ]
+        assembled
+
+
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+Moderate Preeclamsia logic is a higher lavel condition for Hypertension within
+identical treatement, and therefore, we do not differentiate between the 2.
+-}
 referToHospitalDueToAdverseEventForHypertensionTreatment : AssembledData -> Bool
 referToHospitalDueToAdverseEventForHypertensionTreatment =
     filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
-        [ DiagnosisChronicHypertensionImmediate ]
+        [ -- Since treatment for Hypertension and Moderate Preeclampsia
+          -- is identical, we use this indicator for both.
+          DiagnosisChronicHypertensionImmediate
+        ]
         >> List.isEmpty
         >> not
 
@@ -2350,6 +2385,8 @@ recommendedTreatmentSignsForHypertensionInitial =
     ]
 
 
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
 recommendedTreatmentSignsForHypertension =
     [ TreatmentMethyldopa2

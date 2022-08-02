@@ -418,8 +418,23 @@ expectNextStepsTask currentDate assembled task =
                             , DiagnosisTrichomonasOrBacterialVaginosis
                             ]
                             assembled
-                        || (updateHypertensionTreatmentWithMedication assembled
-                                && (not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled)
+                        || (-- Indicators show that Hypertension / Moderate Preeclamsia
+                            -- treatment should be updated.
+                            updateHypertensionTreatmentWithMedication assembled
+                                && (-- Hypertension / Moderate Preeclamsia treatemnt
+                                    -- did not cause and adverse event.
+                                    not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
+                                   )
+                                && (-- Moderate Preeclamsia diagnosed at current encounter,
+                                    -- which results in referral to hospital.
+                                    -- EGA37 diagnoses are not included, since they trigger emergency referral.
+                                    not <|
+                                        diagnosedAnyOf
+                                            [ DiagnosisModeratePreeclampsiaInitialPhase
+                                            , DiagnosisModeratePreeclampsiaRecurrentPhase
+                                            ]
+                                            assembled
+                                   )
                            )
                    )
 
@@ -561,10 +576,19 @@ latestMedicationTreatmentForHIV assembled =
         prescribedMedications
 
 
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 latestMedicationTreatmentForHypertension : AssembledData -> Maybe Translate.TranslationId
 latestMedicationTreatmentForHypertension assembled =
     getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled
-        |> Maybe.map Translate.TreatmentDetailsHypertension
+        |> Maybe.map
+            (\treatment ->
+                let
+                    forModeratePreeclamsia =
+                        diagnosedModeratePreeclampsiaPrevoiusly assembled
+                in
+                Translate.TreatmentDetailsHypertension forModeratePreeclamsia treatment
+            )
 
 
 latestMedicationTreatmentForMalaria : AssembledData -> Maybe Translate.TranslationId
@@ -2097,12 +2121,6 @@ flankPainPresent sign =
 
 chronicHypertensionByMeasurements : PrenatalMeasurements -> Int -> Bool
 chronicHypertensionByMeasurements measurements egaWeeks =
-    -- There's no need to consider Preeclamsia diagnoses when
-    -- diagnosing Chronic Hypertension by blood preasure, because Preeclamsia
-    -- starts from EGA 20.
-    -- In case we also diagnose Severe Preeclampsia due to severe headaches
-    -- with blurry vision (danger signs) which is for any EGA, hypertension
-    -- diagnosis will be filtered out due to applied hierarchy.
     egaWeeks < 20 && highBloodPressure measurements
 
 
@@ -2113,32 +2131,11 @@ chronicHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
 
 gestationalHypertensionByMeasurements : PrenatalMeasurements -> Int -> Bool
 gestationalHypertensionByMeasurements measurements egaWeeks =
-    -- Here we have a risk of collision with Preeclamsia diagnoses.
-    -- To make Preeclampsia diagnosis, in most cases we need to wait until
-    -- recurrent pahse, for urinary protein result.
-    -- What we need to avoid is diagnosing Hypertension on initial phase,
-    -- prescribing medication, and then diagnosing Preeclamsia which
-    -- implies referring patient to hospital.
-    -- Therefore, we diagnose Gestational Hypertension on initial phase
-    -- only if urinary test was not run and reason for this was set.
-    -- In case we diagnose both Gestational Hypertension and Preeclamsia on
-    -- inital stage, hierarch will eliminate Gestational Hypertension, so
-    -- there's no problem.
-    (egaWeeks >= 20)
-        && highBloodPressure measurements
-        && (getMeasurementValueFunc measurements.urineDipstickTest
-                |> Maybe.map
-                    (\value ->
-                        List.all ((/=) value.executionNote)
-                            [ TestNoteRunToday, TestNoteRunPreviously ]
-                    )
-                |> Maybe.withDefault False
-           )
+    (egaWeeks >= 20) && highBloodPressure measurements
 
 
 gestationalHypertensionByMeasurementsAfterRecheck : PrenatalMeasurements -> Int -> Bool
 gestationalHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
-    -- On recurrent phase any collision with Preeclamsia will be handled by hierarchy.
     egaWeeks >= 20 && repeatedTestForMarginalBloodPressure measurements
 
 
