@@ -787,6 +787,7 @@ type TranslationId
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
     | ModeratelyUnderweight
+    | ModeratePreeclampsia
     | Month
     | MonthAbbrev
     | MonthSinglePlural Int
@@ -6569,6 +6570,11 @@ translationSet trans =
             , kinyarwanda = Just "Imirire mibi yoroheje ku biro"
             }
 
+        ModeratePreeclampsia ->
+            { english = "Moderate Preeclampsia"
+            , kinyarwanda = Nothing
+            }
+
         Month ->
             { english = "Month"
             , kinyarwanda = Just "Ukwezi"
@@ -10581,6 +10587,11 @@ translationSet trans =
 
                 GivenMedicine ->
                     { english = "Were you given medicine"
+                    , kinyarwanda = Nothing
+                    }
+
+                PlannedFollowUpCareWithSpecialist ->
+                    { english = "Do you have follow up care planned with a specialist"
                     , kinyarwanda = Nothing
                     }
 

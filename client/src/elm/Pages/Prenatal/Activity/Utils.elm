@@ -5693,6 +5693,7 @@ outsideCareFormWithDefault form saved =
                 { seenAtAnotherFacility = or form.seenAtAnotherFacility (EverySet.member SeenAtAnotherFacility value.signs |> Just)
                 , givenNewDiagnosis = or form.givenNewDiagnosis (EverySet.member GivenNewDiagnoses value.signs |> Just)
                 , givenMedicine = or form.givenMedicine (EverySet.member GivenMedicine value.signs |> Just)
+                , plannedFollowUp = or form.plannedFollowUp (EverySet.member PlannedFollowUpCareWithSpecialist value.signs |> Just)
                 , diagnoses = maybeValueConsideringIsDirtyField form.diagnosesDirty form.diagnoses (value.diagnoses |> Maybe.map EverySet.toList)
                 , diagnosesDirty = form.diagnosesDirty
                 , malariaMedications = or form.malariaMedications malariaMedications
@@ -5717,6 +5718,7 @@ toPrenatalOutsideCareValue form =
             [ Maybe.map (ifTrue SeenAtAnotherFacility) form.seenAtAnotherFacility
             , ifNullableTrue GivenNewDiagnoses form.givenNewDiagnosis
             , ifNullableTrue GivenMedicine form.givenMedicine
+            , ifNullableTrue PlannedFollowUpCareWithSpecialist form.plannedFollowUp
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalOutsideCareSigns)
@@ -5811,6 +5813,15 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                                     (Just DiagnosisOther)
                                     SetOutsideCareDiagnosis
                                     Translate.PrenatalDiagnosis
+                              , viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion PlannedFollowUpCareWithSpecialist
+                              , viewBoolInput
+                                    language
+                                    form.plannedFollowUp
+                                    (SetOutsideCareSignBoolInput
+                                        (\value form_ -> { form_ | plannedFollowUp = Just value })
+                                    )
+                                    "planned-follow-up"
+                                    Nothing
                               ]
                                 ++ givenMedicineSection
                             , [ if isJust form.diagnoses then
@@ -5818,6 +5829,7 @@ outsideCareFormInputsAndTasksDiagnoses language form =
 
                                 else
                                     Nothing
+                              , form.plannedFollowUp
                               ]
                                 ++ givenMedicineTasks
                             )
@@ -5902,9 +5914,18 @@ outsideCareFormInputsAndTasksMedications language form =
                             List.any (\diagnosis -> List.member diagnosis diagnoses)
                                 [ DiagnosisGestationalHypertensionImmediate
                                 , DiagnosisChronicHypertensionImmediate
+                                , DiagnosisModeratePreeclampsiaInitialPhase
                                 ]
                         then
-                            ( [ viewHeader Translate.Hypertension
+                            let
+                                headerTransId =
+                                    if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
+                                        Translate.ModeratePreeclampsia
+
+                                    else
+                                        Translate.Hypertension
+                            in
+                            ( [ viewHeader headerTransId
                               , selectTreatmentOptionsInput outsideCareMedicationOptionsHypertension
                                     NoOutsideCareMedicationForHypertension
                                     form.hypertensionMedications

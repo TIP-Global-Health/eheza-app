@@ -2539,6 +2539,7 @@ outsideCareDiagnosesWithPossibleMedication =
     , DiagnosisModerateAnemia
     , DiagnosisGestationalHypertensionImmediate
     , DiagnosisChronicHypertensionImmediate
+    , DiagnosisModeratePreeclampsiaInitialPhase
     ]
 
 
