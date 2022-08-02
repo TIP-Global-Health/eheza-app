@@ -1355,11 +1355,15 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 )
 
         DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 37)
-                        && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
-                )
+            (-- If diagnosed Moderate Preeclampsia at initial stage, we do not
+             -- need to diagnose again.
+             not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus assembled
+            )
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 37)
+                            && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                    )
 
         DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
             resolveEGAWeeksAndThen
@@ -1369,11 +1373,15 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 )
 
         DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 37)
-                        && severePreeclampsiaRecurrentPhase signs measurements
-                )
+            (-- If diagnosed Severe Preeclampsia at initial stage, we do not
+             -- need to diagnose again.
+             not <| diagnosed DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus assembled
+            )
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 37)
+                            && severePreeclampsiaRecurrentPhase signs measurements
+                    )
 
         DiagnosisEclampsia ->
             List.member Convulsions signs
@@ -1635,7 +1643,11 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 )
 
         DiagnosisModeratePreeclampsiaRecurrentPhase ->
-            resolveEGAWeeksAndThen
+            (-- If diagnosed Moderate Preeclampsia at initial stage, we do not
+             -- need to diagnose again.
+             not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhase assembled
+            )
+                resolveEGAWeeksAndThen
                 (\egaWeeks ->
                     (egaWeeks >= 20)
                         && (egaWeeks < 37)
@@ -1645,18 +1657,20 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         DiagnosisSeverePreeclampsiaInitialPhase ->
             resolveEGAWeeksAndThen
                 (\egaWeeks ->
-                    (egaWeeks >= 20)
-                        && (egaWeeks < 37)
+                    (egaWeeks < 37)
                         && severePreeclampsiaByDangerSigns dangerSigns
                 )
 
         DiagnosisSeverePreeclampsiaRecurrentPhase ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 20)
-                        && (egaWeeks < 37)
-                        && severePreeclampsiaRecurrentPhase dangerSigns measurements
-                )
+            (-- If diagnosed Severe Preeclampsia at initial stage, we do not
+             -- need to diagnose again.
+             not <| diagnosed DiagnosisSeverePreeclampsiaInitialPhase assembled
+            )
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks < 37)
+                            && severePreeclampsiaRecurrentPhase dangerSigns measurements
+                    )
 
         DiagnosisHIV ->
             testedPositiveAt .hivTest
@@ -2081,21 +2095,12 @@ moderatePreeclampsiaByMeasurements measurements =
 moderatePreeclampsiaByMeasurementsRecurrentPhase : PrenatalMeasurements -> Bool
 moderatePreeclampsiaByMeasurementsRecurrentPhase measurements =
     let
-        edema =
-            edemaOnHandOrLegs measurements
-
         highProtein =
             highUrineProtein measurements
     in
-    (highBloodPressure measurements
-        && (-- Adding this to avoid collision with Moderate Preeclampsia
-            -- diagnosed at intial phase
-            not edema
-           )
-        && highProtein
-    )
+    (highBloodPressure measurements && highProtein)
         || (repeatedTestForMarginalBloodPressure measurements
-                && (edema || highProtein)
+                && (edemaOnHandOrLegs measurements || highProtein)
            )
 
 
@@ -2114,7 +2119,7 @@ severePreeclampsiaRecurrentPhase dangerSigns measurements =
                         Maybe.map4
                             (\dia sys diaRepeated sysRepeated ->
                                 (dia >= 110 && sys >= 160)
-                                    || (diaRepeated >= 110 && sys >= sysRepeated)
+                                    || (diaRepeated >= 110 && sys >= 160)
                             )
                             value.dia
                             value.sys
@@ -2123,11 +2128,7 @@ severePreeclampsiaRecurrentPhase dangerSigns measurements =
                     )
                 |> Maybe.withDefault False
     in
-    (-- Adding this to avoid collision with Severe Preeclampsia
-     -- from initial phase of encounter.
-     not <| severePreeclampsiaByDangerSigns dangerSigns
-    )
-        && byBloodPreasure
+    byBloodPreasure
         && highUrineProtein measurements
         && severePreeclampsiaSigns measurements
 
