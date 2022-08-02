@@ -425,8 +425,7 @@ expectNextStepsTask currentDate assembled task =
                                     -- did not cause and adverse event.
                                     not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
                                    )
-                                && (-- Moderate Preeclamsia diagnosed at current encounter,
-                                    -- which results in referral to hospital.
+                                && (-- Moderate Preeclamsia not diagnosed at current encounter, which results in referral to hospital.
                                     -- EGA37 diagnoses are not included, since they trigger emergency referral.
                                     not <|
                                         diagnosedAnyOf
