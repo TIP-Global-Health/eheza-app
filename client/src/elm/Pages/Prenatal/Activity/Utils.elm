@@ -1647,12 +1647,12 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
              -- need to diagnose again.
              not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhase assembled
             )
-                resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 20)
-                        && (egaWeeks < 37)
-                        && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
-                )
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 20)
+                            && (egaWeeks < 37)
+                            && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                    )
 
         DiagnosisSeverePreeclampsiaInitialPhase ->
             resolveEGAWeeksAndThen
