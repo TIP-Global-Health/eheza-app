@@ -79,12 +79,12 @@ thumbnailDimensions =
     }
 
 
-generateFilteredDiagnoses : NominalDate -> EverySet PrenatalDiagnosis -> AssembledData -> List PrenatalDiagnosis -> List PrenatalDiagnosis
-generateFilteredDiagnoses encounterDate encounterDiagnoses assembled filterList =
+updateChronicHypertensionDiagnoses : NominalDate -> EverySet PrenatalDiagnosis -> AssembledData -> List PrenatalDiagnosis -> List PrenatalDiagnosis
+updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled filterList =
     List.filter
         -- We want to be looking at encounters performed
         -- before the encounter we're processing, to be able to locate
-        -- previous cronichal diagnosis.
+        -- previous chronic diagnosis.
         (\( date, _, _ ) ->
             Date.compare date encounterDate == LT
         )

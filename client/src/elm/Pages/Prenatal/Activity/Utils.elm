@@ -425,14 +425,10 @@ expectNextStepsTask currentDate assembled task =
                                     -- did not cause and adverse event.
                                     not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
                                    )
-                                && (-- Moderate Preeclamsia not diagnosed at current encounter, which results in referral to hospital.
-                                    -- EGA37 diagnoses are not included, since they trigger emergency referral.
-                                    not <|
-                                        diagnosedAnyOf
-                                            [ DiagnosisModeratePreeclampsiaInitialPhase
-                                            , DiagnosisModeratePreeclampsiaRecurrentPhase
-                                            ]
-                                            assembled
+                                && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
+                                    -- in referral to hospital. EGA37 diagnoses are not included, since they
+                                    -- trigger emergency referral.
+                                    not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
                                    )
                            )
                    )
@@ -5118,7 +5114,7 @@ expectLaboratoryTask currentDate assembled task =
                         |> Maybe.withDefault (isInitialTest test)
 
                 -- This function checks if patient has reported of having a disease.
-                -- HIV and Hepatitis B are considered chronical diseases.
+                -- HIV and Hepatitis B are considered chronic diseases.
                 -- If patient declared to have one of them, there's no point
                 -- in testing for it.
                 isKnownAsPositive getMeasurementFunc =

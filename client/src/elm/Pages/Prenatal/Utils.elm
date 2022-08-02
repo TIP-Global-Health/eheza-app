@@ -2429,11 +2429,19 @@ resolvePreviousHypertensionDiagnosis nursePreviousMeasurementsWithDates =
     List.filterMap
         (\( _, diagnoses, _ ) ->
             EverySet.toList diagnoses
-                |> List.filter (\diagnosis -> List.member diagnosis hypertensionDiagnoses)
-                |> List.head
+                |> List.filter
+                    (\diagnosis ->
+                        List.member diagnosis hypertensionDiagnoses
+                            || List.member diagnosis moderatePreeclampsiaDiagnoses
+                    )
+                |> Just
         )
         nursePreviousMeasurementsWithDates
-        |> List.head
+        |> List.concat
+        |> List.map hierarchalBloodPreasureDiagnosisToNumber
+        |> Maybe.Extra.values
+        |> List.maximum
+        |> Maybe.andThen hierarchalBloodPreasureDiagnosisFromNumber
 
 
 hypertensionDiagnoses : List PrenatalDiagnosis
