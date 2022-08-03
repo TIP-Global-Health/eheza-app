@@ -2101,9 +2101,7 @@ viewSymptomReviewContent language currentDate assembled data =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form symptom-review" ] <|
-                div [ class "instructions" ]
-                    [ viewLabel language Translate.PrenatalSymptomQuestionsHeader ]
-                    :: inputs
+                inputs
             ]
         , actions
         ]
