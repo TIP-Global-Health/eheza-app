@@ -1616,10 +1616,10 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                 Maybe.map2
                                     (\testPrerequisites sugarCount ->
                                         if EverySet.member PrerequisiteFastFor12h testPrerequisites then
-                                            sugarCount > 7
+                                            sugarCount > 126
 
                                         else
-                                            sugarCount >= 11.1
+                                            sugarCount >= 200
                                     )
                                     value.testPrerequisites
                                     value.sugarCount
