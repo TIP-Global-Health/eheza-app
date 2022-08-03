@@ -5719,7 +5719,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryRandomBloodSugar _ ->
-                    { english = "74-110 mg/dl"
+                    { english = "74-110 mg/dL"
                     , kinyarwanda = Nothing
                     }
 
