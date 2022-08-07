@@ -866,7 +866,7 @@ viewPrenatalLabsPane language currentDate itemsDict db model =
                                     -- same day first vitals were taken.
                                     -- Otherwise, running vitals recheck is not necessary,
                                     -- and we consider this task as completed.
-                                    Date.diff Days currentDate item.dateMeasured == prenatalLabExpirationPeriod
+                                    currentDate == item.dateMeasured
 
                                 _ ->
                                     True
