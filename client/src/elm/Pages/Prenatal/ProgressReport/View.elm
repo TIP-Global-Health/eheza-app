@@ -86,7 +86,6 @@ import Pages.Prenatal.Utils
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
         , recommendedTreatmentSignsForSyphilis
-        , resolvePreviousHypertensionDiagnosis
         )
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -263,6 +262,7 @@ viewContent language currentDate isChw initiator model assembled =
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
                     , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                    , viewChwActivityPane language currentDate isChw assembled
                     , viewPatientProgressPane language currentDate isChw assembled
                     , viewLabsPane language currentDate assembled
                     , viewProgressPhotosPane language currentDate isChw assembled
@@ -388,11 +388,11 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
             List.map
                 (\( date, diagnoses, measurements ) ->
                     let
-                        filteredDiagnoses =
-                            generateFilteredDiagnoses date diagnoses assembled medicalDiagnoses
+                        diagnosesIncludingChronic =
+                            updateChronicHypertensionDiagnoses date diagnoses assembled medicalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) diagnosesIncludingChronic
                                 |> List.concat
 
                         outsideCareDiagnosesEntries =
@@ -482,11 +482,11 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
             List.map
                 (\( date, diagnoses, measurements ) ->
                     let
-                        filteredDiagnoses =
-                            generateFilteredDiagnoses date diagnoses assembled obstetricalDiagnoses
+                        diagnosesIncludingChronic =
+                            updateChronicHypertensionDiagnoses date diagnoses assembled obstetricalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) diagnosesIncludingChronic
                                 |> List.concat
 
                         outsideCareDiagnosesEntries =
@@ -558,6 +558,96 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
             dignoses
                 :: alerts
         ]
+
+
+viewChwActivityPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
+viewChwActivityPane language currentDate isChw assembled =
+    let
+        allMeasurementsWithDates =
+            assembled.chwPreviousMeasurementsWithDates
+                ++ (if isChw then
+                        [ ( currentDate, assembled.encounter.encounterType, assembled.measurements ) ]
+
+                    else
+                        []
+                   )
+                |> List.sortWith (sortByDateDesc (\( date, _, _ ) -> date))
+
+        activitiesWithDate =
+            List.map
+                (\( date, _, measurements ) ->
+                    ( date, List.filter (matchCHWActivityAtEncounter measurements) allCHWActions )
+                )
+                allMeasurementsWithDates
+
+        heading =
+            div [ class "heading" ]
+                [ div [ class "date" ] [ text <| translate language Translate.Date ]
+                , div [ class "chw-actions" ] [ text <| translate language Translate.Actions ]
+                ]
+
+        actions =
+            List.map
+                (\( date, activities ) ->
+                    div [ class "table-row" ]
+                        [ div [ class "date" ] [ text <| formatDDMMYYYY date ]
+                        , List.map
+                            (\activity ->
+                                li [ class <| chwActionToColor activity ]
+                                    [ text <| translate language <| Translate.CHWAction activity ]
+                            )
+                            activities
+                            |> ul [ class "chw-actions" ]
+                        ]
+                )
+                activitiesWithDate
+    in
+    div [ class "chw-activities" ]
+        [ viewItemHeading language Translate.ChwActivity "blue"
+        , div [ class "pane-content" ] <|
+            heading
+                :: actions
+        ]
+
+
+matchCHWActivityAtEncounter : PrenatalMeasurements -> CHWAction -> Bool
+matchCHWActivityAtEncounter measurements activity =
+    case activity of
+        ActionPregnancyDating ->
+            isJust measurements.lastMenstrualPeriod
+
+        ActionLabs ->
+            isJust measurements.pregnancyTest
+
+        ActionDangerSignsPresent ->
+            getMeasurementValueFunc measurements.dangerSigns
+                |> Maybe.map
+                    (\value ->
+                        case EverySet.toList value.signs of
+                            [] ->
+                                False
+
+                            [ NoDangerSign ] ->
+                                False
+
+                            _ ->
+                                True
+                    )
+                |> Maybe.withDefault False
+
+        ActionReferredToHealthCenter ->
+            getMeasurementValueFunc measurements.sendToHC
+                |> Maybe.map (.signs >> EverySet.member ReferToHealthCenter)
+                |> Maybe.withDefault False
+
+        ActionAppointmentConfirmation ->
+            isJust measurements.appointmentConfirmation
+
+        ActionHealthEducation ->
+            isJust measurements.healthEducation
+
+        ActionBirthPlan ->
+            isJust measurements.birthPlan
 
 
 viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
@@ -2016,13 +2106,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                 else
                                     let
                                         continued =
-                                            if
-                                                List.any
-                                                    (\hypertensionDiagnosis ->
-                                                        EverySet.member hypertensionDiagnosis allDiagnoses
-                                                    )
-                                                    hypertensionDiagnoses
-                                            then
+                                            if EverySet.member diagnosis allDiagnoses then
                                                 ""
 
                                             else
@@ -2601,13 +2685,21 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisModeratePreeclampsiaInitialPhase ->
-            referredToHospitalMessage
+            if EverySet.member DiagnosisModeratePreeclampsiaInitialPhase allDiagnoses then
+                referredToHospitalMessage
+
+            else
+                hypertensionTreatmentMessage
 
         DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
             referredToHospitalMessage
 
         DiagnosisModeratePreeclampsiaRecurrentPhase ->
-            referredToHospitalMessage
+            if EverySet.member DiagnosisModeratePreeclampsiaRecurrentPhase allDiagnoses then
+                referredToHospitalMessage
+
+            else
+                hypertensionTreatmentMessage
 
         DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
             referredToHospitalMessage

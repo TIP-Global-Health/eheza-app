@@ -2130,6 +2130,9 @@ viewTreatmentReviewContent language currentDate assembled data =
         measurements =
             assembled.measurements
 
+        moderatePreeclampsiaPrevoiusly =
+            diagnosedModeratePreeclampsiaPrevoiusly assembled
+
         viewTask task =
             let
                 isActive =
@@ -2156,7 +2159,7 @@ viewTreatmentReviewContent language currentDate assembled data =
             div [ class "column" ]
                 [ div attributes
                     [ span [ class "icon-activity-task icon-medication" ] []
-                    , text <| translate language (Translate.TreatmentReviewTask task)
+                    , text <| translate language (Translate.TreatmentReviewTask moderatePreeclampsiaPrevoiusly task)
                     ]
                 ]
 

@@ -43,4 +43,5 @@ type PatientType
 type PatientRecordFilter
     = FilterAcuteIllness
     | FilterAntenatal
+    | FilterFamilyPlanning
     | FilterDemographics

@@ -478,8 +478,18 @@ expectNextStepsTask currentDate assembled task =
                             , DiagnosisTrichomonasOrBacterialVaginosis
                             ]
                             assembled
-                        || (updateHypertensionTreatmentWithMedication assembled
-                                && (not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled)
+                        || (-- Indicators show that Hypertension / Moderate Preeclamsia
+                            -- treatment should be updated.
+                            updateHypertensionTreatmentWithMedication assembled
+                                && (-- Hypertension / Moderate Preeclamsia treatemnt
+                                    -- did not cause and adverse event.
+                                    not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
+                                   )
+                                && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
+                                    -- in referral to hospital. EGA37 diagnoses are not included, since they
+                                    -- trigger emergency referral.
+                                    not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
+                                   )
                            )
                    )
 
@@ -623,10 +633,19 @@ latestMedicationTreatmentForHIV assembled =
         prescribedMedications
 
 
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 latestMedicationTreatmentForHypertension : AssembledData -> Maybe Translate.TranslationId
 latestMedicationTreatmentForHypertension assembled =
     getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled
-        |> Maybe.map Translate.TreatmentDetailsHypertension
+        |> Maybe.map
+            (\treatment ->
+                let
+                    forModeratePreeclamsia =
+                        diagnosedModeratePreeclampsiaPrevoiusly assembled
+                in
+                Translate.TreatmentDetailsHypertension forModeratePreeclamsia treatment
+            )
 
 
 latestMedicationTreatmentForMalaria : AssembledData -> Maybe Translate.TranslationId
@@ -1431,18 +1450,34 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
     in
     case diagnosis of
         DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 37)
-                        && moderatePreeclampsiaByMeasurements measurements
-                )
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 37)
+                            && moderatePreeclampsiaByMeasurements measurements
+                    )
 
         DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 37)
-                        && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
-                )
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && (-- If diagnosed Moderate Preeclampsia at initial stage, we do not
+                    -- need to diagnose again.
+                    not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus assembled
+                   )
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 37)
+                            && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                    )
 
         DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
             resolveEGAWeeksAndThen
@@ -1452,11 +1487,15 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 )
 
         DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 37)
-                        && severePreeclampsiaRecurrentPhase signs measurements
-                )
+            (-- If diagnosed Severe Preeclampsia at initial stage, we do not
+             -- need to diagnose again.
+             not <| diagnosed DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus assembled
+            )
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 37)
+                            && severePreeclampsiaRecurrentPhase signs measurements
+                    )
 
         DiagnosisEclampsia ->
             List.member Convulsions signs
@@ -1660,10 +1699,10 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                 Maybe.map2
                                     (\testPrerequisites sugarCount ->
                                         if EverySet.member PrerequisiteFastFor12h testPrerequisites then
-                                            sugarCount > 7
+                                            sugarCount > 126
 
                                         else
-                                            sugarCount >= 11.1
+                                            sugarCount >= 200
                                     )
                                     value.testPrerequisites
                                     value.sugarCount
@@ -1692,54 +1731,104 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
     case diagnosis of
         DiagnosisChronicHypertensionImmediate ->
             -- Hypertension is a chronic diagnosis for whole duration
-            -- of pregnancy. Therefore, if diagnosed once, we do not need
-            -- to diagnose it again.
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
             (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && resolveEGAWeeksAndThen (chronicHypertensionByMeasurements measurements)
 
         DiagnosisChronicHypertensionAfterRecheck ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
             (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && resolveEGAWeeksAndThen (chronicHypertensionByMeasurementsAfterRecheck measurements)
 
         DiagnosisGestationalHypertensionImmediate ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
             (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurements measurements)
 
         DiagnosisGestationalHypertensionAfterRecheck ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
             (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurementsAfterRecheck measurements)
 
         DiagnosisModeratePreeclampsiaInitialPhase ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 20)
-                        && (egaWeeks < 37)
-                        && moderatePreeclampsiaByMeasurements measurements
-                )
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 20)
+                            && (egaWeeks < 37)
+                            && moderatePreeclampsiaByMeasurements measurements
+                    )
 
         DiagnosisModeratePreeclampsiaRecurrentPhase ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 20)
-                        && (egaWeeks < 37)
-                        && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
-                )
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && -- If diagnosed Moderate Preeclampsia at initial stage, we do not
+                   -- need to diagnose again.
+                   (not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhase assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 20)
+                            && (egaWeeks < 37)
+                            && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                    )
 
         DiagnosisSeverePreeclampsiaInitialPhase ->
             resolveEGAWeeksAndThen
                 (\egaWeeks ->
-                    (egaWeeks >= 20)
-                        && (egaWeeks < 37)
+                    (egaWeeks < 37)
                         && severePreeclampsiaByDangerSigns dangerSigns
                 )
 
         DiagnosisSeverePreeclampsiaRecurrentPhase ->
-            resolveEGAWeeksAndThen
-                (\egaWeeks ->
-                    (egaWeeks >= 20)
-                        && (egaWeeks < 37)
-                        && severePreeclampsiaRecurrentPhase dangerSigns measurements
-                )
+            (-- If diagnosed Severe Preeclampsia at initial stage, we do not
+             -- need to diagnose again.
+             not <| diagnosed DiagnosisSeverePreeclampsiaInitialPhase assembled
+            )
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks < 37)
+                            && severePreeclampsiaRecurrentPhase dangerSigns measurements
+                    )
 
         DiagnosisHIV ->
             testedPositiveAt .hivTest
@@ -2110,12 +2199,6 @@ flankPainPresent sign =
 
 chronicHypertensionByMeasurements : PrenatalMeasurements -> Int -> Bool
 chronicHypertensionByMeasurements measurements egaWeeks =
-    -- There's no need to consider Preeclamsia diagnoses when
-    -- diagnosing Chronic Hypertension by blood preasure, because Preeclamsia
-    -- starts from EGA 20.
-    -- In case we also diagnose Severe Preeclampsia due to severe headaches
-    -- with blurry vision (danger signs) which is for any EGA, hypertension
-    -- diagnosis will be filtered out due to applied hierarchy.
     egaWeeks < 20 && highBloodPressure measurements
 
 
@@ -2126,32 +2209,11 @@ chronicHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
 
 gestationalHypertensionByMeasurements : PrenatalMeasurements -> Int -> Bool
 gestationalHypertensionByMeasurements measurements egaWeeks =
-    -- Here we have a risk of collision with Preeclamsia diagnoses.
-    -- To make Preeclampsia diagnosis, in most cases we need to wait until
-    -- recurrent pahse, for urinary protein result.
-    -- What we need to avoid is diagnosing Hypertension on initial phase,
-    -- prescribing medication, and then diagnosing Preeclamsia which
-    -- implies referring patient to hospital.
-    -- Therefore, we diagnose Gestational Hypertension on initial phase
-    -- only if urinary test was not run and reason for this was set.
-    -- In case we diagnose both Gestational Hypertension and Preeclamsia on
-    -- inital stage, hierarch will eliminate Gestational Hypertension, so
-    -- there's no problem.
-    (egaWeeks >= 20)
-        && highBloodPressure measurements
-        && (getMeasurementValueFunc measurements.urineDipstickTest
-                |> Maybe.map
-                    (\value ->
-                        List.all ((/=) value.executionNote)
-                            [ TestNoteRunToday, TestNoteRunPreviously ]
-                    )
-                |> Maybe.withDefault False
-           )
+    (egaWeeks >= 20) && highBloodPressure measurements
 
 
 gestationalHypertensionByMeasurementsAfterRecheck : PrenatalMeasurements -> Int -> Bool
 gestationalHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
-    -- On recurrent phase any collision with Preeclamsia will be handled by hierarchy.
     egaWeeks >= 20 && repeatedTestForMarginalBloodPressure measurements
 
 
@@ -2164,21 +2226,12 @@ moderatePreeclampsiaByMeasurements measurements =
 moderatePreeclampsiaByMeasurementsRecurrentPhase : PrenatalMeasurements -> Bool
 moderatePreeclampsiaByMeasurementsRecurrentPhase measurements =
     let
-        edema =
-            edemaOnHandOrLegs measurements
-
         highProtein =
             highUrineProtein measurements
     in
-    (highBloodPressure measurements
-        && (-- Adding this to avoid collision with Moderate Preeclampsia
-            -- diagnosed at intial phase
-            not edema
-           )
-        && highProtein
-    )
+    (highBloodPressure measurements && highProtein)
         || (repeatedTestForMarginalBloodPressure measurements
-                && (edema || highProtein)
+                && (edemaOnHandOrLegs measurements || highProtein)
            )
 
 
@@ -2197,7 +2250,7 @@ severePreeclampsiaRecurrentPhase dangerSigns measurements =
                         Maybe.map4
                             (\dia sys diaRepeated sysRepeated ->
                                 (dia >= 110 && sys >= 160)
-                                    || (diaRepeated >= 110 && sys >= sysRepeated)
+                                    || (diaRepeated >= 110 && sys >= 160)
                             )
                             value.dia
                             value.sys
@@ -2206,11 +2259,7 @@ severePreeclampsiaRecurrentPhase dangerSigns measurements =
                     )
                 |> Maybe.withDefault False
     in
-    (-- Adding this to avoid collision with Severe Preeclampsia
-     -- from initial phase of encounter.
-     not <| severePreeclampsiaByDangerSigns dangerSigns
-    )
-        && byBloodPreasure
+    byBloodPreasure
         && highUrineProtein measurements
         && severePreeclampsiaSigns measurements
 
@@ -5155,7 +5204,7 @@ expectLaboratoryTask currentDate assembled task =
                         |> Maybe.withDefault (isInitialTest test)
 
                 -- This function checks if patient has reported of having a disease.
-                -- HIV and Hepatitis B are considered chronical diseases.
+                -- HIV and Hepatitis B are considered chronic diseases.
                 -- If patient declared to have one of them, there's no point
                 -- in testing for it.
                 isKnownAsPositive getMeasurementFunc =
@@ -5734,6 +5783,7 @@ outsideCareFormWithDefault form saved =
                 { seenAtAnotherFacility = or form.seenAtAnotherFacility (EverySet.member SeenAtAnotherFacility value.signs |> Just)
                 , givenNewDiagnosis = or form.givenNewDiagnosis (EverySet.member GivenNewDiagnoses value.signs |> Just)
                 , givenMedicine = or form.givenMedicine (EverySet.member GivenMedicine value.signs |> Just)
+                , plannedFollowUp = or form.plannedFollowUp (EverySet.member PlannedFollowUpCareWithSpecialist value.signs |> Just)
                 , diagnoses = maybeValueConsideringIsDirtyField form.diagnosesDirty form.diagnoses (value.diagnoses |> Maybe.map EverySet.toList)
                 , diagnosesDirty = form.diagnosesDirty
                 , malariaMedications = or form.malariaMedications malariaMedications
@@ -5758,6 +5808,7 @@ toPrenatalOutsideCareValue form =
             [ Maybe.map (ifTrue SeenAtAnotherFacility) form.seenAtAnotherFacility
             , ifNullableTrue GivenNewDiagnoses form.givenNewDiagnosis
             , ifNullableTrue GivenMedicine form.givenMedicine
+            , ifNullableTrue PlannedFollowUpCareWithSpecialist form.plannedFollowUp
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalOutsideCareSigns)
@@ -5852,6 +5903,15 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                                     (Just DiagnosisOther)
                                     SetOutsideCareDiagnosis
                                     Translate.PrenatalDiagnosis
+                              , viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion PlannedFollowUpCareWithSpecialist
+                              , viewBoolInput
+                                    language
+                                    form.plannedFollowUp
+                                    (SetOutsideCareSignBoolInput
+                                        (\value form_ -> { form_ | plannedFollowUp = Just value })
+                                    )
+                                    "planned-follow-up"
+                                    Nothing
                               ]
                                 ++ givenMedicineSection
                             , [ if isJust form.diagnoses then
@@ -5859,6 +5919,7 @@ outsideCareFormInputsAndTasksDiagnoses language form =
 
                                 else
                                     Nothing
+                              , form.plannedFollowUp
                               ]
                                 ++ givenMedicineTasks
                             )
@@ -5943,9 +6004,18 @@ outsideCareFormInputsAndTasksMedications language form =
                             List.any (\diagnosis -> List.member diagnosis diagnoses)
                                 [ DiagnosisGestationalHypertensionImmediate
                                 , DiagnosisChronicHypertensionImmediate
+                                , DiagnosisModeratePreeclampsiaInitialPhase
                                 ]
                         then
-                            ( [ viewHeader Translate.Hypertension
+                            let
+                                headerTransId =
+                                    if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
+                                        Translate.ModeratePreeclampsia
+
+                                    else
+                                        Translate.Hypertension
+                            in
+                            ( [ viewHeader headerTransId
                               , selectTreatmentOptionsInput outsideCareMedicationOptionsHypertension
                                     NoOutsideCareMedicationForHypertension
                                     form.hypertensionMedications
