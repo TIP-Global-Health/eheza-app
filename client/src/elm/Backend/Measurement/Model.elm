@@ -1310,6 +1310,7 @@ type PrenatalOutsideCareSign
     = SeenAtAnotherFacility
     | GivenNewDiagnoses
     | GivenMedicine
+    | PlannedFollowUpCareWithSpecialist
     | NoPrenatalOutsideCareSigns
 
 

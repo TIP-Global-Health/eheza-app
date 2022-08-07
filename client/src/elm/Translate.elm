@@ -103,7 +103,7 @@ import Pages.Prenatal.Activity.Types
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
-import Pages.Prenatal.ProgressReport.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..))
+import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), LabResultsCurrentMode(..), LabResultsHistoryMode(..))
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
@@ -289,6 +289,7 @@ type TranslationId
     | AccompaniedByPartner
     | AccompanyToFacilityQuestion ReferralFacility
     | AccessDenied
+    | Actions
     | ActionsTaken
     | ActionsToTake
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
@@ -431,6 +432,8 @@ type TranslationId
     | Children
     | ChildrenNames
     | ChildrenNationalId
+    | CHWAction CHWAction
+    | ChwActivity
     | Clear
     | ClickTheCheckMark
     | ClinicType ClinicType
@@ -554,6 +557,7 @@ type TranslationId
     | EmergencyReferralHelperReferToEmergencyObstetricCareServices
     | DangerSignsTask DangerSignsTask
     | EmptyString
+    | EncounterDate
     | EncounterTypePageLabel ChwDashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterWarningForDiagnosisPane EncounterWarning String
@@ -665,7 +669,7 @@ type TranslationId
     | HypertensionBeforePregnancy
     | HypertensionRecommendedTreatmentHeader
     | HypertensionRecommendedTreatmentHelper
-    | HypertensionRecommendedTreatmentUpdateHeader
+    | HypertensionRecommendedTreatmentUpdateHeader Bool
     | HypertensionRecommendedTreatmentUpdateBPLabel
     | HypertensionRecommendedTreatmentUpdateCurrentTreatment
     | HypertensionRecommendedTreatmentUpdateNewTreatment HypertensionTreatementUpdateOption
@@ -786,6 +790,7 @@ type TranslationId
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
     | ModeratelyUnderweight
+    | ModeratePreeclampsia
     | Month
     | MonthAbbrev
     | MonthSinglePlural Int
@@ -1153,6 +1158,7 @@ type TranslationId
     | SelectAllSigns
     | SelectDangerSigns
     | SelectDate
+    | SelectedFamilyPlanningMethod
     | SelectIllnessSymptoms
     | SelectPostpartumChildDangerSigns
     | SelectPostpartumMotherDangerSigns
@@ -1265,7 +1271,7 @@ type TranslationId
     | Treatment
     | TreatmentDetailsAnemia
     | TreatmentDetailsHIV Bool Bool
-    | TreatmentDetailsHypertension RecommendedTreatmentSign
+    | TreatmentDetailsHypertension Bool RecommendedTreatmentSign
     | TreatmentDetailsMalaria RecommendedTreatmentSign
     | TreatmentDetailsSyphilis RecommendedTreatmentSign
     | TreatmentReviewQuestionAdverseEvents
@@ -1273,7 +1279,7 @@ type TranslationId
     | TreatmentReviewQuestionMedicationByPMTCT
     | TreatmentReviewQuestionMissedDoses
     | TreatmentReviewQuestionStillTaking
-    | TreatmentReviewTask TreatmentReviewTask
+    | TreatmentReviewTask Bool TreatmentReviewTask
     | TreatmentReviewWarningPopupMessage
     | TreatmentReviewWarningPopupInstructions
     | TrySyncing
@@ -1441,6 +1447,11 @@ translationSet trans =
         AccessDenied ->
             { english = "Access denied"
             , kinyarwanda = Just "Kwinjira ntibyemera"
+            }
+
+        Actions ->
+            { english = "Actions"
+            , kinyarwanda = Nothing
             }
 
         ActionsTaken ->
@@ -2926,6 +2937,48 @@ translationSet trans =
             , kinyarwanda = Just "Indangamuntu y'umwana"
             }
 
+        CHWAction value ->
+            case value of
+                ActionPregnancyDating ->
+                    { english = "Pregnancy Dating"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionLabs ->
+                    { english = "Labs"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionDangerSignsPresent ->
+                    { english = "Danger Signs Present"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionReferredToHealthCenter ->
+                    { english = "Referred to Health Center"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionAppointmentConfirmation ->
+                    { english = "Appointment Confirmation"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    }
+
+                ActionBirthPlan ->
+                    { english = "Birth Plan"
+                    , kinyarwanda = Nothing
+                    }
+
+        ChwActivity ->
+            { english = "Chw Activity"
+            , kinyarwanda = Nothing
+            }
+
         ChildOf ->
             { english = "Child of"
             , kinyarwanda = Just "Umwana wa"
@@ -4014,6 +4067,11 @@ translationSet trans =
             , kinyarwanda = Just ""
             }
 
+        EncounterDate ->
+            { english = "Encounter Date"
+            , kinyarwanda = Just ""
+            }
+
         EncounterTypeFollowUpQuestion encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -5049,10 +5107,16 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
             }
 
-        HypertensionRecommendedTreatmentUpdateHeader ->
-            { english = "This patient was previously diagnosed with Hypertension"
-            , kinyarwanda = Nothing
-            }
+        HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia ->
+            if forModeratePreeclamsia then
+                { english = "This patient was previously diagnosed with Moderate Preeclamsia"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "This patient was previously diagnosed with Hypertension"
+                , kinyarwanda = Nothing
+                }
 
         HypertensionRecommendedTreatmentUpdateBPLabel ->
             { english = "The patients current BP is"
@@ -5671,7 +5735,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryRandomBloodSugar _ ->
-                    { english = "74-110 mg/dl"
+                    { english = "74-110 mg/dL"
                     , kinyarwanda = Nothing
                     }
 
@@ -6525,6 +6589,11 @@ translationSet trans =
         ModeratelyUnderweight ->
             { english = "Moderately Underweight"
             , kinyarwanda = Just "Imirire mibi yoroheje ku biro"
+            }
+
+        ModeratePreeclampsia ->
+            { english = "Moderate Preeclampsia"
+            , kinyarwanda = Nothing
             }
 
         Month ->
@@ -7646,6 +7715,11 @@ translationSet trans =
 
                 FilterDemographics ->
                     { english = "Demographics"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterFamilyPlanning ->
+                    { english = "Family Planning"
                     , kinyarwanda = Nothing
                     }
 
@@ -10707,6 +10781,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PlannedFollowUpCareWithSpecialist ->
+                    { english = "Do you have follow up care planned with a specialist"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- There's not question for this sign.
                 NoPrenatalOutsideCareSigns ->
                     { english = ""
@@ -12453,6 +12532,11 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo Itariki"
             }
 
+        SelectedFamilyPlanningMethod ->
+            { english = "Selected Family Planning Method"
+            , kinyarwanda = Nothing
+            }
+
         SelectIllnessSymptoms ->
             { english = "Please select one or more symptoms the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cyangwa byinshi mu bimenyetso umurwayi afite"
@@ -13226,30 +13310,38 @@ translationSet trans =
                 , kinyarwanda = Nothing
                 }
 
-        TreatmentDetailsHypertension sign ->
+        TreatmentDetailsHypertension forModeratePreeclamsia sign ->
+            let
+                diagnosis =
+                    if forModeratePreeclamsia then
+                        "Moderate Preeclampsia"
+
+                    else
+                        "Hypertension"
+            in
             case sign of
                 TreatmentMethyldopa2 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 2x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 2x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa3 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 3x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 3x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa4 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day and Carvedilol (6.25mg), by mouth 2x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day and Carvedilol (6.25mg), by mouth 2x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
-                    { english = "At the previous visit you were given Methyldopa (250mg,) by mouth 4x a day, Carvedilol (6.25mg), by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg,) by mouth 4x a day, Carvedilol (6.25mg), by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
@@ -13333,7 +13425,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TreatmentReviewTask task ->
+        TreatmentReviewTask forModeratePreeclamsia task ->
             case task of
                 TreatmentReviewPrenatalMedication ->
                     { english = "Prenatal Medication"
@@ -13346,9 +13438,15 @@ translationSet trans =
                     }
 
                 TreatmentReviewHypertension ->
-                    { english = "Hypertension Medication"
-                    , kinyarwanda = Nothing
-                    }
+                    if forModeratePreeclamsia then
+                        { english = "Moderate Preeclamsia Medication"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Hypertension Medication"
+                        , kinyarwanda = Nothing
+                        }
 
                 TreatmentReviewMalaria ->
                     { english = "Malaria Medication"
