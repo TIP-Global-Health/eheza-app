@@ -86,7 +86,6 @@ import Pages.Prenatal.Utils
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
         , recommendedTreatmentSignsForSyphilis
-        , resolvePreviousHypertensionDiagnosis
         )
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -389,11 +388,11 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
             List.map
                 (\( date, diagnoses, measurements ) ->
                     let
-                        filteredDiagnoses =
-                            generateFilteredDiagnoses date diagnoses assembled medicalDiagnoses
+                        diagnosesIncludingChronic =
+                            updateChronicHypertensionDiagnoses date diagnoses assembled medicalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) diagnosesIncludingChronic
                                 |> List.concat
 
                         outsideCareDiagnosesEntries =
@@ -483,11 +482,11 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
             List.map
                 (\( date, diagnoses, measurements ) ->
                     let
-                        filteredDiagnoses =
-                            generateFilteredDiagnoses date diagnoses assembled obstetricalDiagnoses
+                        diagnosesIncludingChronic =
+                            updateChronicHypertensionDiagnoses date diagnoses assembled obstetricalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) diagnosesIncludingChronic
                                 |> List.concat
 
                         outsideCareDiagnosesEntries =
@@ -2107,13 +2106,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                 else
                                     let
                                         continued =
-                                            if
-                                                List.any
-                                                    (\hypertensionDiagnosis ->
-                                                        EverySet.member hypertensionDiagnosis allDiagnoses
-                                                    )
-                                                    hypertensionDiagnoses
-                                            then
+                                            if EverySet.member diagnosis allDiagnoses then
                                                 ""
 
                                             else
@@ -2692,13 +2685,21 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisModeratePreeclampsiaInitialPhase ->
-            referredToHospitalMessage
+            if EverySet.member DiagnosisModeratePreeclampsiaInitialPhase allDiagnoses then
+                referredToHospitalMessage
+
+            else
+                hypertensionTreatmentMessage
 
         DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
             referredToHospitalMessage
 
         DiagnosisModeratePreeclampsiaRecurrentPhase ->
-            referredToHospitalMessage
+            if EverySet.member DiagnosisModeratePreeclampsiaRecurrentPhase allDiagnoses then
+                referredToHospitalMessage
+
+            else
+                hypertensionTreatmentMessage
 
         DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
             referredToHospitalMessage
