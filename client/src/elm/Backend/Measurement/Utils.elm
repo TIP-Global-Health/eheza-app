@@ -1938,6 +1938,9 @@ prenatalOutsideCareSignToString value =
         GivenMedicine ->
             "given-medicine"
 
+        PlannedFollowUpCareWithSpecialist ->
+            "follow-up-with-specialist"
+
         NoPrenatalOutsideCareSigns ->
             "none"
 
@@ -1953,6 +1956,9 @@ prenatalOutsideCareSignFromString value =
 
         "given-medicine" ->
             Just GivenMedicine
+
+        "follow-up-with-specialist" ->
+            Just PlannedFollowUpCareWithSpecialist
 
         "none" ->
             Just NoPrenatalOutsideCareSigns

@@ -656,6 +656,7 @@ function hedley_prenatal_field_default_field_bases() {
         'seen-at-another-facility' => 'Seen at another facility',
         'given-new-diagnoses' => 'Given new diagnoses',
         'given-medicine' => 'Given medicine',
+        'follow-up-with-specialist' => 'Planned follow up care with specialist',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

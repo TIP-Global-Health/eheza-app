@@ -2760,9 +2760,11 @@ update language currentDate id db msg model =
                 extraMsgs =
                     generateNextStepsMsgs secondPhaseRequired nextTask
 
-                appMsgs =
+                form =
                     model.nextStepsData.followUpForm
-                        |> toFollowUpValueWithDefault measurement
+
+                appMsgs =
+                    toFollowUpValueWithDefault measurement { form | assesment = Just assesment }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveFollowUp personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

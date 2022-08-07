@@ -787,6 +787,7 @@ type alias OutsideCareForm =
     { seenAtAnotherFacility : Maybe Bool
     , givenNewDiagnosis : Maybe Bool
     , givenMedicine : Maybe Bool
+    , plannedFollowUp : Maybe Bool
     , diagnoses : Maybe (List PrenatalDiagnosis)
     , diagnosesDirty : Bool
     , malariaMedications : Maybe (List PrenatalOutsideCareMedication)
@@ -802,6 +803,7 @@ emptyOutsideCareForm =
     { seenAtAnotherFacility = Nothing
     , givenNewDiagnosis = Nothing
     , givenMedicine = Nothing
+    , plannedFollowUp = Nothing
     , diagnoses = Nothing
     , diagnosesDirty = False
     , malariaMedications = Nothing
