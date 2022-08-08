@@ -1379,6 +1379,29 @@ type alias PrenatalTetanusImmunisation =
     PrenatalMeasurement VaccinationValue
 
 
+type alias PrenatalBreastfeeding =
+    PrenatalMeasurement BreastfeedingValue
+
+
+type alias BreastfeedingValue =
+    EverySet BreastfeedingSign
+
+
+type BreastfeedingSign
+    = IsBreastfeeding
+    | NotBreastfeedingBreastPain
+    | NotBreastfeedingLowMilkProduction
+    | NotBreastfeedingBreastRedness
+    | NotBreastfeedingProblemsLatching
+    | NotBreastfeedingMedicalProblems
+    | NotBreastfeedingOther
+    | NotBreastfeedingPersonalChoice
+    | BreastPain
+    | BreastRedness
+    | EnoughMilk
+    | LatchingWell
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -2263,6 +2286,7 @@ type alias PrenatalMeasurements =
     , hivPCRTest : Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )
     , mentalHealth : Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth )
     , tetanusImmunisation : Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation )
+    , breastfeeding : Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding )
     }
 
 
@@ -2304,6 +2328,7 @@ emptyPrenatalMeasurements =
     , hivPCRTest = Nothing
     , mentalHealth = Nothing
     , tetanusImmunisation = Nothing
+    , breastfeeding = Nothing
     }
 
 
