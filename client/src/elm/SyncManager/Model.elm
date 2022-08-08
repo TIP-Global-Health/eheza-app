@@ -113,6 +113,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPmtctParticipant (BackendEntity PmtctParticipant)
     | BackendAuthorityPregnancyTest (BackendEntity PregnancyTest)
     | BackendAuthorityPrenatalBloodGpRsTest (BackendEntity PrenatalBloodGpRsTest)
+    | BackendAuthorityPrenatalBreastfeeding (BackendEntity PrenatalBreastfeeding)
     | BackendAuthorityPrenatalEncounter (BackendEntity PrenatalEncounter)
     | BackendAuthorityPrenatalFamilyPlanning (BackendEntity PrenatalFamilyPlanning)
     | BackendAuthorityPrenatalFollowUp (BackendEntity PrenatalFollowUp)

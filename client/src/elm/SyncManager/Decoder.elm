@@ -650,6 +650,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalBloodGpRsTest
                             BackendAuthorityPrenatalBloodGpRsTest
 
+                    "prenatal_breastfeeding" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalBreastfeeding
+                            BackendAuthorityPrenatalBreastfeeding
+
                     "prenatal_encounter" ->
                         doDecode
                             Backend.PrenatalEncounter.Decoder.decodePrenatalEncounter

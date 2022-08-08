@@ -564,6 +564,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalBloodGpRsTest identifier ->
                 viewMeasurement identifier "Prenatal Blood GpRs Test"
 
+            BackendAuthorityPrenatalBreastfeeding identifier ->
+                viewMeasurement identifier "Prenatal Breastfeeding"
+
             BackendAuthorityPrenatalFamilyPlanning identifier ->
                 viewMeasurement identifier "Prenatal Family Planning"
 
