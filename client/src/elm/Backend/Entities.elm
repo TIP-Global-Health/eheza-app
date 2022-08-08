@@ -1149,3 +1149,11 @@ type alias PrenatalTetanusImmunisationId =
 
 type PrenatalTetanusImmunisationUuidType
     = PrenatalTetanusImmunisationUuidType
+
+
+type alias PrenatalBreastfeedingId =
+    EntityUuid PrenatalBreastfeedingUuidType
+
+
+type PrenatalBreastfeedingUuidType
+    = PrenatalBreastfeedingUuidType
