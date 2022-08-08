@@ -244,6 +244,9 @@ decodeRevision =
                     "prenatal_blood_gprs_test" ->
                         decodeWithUuid PrenatalBloodGpRsTestRevision decodePrenatalBloodGpRsTest
 
+                    "prenatal_breastfeeding" ->
+                        decodeWithUuid PrenatalBreastfeedingRevision decodePrenatalBreastfeeding
+
                     "prenatal_encounter" ->
                         decodeWithUuid PrenatalEncounterRevision decodePrenatalEncounter
 
