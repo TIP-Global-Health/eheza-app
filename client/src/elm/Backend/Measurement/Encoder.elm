@@ -883,6 +883,24 @@ encodePrenatalTetanusImmunisation =
     encodePrenatalMeasurement (encodeVaccinationValueWithType "prenatal_tetanus_immunisation")
 
 
+encodePrenatalBreastfeeding : PrenatalBreastfeeding -> List ( String, Value )
+encodePrenatalBreastfeeding =
+    encodePrenatalMeasurement encodeBreastfeedingValue
+
+
+encodeBreastfeedingValue : BreastfeedingValue -> List ( String, Value )
+encodeBreastfeedingValue value =
+    [ ( "breastfeeding_signs", encodeEverySet encodeBreastfeedingSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_breastfeeding" )
+    ]
+
+
+encodeBreastfeedingSign : BreastfeedingSign -> Value
+encodeBreastfeedingSign =
+    breastfeedingSignToString >> string
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")

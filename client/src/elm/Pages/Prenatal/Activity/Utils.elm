@@ -1149,33 +1149,6 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
 
 
-
--- breastfeeding
--- not breastfeeding breast pain
--- not breastfeeding breast redness
--- not breastfeeding low milk production
--- not breastfeeding problems latching
--- not breastfeeding medical problems
--- not breastfeeding personal choice
--- not breastfeeding other
--- breast pain
--- breast redness
--- enough milk
--- latching well
--- breastfeeding|Breastfeeding
--- not breastfeeding breast pain|Not breastfeeding - breast pain
--- not breastfeeding breast redness|Not breastfeeding - breast redness
--- not breastfeeding low milk production|Not breastfeeding low milk production
--- not breastfeeding problems latching|Not breastfeeding problems latching
--- not breastfeeding medical problems|Not breastfeeding medical problems
--- not breastfeeding personal choice|Not breastfeeding personal choice
--- not breastfeeding other|Not breastfeeding other
--- breast pain|Breast pain
--- breast redness|Breast redness
--- enough milk|Enough milk for 8 feeds
--- latching well|Baby latching well
-
-
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     case assembled.encounter.encounterType of

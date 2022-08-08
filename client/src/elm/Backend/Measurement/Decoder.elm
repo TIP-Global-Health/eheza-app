@@ -132,6 +132,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_hiv_pcr_test" (decodeHead decodePrenatalHIVPCRTest) Nothing
         |> optional "prenatal_mental_health" (decodeHead decodePrenatalMentalHealth) Nothing
         |> optional "prenatal_tetanus_immunisation" (decodeHead decodePrenatalTetanusImmunisation) Nothing
+        |> optional "prenatal_vreastfeeding" (decodeHead decodePrenatalBreastfeeding) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -949,6 +950,31 @@ decodePrenatalMentalHealthQuestionOption =
 decodePrenatalTetanusImmunisation : Decoder PrenatalTetanusImmunisation
 decodePrenatalTetanusImmunisation =
     decodePrenatalMeasurement decodeVaccinationValue
+
+
+decodePrenatalBreastfeeding : Decoder PrenatalBreastfeeding
+decodePrenatalBreastfeeding =
+    decodePrenatalMeasurement decodeBreastfeedingValue
+
+
+decodeBreastfeedingValue : Decoder BreastfeedingValue
+decodeBreastfeedingValue =
+    field "breastfeeding_signs" (decodeEverySet decodeBreastfeedingSign)
+
+
+decodeBreastfeedingSign : Decoder BreastfeedingSign
+decodeBreastfeedingSign =
+    string
+        |> andThen
+            (\s ->
+                breastfeedingSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized BreastfeedingSign"
+                        )
+            )
 
 
 decodeHeight : Decoder Height
