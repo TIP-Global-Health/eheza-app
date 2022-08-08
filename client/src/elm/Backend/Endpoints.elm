@@ -1022,3 +1022,9 @@ prenatalTetanusImmunisationEndpoint : ReadWriteEndPoint Error PrenatalTetanusImm
 prenatalTetanusImmunisationEndpoint =
     swEndpoint "nodes/prenatal_tetanus_immunisation" decodePrenatalTetanusImmunisation
         |> withValueEncoder (object << encodePrenatalTetanusImmunisation)
+
+
+prenatalBreastfeedingEndpoint : ReadWriteEndPoint Error PrenatalBreastfeedingId PrenatalBreastfeeding PrenatalBreastfeeding ()
+prenatalBreastfeedingEndpoint =
+    swEndpoint "nodes/prenatal_breastfeeding" decodePrenatalBreastfeeding
+        |> withValueEncoder (object << encodePrenatalBreastfeeding)
