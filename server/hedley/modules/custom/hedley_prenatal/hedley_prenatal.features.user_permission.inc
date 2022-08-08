@@ -31,6 +31,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_breastfeeding content'.
+  $permissions['create prenatal_breastfeeding content'] = array(
+    'name' => 'create prenatal_breastfeeding content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_follow_up content'.
   $permissions['create prenatal_follow_up content'] = array(
     'name' => 'create prenatal_follow_up content',
@@ -209,6 +219,15 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_breastfeeding content'.
+  $permissions['delete any prenatal_breastfeeding content'] = array(
+    'name' => 'delete any prenatal_breastfeeding content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_follow_up content'.
   $permissions['delete any prenatal_follow_up content'] = array(
     'name' => 'delete any prenatal_follow_up content',
@@ -365,6 +384,15 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete own prenatal_blood_gprs_test content'.
   $permissions['delete own prenatal_blood_gprs_test content'] = array(
     'name' => 'delete own prenatal_blood_gprs_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_breastfeeding content'.
+  $permissions['delete own prenatal_breastfeeding content'] = array(
+    'name' => 'delete own prenatal_breastfeeding content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -528,6 +556,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit any prenatal_blood_gprs_test content'.
   $permissions['edit any prenatal_blood_gprs_test content'] = array(
     'name' => 'edit any prenatal_blood_gprs_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_breastfeeding content'.
+  $permissions['edit any prenatal_breastfeeding content'] = array(
+    'name' => 'edit any prenatal_breastfeeding content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -707,6 +745,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit own prenatal_blood_gprs_test content'.
   $permissions['edit own prenatal_blood_gprs_test content'] = array(
     'name' => 'edit own prenatal_blood_gprs_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_breastfeeding content'.
+  $permissions['edit own prenatal_breastfeeding content'] = array(
+    'name' => 'edit own prenatal_breastfeeding content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
