@@ -2004,6 +2004,33 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map ((==) RhesusNegative)
                 |> Maybe.withDefault False
 
+        DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+            let
+                byBreastfeeding =
+                    getMeasurementValueFunc assembled.measurements.breastfeeding
+                        |> Maybe.map
+                            (\signs ->
+                                List.any (\sign -> EverySet.member sign signs)
+                                    [ BreastPain, BreastRedness ]
+                            )
+                        |> Maybe.withDefault False
+
+                byBreastExam =
+                    getMeasurementValueFunc assembled.measurements.breastExam
+                        |> Maybe.map
+                            (\value ->
+                                case EverySet.toList value.exam of
+                                    [ NormalBreast ] ->
+                                        False
+
+                                    _ ->
+                                        True
+                            )
+                        |> Maybe.withDefault False
+            in
+            (assembled.encounter.encounterType == NursePostpartumEncounter)
+                && (byBreastfeeding || byBreastExam)
+
         -- Non Lab Results diagnoses.
         _ ->
             False
@@ -2452,6 +2479,7 @@ labResultsAndExaminationDiagnoses =
     , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
     , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
     , DiagnosisRhesusNegative
+    , DiagnosisPostpartumEarlyMastitisOrEngorgment
     ]
 
 
