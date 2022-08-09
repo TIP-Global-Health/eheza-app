@@ -2231,10 +2231,10 @@ breastfeedingSignToString value =
         NotBreastfeedingBreastPain ->
             "not-breastfeeding-breast-pain"
 
-        NotBreastfeedingLowMilkProduction ->
+        NotBreastfeedingBreastRedness ->
             "not-breastfeeding-breast-redness"
 
-        NotBreastfeedingBreastRedness ->
+        NotBreastfeedingLowMilkProduction ->
             "not-breastfeeding-low-milk-production"
 
         NotBreastfeedingProblemsLatching ->
@@ -2243,10 +2243,10 @@ breastfeedingSignToString value =
         NotBreastfeedingMedicalProblems ->
             "not-breastfeeding-medical-problems"
 
-        NotBreastfeedingOther ->
+        NotBreastfeedingPersonalChoice ->
             "not-breastfeeding-personal-choice"
 
-        NotBreastfeedingPersonalChoice ->
+        NotBreastfeedingOther ->
             "not-breastfeeding-other"
 
         BreastPain ->
@@ -2275,10 +2275,10 @@ breastfeedingSignFromString value =
             Just NotBreastfeedingBreastPain
 
         "not-breastfeeding-breast-redness" ->
-            Just NotBreastfeedingLowMilkProduction
+            Just NotBreastfeedingBreastRedness
 
         "not-breastfeeding-low-milk-production" ->
-            Just NotBreastfeedingBreastRedness
+            Just NotBreastfeedingLowMilkProduction
 
         "not-breastfeeding-problems-latching" ->
             Just NotBreastfeedingProblemsLatching
@@ -2287,10 +2287,10 @@ breastfeedingSignFromString value =
             Just NotBreastfeedingMedicalProblems
 
         "not-breastfeeding-personal-choice" ->
-            Just NotBreastfeedingOther
+            Just NotBreastfeedingPersonalChoice
 
         "not-breastfeeding-other" ->
-            Just NotBreastfeedingPersonalChoice
+            Just NotBreastfeedingOther
 
         "breast-pain" ->
             Just BreastPain
