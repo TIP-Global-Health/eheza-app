@@ -326,7 +326,7 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                     maybeSessionId
                     |> Maybe.withDefault (createNewSessionMsg currentDate selectedHealthCenter id NursePostpartumEncounter)
 
-        -- Whether first prenatal encounter for person is in process.
+        -- Whether the first prenatal encounter for the person is in process.
         -- This is True when there's only one encounter, it's active, and
         -- it is of type NurseEncounter.
         firstEncounterInProcess =
