@@ -4528,16 +4528,16 @@ viewBreastfeedingContent language currentDate assembled data =
                     if isBreastfeeding then
                         let
                             breastPainUpdateFunc value form_ =
-                                { form_ | breastPain = Just value }
+                                { form_ | breastPain = Just value, breastPainDirty = True }
 
                             breastRednessUpdateFunc value form_ =
-                                { form_ | breastRedness = Just value }
+                                { form_ | breastRedness = Just value, breastRednessDirty = True }
 
                             enoughMilkUpdateFunc value form_ =
-                                { form_ | enoughMilk = Just value }
+                                { form_ | enoughMilk = Just value, enoughMilkDirty = True }
 
                             latchingWellUpdateFunc value form_ =
-                                { form_ | latchingWell = Just value }
+                                { form_ | latchingWell = Just value, latchingWellDirty = True }
                         in
                         ( [ viewQuestionLabel language <| Translate.BreastfeedingSignQuestion BreastPain
                           , viewBoolInput
@@ -4574,27 +4574,25 @@ viewBreastfeedingContent language currentDate assembled data =
                     else
                         ( [ viewQuestionLabel language Translate.WhyNot
                           , viewCheckBoxSelectInput language
-                                [ NotBreastfeedingBreastPain
-                                , NotBreastfeedingBreastRedness
-                                , NotBreastfeedingLowMilkProduction
-                                , NotBreastfeedingProblemsLatching
-                                ]
-                                [ NotBreastfeedingMedicalProblems
-                                , NotBreastfeedingPersonalChoice
-                                , NotBreastfeedingOther
-                                ]
+                                reasonsForNotBreastfeedingLeft
+                                reasonsForNotBreastfeedingRight
                                 form.reasonForNotBreastfeeding
                                 SetReasonForNotBreastfeeding
                                 Translate.ReasonForNotBreastfeeding
                           ]
-                        , [ form.reasonForNotBreastfeeding ]
+                        , [ if isJust form.reasonForNotBreastfeeding then
+                                Just True
+
+                            else
+                                Nothing
+                          ]
                         )
                 )
                 form.isBreastfeeding
                 |> Maybe.withDefault ( [], [] )
 
         tasks =
-            form.isBreastfeeding :: tasks
+            form.isBreastfeeding :: derivedTasks
 
         tasksCompleted =
             Maybe.Extra.values tasks
@@ -4604,7 +4602,19 @@ viewBreastfeedingContent language currentDate assembled data =
             List.length tasks
 
         isBreastfeedingUpdateFunc value form_ =
-            { form_ | isBreastfeeding = Just value }
+            { form_
+                | isBreastfeeding = Just value
+                , reasonForNotBreastfeeding = Nothing
+                , reasonForNotBreastfeedingDirty = True
+                , breastPain = Nothing
+                , breastPainDirty = True
+                , breastRedness = Nothing
+                , breastRednessDirty = True
+                , enoughMilk = Nothing
+                , enoughMilkDirty = True
+                , latchingWell = Nothing
+                , latchingWellDirty = True
+            }
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]

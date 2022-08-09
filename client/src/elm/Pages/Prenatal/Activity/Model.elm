@@ -224,6 +224,10 @@ type Msg
       -- PostpartumTreatmentReview
     | SetPostpartumTreatmentReviewBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
     | SavePostpartumTreatmentReview PersonId (Maybe ( MedicationId, Medication ))
+      -- BREASTFEEDING
+    | SetBreastfeedingBoolInput (Bool -> BreastfeedingForm -> BreastfeedingForm) Bool
+    | SetReasonForNotBreastfeeding BreastfeedingSign
+    | SaveBreastfeeding PersonId (Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding ))
 
 
 type alias Model =
@@ -1209,10 +1213,15 @@ emptyBreastfeedingData =
 type alias BreastfeedingForm =
     { isBreastfeeding : Maybe Bool
     , reasonForNotBreastfeeding : Maybe BreastfeedingSign
+    , reasonForNotBreastfeedingDirty : Bool
     , breastPain : Maybe Bool
+    , breastPainDirty : Bool
     , breastRedness : Maybe Bool
+    , breastRednessDirty : Bool
     , enoughMilk : Maybe Bool
+    , enoughMilkDirty : Bool
     , latchingWell : Maybe Bool
+    , latchingWellDirty : Bool
     }
 
 
@@ -1220,8 +1229,13 @@ emptyBreastfeedingForm : BreastfeedingForm
 emptyBreastfeedingForm =
     { isBreastfeeding = Nothing
     , reasonForNotBreastfeeding = Nothing
+    , reasonForNotBreastfeedingDirty = False
     , breastPain = Nothing
+    , breastPainDirty = False
     , breastRedness = Nothing
+    , breastRednessDirty = False
     , enoughMilk = Nothing
+    , enoughMilkDirty = False
     , latchingWell = Nothing
+    , latchingWellDirty = False
     }

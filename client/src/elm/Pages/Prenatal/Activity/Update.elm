@@ -3605,11 +3605,10 @@ update language currentDate id db msg model =
 
         SetPostpartumTreatmentReviewBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.postpartumTreatmentReviewData.form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.postpartumTreatmentReviewData.form
-                    in
                     model.postpartumTreatmentReviewData
                         |> (\data -> { data | form = updatedForm })
             in
@@ -3633,6 +3632,63 @@ update language currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.PrenatalEncounter.Model.SaveMedication personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetBreastfeedingBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.breastfeedingData.form
+
+                updatedData =
+                    model.breastfeedingData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | breastfeedingData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotBreastfeeding value ->
+            let
+                form =
+                    model.breastfeedingData.form
+
+                updatedForm =
+                    { form | reasonForNotBreastfeeding = Just value, reasonForNotBreastfeedingDirty = True }
+
+                updatedData =
+                    model.breastfeedingData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | breastfeedingData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveBreastfeeding personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.breastfeedingData.form
+                        |> toBreastfeedingValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveBreastfeeding personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id

@@ -1400,7 +1400,7 @@ type BreastfeedingSign
     | BreastRedness
     | EnoughMilk
     | LatchingWell
-    | NoBreastfeedingSign
+    | NoBreastfeedingSigns
 
 
 

@@ -354,8 +354,7 @@ activityCompleted currentDate assembled activity =
                 || List.all (immunisationTaskCompleted currentDate assembled) immunisationTasks
 
         Backend.PrenatalActivity.Model.Breastfeeding ->
-            -- @todo
-            False
+            isJust assembled.measurements.breastfeeding
 
         SpecialityCare ->
             -- @todo
@@ -6739,3 +6738,76 @@ toHealthEducationValue saved form =
                 , signsPhase2 = Maybe.andThen .signsPhase2 saved
                 }
             )
+
+
+breastfeedingFormWithDefault : BreastfeedingForm -> Maybe BreastfeedingValue -> BreastfeedingForm
+breastfeedingFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    reasonForNotBreastfeedingFromValue =
+                        EverySet.toList value
+                            |> List.filter (\sign -> List.member sign reasonsForNotBreastfeeding)
+                            |> List.head
+                in
+                { isBreastfeeding = or form.isBreastfeeding (EverySet.member IsBreastfeeding value |> Just)
+                , reasonForNotBreastfeeding =
+                    maybeValueConsideringIsDirtyField form.reasonForNotBreastfeedingDirty
+                        form.reasonForNotBreastfeeding
+                        reasonForNotBreastfeedingFromValue
+                , reasonForNotBreastfeedingDirty = form.reasonForNotBreastfeedingDirty
+                , breastPain = maybeValueConsideringIsDirtyField form.breastPainDirty form.breastPain (EverySet.member BreastPain value |> Just)
+                , breastPainDirty = form.breastPainDirty
+                , breastRedness = maybeValueConsideringIsDirtyField form.breastRednessDirty form.breastRedness (EverySet.member BreastRedness value |> Just)
+                , breastRednessDirty = form.breastRednessDirty
+                , enoughMilk = maybeValueConsideringIsDirtyField form.enoughMilkDirty form.enoughMilk (EverySet.member EnoughMilk value |> Just)
+                , enoughMilkDirty = form.enoughMilkDirty
+                , latchingWell = maybeValueConsideringIsDirtyField form.latchingWellDirty form.latchingWell (EverySet.member LatchingWell value |> Just)
+                , latchingWellDirty = form.latchingWellDirty
+                }
+            )
+
+
+toBreastfeedingValueWithDefault : Maybe BreastfeedingValue -> BreastfeedingForm -> Maybe BreastfeedingValue
+toBreastfeedingValueWithDefault saved form =
+    breastfeedingFormWithDefault form saved
+        |> toBreastfeedingValue
+
+
+toBreastfeedingValue : BreastfeedingForm -> Maybe BreastfeedingValue
+toBreastfeedingValue form =
+    [ Maybe.map (ifTrue IsBreastfeeding) form.isBreastfeeding
+    , ifNullableTrue BreastPain form.breastPain
+    , ifNullableTrue BreastRedness form.breastRedness
+    , ifNullableTrue EnoughMilk form.enoughMilk
+    , ifNullableTrue LatchingWell form.latchingWell
+    ]
+        ++ [ Maybe.map (EverySet.singleton >> Just) form.reasonForNotBreastfeeding
+                |> Maybe.withDefault (Just EverySet.empty)
+           ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoBreastfeedingSigns)
+
+
+reasonsForNotBreastfeeding : List BreastfeedingSign
+reasonsForNotBreastfeeding =
+    reasonsForNotBreastfeedingLeft ++ reasonsForNotBreastfeedingRight
+
+
+reasonsForNotBreastfeedingLeft : List BreastfeedingSign
+reasonsForNotBreastfeedingLeft =
+    [ NotBreastfeedingBreastPain
+    , NotBreastfeedingBreastRedness
+    , NotBreastfeedingLowMilkProduction
+    , NotBreastfeedingProblemsLatching
+    ]
+
+
+reasonsForNotBreastfeedingRight : List BreastfeedingSign
+reasonsForNotBreastfeedingRight =
+    [ NotBreastfeedingMedicalProblems
+    , NotBreastfeedingPersonalChoice
+    , NotBreastfeedingOther
+    ]

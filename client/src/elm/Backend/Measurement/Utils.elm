@@ -2261,7 +2261,7 @@ breastfeedingSignToString value =
         LatchingWell ->
             "latching-well"
 
-        NoBreastfeedingSign ->
+        NoBreastfeedingSigns ->
             "none"
 
 
@@ -2305,7 +2305,7 @@ breastfeedingSignFromString value =
             Just LatchingWell
 
         "none" ->
-            Just NoBreastfeedingSign
+            Just NoBreastfeedingSigns
 
         _ ->
             Nothing
