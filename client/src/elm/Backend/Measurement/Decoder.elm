@@ -358,6 +358,9 @@ decodePrenatalHealthEducationSign =
                     "diabetes" ->
                         succeed EducationDiabetes
 
+                    "early-mastitis-engorgment" ->
+                        succeed EducationEarlyMastitisOrEngorgment
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

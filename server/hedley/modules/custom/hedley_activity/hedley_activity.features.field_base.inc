@@ -1532,6 +1532,7 @@ function hedley_activity_field_default_field_bases() {
         'pelvic-pain' => 'Pelvic Pain',
         'safer-sex' => 'Safer sex',
         'mental-health' => 'Mental Health',
+        'early-mastitis-engorgment' => 'Early Mastitis or Engorgment',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

@@ -110,6 +110,7 @@ type alias HealthEducationForm =
     , mentalHealth : Maybe Bool
     , hivDetectableViralLoad : Maybe Bool
     , diabetes : Maybe Bool
+    , earlyMastitisOrEngorgment : Maybe Bool
     }
 
 
@@ -138,6 +139,7 @@ emptyHealthEducationForm =
     , mentalHealth = Nothing
     , hivDetectableViralLoad = Nothing
     , diabetes = Nothing
+    , earlyMastitisOrEngorgment = Nothing
     }
 
 

@@ -454,6 +454,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisCandidiasis
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
+                                    , DiagnosisPostpartumEarlyMastitisOrEngorgment
                                     ]
                                     assembled
                                 || provideMentalHealthEducation assembled
@@ -2547,7 +2548,6 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             healthEducationFormInputsAndTasksForNurse language assembled form
 
         NursePostpartumEncounter ->
-            --@todo
             healthEducationFormInputsAndTasksForNurse language assembled form
 
         _ ->
@@ -2800,6 +2800,41 @@ healthEducationFormInputsAndTasksForNurse language assembled form =
             else
                 ( [], Nothing )
 
+        earlyMastitisOrEngorgment =
+            let
+                reliefMethods =
+                    List.map
+                        (Translate.EarlyMastitisOrEngorgmentReliefMethod
+                            >> translate language
+                            >> String.toLower
+                            >> text
+                            >> List.singleton
+                            >> li []
+                        )
+                        [ ReliefMethodBreastMassage
+                        , ReliefMethodIncreaseFluid
+                        , ReliefMethodBreastfeedingOrHandExpression
+                        ]
+                        |> ul []
+            in
+            if diagnosed DiagnosisPostpartumEarlyMastitisOrEngorgment assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationEarlyMastitisOrEngorgment) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationEarlyMastitisOrEngorgmentInform ":" "label paragraph"
+                  , reliefMethods
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.earlyMastitisOrEngorgment
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | earlyMastitisOrEngorgment = Just value }))
+                        "mental-health"
+                        Nothing
+                  ]
+                , Just form.earlyMastitisOrEngorgment
+                )
+
+            else
+                ( [], Nothing )
+
         inputsAndTasks =
             [ nauseaVomiting
             , legCramps
@@ -2811,6 +2846,7 @@ healthEducationFormInputsAndTasksForNurse language assembled form =
             , pelvicPain
             , saferSex
             , mentalHealth
+            , earlyMastitisOrEngorgment
             ]
     in
     ( hivInputs
@@ -6724,9 +6760,9 @@ healthEducationFormWithDefault form saved =
                 , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain value.signs |> Just)
                 , saferSex = or form.saferSex (EverySet.member EducationSaferSex value.signs |> Just)
                 , mentalHealth = or form.mentalHealth (EverySet.member EducationMentalHealth value.signs |> Just)
+                , earlyMastitisOrEngorgment = or form.earlyMastitisOrEngorgment (EverySet.member EducationEarlyMastitisOrEngorgment value.signs |> Just)
 
-                -- Only signs that do not participate at recurrent phase. Resolved directly
-                -- from value.
+                -- Signs that do not participate at initial phase. Resolved directly from value.
                 , hivDetectableViralLoad = Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2
                 , diabetes = Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2
                 }
@@ -6756,6 +6792,7 @@ toHealthEducationValue saved form =
     , ifNullableTrue EducationPelvicPain form.pelvicPain
     , ifNullableTrue EducationSaferSex form.saferSex
     , ifNullableTrue EducationMentalHealth form.mentalHealth
+    , ifNullableTrue EducationEarlyMastitisOrEngorgment form.earlyMastitisOrEngorgment
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

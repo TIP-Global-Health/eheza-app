@@ -850,6 +850,7 @@ type PrenatalHealthEducationSign
     | EducationHIVDetectableViralLoad
     | EducationMentalHealth
     | EducationDiabetes
+    | EducationEarlyMastitisOrEngorgment
     | NoPrenatalHealthEducationSigns
 
 

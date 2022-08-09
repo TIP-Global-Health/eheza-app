@@ -242,6 +242,9 @@ encodePrenatalHealthEducationSign sign =
             EducationDiabetes ->
                 "diabetes"
 
+            EducationEarlyMastitisOrEngorgment ->
+                "early-mastitis-engorgment"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

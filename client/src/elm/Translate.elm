@@ -95,7 +95,8 @@ import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.Prenatal.Activity.Types
     exposing
-        ( ExaminationTask(..)
+        ( EarlyMastitisOrEngorgmentReliefMethod(..)
+        , ExaminationTask(..)
         , HeartburnReliefMethod(..)
         , HistoryTask(..)
         , LegCrampsReliefMethod(..)
@@ -539,6 +540,7 @@ type TranslationId
     | DropzoneDefaultMessage
     | DueDate
     | DueTo
+    | EarlyMastitisOrEngorgmentReliefMethod EarlyMastitisOrEngorgmentReliefMethod
     | EarlyChildhoodDevelopment
     | ECDSignQuestion ECDSign
     | ECDStatus ECDStatus
@@ -963,6 +965,7 @@ type TranslationId
     | PrenatalHealthEducationLegPainRednessInform
     | PrenatalHealthEducationPelvicPainInform
     | PrenatalHealthEducationSaferSexInform
+    | PrenatalHealthEducationEarlyMastitisOrEngorgmentInform
     | PrenatalHealthEducationMentalHealthInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
@@ -3792,6 +3795,23 @@ translationSet trans =
             { english = "Early Childhood Development"
             , kinyarwanda = Just "Gahunda ikomatanije y'imikurire"
             }
+
+        EarlyMastitisOrEngorgmentReliefMethod method ->
+            case method of
+                ReliefMethodBreastMassage ->
+                    { english = "Massage"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodIncreaseFluid ->
+                    { english = "Increase fluid"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodBreastfeedingOrHandExpression ->
+                    { english = "continue breastfeeding or use hand expression"
+                    , kinyarwanda = Nothing
+                    }
 
         ECDSignQuestion sign ->
             case sign of
@@ -9525,6 +9545,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                EducationEarlyMastitisOrEngorgment ->
+                    { english = "Early Mastitis or Engorgment"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -9660,6 +9685,11 @@ translationSet trans =
 
         PrenatalHealthEducationSaferSexInform ->
             { english = "Counsel patient on safer sex practices"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationEarlyMastitisOrEngorgmentInform ->
+            { english = "Instruct the patient that the following may help relieve symptoms"
             , kinyarwanda = Nothing
             }
 
