@@ -132,7 +132,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_hiv_pcr_test" (decodeHead decodePrenatalHIVPCRTest) Nothing
         |> optional "prenatal_mental_health" (decodeHead decodePrenatalMentalHealth) Nothing
         |> optional "prenatal_tetanus_immunisation" (decodeHead decodePrenatalTetanusImmunisation) Nothing
-        |> optional "prenatal_vreastfeeding" (decodeHead decodePrenatalBreastfeeding) Nothing
+        |> optional "prenatal_breastfeeding" (decodeHead decodePrenatalBreastfeeding) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
