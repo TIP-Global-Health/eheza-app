@@ -334,8 +334,8 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                 && isJust maybeActiveEncounterId
                 && (Maybe.map ((==) NurseEncounter) lastEncounterType |> Maybe.withDefault False)
 
-        -- Whether postpartum encounter for person is in process.
-        -- This is True when current active encounter is of
+        -- Whether postpartum encounter for the person is in process.
+        -- This is True when the current active encounter is of
         -- NursePostpartumEncounter type.
         postpartumEncounterInProcess =
             isJust maybeActiveEncounterId
