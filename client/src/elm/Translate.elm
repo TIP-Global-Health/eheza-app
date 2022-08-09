@@ -759,6 +759,7 @@ type TranslationId
     | MedicationDistributionHelperAnemia
     | MedicationDistributionHelperDiscordantPartnership
     | MedicationDistributionHelperDiscordantPartnershipNoARVs
+    | MedicationDistributionHelperEarlyMastitisOrEngorgment
     | MedicationDistributionHelperHIV
     | MedicationDistributionHelperMebendazole
     | MedicationDistributionHelperGonorrhea
@@ -6295,6 +6296,11 @@ translationSet trans =
         MedicationDistributionHelperDiscordantPartnershipNoARVs ->
             { english = "This patient is part of a discordant partnership in which the partner is not on ARVs"
             , kinyarwanda = Just "Uwo babana afite ubwandu bwa Virusi itera SIDA ariko umubyeyi we ntabwo afite kandi ntago afata imiti igabanya ubukana"
+            }
+
+        MedicationDistributionHelperEarlyMastitisOrEngorgment ->
+            { english = "This patient has signs of Early Mastitis or Engorgement"
+            , kinyarwanda = Nothing
             }
 
         MedicationDistributionHelperHIV ->

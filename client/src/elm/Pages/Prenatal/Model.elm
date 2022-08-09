@@ -57,6 +57,7 @@ type alias MedicationDistributionForm =
     , azithromycin : Maybe Bool
     , metronidazole : Maybe Bool
     , vitaminA : Maybe Bool
+    , paracetamol : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     , recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
     , hypertensionAvoidingGuidanceReason : Maybe AvoidingGuidanceReason
@@ -77,6 +78,7 @@ emptyMedicationDistributionForm =
     , azithromycin = Nothing
     , metronidazole = Nothing
     , vitaminA = Nothing
+    , paracetamol = Nothing
     , nonAdministrationSigns = Nothing
     , recommendedTreatmentSigns = Nothing
     , hypertensionAvoidingGuidanceReason = Nothing
