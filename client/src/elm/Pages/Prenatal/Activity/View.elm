@@ -298,8 +298,7 @@ viewActivity language currentDate isChw activity assembled db model =
             viewImmunisationContent language currentDate assembled model.immunisationData
 
         Backend.PrenatalActivity.Model.Breastfeeding ->
-            -- @todo
-            []
+            viewBreastfeedingContent language currentDate assembled model.breastfeedingData
 
         PostpartumTreatmentReview ->
             viewPostpartumTreatmentReviewContent language currentDate assembled model.postpartumTreatmentReviewData
@@ -2213,7 +2212,7 @@ viewTreatmentReviewContent language currentDate assembled data =
         measurements =
             assembled.measurements
 
-        moderatePreeclampsiaPrevoiusly =
+        moderatePreeclampsiaPreviously =
             diagnosedModeratePreeclampsiaPrevoiusly assembled
 
         viewTask task =
@@ -2242,7 +2241,7 @@ viewTreatmentReviewContent language currentDate assembled data =
             div [ class "column" ]
                 [ div attributes
                     [ span [ class "icon-activity-task icon-medication" ] []
-                    , text <| translate language (Translate.TreatmentReviewTask moderatePreeclampsiaPrevoiusly task)
+                    , text <| translate language (Translate.TreatmentReviewTask moderatePreeclampsiaPreviously task)
                     ]
                 ]
 
@@ -4513,6 +4512,123 @@ viewMedicationTreatmentForm language currentDate setBoolInputMsg assembled form 
             resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task
     in
     div [ class "ui form medication" ] inputs
+
+
+viewBreastfeedingContent : Language -> NominalDate -> AssembledData -> BreastfeedingData -> List (Html Msg)
+viewBreastfeedingContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.breastfeeding
+                |> getMeasurementValueFunc
+                |> breastfeedingFormWithDefault data.form
+
+        ( derivedSection, derivedTasks ) =
+            Maybe.map
+                (\isBreastfeeding ->
+                    if isBreastfeeding then
+                        let
+                            breastPainUpdateFunc value form_ =
+                                { form_ | breastPain = Just value }
+
+                            breastRednessUpdateFunc value form_ =
+                                { form_ | breastRedness = Just value }
+
+                            enoughMilkUpdateFunc value form_ =
+                                { form_ | enoughMilk = Just value }
+
+                            latchingWellUpdateFunc value form_ =
+                                { form_ | latchingWell = Just value }
+                        in
+                        ( [ viewQuestionLabel language <| Translate.BreastfeedingSignQuestion BreastPain
+                          , viewBoolInput
+                                language
+                                form.breastPain
+                                (SetBreastfeedingBoolInput breastPainUpdateFunc)
+                                "breast-pain"
+                                Nothing
+                          , viewQuestionLabel language <| Translate.BreastfeedingSignQuestion BreastRedness
+                          , viewBoolInput
+                                language
+                                form.breastRedness
+                                (SetBreastfeedingBoolInput breastRednessUpdateFunc)
+                                "breast-redness"
+                                Nothing
+                          , viewQuestionLabel language <| Translate.BreastfeedingSignQuestion EnoughMilk
+                          , viewBoolInput
+                                language
+                                form.enoughMilk
+                                (SetBreastfeedingBoolInput enoughMilkUpdateFunc)
+                                "enough-milk"
+                                Nothing
+                          , viewQuestionLabel language <| Translate.BreastfeedingSignQuestion LatchingWell
+                          , viewBoolInput
+                                language
+                                form.latchingWell
+                                (SetBreastfeedingBoolInput latchingWellUpdateFunc)
+                                "latching-well"
+                                Nothing
+                          ]
+                        , [ form.breastPain, form.breastRedness, form.enoughMilk, form.latchingWell ]
+                        )
+
+                    else
+                        ( [ viewQuestionLabel language Translate.WhyNot
+                          , viewCheckBoxSelectInput language
+                                [ NotBreastfeedingBreastPain
+                                , NotBreastfeedingBreastRedness
+                                , NotBreastfeedingLowMilkProduction
+                                , NotBreastfeedingProblemsLatching
+                                ]
+                                [ NotBreastfeedingMedicalProblems
+                                , NotBreastfeedingPersonalChoice
+                                , NotBreastfeedingOther
+                                ]
+                                form.reasonForNotBreastfeeding
+                                SetReasonForNotBreastfeeding
+                                Translate.ReasonForNotBreastfeeding
+                          ]
+                        , [ form.reasonForNotBreastfeeding ]
+                        )
+                )
+                form.isBreastfeeding
+                |> Maybe.withDefault ( [], [] )
+
+        tasks =
+            form.isBreastfeeding :: tasks
+
+        tasksCompleted =
+            Maybe.Extra.values tasks
+                |> List.length
+
+        totalTasks =
+            List.length tasks
+
+        isBreastfeedingUpdateFunc value form_ =
+            { form_ | isBreastfeeding = Just value }
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form breeastfeeding" ] <|
+                [ viewQuestionLabel language <| Translate.BreastfeedingSignQuestion IsBreastfeeding
+                , viewBoolInput
+                    language
+                    form.isBreastfeeding
+                    (SetBreastfeedingBoolInput isBreastfeedingUpdateFunc)
+                    "is-breastfeeding"
+                    Nothing
+                ]
+                    ++ derivedSection
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveBreastfeeding assembled.participant.person assembled.measurements.breastfeeding
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
 
 
 viewPostpartumTreatmentReviewContent : Language -> NominalDate -> AssembledData -> PostpartumTreatmentReviewData -> List (Html Msg)

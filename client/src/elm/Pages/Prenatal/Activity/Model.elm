@@ -243,6 +243,7 @@ type alias Model =
     , mentalHealthData : MentalHealthData
     , immunisationData : ImmunisationData
     , postpartumTreatmentReviewData : PostpartumTreatmentReviewData
+    , breastfeedingData : BreastfeedingData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe (WarningPopupType Msg)
@@ -267,6 +268,7 @@ emptyModel =
     , mentalHealthData = emptyMentalHealthData
     , immunisationData = emptyImmunisationData
     , postpartumTreatmentReviewData = emptyPostpartumTreatmentReviewData
+    , breastfeedingData = emptyBreastfeedingData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -1190,4 +1192,36 @@ type alias PostpartumTreatmentReviewData =
 emptyPostpartumTreatmentReviewData : MedicationData
 emptyPostpartumTreatmentReviewData =
     { form = emptyMedicationForm
+    }
+
+
+type alias BreastfeedingData =
+    { form : BreastfeedingForm
+    }
+
+
+emptyBreastfeedingData : BreastfeedingData
+emptyBreastfeedingData =
+    { form = emptyBreastfeedingForm
+    }
+
+
+type alias BreastfeedingForm =
+    { isBreastfeeding : Maybe Bool
+    , reasonForNotBreastfeeding : Maybe BreastfeedingSign
+    , breastPain : Maybe Bool
+    , breastRedness : Maybe Bool
+    , enoughMilk : Maybe Bool
+    , latchingWell : Maybe Bool
+    }
+
+
+emptyBreastfeedingForm : BreastfeedingForm
+emptyBreastfeedingForm =
+    { isBreastfeeding = Nothing
+    , reasonForNotBreastfeeding = Nothing
+    , breastPain = Nothing
+    , breastRedness = Nothing
+    , enoughMilk = Nothing
+    , latchingWell = Nothing
     }

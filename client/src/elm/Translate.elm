@@ -381,6 +381,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
     | BloodPressure
@@ -1067,6 +1068,7 @@ type TranslationId
     | ProvidedSymtomReliefGuidanceQuestion
     | Province
     | ReasonForCSection
+    | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
     | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
@@ -2573,6 +2575,38 @@ translationSet trans =
             { english = "Error contacting backend"
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
+
+        BreastfeedingSignQuestion sign ->
+            case sign of
+                IsBreastfeeding ->
+                    { english = "Are you breastfeeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                BreastPain ->
+                    { english = "Are you experiencing breast pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                BreastRedness ->
+                    { english = "Are you experiencing breast redness"
+                    , kinyarwanda = Nothing
+                    }
+
+                EnoughMilk ->
+                    { english = "Do you have enough milk for your baby to breastfeed at least 8 times per day"
+                    , kinyarwanda = Nothing
+                    }
+
+                LatchingWell ->
+                    { english = "Is the baby latching well"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         BeatsPerMinuteUnitLabel ->
             { english = "bpm"
@@ -11513,6 +11547,48 @@ translationSet trans =
             { english = "Reason for C-section"
             , kinyarwanda = Nothing
             }
+
+        ReasonForNotBreastfeeding reason ->
+            case reason of
+                NotBreastfeedingBreastPain ->
+                    { english = "Breast pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingBreastRedness ->
+                    { english = "Breast redness"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingLowMilkProduction ->
+                    { english = "Low milk production"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingProblemsLatching ->
+                    { english = "Problems latching"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingMedicalProblems ->
+                    { english = "Medical Problems"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingPersonalChoice ->
+                    { english = "Personal Choice"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         ReasonForNotIsolating reason ->
             case reason of

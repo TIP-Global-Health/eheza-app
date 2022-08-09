@@ -1390,12 +1390,12 @@ type alias BreastfeedingValue =
 type BreastfeedingSign
     = IsBreastfeeding
     | NotBreastfeedingBreastPain
-    | NotBreastfeedingLowMilkProduction
     | NotBreastfeedingBreastRedness
+    | NotBreastfeedingLowMilkProduction
     | NotBreastfeedingProblemsLatching
     | NotBreastfeedingMedicalProblems
-    | NotBreastfeedingOther
     | NotBreastfeedingPersonalChoice
+    | NotBreastfeedingOther
     | BreastPain
     | BreastRedness
     | EnoughMilk
