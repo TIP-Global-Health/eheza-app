@@ -374,7 +374,6 @@ resolveNextStepsTasks currentDate assembled =
                     [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsWait ]
 
                 NursePostpartumEncounter ->
-                    -- @todo
                     [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
 
                 _ ->
