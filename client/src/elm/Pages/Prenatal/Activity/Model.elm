@@ -949,8 +949,10 @@ type alias GUExamForm =
     { vaginalExamSigns : Maybe (List VaginalExamSign)
     , episiotomyOrPerinealTear : Maybe Bool
     , healingNormally : Maybe Bool
-    , rectalHemorrhoids : Maybe Bool
+    , healingNormallyDirty : Bool
     , postpartumHealingProblems : Maybe (List PostpartumHealingProblem)
+    , postpartumHealingProblemsDirty : Bool
+    , rectalHemorrhoids : Maybe Bool
     }
 
 
@@ -959,8 +961,10 @@ emptyGUExamForm =
     { vaginalExamSigns = Nothing
     , episiotomyOrPerinealTear = Nothing
     , healingNormally = Nothing
-    , rectalHemorrhoids = Nothing
+    , healingNormallyDirty = False
     , postpartumHealingProblems = Nothing
+    , postpartumHealingProblemsDirty = False
+    , rectalHemorrhoids = Nothing
     }
 
 

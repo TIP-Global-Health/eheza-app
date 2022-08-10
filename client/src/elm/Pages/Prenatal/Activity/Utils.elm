@@ -6931,3 +6931,80 @@ reasonsForNotBreastfeedingRight =
     , NotBreastfeedingPersonalChoice
     , NotBreastfeedingOther
     ]
+
+
+guExamFormWithDefault : GUExamForm -> Maybe GUExamValue -> GUExamForm
+guExamFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    postpartumHealingProblemsFromValue =
+                        Maybe.andThen
+                            (\problems ->
+                                case EverySet.toList problems of
+                                    [ NormalPostpartumHealing ] ->
+                                        Nothing
+
+                                    _ ->
+                                        Just <| EverySet.toList problems
+                            )
+                            value.postpartumHealingProblems
+                in
+                { vaginalExamSigns = or form.vaginalExamSigns (EverySet.toList value.vaginalExamSigns |> Just)
+                , episiotomyOrPerinealTear = or form.episiotomyOrPerinealTear (EverySet.member EpisiotomyOrPerinealTear value.guExamSigns |> Just)
+                , healingNormally =
+                    maybeValueConsideringIsDirtyField
+                        form.healingNormallyDirty
+                        form.healingNormally
+                        (Maybe.map (EverySet.member NormalPostpartumHealing) value.postpartumHealingProblems)
+                , healingNormallyDirty = form.healingNormallyDirty
+                , postpartumHealingProblems =
+                    maybeValueConsideringIsDirtyField
+                        form.postpartumHealingProblemsDirty
+                        form.postpartumHealingProblems
+                        postpartumHealingProblemsFromValue
+                , postpartumHealingProblemsDirty = form.postpartumHealingProblemsDirty
+                , rectalHemorrhoids = or form.rectalHemorrhoids (EverySet.member RectalHemorrhoids value.guExamSigns |> Just)
+                }
+            )
+
+
+toGUExamValueWithDefault : Maybe GUExamValue -> GUExamForm -> Maybe GUExamValue
+toGUExamValueWithDefault saved form =
+    guExamFormWithDefault form saved
+        |> toGUExamValue
+
+
+toGUExamValue : GUExamForm -> Maybe GUExamValue
+toGUExamValue form =
+    let
+        maybeGUExamSigns =
+            [ ifNullableTrue EpisiotomyOrPerinealTear form.episiotomyOrPerinealTear
+            , ifNullableTrue RectalHemorrhoids form.rectalHemorrhoids
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoGUExamSigns)
+    in
+    Maybe.map2
+        (\vaginalExamSigns guExamSigns ->
+            let
+                postpartumHealingProblems =
+                    Maybe.andThen
+                        (\healingNormally ->
+                            if healingNormally then
+                                Just <| EverySet.singleton NormalPostpartumHealing
+
+                            else
+                                Maybe.map EverySet.fromList form.postpartumHealingProblems
+                        )
+                        form.healingNormally
+            in
+            { vaginalExamSigns = EverySet.fromList vaginalExamSigns
+            , guExamSigns = guExamSigns
+            , postpartumHealingProblems = postpartumHealingProblems
+            }
+        )
+        form.vaginalExamSigns
+        maybeGUExamSigns
