@@ -601,7 +601,7 @@ type TranslationId
     | FirstAntenatalVisit
     | FirstName
     | FiveVisits
-    | ForIllustrativePurposesOnly
+    | FollowPostpartumProtocols
     | FollowUpWithPatientIn
     | FollowUpWithPatientOn
     | FollowUpByChwLabel
@@ -609,6 +609,7 @@ type TranslationId
     | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
     | FollowUpDueOption FollowUpDueOption
+    | ForIllustrativePurposesOnly
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
@@ -1287,6 +1288,7 @@ type TranslationId
     | Type
     | UbudeheLabel
     | UbudeheNumber Ubudehe
+    | UndeterminedDiagnoses
     | UnitCopiesPerMM3
     | UnitGramsPerDeciliter
     | UnitMilliGramsPerDeciliter
@@ -4534,8 +4536,8 @@ translationSet trans =
             , kinyarwanda = Just "Inshuro eshanu"
             }
 
-        ForIllustrativePurposesOnly ->
-            { english = "For illustrative purposes only"
+        FollowPostpartumProtocols ->
+            { english = "Follow Postpartum Protocols"
             , kinyarwanda = Nothing
             }
 
@@ -4627,6 +4629,11 @@ translationSet trans =
                     { english = "Next Month"
                     , kinyarwanda = Just "Ukwezi gutaha"
                     }
+
+        ForIllustrativePurposesOnly ->
+            { english = "For illustrative purposes only"
+            , kinyarwanda = Nothing
+            }
 
         FormError errorValue ->
             translateFormError errorValue
@@ -8503,6 +8510,56 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPostpartumAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumUrinaryIncontinence ->
+                    { english = "Urinary Incontinence"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFatigue ->
+                    { english = "Fatigue"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumPerinealPainOrDischarge ->
+                    { english = "Perineal Pain or Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumInfection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumExcessiveBleeding ->
+                    { english = "Excessive Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+                    { english = "Early Mastitis or Engorgment"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumMastitis ->
+                    { english = "Mastitis"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -8860,6 +8917,56 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisPostpartumAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumUrinaryIncontinence ->
+                    { english = "Urinary Incontinence"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFatigue ->
+                    { english = "Fatigue"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumPerinealPainOrDischarge ->
+                    { english = "Perineal Pain or Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumInfection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumExcessiveBleeding ->
+                    { english = "Excessive Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+                    { english = "Early Mastitis or Engorgment"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumMastitis ->
+                    { english = "Mastitis"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalDiagnosis ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -9104,6 +9211,56 @@ translationSet trans =
 
                 DiagnosisSuicideRisk ->
                     { english = "Patient shows signs of being a suicide risk"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumUrinaryIncontinence ->
+                    { english = "Patient shows signs of Urinary Incontinence"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFatigue ->
+                    { english = "Fatigue"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumPerinealPainOrDischarge ->
+                    { english = "Perineal Pain or Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumInfection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumExcessiveBleeding ->
+                    { english = "Excessive Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+                    { english = "Early Mastitis or Engorgment"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPostpartumMastitis ->
+                    { english = "Mastitis"
                     , kinyarwanda = Nothing
                     }
 
@@ -10888,8 +11045,38 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PostpartumAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumUrinaryIncontinence ->
+                    { english = "Urinary Incontinence"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumFatigue ->
+                    { english = "Fatigue"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                PostpartumPerinealPainOrDischarge ->
+                    { english = "Perineal pain or Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoPrenatalSymptoms ->
-                    { english = "None"
+                    { english = "None of these"
                     , kinyarwanda = Nothing
                     }
 
@@ -13323,6 +13510,11 @@ translationSet trans =
                     { english = "4"
                     , kinyarwanda = Nothing
                     }
+
+        UndeterminedDiagnoses ->
+            { english = "Undetermined Diagnoses"
+            , kinyarwanda = Nothing
+            }
 
         UnitCopiesPerMM3 ->
             { english = "copies/mm3"

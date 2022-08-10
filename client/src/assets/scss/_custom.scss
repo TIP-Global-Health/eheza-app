@@ -1464,6 +1464,17 @@ input::placeholder {
     }
   }
 
+  &.diagnosis-popup {
+
+    .bottom-message p {
+      margin-bottom: 10px;
+    }
+
+    ul {
+      text-align: left;
+    }
+  }
+
   > .icon:first-child+*,
   >:first-child:not(.icon) {
     border-top-left-radius: 0;

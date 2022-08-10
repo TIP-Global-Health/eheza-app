@@ -2895,6 +2895,45 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             -- Other diagnosis is used only at outside care diagnostics.
             []
 
+        DiagnosisPostpartumAbdominalPain ->
+            -- @todo
+            []
+
+        DiagnosisPostpartumUrinaryIncontinence ->
+            referredToHospitalMessage
+
+        DiagnosisPostpartumHeadache ->
+            -- @todo
+            []
+
+        DiagnosisPostpartumFatigue ->
+            -- @todo
+            []
+
+        DiagnosisPostpartumFever ->
+            -- @todo
+            []
+
+        DiagnosisPostpartumPerinealPainOrDischarge ->
+            -- @todo
+            []
+
+        DiagnosisPostpartumInfection ->
+            -- @todo
+            []
+
+        DiagnosisPostpartumExcessiveBleeding ->
+            -- @todo
+            []
+
+        DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+            -- @todo
+            []
+
+        DiagnosisPostpartumMastitis ->
+            -- @todo
+            []
+
         NoPrenatalDiagnosis ->
             []
 

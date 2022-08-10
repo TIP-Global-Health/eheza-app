@@ -1255,6 +1255,13 @@ type PrenatalSymptom
     | Constipation
     | VaricoseVeins
     | LegPainRedness
+      -- For Postpartum:
+    | PostpartumAbdominalPain
+    | PostpartumUrinaryIncontinence
+    | PostpartumHeadache
+    | PostpartumFatigue
+    | PostpartumFever
+    | PostpartumPerinealPainOrDischarge
     | NoPrenatalSymptoms
 
 

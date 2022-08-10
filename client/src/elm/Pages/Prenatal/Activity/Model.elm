@@ -29,8 +29,7 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetWarningPopupState (Maybe ( String, String ))
-    | ViewWarningPopupForNonUrgentDiagnoses
+    | SetWarningPopupState (Maybe (WarningPopupType Msg))
       -- PregnancyDatingMsgs
     | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetConfirmLmpDate NominalDate Bool
@@ -203,7 +202,6 @@ type Msg
     | SaveSymptomReview PersonId (Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview ))
       -- TREATMENTREVIEWMsgs
     | SetActiveTreatmentReviewTask TreatmentReviewTask
-    | SetTreatmentReviewWarningPopupState (Maybe Msg)
     | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
     | SetHIVMedicationNotGivenReason HIVTreatmentSign
     | SaveMedicationSubActivity PersonId (Maybe ( MedicationId, Medication )) (Maybe TreatmentReviewTask)
@@ -211,7 +209,6 @@ type Msg
     | SetMentalHealthStep MentalHealthStep
     | SetMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | SetSpecialistAtHC Bool
-    | SetMentalHealthWarningPopupState (Maybe Msg)
     | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask
@@ -244,7 +241,7 @@ type alias Model =
     , immunisationData : ImmunisationData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
-    , warningPopupState : Maybe ( String, String )
+    , warningPopupState : Maybe (WarningPopupType Msg)
     }
 
 
@@ -580,7 +577,6 @@ emptySymptomReviewForm =
 type alias TreatmentReviewData =
     { medicationForm : MedicationForm
     , activeTask : Maybe TreatmentReviewTask
-    , warningPopupState : Maybe Msg
     }
 
 
@@ -588,20 +584,17 @@ emptyTreatmentReviewData : TreatmentReviewData
 emptyTreatmentReviewData =
     { medicationForm = emptyMedicationForm
     , activeTask = Nothing
-    , warningPopupState = Nothing
     }
 
 
 type alias MentalHealthData =
     { form : MentalHealthForm
-    , warningPopupState : Maybe Msg
     }
 
 
 emptyMentalHealthData : MentalHealthData
 emptyMentalHealthData =
     { form = emptyMentalHealthForm
-    , warningPopupState = Nothing
     }
 
 

@@ -217,7 +217,7 @@ viewHeaderAndContent language currentDate id activity db model assembled =
         [ viewHeader language (PrenatalRecurrentEncounterPage id) (Translate.PrenatalRecurrentActivitiesTitle activity) assembled
         , viewContent language currentDate activity db model assembled
         , viewModal <|
-            warningPopup language currentDate False SetWarningPopupState model.warningPopupState
+            warningPopup language currentDate False assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
 
 

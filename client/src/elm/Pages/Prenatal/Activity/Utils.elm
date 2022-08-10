@@ -374,7 +374,7 @@ resolveNextStepsTasks currentDate assembled =
 
                 NursePostpartumEncounter ->
                     -- @todo
-                    [ NextStepsSendToHC ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
 
                 _ ->
                     -- The order is important. Do not change.
@@ -414,8 +414,7 @@ expectNextStepsTask currentDate assembled task =
                         || referToMentalHealthSpecialist assembled
 
                 NursePostpartumEncounter ->
-                    --@todo
-                    False
+                    referToHospitalForNonHIVDiagnosis assembled
 
                 _ ->
                     dangerSigns
@@ -444,8 +443,21 @@ expectNextStepsTask currentDate assembled task =
                            )
 
                 NursePostpartumEncounter ->
-                    --@todo
-                    False
+                    (not <| emergencyReferalRequired assembled)
+                        && (provideNauseaAndVomitingEducation assembled
+                                || List.any (symptomRecorded assembled.measurements)
+                                    [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
+                                || provideLegPainRednessEducation assembled
+                                || providePelvicPainEducation assembled
+                                || diagnosedAnyOf
+                                    [ DiagnosisHeartburn
+                                    , DiagnosisCandidiasis
+                                    , DiagnosisGonorrhea
+                                    , DiagnosisTrichomonasOrBacterialVaginosis
+                                    ]
+                                    assembled
+                                || provideMentalHealthEducation assembled
+                           )
 
                 ChwPostpartumEncounter ->
                     True
@@ -457,41 +469,61 @@ expectNextStepsTask currentDate assembled task =
         NextStepsNewbornEnrolment ->
             assembled.encounter.encounterType == ChwPostpartumEncounter
 
+        -- Exclusive task for Nurse encounter.
         NextStepsMedicationDistribution ->
-            -- Exclusive task for Nurse encounter.
-            (assembled.encounter.encounterType == NurseEncounter)
-                && -- Emergency referral is not required.
-                   (not <| emergencyReferalRequired assembled)
-                && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
-                        |> List.isEmpty
-                        |> not
-                    )
-                        || (diagnosedMalaria assembled
-                                && (not <| referToHospitalDueToAdverseEventForMalariaTreatment assembled)
-                           )
-                        || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
-                        || diagnosedAnyOf
-                            [ DiagnosisHeartburn
-                            , DiagnosisUrinaryTractInfection
-                            , DiagnosisCandidiasis
-                            , DiagnosisGonorrhea
-                            , DiagnosisTrichomonasOrBacterialVaginosis
-                            ]
-                            assembled
-                        || (-- Indicators show that Hypertension / Moderate Preeclamsia
-                            -- treatment should be updated.
-                            updateHypertensionTreatmentWithMedication assembled
-                                && (-- Hypertension / Moderate Preeclamsia treatemnt
-                                    -- did not cause and adverse event.
-                                    not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
+            case assembled.encounter.encounterType of
+                NurseEncounter ->
+                    -- Emergency referral is not required.
+                    (not <| emergencyReferalRequired assembled)
+                        && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
+                                |> List.isEmpty
+                                |> not
+                            )
+                                || (diagnosedMalaria assembled
+                                        && (not <| referToHospitalDueToAdverseEventForMalariaTreatment assembled)
                                    )
-                                && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
-                                    -- in referral to hospital. EGA37 diagnoses are not included, since they
-                                    -- trigger emergency referral.
-                                    not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
+                                || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
+                                || diagnosedAnyOf
+                                    [ DiagnosisHeartburn
+                                    , DiagnosisUrinaryTractInfection
+                                    , DiagnosisCandidiasis
+                                    , DiagnosisGonorrhea
+                                    , DiagnosisTrichomonasOrBacterialVaginosis
+                                    ]
+                                    assembled
+                                || (updateHypertensionTreatmentWithMedication assembled
+                                        && (-- Hypertension / Moderate Preeclamsia treatemnt
+                                            -- did not cause an adverse event.
+                                            not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
+                                           )
+                                        && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
+                                            -- in referral to hospital. EGA37 diagnoses are not included, since they
+                                            -- trigger emergency referral.
+                                            not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
+                                           )
                                    )
                            )
-                   )
+
+                NursePostpartumEncounter ->
+                    -- Emergency referral is not required.
+                    (not <| emergencyReferalRequired assembled)
+                        && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
+                                |> List.isEmpty
+                                |> not
+                            )
+                                || diagnosedAnyOf
+                                    [ DiagnosisHeartburn
+                                    , DiagnosisUrinaryTractInfection
+                                    , DiagnosisCandidiasis
+                                    , DiagnosisGonorrhea
+                                    , DiagnosisTrichomonasOrBacterialVaginosis
+                                    ]
+                                    assembled
+                           )
+
+                -- CHW encounter types where medication is not distributed.
+                _ ->
+                    False
 
         NextStepsWait ->
             -- Exclusive task for Nurse encounter.
@@ -834,6 +866,7 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
                    , DiagnosisCandidiasisContinued
                    , DiagnosisGonorrheaContinued
                    , DiagnosisTrichomonasOrBacterialVaginosisContinued
+                   , DiagnosisPostpartumUrinaryIncontinence
                    ]
     in
     List.filter (\diagnosis -> diagnosed diagnosis assembled)
@@ -1108,7 +1141,7 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
 
         NursePostpartumEncounter ->
             --@todo
-            False
+            True
 
         _ ->
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
@@ -2107,6 +2140,24 @@ matchSymptomsPrenatalDiagnosis egaInWeeks assembled diagnosis =
         Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
             symptomRecorded assembled.measurements CoughContinuous
 
+        DiagnosisPostpartumAbdominalPain ->
+            symptomRecorded assembled.measurements PostpartumAbdominalPain
+
+        DiagnosisPostpartumUrinaryIncontinence ->
+            symptomRecorded assembled.measurements PostpartumUrinaryIncontinence
+
+        DiagnosisPostpartumHeadache ->
+            symptomRecorded assembled.measurements PostpartumHeadache
+
+        DiagnosisPostpartumFatigue ->
+            symptomRecorded assembled.measurements PostpartumFatigue
+
+        DiagnosisPostpartumFever ->
+            symptomRecorded assembled.measurements PostpartumFever
+
+        DiagnosisPostpartumPerinealPainOrDischarge ->
+            symptomRecorded assembled.measurements PostpartumPerinealPainOrDischarge
+
         -- Non Symptoms diagnoses.
         _ ->
             False
@@ -2422,6 +2473,12 @@ symptomsDiagnoses =
     , DiagnosisTrichomonasOrBacterialVaginosis
     , DiagnosisTrichomonasOrBacterialVaginosisContinued
     , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
+    , DiagnosisPostpartumAbdominalPain
+    , DiagnosisPostpartumUrinaryIncontinence
+    , DiagnosisPostpartumHeadache
+    , DiagnosisPostpartumFatigue
+    , DiagnosisPostpartumFever
+    , DiagnosisPostpartumPerinealPainOrDischarge
     ]
 
 
@@ -2436,6 +2493,16 @@ mentalHealthDiagnosesRequiringTreatment =
     , DiagnosisDepressionHighlyPossible
     , DiagnosisDepressionProbable
     , DiagnosisSuicideRisk
+    ]
+
+
+undeterminedPostpartumDiagnoses : List PrenatalDiagnosis
+undeterminedPostpartumDiagnoses =
+    [ DiagnosisPostpartumAbdominalPain
+    , DiagnosisPostpartumHeadache
+    , DiagnosisPostpartumFatigue
+    , DiagnosisPostpartumFever
+    , DiagnosisPostpartumPerinealPainOrDischarge
     ]
 
 
@@ -2840,7 +2907,7 @@ healthEducationFormInputsAndTasksForChw language assembled form =
                             Nothing
                     )
                 -- There's a posibility to have more than one
-                -- 'Third' enciunter, therefore, the check
+                -- 'Third' encounter, therefore, the check
                 -- for ANY in list.
                 |> List.any (.healthEducation >> isJust)
 
@@ -5494,23 +5561,57 @@ updateSymptomReviewFormWithSymptoms form symptoms =
     }
 
 
-symptomReviewFormInputsAndTasks : Language -> SymptomReviewStep -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
-symptomReviewFormInputsAndTasks language step form =
+symptomReviewFormInputsAndTasks : Language -> PrenatalEncounterType -> SymptomReviewStep -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
+symptomReviewFormInputsAndTasks language encounterType step form =
     case step of
         SymptomReviewStepSymptoms ->
-            symptomReviewFormInputsAndTasksSymptoms language form
+            symptomReviewFormInputsAndTasksSymptoms language encounterType form
 
         SymptomReviewStepQuestions ->
             symptomReviewFormInputsAndTasksQuestions language form
 
 
-symptomReviewFormInputsAndTasksSymptoms : Language -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
-symptomReviewFormInputsAndTasksSymptoms language form =
+symptomReviewFormInputsAndTasksSymptoms : Language -> PrenatalEncounterType -> SymptomReviewForm -> ( List (Html Msg), Int, Int )
+symptomReviewFormInputsAndTasksSymptoms language encounterType form =
+    let
+        ( symptomsLeft, symptomsRight ) =
+            case encounterType of
+                NurseEncounter ->
+                    ( [ BurningWithUrination, AbnormalVaginalDischarge, NauseaAndVomiting, Heartburn, LegCramps, LowBackPain ]
+                    , [ CoughContinuous, PelvicPain, Constipation, VaricoseVeins, LegPainRedness ]
+                    )
+
+                NursePostpartumEncounter ->
+                    ( [ BurningWithUrination
+                      , AbnormalVaginalDischarge
+                      , NauseaAndVomiting
+                      , Heartburn
+                      , LegCramps
+                      , LowBackPain
+                      , CoughContinuous
+                      , PostpartumAbdominalPain
+                      , PostpartumUrinaryIncontinence
+                      ]
+                    , [ PelvicPain
+                      , Constipation
+                      , VaricoseVeins
+                      , PostpartumHeadache
+                      , PostpartumFatigue
+                      , PostpartumFever
+                      , PostpartumPerinealPainOrDischarge
+                      , LegPainRedness
+                      ]
+                    )
+
+                -- We should never get here, as these are CHW encounter types.
+                _ ->
+                    ( [], [] )
+    in
     ( [ div [ class "ui form symptom-review" ]
             [ viewLabel language Translate.SelectIllnessSymptoms
             , viewCheckBoxMultipleSelectInput language
-                [ BurningWithUrination, AbnormalVaginalDischarge, NauseaAndVomiting, Heartburn, LegCramps, LowBackPain ]
-                [ CoughContinuous, PelvicPain, Constipation, VaricoseVeins, LegPainRedness ]
+                symptomsLeft
+                symptomsRight
                 (form.symptoms |> Maybe.withDefault [])
                 (Just NoPrenatalSymptoms)
                 SetPrenatalSymptom

@@ -130,7 +130,7 @@ update language currentDate id db msg model =
                 |> Maybe.withDefault [ SetActivePage destinationPage ]
 
         generateMedicationSubActivityMsgs nextTask =
-            SetTreatmentReviewWarningPopupState Nothing
+            SetWarningPopupState Nothing
                 :: (Maybe.map (\task -> [ SetActiveTreatmentReviewTask task ]) nextTask
                         |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
                    )
@@ -165,28 +165,6 @@ update language currentDate id db msg model =
 
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
-
-        ViewWarningPopupForNonUrgentDiagnoses ->
-            let
-                nonUrgentDiagnoses =
-                    Dict.get id db.prenatalEncounters
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map (.diagnoses >> EverySet.toList >> filterNonUrgentDiagnoses)
-                        |> Maybe.withDefault []
-
-                extraMsgs =
-                    if List.isEmpty nonUrgentDiagnoses then
-                        []
-
-                    else
-                        let
-                            message =
-                                List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) nonUrgentDiagnoses
-                                    |> String.join ", "
-                        in
-                        [ SetWarningPopupState <| Just ( message, "" ) ]
-            in
-            sequenceExtra (update language currentDate id db) extraMsgs noChange
 
         SetLmpDateSelectorState state ->
             let
@@ -3110,29 +3088,27 @@ update language currentDate id db msg model =
                     model.symptomReviewData
                         |> (\data -> { data | step = step })
 
-                warningPopupState =
+                extraMsgs =
                     if step == SymptomReviewStepQuestions then
                         Maybe.map
                             (\symptoms ->
                                 if List.member CoughContinuous symptoms then
-                                    Just
-                                        ( translate language Translate.TuberculosisWarning
-                                        , translate language Translate.TuberculosisInstructions
-                                        )
+                                    [ SetWarningPopupState (Just WarningPopupTuberculosis) ]
 
                                 else
-                                    model.warningPopupState
+                                    []
                             )
                             symptomReviewForm.symptoms
-                            |> Maybe.withDefault model.warningPopupState
+                            |> Maybe.withDefault []
 
                     else
-                        model.warningPopupState
+                        []
             in
-            ( { model | symptomReviewData = updatedData, warningPopupState = warningPopupState }
+            ( { model | symptomReviewData = updatedData }
             , Cmd.none
             , []
             )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetPrenatalSymptom symptom ->
             let
@@ -3231,17 +3207,6 @@ update language currentDate id db msg model =
                 updatedData =
                     model.treatmentReviewData
                         |> (\data -> { data | activeTask = Just task })
-            in
-            ( { model | treatmentReviewData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetTreatmentReviewWarningPopupState state ->
-            let
-                updatedData =
-                    model.treatmentReviewData
-                        |> (\data -> { data | warningPopupState = state })
             in
             ( { model | treatmentReviewData = updatedData }
             , Cmd.none
@@ -3364,17 +3329,6 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetMentalHealthWarningPopupState state ->
-            let
-                updatedData =
-                    model.mentalHealthData
-                        |> (\data -> { data | warningPopupState = state })
-            in
-            ( { model | mentalHealthData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SaveMentalHealth personId saved ->
             let
                 measurementId =
@@ -3389,7 +3343,7 @@ update language currentDate id db msg model =
 
                     else
                         [ SetActivePage <| UserPage <| PrenatalEncounterPage id
-                        , SetMentalHealthWarningPopupState Nothing
+                        , SetWarningPopupState Nothing
                         ]
 
                 appMsgs =
