@@ -19,11 +19,13 @@ import Backend.Measurement.Model
         , NeckCPESign(..)
         , PhotoUrl(..)
         , PostpartumChildDangerSign(..)
+        , PostpartumHealingProblem(..)
         , PostpartumMotherDangerSign(..)
         , PrenatalOutsideCareMedication(..)
         , PrenatalSymptom(..)
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
+        , VaginalExamSign(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
@@ -93,8 +95,7 @@ update language currentDate id db msg model =
 
         outsideCareForm =
             Dict.get id db.prenatalMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
                     (.outsideCare
                         >> getMeasurementValueFunc
@@ -104,13 +105,22 @@ update language currentDate id db msg model =
 
         resolveVaccinationForm vaccineType form =
             Dict.get id db.prenatalMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
                     (getMeasurementByVaccineTypeFunc vaccineType
                         >> vaccinationFormWithDefault form
                     )
                 |> Maybe.withDefault form
+
+        guExamForm =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.guExam
+                        >> getMeasurementValueFunc
+                        >> guExamFormWithDefault model.examinationData.guExamForm
+                    )
+                |> Maybe.withDefault model.examinationData.guExamForm
 
         generateLaboratoryMsgs nextTask =
             Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
@@ -1144,11 +1154,10 @@ update language currentDate id db msg model =
 
         SetBreastExamBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.examinationData.breastExamForm
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.examinationData.breastExamForm
-                    in
                     model.examinationData
                         |> (\data -> { data | breastExamForm = updatedForm })
             in
@@ -1201,6 +1210,83 @@ update language currentDate id db msg model =
                     toBreastExamValueWithDefault measurement model.examinationData.breastExamForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveBreastExam personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetGUExamBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.examinationData.guExamForm
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | guExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetVaginalExamSign sign ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .vaginalExamSigns
+                        (\signs -> { guExamForm | vaginalExamSigns = signs })
+                        NormalVaginalExam
+                        sign
+                        guExamForm
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | guExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPostpartumHealingProblem problem ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .postpartumHealingProblems
+                        (\problems -> { guExamForm | postpartumHealingProblems = problems })
+                        NormalPostpartumHealing
+                        problem
+                        guExamForm
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | guExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveGUExam personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateExaminationMsgs nextTask
+
+                appMsgs =
+                    toGUExamValueWithDefault measurement model.examinationData.guExamForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveGUExam personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

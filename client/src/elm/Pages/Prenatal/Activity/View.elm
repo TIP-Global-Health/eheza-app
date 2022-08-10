@@ -848,59 +848,51 @@ viewExaminationContent language currentDate assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        nutritionForm =
-            let
-                form =
-                    assembled.measurements.nutrition
-                        |> getMeasurementValueFunc
-                        |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
-            in
-            if isJust measuredHeight then
-                Maybe.map (\(HeightInCm height) -> { form | height = Just height }) measuredHeight
-                    |> Maybe.withDefault form
-
-            else
-                form
-
         measuredHeight =
             resolveMeasuredHeight assembled
 
         viewForm =
             case activeTask of
                 Just Vitals ->
-                    assembled.measurements.vitals
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.vitals
                         |> vitalsFormWithDefault data.vitalsForm
                         |> viewVitalsForm language currentDate assembled
 
                 Just NutritionAssessment ->
                     let
+                        form =
+                            assembled.measurements.nutrition
+                                |> getMeasurementValueFunc
+                                |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
+
+                        formWithMeasuredHeight =
+                            Maybe.map (\(HeightInCm height) -> { form | height = Just height }) measuredHeight
+                                |> Maybe.withDefault form
+
                         hideHeightInput =
                             isJust measuredHeight
                     in
-                    viewNutritionAssessmentForm language currentDate assembled nutritionForm hideHeightInput
+                    viewNutritionAssessmentForm language currentDate assembled formWithMeasuredHeight hideHeightInput
 
                 Just CorePhysicalExam ->
-                    assembled.measurements.corePhysicalExam
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.corePhysicalExam
                         |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
                         |> viewCorePhysicalExamForm language currentDate assembled
 
                 Just ObstetricalExam ->
-                    assembled.measurements.obstetricalExam
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.obstetricalExam
                         |> obstetricalExamFormWithDefault data.obstetricalExamForm
                         |> viewObstetricalExamForm language currentDate assembled
 
                 Just BreastExam ->
-                    assembled.measurements.breastExam
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.breastExam
                         |> breastExamFormWithDefault data.breastExamForm
                         |> viewBreastExamForm language currentDate assembled
 
                 Just GUExam ->
-                    -- @todo
-                    emptyNode
+                    getMeasurementValueFunc assembled.measurements.guExam
+                        |> guExamFormWithDefault data.guExamForm
+                        |> viewGUExamForm language currentDate assembled
 
                 Nothing ->
                     emptyNode
@@ -3556,6 +3548,16 @@ viewBreastExamForm language currentDate assembled form =
             "self-guidance"
             Nothing
         ]
+
+
+viewGUExamForm : Language -> NominalDate -> AssembledData -> GUExamForm -> Html Msg
+viewGUExamForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            guExamFormInputsAndTasks language assembled form
+    in
+    div [ class "ui form examination breast-exam" ]
+        inputs
 
 
 viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg

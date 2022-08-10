@@ -96,6 +96,11 @@ type Msg
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
     | SetBreastExamBreast BreastExamSign
     | SaveBreastExam PersonId (Maybe ( BreastExamId, BreastExam )) (Maybe ExaminationTask)
+      -- ExaminationMsgs, GU Exam
+    | SetGUExamBoolInput (Bool -> GUExamForm -> GUExamForm) Bool
+    | SetPostpartumHealingProblem PostpartumHealingProblem
+    | SetVaginalExamSign VaginalExamSign
+    | SaveGUExam PersonId (Maybe ( PrenatalGUExamId, PrenatalGUExam )) (Maybe ExaminationTask)
       -- FamilyPlanningMsgs
     | SetFamilyPlanningSign FamilyPlanningSign
     | SaveFamilyPlanning PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))

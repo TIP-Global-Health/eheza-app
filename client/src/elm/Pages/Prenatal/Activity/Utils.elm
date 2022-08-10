@@ -3290,8 +3290,8 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 ( _, tasks ) =
                     healthEducationFormInputsAndTasks language assembled form
             in
-            ( List.map taskCompleted tasks
-                |> List.sum
+            ( Maybe.Extra.values tasks
+                |> List.length
             , List.length tasks
             )
 
@@ -4834,8 +4834,18 @@ examinationTasksCompletedFromTotal assembled data task =
             )
 
         GUExam ->
-            -- @todo
-            ( 0, 0 )
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.guExam
+                        |> guExamFormWithDefault data.guExamForm
+
+                ( _, tasks ) =
+                    guExamFormInputsAndTasks English assembled form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
 
 
 socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
@@ -6981,8 +6991,8 @@ toGUExamValue : GUExamForm -> Maybe GUExamValue
 toGUExamValue form =
     let
         maybeGUExamSigns =
-            [ ifNullableTrue EpisiotomyOrPerinealTear form.episiotomyOrPerinealTear
-            , ifNullableTrue RectalHemorrhoids form.rectalHemorrhoids
+            [ Maybe.map (ifTrue EpisiotomyOrPerinealTear) form.episiotomyOrPerinealTear
+            , Maybe.map (ifTrue RectalHemorrhoids) form.rectalHemorrhoids
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoGUExamSigns)
@@ -7008,3 +7018,115 @@ toGUExamValue form =
         )
         form.vaginalExamSigns
         maybeGUExamSigns
+
+
+guExamFormInputsAndTasks : Language -> AssembledData -> GUExamForm -> ( List (Html Msg), List (Maybe Bool) )
+guExamFormInputsAndTasks language assembled form =
+    let
+        ( initialSection, initialTasks ) =
+            let
+                episiotomyOrPerinealTeareUpdateFunc value form_ =
+                    { form_
+                        | episiotomyOrPerinealTear = Just value
+                        , healingNormally = Nothing
+                        , healingNormallyDirty = True
+                        , postpartumHealingProblems = Nothing
+                        , postpartumHealingProblemsDirty = True
+                    }
+            in
+            ( [ viewLabel language Translate.VaginalExamination
+              , viewCheckBoxMultipleSelectInput language
+                    [ FoulSmellingLochia, ExcessiveVaginalBleeding ]
+                    [ NormalVaginalExam ]
+                    (form.vaginalExamSigns |> Maybe.withDefault [])
+                    Nothing
+                    SetVaginalExamSign
+                    Translate.VaginalExamSign
+              , div [ class "separator double" ] []
+              , viewQuestionLabel language Translate.EpisiotomyOrPerinealTearQuestion
+              , viewBoolInput
+                    language
+                    form.episiotomyOrPerinealTear
+                    (SetGUExamBoolInput episiotomyOrPerinealTeareUpdateFunc)
+                    "episiotomy"
+                    Nothing
+              ]
+            , [ if isJust form.vaginalExamSigns then
+                    Just True
+
+                else
+                    Nothing
+              , form.episiotomyOrPerinealTear
+              ]
+            )
+
+        ( derivedSection, derivedTasks ) =
+            if isNothing form.episiotomyOrPerinealTear then
+                ( [], [] )
+
+            else if form.episiotomyOrPerinealTear == Just True then
+                let
+                    ( healingProblemsSection, healingProblemsTasks ) =
+                        if form.healingNormally == Just False then
+                            ( [ viewQuestionLabel language Translate.PostpartumHealingProblemQuestion
+                              , viewCheckBoxMultipleSelectInput language
+                                    [ HealingProblemSwelling, HealingProblemDischarge, HealingProblemReleaseOfSutures ]
+                                    [ HealingProblemHematoma, HealingProblemBruising ]
+                                    (form.postpartumHealingProblems |> Maybe.withDefault [])
+                                    Nothing
+                                    SetPostpartumHealingProblem
+                                    Translate.PostpartumHealingProblem
+                              , div [ class "separator double" ] []
+                              ]
+                            , [ if isJust form.postpartumHealingProblems then
+                                    Just True
+
+                                else
+                                    Nothing
+                              ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    healingNormallyUpdateFunc value form_ =
+                        { form_
+                            | healingNormally = Just value
+                            , healingNormallyDirty = True
+                            , postpartumHealingProblems = Nothing
+                            , postpartumHealingProblemsDirty = True
+                        }
+                in
+                ( [ viewQuestionLabel language Translate.EpisiotomyOrPerinealTearHealingQuestion
+                  , viewBoolInput
+                        language
+                        form.healingNormally
+                        (SetGUExamBoolInput healingNormallyUpdateFunc)
+                        "healing-normally"
+                        Nothing
+                  ]
+                    ++ healingProblemsSection
+                    ++ rectalHemorrhoidsSection
+                , [ form.healingNormally ] ++ healingProblemsTasks ++ rectalHemorrhoidsTasks
+                )
+
+            else
+                ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks )
+
+        ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks ) =
+            let
+                rectalHemorrhoidsUpdateFunc value form_ =
+                    { form_ | rectalHemorrhoids = Just value }
+            in
+            ( [ viewQuestionLabel language Translate.RectalHemorrhoids
+              , viewBoolInput
+                    language
+                    form.rectalHemorrhoids
+                    (SetGUExamBoolInput rectalHemorrhoidsUpdateFunc)
+                    "rectal-hemorrhoids"
+                    Nothing
+              ]
+            , [ form.rectalHemorrhoids ]
+            )
+    in
+    ( initialSection ++ derivedSection, initialTasks ++ derivedTasks )
