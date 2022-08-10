@@ -44,13 +44,12 @@ import Measurement.Utils
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         )
-import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Activity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue, tasksBarId)
+import Pages.Utils exposing (insertIntoSet, nonAdministrationReasonToSign, setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 import Translate exposing (Language, translate)
@@ -3598,6 +3597,47 @@ update language currentDate id db msg model =
                                 ]
                             )
                         |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetPostpartumTreatmentReviewBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.postpartumTreatmentReviewData.form
+                    in
+                    model.postpartumTreatmentReviewData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | postpartumTreatmentReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SavePostpartumTreatmentReview personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.postpartumTreatmentReviewData.form
+                        |> toMedicationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveMedication personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
             in
             ( model
             , Cmd.none

@@ -30,7 +30,6 @@ import Measurement.Utils
         , vaccineDoseToComparable
         , vitalsFormWithDefault
         )
-import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -184,7 +183,7 @@ expectActivity currentDate assembled activity =
                 FamilyPlanning ->
                     True
 
-                PrenatalTreatmentReview ->
+                PostpartumTreatmentReview ->
                     True
 
                 SpecialityCare ->
@@ -361,6 +360,9 @@ activityCompleted currentDate assembled activity =
         SpecialityCare ->
             -- @todo
             False
+
+        PostpartumTreatmentReview ->
+            isJust assembled.measurements.medication
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
@@ -3521,6 +3523,8 @@ medicationFormWithDefault form saved =
                 { receivedIronFolicAcid = or form.receivedIronFolicAcid (Maybe.map (EverySet.member IronAndFolicAcidSupplement) value.signs)
                 , receivedDewormingPill = or form.receivedDewormingPill (Maybe.map (EverySet.member DewormingPill) value.signs)
                 , receivedMebendazole = or form.receivedMebendazole (Maybe.map (EverySet.member Mebendazole) value.signs)
+                , receivedFolicAcid = or form.receivedFolicAcid (Maybe.map (EverySet.member PostpartumFolicAcid) value.signs)
+                , receivedVitaminA = or form.receivedVitaminA (Maybe.map (EverySet.member PostpartumVitaminA) value.signs)
                 , hivMedicationByPMTCT = or form.hivMedicationByPMTCT (Maybe.map (EverySet.member HIVTreatmentMedicineByPMTCT) value.hivTreatment)
                 , hivMedicationNotGivenReason =
                     maybeValueConsideringIsDirtyField form.hivMedicationNotGivenReasonDirty
@@ -3581,13 +3585,23 @@ toMedicationValue : MedicationForm -> Maybe MedicationValue
 toMedicationValue form =
     let
         signs =
-            if List.all isNothing [ form.receivedIronFolicAcid, form.receivedDewormingPill, form.receivedMebendazole ] then
+            if
+                List.all isNothing
+                    [ form.receivedIronFolicAcid
+                    , form.receivedDewormingPill
+                    , form.receivedMebendazole
+                    , form.receivedFolicAcid
+                    , form.receivedVitaminA
+                    ]
+            then
                 Nothing
 
             else
                 [ ifNullableTrue IronAndFolicAcidSupplement form.receivedIronFolicAcid
                 , ifNullableTrue DewormingPill form.receivedDewormingPill
                 , ifNullableTrue Mebendazole form.receivedMebendazole
+                , ifNullableTrue PostpartumFolicAcid form.receivedFolicAcid
+                , ifNullableTrue PostpartumVitaminA form.receivedVitaminA
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)

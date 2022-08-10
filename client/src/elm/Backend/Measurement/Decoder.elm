@@ -1644,6 +1644,12 @@ decodeMedicationSign =
                     "mebendezole" ->
                         succeed Mebendazole
 
+                    "folic-acid" ->
+                        succeed PostpartumFolicAcid
+
+                    "vitamin-a" ->
+                        succeed PostpartumVitaminA
+
                     "none" ->
                         succeed NoMedication
 
@@ -2936,7 +2942,7 @@ decodeMedicationDistributionSign =
                     "mebendezole" ->
                         succeed Mebendezole
 
-                    "vitamin-a" ->
+                    "vitamina" ->
                         succeed VitaminA
 
                     "paracetamol" ->
@@ -3082,6 +3088,11 @@ decodeMedicationNonAdministrationSign =
                                     "metronidazole" ->
                                         administrationNote
                                             |> Maybe.map (MedicationMetronidazole >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "vitamina" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationVitaminA >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->

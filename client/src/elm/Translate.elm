@@ -337,7 +337,8 @@ type TranslationId
     | AdministerFolicAcidHelper
     | AdministerHIVARVHelper
     | AdministerIronHelper
-    | AdministeVitaminAHelper
+    | AdministerVitaminAHelperPrenatal
+    | AdministerVitaminAHelperWellChild
     | Administered
     | AdministeredMedicationQuestion
     | AdministeredOneOfAboveMedicinesQuestion
@@ -761,6 +762,7 @@ type TranslationId
     | MedicationDistributionHelperMebendazole
     | MedicationDistributionHelperGonorrhea
     | MedicationDistributionHelperTrichomonasOrBacterialVaginosis
+    | MedicationDistributionHelperVitaminA
     | MedicationDistributionNoticeGonorrhea
     | MedicationDistributionNoticeGonorrheaPartnerMed1
     | MedicationDistributionNoticeGonorrheaPartnerMed2
@@ -1069,9 +1071,11 @@ type TranslationId
     | ReasonForNotTaking ReasonForNotTaking
     | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | ReceivedDewormingPill
+    | ReceivedFolicAcid
     | ReceivedIronFolicAcid
     | ReceivedMebendazole
     | ReceivedMosquitoNet
+    | ReceivedVitaminA
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
     | Recommended
@@ -1941,7 +1945,12 @@ translationSet trans =
             , kinyarwanda = Just "Fata mg 1 60 inshuro 2 ku munsi mu mezi atatu"
             }
 
-        AdministeVitaminAHelper ->
+        AdministerVitaminAHelperPrenatal ->
+            { english = "Vitamin A is given once"
+            , kinyarwanda = Nothing
+            }
+
+        AdministerVitaminAHelperWellChild ->
             { english = "Put the correct number of drops directly into the mouth of the child"
             , kinyarwanda = Just "Shyira mu kanwa k'umwana ibitonyanga bigenwe"
             }
@@ -6274,6 +6283,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        MedicationDistributionHelperVitaminA ->
+            { english = "This patient did not receive Vitamin A"
+            , kinyarwanda = Nothing
+            }
+
         MedicationDistributionNoticeGonorrhea ->
             { english = "Note: It is also recommended to prescribe the partner"
             , kinyarwanda = Nothing
@@ -7394,7 +7408,7 @@ translationSet trans =
             case type_ of
                 FortifiedPorridge ->
                     { english = "Fortified Porridge"
-                    , kinyarwanda = Just "Igikoma kirimo Imyunyu ngugu na Vitamine"
+                    , kinyarwanda = Just "Igikoma kirimo Imyunyu ngugu na Vitamin"
                     }
 
                 Rutf ->
@@ -8127,6 +8141,11 @@ translationSet trans =
                 SpecialityCare ->
                     { english = "Speciality Care"
                     , kinyarwanda = Nothing
+                    }
+
+                PostpartumTreatmentReview ->
+                    { english = "Treatment Review"
+                    , kinyarwanda = Just "Kureba imiti yahawe"
                     }
 
         PrenatalRecurrentActivitiesTitle activity ->
@@ -11586,9 +11605,14 @@ translationSet trans =
             , kinyarwanda = Just "Umubyeyi yahawe ikinini cy'inzoka"
             }
 
+        ReceivedFolicAcid ->
+            { english = "Have you received Folic Acid"
+            , kinyarwanda = Nothing
+            }
+
         ReceivedIronFolicAcid ->
             { english = "Has the mother received iron and folic acid supplement"
-            , kinyarwanda = Just "Umubyeyi yahawe ibinini bya Fer cg Folic Acid byongera amaraso?"
+            , kinyarwanda = Just "Umubyeyi yahawe ibinini bya Fer cg Folic Acid byongera amaraso"
             }
 
         ReceivedMebendazole ->
@@ -11598,7 +11622,12 @@ translationSet trans =
 
         ReceivedMosquitoNet ->
             { english = "Has the mother received a mosquito net"
-            , kinyarwanda = Just "Umubyeyi yahawe inzitiramubu?"
+            , kinyarwanda = Just "Umubyeyi yahawe inzitiramubu"
+            }
+
+        ReceivedVitaminA ->
+            { english = "Have you received Vitamin A"
+            , kinyarwanda = Nothing
             }
 
         Recommendation114 recommendation ->
@@ -12795,7 +12824,7 @@ translationSet trans =
 
                 SymptomReliefVitaminC ->
                     { english = "Effervescent Vitamin C tablets"
-                    , kinyarwanda = Just "Ibinini bya Vitamine C"
+                    , kinyarwanda = Just "Ibinini bya Vitamin C"
                     }
 
                 SymptomReliefPaidoterineSyrup ->

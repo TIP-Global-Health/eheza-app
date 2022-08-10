@@ -1418,6 +1418,12 @@ encodeMedicationSign sign =
             Mebendazole ->
                 "mebendezole"
 
+            PostpartumFolicAcid ->
+                "folic-acid"
+
+            PostpartumVitaminA ->
+                "vitamin-a"
+
             NoMedication ->
                 "none"
 
@@ -2768,9 +2774,6 @@ encondeMedicationDistributionSign sign =
             Mebendezole ->
                 "mebendezole"
 
-            VitaminA ->
-                "vitamin-a"
-
             Paracetamol ->
                 "paracetamol"
 
@@ -2800,6 +2803,9 @@ encondeMedicationDistributionSign sign =
 
             Metronidazole ->
                 "metronidazole"
+
+            VitaminA ->
+                "vitamina"
 
             NoMedicationDistributionSigns ->
                 "none"
@@ -2859,6 +2865,9 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationMetronidazole reason ->
                 "metronidazole-" ++ administrationNoteToString reason
+
+            MedicationVitaminA reason ->
+                "vitamina-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"

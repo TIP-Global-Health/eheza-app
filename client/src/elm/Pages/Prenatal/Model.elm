@@ -56,6 +56,7 @@ type alias MedicationDistributionForm =
     , ceftriaxone : Maybe Bool
     , azithromycin : Maybe Bool
     , metronidazole : Maybe Bool
+    , vitaminA : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     , recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
     , hypertensionAvoidingGuidanceReason : Maybe AvoidingGuidanceReason
@@ -75,6 +76,7 @@ emptyMedicationDistributionForm =
     , ceftriaxone = Nothing
     , azithromycin = Nothing
     , metronidazole = Nothing
+    , vitaminA = Nothing
     , nonAdministrationSigns = Nothing
     , recommendedTreatmentSigns = Nothing
     , hypertensionAvoidingGuidanceReason = Nothing

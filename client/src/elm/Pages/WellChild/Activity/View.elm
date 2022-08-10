@@ -1791,7 +1791,7 @@ viewMedicationContent language currentDate isChw assembled data =
                             , setMedicationAdministeredMsg = SetVitaminAAdministered
                             , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
                             , resolveDosageAndIconFunc = resolveVitaminADosageAndIcon
-                            , helper = Translate.AdministeVitaminAHelper
+                            , helper = Translate.AdministerVitaminAHelperWellChild
                             }
                     in
                     measurements.vitaminA

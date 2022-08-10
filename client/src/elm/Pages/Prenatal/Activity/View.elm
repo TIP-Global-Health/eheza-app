@@ -301,6 +301,9 @@ viewActivity language currentDate isChw activity assembled db model =
             -- @todo
             []
 
+        PostpartumTreatmentReview ->
+            viewPostpartumTreatmentReviewContent language currentDate assembled model.postpartumTreatmentReviewData
+
         SpecialityCare ->
             -- @todo
             []
@@ -4510,6 +4513,63 @@ viewMedicationTreatmentForm language currentDate setBoolInputMsg assembled form 
             resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task
     in
     div [ class "ui form medication" ] inputs
+
+
+viewPostpartumTreatmentReviewContent : Language -> NominalDate -> AssembledData -> PostpartumTreatmentReviewData -> List (Html Msg)
+viewPostpartumTreatmentReviewContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.medication
+                |> getMeasurementValueFunc
+                |> medicationFormWithDefault data.form
+
+        ( tasksCompleted, totalTasks ) =
+            ( taskCompleted form.receivedFolicAcid + taskCompleted form.receivedVitaminA
+            , 2
+            )
+
+        receivedFolicAcidInput =
+            [ viewQuestionLabel language Translate.ReceivedFolicAcid
+            , viewBoolInput
+                language
+                form.receivedFolicAcid
+                (SetPostpartumTreatmentReviewBoolInput receivedFolicAcidUpdateFunc)
+                "folic-acid"
+                Nothing
+            ]
+
+        receivedFolicAcidUpdateFunc value form_ =
+            { form_ | receivedFolicAcid = Just value }
+
+        receivedVitaminAInput =
+            [ viewQuestionLabel language Translate.ReceivedVitaminA
+            , viewBoolInput
+                language
+                form.receivedVitaminA
+                (SetPostpartumTreatmentReviewBoolInput receivedVitaminAUpdateFunc)
+                "vitamin-a"
+                Nothing
+            ]
+
+        receivedVitaminAUpdateFunc value form_ =
+            { form_ | receivedVitaminA = Just value }
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form medication" ] <|
+                receivedVitaminAInput
+                    ++ receivedFolicAcidInput
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SavePostpartumTreatmentReview assembled.participant.person assembled.measurements.medication
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
 
 
 

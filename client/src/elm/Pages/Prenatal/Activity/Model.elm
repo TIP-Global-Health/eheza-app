@@ -221,6 +221,9 @@ type Msg
     | SaveVaccinationUpdateDate PrenatalVaccineType VaccineDose
     | DeleteVaccinationUpdateDate PrenatalVaccineType VaccineDose NominalDate
     | SaveTetanusImmunisation PersonId (Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation ))
+      -- PostpartumTreatmentReview
+    | SetPostpartumTreatmentReviewBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
+    | SavePostpartumTreatmentReview PersonId (Maybe ( MedicationId, Medication ))
 
 
 type alias Model =
@@ -239,6 +242,7 @@ type alias Model =
     , treatmentReviewData : TreatmentReviewData
     , mentalHealthData : MentalHealthData
     , immunisationData : ImmunisationData
+    , postpartumTreatmentReviewData : PostpartumTreatmentReviewData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe (WarningPopupType Msg)
@@ -262,6 +266,7 @@ emptyModel =
     , treatmentReviewData = emptyTreatmentReviewData
     , mentalHealthData = emptyMentalHealthData
     , immunisationData = emptyImmunisationData
+    , postpartumTreatmentReviewData = emptyPostpartumTreatmentReviewData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -376,6 +381,10 @@ type alias MedicationForm =
     { receivedIronFolicAcid : Maybe Bool
     , receivedDewormingPill : Maybe Bool
     , receivedMebendazole : Maybe Bool
+
+    -- Following 2 are for Postpartum encounter
+    , receivedFolicAcid : Maybe Bool
+    , receivedVitaminA : Maybe Bool
     , hivMedicationByPMTCT : Maybe Bool
     , hivMedicationNotGivenReason : Maybe HIVTreatmentSign
     , hivMedicationNotGivenReasonDirty : Bool
@@ -412,6 +421,8 @@ emptyMedicationForm =
     { receivedIronFolicAcid = Nothing
     , receivedDewormingPill = Nothing
     , receivedMebendazole = Nothing
+    , receivedFolicAcid = Nothing
+    , receivedVitaminA = Nothing
     , hivMedicationByPMTCT = Nothing
     , hivMedicationNotGivenReason = Nothing
     , hivMedicationNotGivenReasonDirty = False
@@ -1168,4 +1179,15 @@ emptyMentalHealthForm =
     { signs = Nothing
     , specialistAtHC = Nothing
     , step = MentalHealthQuestion MentalHealthQuestion1
+    }
+
+
+type alias PostpartumTreatmentReviewData =
+    { form : MedicationForm
+    }
+
+
+emptyPostpartumTreatmentReviewData : MedicationData
+emptyPostpartumTreatmentReviewData =
+    { form = emptyMedicationForm
     }
