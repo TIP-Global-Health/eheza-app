@@ -325,6 +325,7 @@ type alias ExaminationData =
     , corePhysicalExamForm : CorePhysicalExamForm
     , obstetricalExamForm : ObstetricalExamForm
     , breastExamForm : BreastExamForm
+    , guExamForm : GUExamForm
     , activeTask : ExaminationTask
     }
 
@@ -336,6 +337,7 @@ emptyExaminationData =
     , corePhysicalExamForm = emptyCorePhysicalExamForm
     , obstetricalExamForm = emptyObstetricalExamForm
     , breastExamForm = emptyBreastExamForm
+    , guExamForm = emptyGUExamForm
     , activeTask = Vitals
     }
 
@@ -941,6 +943,25 @@ type alias BreastExamForm =
 emptyBreastExamForm : BreastExamForm
 emptyBreastExamForm =
     BreastExamForm Nothing Nothing
+
+
+type alias GUExamForm =
+    { vaginalExamSigns : Maybe (List VaginalExamSign)
+    , episiotomyOrPerinealTear : Maybe Bool
+    , healingNormally : Maybe Bool
+    , rectalHemorrhoids : Maybe Bool
+    , postpartumHealingProblems : Maybe (List PostpartumHealingProblem)
+    }
+
+
+emptyGUExamForm : GUExamForm
+emptyGUExamForm =
+    { vaginalExamSigns = Nothing
+    , episiotomyOrPerinealTear = Nothing
+    , healingNormally = Nothing
+    , rectalHemorrhoids = Nothing
+    , postpartumHealingProblems = Nothing
+    }
 
 
 type alias FamilyPlanningForm =
