@@ -1028,3 +1028,9 @@ prenatalBreastfeedingEndpoint : ReadWriteEndPoint Error PrenatalBreastfeedingId 
 prenatalBreastfeedingEndpoint =
     swEndpoint "nodes/prenatal_breastfeeding" decodePrenatalBreastfeeding
         |> withValueEncoder (object << encodePrenatalBreastfeeding)
+
+
+prenatalGUExamEndpoint : ReadWriteEndPoint Error PrenatalGUExamId PrenatalGUExam PrenatalGUExam ()
+prenatalGUExamEndpoint =
+    swEndpoint "nodes/prenatal_gu_exam" decodePrenatalGUExam
+        |> withValueEncoder (object << encodePrenatalGUExam)
