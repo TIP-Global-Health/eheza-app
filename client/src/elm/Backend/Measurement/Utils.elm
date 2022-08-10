@@ -2309,3 +2309,108 @@ breastfeedingSignFromString value =
 
         _ ->
             Nothing
+
+
+vaginalExamSignToString : VaginalExamSign -> String
+vaginalExamSignToString value =
+    case value of
+        FoulSmellingLochia ->
+            "foul-smelling-lochia"
+
+        ExcessiveVaginalBleeding ->
+            "bleeding"
+
+        NormalVaginalExam ->
+            "normal"
+
+
+vaginalExamSignFromString : String -> Maybe VaginalExamSign
+vaginalExamSignFromString value =
+    case value of
+        "foul-smelling-lochia" ->
+            Just FoulSmellingLochia
+
+        "bleeding" ->
+            Just ExcessiveVaginalBleeding
+
+        "normal" ->
+            Just NormalVaginalExam
+
+        _ ->
+            Nothing
+
+
+guExamSignToString : GUExamSign -> String
+guExamSignToString value =
+    case value of
+        EpisiotomyOrPerinealTear ->
+            "episiotomy-perineal-tear"
+
+        RectalHemorrhoids ->
+            "rectal-hemorrhoids"
+
+        NoGUExamSigns ->
+            "none"
+
+
+guExamSignFromString : String -> Maybe GUExamSign
+guExamSignFromString value =
+    case value of
+        "episiotomy-perineal-tear" ->
+            Just EpisiotomyOrPerinealTear
+
+        "rectal-hemorrhoids" ->
+            Just RectalHemorrhoids
+
+        "none" ->
+            Just NoGUExamSigns
+
+        _ ->
+            Nothing
+
+
+postpartumHealingProblemToString : PostpartumHealingProblem -> String
+postpartumHealingProblemToString value =
+    case value of
+        NormalPostpartumHealing ->
+            "normal-healing"
+
+        HealingProblemSwelling ->
+            "swelling"
+
+        HealingProblemDischarge ->
+            "discharge"
+
+        HealingProblemReleaseOfSutures ->
+            "release-of-sutures"
+
+        HealingProblemHematoma ->
+            "hematoma"
+
+        HealingProblemBruising ->
+            "bruising"
+
+
+postpartumHealingProblemFromString : String -> Maybe PostpartumHealingProblem
+postpartumHealingProblemFromString value =
+    case value of
+        "normal-healing" ->
+            Just NormalPostpartumHealing
+
+        "swelling" ->
+            Just HealingProblemSwelling
+
+        "discharge" ->
+            Just HealingProblemDischarge
+
+        "release-of-sutures" ->
+            Just HealingProblemReleaseOfSutures
+
+        "hematoma" ->
+            Just HealingProblemHematoma
+
+        "bruising" ->
+            Just HealingProblemBruising
+
+        _ ->
+            Nothing

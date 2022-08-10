@@ -904,6 +904,45 @@ encodeBreastfeedingSign =
     breastfeedingSignToString >> string
 
 
+encodePrenatalGUExam : PrenatalGUExam -> List ( String, Value )
+encodePrenatalGUExam =
+    encodePrenatalMeasurement encodeGUExamValue
+
+
+encodeGUExamValue : GUExamValue -> List ( String, Value )
+encodeGUExamValue value =
+    let
+        postpartumHealingProblems =
+            Maybe.map
+                (\problems ->
+                    [ ( "postpartum_healing_problem", encodeEverySet encodePostpartumHealingProblem problems ) ]
+                )
+                value.postpartumHealingProblems
+                |> Maybe.withDefault []
+    in
+    [ ( "vaginal_exam_signs", encodeEverySet encodeVaginalExamSign value.vaginalExamSigns )
+    , ( "gu_exam_signs", encodeEverySet encodeGUExamSign value.guExamSigns )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_gu_exam" )
+    ]
+        ++ postpartumHealingProblems
+
+
+encodeVaginalExamSign : VaginalExamSign -> Value
+encodeVaginalExamSign =
+    vaginalExamSignToString >> string
+
+
+encodeGUExamSign : GUExamSign -> Value
+encodeGUExamSign =
+    guExamSignToString >> string
+
+
+encodePostpartumHealingProblem : PostpartumHealingProblem -> Value
+encodePostpartumHealingProblem =
+    postpartumHealingProblemToString >> string
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")

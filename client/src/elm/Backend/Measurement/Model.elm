@@ -1411,7 +1411,7 @@ type alias PrenatalGUExam =
 type alias GUExamValue =
     { vaginalExamSigns : EverySet VaginalExamSign
     , guExamSigns : EverySet GUExamSign
-    , postpartumHealingProblems : EverySet PostpartumHealingProblem
+    , postpartumHealingProblems : Maybe (EverySet PostpartumHealingProblem)
     }
 
 

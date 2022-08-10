@@ -133,6 +133,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_mental_health" (decodeHead decodePrenatalMentalHealth) Nothing
         |> optional "prenatal_tetanus_immunisation" (decodeHead decodePrenatalTetanusImmunisation) Nothing
         |> optional "prenatal_breastfeeding" (decodeHead decodePrenatalBreastfeeding) Nothing
+        |> optional "prenatal_gu_exam" (decodeHead decodePrenatalGUExam) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -976,6 +977,64 @@ decodeBreastfeedingSign =
                         (fail <|
                             s
                                 ++ " is not a recognized BreastfeedingSign"
+                        )
+            )
+
+
+decodePrenatalGUExam : Decoder PrenatalGUExam
+decodePrenatalGUExam =
+    decodePrenatalMeasurement decodeGUExamValue
+
+
+decodeGUExamValue : Decoder GUExamValue
+decodeGUExamValue =
+    succeed GUExamValue
+        |> required "vaginal_exam_signs" (decodeEverySet decodeVaginalExamSign)
+        |> required "gu_exam_signs" (decodeEverySet decodeGUExamSign)
+        |> optional "postpartum_healing_problem" (nullable (decodeEverySet decodePostpartumHealingProblem)) Nothing
+
+
+decodeVaginalExamSign : Decoder VaginalExamSign
+decodeVaginalExamSign =
+    string
+        |> andThen
+            (\s ->
+                vaginalExamSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized VaginalExamSign"
+                        )
+            )
+
+
+decodeGUExamSign : Decoder GUExamSign
+decodeGUExamSign =
+    string
+        |> andThen
+            (\s ->
+                guExamSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized GUExamSign"
+                        )
+            )
+
+
+decodePostpartumHealingProblem : Decoder PostpartumHealingProblem
+decodePostpartumHealingProblem =
+    string
+        |> andThen
+            (\s ->
+                postpartumHealingProblemFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized PostpartumHealingProblem"
                         )
             )
 
