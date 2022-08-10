@@ -769,9 +769,7 @@ examinationTaskCompleted assembled task =
             isJust assembled.measurements.breastExam
 
         GUExam ->
-            -- @todo
-            -- isJust assembled.measurements.breastExam
-            False
+            isJust assembled.measurements.guExam
 
 
 referredToHIVProgramPreviously : AssembledData -> Bool
@@ -1377,7 +1375,8 @@ generateDangerSignsListForNurse assembled =
                 assembled.measurements
 
         NursePostpartumEncounter ->
-            --@todo
+            -- No need for this, becasue there's no
+            -- Danger signs activity at Postpartum encounter.
             []
 
         _ ->

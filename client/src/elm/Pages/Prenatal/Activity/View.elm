@@ -928,8 +928,7 @@ viewExaminationContent language currentDate assembled data =
                                     SaveBreastExam personId measurements.breastExam nextTask
 
                                 GUExam ->
-                                    -- @todo
-                                    NoOp
+                                    SaveGUExam personId measurements.guExam nextTask
                     in
                     div [ class "actions examination" ]
                         [ button
