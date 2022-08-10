@@ -2891,10 +2891,6 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisSuicideRisk ->
             mentalHealthMessage
 
-        DiagnosisOther ->
-            -- Other diagnosis is used only at outside care diagnostics.
-            []
-
         DiagnosisPostpartumAbdominalPain ->
             -- @todo
             []
@@ -2927,11 +2923,34 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             []
 
         DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-            -- @todo
-            []
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            nonAdministrationReasons =
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
+                        in
+                        treatmentMessageForMedicationLower value.distributionSigns nonAdministrationReasons Paracetamol
+                            |> Maybe.map
+                                (\message ->
+                                    diagnosisForProgressReport
+                                        ++ " - "
+                                        ++ message
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                        |> wrapWithLI
+                                )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
 
         DiagnosisPostpartumMastitis ->
             -- @todo
+            []
+
+        DiagnosisOther ->
+            -- Other diagnosis is used only at outside care diagnostics.
             []
 
         NoPrenatalDiagnosis ->

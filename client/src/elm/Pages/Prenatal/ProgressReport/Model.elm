@@ -102,6 +102,7 @@ obstetricalDiagnoses =
     , DiagnosisDepressionHighlyPossible
     , DiagnosisDepressionProbable
     , DiagnosisSuicideRisk
+    , DiagnosisPostpartumEarlyMastitisOrEngorgment
     ]
 
 
