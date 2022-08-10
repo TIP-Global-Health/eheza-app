@@ -326,7 +326,7 @@ type alias ExaminationData =
     , obstetricalExamForm : ObstetricalExamForm
     , breastExamForm : BreastExamForm
     , guExamForm : GUExamForm
-    , activeTask : ExaminationTask
+    , activeTask : Maybe ExaminationTask
     }
 
 
@@ -338,7 +338,7 @@ emptyExaminationData =
     , obstetricalExamForm = emptyObstetricalExamForm
     , breastExamForm = emptyBreastExamForm
     , guExamForm = emptyGUExamForm
-    , activeTask = Vitals
+    , activeTask = Nothing
     }
 
 
