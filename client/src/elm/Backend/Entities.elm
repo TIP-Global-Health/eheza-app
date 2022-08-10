@@ -1157,3 +1157,11 @@ type alias PrenatalBreastfeedingId =
 
 type PrenatalBreastfeedingUuidType
     = PrenatalBreastfeedingUuidType
+
+
+type alias PrenatalGUExamId =
+    EntityUuid PrenatalGUExamUuidType
+
+
+type PrenatalGUExamUuidType
+    = PrenatalGUExamUuidType
