@@ -111,6 +111,7 @@ var tableForType = {
     prenatal_encounter: 'shards',
     prenatal_family_planning: 'shards',
     prenatal_follow_up: 'shards',
+    prenatal_gu_exam: 'shards',
     prenatal_health_education: 'shards',
     prenatal_hemoglobin_test: 'shards',
     prenatal_hepatitis_b_test: 'shards',
