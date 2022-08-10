@@ -4363,6 +4363,11 @@ translationSet trans =
                 Pages.Prenatal.Activity.Types.BreastExam ->
                     translationSet BreastExam
 
+                GUExam ->
+                    { english = "GU Exam"
+                    , kinyarwanda = Nothing
+                    }
+
         ExaminationTaskRecurrent task ->
             case task of
                 Pages.Prenatal.RecurrentActivity.Types.ExaminationVitals ->

@@ -763,7 +763,7 @@ viewExaminationContent : Language -> NominalDate -> AssembledData -> Examination
 viewExaminationContent language currentDate assembled data =
     let
         tasks =
-            [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
+            resolveExaminationTasks assembled
 
         tasksCompletedFromTotalDict =
             List.map
@@ -795,6 +795,10 @@ viewExaminationContent language currentDate assembled data =
 
                         BreastExam ->
                             ( "breast-exam", isJust assembled.measurements.breastExam )
+
+                        GUExam ->
+                            -- @todo
+                            ( "gu-exam", False )
 
                 isActive =
                     task == data.activeTask
@@ -877,6 +881,10 @@ viewExaminationContent language currentDate assembled data =
                     in
                     viewBreastExamForm language currentDate assembled form
 
+                GUExam ->
+                    -- @todo
+                    emptyNode
+
         getNextTask currentTask =
             case currentTask of
                 Vitals ->
@@ -903,6 +911,10 @@ viewExaminationContent language currentDate assembled data =
                     [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam ]
                         |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
                         |> List.head
+
+                GUExam ->
+                    -- @todo
+                    Nothing
 
         actions =
             let
@@ -941,6 +953,10 @@ viewExaminationContent language currentDate assembled data =
                                 assembled.participant.person
                                 assembled.measurements.breastExam
                                 nextTask
+
+                        GUExam ->
+                            -- @todo
+                            NoOp
             in
             div [ class "actions examination" ]
                 [ button
@@ -1840,7 +1856,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     activeTask == Just task
 
                 isCompleted =
-                    nextStepsMeasurementTaken assembled task
+                    nextStepsTaskCompleted assembled task
 
                 navigationAction =
                     if isActive then
@@ -1877,7 +1893,7 @@ viewNextStepsContent language currentDate isChw assembled data =
             List.member NextStepsWait tasks
                 && -- There's one or less uncompleted task,
                    -- which is the Wait task.
-                   (List.filter (nextStepsMeasurementTaken assembled >> not) tasks
+                   (List.filter (nextStepsTaskCompleted assembled >> not) tasks
                         |> List.length
                         |> (\length -> length < 2)
                    )

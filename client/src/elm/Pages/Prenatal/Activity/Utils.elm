@@ -297,11 +297,8 @@ activityCompleted currentDate assembled activity =
                 isJust assembled.measurements.socialHistory
 
         Examination ->
-            isJust assembled.measurements.vitals
-                && isJust assembled.measurements.nutrition
-                && isJust assembled.measurements.corePhysicalExam
-                && isJust assembled.measurements.obstetricalExam
-                && isJust assembled.measurements.breastExam
+            resolveExaminationTasks assembled
+                |> List.all (examinationTaskCompleted assembled)
 
         FamilyPlanning ->
             isJust assembled.measurements.familyPlanning
@@ -334,7 +331,7 @@ activityCompleted currentDate assembled activity =
 
         NextSteps ->
             resolveNextStepsTasks currentDate assembled
-                |> List.all (nextStepsMeasurementTaken assembled)
+                |> List.all (nextStepsTaskCompleted assembled)
 
         PregnancyOutcome ->
             isJust assembled.participant.dateConcluded
@@ -540,6 +537,77 @@ expectNextStepsTask currentDate assembled task =
                    )
 
 
+nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
+    case task of
+        NextStepsAppointmentConfirmation ->
+            isJust assembled.measurements.appointmentConfirmation
+
+        NextStepsFollowUp ->
+            isJust assembled.measurements.followUp
+
+        NextStepsSendToHC ->
+            isJust assembled.measurements.sendToHC
+
+        NextStepsHealthEducation ->
+            isJust assembled.measurements.healthEducation
+
+        NextStepsNewbornEnrolment ->
+            isJust assembled.participant.newborn
+
+        NextStepsMedicationDistribution ->
+            let
+                allowedSigns =
+                    NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
+
+                malariaTreatmentCompleted =
+                    if diagnosedMalaria assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
+
+                    else
+                        True
+
+                heartburnTreatmentCompleted =
+                    if diagnosed DiagnosisHeartburn assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHeartburn assembled.measurements
+
+                    else
+                        True
+
+                hypertensionTreatmentCompleted =
+                    if diagnosedHypertension PrenatalEncounterPhaseInitial assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+                    else
+                        True
+
+                candidiasisTreatmentCompleted =
+                    if diagnosed DiagnosisCandidiasis assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForCandidiasis assembled.measurements
+
+                    else
+                        True
+
+                urinaryTractInfectionTreatmentCompleted =
+                    if diagnosed DiagnosisUrinaryTractInfection assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForUrinaryTractInfection assembled.measurements
+
+                    else
+                        True
+            in
+            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+                && malariaTreatmentCompleted
+                && heartburnTreatmentCompleted
+                && hypertensionTreatmentCompleted
+                && candidiasisTreatmentCompleted
+                && urinaryTractInfectionTreatmentCompleted
+
+        NextStepsWait ->
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.map .patientNotified
+                |> Maybe.withDefault False
+
+
 resolveTreatmentReviewTasks : AssembledData -> List TreatmentReviewTask
 resolveTreatmentReviewTasks assembled =
     let
@@ -588,6 +656,40 @@ expectTreatmentReviewTask assembled task =
                 |> isJust
 
 
+treatmentReviewTaskCompleted : AssembledData -> TreatmentReviewTask -> Bool
+treatmentReviewTaskCompleted assembled task =
+    case task of
+        TreatmentReviewPrenatalMedication ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.signs >> isJust)
+                |> Maybe.withDefault False
+
+        TreatmentReviewHIV ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.hivTreatment >> isJust)
+                |> Maybe.withDefault False
+
+        TreatmentReviewHypertension ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.hypertensionTreatment >> isJust)
+                |> Maybe.withDefault False
+
+        TreatmentReviewMalaria ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.malariaTreatment >> isJust)
+                |> Maybe.withDefault False
+
+        TreatmentReviewAnemia ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.anemiaTreatment >> isJust)
+                |> Maybe.withDefault False
+
+        TreatmentReviewSyphilis ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.syphilisTreatment >> isJust)
+                |> Maybe.withDefault False
+
+
 resolveHistoryTasks : AssembledData -> List HistoryTask
 resolveHistoryTasks assembled =
     let
@@ -615,6 +717,61 @@ expectHistoryTask assembled task =
 
         OutsideCare ->
             not firstEnconter
+
+
+resolveExaminationTasks : AssembledData -> List ExaminationTask
+resolveExaminationTasks assembled =
+    let
+        tasks =
+            [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam, GUExam ]
+    in
+    List.filter (expectExaminationTask assembled) tasks
+
+
+expectExaminationTask : AssembledData -> ExaminationTask -> Bool
+expectExaminationTask assembled task =
+    case task of
+        Vitals ->
+            True
+
+        NutritionAssessment ->
+            True
+
+        CorePhysicalExam ->
+            True
+
+        ObstetricalExam ->
+            assembled.encounter.encounterType /= NursePostpartumEncounter
+
+        BreastExam ->
+            True
+
+        GUExam ->
+            assembled.encounter.encounterType == NursePostpartumEncounter
+
+
+examinationTaskCompleted : AssembledData -> ExaminationTask -> Bool
+examinationTaskCompleted assembled task =
+    case task of
+        Vitals ->
+            isJust assembled.measurements.vitals
+
+        NutritionAssessment ->
+            isJust assembled.measurements.nutrition
+
+        CorePhysicalExam ->
+            isJust assembled.measurements.corePhysicalExam
+
+        ObstetricalExam ->
+            isJust assembled.measurements.obstetricalExam
+
+        BreastExam ->
+            isJust assembled.measurements.breastExam
+
+        GUExam ->
+            -- @todo
+            -- isJust assembled.measurements.breastExam
+            False
 
 
 referredToHIVProgramPreviously : AssembledData -> Bool
@@ -733,40 +890,6 @@ latestMedicationTreatmentForSyphilis assembled =
     in
     getLatestTreatmentByTreatmentOptions treatmentOptions assembled
         |> Maybe.map Translate.TreatmentDetailsSyphilis
-
-
-treatmentReviewTaskCompleted : AssembledData -> TreatmentReviewTask -> Bool
-treatmentReviewTaskCompleted assembled task =
-    case task of
-        TreatmentReviewPrenatalMedication ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.signs >> isJust)
-                |> Maybe.withDefault False
-
-        TreatmentReviewHIV ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.hivTreatment >> isJust)
-                |> Maybe.withDefault False
-
-        TreatmentReviewHypertension ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.hypertensionTreatment >> isJust)
-                |> Maybe.withDefault False
-
-        TreatmentReviewMalaria ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.malariaTreatment >> isJust)
-                |> Maybe.withDefault False
-
-        TreatmentReviewAnemia ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.anemiaTreatment >> isJust)
-                |> Maybe.withDefault False
-
-        TreatmentReviewSyphilis ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.syphilisTreatment >> isJust)
-                |> Maybe.withDefault False
 
 
 historyTaskCompleted : AssembledData -> HistoryTask -> Bool
@@ -1061,77 +1184,6 @@ symptomRecordedPreviously assembled symptom =
             )
         |> List.isEmpty
         |> not
-
-
-nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
-nextStepsMeasurementTaken assembled task =
-    case task of
-        NextStepsAppointmentConfirmation ->
-            isJust assembled.measurements.appointmentConfirmation
-
-        NextStepsFollowUp ->
-            isJust assembled.measurements.followUp
-
-        NextStepsSendToHC ->
-            isJust assembled.measurements.sendToHC
-
-        NextStepsHealthEducation ->
-            isJust assembled.measurements.healthEducation
-
-        NextStepsNewbornEnrolment ->
-            isJust assembled.participant.newborn
-
-        NextStepsMedicationDistribution ->
-            let
-                allowedSigns =
-                    NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
-
-                malariaTreatmentCompleted =
-                    if diagnosedMalaria assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
-
-                    else
-                        True
-
-                heartburnTreatmentCompleted =
-                    if diagnosed DiagnosisHeartburn assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHeartburn assembled.measurements
-
-                    else
-                        True
-
-                hypertensionTreatmentCompleted =
-                    if diagnosedHypertension PrenatalEncounterPhaseInitial assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
-
-                    else
-                        True
-
-                candidiasisTreatmentCompleted =
-                    if diagnosed DiagnosisCandidiasis assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForCandidiasis assembled.measurements
-
-                    else
-                        True
-
-                urinaryTractInfectionTreatmentCompleted =
-                    if diagnosed DiagnosisUrinaryTractInfection assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForUrinaryTractInfection assembled.measurements
-
-                    else
-                        True
-            in
-            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
-                && malariaTreatmentCompleted
-                && heartburnTreatmentCompleted
-                && hypertensionTreatmentCompleted
-                && candidiasisTreatmentCompleted
-                && urinaryTractInfectionTreatmentCompleted
-
-        NextStepsWait ->
-            getMeasurementValueFunc assembled.measurements.labsResults
-                |> Maybe.map .patientNotified
-                |> Maybe.withDefault False
 
 
 mandatoryActivitiesForAssessmentCompleted : NominalDate -> AssembledData -> Bool
@@ -3270,7 +3322,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
         NextStepsWait ->
             let
                 completed =
-                    if nextStepsMeasurementTaken assembled NextStepsWait then
+                    if nextStepsTaskCompleted assembled NextStepsWait then
                         1
 
                     else
@@ -4780,6 +4832,10 @@ examinationTasksCompletedFromTotal assembled data task =
             ( taskCompleted form.breast + taskCompleted form.selfGuidance
             , 2
             )
+
+        GUExam ->
+            -- @todo
+            ( 0, 0 )
 
 
 socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult

@@ -65,7 +65,7 @@ activityCompleted currentDate assembled activity =
         RecurrentNextSteps ->
             (not <| expectActivity currentDate assembled RecurrentNextSteps)
                 || (resolveNextStepsTasks currentDate assembled
-                        |> List.all (nextStepsMeasurementTaken assembled)
+                        |> List.all (nextStepsTaskCompleted assembled)
                    )
 
         RecurrentExamination ->
@@ -444,8 +444,8 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
         |> List.filter (\diagnosis -> diagnosed diagnosis assembled)
 
 
-nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
-nextStepsMeasurementTaken assembled task =
+nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
     case task of
         NextStepsSendToHC ->
             isJust assembled.measurements.sendToHC
