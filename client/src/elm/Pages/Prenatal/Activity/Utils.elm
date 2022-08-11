@@ -7033,7 +7033,10 @@ guExamFormInputsAndTasks language assembled form =
                         , postpartumHealingProblemsDirty = True
                     }
             in
-            ( [ viewLabel language Translate.VaginalExamination
+            ( [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.VaginalExamination ]
+                    ]
               , viewCheckBoxMultipleSelectInput language
                     [ FoulSmellingLochia, ExcessiveVaginalBleeding ]
                     [ NormalVaginalExam ]
@@ -7042,7 +7045,7 @@ guExamFormInputsAndTasks language assembled form =
                     SetVaginalExamSign
                     Translate.VaginalExamSign
               , div [ class "separator double" ] []
-              , viewQuestionLabel language Translate.EpisiotomyOrPerinealTearQuestion
+              , viewCustomLabel language Translate.EpisiotomyOrPerinealTearQuestion "?" "label question"
               , viewBoolInput
                     language
                     form.episiotomyOrPerinealTear
@@ -7067,7 +7070,7 @@ guExamFormInputsAndTasks language assembled form =
                 let
                     ( healingProblemsSection, healingProblemsTasks ) =
                         if form.healingNormally == Just False then
-                            ( [ viewQuestionLabel language Translate.PostpartumHealingProblemQuestion
+                            ( [ viewCustomLabel language Translate.PostpartumHealingProblemQuestion "?" "label question"
                               , viewCheckBoxMultipleSelectInput language
                                     [ HealingProblemSwelling, HealingProblemDischarge, HealingProblemReleaseOfSutures ]
                                     [ HealingProblemHematoma, HealingProblemBruising ]
@@ -7096,7 +7099,7 @@ guExamFormInputsAndTasks language assembled form =
                             , postpartumHealingProblemsDirty = True
                         }
                 in
-                ( [ viewQuestionLabel language Translate.EpisiotomyOrPerinealTearHealingQuestion
+                ( [ viewCustomLabel language Translate.EpisiotomyOrPerinealTearHealingQuestion "?" "label question"
                   , viewBoolInput
                         language
                         form.healingNormally
@@ -7117,7 +7120,7 @@ guExamFormInputsAndTasks language assembled form =
                 rectalHemorrhoidsUpdateFunc value form_ =
                     { form_ | rectalHemorrhoids = Just value }
             in
-            ( [ viewQuestionLabel language Translate.RectalHemorrhoids
+            ( [ viewCustomLabel language Translate.RectalHemorrhoids "?" "label question"
               , viewBoolInput
                     language
                     form.rectalHemorrhoids
