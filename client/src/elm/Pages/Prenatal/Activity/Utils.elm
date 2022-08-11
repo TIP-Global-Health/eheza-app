@@ -2082,6 +2082,30 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             (assembled.encounter.encounterType == NursePostpartumEncounter)
                 && (byBreastfeeding || byBreastExam)
 
+        DiagnosisPostpartumMastitis ->
+            let
+                byBreastfeeding =
+                    getMeasurementValueFunc assembled.measurements.breastfeeding
+                        |> Maybe.map
+                            (\signs ->
+                                List.any (\sign -> EverySet.member sign signs)
+                                    [ BreastPain, BreastRedness ]
+                            )
+                        |> Maybe.withDefault False
+
+                byBreastExam =
+                    getMeasurementValueFunc assembled.measurements.breastExam
+                        |> Maybe.map
+                            (\value ->
+                                List.any (\sign -> EverySet.member sign value.exam)
+                                    [ Warmth, Discharge ]
+                            )
+                        |> Maybe.withDefault False
+            in
+            (assembled.encounter.encounterType == NursePostpartumEncounter)
+                && symptomRecorded assembled.measurements PostpartumFever
+                && (byBreastfeeding || byBreastExam)
+
         -- Non Lab Results diagnoses.
         _ ->
             False
@@ -2531,6 +2555,9 @@ labResultsAndExaminationDiagnoses =
     , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
     , DiagnosisRhesusNegative
     , DiagnosisPostpartumEarlyMastitisOrEngorgment
+    , DiagnosisPostpartumMastitis
+    , DiagnosisPostpartumInfection
+    , DiagnosisPostpartumExcessiveBleeding
     ]
 
 
