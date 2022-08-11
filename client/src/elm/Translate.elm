@@ -9388,22 +9388,22 @@ translationSet trans =
                     }
 
                 DiagnosisPostpartumInfection ->
-                    { english = "Infection"
+                    { english = "Patient shows signs of Infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPostpartumExcessiveBleeding ->
-                    { english = "Excessive Bleeding"
+                    { english = "Patient shows signs of Excessive Bleeding"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-                    { english = "Early Mastitis or Engorgment"
+                    { english = "Patient shows signs of Early Mastitis or Engorgment"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPostpartumMastitis ->
-                    { english = "Mastitis"
+                    { english = "Patient shows signs of Mastitis"
                     , kinyarwanda = Nothing
                     }
 
