@@ -762,8 +762,79 @@ viewHistoryContent language currentDate assembled data =
 viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)
 viewExaminationContent language currentDate assembled data =
     let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
         tasks =
-            [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
+            resolveExaminationTasks assembled
+
+        activeTask =
+            Maybe.map
+                (\task ->
+                    if List.member task tasks then
+                        Just task
+
+                    else
+                        List.head tasks
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasks)
+
+        viewTask task =
+            let
+                iconClass =
+                    case task of
+                        Vitals ->
+                            "vitals"
+
+                        NutritionAssessment ->
+                            "nutrition-assessment"
+
+                        CorePhysicalExam ->
+                            "core-physical-exam"
+
+                        ObstetricalExam ->
+                            "obstetrical-exam"
+
+                        BreastExam ->
+                            "breast-exam"
+
+                        GUExam ->
+                            "gu-exam"
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    examinationTaskCompleted assembled task
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveExaminationTask task ]
+            in
+            div [ class <| "column " ++ iconClass ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.ExaminationTask task)
+                    ]
+                ]
 
         tasksCompletedFromTotalDict =
             List.map
@@ -774,181 +845,101 @@ viewExaminationContent language currentDate assembled data =
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
-
-        viewTask task =
-            let
-                ( iconClass, isCompleted ) =
-                    case task of
-                        Vitals ->
-                            ( "vitals", isJust assembled.measurements.vitals )
-
-                        NutritionAssessment ->
-                            ( "nutrition-assessment", isJust assembled.measurements.nutrition )
-
-                        CorePhysicalExam ->
-                            ( "core-physical-exam", isJust assembled.measurements.corePhysicalExam )
-
-                        ObstetricalExam ->
-                            ( "obstetrical-exam", isJust assembled.measurements.obstetricalExam )
-
-                        BreastExam ->
-                            ( "breast-exam", isJust assembled.measurements.breastExam )
-
-                isActive =
-                    task == data.activeTask
-
-                attributes =
-                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
-                        :: (if isActive then
-                                []
-
-                            else
-                                [ onClick <| SetActiveExaminationTask task ]
-                           )
-            in
-            div [ class <| "column " ++ iconClass ]
-                [ div attributes
-                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.ExaminationTask task)
-                    ]
-                ]
-
-        nutritionForm =
-            let
-                form =
-                    assembled.measurements.nutrition
-                        |> getMeasurementValueFunc
-                        |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
-            in
-            if isJust measuredHeight then
-                Maybe.map (\(HeightInCm height) -> { form | height = Just height }) measuredHeight
-                    |> Maybe.withDefault form
-
-            else
-                form
 
         measuredHeight =
             resolveMeasuredHeight assembled
 
         viewForm =
-            case data.activeTask of
-                Vitals ->
+            case activeTask of
+                Just Vitals ->
+                    getMeasurementValueFunc assembled.measurements.vitals
+                        |> vitalsFormWithDefault data.vitalsForm
+                        |> viewVitalsForm language currentDate assembled
+
+                Just NutritionAssessment ->
                     let
                         form =
-                            assembled.measurements.vitals
+                            assembled.measurements.nutrition
                                 |> getMeasurementValueFunc
-                                |> vitalsFormWithDefault data.vitalsForm
-                    in
-                    viewVitalsForm language currentDate assembled form
+                                |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
-                NutritionAssessment ->
-                    let
+                        formWithMeasuredHeight =
+                            Maybe.map (\(HeightInCm height) -> { form | height = Just height }) measuredHeight
+                                |> Maybe.withDefault form
+
                         hideHeightInput =
                             isJust measuredHeight
                     in
-                    viewNutritionAssessmentForm language currentDate assembled nutritionForm hideHeightInput
+                    viewNutritionAssessmentForm language currentDate assembled formWithMeasuredHeight hideHeightInput
 
-                CorePhysicalExam ->
-                    let
-                        form =
-                            assembled.measurements.corePhysicalExam
-                                |> getMeasurementValueFunc
-                                |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
-                    in
-                    viewCorePhysicalExamForm language currentDate assembled form
+                Just CorePhysicalExam ->
+                    getMeasurementValueFunc assembled.measurements.corePhysicalExam
+                        |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
+                        |> viewCorePhysicalExamForm language currentDate assembled
 
-                ObstetricalExam ->
-                    let
-                        form =
-                            assembled.measurements.obstetricalExam
-                                |> getMeasurementValueFunc
-                                |> obstetricalExamFormWithDefault data.obstetricalExamForm
-                    in
-                    viewObstetricalExamForm language currentDate assembled form
+                Just ObstetricalExam ->
+                    getMeasurementValueFunc assembled.measurements.obstetricalExam
+                        |> obstetricalExamFormWithDefault data.obstetricalExamForm
+                        |> viewObstetricalExamForm language currentDate assembled
 
-                BreastExam ->
-                    let
-                        form =
-                            assembled.measurements.breastExam
-                                |> getMeasurementValueFunc
-                                |> breastExamFormWithDefault data.breastExamForm
-                    in
-                    viewBreastExamForm language currentDate assembled form
+                Just BreastExam ->
+                    getMeasurementValueFunc assembled.measurements.breastExam
+                        |> breastExamFormWithDefault data.breastExamForm
+                        |> viewBreastExamForm language currentDate assembled
 
-        getNextTask currentTask =
-            case currentTask of
-                Vitals ->
-                    [ NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+                Just GUExam ->
+                    getMeasurementValueFunc assembled.measurements.guExam
+                        |> guExamFormWithDefault data.guExamForm
+                        |> viewGUExamForm language currentDate assembled
 
-                NutritionAssessment ->
-                    [ CorePhysicalExam, ObstetricalExam, BreastExam, Vitals ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+                Nothing ->
+                    emptyNode
 
-                CorePhysicalExam ->
-                    [ ObstetricalExam, BreastExam, Vitals, NutritionAssessment ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                ObstetricalExam ->
-                    [ BreastExam, Vitals, NutritionAssessment, CorePhysicalExam ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                BreastExam ->
-                    [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
 
         actions =
-            let
-                nextTask =
-                    getNextTask data.activeTask
+            Maybe.map
+                (\task ->
+                    let
+                        saveAction =
+                            case task of
+                                Vitals ->
+                                    SaveVitals personId measurements.vitals nextTask
 
-                saveAction =
-                    case data.activeTask of
-                        Vitals ->
-                            SaveVitals
-                                assembled.participant.person
-                                assembled.measurements.vitals
-                                nextTask
+                                NutritionAssessment ->
+                                    SaveNutritionAssessment personId measurements.nutrition (Maybe.map getHeightValue measuredHeight) nextTask
 
-                        NutritionAssessment ->
-                            SaveNutritionAssessment
-                                assembled.participant.person
-                                assembled.measurements.nutrition
-                                (Maybe.map getHeightValue measuredHeight)
-                                nextTask
+                                CorePhysicalExam ->
+                                    SaveCorePhysicalExam personId measurements.corePhysicalExam nextTask
 
-                        CorePhysicalExam ->
-                            SaveCorePhysicalExam
-                                assembled.participant.person
-                                assembled.measurements.corePhysicalExam
-                                nextTask
+                                ObstetricalExam ->
+                                    SaveObstetricalExam personId measurements.obstetricalExam nextTask
 
-                        ObstetricalExam ->
-                            SaveObstetricalExam
-                                assembled.participant.person
-                                assembled.measurements.obstetricalExam
-                                nextTask
+                                BreastExam ->
+                                    SaveBreastExam personId measurements.breastExam nextTask
 
-                        BreastExam ->
-                            SaveBreastExam
-                                assembled.participant.person
-                                assembled.measurements.breastExam
-                                nextTask
-            in
-            div [ class "actions examination" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveAction
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+                                GUExam ->
+                                    SaveGUExam personId measurements.guExam nextTask
+                    in
+                    div [ class "actions examination" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveAction
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue" ]
         [ div [ class "ui five column grid" ] <|
@@ -1811,6 +1802,35 @@ viewNextStepsContent language currentDate isChw assembled data =
         tasks =
             resolveNextStepsTasks currentDate assembled
 
+        activeTask =
+            Maybe.map
+                (\task ->
+                    if List.member task tasksConsideringShowWaitTask then
+                        Just task
+
+                    else
+                        List.head tasksConsideringShowWaitTask
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasksConsideringShowWaitTask)
+
+        tasksConsideringShowWaitTask =
+            if showWaitTask then
+                tasks
+
+            else
+                List.filter ((/=) NextStepsWait) tasks
+
+        showWaitTask =
+            -- Wait task is expected.
+            List.member NextStepsWait tasks
+                && -- There's one or less uncompleted task,
+                   -- which is the Wait task.
+                   (List.filter (nextStepsTaskCompleted assembled >> not) tasks
+                        |> List.length
+                        |> (\length -> length < 2)
+                   )
+
         viewTask task =
             let
                 iconClass =
@@ -1840,14 +1860,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     activeTask == Just task
 
                 isCompleted =
-                    nextStepsMeasurementTaken assembled task
-
-                navigationAction =
-                    if isActive then
-                        []
-
-                    else
-                        [ onClick <| SetActiveNextStepsTask task ]
+                    nextStepsTaskCompleted assembled task
 
                 attributes =
                     classList
@@ -1856,6 +1869,13 @@ viewNextStepsContent language currentDate isChw assembled data =
                         , ( "completed", not isActive && isCompleted )
                         ]
                         :: navigationAction
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveNextStepsTask task ]
             in
             div [ class "column" ]
                 [ div attributes
@@ -1871,35 +1891,6 @@ viewNextStepsContent language currentDate isChw assembled data =
                         ( task, nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task )
                     )
                 |> Dict.fromList
-
-        showWaitTask =
-            -- Wait task is expected.
-            List.member NextStepsWait tasks
-                && -- There's one or less uncompleted task,
-                   -- which is the Wait task.
-                   (List.filter (nextStepsMeasurementTaken assembled >> not) tasks
-                        |> List.length
-                        |> (\length -> length < 2)
-                   )
-
-        tasksConsideringShowWaitTask =
-            if showWaitTask then
-                tasks
-
-            else
-                List.filter ((/=) NextStepsWait) tasks
-
-        activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasksConsideringShowWaitTask then
-                        Just task
-
-                    else
-                        List.head tasksConsideringShowWaitTask
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasksConsideringShowWaitTask)
 
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
@@ -2041,77 +2032,77 @@ viewNextStepsContent language currentDate isChw assembled data =
                 |> List.head
 
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            secondPhase =
-                                secondPhaseRequired assembled
+            Maybe.map
+                (\task ->
+                    let
+                        secondPhase =
+                            secondPhaseRequired assembled
 
-                            saveMsg =
-                                case task of
-                                    NextStepsAppointmentConfirmation ->
-                                        SaveAppointmentConfirmation personId measurements.appointmentConfirmation secondPhase nextTask
+                        saveMsg =
+                            case task of
+                                NextStepsAppointmentConfirmation ->
+                                    SaveAppointmentConfirmation personId measurements.appointmentConfirmation secondPhase nextTask
 
-                                    NextStepsFollowUp ->
-                                        let
-                                            assesment =
-                                                generatePrenatalAssesmentForChw assembled
-                                        in
-                                        SaveFollowUp personId assesment measurements.followUp secondPhase nextTask
+                                NextStepsFollowUp ->
+                                    let
+                                        assesment =
+                                            generatePrenatalAssesmentForChw assembled
+                                    in
+                                    SaveFollowUp personId assesment measurements.followUp secondPhase nextTask
 
-                                    NextStepsSendToHC ->
-                                        let
-                                            nonDefaultFacility =
-                                                if List.member referralFacility [ FacilityMentalHealthSpecialist, FacilityHIVProgram ] then
-                                                    Just referralFacility
+                                NextStepsSendToHC ->
+                                    let
+                                        nonDefaultFacility =
+                                            if List.member referralFacility [ FacilityMentalHealthSpecialist, FacilityHIVProgram ] then
+                                                Just referralFacility
 
-                                                else
-                                                    Nothing
-                                        in
-                                        SaveSendToHC personId measurements.sendToHC secondPhase nonDefaultFacility nextTask
+                                            else
+                                                Nothing
+                                    in
+                                    SaveSendToHC personId measurements.sendToHC secondPhase nonDefaultFacility nextTask
 
-                                    NextStepsHealthEducation ->
-                                        SaveHealthEducationSubActivity personId measurements.healthEducation secondPhase nextTask
+                                NextStepsHealthEducation ->
+                                    SaveHealthEducationSubActivity personId measurements.healthEducation secondPhase nextTask
 
-                                    NextStepsNewbornEnrolment ->
-                                        SaveNewbornEnrollment secondPhase nextTask
+                                NextStepsNewbornEnrolment ->
+                                    SaveNewbornEnrollment secondPhase nextTask
 
-                                    NextStepsMedicationDistribution ->
-                                        SaveMedicationDistribution personId measurements.medicationDistribution secondPhase nextTask
+                                NextStepsMedicationDistribution ->
+                                    SaveMedicationDistribution personId measurements.medicationDistribution secondPhase nextTask
 
-                                    NextStepsWait ->
-                                        Maybe.map
-                                            (\( measurementId, measurement ) ->
-                                                let
-                                                    value =
-                                                        measurement.value
-                                                in
-                                                SaveWait personId (Just measurementId) { value | patientNotified = True } secondPhase nextTask
-                                            )
-                                            measurements.labsResults
-                                            |> Maybe.withDefault NoOp
-                        in
-                        case task of
-                            NextStepsWait ->
-                                viewPauseEncounterButton language
-                                    -- Button is enabled because there are
-                                    -- no actual tasks to be performed.
-                                    True
-                                    -- When saving, we'll also 'pause' the encounter
-                                    -- which actualy navigates to main menu page.
-                                    -- The encounter is closed on second phase.
-                                    saveMsg
+                                NextStepsWait ->
+                                    Maybe.map
+                                        (\( measurementId, measurement ) ->
+                                            let
+                                                value =
+                                                    measurement.value
+                                            in
+                                            SaveWait personId (Just measurementId) { value | patientNotified = True } secondPhase nextTask
+                                        )
+                                        measurements.labsResults
+                                        |> Maybe.withDefault NoOp
+                    in
+                    case task of
+                        NextStepsWait ->
+                            viewPauseEncounterButton language
+                                -- Button is enabled because there are
+                                -- no actual tasks to be performed.
+                                True
+                                -- When saving, we'll also 'pause' the encounter
+                                -- which actualy navigates to main menu page.
+                                -- The encounter is closed on second phase.
+                                saveMsg
 
-                            _ ->
-                                div [ class "actions next-steps" ]
-                                    [ button
-                                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                        , onClick saveMsg
-                                        ]
-                                        [ text <| translate language Translate.Save ]
+                        _ ->
+                            div [ class "actions next-steps" ]
+                                [ button
+                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                    , onClick saveMsg
                                     ]
-                    )
+                                    [ text <| translate language Translate.Save ]
+                                ]
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
@@ -3529,6 +3520,16 @@ viewBreastExamForm language currentDate assembled form =
     let
         selfGuidanceUpdateFunc value form_ =
             { form_ | selfGuidance = Just value }
+
+        breastExamOptionsLeft =
+            if assembled.encounter.encounterType == NursePostpartumEncounter then
+                [ Mass, Discharge, Warmth ]
+
+            else
+                [ Mass, Discharge ]
+
+        breastExamOptionsRight =
+            [ Infection, NormalBreast ]
     in
     div [ class "ui form examination breast-exam" ]
         [ div [ class "ui grid" ]
@@ -3541,8 +3542,8 @@ viewBreastExamForm language currentDate assembled form =
                 ]
             ]
         , viewCheckBoxMultipleSelectInput language
-            [ Mass, Discharge ]
-            [ Infection, NormalBreast ]
+            breastExamOptionsLeft
+            breastExamOptionsRight
             (form.breast |> Maybe.withDefault [])
             Nothing
             SetBreastExamBreast
@@ -3556,6 +3557,16 @@ viewBreastExamForm language currentDate assembled form =
             "self-guidance"
             Nothing
         ]
+
+
+viewGUExamForm : Language -> NominalDate -> AssembledData -> GUExamForm -> Html Msg
+viewGUExamForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            guExamFormInputsAndTasks language assembled form
+    in
+    div [ class "ui form examination breast-exam" ]
+        inputs
 
 
 viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg

@@ -297,11 +297,8 @@ activityCompleted currentDate assembled activity =
                 isJust assembled.measurements.socialHistory
 
         Examination ->
-            isJust assembled.measurements.vitals
-                && isJust assembled.measurements.nutrition
-                && isJust assembled.measurements.corePhysicalExam
-                && isJust assembled.measurements.obstetricalExam
-                && isJust assembled.measurements.breastExam
+            resolveExaminationTasks assembled
+                |> List.all (examinationTaskCompleted assembled)
 
         FamilyPlanning ->
             isJust assembled.measurements.familyPlanning
@@ -334,7 +331,7 @@ activityCompleted currentDate assembled activity =
 
         NextSteps ->
             resolveNextStepsTasks currentDate assembled
-                |> List.all (nextStepsMeasurementTaken assembled)
+                |> List.all (nextStepsTaskCompleted assembled)
 
         PregnancyOutcome ->
             isJust assembled.participant.dateConcluded
@@ -540,6 +537,77 @@ expectNextStepsTask currentDate assembled task =
                    )
 
 
+nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
+    case task of
+        NextStepsAppointmentConfirmation ->
+            isJust assembled.measurements.appointmentConfirmation
+
+        NextStepsFollowUp ->
+            isJust assembled.measurements.followUp
+
+        NextStepsSendToHC ->
+            isJust assembled.measurements.sendToHC
+
+        NextStepsHealthEducation ->
+            isJust assembled.measurements.healthEducation
+
+        NextStepsNewbornEnrolment ->
+            isJust assembled.participant.newborn
+
+        NextStepsMedicationDistribution ->
+            let
+                allowedSigns =
+                    NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
+
+                malariaTreatmentCompleted =
+                    if diagnosedMalaria assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
+
+                    else
+                        True
+
+                heartburnTreatmentCompleted =
+                    if diagnosed DiagnosisHeartburn assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHeartburn assembled.measurements
+
+                    else
+                        True
+
+                hypertensionTreatmentCompleted =
+                    if diagnosedHypertension PrenatalEncounterPhaseInitial assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+                    else
+                        True
+
+                candidiasisTreatmentCompleted =
+                    if diagnosed DiagnosisCandidiasis assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForCandidiasis assembled.measurements
+
+                    else
+                        True
+
+                urinaryTractInfectionTreatmentCompleted =
+                    if diagnosed DiagnosisUrinaryTractInfection assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForUrinaryTractInfection assembled.measurements
+
+                    else
+                        True
+            in
+            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+                && malariaTreatmentCompleted
+                && heartburnTreatmentCompleted
+                && hypertensionTreatmentCompleted
+                && candidiasisTreatmentCompleted
+                && urinaryTractInfectionTreatmentCompleted
+
+        NextStepsWait ->
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.map .patientNotified
+                |> Maybe.withDefault False
+
+
 resolveTreatmentReviewTasks : AssembledData -> List TreatmentReviewTask
 resolveTreatmentReviewTasks assembled =
     let
@@ -588,6 +656,40 @@ expectTreatmentReviewTask assembled task =
                 |> isJust
 
 
+treatmentReviewTaskCompleted : AssembledData -> TreatmentReviewTask -> Bool
+treatmentReviewTaskCompleted assembled task =
+    case task of
+        TreatmentReviewPrenatalMedication ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.signs >> isJust)
+                |> Maybe.withDefault False
+
+        TreatmentReviewHIV ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.hivTreatment >> isJust)
+                |> Maybe.withDefault False
+
+        TreatmentReviewHypertension ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.hypertensionTreatment >> isJust)
+                |> Maybe.withDefault False
+
+        TreatmentReviewMalaria ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.malariaTreatment >> isJust)
+                |> Maybe.withDefault False
+
+        TreatmentReviewAnemia ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.anemiaTreatment >> isJust)
+                |> Maybe.withDefault False
+
+        TreatmentReviewSyphilis ->
+            getMeasurementValueFunc assembled.measurements.medication
+                |> Maybe.map (.syphilisTreatment >> isJust)
+                |> Maybe.withDefault False
+
+
 resolveHistoryTasks : AssembledData -> List HistoryTask
 resolveHistoryTasks assembled =
     let
@@ -615,6 +717,59 @@ expectHistoryTask assembled task =
 
         OutsideCare ->
             not firstEnconter
+
+
+resolveExaminationTasks : AssembledData -> List ExaminationTask
+resolveExaminationTasks assembled =
+    let
+        tasks =
+            [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam, GUExam ]
+    in
+    List.filter (expectExaminationTask assembled) tasks
+
+
+expectExaminationTask : AssembledData -> ExaminationTask -> Bool
+expectExaminationTask assembled task =
+    case task of
+        Vitals ->
+            True
+
+        NutritionAssessment ->
+            True
+
+        CorePhysicalExam ->
+            True
+
+        ObstetricalExam ->
+            assembled.encounter.encounterType /= NursePostpartumEncounter
+
+        BreastExam ->
+            True
+
+        GUExam ->
+            assembled.encounter.encounterType == NursePostpartumEncounter
+
+
+examinationTaskCompleted : AssembledData -> ExaminationTask -> Bool
+examinationTaskCompleted assembled task =
+    case task of
+        Vitals ->
+            isJust assembled.measurements.vitals
+
+        NutritionAssessment ->
+            isJust assembled.measurements.nutrition
+
+        CorePhysicalExam ->
+            isJust assembled.measurements.corePhysicalExam
+
+        ObstetricalExam ->
+            isJust assembled.measurements.obstetricalExam
+
+        BreastExam ->
+            isJust assembled.measurements.breastExam
+
+        GUExam ->
+            isJust assembled.measurements.guExam
 
 
 referredToHIVProgramPreviously : AssembledData -> Bool
@@ -733,40 +888,6 @@ latestMedicationTreatmentForSyphilis assembled =
     in
     getLatestTreatmentByTreatmentOptions treatmentOptions assembled
         |> Maybe.map Translate.TreatmentDetailsSyphilis
-
-
-treatmentReviewTaskCompleted : AssembledData -> TreatmentReviewTask -> Bool
-treatmentReviewTaskCompleted assembled task =
-    case task of
-        TreatmentReviewPrenatalMedication ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.signs >> isJust)
-                |> Maybe.withDefault False
-
-        TreatmentReviewHIV ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.hivTreatment >> isJust)
-                |> Maybe.withDefault False
-
-        TreatmentReviewHypertension ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.hypertensionTreatment >> isJust)
-                |> Maybe.withDefault False
-
-        TreatmentReviewMalaria ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.malariaTreatment >> isJust)
-                |> Maybe.withDefault False
-
-        TreatmentReviewAnemia ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.anemiaTreatment >> isJust)
-                |> Maybe.withDefault False
-
-        TreatmentReviewSyphilis ->
-            getMeasurementValueFunc assembled.measurements.medication
-                |> Maybe.map (.syphilisTreatment >> isJust)
-                |> Maybe.withDefault False
 
 
 historyTaskCompleted : AssembledData -> HistoryTask -> Bool
@@ -1063,77 +1184,6 @@ symptomRecordedPreviously assembled symptom =
         |> not
 
 
-nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
-nextStepsMeasurementTaken assembled task =
-    case task of
-        NextStepsAppointmentConfirmation ->
-            isJust assembled.measurements.appointmentConfirmation
-
-        NextStepsFollowUp ->
-            isJust assembled.measurements.followUp
-
-        NextStepsSendToHC ->
-            isJust assembled.measurements.sendToHC
-
-        NextStepsHealthEducation ->
-            isJust assembled.measurements.healthEducation
-
-        NextStepsNewbornEnrolment ->
-            isJust assembled.participant.newborn
-
-        NextStepsMedicationDistribution ->
-            let
-                allowedSigns =
-                    NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
-
-                malariaTreatmentCompleted =
-                    if diagnosedMalaria assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
-
-                    else
-                        True
-
-                heartburnTreatmentCompleted =
-                    if diagnosed DiagnosisHeartburn assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHeartburn assembled.measurements
-
-                    else
-                        True
-
-                hypertensionTreatmentCompleted =
-                    if diagnosedHypertension PrenatalEncounterPhaseInitial assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
-
-                    else
-                        True
-
-                candidiasisTreatmentCompleted =
-                    if diagnosed DiagnosisCandidiasis assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForCandidiasis assembled.measurements
-
-                    else
-                        True
-
-                urinaryTractInfectionTreatmentCompleted =
-                    if diagnosed DiagnosisUrinaryTractInfection assembled then
-                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForUrinaryTractInfection assembled.measurements
-
-                    else
-                        True
-            in
-            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
-                && malariaTreatmentCompleted
-                && heartburnTreatmentCompleted
-                && hypertensionTreatmentCompleted
-                && candidiasisTreatmentCompleted
-                && urinaryTractInfectionTreatmentCompleted
-
-        NextStepsWait ->
-            getMeasurementValueFunc assembled.measurements.labsResults
-                |> Maybe.map .patientNotified
-                |> Maybe.withDefault False
-
-
 mandatoryActivitiesForAssessmentCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForAssessmentCompleted currentDate assembled =
     case assembled.encounter.encounterType of
@@ -1325,7 +1375,8 @@ generateDangerSignsListForNurse assembled =
                 assembled.measurements
 
         NursePostpartumEncounter ->
-            --@todo
+            -- No need for this, becasue there's no
+            -- Danger signs activity at Postpartum encounter.
             []
 
         _ ->
@@ -3238,8 +3289,8 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 ( _, tasks ) =
                     healthEducationFormInputsAndTasks language assembled form
             in
-            ( List.map taskCompleted tasks
-                |> List.sum
+            ( Maybe.Extra.values tasks
+                |> List.length
             , List.length tasks
             )
 
@@ -3270,7 +3321,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
         NextStepsWait ->
             let
                 completed =
-                    if nextStepsMeasurementTaken assembled NextStepsWait then
+                    if nextStepsTaskCompleted assembled NextStepsWait then
                         1
 
                     else
@@ -4779,6 +4830,20 @@ examinationTasksCompletedFromTotal assembled data task =
             in
             ( taskCompleted form.breast + taskCompleted form.selfGuidance
             , 2
+            )
+
+        GUExam ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.guExam
+                        |> guExamFormWithDefault data.guExamForm
+
+                ( _, tasks ) =
+                    guExamFormInputsAndTasks English assembled form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
             )
 
 
@@ -6875,3 +6940,195 @@ reasonsForNotBreastfeedingRight =
     , NotBreastfeedingPersonalChoice
     , NotBreastfeedingOther
     ]
+
+
+guExamFormWithDefault : GUExamForm -> Maybe GUExamValue -> GUExamForm
+guExamFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    postpartumHealingProblemsFromValue =
+                        Maybe.andThen
+                            (\problems ->
+                                case EverySet.toList problems of
+                                    [ NormalPostpartumHealing ] ->
+                                        Nothing
+
+                                    _ ->
+                                        Just <| EverySet.toList problems
+                            )
+                            value.postpartumHealingProblems
+                in
+                { vaginalExamSigns = or form.vaginalExamSigns (EverySet.toList value.vaginalExamSigns |> Just)
+                , episiotomyOrPerinealTear = or form.episiotomyOrPerinealTear (EverySet.member EpisiotomyOrPerinealTear value.guExamSigns |> Just)
+                , healingNormally =
+                    maybeValueConsideringIsDirtyField
+                        form.healingNormallyDirty
+                        form.healingNormally
+                        (Maybe.map (EverySet.member NormalPostpartumHealing) value.postpartumHealingProblems)
+                , healingNormallyDirty = form.healingNormallyDirty
+                , postpartumHealingProblems =
+                    maybeValueConsideringIsDirtyField
+                        form.postpartumHealingProblemsDirty
+                        form.postpartumHealingProblems
+                        postpartumHealingProblemsFromValue
+                , postpartumHealingProblemsDirty = form.postpartumHealingProblemsDirty
+                , rectalHemorrhoids = or form.rectalHemorrhoids (EverySet.member RectalHemorrhoids value.guExamSigns |> Just)
+                }
+            )
+
+
+toGUExamValueWithDefault : Maybe GUExamValue -> GUExamForm -> Maybe GUExamValue
+toGUExamValueWithDefault saved form =
+    guExamFormWithDefault form saved
+        |> toGUExamValue
+
+
+toGUExamValue : GUExamForm -> Maybe GUExamValue
+toGUExamValue form =
+    let
+        maybeGUExamSigns =
+            [ Maybe.map (ifTrue EpisiotomyOrPerinealTear) form.episiotomyOrPerinealTear
+            , Maybe.map (ifTrue RectalHemorrhoids) form.rectalHemorrhoids
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoGUExamSigns)
+    in
+    Maybe.map2
+        (\vaginalExamSigns guExamSigns ->
+            let
+                postpartumHealingProblems =
+                    Maybe.andThen
+                        (\healingNormally ->
+                            if healingNormally then
+                                Just <| EverySet.singleton NormalPostpartumHealing
+
+                            else
+                                Maybe.map EverySet.fromList form.postpartumHealingProblems
+                        )
+                        form.healingNormally
+            in
+            { vaginalExamSigns = EverySet.fromList vaginalExamSigns
+            , guExamSigns = guExamSigns
+            , postpartumHealingProblems = postpartumHealingProblems
+            }
+        )
+        form.vaginalExamSigns
+        maybeGUExamSigns
+
+
+guExamFormInputsAndTasks : Language -> AssembledData -> GUExamForm -> ( List (Html Msg), List (Maybe Bool) )
+guExamFormInputsAndTasks language assembled form =
+    let
+        ( initialSection, initialTasks ) =
+            let
+                episiotomyOrPerinealTeareUpdateFunc value form_ =
+                    { form_
+                        | episiotomyOrPerinealTear = Just value
+                        , healingNormally = Nothing
+                        , healingNormallyDirty = True
+                        , postpartumHealingProblems = Nothing
+                        , postpartumHealingProblemsDirty = True
+                    }
+            in
+            ( [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.VaginalExamination ]
+                    ]
+              , viewCheckBoxMultipleSelectInput language
+                    [ FoulSmellingLochia, ExcessiveVaginalBleeding ]
+                    [ NormalVaginalExam ]
+                    (form.vaginalExamSigns |> Maybe.withDefault [])
+                    Nothing
+                    SetVaginalExamSign
+                    Translate.VaginalExamSign
+              , div [ class "separator double" ] []
+              , viewCustomLabel language Translate.EpisiotomyOrPerinealTearQuestion "?" "label question"
+              , viewBoolInput
+                    language
+                    form.episiotomyOrPerinealTear
+                    (SetGUExamBoolInput episiotomyOrPerinealTeareUpdateFunc)
+                    "episiotomy"
+                    Nothing
+              ]
+            , [ if isJust form.vaginalExamSigns then
+                    Just True
+
+                else
+                    Nothing
+              , form.episiotomyOrPerinealTear
+              ]
+            )
+
+        ( derivedSection, derivedTasks ) =
+            if isNothing form.episiotomyOrPerinealTear then
+                ( [], [] )
+
+            else if form.episiotomyOrPerinealTear == Just True then
+                let
+                    ( healingProblemsSection, healingProblemsTasks ) =
+                        if form.healingNormally == Just False then
+                            ( [ viewCustomLabel language Translate.PostpartumHealingProblemQuestion "?" "label question"
+                              , viewCheckBoxMultipleSelectInput language
+                                    [ HealingProblemSwelling, HealingProblemDischarge, HealingProblemReleaseOfSutures ]
+                                    [ HealingProblemHematoma, HealingProblemBruising ]
+                                    (form.postpartumHealingProblems |> Maybe.withDefault [])
+                                    Nothing
+                                    SetPostpartumHealingProblem
+                                    Translate.PostpartumHealingProblem
+                              , div [ class "separator double" ] []
+                              ]
+                            , [ if isJust form.postpartumHealingProblems then
+                                    Just True
+
+                                else
+                                    Nothing
+                              ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    healingNormallyUpdateFunc value form_ =
+                        { form_
+                            | healingNormally = Just value
+                            , healingNormallyDirty = True
+                            , postpartumHealingProblems = Nothing
+                            , postpartumHealingProblemsDirty = True
+                        }
+                in
+                ( [ viewCustomLabel language Translate.EpisiotomyOrPerinealTearHealingQuestion "?" "label question"
+                  , viewBoolInput
+                        language
+                        form.healingNormally
+                        (SetGUExamBoolInput healingNormallyUpdateFunc)
+                        "healing-normally"
+                        Nothing
+                  ]
+                    ++ healingProblemsSection
+                    ++ rectalHemorrhoidsSection
+                , [ form.healingNormally ] ++ healingProblemsTasks ++ rectalHemorrhoidsTasks
+                )
+
+            else
+                ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks )
+
+        ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks ) =
+            let
+                rectalHemorrhoidsUpdateFunc value form_ =
+                    { form_ | rectalHemorrhoids = Just value }
+            in
+            ( [ viewCustomLabel language Translate.RectalHemorrhoids "?" "label question"
+              , viewBoolInput
+                    language
+                    form.rectalHemorrhoids
+                    (SetGUExamBoolInput rectalHemorrhoidsUpdateFunc)
+                    "rectal-hemorrhoids"
+                    Nothing
+              ]
+            , [ form.rectalHemorrhoids ]
+            )
+    in
+    ( initialSection ++ derivedSection, initialTasks ++ derivedTasks )

@@ -19,11 +19,13 @@ import Backend.Measurement.Model
         , NeckCPESign(..)
         , PhotoUrl(..)
         , PostpartumChildDangerSign(..)
+        , PostpartumHealingProblem(..)
         , PostpartumMotherDangerSign(..)
         , PrenatalOutsideCareMedication(..)
         , PrenatalSymptom(..)
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
+        , VaginalExamSign(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
@@ -93,8 +95,7 @@ update language currentDate id db msg model =
 
         outsideCareForm =
             Dict.get id db.prenatalMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
                     (.outsideCare
                         >> getMeasurementValueFunc
@@ -104,13 +105,22 @@ update language currentDate id db msg model =
 
         resolveVaccinationForm vaccineType form =
             Dict.get id db.prenatalMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
                     (getMeasurementByVaccineTypeFunc vaccineType
                         >> vaccinationFormWithDefault form
                     )
                 |> Maybe.withDefault form
+
+        guExamForm =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.guExam
+                        >> getMeasurementValueFunc
+                        >> guExamFormWithDefault model.examinationData.guExamForm
+                    )
+                |> Maybe.withDefault model.examinationData.guExamForm
 
         generateLaboratoryMsgs nextTask =
             Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
@@ -136,6 +146,10 @@ update language currentDate id db msg model =
 
         generateHistoryMsgs nextTask =
             Maybe.map (\task -> [ SetActiveHistoryTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
+
+        generateExaminationMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveExaminationTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalEncounterPage id ]
     in
     case msg of
@@ -758,7 +772,7 @@ update language currentDate id db msg model =
             let
                 updatedData =
                     model.examinationData
-                        |> (\data -> { data | activeTask = task })
+                        |> (\data -> { data | activeTask = Just task })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -795,7 +809,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveVitals personId saved nextTask_ ->
+        SaveVitals personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -803,35 +817,24 @@ update language currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Vitals
-                            )
+                extraMsgs =
+                    generateExaminationMsgs nextTask
 
                 appMsgs =
-                    model.examinationData.vitalsForm
-                        |> toVitalsValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveVitals personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                    toVitalsValueWithDefault measurement model.examinationData.vitalsForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveVitals personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
-
-                updatedData =
-                    model.examinationData
-                        |> (\data -> { data | activeTask = nextTask })
+                        |> Maybe.withDefault []
             in
-            ( { model | examinationData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetNutritionAssessmentMeasurement formUpdateFunc value ->
             let
@@ -848,13 +851,16 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveNutritionAssessment personId saved maybeHeight nextTask_ ->
+        SaveNutritionAssessment personId saved maybeHeight nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
                     getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateExaminationMsgs nextTask
 
                 form_ =
                     model.examinationData.nutritionAssessmentForm
@@ -864,35 +870,21 @@ update language currentDate id db msg model =
                         |> Maybe.map (\height -> { form_ | height = Just height })
                         |> Maybe.withDefault form_
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Vitals
-                            )
-
                 appMsgs =
-                    form
-                        |> toPrenatalNutritionValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveNutrition personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                    toPrenatalNutritionValueWithDefault measurement form
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveNutrition personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
-
-                updatedData =
-                    model.examinationData
-                        |> (\data -> { data | activeTask = nextTask })
+                        |> Maybe.withDefault []
             in
-            ( { model | examinationData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetCorePhysicalExamBoolInput formUpdateFunc value ->
             let
@@ -1029,7 +1021,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveCorePhysicalExam personId saved nextTask_ ->
+        SaveCorePhysicalExam personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1037,35 +1029,24 @@ update language currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Vitals
-                            )
+                extraMsgs =
+                    generateExaminationMsgs nextTask
 
                 appMsgs =
-                    model.examinationData.corePhysicalExamForm
-                        |> toCorePhysicalExamValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveCorePhysicalExam personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                    toCorePhysicalExamValueWithDefault measurement model.examinationData.corePhysicalExamForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveCorePhysicalExam personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
-
-                updatedData =
-                    model.examinationData
-                        |> (\data -> { data | activeTask = nextTask })
+                        |> Maybe.withDefault []
             in
-            ( { model | examinationData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetObstetricalExamBoolInput formUpdateFunc value ->
             let
@@ -1144,7 +1125,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveObstetricalExam personId saved nextTask_ ->
+        SaveObstetricalExam personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1152,43 +1133,31 @@ update language currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Vitals
-                            )
+                extraMsgs =
+                    generateExaminationMsgs nextTask
 
                 appMsgs =
-                    model.examinationData.obstetricalExamForm
-                        |> toObstetricalExamValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveObstetricalExam personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                    toObstetricalExamValueWithDefault measurement model.examinationData.obstetricalExamForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveObstetricalExam personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
-
-                updatedData =
-                    model.examinationData
-                        |> (\data -> { data | activeTask = nextTask })
+                        |> Maybe.withDefault []
             in
-            ( { model | examinationData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetBreastExamBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.examinationData.breastExamForm
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.examinationData.breastExamForm
-                    in
                     model.examinationData
                         |> (\data -> { data | breastExamForm = updatedForm })
             in
@@ -1226,7 +1195,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveBreastExam personId saved nextTask_ ->
+        SaveBreastExam personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1234,35 +1203,101 @@ update language currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id ]
-                            , Vitals
-                            )
+                extraMsgs =
+                    generateExaminationMsgs nextTask
 
                 appMsgs =
-                    model.examinationData.breastExamForm
-                        |> toBreastExamValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.PrenatalEncounter.Model.SaveBreastExam personId measurementId value
-                                    |> Backend.Model.MsgPrenatalEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                    toBreastExamValueWithDefault measurement model.examinationData.breastExamForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveBreastExam personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
-
-                updatedData =
-                    model.examinationData
-                        |> (\data -> { data | activeTask = nextTask })
+                        |> Maybe.withDefault []
             in
-            ( { model | examinationData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetGUExamBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.examinationData.guExamForm
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | guExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetVaginalExamSign sign ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .vaginalExamSigns
+                        (\signs -> { guExamForm | vaginalExamSigns = signs })
+                        NormalVaginalExam
+                        sign
+                        guExamForm
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | guExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPostpartumHealingProblem problem ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .postpartumHealingProblems
+                        (\problems -> { guExamForm | postpartumHealingProblems = problems })
+                        NormalPostpartumHealing
+                        problem
+                        guExamForm
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | guExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveGUExam personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateExaminationMsgs nextTask
+
+                appMsgs =
+                    toGUExamValueWithDefault measurement model.examinationData.guExamForm
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveGUExam personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
 
         SetFamilyPlanningSign sign ->
             let

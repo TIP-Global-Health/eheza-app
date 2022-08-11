@@ -7,6 +7,7 @@ type ExaminationTask
     | NutritionAssessment
     | ObstetricalExam
     | Vitals
+    | GUExam
 
 
 type HistoryTask

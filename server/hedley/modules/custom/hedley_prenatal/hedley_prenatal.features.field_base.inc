@@ -300,6 +300,33 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_gu_exam_signs'.
+  $field_bases['field_gu_exam_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_gu_exam_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'episiotomy-perineal-tear' => 'Episiotomy or a perineal tear',
+        'rectal-hemorrhoids' => 'Rectal Hemorrhoids',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_haemoglobin'.
   $field_bases['field_haemoglobin'] = array(
     'active' => 1,
@@ -813,6 +840,36 @@ function hedley_prenatal_field_default_field_bases() {
         '7.5' => 7.5,
         '8.0' => '8.0',
         '8.5' => 8.5,
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_postpartum_healing_problem'.
+  $field_bases['field_postpartum_healing_problem'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_postpartum_healing_problem',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'normal-healing' => 'Normal Healing',
+        'swelling' => 'Swelling',
+        'discharge' => 'Discharge',
+        'release-of-sutures' => 'Release (lâchage) of sutures',
+        'hematoma' => 'Hematoma',
+        'bruising' => 'Bruising',
       ),
       'allowed_values_function' => '',
     ),
@@ -1367,6 +1424,33 @@ function hedley_prenatal_field_default_field_bases() {
         2 => 2,
         4 => 4,
         8 => 8,
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_vaginal_exam_signs'.
+  $field_bases['field_vaginal_exam_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_vaginal_exam_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'foul-smelling-lochia' => 'Foul Smelling Lochia',
+        'bleeding' => 'Bleeding',
+        'normal' => 'Normal',
       ),
       'allowed_values_function' => '',
     ),

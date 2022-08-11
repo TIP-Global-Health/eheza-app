@@ -117,6 +117,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalEncounter (BackendEntity PrenatalEncounter)
     | BackendAuthorityPrenatalFamilyPlanning (BackendEntity PrenatalFamilyPlanning)
     | BackendAuthorityPrenatalFollowUp (BackendEntity PrenatalFollowUp)
+    | BackendAuthorityPrenatalGUExam (BackendEntity PrenatalGUExam)
     | BackendAuthorityPrenatalHealthEducation (BackendEntity PrenatalHealthEducation)
     | BackendAuthorityPrenatalHemoglobinTest (BackendEntity PrenatalHemoglobinTest)
     | BackendAuthorityPrenatalHepatitisBTest (BackendEntity PrenatalHepatitisBTest)

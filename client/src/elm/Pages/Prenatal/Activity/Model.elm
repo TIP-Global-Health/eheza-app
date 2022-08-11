@@ -96,6 +96,11 @@ type Msg
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
     | SetBreastExamBreast BreastExamSign
     | SaveBreastExam PersonId (Maybe ( BreastExamId, BreastExam )) (Maybe ExaminationTask)
+      -- ExaminationMsgs, GU Exam
+    | SetGUExamBoolInput (Bool -> GUExamForm -> GUExamForm) Bool
+    | SetPostpartumHealingProblem PostpartumHealingProblem
+    | SetVaginalExamSign VaginalExamSign
+    | SaveGUExam PersonId (Maybe ( PrenatalGUExamId, PrenatalGUExam )) (Maybe ExaminationTask)
       -- FamilyPlanningMsgs
     | SetFamilyPlanningSign FamilyPlanningSign
     | SaveFamilyPlanning PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
@@ -325,7 +330,8 @@ type alias ExaminationData =
     , corePhysicalExamForm : CorePhysicalExamForm
     , obstetricalExamForm : ObstetricalExamForm
     , breastExamForm : BreastExamForm
-    , activeTask : ExaminationTask
+    , guExamForm : GUExamForm
+    , activeTask : Maybe ExaminationTask
     }
 
 
@@ -336,7 +342,8 @@ emptyExaminationData =
     , corePhysicalExamForm = emptyCorePhysicalExamForm
     , obstetricalExamForm = emptyObstetricalExamForm
     , breastExamForm = emptyBreastExamForm
-    , activeTask = Vitals
+    , guExamForm = emptyGUExamForm
+    , activeTask = Nothing
     }
 
 
@@ -941,6 +948,29 @@ type alias BreastExamForm =
 emptyBreastExamForm : BreastExamForm
 emptyBreastExamForm =
     BreastExamForm Nothing Nothing
+
+
+type alias GUExamForm =
+    { vaginalExamSigns : Maybe (List VaginalExamSign)
+    , episiotomyOrPerinealTear : Maybe Bool
+    , healingNormally : Maybe Bool
+    , healingNormallyDirty : Bool
+    , postpartumHealingProblems : Maybe (List PostpartumHealingProblem)
+    , postpartumHealingProblemsDirty : Bool
+    , rectalHemorrhoids : Maybe Bool
+    }
+
+
+emptyGUExamForm : GUExamForm
+emptyGUExamForm =
+    { vaginalExamSigns = Nothing
+    , episiotomyOrPerinealTear = Nothing
+    , healingNormally = Nothing
+    , healingNormallyDirty = False
+    , postpartumHealingProblems = Nothing
+    , postpartumHealingProblemsDirty = False
+    , rectalHemorrhoids = Nothing
+    }
 
 
 type alias FamilyPlanningForm =

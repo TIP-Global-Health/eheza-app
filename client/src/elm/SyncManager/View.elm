@@ -570,11 +570,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalFamilyPlanning identifier ->
                 viewMeasurement identifier "Prenatal Family Planning"
 
-            BackendAuthorityPrenatalHealthEducation identifier ->
-                viewMeasurement identifier "Prenatal Health Education"
-
             BackendAuthorityPrenatalFollowUp identifier ->
                 viewMeasurement identifier "Prenatal Follow Up"
+
+            BackendAuthorityPrenatalGUExam identifier ->
+                viewMeasurement identifier "Prenatal GU Exam"
+
+            BackendAuthorityPrenatalHealthEducation identifier ->
+                viewMeasurement identifier "Prenatal Health Education"
 
             BackendAuthorityPrenatalHemoglobinTest identifier ->
                 viewMeasurement identifier "Prenatal Hemoglobin Test"

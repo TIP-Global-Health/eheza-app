@@ -253,6 +253,12 @@ decodeRevision =
                     "prenatal_family_planning" ->
                         decodeWithUuid PrenatalFamilyPlanningRevision decodePrenatalFamilyPlanning
 
+                    "prenatal_follow_up" ->
+                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+
+                    "prenatal_gu_exam" ->
+                        decodeWithUuid PrenatalGUExamRevision decodePrenatalGUExam
+
                     "prenatal_health_education" ->
                         decodeWithUuid PrenatalHealthEducationRevision decodePrenatalHealthEducation
 
@@ -267,9 +273,6 @@ decodeRevision =
 
                     "prenatal_hiv_pcr_test" ->
                         decodeWithUuid PrenatalHIVPCRTestRevision decodePrenatalHIVPCRTest
-
-                    "prenatal_follow_up" ->
-                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
 
                     "prenatal_labs_results" ->
                         decodeWithUuid PrenatalLabsResultsRevision decodePrenatalLabsResults

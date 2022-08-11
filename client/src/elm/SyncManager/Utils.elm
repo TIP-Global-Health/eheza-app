@@ -579,6 +579,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalFollowUp identifier ->
             getIdentifier identifier "prenatal_follow_up"
 
+        BackendAuthorityPrenatalGUExam identifier ->
+            getIdentifier identifier "prenatal_gu_exam"
+
         BackendAuthorityPrenatalHealthEducation identifier ->
             getIdentifier identifier "prenatal_health_education"
 
@@ -1155,6 +1158,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalFollowUp identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalFollowUp identifier
 
+        BackendAuthorityPrenatalGUExam identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalGUExam identifier
+
         BackendAuthorityPrenatalHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalHealthEducation identifier
 
@@ -1693,6 +1699,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalFollowUp identifier ->
             PrenatalFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalGUExam identifier ->
+            PrenatalGUExamRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalHealthEducation identifier ->
             PrenatalHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity

@@ -192,6 +192,7 @@ function hedley_activity_field_default_field_bases() {
         'mass' => 'Mass',
         'discharge' => 'Discharge',
         'infection' => 'Infection',
+        'warmth' => 'Warmth',
         'normal' => 'Normal',
       ),
       'allowed_values_function' => '',

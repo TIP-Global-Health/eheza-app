@@ -576,6 +576,8 @@ type TranslationId
     | EntryStatusAntenatal PaneEntryStatus
     | EntryStatusDiagnosis PaneEntryStatus
     | EPDSPreformedOn
+    | EpisiotomyOrPerinealTearQuestion
+    | EpisiotomyOrPerinealTearHealingQuestion
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
@@ -933,6 +935,8 @@ type TranslationId
     | PleaseSync
     | PositiveLabel
     | PostpartumEncounter
+    | PostpartumHealingProblem PostpartumHealingProblem
+    | PostpartumHealingProblemQuestion
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | PreeclampsiaPreviousPregnancy
@@ -1091,6 +1095,7 @@ type TranslationId
     | RecommendedTreatmentSignLabel RecommendedTreatmentSign
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
+    | RectalHemorrhoids
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
     | ReferredPatientToFacilityQuestion ReferralFacility
     | ReferredToFacility ReferralFacility
@@ -1318,6 +1323,8 @@ type TranslationId
     | VaccineDoseAdministeredTodayPrenatalQuestion String
     | VaccineDoseAdministeredTodayWellChildQuestion String
     | VaccineType VaccineType
+    | VaginalExamination
+    | VaginalExamSign VaginalExamSign
     | ValidationErrors
     | Version
     | View
@@ -2711,6 +2718,11 @@ translationSet trans =
 
                 NormalBreast ->
                     translationSet Normal
+
+                Warmth ->
+                    { english = "Warmth"
+                    , kinyarwanda = Nothing
+                    }
 
         BrittleHair ->
             { english = "Brittle Hair"
@@ -4323,6 +4335,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        EpisiotomyOrPerinealTearQuestion ->
+            { english = "Did the patient have an episiotomy or a perineal tear"
+            , kinyarwanda = Nothing
+            }
+
+        EpisiotomyOrPerinealTearHealingQuestion ->
+            { english = "Is it healing normally"
+            , kinyarwanda = Nothing
+            }
+
         ErrorCheckLocalConfig ->
             { english = "Check your LocalConfig.elm file and make sure you have defined the enviorement properly"
             , kinyarwanda = Nothing
@@ -4362,6 +4384,11 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.BreastExam ->
                     translationSet BreastExam
+
+                GUExam ->
+                    { english = "GU Exam"
+                    , kinyarwanda = Nothing
+                    }
 
         ExaminationTaskRecurrent task ->
             case task of
@@ -7971,6 +7998,43 @@ translationSet trans =
         PostpartumEncounter ->
             { english = "Postpartum Encounter"
             , kinyarwanda = Just "Igikorwa cya nyuma yo kubyara"
+            }
+
+        PostpartumHealingProblem problem ->
+            case problem of
+                NormalPostpartumHealing ->
+                    { english = "Healing Normally"
+                    , kinyarwanda = Nothing
+                    }
+
+                HealingProblemSwelling ->
+                    { english = "Swelling"
+                    , kinyarwanda = Nothing
+                    }
+
+                HealingProblemDischarge ->
+                    { english = "Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                HealingProblemReleaseOfSutures ->
+                    { english = "Release (lâchage) of sutures"
+                    , kinyarwanda = Nothing
+                    }
+
+                HealingProblemHematoma ->
+                    { english = "Hematoma"
+                    , kinyarwanda = Nothing
+                    }
+
+                HealingProblemBruising ->
+                    { english = "Bruising"
+                    , kinyarwanda = Nothing
+                    }
+
+        PostpartumHealingProblemQuestion ->
+            { english = "What issues are presented"
+            , kinyarwanda = Nothing
             }
 
         PostpartumChildDangerSign sign ->
@@ -12047,6 +12111,11 @@ translationSet trans =
             , kinyarwanda = Just "Andika iherezo ry'inda"
             }
 
+        RectalHemorrhoids ->
+            { english = "Rectal Hemorrhoids"
+            , kinyarwanda = Nothing
+            }
+
         RecurringHighSeverityAlert alert ->
             case alert of
                 Backend.PrenatalActivity.Model.BloodPressure ->
@@ -13809,6 +13878,28 @@ translationSet trans =
                             { english = "Tetanus"
                             , kinyarwanda = Nothing
                             }
+
+        VaginalExamination ->
+            { english = "Vaginal Examination"
+            , kinyarwanda = Nothing
+            }
+
+        VaginalExamSign sign ->
+            case sign of
+                FoulSmellingLochia ->
+                    { english = "Foul Smelling Lochia"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExcessiveVaginalBleeding ->
+                    { english = "Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                NormalVaginalExam ->
+                    { english = "Normal"
+                    , kinyarwanda = Nothing
+                    }
 
         ValidationErrors ->
             { english = "Validation Errors"

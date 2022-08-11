@@ -444,6 +444,7 @@ type Revision
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
     | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp
+    | PrenatalGUExamRevision PrenatalGUExamId PrenatalGUExam
     | PrenatalHealthEducationRevision PrenatalHealthEducationId PrenatalHealthEducation
     | PrenatalHemoglobinTestRevision PrenatalHemoglobinTestId PrenatalHemoglobinTest
     | PrenatalHepatitisBTestRevision PrenatalHepatitisBTestId PrenatalHepatitisBTest

@@ -429,6 +429,7 @@ type BreastExamSign
     = Mass
     | Discharge
     | Infection
+    | Warmth
     | NormalBreast
 
 
@@ -1404,6 +1405,38 @@ type BreastfeedingSign
     | NoBreastfeedingSigns
 
 
+type alias PrenatalGUExam =
+    PrenatalMeasurement GUExamValue
+
+
+type alias GUExamValue =
+    { vaginalExamSigns : EverySet VaginalExamSign
+    , guExamSigns : EverySet GUExamSign
+    , postpartumHealingProblems : Maybe (EverySet PostpartumHealingProblem)
+    }
+
+
+type VaginalExamSign
+    = FoulSmellingLochia
+    | ExcessiveVaginalBleeding
+    | NormalVaginalExam
+
+
+type GUExamSign
+    = EpisiotomyOrPerinealTear
+    | RectalHemorrhoids
+    | NoGUExamSigns
+
+
+type PostpartumHealingProblem
+    = NormalPostpartumHealing
+    | HealingProblemSwelling
+    | HealingProblemDischarge
+    | HealingProblemReleaseOfSutures
+    | HealingProblemHematoma
+    | HealingProblemBruising
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -2289,6 +2322,7 @@ type alias PrenatalMeasurements =
     , mentalHealth : Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth )
     , tetanusImmunisation : Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation )
     , breastfeeding : Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding )
+    , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     }
 
 
@@ -2331,6 +2365,7 @@ emptyPrenatalMeasurements =
     , mentalHealth = Nothing
     , tetanusImmunisation = Nothing
     , breastfeeding = Nothing
+    , guExam = Nothing
     }
 
 
