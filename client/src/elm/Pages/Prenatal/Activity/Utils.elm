@@ -2131,6 +2131,24 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 && symptomRecorded assembled.measurements PostpartumFever
                 && (byBreastfeeding || byBreastExam)
 
+        DiagnosisPostpartumInfection ->
+            getMeasurementValueFunc assembled.measurements.guExam
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member FoulSmellingLochia value.vaginalExamSigns
+                            || (EverySet.member EpisiotomyOrPerinealTear value.guExamSigns
+                                    && (Maybe.map
+                                            (\problems ->
+                                                List.any (\sign -> EverySet.member sign problems)
+                                                    [ HealingProblemSwelling, HealingProblemDischarge ]
+                                            )
+                                            value.postpartumHealingProblems
+                                            |> Maybe.withDefault False
+                                       )
+                               )
+                    )
+                |> Maybe.withDefault False
+
         DiagnosisPostpartumExcessiveBleeding ->
             getMeasurementValueFunc assembled.measurements.guExam
                 |> Maybe.map (.vaginalExamSigns >> EverySet.member ExcessiveVaginalBleeding)
