@@ -412,6 +412,7 @@ expectNextStepsTask currentDate assembled task =
 
                 NursePostpartumEncounter ->
                     referToHospitalForNonHIVDiagnosis assembled
+                        || referToMentalHealthSpecialist assembled
 
                 _ ->
                     dangerSigns
@@ -989,6 +990,8 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
                    , DiagnosisGonorrheaContinued
                    , DiagnosisTrichomonasOrBacterialVaginosisContinued
                    , DiagnosisPostpartumUrinaryIncontinence
+                   , DiagnosisPostpartumInfection
+                   , DiagnosisPostpartumExcessiveBleeding
                    ]
     in
     List.filter (\diagnosis -> diagnosed diagnosis assembled)
@@ -1218,8 +1221,7 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
                    )
 
         NursePostpartumEncounter ->
-            -- @todo:
-            True
+            activityCompleted currentDate assembled SymptomReview
 
         ChwFirstEncounter ->
             let
