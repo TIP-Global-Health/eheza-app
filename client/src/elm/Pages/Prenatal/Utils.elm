@@ -257,6 +257,37 @@ hierarchalBloodPreasureDiagnosisFromNumber number =
             Nothing
 
 
+hierarchalMastisisDiagnoses : List PrenatalDiagnosis
+hierarchalMastisisDiagnoses =
+    [ DiagnosisPostpartumMastitis, DiagnosisPostpartumEarlyMastitisOrEngorgment ]
+
+
+hierarchalMastisisDiagnosisToNumber : PrenatalDiagnosis -> Maybe Int
+hierarchalMastisisDiagnosisToNumber diagnosis =
+    case diagnosis of
+        DiagnosisPostpartumMastitis ->
+            Just 2
+
+        DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+            Just 1
+
+        _ ->
+            Nothing
+
+
+hierarchalMastisisDiagnosisFromNumber : Int -> Maybe PrenatalDiagnosis
+hierarchalMastisisDiagnosisFromNumber number =
+    case number of
+        2 ->
+            Just DiagnosisPostpartumMastitis
+
+        1 ->
+            Just DiagnosisPostpartumEarlyMastitisOrEngorgment
+
+        _ ->
+            Nothing
+
+
 medicationDistributionFormWithDefault : MedicationDistributionSign -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue -> MedicationDistributionForm
 medicationDistributionFormWithDefault valueForNone form saved =
     case valueForNone of

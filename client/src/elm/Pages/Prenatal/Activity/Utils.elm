@@ -1501,7 +1501,12 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
     EverySet.union emergencyDiagnoses diagnosesByLabResultsAndExamination
         |> EverySet.union diagnosesBySymptoms
         |> EverySet.union diagnosesByMentalHealth
-        |> applyBloodPreasureDiagnosesHierarchy
+        |> applyDiagnosesHierarchy
+
+
+applyDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyDiagnosesHierarchy =
+    applyBloodPreasureDiagnosesHierarchy >> applyMastisisDiagnosesHierarchy
 
 
 applyBloodPreasureDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
@@ -1520,6 +1525,26 @@ applyBloodPreasureDiagnosesHierarchy diagnoses =
                 |> Maybe.withDefault []
     in
     topBloodPreasureDiagnosis
+        ++ others
+        |> EverySet.fromList
+
+
+applyMastisisDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyMastisisDiagnosesHierarchy diagnoses =
+    let
+        ( mastisisDiagnoses, others ) =
+            EverySet.toList diagnoses
+                |> List.partition (\diagnosis -> List.member diagnosis hierarchalMastisisDiagnoses)
+
+        topMastisisDiagnosis =
+            List.map hierarchalMastisisDiagnosisToNumber mastisisDiagnoses
+                |> Maybe.Extra.values
+                |> List.maximum
+                |> Maybe.andThen hierarchalMastisisDiagnosisFromNumber
+                |> Maybe.map List.singleton
+                |> Maybe.withDefault []
+    in
+    topMastisisDiagnosis
         ++ others
         |> EverySet.fromList
 
