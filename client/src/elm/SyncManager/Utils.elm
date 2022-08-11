@@ -567,6 +567,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalBloodGpRsTest identifier ->
             getIdentifier identifier "prenatal_blood_gprs_test"
 
+        BackendAuthorityPrenatalBreastfeeding identifier ->
+            getIdentifier identifier "prenatal_breastfeeding"
+
         BackendAuthorityPrenatalEncounter identifier ->
             getIdentifier identifier "prenatal_encounter"
 
@@ -1140,6 +1143,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalBloodGpRsTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalBloodGpRsTest identifier
 
+        BackendAuthorityPrenatalBreastfeeding identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalBreastfeeding identifier
+
         BackendAuthorityPrenatalEncounter identifier ->
             encode Backend.PrenatalEncounter.Encoder.encodePrenatalEncounter identifier
 
@@ -1675,6 +1681,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalBloodGpRsTest identifier ->
             PrenatalBloodGpRsTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalBreastfeeding identifier ->
+            PrenatalBreastfeedingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalEncounter identifier ->
             PrenatalEncounterRevision (toEntityUuid identifier.uuid) identifier.entity

@@ -293,6 +293,7 @@ medicationDistributionFormWithDefaultInitialPhase form saved =
                 , azithromycin = or form.azithromycin (medicationDistributionResolveFromValue allowedSigns value Azithromycin)
                 , metronidazole = or form.metronidazole (medicationDistributionResolveFromValue allowedSigns value Metronidazole)
                 , vitaminA = or form.vitaminA (medicationDistributionResolveFromValue allowedSigns value VitaminA)
+                , paracetamol = or form.paracetamol (medicationDistributionResolveFromValue allowedSigns value Paracetamol)
 
                 -- Following 2 do not participate at initial phase, therefore,
                 -- resolved directly from value.
@@ -333,6 +334,7 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 , azithromycin = EverySet.member Azithromycin value.distributionSigns |> Just
                 , metronidazole = EverySet.member Metronidazole value.distributionSigns |> Just
                 , vitaminA = EverySet.member VitaminA value.distributionSigns |> Just
+                , paracetamol = EverySet.member Paracetamol value.distributionSigns |> Just
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 , hypertensionAvoidingGuidanceReason = maybeValueConsideringIsDirtyField form.hypertensionAvoidingGuidanceReasonDirty form.hypertensionAvoidingGuidanceReason hypertensionAvoidingGuidanceReason
@@ -408,6 +410,7 @@ toMedicationDistributionValue valueForNone form =
             , ifNullableTrue Azithromycin form.azithromycin
             , ifNullableTrue Metronidazole form.metronidazole
             , ifNullableTrue VitaminA form.vitaminA
+            , ifNullableTrue Paracetamol form.paracetamol
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty valueForNone)
@@ -1498,7 +1501,7 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                         Nothing
 
                 -- Only for Postpartum encounter.
-                vitaminA =
+                vitaminASet =
                     let
                         prescribeVitaminA =
                             (assembled.encounter.encounterType == NursePostpartumEncounter)
@@ -1517,8 +1520,28 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
 
                     else
                         Nothing
+
+                -- Only for Postpartum encounter.
+                paracetamolSet =
+                    if diagnosed DiagnosisPostpartumEarlyMastitisOrEngorgment assembled then
+                        Just
+                            ( Translate.MedicationDistributionHelperEarlyMastitisOrEngorgment
+                            , [ Paracetamol ]
+                            , []
+                            )
+
+                    else
+                        Nothing
             in
-            Maybe.Extra.values [ mebendazoleSet, hivPositiveSet, discordantPartnershipSet, gonorheaSet, trichomonasOrBVSet, vitaminA ]
+            Maybe.Extra.values
+                [ mebendazoleSet
+                , hivPositiveSet
+                , discordantPartnershipSet
+                , gonorheaSet
+                , trichomonasOrBVSet
+                , vitaminASet
+                , paracetamolSet
+                ]
 
         PrenatalEncounterPhaseRecurrent ->
             if
@@ -1744,6 +1767,9 @@ resolveMedicationDistributionInputsAndTasksForMedication language currentDate pe
 
         VitaminA ->
             resolveVitaminADistributionInputsAndTasks language currentDate person setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg form
+
+        Paracetamol ->
+            resolveParacetamolDistributionInputsAndTasks language currentDate person setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg form
 
         -- Other medications are not prescribed at Prenatal encounter.
         _ ->
@@ -2295,6 +2321,55 @@ resolveVitaminADistributionInputsAndTasks language currentDate person setMedicat
     )
 
 
+resolveParacetamolDistributionInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Person
+    -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
+    -> (Maybe AdministrationNote -> MedicationDistributionSign -> AdministrationNote -> msg)
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveParacetamolDistributionInputsAndTasks language currentDate person setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg form =
+    let
+        instructions =
+            resolveParacetamolDosageAndIcon currentDate person
+                |> Maybe.map
+                    (\( dosage, icon ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Paracetamol) (" (" ++ dosage ++ ")") icon "" Nothing
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        updateFunc value form_ =
+            { form_ | paracetamol = Just value, nonAdministrationSigns = updateNonAdministrationSigns Paracetamol MedicationParacetamol value form_ }
+
+        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+            if form.paracetamol == Just False then
+                ( viewMedicationDistributionDerivedQuestion language Paracetamol MedicationParacetamol setMedicationDistributionAdministrationNoteMsg form
+                , taskCompleted <|
+                    getCurrentReasonForMedicationNonAdministration MedicationParacetamol form
+                , 1
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( [ instructions
+      , viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Paracetamol)
+      , viewBoolInput
+            language
+            form.paracetamol
+            (setMedicationDistributionBoolInputMsg updateFunc)
+            "paracetamol-medication"
+            Nothing
+      ]
+        ++ derivedInput
+    , taskCompleted form.paracetamol + derrivedTaskCompleted
+    , 1 + derrivedTaskActive
+    )
+
+
 viewMedicationDistributionDerivedQuestion :
     Language
     -> MedicationDistributionSign
@@ -2393,6 +2468,11 @@ resolveVitaminADosageAndIcon currentDate person =
     Just ( "200,000 IU", "icon-pills" )
 
 
+resolveParacetamolDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
+resolveParacetamolDosageAndIcon currentDate person =
+    Just ( "500 mg", "icon-pills" )
+
+
 medicationsInitialPhase : List MedicationDistributionSign
 medicationsInitialPhase =
     [ Mebendezole
@@ -2402,6 +2482,7 @@ medicationsInitialPhase =
     , Azithromycin
     , Metronidazole
     , VitaminA
+    , Paracetamol
     ]
 
 

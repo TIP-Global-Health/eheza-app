@@ -354,8 +354,7 @@ activityCompleted currentDate assembled activity =
                 || List.all (immunisationTaskCompleted currentDate assembled) immunisationTasks
 
         Backend.PrenatalActivity.Model.Breastfeeding ->
-            -- @todo
-            False
+            isJust assembled.measurements.breastfeeding
 
         SpecialityCare ->
             -- @todo
@@ -375,7 +374,6 @@ resolveNextStepsTasks currentDate assembled =
                     [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsWait ]
 
                 NursePostpartumEncounter ->
-                    -- @todo
                     [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
 
                 _ ->
@@ -456,6 +454,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisCandidiasis
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
+                                    , DiagnosisPostpartumEarlyMastitisOrEngorgment
                                     ]
                                     assembled
                                 || provideMentalHealthEducation assembled
@@ -2005,6 +2004,33 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map ((==) RhesusNegative)
                 |> Maybe.withDefault False
 
+        DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+            let
+                byBreastfeeding =
+                    getMeasurementValueFunc assembled.measurements.breastfeeding
+                        |> Maybe.map
+                            (\signs ->
+                                List.any (\sign -> EverySet.member sign signs)
+                                    [ BreastPain, BreastRedness ]
+                            )
+                        |> Maybe.withDefault False
+
+                byBreastExam =
+                    getMeasurementValueFunc assembled.measurements.breastExam
+                        |> Maybe.map
+                            (\value ->
+                                case EverySet.toList value.exam of
+                                    [ NormalBreast ] ->
+                                        False
+
+                                    _ ->
+                                        True
+                            )
+                        |> Maybe.withDefault False
+            in
+            (assembled.encounter.encounterType == NursePostpartumEncounter)
+                && (byBreastfeeding || byBreastExam)
+
         -- Non Lab Results diagnoses.
         _ ->
             False
@@ -2453,6 +2479,7 @@ labResultsAndExaminationDiagnoses =
     , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
     , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
     , DiagnosisRhesusNegative
+    , DiagnosisPostpartumEarlyMastitisOrEngorgment
     ]
 
 
@@ -2521,7 +2548,6 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             healthEducationFormInputsAndTasksForNurse language assembled form
 
         NursePostpartumEncounter ->
-            --@todo
             healthEducationFormInputsAndTasksForNurse language assembled form
 
         _ ->
@@ -2774,6 +2800,41 @@ healthEducationFormInputsAndTasksForNurse language assembled form =
             else
                 ( [], Nothing )
 
+        earlyMastitisOrEngorgment =
+            let
+                reliefMethods =
+                    List.map
+                        (Translate.EarlyMastitisOrEngorgmentReliefMethod
+                            >> translate language
+                            >> String.toLower
+                            >> text
+                            >> List.singleton
+                            >> li []
+                        )
+                        [ ReliefMethodBreastMassage
+                        , ReliefMethodIncreaseFluid
+                        , ReliefMethodBreastfeedingOrHandExpression
+                        ]
+                        |> ul []
+            in
+            if diagnosed DiagnosisPostpartumEarlyMastitisOrEngorgment assembled then
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationEarlyMastitisOrEngorgment) "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationEarlyMastitisOrEngorgmentInform ":" "label paragraph"
+                  , reliefMethods
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.earlyMastitisOrEngorgment
+                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | earlyMastitisOrEngorgment = Just value }))
+                        "mental-health"
+                        Nothing
+                  ]
+                , Just form.earlyMastitisOrEngorgment
+                )
+
+            else
+                ( [], Nothing )
+
         inputsAndTasks =
             [ nauseaVomiting
             , legCramps
@@ -2785,6 +2846,7 @@ healthEducationFormInputsAndTasksForNurse language assembled form =
             , pelvicPain
             , saferSex
             , mentalHealth
+            , earlyMastitisOrEngorgment
             ]
     in
     ( hivInputs
@@ -6698,9 +6760,9 @@ healthEducationFormWithDefault form saved =
                 , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain value.signs |> Just)
                 , saferSex = or form.saferSex (EverySet.member EducationSaferSex value.signs |> Just)
                 , mentalHealth = or form.mentalHealth (EverySet.member EducationMentalHealth value.signs |> Just)
+                , earlyMastitisOrEngorgment = or form.earlyMastitisOrEngorgment (EverySet.member EducationEarlyMastitisOrEngorgment value.signs |> Just)
 
-                -- Only signs that do not participate at recurrent phase. Resolved directly
-                -- from value.
+                -- Signs that do not participate at initial phase. Resolved directly from value.
                 , hivDetectableViralLoad = Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2
                 , diabetes = Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2
                 }
@@ -6730,6 +6792,7 @@ toHealthEducationValue saved form =
     , ifNullableTrue EducationPelvicPain form.pelvicPain
     , ifNullableTrue EducationSaferSex form.saferSex
     , ifNullableTrue EducationMentalHealth form.mentalHealth
+    , ifNullableTrue EducationEarlyMastitisOrEngorgment form.earlyMastitisOrEngorgment
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
@@ -6739,3 +6802,76 @@ toHealthEducationValue saved form =
                 , signsPhase2 = Maybe.andThen .signsPhase2 saved
                 }
             )
+
+
+breastfeedingFormWithDefault : BreastfeedingForm -> Maybe BreastfeedingValue -> BreastfeedingForm
+breastfeedingFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    reasonForNotBreastfeedingFromValue =
+                        EverySet.toList value
+                            |> List.filter (\sign -> List.member sign reasonsForNotBreastfeeding)
+                            |> List.head
+                in
+                { isBreastfeeding = or form.isBreastfeeding (EverySet.member IsBreastfeeding value |> Just)
+                , reasonForNotBreastfeeding =
+                    maybeValueConsideringIsDirtyField form.reasonForNotBreastfeedingDirty
+                        form.reasonForNotBreastfeeding
+                        reasonForNotBreastfeedingFromValue
+                , reasonForNotBreastfeedingDirty = form.reasonForNotBreastfeedingDirty
+                , breastPain = maybeValueConsideringIsDirtyField form.breastPainDirty form.breastPain (EverySet.member BreastPain value |> Just)
+                , breastPainDirty = form.breastPainDirty
+                , breastRedness = maybeValueConsideringIsDirtyField form.breastRednessDirty form.breastRedness (EverySet.member BreastRedness value |> Just)
+                , breastRednessDirty = form.breastRednessDirty
+                , enoughMilk = maybeValueConsideringIsDirtyField form.enoughMilkDirty form.enoughMilk (EverySet.member EnoughMilk value |> Just)
+                , enoughMilkDirty = form.enoughMilkDirty
+                , latchingWell = maybeValueConsideringIsDirtyField form.latchingWellDirty form.latchingWell (EverySet.member LatchingWell value |> Just)
+                , latchingWellDirty = form.latchingWellDirty
+                }
+            )
+
+
+toBreastfeedingValueWithDefault : Maybe BreastfeedingValue -> BreastfeedingForm -> Maybe BreastfeedingValue
+toBreastfeedingValueWithDefault saved form =
+    breastfeedingFormWithDefault form saved
+        |> toBreastfeedingValue
+
+
+toBreastfeedingValue : BreastfeedingForm -> Maybe BreastfeedingValue
+toBreastfeedingValue form =
+    [ Maybe.map (ifTrue IsBreastfeeding) form.isBreastfeeding
+    , ifNullableTrue BreastPain form.breastPain
+    , ifNullableTrue BreastRedness form.breastRedness
+    , ifNullableTrue EnoughMilk form.enoughMilk
+    , ifNullableTrue LatchingWell form.latchingWell
+    ]
+        ++ [ Maybe.map (EverySet.singleton >> Just) form.reasonForNotBreastfeeding
+                |> Maybe.withDefault (Just EverySet.empty)
+           ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoBreastfeedingSigns)
+
+
+reasonsForNotBreastfeeding : List BreastfeedingSign
+reasonsForNotBreastfeeding =
+    reasonsForNotBreastfeedingLeft ++ reasonsForNotBreastfeedingRight
+
+
+reasonsForNotBreastfeedingLeft : List BreastfeedingSign
+reasonsForNotBreastfeedingLeft =
+    [ NotBreastfeedingBreastPain
+    , NotBreastfeedingBreastRedness
+    , NotBreastfeedingLowMilkProduction
+    , NotBreastfeedingProblemsLatching
+    ]
+
+
+reasonsForNotBreastfeedingRight : List BreastfeedingSign
+reasonsForNotBreastfeedingRight =
+    [ NotBreastfeedingMedicalProblems
+    , NotBreastfeedingPersonalChoice
+    , NotBreastfeedingOther
+    ]

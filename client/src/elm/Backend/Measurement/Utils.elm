@@ -2220,3 +2220,92 @@ prenatalMentalHealthQuestionOptionFromString value =
 
         _ ->
             Nothing
+
+
+breastfeedingSignToString : BreastfeedingSign -> String
+breastfeedingSignToString value =
+    case value of
+        IsBreastfeeding ->
+            "breastfeeding"
+
+        NotBreastfeedingBreastPain ->
+            "not-breastfeeding-breast-pain"
+
+        NotBreastfeedingBreastRedness ->
+            "not-breastfeeding-breast-redness"
+
+        NotBreastfeedingLowMilkProduction ->
+            "not-breastfeeding-low-milk-production"
+
+        NotBreastfeedingProblemsLatching ->
+            "not-breastfeeding-problems-latching"
+
+        NotBreastfeedingMedicalProblems ->
+            "not-breastfeeding-medical-problems"
+
+        NotBreastfeedingPersonalChoice ->
+            "not-breastfeeding-personal-choice"
+
+        NotBreastfeedingOther ->
+            "not-breastfeeding-other"
+
+        BreastPain ->
+            "breast-pain"
+
+        BreastRedness ->
+            "breast-redness"
+
+        EnoughMilk ->
+            "enough-milk"
+
+        LatchingWell ->
+            "latching-well"
+
+        NoBreastfeedingSigns ->
+            "none"
+
+
+breastfeedingSignFromString : String -> Maybe BreastfeedingSign
+breastfeedingSignFromString value =
+    case value of
+        "breastfeeding" ->
+            Just IsBreastfeeding
+
+        "not-breastfeeding-breast-pain" ->
+            Just NotBreastfeedingBreastPain
+
+        "not-breastfeeding-breast-redness" ->
+            Just NotBreastfeedingBreastRedness
+
+        "not-breastfeeding-low-milk-production" ->
+            Just NotBreastfeedingLowMilkProduction
+
+        "not-breastfeeding-problems-latching" ->
+            Just NotBreastfeedingProblemsLatching
+
+        "not-breastfeeding-medical-problems" ->
+            Just NotBreastfeedingMedicalProblems
+
+        "not-breastfeeding-personal-choice" ->
+            Just NotBreastfeedingPersonalChoice
+
+        "not-breastfeeding-other" ->
+            Just NotBreastfeedingOther
+
+        "breast-pain" ->
+            Just BreastPain
+
+        "breast-redness" ->
+            Just BreastRedness
+
+        "enough-milk" ->
+            Just EnoughMilk
+
+        "latching-well" ->
+            Just LatchingWell
+
+        "none" ->
+            Just NoBreastfeedingSigns
+
+        _ ->
+            Nothing

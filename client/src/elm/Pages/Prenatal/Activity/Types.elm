@@ -71,6 +71,12 @@ type HeartburnReliefMethod
     | ReliefMethodSleepWithHeadRaised
 
 
+type EarlyMastitisOrEngorgmentReliefMethod
+    = ReliefMethodBreastMassage
+    | ReliefMethodIncreaseFluid
+    | ReliefMethodBreastfeedingOrHandExpression
+
+
 type TreatmentReviewTask
     = TreatmentReviewPrenatalMedication
     | TreatmentReviewHIV

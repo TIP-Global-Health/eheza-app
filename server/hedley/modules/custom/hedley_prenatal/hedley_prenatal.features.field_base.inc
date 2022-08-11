@@ -128,6 +128,42 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_breastfeeding_signs'.
+  $field_bases['field_breastfeeding_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_breastfeeding_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'breastfeeding' => 'Breastfeeding',
+        'not-breastfeeding-breast-pain' => 'Not breastfeeding - breast pain',
+        'not-breastfeeding-breast-redness' => 'Not breastfeeding - breast redness',
+        'not-breastfeeding-low-milk-production' => 'Not breastfeeding - low milk production',
+        'not-breastfeeding-problems-latching' => 'Not breastfeeding - problems latching',
+        'not-breastfeeding-medical-problems' => 'Not breastfeeding - medical problems',
+        'not-breastfeeding-personal-choice' => 'Not breastfeeding - personal choice',
+        'not-breastfeeding-other' => 'Not breastfeeding - other',
+        'breast-pain' => 'Breast pain',
+        'breast-redness' => 'Breast redness',
+        'enough-milk' => 'Enough milk for 8 feeds',
+        'latching-well' => 'Baby latching well',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_completed_tests'.
   $field_bases['field_completed_tests'] = array(
     'active' => 1,

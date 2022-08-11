@@ -440,6 +440,7 @@ type Revision
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
     | PregnancyTestRevision PregnancyTestId PregnancyTest
     | PrenatalBloodGpRsTestRevision PrenatalBloodGpRsTestId PrenatalBloodGpRsTest
+    | PrenatalBreastfeedingRevision PrenatalBreastfeedingId PrenatalBreastfeeding
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
     | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp

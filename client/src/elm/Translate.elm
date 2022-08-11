@@ -95,7 +95,8 @@ import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.Prenatal.Activity.Types
     exposing
-        ( ExaminationTask(..)
+        ( EarlyMastitisOrEngorgmentReliefMethod(..)
+        , ExaminationTask(..)
         , HeartburnReliefMethod(..)
         , HistoryTask(..)
         , LegCrampsReliefMethod(..)
@@ -381,6 +382,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
     | BloodPressure
@@ -538,6 +540,7 @@ type TranslationId
     | DropzoneDefaultMessage
     | DueDate
     | DueTo
+    | EarlyMastitisOrEngorgmentReliefMethod EarlyMastitisOrEngorgmentReliefMethod
     | EarlyChildhoodDevelopment
     | ECDSignQuestion ECDSign
     | ECDStatus ECDStatus
@@ -758,6 +761,7 @@ type TranslationId
     | MedicationDistributionHelperAnemia
     | MedicationDistributionHelperDiscordantPartnership
     | MedicationDistributionHelperDiscordantPartnershipNoARVs
+    | MedicationDistributionHelperEarlyMastitisOrEngorgment
     | MedicationDistributionHelperHIV
     | MedicationDistributionHelperMebendazole
     | MedicationDistributionHelperGonorrhea
@@ -961,6 +965,7 @@ type TranslationId
     | PrenatalHealthEducationLegPainRednessInform
     | PrenatalHealthEducationPelvicPainInform
     | PrenatalHealthEducationSaferSexInform
+    | PrenatalHealthEducationEarlyMastitisOrEngorgmentInform
     | PrenatalHealthEducationMentalHealthInform
     | PrenatalHIVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
@@ -1067,6 +1072,7 @@ type TranslationId
     | ProvidedSymtomReliefGuidanceQuestion
     | Province
     | ReasonForCSection
+    | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
     | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
@@ -2574,6 +2580,38 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
+        BreastfeedingSignQuestion sign ->
+            case sign of
+                IsBreastfeeding ->
+                    { english = "Are you breastfeeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                BreastPain ->
+                    { english = "Are you experiencing breast pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                BreastRedness ->
+                    { english = "Are you experiencing breast redness"
+                    , kinyarwanda = Nothing
+                    }
+
+                EnoughMilk ->
+                    { english = "Do you have enough milk for your baby to breastfeed at least 8 times per day"
+                    , kinyarwanda = Nothing
+                    }
+
+                LatchingWell ->
+                    { english = "Is the baby latching well"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         BeatsPerMinuteUnitLabel ->
             { english = "bpm"
             , kinyarwanda = Just "Inshuro umutima utera ku munota"
@@ -3757,6 +3795,23 @@ translationSet trans =
             { english = "Early Childhood Development"
             , kinyarwanda = Just "Gahunda ikomatanije y'imikurire"
             }
+
+        EarlyMastitisOrEngorgmentReliefMethod method ->
+            case method of
+                ReliefMethodBreastMassage ->
+                    { english = "Massage"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodIncreaseFluid ->
+                    { english = "Increase fluid"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReliefMethodBreastfeedingOrHandExpression ->
+                    { english = "continue breastfeeding or use hand expression"
+                    , kinyarwanda = Nothing
+                    }
 
         ECDSignQuestion sign ->
             case sign of
@@ -6261,6 +6316,11 @@ translationSet trans =
         MedicationDistributionHelperDiscordantPartnershipNoARVs ->
             { english = "This patient is part of a discordant partnership in which the partner is not on ARVs"
             , kinyarwanda = Just "Uwo babana afite ubwandu bwa Virusi itera SIDA ariko umubyeyi we ntabwo afite kandi ntago afata imiti igabanya ubukana"
+            }
+
+        MedicationDistributionHelperEarlyMastitisOrEngorgment ->
+            { english = "This patient has signs of Early Mastitis or Engorgement"
+            , kinyarwanda = Nothing
             }
 
         MedicationDistributionHelperHIV ->
@@ -9485,6 +9545,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                EducationEarlyMastitisOrEngorgment ->
+                    { english = "Early Mastitis or Engorgment"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -9620,6 +9685,11 @@ translationSet trans =
 
         PrenatalHealthEducationSaferSexInform ->
             { english = "Counsel patient on safer sex practices"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalHealthEducationEarlyMastitisOrEngorgmentInform ->
+            { english = "Instruct the patient that the following may help relieve symptoms"
             , kinyarwanda = Nothing
             }
 
@@ -11513,6 +11583,48 @@ translationSet trans =
             { english = "Reason for C-section"
             , kinyarwanda = Nothing
             }
+
+        ReasonForNotBreastfeeding reason ->
+            case reason of
+                NotBreastfeedingBreastPain ->
+                    { english = "Breast pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingBreastRedness ->
+                    { english = "Breast redness"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingLowMilkProduction ->
+                    { english = "Low milk production"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingProblemsLatching ->
+                    { english = "Problems latching"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingMedicalProblems ->
+                    { english = "Medical Problems"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingPersonalChoice ->
+                    { english = "Personal Choice"
+                    , kinyarwanda = Nothing
+                    }
+
+                NotBreastfeedingOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         ReasonForNotIsolating reason ->
             case reason of

@@ -719,7 +719,11 @@ healthEducationFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { expectations = EverySet.member EducationExpectations value.signs |> Just
+                { hivDetectableViralLoad = or form.hivDetectableViralLoad (Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2)
+                , diabetes = or form.diabetes (Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2)
+
+                -- Signs that do not participate at recurrent phase. Resolved directly from value.
+                , expectations = EverySet.member EducationExpectations value.signs |> Just
                 , visitsReview = EverySet.member EducationVisitsReview value.signs |> Just
                 , warningSigns = EverySet.member EducationWarningSigns value.signs |> Just
                 , hemorrhaging = EverySet.member EducationHemorrhaging value.signs |> Just
@@ -740,8 +744,7 @@ healthEducationFormWithDefault form saved =
                 , pelvicPain = EverySet.member EducationPelvicPain value.signs |> Just
                 , saferSex = EverySet.member EducationSaferSex value.signs |> Just
                 , mentalHealth = EverySet.member EducationMentalHealth value.signs |> Just
-                , hivDetectableViralLoad = or form.hivDetectableViralLoad (Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2)
-                , diabetes = or form.diabetes (Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2)
+                , earlyMastitisOrEngorgment = EverySet.member EducationEarlyMastitisOrEngorgment value.signs |> Just
                 }
             )
 

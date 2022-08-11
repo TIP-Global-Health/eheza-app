@@ -224,6 +224,10 @@ type Msg
       -- PostpartumTreatmentReview
     | SetPostpartumTreatmentReviewBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
     | SavePostpartumTreatmentReview PersonId (Maybe ( MedicationId, Medication ))
+      -- BREASTFEEDING
+    | SetBreastfeedingBoolInput (Bool -> BreastfeedingForm -> BreastfeedingForm) Bool
+    | SetReasonForNotBreastfeeding BreastfeedingSign
+    | SaveBreastfeeding PersonId (Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding ))
 
 
 type alias Model =
@@ -243,6 +247,7 @@ type alias Model =
     , mentalHealthData : MentalHealthData
     , immunisationData : ImmunisationData
     , postpartumTreatmentReviewData : PostpartumTreatmentReviewData
+    , breastfeedingData : BreastfeedingData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe (WarningPopupType Msg)
@@ -267,6 +272,7 @@ emptyModel =
     , mentalHealthData = emptyMentalHealthData
     , immunisationData = emptyImmunisationData
     , postpartumTreatmentReviewData = emptyPostpartumTreatmentReviewData
+    , breastfeedingData = emptyBreastfeedingData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -1190,4 +1196,46 @@ type alias PostpartumTreatmentReviewData =
 emptyPostpartumTreatmentReviewData : MedicationData
 emptyPostpartumTreatmentReviewData =
     { form = emptyMedicationForm
+    }
+
+
+type alias BreastfeedingData =
+    { form : BreastfeedingForm
+    }
+
+
+emptyBreastfeedingData : BreastfeedingData
+emptyBreastfeedingData =
+    { form = emptyBreastfeedingForm
+    }
+
+
+type alias BreastfeedingForm =
+    { isBreastfeeding : Maybe Bool
+    , reasonForNotBreastfeeding : Maybe BreastfeedingSign
+    , reasonForNotBreastfeedingDirty : Bool
+    , breastPain : Maybe Bool
+    , breastPainDirty : Bool
+    , breastRedness : Maybe Bool
+    , breastRednessDirty : Bool
+    , enoughMilk : Maybe Bool
+    , enoughMilkDirty : Bool
+    , latchingWell : Maybe Bool
+    , latchingWellDirty : Bool
+    }
+
+
+emptyBreastfeedingForm : BreastfeedingForm
+emptyBreastfeedingForm =
+    { isBreastfeeding = Nothing
+    , reasonForNotBreastfeeding = Nothing
+    , reasonForNotBreastfeedingDirty = False
+    , breastPain = Nothing
+    , breastPainDirty = False
+    , breastRedness = Nothing
+    , breastRednessDirty = False
+    , enoughMilk = Nothing
+    , enoughMilkDirty = False
+    , latchingWell = Nothing
+    , latchingWellDirty = False
     }

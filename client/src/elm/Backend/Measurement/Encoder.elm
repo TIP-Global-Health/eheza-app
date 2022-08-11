@@ -242,6 +242,9 @@ encodePrenatalHealthEducationSign sign =
             EducationDiabetes ->
                 "diabetes"
 
+            EducationEarlyMastitisOrEngorgment ->
+                "early-mastitis-engorgment"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
@@ -881,6 +884,24 @@ encodePrenatalMentalHealthValue value =
 encodePrenatalTetanusImmunisation : PrenatalTetanusImmunisation -> List ( String, Value )
 encodePrenatalTetanusImmunisation =
     encodePrenatalMeasurement (encodeVaccinationValueWithType "prenatal_tetanus_immunisation")
+
+
+encodePrenatalBreastfeeding : PrenatalBreastfeeding -> List ( String, Value )
+encodePrenatalBreastfeeding =
+    encodePrenatalMeasurement encodeBreastfeedingValue
+
+
+encodeBreastfeedingValue : BreastfeedingValue -> List ( String, Value )
+encodeBreastfeedingValue value =
+    [ ( "breastfeeding_signs", encodeEverySet encodeBreastfeedingSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_breastfeeding" )
+    ]
+
+
+encodeBreastfeedingSign : BreastfeedingSign -> Value
+encodeBreastfeedingSign =
+    breastfeedingSignToString >> string
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )

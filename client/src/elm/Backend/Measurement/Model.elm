@@ -850,6 +850,7 @@ type PrenatalHealthEducationSign
     | EducationHIVDetectableViralLoad
     | EducationMentalHealth
     | EducationDiabetes
+    | EducationEarlyMastitisOrEngorgment
     | NoPrenatalHealthEducationSigns
 
 
@@ -1377,6 +1378,30 @@ type PrenatalMentalHealthQuestionOption
 
 type alias PrenatalTetanusImmunisation =
     PrenatalMeasurement VaccinationValue
+
+
+type alias PrenatalBreastfeeding =
+    PrenatalMeasurement BreastfeedingValue
+
+
+type alias BreastfeedingValue =
+    EverySet BreastfeedingSign
+
+
+type BreastfeedingSign
+    = IsBreastfeeding
+    | NotBreastfeedingBreastPain
+    | NotBreastfeedingBreastRedness
+    | NotBreastfeedingLowMilkProduction
+    | NotBreastfeedingProblemsLatching
+    | NotBreastfeedingMedicalProblems
+    | NotBreastfeedingPersonalChoice
+    | NotBreastfeedingOther
+    | BreastPain
+    | BreastRedness
+    | EnoughMilk
+    | LatchingWell
+    | NoBreastfeedingSigns
 
 
 
@@ -2263,6 +2288,7 @@ type alias PrenatalMeasurements =
     , hivPCRTest : Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )
     , mentalHealth : Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth )
     , tetanusImmunisation : Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation )
+    , breastfeeding : Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding )
     }
 
 
@@ -2304,6 +2330,7 @@ emptyPrenatalMeasurements =
     , hivPCRTest = Nothing
     , mentalHealth = Nothing
     , tetanusImmunisation = Nothing
+    , breastfeeding = Nothing
     }
 
 
