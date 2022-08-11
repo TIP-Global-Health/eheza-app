@@ -2131,6 +2131,11 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 && symptomRecorded assembled.measurements PostpartumFever
                 && (byBreastfeeding || byBreastExam)
 
+        DiagnosisPostpartumExcessiveBleeding ->
+            getMeasurementValueFunc assembled.measurements.guExam
+                |> Maybe.map (.vaginalExamSigns >> EverySet.member ExcessiveVaginalBleeding)
+                |> Maybe.withDefault False
+
         -- Non Lab Results diagnoses.
         _ ->
             False
