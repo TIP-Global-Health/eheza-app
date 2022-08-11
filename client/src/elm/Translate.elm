@@ -2719,6 +2719,11 @@ translationSet trans =
                 NormalBreast ->
                     translationSet Normal
 
+                Warmth ->
+                    { english = "Warmth"
+                    , kinyarwanda = Nothing
+                    }
+
         BrittleHair ->
             { english = "Brittle Hair"
             , kinyarwanda = Just "Gucurama no guhindura ibara ku misatsi"

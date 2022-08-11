@@ -3520,6 +3520,16 @@ viewBreastExamForm language currentDate assembled form =
     let
         selfGuidanceUpdateFunc value form_ =
             { form_ | selfGuidance = Just value }
+
+        breastExamOptionsLeft =
+            if assembled.encounter.encounterType == NursePostpartumEncounter then
+                [ Mass, Discharge, Warmth ]
+
+            else
+                [ Mass, Discharge ]
+
+        breastExamOptionsRight =
+            [ Infection, NormalBreast ]
     in
     div [ class "ui form examination breast-exam" ]
         [ div [ class "ui grid" ]
@@ -3532,8 +3542,8 @@ viewBreastExamForm language currentDate assembled form =
                 ]
             ]
         , viewCheckBoxMultipleSelectInput language
-            [ Mass, Discharge ]
-            [ Infection, NormalBreast ]
+            breastExamOptionsLeft
+            breastExamOptionsRight
             (form.breast |> Maybe.withDefault [])
             Nothing
             SetBreastExamBreast

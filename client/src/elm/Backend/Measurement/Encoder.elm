@@ -1164,6 +1164,9 @@ encodeBreastExamSign sign =
             Infection ->
                 "infection"
 
+            Warmth ->
+                "warmth"
+
             NormalBreast ->
                 "normal"
 

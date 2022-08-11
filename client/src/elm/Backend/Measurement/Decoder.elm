@@ -1361,6 +1361,9 @@ decodeBreastExamSign =
                     "infection" ->
                         succeed Infection
 
+                    "warmth" ->
+                        succeed Warmth
+
                     "normal" ->
                         succeed NormalBreast
 

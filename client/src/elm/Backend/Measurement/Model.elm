@@ -429,6 +429,7 @@ type BreastExamSign
     = Mass
     | Discharge
     | Infection
+    | Warmth
     | NormalBreast
 
 
