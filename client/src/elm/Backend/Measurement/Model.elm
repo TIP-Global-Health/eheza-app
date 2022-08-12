@@ -852,6 +852,7 @@ type PrenatalHealthEducationSign
     | EducationMentalHealth
     | EducationDiabetes
     | EducationEarlyMastitisOrEngorgment
+    | EducationMastitis
     | NoPrenatalHealthEducationSigns
 
 

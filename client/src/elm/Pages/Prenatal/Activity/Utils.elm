@@ -453,6 +453,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
                                     , DiagnosisPostpartumEarlyMastitisOrEngorgment
+                                    , DiagnosisPostpartumMastitis
                                     ]
                                     assembled
                                 || provideMentalHealthEducation assembled
@@ -1508,7 +1509,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
 
 applyDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyDiagnosesHierarchy =
-    applyBloodPreasureDiagnosesHierarchy >> applyMastisisDiagnosesHierarchy
+    applyBloodPreasureDiagnosesHierarchy >> applyMastitisDiagnosesHierarchy
 
 
 applyBloodPreasureDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
@@ -1531,22 +1532,22 @@ applyBloodPreasureDiagnosesHierarchy diagnoses =
         |> EverySet.fromList
 
 
-applyMastisisDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyMastisisDiagnosesHierarchy diagnoses =
+applyMastitisDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyMastitisDiagnosesHierarchy diagnoses =
     let
-        ( mastisisDiagnoses, others ) =
+        ( mastitisDiagnoses, others ) =
             EverySet.toList diagnoses
-                |> List.partition (\diagnosis -> List.member diagnosis hierarchalMastisisDiagnoses)
+                |> List.partition (\diagnosis -> List.member diagnosis hierarchalMastitisDiagnoses)
 
-        topMastisisDiagnosis =
-            List.map hierarchalMastisisDiagnosisToNumber mastisisDiagnoses
+        topMastitisDiagnosis =
+            List.map hierarchalMastitisDiagnosisToNumber mastitisDiagnoses
                 |> Maybe.Extra.values
                 |> List.maximum
-                |> Maybe.andThen hierarchalMastisisDiagnosisFromNumber
+                |> Maybe.andThen hierarchalMastitisDiagnosisFromNumber
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in
-    topMastisisDiagnosis
+    topMastitisDiagnosis
         ++ others
         |> EverySet.fromList
 
@@ -2928,36 +2929,49 @@ healthEducationFormInputsAndTasksForNurse language assembled form =
             else
                 ( [], Nothing )
 
-        earlyMastitisOrEngorgment =
-            let
-                reliefMethods =
-                    List.map
-                        (Translate.EarlyMastitisOrEngorgmentReliefMethod
-                            >> translate language
-                            >> String.toLower
-                            >> text
-                            >> List.singleton
-                            >> li []
-                        )
-                        [ ReliefMethodBreastMassage
-                        , ReliefMethodIncreaseFluid
-                        , ReliefMethodBreastfeedingOrHandExpression
-                        ]
-                        |> ul []
-            in
-            if diagnosed DiagnosisPostpartumEarlyMastitisOrEngorgment assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationEarlyMastitisOrEngorgment) "" "label header"
+        hierarchalMastitis =
+            if diagnosedAnyOf [ DiagnosisPostpartumEarlyMastitisOrEngorgment, DiagnosisPostpartumMastitis ] assembled then
+                let
+                    reliefMethods =
+                        List.map
+                            (Translate.EarlyMastitisOrEngorgmentReliefMethod
+                                >> translate language
+                                >> String.toLower
+                                >> text
+                                >> List.singleton
+                                >> li []
+                            )
+                            [ ReliefMethodBreastMassage
+                            , ReliefMethodIncreaseFluid
+                            , ReliefMethodBreastfeedingOrHandExpression
+                            ]
+                            |> ul []
+
+                    ( eudcationSign, formField, updateFunc ) =
+                        if diagnosed DiagnosisPostpartumMastitis assembled then
+                            ( EducationMastitis
+                            , form.mastitis
+                            , \value form_ -> { form_ | mastitis = Just value }
+                            )
+
+                        else
+                            ( EducationEarlyMastitisOrEngorgment
+                            , form.earlyMastitisOrEngorgment
+                            , \value form_ -> { form_ | earlyMastitisOrEngorgment = Just value }
+                            )
+                in
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel eudcationSign) "" "label header"
                   , viewCustomLabel language Translate.PrenatalHealthEducationEarlyMastitisOrEngorgmentInform ":" "label paragraph"
                   , reliefMethods
                   , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
                   , viewBoolInput
                         language
-                        form.earlyMastitisOrEngorgment
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | earlyMastitisOrEngorgment = Just value }))
-                        "mental-health"
+                        formField
+                        (SetHealthEducationSubActivityBoolInput updateFunc)
+                        "mastitis"
                         Nothing
                   ]
-                , Just form.earlyMastitisOrEngorgment
+                , Just formField
                 )
 
             else
@@ -2974,7 +2988,7 @@ healthEducationFormInputsAndTasksForNurse language assembled form =
             , pelvicPain
             , saferSex
             , mentalHealth
-            , earlyMastitisOrEngorgment
+            , hierarchalMastitis
             ]
     in
     ( hivInputs
@@ -6903,6 +6917,7 @@ healthEducationFormWithDefault form saved =
                 , saferSex = or form.saferSex (EverySet.member EducationSaferSex value.signs |> Just)
                 , mentalHealth = or form.mentalHealth (EverySet.member EducationMentalHealth value.signs |> Just)
                 , earlyMastitisOrEngorgment = or form.earlyMastitisOrEngorgment (EverySet.member EducationEarlyMastitisOrEngorgment value.signs |> Just)
+                , mastitis = or form.mastitis (EverySet.member EducationMastitis value.signs |> Just)
 
                 -- Signs that do not participate at initial phase. Resolved directly from value.
                 , hivDetectableViralLoad = Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2
@@ -6935,6 +6950,7 @@ toHealthEducationValue saved form =
     , ifNullableTrue EducationSaferSex form.saferSex
     , ifNullableTrue EducationMentalHealth form.mentalHealth
     , ifNullableTrue EducationEarlyMastitisOrEngorgment form.earlyMastitisOrEngorgment
+    , ifNullableTrue EducationMastitis form.mastitis
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

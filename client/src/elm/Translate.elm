@@ -9614,6 +9614,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                EducationMastitis ->
+                    { english = "Mastitis"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing

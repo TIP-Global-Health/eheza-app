@@ -257,13 +257,13 @@ hierarchalBloodPreasureDiagnosisFromNumber number =
             Nothing
 
 
-hierarchalMastisisDiagnoses : List PrenatalDiagnosis
-hierarchalMastisisDiagnoses =
+hierarchalMastitisDiagnoses : List PrenatalDiagnosis
+hierarchalMastitisDiagnoses =
     [ DiagnosisPostpartumMastitis, DiagnosisPostpartumEarlyMastitisOrEngorgment ]
 
 
-hierarchalMastisisDiagnosisToNumber : PrenatalDiagnosis -> Maybe Int
-hierarchalMastisisDiagnosisToNumber diagnosis =
+hierarchalMastitisDiagnosisToNumber : PrenatalDiagnosis -> Maybe Int
+hierarchalMastitisDiagnosisToNumber diagnosis =
     case diagnosis of
         DiagnosisPostpartumMastitis ->
             Just 2
@@ -275,8 +275,8 @@ hierarchalMastisisDiagnosisToNumber diagnosis =
             Nothing
 
 
-hierarchalMastisisDiagnosisFromNumber : Int -> Maybe PrenatalDiagnosis
-hierarchalMastisisDiagnosisFromNumber number =
+hierarchalMastitisDiagnosisFromNumber : Int -> Maybe PrenatalDiagnosis
+hierarchalMastitisDiagnosisFromNumber number =
     case number of
         2 ->
             Just DiagnosisPostpartumMastitis
