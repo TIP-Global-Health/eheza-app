@@ -2083,6 +2083,8 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map ((==) RhesusNegative)
                 |> Maybe.withDefault False
 
+        -- If criterias for DiagnosisPostpartumMastitis also matches, this
+        -- diagnosis will be filtered out when applying diagnoses hierarchy.
         DiagnosisPostpartumEarlyMastitisOrEngorgment ->
             let
                 byBreastfeeding =

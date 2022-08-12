@@ -2368,6 +2368,7 @@ resolveParacetamolDistributionInputsAndTasks language currentDate person setMedi
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
                             [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign Paracetamol) (" (" ++ dosage ++ ")") icon "" Nothing
+                            , div [ class "prescription" ] [ text <| translate language Translate.AdministerParacetamolHelper ++ "." ]
                             ]
                     )
                 |> Maybe.withDefault emptyNode

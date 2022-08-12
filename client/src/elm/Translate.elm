@@ -338,6 +338,7 @@ type TranslationId
     | AdministerFolicAcidHelper
     | AdministerHIVARVHelper
     | AdministerIronHelper
+    | AdministerParacetamolHelper
     | AdministerVitaminAHelperPrenatal
     | AdministerVitaminAHelperWellChild
     | Administered
@@ -1956,6 +1957,11 @@ translationSet trans =
         AdministerIronHelper ->
             { english = "Take 1 60 mg tabs 2x a day x 3 months"
             , kinyarwanda = Just "Fata mg 1 60 inshuro 2 ku munsi mu mezi atatu"
+            }
+
+        AdministerParacetamolHelper ->
+            { english = "Take 1 tablet by mouth 3 times a day for 5 days"
+            , kinyarwanda = Nothing
             }
 
         AdministerVitaminAHelperPrenatal ->
