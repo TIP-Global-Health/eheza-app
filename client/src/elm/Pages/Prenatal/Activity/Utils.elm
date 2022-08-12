@@ -517,6 +517,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisCandidiasis
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
+                                    , DiagnosisPostpartumMastitis
                                     ]
                                     assembled
                            )
@@ -596,6 +597,13 @@ nextStepsTaskCompleted assembled task =
 
                     else
                         True
+
+                mastitisTreatmentCompleted =
+                    if diagnosed DiagnosisPostpartumMastitis assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMastitis assembled.measurements
+
+                    else
+                        True
             in
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
                 && malariaTreatmentCompleted
@@ -603,6 +611,7 @@ nextStepsTaskCompleted assembled task =
                 && hypertensionTreatmentCompleted
                 && candidiasisTreatmentCompleted
                 && urinaryTractInfectionTreatmentCompleted
+                && mastitisTreatmentCompleted
 
         NextStepsWait ->
             getMeasurementValueFunc assembled.measurements.labsResults

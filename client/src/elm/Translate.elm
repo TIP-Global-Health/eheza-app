@@ -755,6 +755,8 @@ type TranslationId
     | MalnutritionWithComplications
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
+    | MastitisRecommendedTreatmentHeader
+    | MastitisRecommendedTreatmentHelper
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -6258,6 +6260,16 @@ translationSet trans =
                     { english = "Widowed"
                     , kinyarwanda = Just "Umupfakazi"
                     }
+
+        MastitisRecommendedTreatmentHeader ->
+            { english = "This patient has Mastitis"
+            , kinyarwanda = Nothing
+            }
+
+        MastitisRecommendedTreatmentHelper ->
+            { english = "Select the best treatment option for the patient below"
+            , kinyarwanda = Nothing
+            }
 
         MeasurementNoChange ->
             { english = "No Change"
@@ -11989,7 +12001,7 @@ translationSet trans =
                     }
 
                 TreatmentMastitisAmoxicillin ->
-                    { english = "2 Capsules by mouth 3 times a day for 7 days"
+                    { english = "2 capsules by mouth 3 times a day for 7 days"
                     , kinyarwanda = Nothing
                     }
 
