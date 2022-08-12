@@ -11983,6 +11983,31 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentCloxacillin ->
+                    { english = "2 capsules by mouth 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMastitisAmoxicillin ->
+                    { english = "2 Capsules by mouth 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentPenecilinV ->
+                    { english = "2 tablets by mouth 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentParacetamol ->
+                    { english = "1 tablet by mouth 3 times a day for 5 days or"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentIbuprofen ->
+                    { english = "1 tablet by mouth 3 times a day for 5 days"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Dosage is not applicable for other options.
                 _ ->
                     { english = ""
@@ -12077,6 +12102,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NoTreatmentForHypertension ->
+                    { english = "No Treatment Administered"
+                    , kinyarwanda = Just "Nta muti watanzwe"
+                    }
+
                 TreatmentAluminiumHydroxide ->
                     { english = "Aluminium Hydroxide (500mg)"
                     , kinyarwanda = Nothing
@@ -12107,7 +12137,32 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NoTreatmentForHypertension ->
+                TreatmentCloxacillin ->
+                    { english = "Cloxacillin (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMastitisAmoxicillin ->
+                    { english = "Amoxicillin (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentPenecilinV ->
+                    { english = "Penecilin V (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentParacetamol ->
+                    { english = "Paracetamol (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentIbuprofen ->
+                    { english = "Ibuprofen (400mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoTreatmentForMastitis ->
                     { english = "No Treatment Administered"
                     , kinyarwanda = Just "Nta muti watanzwe"
                     }

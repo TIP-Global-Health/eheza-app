@@ -1482,6 +1482,24 @@ recommendedTreatmentSignToString sign =
         TreatmentClotrimaxazole500 ->
             "clotrimaxazole-500"
 
+        TreatmentCloxacillin ->
+            "cloxacillin"
+
+        TreatmentMastitisAmoxicillin ->
+            "mastitis-amoxicillin"
+
+        TreatmentPenecilinV ->
+            "penecilin-v"
+
+        TreatmentParacetamol ->
+            "paracetamol"
+
+        TreatmentIbuprofen ->
+            "ibuprofen"
+
+        NoTreatmentForMastitis ->
+            "no-treatment-mastitis"
+
 
 recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
 recommendedTreatmentSignFromString sign =
@@ -1554,6 +1572,24 @@ recommendedTreatmentSignFromString sign =
 
         "clotrimaxazole-500" ->
             Just TreatmentClotrimaxazole500
+
+        "cloxacillin" ->
+            Just TreatmentCloxacillin
+
+        "mastitis-amoxicillin" ->
+            Just TreatmentMastitisAmoxicillin
+
+        "penecilin-v" ->
+            Just TreatmentPenecilinV
+
+        "paracetamol" ->
+            Just TreatmentParacetamol
+
+        "ibuprofen" ->
+            Just TreatmentIbuprofen
+
+        "no-treatment-mastitis" ->
+            Just NoTreatmentForMastitis
 
         _ ->
             Nothing
