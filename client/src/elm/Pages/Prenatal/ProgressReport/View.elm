@@ -19,7 +19,7 @@ import Backend.Measurement.Model
         , PrenatalTestExecutionNote(..)
         , PrenatalTestResult(..)
         , PrenatalTestVariant(..)
-        , ReasonForNotSendingToHC(..)
+        , ReasonForNonReferral(..)
         , RecommendedTreatmentSign(..)
         , ReferralFacility(..)
         , SendToHCSign(..)
@@ -2301,11 +2301,11 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         suffix =
                             Maybe.map
                                 (\reason_ ->
-                                    if reason_ == NoReasonForNotSendingToHC then
+                                    if reason_ == NoReasonForNonReferral then
                                         ""
 
                                     else
-                                        " - " ++ (String.toLower <| translate language <| Translate.ReasonForNotSendingToHC reason_)
+                                        " - " ++ (String.toLower <| translate language <| Translate.ReasonForNonReferral reason_)
                                 )
                                 reason
                                 |> Maybe.withDefault ""

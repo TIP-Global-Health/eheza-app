@@ -829,7 +829,7 @@ type TranslationId
     | NoTreatmentAdministered
     | NoTreatmentRecorded
     | NutritionSigns
-    | ReasonForNotSendingToHC ReasonForNotSendingToHC
+    | ReasonForNonReferral ReasonForNonReferral
     | AdministrationNote AdministrationNote
     | AdministrationNoteForPrenatalImmunisation AdministrationNote
     | AdministrationNoteForWellChildImmunisation AdministrationNote
@@ -6860,7 +6860,7 @@ translationSet trans =
             , kinyarwanda = Just "Ibimenyetso by'imirire"
             }
 
-        ReasonForNotSendingToHC reason ->
+        ReasonForNonReferral reason ->
             case reason of
                 ClientRefused ->
                     { english = "Client refused"
@@ -6882,12 +6882,12 @@ translationSet trans =
                     , kinyarwanda = Just "Umukiriya ari kwitabwaho"
                     }
 
-                ReasonForNotSendingToHCOther ->
+                ReasonForNonReferralOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
                     }
 
-                NoReasonForNotSendingToHC ->
+                NoReasonForNonReferral ->
                     { english = "No Reason"
                     , kinyarwanda = Nothing
                     }

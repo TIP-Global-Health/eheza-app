@@ -138,7 +138,7 @@ type alias SendToHCForm =
     , accompanyToHealthCenter : Maybe Bool
     , enrollToNutritionProgram : Maybe Bool
     , referToNutritionProgram : Maybe Bool
-    , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
+    , reasonForNotSendingToHC : Maybe ReasonForNonReferral
     }
 
 
@@ -235,7 +235,7 @@ type MsgChild
     | DropZoneComplete DropZoneFile
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SetReasonForNonReferral ReasonForNonReferral
     | SetProvidedEducationForDiagnosis Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetContributingFactorsSign ContributingFactorsSign

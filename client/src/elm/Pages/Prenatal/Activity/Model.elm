@@ -184,7 +184,7 @@ type Msg
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SetAccompanyToHC Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SetReasonForNonReferral ReasonForNonReferral
     | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe ReferralFacility) (Maybe NextStepsTask)
     | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetAppointmentConfirmation Date
@@ -654,7 +654,7 @@ type alias PrenatalReferralForm =
       handReferralForm : Maybe Bool
     , referToHealthCenter : Maybe Bool
     , accompanyToHealthCenter : Maybe Bool
-    , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
+    , reasonForNotSendingToHC : Maybe ReasonForNonReferral
 
     -- Fields used for Nurse:
     , referToHospital : Maybe Bool
@@ -668,7 +668,7 @@ type alias PrenatalReferralForm =
     , referToNCDProgram : Maybe Bool
     , referralFormNCDProgram : Maybe Bool
     , accompanyToNCDProgram : Maybe Bool
-    , reasonsForNonReferral : Maybe (EverySet ReasonForNotSendingToHC)
+    , reasonsForNonReferral : Maybe (EverySet ReasonForNonReferral)
     }
 
 

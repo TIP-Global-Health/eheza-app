@@ -1095,7 +1095,7 @@ viewSendToHC language currentDate measurement form_ =
             viewSendToHealthCenterForm language
                 currentDate
                 SetReferToHealthCenter
-                SetReasonForNotSendingToHC
+                SetReasonForNonReferral
                 SetHandReferralForm
                 Nothing
                 form
@@ -1145,7 +1145,7 @@ viewSendToHealthCenterForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
@@ -1159,7 +1159,7 @@ viewSendToHospitalForm :
     -> Language
     -> NominalDate
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
@@ -1172,7 +1172,7 @@ viewSendToHIVProgramForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
@@ -1185,7 +1185,7 @@ viewSendToMentalSpecialistForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
@@ -1200,12 +1200,12 @@ viewSendToFacilityForm :
     -> ReferralFacility
     -> List PrenatalDiagnosis
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToFacilityForm language currentDate facility referralReasons setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+viewSendToFacilityForm language currentDate facility referralReasons setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
         headerHelper =
             case facility of
@@ -1254,10 +1254,10 @@ viewSendToFacilityForm language currentDate facility referralReasons setReferToH
                         let
                             options =
                                 if List.member facility [ FacilityHIVProgram, FacilityMentalHealthSpecialist ] then
-                                    [ ClientRefused, ClientAlreadyInCare, ReasonForNotSendingToHCOther ]
+                                    [ ClientRefused, ClientAlreadyInCare, ReasonForNonReferralOther ]
 
                                 else
-                                    [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                                    [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNonReferralOther ]
                         in
                         [ div [ class "why-not" ]
                             [ viewQuestionLabel language Translate.WhyNot
@@ -1265,8 +1265,8 @@ viewSendToFacilityForm language currentDate facility referralReasons setReferToH
                                 options
                                 []
                                 form.reasonForNotSendingToHC
-                                setReasonForNotSendingToHCMsg
-                                Translate.ReasonForNotSendingToHC
+                                setReasonForNonReferralMsg
+                                Translate.ReasonForNonReferral
                             ]
                         ]
 

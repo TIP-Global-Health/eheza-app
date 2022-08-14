@@ -2737,14 +2737,14 @@ decodeSendToHCValue : Decoder SendToHCValue
 decodeSendToHCValue =
     succeed SendToHCValue
         |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
-        |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
+        |> optional "reason_not_sent_to_hc" decodeReasonForNonReferral NoReasonForNonReferral
 
 
 decodePrenatalSendToHCValue : Decoder PrenatalSendToHCValue
 decodePrenatalSendToHCValue =
     succeed PrenatalSendToHCValue
         |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
-        |> optional "reason_not_sent_to_hc" decodeReasonForNotSendingToHC NoReasonForNotSendingToHC
+        |> optional "reason_not_sent_to_hc" decodeReasonForNonReferral NoReasonForNonReferral
         |> optional "referral_facility" (nullable decodeReferralFacility) Nothing
 
 
@@ -2779,8 +2779,8 @@ decodeSendToHCSign =
             )
 
 
-decodeReasonForNotSendingToHC : Decoder ReasonForNotSendingToHC
-decodeReasonForNotSendingToHC =
+decodeReasonForNonReferral : Decoder ReasonForNonReferral
+decodeReasonForNonReferral =
     string
         |> andThen
             (\event ->
@@ -2798,15 +2798,15 @@ decodeReasonForNotSendingToHC =
                         succeed ClientAlreadyInCare
 
                     "other" ->
-                        succeed ReasonForNotSendingToHCOther
+                        succeed ReasonForNonReferralOther
 
                     "none" ->
-                        succeed NoReasonForNotSendingToHC
+                        succeed NoReasonForNonReferral
 
                     _ ->
                         fail <|
                             event
-                                ++ "is not a recognized ReasonForNotSendingToHC"
+                                ++ "is not a recognized ReasonForNonReferral"
             )
 
 

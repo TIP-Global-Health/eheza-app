@@ -2225,7 +2225,7 @@ encodeGroupSendToHC =
 encodeSendToHCValueWithType : String -> SendToHCValue -> List ( String, Value )
 encodeSendToHCValueWithType type_ value =
     [ ( "send_to_hc", encodeEverySet encodeSendToHCSign value.signs )
-    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
+    , ( "reason_not_sent_to_hc", encodeReasonForNonReferral value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
@@ -2240,7 +2240,7 @@ encodePrenatalSendToHCValue value =
                 |> Maybe.withDefault []
     in
     [ ( "send_to_hc", encodeEverySet encodeSendToHCSign value.signs )
-    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
+    , ( "reason_not_sent_to_hc", encodeReasonForNonReferral value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_send_to_hc" )
     ]
@@ -2270,8 +2270,8 @@ encodeSendToHCSign sign =
                 "none"
 
 
-encodeReasonForNotSendingToHC : ReasonForNotSendingToHC -> Value
-encodeReasonForNotSendingToHC event =
+encodeReasonForNonReferral : ReasonForNonReferral -> Value
+encodeReasonForNonReferral event =
     string <|
         case event of
             ClientRefused ->
@@ -2286,10 +2286,10 @@ encodeReasonForNotSendingToHC event =
             ClientAlreadyInCare ->
                 "already-in-care"
 
-            ReasonForNotSendingToHCOther ->
+            ReasonForNonReferralOther ->
                 "other"
 
-            NoReasonForNotSendingToHC ->
+            NoReasonForNonReferral ->
                 "none"
 
 

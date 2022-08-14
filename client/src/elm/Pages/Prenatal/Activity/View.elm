@@ -1870,7 +1870,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                         |> viewFormFunc language
                             currentDate
                             SetReferToHealthCenter
-                            SetReasonForNotSendingToHC
+                            SetReasonForNonReferral
                             SetHandReferralForm
                             accompanyConfig
 

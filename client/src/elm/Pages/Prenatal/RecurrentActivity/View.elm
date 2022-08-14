@@ -887,7 +887,7 @@ viewNextStepsContent language currentDate assembled data =
                             language
                             currentDate
                             SetReferToHealthCenter
-                            SetReasonForNotSendingToHC
+                            SetReasonForNonReferral
                             SetHandReferralForm
                             Nothing
 

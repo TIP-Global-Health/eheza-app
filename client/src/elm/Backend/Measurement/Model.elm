@@ -873,7 +873,7 @@ type alias PrenatalSendToHC =
 
 type alias PrenatalSendToHCValue =
     { signs : EverySet SendToHCSign
-    , reasonForNotSendingToHC : ReasonForNotSendingToHC
+    , reasonForNotSendingToHC : ReasonForNonReferral
 
     -- This field will be populated in case of non standard facility.
     -- Standards are Health center for CHW and Hopital for nurse.
@@ -1630,7 +1630,7 @@ type alias Call114 =
 
 type alias SendToHCValue =
     { signs : EverySet SendToHCSign
-    , reasonForNotSendingToHC : ReasonForNotSendingToHC
+    , reasonForNotSendingToHC : ReasonForNonReferral
     }
 
 
@@ -1720,13 +1720,13 @@ type alias AcuteIllnessMuac =
     AcuteIllnessMeasurement MuacInCm
 
 
-type ReasonForNotSendingToHC
+type ReasonForNonReferral
     = ClientRefused
     | NoAmbulance
     | ClientUnableToAffordFees
     | ClientAlreadyInCare
-    | ReasonForNotSendingToHCOther
-    | NoReasonForNotSendingToHC
+    | ReasonForNonReferralOther
+    | NoReasonForNonReferral
 
 
 type TreatmentOngoingSign

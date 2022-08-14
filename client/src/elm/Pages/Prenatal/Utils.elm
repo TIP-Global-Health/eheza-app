@@ -2582,7 +2582,7 @@ toPrenatalSendToHCValue referralFacility form =
 
         reasonForNotSendingToHC =
             form.reasonForNotSendingToHC
-                |> Maybe.withDefault NoReasonForNotSendingToHC
+                |> Maybe.withDefault NoReasonForNonReferral
                 |> Just
     in
     Maybe.map PrenatalSendToHCValue signs
