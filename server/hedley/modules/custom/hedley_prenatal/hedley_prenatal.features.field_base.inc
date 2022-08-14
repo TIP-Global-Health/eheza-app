@@ -1031,6 +1031,44 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_reasons_for_non_referrals'.
+  $field_bases['field_reasons_for_non_referrals'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_reasons_for_non_referrals',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hospital-client-refused' => 'Hospital - Client refused',
+        'hospital-already-in-care' => 'Hospital - Client already in care',
+        'hospital-unnecessary' => 'Hospital - Unnecessary',
+        'hospital-other' => 'Hospital - Other',
+        'mhs-client-refused' => 'Mental health specialist - Client refused',
+        'mhs-already-in-care' => 'Mental health specialist - Client already in care',
+        'mhs-unnecessary' => 'Mental health specialist - Unnecessary',
+        'mhs-other' => 'Mental health specialist - Other',
+        'arv-client-refused' => 'ARV program - Client refused',
+        'arv-already-in-care' => 'ARV program - Client already in care',
+        'ncd-client-refused' => 'NCD program - Client refused',
+        'ncd-already-in-care' => 'NCD program - Client already in care',
+        'none-initial' => 'None at initial phase',
+        'none-recurrent' => 'None at recurrent phase',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_recommended_treatment'.
   $field_bases['field_recommended_treatment'] = array(
     'active' => 1,
@@ -1077,13 +1115,14 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_referral_facility'.
-  $field_bases['field_referral_facility'] = array(
+  // Exported field_base: 'field_referrals'.
+  $field_bases['field_referrals'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
+    'entity_id_type' => NULL,
     'entity_types' => array(),
-    'field_name' => 'field_referral_facility',
+    'field_name' => 'field_referrals',
     'indexes' => array(
       'value' => array(
         0 => 'value',
@@ -1093,8 +1132,17 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'hiv-program' => 'HIV program',
-        'mental-health-specialist' => 'Mental health specialist',
+        'hospital' => 'Hospital',
+        'hospital-referral-form' => 'Hospital - referral form',
+        'mhs' => 'Mental health specialist',
+        'mhs-referral-form' => 'Mental health specialist - referral form',
+        'mhs-accompany' => 'Mental health specialist - accompany',
+        'arv' => 'ARV program',
+        'arv-referral-form' => 'ARV program - referral form',
+        'arv-accompany' => 'ARV program - accompany',
+        'ncd' => 'NCD program',
+        'ncd-referral-form' => 'NCD program - referral form',
+        'ncd-accompany' => 'NCD program - accompany',
       ),
       'allowed_values_function' => '',
     ),
