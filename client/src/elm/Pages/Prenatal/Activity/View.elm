@@ -25,7 +25,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (sendToHCFormWithDefault, vaccinationFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewSendToMentalSpecialistForm)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToARVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewSendToMentalSpecialistForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -1832,7 +1832,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     ( FacilityMentalHealthSpecialist, [] )
 
                 else
-                    ( FacilityHIVProgram, [] )
+                    ( FacilityARVProgram, [] )
 
         viewForm =
             case activeTask of
@@ -1861,8 +1861,12 @@ viewNextStepsContent language currentDate isChw assembled data =
                                 FacilityMentalHealthSpecialist ->
                                     ( viewSendToMentalSpecialistForm, Nothing )
 
-                                FacilityHIVProgram ->
-                                    ( viewSendToHIVProgramForm, Just SetAccompanyToHC )
+                                FacilityARVProgram ->
+                                    ( viewSendToARVProgramForm, Just SetAccompanyToHC )
+
+                                FacilityNCDProgram ->
+                                    -- @todo
+                                    ( [], Nothing )
                     in
                     measurements.sendToHC
                         |> getMeasurementValueFunc
@@ -1973,7 +1977,12 @@ viewNextStepsContent language currentDate isChw assembled data =
                                     NextStepsSendToHC ->
                                         let
                                             nonDefaultFacility =
-                                                if List.member referralFacility [ FacilityMentalHealthSpecialist, FacilityHIVProgram ] then
+                                                if
+                                                    List.member referralFacility
+                                                        [ FacilityMentalHealthSpecialist
+                                                        , FacilityARVProgram
+                                                        ]
+                                                then
                                                     Just referralFacility
 
                                                 else

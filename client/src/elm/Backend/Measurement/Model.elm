@@ -868,24 +868,45 @@ type PrenatalAssesment
 
 
 type alias PrenatalSendToHC =
-    PrenatalMeasurement PrenatalSendToHCValue
+    PrenatalMeasurement PrenatalReferralValue
 
 
-type alias PrenatalSendToHCValue =
-    { signs : EverySet SendToHCSign
-    , reasonForNotSendingToHC : ReasonForNonReferral
-
-    -- This field will be populated in case of non standard facility.
-    -- Standards are Health center for CHW and Hopital for nurse.
-    , referralFacility : Maybe ReferralFacility
+type alias PrenatalReferralValue =
+    { sendToHCSigns : Maybe (EverySet SendToHCSign)
+    , reasonForNotSendingToHC : Maybe ReasonForNonReferral
+    , referToFacilitySigns : Maybe (EverySet ReferToFacilitySign)
+    , reasonForNotReferringYoFacility : Maybe (EverySet FacilityNonReferralReason)
     }
+
+
+type ReferToFacilitySign
+    = ReferToHospital
+    | ReferralFormHospital
+    | ReferToMentalHealthSpecialist
+    | ReferralFormMentalHealthSpecialist
+    | AccompanyToMentalHealthSpecialist
+    | ReferToARVProgram
+    | ReferralFormARVProgram
+    | AccompanyToARVProgram
+    | ReferToNCDProgram
+    | ReferralFormNCDProgram
+    | AccompanyToNCDProgram
+    | NoReferToFacilitySigns
+
+
+type FacilityNonReferralReason
+    = NonReferralReasonHospital ReasonForNonReferral
+    | NonReferralReasonMentalHealthSpecialist ReasonForNonReferral
+    | NonReferralReasonARVProgram ReasonForNonReferral
+    | NonReferralReasonNCDProgram ReasonForNonReferral
 
 
 type ReferralFacility
     = FacilityHealthCenter
     | FacilityHospital
-    | FacilityHIVProgram
     | FacilityMentalHealthSpecialist
+    | FacilityARVProgram
+    | FacilityNCDProgram
 
 
 type alias PrenatalAppointmentConfirmationValue =
@@ -1645,36 +1666,6 @@ type SendToHCSign
 
 type alias SendToHC =
     AcuteIllnessMeasurement SendToHCValue
-
-
-type alias PrenatalReferralValue =
-    { sendToHCSigns : Maybe (EverySet SendToHCSign)
-    , reasonForNotSendingToHC : Maybe ReasonForNonReferral
-    , referToFacilitySigns : Maybe (EverySet ReferToFacilitySign)
-    , reasonForNotReferringYoFacility : Maybe (EverySet FacilityNonReferralReason)
-    }
-
-
-type ReferToFacilitySign
-    = ReferToHospital
-    | ReferralFormHospital
-    | ReferToMentalHealthSpecialist
-    | ReferralFormMentalHealthSpecialist
-    | AccompanyToMentalHealthSpecialist
-    | ReferToARVProgram
-    | ReferralFormARVProgram
-    | AccompanyToARVProgram
-    | ReferToNCDProgram
-    | ReferralFormNCDProgram
-    | AccompanyToNCDProgram
-    | NoReferToFacilitySigns
-
-
-type FacilityNonReferralReason
-    = NonReferralReasonHospital ReasonForNonReferral
-    | NonReferralReasonMentalHealthSpecialist ReasonForNonReferral
-    | NonReferralReasonARVProgram ReasonForNonReferral
-    | NonReferralReasonNCDProgram ReasonForNonReferral
 
 
 type MedicationDistributionSign

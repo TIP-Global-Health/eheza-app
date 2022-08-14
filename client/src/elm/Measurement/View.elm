@@ -9,7 +9,7 @@ module Measurement.View exposing
     , viewMeasurementFloatDiff
     , viewMother
     , viewReferToProgramForm
-    , viewSendToHIVProgramForm
+    , viewSendToARVProgramForm
     , viewSendToHealthCenterForm
     , viewSendToHospitalForm
     , viewSendToMentalSpecialistForm
@@ -1168,7 +1168,7 @@ viewSendToHospitalForm referralReasons language currentDate =
     viewSendToFacilityForm language currentDate FacilityHospital referralReasons
 
 
-viewSendToHIVProgramForm :
+viewSendToARVProgramForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
@@ -1177,8 +1177,8 @@ viewSendToHIVProgramForm :
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToHIVProgramForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHIVProgram []
+viewSendToARVProgramForm language currentDate =
+    viewSendToFacilityForm language currentDate FacilityARVProgram []
 
 
 viewSendToMentalSpecialistForm :
@@ -1237,11 +1237,15 @@ viewSendToFacilityForm language currentDate facility referralReasons setReferToH
                     , viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions"
                     ]
 
-                FacilityHIVProgram ->
-                    [ viewCustomLabel language Translate.PrenatalHIVProgramHelper "." "instructions" ]
-
                 FacilityMentalHealthSpecialist ->
                     [ viewCustomLabel language Translate.PrenatalMentalHealthSpecialistHelper "." "instructions" ]
+
+                PrenatalARVProgram ->
+                    [ viewCustomLabel language Translate.PrenatalARVProgramHelper "." "instructions" ]
+
+                PrenatalNCDProgram ->
+                    -- @todo
+                    []
 
         sendToHCSection =
             let
@@ -1253,7 +1257,7 @@ viewSendToFacilityForm language currentDate facility referralReasons setReferToH
                     if not sentToHealthCenter then
                         let
                             options =
-                                if List.member facility [ FacilityHIVProgram, FacilityMentalHealthSpecialist ] then
+                                if List.member facility [ FacilityARVProgram, FacilityMentalHealthSpecialist ] then
                                     [ ClientRefused, ClientAlreadyInCare, ReasonForNonReferralOther ]
 
                                 else

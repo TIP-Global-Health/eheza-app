@@ -1189,7 +1189,7 @@ update language currentDate id db msg model =
                         |> -- We pass Nothing here, because we know that Hospital form
                            -- is displayed, and it does not require non default
                            -- referral facility.
-                           toPrenatalSendToHCValueWithDefault measurement Nothing
+                           toPrenatalReferralValueWithDefault measurement Nothing
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

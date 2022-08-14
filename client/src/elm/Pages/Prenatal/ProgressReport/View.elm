@@ -2391,8 +2391,8 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             getMeasurementValueFunc measurements.sendToHC
                 |> Maybe.map
                     (\value ->
-                        if value.referralFacility == Just FacilityHIVProgram then
-                            referredToFacilityMessage (Just FacilityHIVProgram)
+                        if value.referralFacility == Just PrenatalARVProgram then
+                            referredToFacilityMessage (Just PrenatalARVProgram)
 
                         else
                             getMeasurementValueFunc measurements.medicationDistribution

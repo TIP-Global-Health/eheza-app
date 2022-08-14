@@ -2543,8 +2543,8 @@ outsideCareDiagnosesWithPossibleMedication =
     ]
 
 
-prenatalSendToHCFormWithDefault : SendToHCForm -> Maybe PrenatalSendToHCValue -> SendToHCForm
-prenatalSendToHCFormWithDefault form saved =
+prenatalReferralFormWithDefault : PrenatalReferralForm -> Maybe PrenatalReferralValue -> PrenatalReferralForm
+prenatalReferralFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -2552,25 +2552,19 @@ prenatalSendToHCFormWithDefault form saved =
                 { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
                 , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
                 , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
-
-                -- Not used at prenatal.
-                , enrollToNutritionProgram = form.enrollToNutritionProgram
-
-                -- Not used at prenatal.
-                , referToNutritionProgram = form.referToNutritionProgram
                 , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
                 }
             )
 
 
-toPrenatalSendToHCValueWithDefault : Maybe PrenatalSendToHCValue -> Maybe ReferralFacility -> SendToHCForm -> Maybe PrenatalSendToHCValue
-toPrenatalSendToHCValueWithDefault saved referralFacility form =
-    prenatalSendToHCFormWithDefault form saved
-        |> toPrenatalSendToHCValue referralFacility
+toPrenatalReferralValueWithDefault : Maybe PrenatalReferralValue -> Maybe ReferralFacility -> PrenatalReferralForm -> Maybe PrenatalReferralValue
+toPrenatalReferralValueWithDefault saved referralFacility form =
+    prenatalReferralFormWithDefault form saved
+        |> toPrenatalReferralValue referralFacility
 
 
-toPrenatalSendToHCValue : Maybe ReferralFacility -> SendToHCForm -> Maybe PrenatalSendToHCValue
-toPrenatalSendToHCValue referralFacility form =
+toPrenatalReferralValue : Maybe ReferralFacility -> PrenatalReferralForm -> Maybe PrenatalReferralValue
+toPrenatalReferralValue referralFacility form =
     let
         signs =
             [ ifNullableTrue HandReferrerForm form.handReferralForm
@@ -2578,14 +2572,14 @@ toPrenatalSendToHCValue referralFacility form =
             , ifNullableTrue PrenatalAccompanyToHC form.accompanyToHealthCenter
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoReferralSigns)
 
         reasonForNotSendingToHC =
             form.reasonForNotSendingToHC
                 |> Maybe.withDefault NoReasonForNonReferral
                 |> Just
     in
-    Maybe.map PrenatalSendToHCValue signs
+    Maybe.map PrenatalReferralValue signs
         |> andMap reasonForNotSendingToHC
         |> andMap (Just referralFacility)
 

@@ -397,7 +397,7 @@ decodePrenatalAssesment =
 
 decodePrenatalSendToHc : Decoder PrenatalSendToHC
 decodePrenatalSendToHc =
-    decodePrenatalMeasurement decodePrenatalSendToHCValue
+    decodePrenatalMeasurement decodePrenatalReferralValue
 
 
 decodeAppointmentConfirmation : Decoder PrenatalAppointmentConfirmation
@@ -2740,9 +2740,9 @@ decodeSendToHCValue =
         |> optional "reason_not_sent_to_hc" decodeReasonForNonReferral NoReasonForNonReferral
 
 
-decodePrenatalSendToHCValue : Decoder PrenatalSendToHCValue
-decodePrenatalSendToHCValue =
-    succeed PrenatalSendToHCValue
+decodePrenatalReferralValue : Decoder PrenatalReferralValue
+decodePrenatalReferralValue =
+    succeed PrenatalReferralValue
         |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
         |> optional "reason_not_sent_to_hc" decodeReasonForNonReferral NoReasonForNonReferral
         |> optional "referral_facility" (nullable decodeReferralFacility) Nothing
@@ -2816,17 +2816,20 @@ decodeReferralFacility =
         |> andThen
             (\facility ->
                 case facility of
-                    "health-center" ->
+                    "hc" ->
                         succeed FacilityHealthCenter
 
                     "hospital" ->
                         succeed FacilityHospital
 
-                    "hiv-program" ->
-                        succeed FacilityHIVProgram
-
-                    "mental-health-specialist" ->
+                    "mhs" ->
                         succeed FacilityMentalHealthSpecialist
+
+                    "arv" ->
+                        succeed FacilityARVProgram
+
+                    "ncd" ->
+                        succeed FacilityNCDProgram
 
                     _ ->
                         fail <|

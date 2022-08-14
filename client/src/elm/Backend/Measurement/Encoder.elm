@@ -280,7 +280,7 @@ encodePrenatalAssesment assesment =
 
 encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )
 encodePrenatalSendToHC =
-    encodePrenatalMeasurement encodePrenatalSendToHCValue
+    encodePrenatalMeasurement encodePrenatalReferralValue
 
 
 encodeAppointmentConfirmation : PrenatalAppointmentConfirmation -> List ( String, Value )
@@ -2231,20 +2231,13 @@ encodeSendToHCValueWithType type_ value =
     ]
 
 
-encodePrenatalSendToHCValue : PrenatalSendToHCValue -> List ( String, Value )
-encodePrenatalSendToHCValue value =
-    let
-        referralFacility =
-            Maybe.map (\facility -> [ ( "referral_facility", encodeReferralFacility facility ) ])
-                value.referralFacility
-                |> Maybe.withDefault []
-    in
+encodePrenatalReferralValue : PrenatalReferralValue -> List ( String, Value )
+encodePrenatalReferralValue value =
     [ ( "send_to_hc", encodeEverySet encodeSendToHCSign value.signs )
     , ( "reason_not_sent_to_hc", encodeReasonForNonReferral value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_send_to_hc" )
     ]
-        ++ referralFacility
 
 
 encodeSendToHCSign : SendToHCSign -> Value
@@ -2298,16 +2291,19 @@ encodeReferralFacility facility =
     string <|
         case facility of
             FacilityHealthCenter ->
-                "health-center"
+                "hc"
 
             FacilityHospital ->
                 "hospital"
 
-            FacilityHIVProgram ->
-                "hiv-program"
-
             FacilityMentalHealthSpecialist ->
-                "mental-health-specialist"
+                "mhs"
+
+            FacilityARVProgram ->
+                "arv"
+
+            FacilityNCDProgram ->
+                "ncd"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )

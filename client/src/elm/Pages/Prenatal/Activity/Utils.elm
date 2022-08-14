@@ -24,7 +24,7 @@ import Measurement.Model exposing (VaccinationFormViewMode(..), VitalsForm)
 import Measurement.Utils
     exposing
         ( getNextVaccineDose
-        , sendToHCFormWithDefault
+        , referralFormWithDefault
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         , vitalsFormWithDefault
@@ -2971,7 +2971,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 form =
                     assembled.measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
+                        |> prenatalSendToHCFormWithDefault data.referralForm
 
                 ( reasonForNotSentCompleted, reasonForNotSentActive ) =
                     form.referToHealthCenter

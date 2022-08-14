@@ -625,7 +625,7 @@ emptyImmunisationData =
 type alias NextStepsData =
     { appointmentConfirmationForm : AppointmentConfirmationForm
     , followUpForm : FollowUpForm
-    , sendToHCForm : SendToHCForm
+    , referralForm : PrenatalReferralForm
     , healthEducationForm : HealthEducationForm
     , newbornEnrolmentForm : NewbornEnrolmentForm
     , medicationDistributionForm : MedicationDistributionForm
@@ -637,7 +637,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { appointmentConfirmationForm = emptyAppointmentConfirmationForm
     , followUpForm = emptyFollowUpForm
-    , sendToHCForm = emptySendToHCForm
+    , referralForm = emptyPrenatalReferralForm
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , medicationDistributionForm = emptyMedicationDistributionForm
