@@ -1647,6 +1647,36 @@ type alias SendToHC =
     AcuteIllnessMeasurement SendToHCValue
 
 
+type alias PrenatalReferralValue =
+    { sendToHCSigns : Maybe (EverySet SendToHCSign)
+    , reasonForNotSendingToHC : Maybe ReasonForNonReferral
+    , referToFacilitySigns : Maybe (EverySet ReferToFacilitySign)
+    , reasonForNotReferringYoFacility : Maybe (EverySet FacilityNonReferralReason)
+    }
+
+
+type ReferToFacilitySign
+    = ReferToHospital
+    | ReferralFormHospital
+    | ReferToMentalHealthSpecialist
+    | ReferralFormMentalHealthSpecialist
+    | AccompanyToMentalHealthSpecialist
+    | ReferToARVProgram
+    | ReferralFormARVProgram
+    | AccompanyToARVProgram
+    | ReferToNCDProgram
+    | ReferralFormNCDProgram
+    | AccompanyToNCDProgram
+    | NoReferToFacilitySigns
+
+
+type FacilityNonReferralReason
+    = NonReferralReasonHospital ReasonForNonReferral
+    | NonReferralReasonMentalHealthSpecialist ReasonForNonReferral
+    | NonReferralReasonARVProgram ReasonForNonReferral
+    | NonReferralReasonNCDProgram ReasonForNonReferral
+
+
 type MedicationDistributionSign
     = Amoxicillin
     | Coartem

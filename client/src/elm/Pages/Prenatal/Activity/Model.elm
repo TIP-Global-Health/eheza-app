@@ -668,7 +668,7 @@ type alias PrenatalReferralForm =
     , referToNCDProgram : Maybe Bool
     , referralFormNCDProgram : Maybe Bool
     , accompanyToNCDProgram : Maybe Bool
-    , reasonsForNonReferral : Maybe (EverySet ReasonForNonReferral)
+    , facilityNonReferralReasons : Maybe (EverySet FacilityNonReferralReason)
     }
 
 
@@ -689,7 +689,7 @@ emptyPrenatalReferralForm =
     , referToNCDProgram = Nothing
     , referralFormNCDProgram = Nothing
     , accompanyToNCDProgram = Nothing
-    , reasonsForNonReferral = Nothing
+    , facilityNonReferralReasons = Nothing
     }
 
 
