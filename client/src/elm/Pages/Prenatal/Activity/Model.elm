@@ -182,7 +182,8 @@ type Msg
     | SaveFollowUp PersonId PrenatalAssesment (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) Bool (Maybe NextStepsTask)
     | SaveNewbornEnrollment Bool (Maybe NextStepsTask)
     | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
-    | SetReasonForNonReferral ReasonForNonReferral
+    | SetHealthCenterNonReferralReason ReasonForNonReferral
+    | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
     | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe NextStepsTask)
     | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetAppointmentConfirmation Date

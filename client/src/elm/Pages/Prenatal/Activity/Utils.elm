@@ -6560,7 +6560,7 @@ resolveReferralInputsAndTasksForCHW language currentDate assembled form =
                                     [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNonReferralOther ]
                                     []
                                     form.reasonForNotSendingToHC
-                                    SetReasonForNonReferral
+                                    SetHealthCenterNonReferralReason
                                     Translate.ReasonForNonReferral
                                 ]
                           ]
@@ -6595,3 +6595,60 @@ resolveReferralInputsAndTasksForCHW language currentDate assembled form =
         ++ derivedSection
     , [ form.referToHealthCenter ] ++ derivedTasks
     )
+
+
+resolveReferralInputsAndTasksForNurse :
+    Language
+    -> NominalDate
+    -> PrenatalEncounterPhase
+    -> AssembledData
+    -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> ReferralForm
+    -> ( List (Html msg), List (Maybe Bool) )
+resolveReferralInputsAndTasksForNurse language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+    let
+        foldResults =
+            List.foldr
+                (\( inputs, tasks ) ( accumInputs, accumTasks ) ->
+                    ( inputs ++ accumInputs, tasks ++ accumTasks )
+                )
+                ( [], [] )
+    in
+    resolveRequiredReferralFacilities assembled
+        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
+        |> foldResults
+
+
+resolveRequiredReferralFacilities : AssembledData -> List ReferralFacility
+resolveRequiredReferralFacilities assembled =
+    List.filter (matchRequiredReferralFacility assembled) referralFacilities
+
+
+matchRequiredReferralFacility : AssembledData -> ReferralFacility -> Bool
+matchRequiredReferralFacility assembled facility =
+    case facility of
+        FacilityHospital ->
+            referToHospitalForNonHIVDiagnosis assembled
+                || referToHospitalDueToAdverseEvent assembled
+                || referToHospitalDueToPastDiagnosis assembled
+
+        FacilityMentalHealthSpecialist ->
+            referToMentalHealthSpecialist assembled
+
+        FacilityARVProgram ->
+            referToHIVProgram assembled
+
+        FacilityNCDProgram ->
+            -- @todo
+            False
+
+        FacilityHealthCenter ->
+            -- We should never get here. HC inputs are resolved
+            -- with resolveReferralInputsAndTasksForCHW.
+            False
+
+
+referralFacilities : List ReferralFacility
+referralFacilities =
+    [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram ]

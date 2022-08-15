@@ -103,6 +103,16 @@ update language currentDate id db msg model =
                     )
                 |> Maybe.withDefault model.historyData.outsideCareForm
 
+        referralForm =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.sendToHC
+                        >> getMeasurementValueFunc
+                        >> referralFormWithDefault model.nextStepsData.referralForm
+                    )
+                |> Maybe.withDefault model.nextStepsData.referralForm
+
         resolveVaccinationForm vaccineType form =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
@@ -2826,13 +2836,44 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetReasonForNonReferral value ->
+        SetHealthCenterNonReferralReason value ->
             let
                 form =
                     model.nextStepsData.referralForm
 
                 updatedForm =
                     { form | reasonForNotSendingToHC = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | referralForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetFacilityNonReferralReason currentValue facility reason ->
+            let
+                updatedValue =
+                    nonReferralReasonToSign facility reason
+
+                updatedFacilityNonReferralReasons =
+                    Maybe.map
+                        (\facilityNonReferralReasons ->
+                            case currentValue of
+                                Just value ->
+                                    EverySet.remove (nonReferralReasonToSign facility value) facilityNonReferralReasons
+                                        |> EverySet.insert updatedValue
+
+                                Nothing ->
+                                    EverySet.insert updatedValue facilityNonReferralReasons
+                        )
+                        referralForm.facilityNonReferralReasons
+                        |> Maybe.withDefault (EverySet.singleton updatedValue)
+
+                updatedForm =
+                    { referralForm | facilityNonReferralReasons = Just updatedFacilityNonReferralReasons }
 
                 updatedData =
                     model.nextStepsData

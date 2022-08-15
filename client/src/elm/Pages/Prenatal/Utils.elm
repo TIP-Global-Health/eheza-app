@@ -2671,35 +2671,6 @@ toPrenatalReferralValue form =
         Nothing
 
 
-resolveReferralInputsAndTasksForNurse :
-    Language
-    -> NominalDate
-    -> PrenatalEncounterPhase
-    -> AssembledData
-    -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
-    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
-    -> ReferralForm
-    -> ( List (Html msg), List (Maybe Bool) )
-resolveReferralInputsAndTasksForNurse language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
-    let
-        foldResults =
-            List.foldr
-                (\( inputs, tasks ) ( accumInputs, accumTasks ) ->
-                    ( inputs ++ accumInputs, tasks ++ accumTasks )
-                )
-                ( [], [] )
-    in
-    resolveRequirefReferralFacilities language
-        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
-        |> foldResults
-
-
-resolveRequirefReferralFacilities : Language -> List ReferralFacility
-resolveRequirefReferralFacilities language =
-    -- @todo: implement logic
-    [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram ]
-
-
 resolveReferralToFacilityInputsAndTasks :
     Language
     -> NominalDate
@@ -2917,3 +2888,24 @@ getCurrentReasonForNonReferral reasonToSignFunc form =
         )
         [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ClientAlreadyInCare, ReasonForNonReferralOther ]
         |> List.head
+
+
+nonReferralReasonToSign : ReferralFacility -> ReasonForNonReferral -> NonReferralSign
+nonReferralReasonToSign facility reason =
+    case facility of
+        FacilityHospital ->
+            NonReferralReasonHospital reason
+
+        FacilityMentalHealthSpecialist ->
+            NonReferralReasonMentalHealthSpecialist reason
+
+        FacilityARVProgram ->
+            NonReferralReasonARVProgram reason
+
+        FacilityNCDProgram ->
+            -- @todo
+            NoNonReferralSigns
+
+        FacilityHealthCenter ->
+            -- We should never get here.
+            NoNonReferralSigns

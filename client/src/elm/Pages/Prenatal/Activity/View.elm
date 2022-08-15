@@ -1873,7 +1873,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     --     |> viewFormFunc language
                     --         currentDate
                     --         SetReferToHealthCenter
-                    --         SetReasonForNonReferral
+                    --         SetHealthCenterNonReferralReason
                     --         SetHandReferralForm
                     --         accompanyConfig
                     emptyNode
