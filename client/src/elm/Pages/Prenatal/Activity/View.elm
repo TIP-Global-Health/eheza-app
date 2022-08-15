@@ -1837,50 +1837,22 @@ viewNextStepsContent language currentDate isChw assembled data =
         viewForm =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
-                    measurements.appointmentConfirmation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.appointmentConfirmation
                         |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
                         |> viewAppointmentConfirmationForm language currentDate assembled
 
                 Just NextStepsFollowUp ->
-                    measurements.followUp
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate assembled
 
                 Just NextStepsSendToHC ->
-                    -- @todo
-                    -- let
-                    --     ( viewFormFunc, accompanyConfig ) =
-                    --         case referralFacility of
-                    --             FacilityHealthCenter ->
-                    --                 ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
-                    --
-                    --             FacilityHospital ->
-                    --                 ( viewSendToHospitalForm referralReasons, Nothing )
-                    --
-                    --             FacilityMentalHealthSpecialist ->
-                    --                 ( viewSendToMentalSpecialistForm, Nothing )
-                    --
-                    --             FacilityARVProgram ->
-                    --                 ( viewSendToARVProgramForm, Just SetAccompanyToHC )
-                    --
-                    --             FacilityNCDProgram ->
-                    --                 ( viewSendToARVProgramForm, Nothing )
-                    -- in
-                    -- getMeasurementValueFunc measurements.sendToHC
-                    --     |> referralFormWithDefault data.referralForm
-                    --     |> viewFormFunc language
-                    --         currentDate
-                    --         SetReferToHealthCenter
-                    --         SetHealthCenterNonReferralReason
-                    --         SetHandReferralForm
-                    --         accompanyConfig
-                    emptyNode
+                    getMeasurementValueFunc measurements.sendToHC
+                        |> referralFormWithDefault data.referralForm
+                        |> viewReferralForm language currentDate assembled
 
                 Just NextStepsHealthEducation ->
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate assembled
 
@@ -4432,6 +4404,26 @@ viewMedicationTreatmentForm language currentDate setBoolInputMsg assembled form 
             resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task
     in
     div [ class "ui form medication" ] inputs
+
+
+viewReferralForm : Language -> NominalDate -> AssembledData -> ReferralForm -> Html Msg
+viewReferralForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            case assembled.encounter.encounterType of
+                NurseEncounter ->
+                    resolveReferralInputsAndTasksForNurse language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
+
+                _ ->
+                    resolveReferralInputsAndTasksForCHW language currentDate assembled form
+    in
+    div [ class "ui form referral" ]
+        inputs
 
 
 

@@ -14,7 +14,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils exposing (vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..))
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.Utils exposing (..)
@@ -411,7 +411,7 @@ expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
-            diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseRecurrent assembled
+            resolveRequiredReferralFacilities assembled
                 |> List.isEmpty
                 |> not
 
@@ -747,3 +747,58 @@ toHealthEducationValue saved form =
                 , signsPhase2 = Just signsPhase2
                 }
             )
+
+
+resolveReferralInputsAndTasks :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> ReferralForm
+    -> ( List (Html msg), List (Maybe Bool) )
+resolveReferralInputsAndTasks language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+    let
+        foldResults =
+            List.foldr
+                (\( inputs, tasks ) ( accumInputs, accumTasks ) ->
+                    ( inputs ++ accumInputs, tasks ++ accumTasks )
+                )
+                ( [], [] )
+    in
+    resolveRequiredReferralFacilities assembled
+        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate PrenatalEncounterPhaseRecurrent assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
+        |> foldResults
+
+
+resolveRequiredReferralFacilities : AssembledData -> List ReferralFacility
+resolveRequiredReferralFacilities assembled =
+    List.filter (matchRequiredReferralFacility assembled) referralFacilities
+
+
+matchRequiredReferralFacility : AssembledData -> ReferralFacility -> Bool
+matchRequiredReferralFacility assembled facility =
+    case facility of
+        FacilityHospital ->
+            diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseRecurrent assembled
+                |> List.isEmpty
+                |> not
+
+        FacilityMentalHealthSpecialist ->
+            False
+
+        FacilityARVProgram ->
+            False
+
+        FacilityNCDProgram ->
+            False
+
+        FacilityHealthCenter ->
+            -- We should never get here. HC inputs are resolved
+            -- with resolveReferralInputsAndTasksForCHW.
+            False
+
+
+referralFacilities : List ReferralFacility
+referralFacilities =
+    [ FacilityHospital ]

@@ -2784,7 +2784,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                                 ( [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion FacilityHealthCenter
                                                   , viewBoolInput
                                                         language
-                                                        form.accompanyToHealthCenter
+                                                        field
                                                         (setReferralBoolInputMsg updateFunc)
                                                         "accompany-to-hc"
                                                         Nothing
@@ -2804,7 +2804,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                         Nothing
                                   ]
                                     ++ accompanySection
-                                , [ form.handReferralForm ] ++ accompanyTasks
+                                , [ config.formField ] ++ accompanyTasks
                                 )
 
                             else
@@ -2827,7 +2827,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                    , viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion facility
                    , viewBoolInput
                         language
-                        form.referToHealthCenter
+                        config.referralField
                         (setReferralBoolInputMsg config.referralUpdateFunc)
                         "referral"
                         Nothing

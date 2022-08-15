@@ -356,11 +356,9 @@ expectNextStepsTask currentDate assembled task =
         NextStepsSendToHC ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    referToHospitalForNonHIVDiagnosis assembled
-                        || referToHospitalDueToAdverseEvent assembled
-                        || referToHospitalDueToPastDiagnosis assembled
-                        || referToHIVProgram assembled
-                        || referToMentalHealthSpecialist assembled
+                    resolveRequiredReferralFacilities assembled
+                        |> List.isEmpty
+                        |> not
 
                 _ ->
                     dangerSigns
@@ -1031,18 +1029,19 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         NurseEncounter ->
             -- If we have emergency diagnosis that require immediate referral,
             -- we allow displaying Next steps right away.
-            diagnosedAnyOf emergencyReferralDiagnoses assembled
-                || (-- Otherwise, we need all activities that will appear at
-                    -- current encounter completed, besides Photo
-                    -- and Next Steps itself.
-                    getAllActivities assembled
-                        |> EverySet.fromList
-                        |> EverySet.remove PrenatalPhoto
-                        |> EverySet.remove NextSteps
-                        |> EverySet.toList
-                        |> List.filter (expectActivity currentDate assembled)
-                        |> List.all (activityCompleted currentDate assembled)
-                   )
+            -- diagnosedAnyOf emergencyReferralDiagnoses assembled
+            --     || (-- Otherwise, we need all activities that will appear at
+            --         -- current encounter completed, besides Photo
+            --         -- and Next Steps itself.
+            --         getAllActivities assembled
+            --             |> EverySet.fromList
+            --             |> EverySet.remove PrenatalPhoto
+            --             |> EverySet.remove NextSteps
+            --             |> EverySet.toList
+            --             |> List.filter (expectActivity currentDate assembled)
+            --             |> List.all (activityCompleted currentDate assembled)
+            --        )
+            True
 
         ChwFirstEncounter ->
             let
@@ -2944,48 +2943,29 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             )
 
         NextStepsSendToHC ->
-            -- @todo
-            -- let
-            --     form =
-            --         assembled.measurements.sendToHC
-            --             |> getMeasurementValueFunc
-            --             |> referralFormWithDefault data.referralForm
-            --
-            --     ( reasonForNotSentCompleted, reasonForNotSentActive ) =
-            --         form.referToHealthCenter
-            --             |> Maybe.map
-            --                 (\sentToHC ->
-            --                     if not sentToHC then
-            --                         if isJust form.reasonForNotSendingToHC then
-            --                             ( 2, 2 )
-            --
-            --                         else
-            --                             ( 1, 2 )
-            --
-            --                     else
-            --                         ( 1, 1 )
-            --                 )
-            --             |> Maybe.withDefault ( 0, 1 )
-            --
-            --     ( accompanyToHealthCenterCompleted, accompanyToHealthCenterActive ) =
-            --         if isChw then
-            --             ( taskCompleted form.accompanyToHealthCenter, 1 )
-            --
-            --         else if
-            --             referToHospitalForNonHIVDiagnosis assembled
-            --                 || referToHospitalDueToAdverseEvent assembled
-            --                 || referToHospitalDueToPastDiagnosis assembled
-            --                 || referToMentalHealthSpecialist assembled
-            --         then
-            --             ( 0, 0 )
-            --
-            --         else
-            --             ( taskCompleted form.accompanyToHealthCenter, 1 )
-            -- in
-            -- ( taskCompleted form.handReferralForm + reasonForNotSentCompleted + accompanyToHealthCenterCompleted
-            -- , 1 + reasonForNotSentActive + accompanyToHealthCenterActive
-            -- )
-            ( 0, 0 )
+            let
+                form =
+                    assembled.measurements.sendToHC
+                        |> getMeasurementValueFunc
+                        |> referralFormWithDefault data.referralForm
+
+                ( _, tasks ) =
+                    case assembled.encounter.encounterType of
+                        NurseEncounter ->
+                            resolveReferralInputsAndTasksForNurse language
+                                currentDate
+                                assembled
+                                SetReferralBoolInput
+                                SetFacilityNonReferralReason
+                                form
+
+                        _ ->
+                            resolveReferralInputsAndTasksForCHW language currentDate assembled form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
 
         NextStepsHealthEducation ->
             let
@@ -6600,13 +6580,12 @@ resolveReferralInputsAndTasksForCHW language currentDate assembled form =
 resolveReferralInputsAndTasksForNurse :
     Language
     -> NominalDate
-    -> PrenatalEncounterPhase
     -> AssembledData
     -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
     -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
     -> ReferralForm
     -> ( List (Html msg), List (Maybe Bool) )
-resolveReferralInputsAndTasksForNurse language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+resolveReferralInputsAndTasksForNurse language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
     let
         foldResults =
             List.foldr
@@ -6616,7 +6595,7 @@ resolveReferralInputsAndTasksForNurse language currentDate phase assembled setRe
                 ( [], [] )
     in
     resolveRequiredReferralFacilities assembled
-        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
+        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate PrenatalEncounterPhaseInitial assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
         |> foldResults
 
 
@@ -6651,4 +6630,4 @@ matchRequiredReferralFacility assembled facility =
 
 referralFacilities : List ReferralFacility
 referralFacilities =
-    [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram ]
+    [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram, FacilityNCDProgram ]

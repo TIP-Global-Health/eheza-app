@@ -28,7 +28,7 @@ import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass)
 import Pages.Prenatal.Activity.View exposing (warningPopup)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
-import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..))
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
@@ -1098,6 +1098,21 @@ viewHealthEducationForm language currentDate assembled form =
             healthEducationFormInputsAndTasks language assembled form
     in
     div [ class "ui form health-education" ]
+        inputs
+
+
+viewReferralForm : Language -> NominalDate -> AssembledData -> ReferralForm -> Html Msg
+viewReferralForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            resolveReferralInputsAndTasks language
+                currentDate
+                assembled
+                SetReferralBoolInput
+                SetFacilityNonReferralReason
+                form
+    in
+    div [ class "ui form referral" ]
         inputs
 
 
