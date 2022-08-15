@@ -28,12 +28,13 @@ import Measurement.Utils
         , vaccineDoseToComparable
         , vitalsFormWithDefault
         )
+import Measurement.View exposing (viewActionTakenLabel)
 import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired, getAllActivities)
-import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), VaccinationProgressDict)
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
     exposing
@@ -749,32 +750,9 @@ referToHospitalForNonHIVDiagnosis =
 
 nonHIVDiagnosesCausingHospitalReferral : AssembledData -> List PrenatalDiagnosis
 nonHIVDiagnosesCausingHospitalReferral assembled =
-    diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
+    diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseInitial assembled
         ++ diagnosesCausingHospitalReferralByMentalHealth assembled
         ++ diagnosesCausingHospitalReferralByOtherReasons assembled
-
-
-diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
-    let
-        immediateReferralDiagnoses =
-            emergencyReferralDiagnosesInitial
-                ++ [ DiagnosisModeratePreeclampsiaInitialPhase
-                   , DiagnosisHeartburnPersistent
-                   , DiagnosisDeepVeinThrombosis
-                   , DiagnosisPelvicPainIntense
-                   , DiagnosisPelvicPainContinued
-                   , DiagnosisPyelonephritis
-                   , DiagnosisMalariaMedicatedContinued
-                   , DiagnosisMalariaWithAnemiaMedicatedContinued
-                   , DiagnosisUrinaryTractInfectionContinued
-                   , DiagnosisCandidiasisContinued
-                   , DiagnosisGonorrheaContinued
-                   , DiagnosisTrichomonasOrBacterialVaginosisContinued
-                   ]
-    in
-    List.filter (\diagnosis -> diagnosed diagnosis assembled)
-        immediateReferralDiagnoses
 
 
 diagnosesCausingHospitalReferralByMentalHealth : AssembledData -> List PrenatalDiagnosis
@@ -2971,7 +2949,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             --     form =
             --         assembled.measurements.sendToHC
             --             |> getMeasurementValueFunc
-            --             |> prenatalReferralFormWithDefault data.referralForm
+            --             |> referralFormWithDefault data.referralForm
             --
             --     ( reasonForNotSentCompleted, reasonForNotSentActive ) =
             --         form.referToHealthCenter
@@ -6535,3 +6513,85 @@ toHealthEducationValue saved form =
                 , signsPhase2 = Maybe.andThen .signsPhase2 saved
                 }
             )
+
+
+resolveReferralInputsAndTasksForCHW :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ReferralForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+resolveReferralInputsAndTasksForCHW language currentDate assembled form =
+    let
+        ( derivedSection, derivedTasks ) =
+            Maybe.map
+                (\referToHealthCenter ->
+                    if referToHealthCenter then
+                        ( [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+                          , viewBoolInput
+                                language
+                                form.handReferralForm
+                                (SetReferralBoolInput
+                                    (\value form_ ->
+                                        { form_ | handReferralForm = Just value }
+                                    )
+                                )
+                                "hand-referral-form"
+                                Nothing
+                          , viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion FacilityHealthCenter
+                          , viewBoolInput
+                                language
+                                form.accompanyToHealthCenter
+                                (SetReferralBoolInput
+                                    (\value form_ ->
+                                        { form_ | accompanyToHealthCenter = Just value }
+                                    )
+                                )
+                                "accompany-to-hc"
+                                Nothing
+                          ]
+                        , [ form.handReferralForm, form.accompanyToHealthCenter ]
+                        )
+
+                    else
+                        ( [ div [ class "why-not" ]
+                                [ viewQuestionLabel language Translate.WhyNot
+                                , viewCheckBoxSelectInput language
+                                    [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNonReferralOther ]
+                                    []
+                                    form.reasonForNotSendingToHC
+                                    SetReasonForNonReferral
+                                    Translate.ReasonForNonReferral
+                                ]
+                          ]
+                        , [ if isJust form.reasonForNotSendingToHC then
+                                Just True
+
+                            else
+                                Nothing
+                          ]
+                        )
+                )
+                form.referToHealthCenter
+                |> Maybe.withDefault ( [], [] )
+    in
+    ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm FacilityHealthCenter) "icon-forms" Nothing
+            , viewActionTakenLabel language (Translate.SendPatientToFacility FacilityHealthCenter) "icon-shuttle" Nothing
+            ]
+      , viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion FacilityHealthCenter
+      , viewBoolInput
+            language
+            form.referToHealthCenter
+            (SetReferralBoolInput
+                (\value form_ ->
+                    { form_ | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+                )
+            )
+            "refer-to-hc"
+            Nothing
+      ]
+        ++ derivedSection
+    , [ form.referToHealthCenter ] ++ derivedTasks
+    )

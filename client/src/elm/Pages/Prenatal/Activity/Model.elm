@@ -181,9 +181,7 @@ type Msg
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId PrenatalAssesment (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) Bool (Maybe NextStepsTask)
     | SaveNewbornEnrollment Bool (Maybe NextStepsTask)
-    | SetReferToHealthCenter Bool
-    | SetHandReferralForm Bool
-    | SetAccompanyToHC Bool
+    | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
     | SetReasonForNonReferral ReasonForNonReferral
     | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe NextStepsTask)
     | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
@@ -625,7 +623,7 @@ emptyImmunisationData =
 type alias NextStepsData =
     { appointmentConfirmationForm : AppointmentConfirmationForm
     , followUpForm : FollowUpForm
-    , referralForm : PrenatalReferralForm
+    , referralForm : ReferralForm
     , healthEducationForm : HealthEducationForm
     , newbornEnrolmentForm : NewbornEnrolmentForm
     , medicationDistributionForm : MedicationDistributionForm
@@ -637,7 +635,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { appointmentConfirmationForm = emptyAppointmentConfirmationForm
     , followUpForm = emptyFollowUpForm
-    , referralForm = emptyPrenatalReferralForm
+    , referralForm = emptyReferralForm
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , medicationDistributionForm = emptyMedicationDistributionForm

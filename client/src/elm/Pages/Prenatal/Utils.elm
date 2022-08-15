@@ -17,6 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (SendToHCForm)
 import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.View exposing (viewActionTakenLabel)
 import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
@@ -102,6 +103,43 @@ filterNonUrgentDiagnoses diagnoses =
             NoPrenatalDiagnosis :: emergencyReferralDiagnoses
     in
     List.filter (\diagnosis -> not <| List.member diagnosis exclusions) diagnoses
+
+
+diagnosesCausingHospitalReferralByImmediateDiagnoses : PrenatalEncounterPhase -> AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
+    let
+        immediateReferralDiagnoses =
+            case phase of
+                PrenatalEncounterPhaseInitial ->
+                    emergencyReferralDiagnosesInitial
+                        ++ [ DiagnosisModeratePreeclampsiaInitialPhase
+                           , DiagnosisHeartburnPersistent
+                           , DiagnosisDeepVeinThrombosis
+                           , DiagnosisPelvicPainIntense
+                           , DiagnosisPelvicPainContinued
+                           , DiagnosisPyelonephritis
+                           , DiagnosisMalariaMedicatedContinued
+                           , DiagnosisMalariaWithAnemiaMedicatedContinued
+                           , DiagnosisUrinaryTractInfectionContinued
+                           , DiagnosisCandidiasisContinued
+                           , DiagnosisGonorrheaContinued
+                           , DiagnosisTrichomonasOrBacterialVaginosisContinued
+                           ]
+
+                PrenatalEncounterPhaseRecurrent ->
+                    emergencyReferralDiagnosesRecurrent
+                        ++ [ DiagnosisHepatitisB
+                           , DiagnosisNeurosyphilis
+                           , DiagnosisMalariaWithSevereAnemia
+                           , DiagnosisSevereAnemia
+                           , DiagnosisModeratePreeclampsiaRecurrentPhase
+                           , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
+                           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
+                           , DiagnosisRhesusNegative
+                           ]
+    in
+    List.filter (\diagnosis -> diagnosed diagnosis assembled)
+        immediateReferralDiagnoses
 
 
 emergencyReferralDiagnoses : List PrenatalDiagnosis
@@ -2543,8 +2581,20 @@ outsideCareDiagnosesWithPossibleMedication =
     ]
 
 
-prenatalReferralFormWithDefault : PrenatalReferralForm -> Maybe PrenatalReferralValue -> PrenatalReferralForm
-prenatalReferralFormWithDefault form saved =
+generateVaccinationProgress : List PrenatalMeasurements -> VaccinationProgressDict
+generateVaccinationProgress measurements =
+    let
+        tetanusImmunisations =
+            List.filterMap (.tetanusImmunisation >> getMeasurementValueFunc)
+                measurements
+    in
+    [ ( VaccineTetanus, generateVaccinationProgressForVaccine tetanusImmunisations )
+    ]
+        |> Dict.fromList
+
+
+referralFormWithDefault : ReferralForm -> Maybe PrenatalReferralValue -> ReferralForm
+referralFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -2576,13 +2626,13 @@ prenatalReferralFormWithDefault form saved =
             )
 
 
-toPrenatalReferralValueWithDefault : Maybe PrenatalReferralValue -> PrenatalReferralForm -> Maybe PrenatalReferralValue
+toPrenatalReferralValueWithDefault : Maybe PrenatalReferralValue -> ReferralForm -> Maybe PrenatalReferralValue
 toPrenatalReferralValueWithDefault saved form =
-    prenatalReferralFormWithDefault form saved
+    referralFormWithDefault form saved
         |> toPrenatalReferralValue
 
 
-toPrenatalReferralValue : PrenatalReferralForm -> Maybe PrenatalReferralValue
+toPrenatalReferralValue : ReferralForm -> Maybe PrenatalReferralValue
 toPrenatalReferralValue form =
     let
         sendToHCSigns =
@@ -2621,13 +2671,249 @@ toPrenatalReferralValue form =
         Nothing
 
 
-generateVaccinationProgress : List PrenatalMeasurements -> VaccinationProgressDict
-generateVaccinationProgress measurements =
+resolveReferralInputsAndTasksForNurse :
+    Language
+    -> NominalDate
+    -> PrenatalEncounterPhase
+    -> AssembledData
+    -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> ReferralForm
+    -> ( List (Html msg), List (Maybe Bool) )
+resolveReferralInputsAndTasksForNurse language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
     let
-        tetanusImmunisations =
-            List.filterMap (.tetanusImmunisation >> getMeasurementValueFunc)
-                measurements
+        foldResults =
+            List.foldr
+                (\( inputs, tasks ) ( accumInputs, accumTasks ) ->
+                    ( inputs ++ accumInputs, tasks ++ accumTasks )
+                )
+                ( [], [] )
     in
-    [ ( VaccineTetanus, generateVaccinationProgressForVaccine tetanusImmunisations )
+    resolveRequirefReferralFacilities language
+        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
+        |> foldResults
+
+
+resolveRequirefReferralFacilities : Language -> List ReferralFacility
+resolveRequirefReferralFacilities language =
+    -- @todo: implement logic
+    [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram ]
+
+
+resolveReferralToFacilityInputsAndTasks :
+    Language
+    -> NominalDate
+    -> PrenatalEncounterPhase
+    -> AssembledData
+    -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> ReferralForm
+    -> ReferralFacility
+    -> ( List (Html msg), List (Maybe Bool) )
+resolveReferralToFacilityInputsAndTasks language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form facility =
+    let
+        maybeConfig =
+            case facility of
+                FacilityHospital ->
+                    let
+                        referralReasons =
+                            diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled
+
+                        referralContext =
+                            if not <| List.isEmpty referralReasons then
+                                let
+                                    diagnosisTransId diagnosis =
+                                        if diagnosis == DiagnosisChronicHypertensionImmediate then
+                                            Translate.Hypertension
+
+                                        else
+                                            Translate.PrenatalDiagnosis diagnosis
+
+                                    reasons =
+                                        List.map (diagnosisTransId >> translate language) referralReasons
+                                            |> String.join ", "
+                                in
+                                div [ class "label" ] [ text <| translate language Translate.PatientDiagnosedWithLabel ++ ": " ++ reasons ++ "." ]
+
+                            else
+                                emptyNode
+                    in
+                    Just
+                        { header =
+                            [ referralContext
+                            , viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions"
+                            ]
+                        , referralField = form.referToHospital
+                        , referralUpdateFunc = \value form_ -> { form_ | referToHospital = Just value }
+                        , formField = form.referralFormHospital
+                        , formUpdateFunc = \value form_ -> { form_ | referralFormHospital = Just value }
+                        , accompanyConfig = Nothing
+                        , reasonToSignFunc = NonReferralReasonHospital
+                        }
+
+                FacilityMentalHealthSpecialist ->
+                    Just
+                        { header = [ viewCustomLabel language Translate.PrenatalMentalHealthSpecialistHelper "." "instructions" ]
+                        , referralField = form.referToMentalHealthSpecialist
+                        , referralUpdateFunc = \value form_ -> { form_ | referToMentalHealthSpecialist = Just value }
+                        , formField = form.referralFormMentalHealthSpecialist
+                        , formUpdateFunc = \value form_ -> { form_ | referralFormMentalHealthSpecialist = Just value }
+                        , accompanyConfig =
+                            Just
+                                ( form.accompanyToMentalHealthSpecialist
+                                , \value form_ -> { form_ | accompanyToMentalHealthSpecialist = Just value }
+                                )
+                        , reasonToSignFunc = NonReferralReasonMentalHealthSpecialist
+                        }
+
+                FacilityARVProgram ->
+                    Just
+                        { header = [ viewCustomLabel language Translate.PrenatalARVProgramHelper "." "instructions" ]
+                        , referralField = form.referToARVProgram
+                        , referralUpdateFunc = \value form_ -> { form_ | referToARVProgram = Just value }
+                        , formField = form.referralFormARVProgram
+                        , formUpdateFunc = \value form_ -> { form_ | referralFormARVProgram = Just value }
+                        , accompanyConfig =
+                            Just
+                                ( form.accompanyToARVProgram
+                                , \value form_ -> { form_ | accompanyToARVProgram = Just value }
+                                )
+                        , reasonToSignFunc = NonReferralReasonARVProgram
+                        }
+
+                FacilityNCDProgram ->
+                    -- @todo
+                    Nothing
+
+                FacilityHealthCenter ->
+                    -- We should never get here.
+                    Nothing
+    in
+    Maybe.map
+        (\config ->
+            let
+                instructions =
+                    case facility of
+                        FacilityMentalHealthSpecialist ->
+                            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing ]
+
+                        _ ->
+                            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+                            , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
+                            ]
+
+                ( derivedSection, derivedTasks ) =
+                    Maybe.map
+                        (\referred ->
+                            if referred then
+                                let
+                                    ( accompanySection, accompanyTasks ) =
+                                        Maybe.map
+                                            (\( field, updateFunc ) ->
+                                                ( [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion FacilityHealthCenter
+                                                  , viewBoolInput
+                                                        language
+                                                        form.accompanyToHealthCenter
+                                                        (setReferralBoolInputMsg updateFunc)
+                                                        "accompany-to-hc"
+                                                        Nothing
+                                                  ]
+                                                , [ field ]
+                                                )
+                                            )
+                                            config.accompanyConfig
+                                            |> Maybe.withDefault ( [], [] )
+                                in
+                                ( [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+                                  , viewBoolInput
+                                        language
+                                        config.formField
+                                        (setReferralBoolInputMsg config.formUpdateFunc)
+                                        "hand-referral-form"
+                                        Nothing
+                                  ]
+                                    ++ accompanySection
+                                , [ form.handReferralForm ] ++ accompanyTasks
+                                )
+
+                            else
+                                ( nonReferralReasonSection language facility config.reasonToSignFunc setNonReferralReasonMsg form
+                                , [ if isJust <| getCurrentReasonForNonReferral config.reasonToSignFunc form then
+                                        Just True
+
+                                    else
+                                        Nothing
+                                  ]
+                                )
+                        )
+                        config.referralField
+                        |> Maybe.withDefault ( [], [] )
+            in
+            ( config.header
+                ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                   , div [ class "instructions" ]
+                        instructions
+                   , viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion facility
+                   , viewBoolInput
+                        language
+                        form.referToHealthCenter
+                        (setReferralBoolInputMsg config.referralUpdateFunc)
+                        "referral"
+                        Nothing
+                   ]
+                ++ derivedSection
+            , [ config.referralField ] ++ derivedTasks
+            )
+        )
+        maybeConfig
+        |> Maybe.withDefault ( [], [] )
+
+
+nonReferralReasonSection :
+    Language
+    -> ReferralFacility
+    -> (ReasonForNonReferral -> FacilityNonReferralReason)
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> ReferralForm
+    -> List (Html msg)
+nonReferralReasonSection language facility reasonToSignFunc setNonReferralReasonMsg form =
+    let
+        currentValue =
+            getCurrentReasonForNonReferral reasonToSignFunc form
+
+        options =
+            if facility == FacilityHospital then
+                [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNonReferralOther ]
+
+            else
+                [ ClientRefused, ClientAlreadyInCare, ReasonForNonReferralOther ]
+    in
+    [ viewQuestionLabel language Translate.WhyNot
+    , viewCheckBoxSelectInput language
+        options
+        []
+        currentValue
+        (setNonReferralReasonMsg currentValue facility)
+        Translate.ReasonForNonReferral
     ]
-        |> Dict.fromList
+
+
+getCurrentReasonForNonReferral :
+    (ReasonForNonReferral -> FacilityNonReferralReason)
+    -> ReferralForm
+    -> Maybe ReasonForNonReferral
+getCurrentReasonForNonReferral reasonToSignFunc form =
+    let
+        facilityNonReferralReasons =
+            Maybe.withDefault EverySet.empty form.facilityNonReferralReasons
+    in
+    List.filterMap
+        (\reason ->
+            if EverySet.member (reasonToSignFunc reason) facilityNonReferralReasons then
+                Just reason
+
+            else
+                Nothing
+        )
+        [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ClientAlreadyInCare, ReasonForNonReferralOther ]
+        |> List.head

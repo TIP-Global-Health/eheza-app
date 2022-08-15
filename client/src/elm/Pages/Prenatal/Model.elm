@@ -139,7 +139,7 @@ emptyHealthEducationForm =
     }
 
 
-type alias PrenatalReferralForm =
+type alias ReferralForm =
     { -- Fields used for CHW:
       handReferralForm : Maybe Bool
     , referToHealthCenter : Maybe Bool
@@ -162,8 +162,8 @@ type alias PrenatalReferralForm =
     }
 
 
-emptyPrenatalReferralForm : PrenatalReferralForm
-emptyPrenatalReferralForm =
+emptyReferralForm : ReferralForm
+emptyReferralForm =
     { handReferralForm = Nothing
     , referToHealthCenter = Nothing
     , accompanyToHealthCenter = Nothing

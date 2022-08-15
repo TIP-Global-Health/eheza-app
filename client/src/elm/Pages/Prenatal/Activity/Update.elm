@@ -2812,47 +2812,10 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SetReferToHealthCenter value ->
+        SetReferralBoolInput updateFunc value ->
             let
-                form =
-                    model.nextStepsData.referralForm
-
                 updatedForm =
-                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | referralForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetHandReferralForm value ->
-            let
-                form =
-                    model.nextStepsData.referralForm
-
-                updatedForm =
-                    { form | handReferralForm = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | referralForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetAccompanyToHC value ->
-            let
-                form =
-                    model.nextStepsData.referralForm
-
-                updatedForm =
-                    { form | accompanyToHealthCenter = Just value }
+                    updateFunc value model.nextStepsData.referralForm
 
                 updatedData =
                     model.nextStepsData

@@ -1049,7 +1049,8 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'hospital-client-refused' => 'Hospital - Client refused',
-        'hospital-already-in-care' => 'Hospital - Client already in care',
+        'hospital-no-ambulance' => 'Hospital - ambulance available',
+        'hospital-unable-to-afford-fee' => 'Hospital - client unable to afford fees',
         'hospital-unnecessary' => 'Hospital - Unnecessary',
         'hospital-other' => 'Hospital - Other',
         'mhs-client-refused' => 'Mental health specialist - Client refused',
@@ -1058,8 +1059,12 @@ function hedley_prenatal_field_default_field_bases() {
         'mhs-other' => 'Mental health specialist - Other',
         'arv-client-refused' => 'ARV program - Client refused',
         'arv-already-in-care' => 'ARV program - Client already in care',
+        'arv-unnecessary' => 'ARV program - Unnecessary',
+        'arv-other' => 'ARV program - Other',
         'ncd-client-refused' => 'NCD program - Client refused',
         'ncd-already-in-care' => 'NCD program - Client already in care',
+        'ncd-unnecessary' => 'NCD program - Unnecessary',
+        'ncd-other' => 'NCD program - Other',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

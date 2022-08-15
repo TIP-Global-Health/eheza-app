@@ -1206,6 +1206,7 @@ viewSendToFacilityForm :
     -> SendToHCForm
     -> Html msg
 viewSendToFacilityForm language currentDate facility referralReasons setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+    -- @todo - make for HC and Hospital only.
     let
         headerHelper =
             case facility of

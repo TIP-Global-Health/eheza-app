@@ -411,7 +411,7 @@ expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
-            diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
+            diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseRecurrent assembled
                 |> List.isEmpty
                 |> not
 
@@ -428,21 +428,6 @@ expectNextStepsTask currentDate assembled task =
 
         NextStepsHealthEducation ->
             diagnosedAnyOf (DiagnosisHIVDetectableViralLoad :: diabetesDiagnoses) assembled
-
-
-diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
-    emergencyReferralDiagnosesRecurrent
-        ++ [ DiagnosisHepatitisB
-           , DiagnosisNeurosyphilis
-           , DiagnosisMalariaWithSevereAnemia
-           , DiagnosisSevereAnemia
-           , DiagnosisModeratePreeclampsiaRecurrentPhase
-           , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
-           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
-           , DiagnosisRhesusNegative
-           ]
-        |> List.filter (\diagnosis -> diagnosed diagnosis assembled)
 
 
 nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
@@ -488,7 +473,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 form =
                     assembled.measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> prenatalReferralFormWithDefault data.referralForm
+                        |> referralFormWithDefault data.referralForm
 
                 ( reasonForNotSentCompleted, reasonForNotSentActive ) =
                     form.referToHealthCenter
