@@ -2872,7 +2872,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
 nonReferralReasonSection :
     Language
     -> ReferralFacility
-    -> (ReasonForNonReferral -> FacilityNonReferralReason)
+    -> (ReasonForNonReferral -> NonReferralSign)
     -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
     -> ReferralForm
     -> List (Html msg)
@@ -2899,7 +2899,7 @@ nonReferralReasonSection language facility reasonToSignFunc setNonReferralReason
 
 
 getCurrentReasonForNonReferral :
-    (ReasonForNonReferral -> FacilityNonReferralReason)
+    (ReasonForNonReferral -> NonReferralSign)
     -> ReferralForm
     -> Maybe ReasonForNonReferral
 getCurrentReasonForNonReferral reasonToSignFunc form =

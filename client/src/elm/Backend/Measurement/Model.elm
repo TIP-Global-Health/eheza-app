@@ -875,7 +875,7 @@ type alias PrenatalReferralValue =
     { sendToHCSigns : Maybe (EverySet SendToHCSign)
     , reasonForNotSendingToHC : Maybe ReasonForNonReferral
     , referToFacilitySigns : Maybe (EverySet ReferToFacilitySign)
-    , facilityNonReferralReasons : Maybe (EverySet FacilityNonReferralReason)
+    , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
     }
 
 
@@ -894,12 +894,12 @@ type ReferToFacilitySign
     | NoReferToFacilitySigns
 
 
-type FacilityNonReferralReason
+type NonReferralSign
     = NonReferralReasonHospital ReasonForNonReferral
     | NonReferralReasonMentalHealthSpecialist ReasonForNonReferral
     | NonReferralReasonARVProgram ReasonForNonReferral
     | NonReferralReasonNCDProgram ReasonForNonReferral
-    | NoFacilityNonReferralReasons
+    | NoNonReferralSigns
 
 
 type ReferralFacility

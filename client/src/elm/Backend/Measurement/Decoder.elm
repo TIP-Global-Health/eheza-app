@@ -2792,7 +2792,7 @@ decodePrenatalReferralValue =
         |> optional "send_to_hc" (nullable (decodeEverySet decodeSendToHCSign)) Nothing
         |> optional "reason_not_sent_to_hc" (nullable decodeReasonForNonReferral) Nothing
         |> optional "referrals" (nullable (decodeEverySet decodeReferToFacilitySign)) Nothing
-        |> optional "reasons_for_non_referrals" (nullable (decodeEverySet decodeFacilityNonReferralReason)) Nothing
+        |> optional "reasons_for_non_referrals" (nullable (decodeEverySet decodeNonReferralSign)) Nothing
 
 
 decodeReferToFacilitySign : Decoder ReferToFacilitySign
@@ -2844,13 +2844,13 @@ decodeReferToFacilitySign =
             )
 
 
-decodeFacilityNonReferralReason : Decoder FacilityNonReferralReason
-decodeFacilityNonReferralReason =
+decodeNonReferralSign : Decoder NonReferralSign
+decodeNonReferralSign =
     string
         |> andThen
             (\sign ->
                 if sign == "none" then
-                    succeed NoFacilityNonReferralReasons
+                    succeed NoNonReferralSigns
 
                 else
                     let
@@ -2858,7 +2858,7 @@ decodeFacilityNonReferralReason =
                             String.split "-" sign
 
                         failure =
-                            fail <| sign ++ " is not a recognized FacilityNonReferralReason"
+                            fail <| sign ++ " is not a recognized NonReferralSign"
                     in
                     List.head parts
                         |> Maybe.map
@@ -2887,7 +2887,7 @@ decodeFacilityNonReferralReason =
                                             |> Maybe.withDefault failure
 
                                     "none" ->
-                                        succeed NoFacilityNonReferralReasons
+                                        succeed NoNonReferralSigns
 
                                     _ ->
                                         failure

@@ -2296,7 +2296,7 @@ encodePrenatalReferralValue value =
                 |> Maybe.withDefault []
 
         facilityNonReferralReasons =
-            Maybe.map (\reason -> [ ( "reasons_for_non_referrals", encodeEverySet encodeFacilityNonReferralReason reason ) ])
+            Maybe.map (\reason -> [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ])
                 value.facilityNonReferralReasons
                 |> Maybe.withDefault []
     in
@@ -2350,8 +2350,8 @@ encodeReferToFacilitySign sign =
                 "none"
 
 
-encodeFacilityNonReferralReason : FacilityNonReferralReason -> Value
-encodeFacilityNonReferralReason sign =
+encodeNonReferralSign : NonReferralSign -> Value
+encodeNonReferralSign sign =
     string <|
         case sign of
             NonReferralReasonHospital reason ->
@@ -2366,7 +2366,7 @@ encodeFacilityNonReferralReason sign =
             NonReferralReasonNCDProgram reason ->
                 "ncd-" ++ reasonForNonReferralToString reason
 
-            NoFacilityNonReferralReasons ->
+            NoNonReferralSigns ->
                 "none"
 
 

@@ -6,8 +6,8 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model
     exposing
         ( AvoidingGuidanceReason
-        , FacilityNonReferralReason
         , MedicationNonAdministrationSign
+        , NonReferralSign
         , ObstetricHistoryValue
         , PrenatalMeasurements
         , PrenatalVaccineType
@@ -158,7 +158,7 @@ type alias ReferralForm =
     , referToNCDProgram : Maybe Bool
     , referralFormNCDProgram : Maybe Bool
     , accompanyToNCDProgram : Maybe Bool
-    , facilityNonReferralReasons : Maybe (EverySet FacilityNonReferralReason)
+    , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
     }
 
 
