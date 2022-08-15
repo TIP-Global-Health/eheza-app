@@ -1849,33 +1849,34 @@ viewNextStepsContent language currentDate isChw assembled data =
                         |> viewFollowUpForm language currentDate assembled
 
                 Just NextStepsSendToHC ->
-                    let
-                        ( viewFormFunc, accompanyConfig ) =
-                            case referralFacility of
-                                FacilityHealthCenter ->
-                                    ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
-
-                                FacilityHospital ->
-                                    ( viewSendToHospitalForm referralReasons, Nothing )
-
-                                FacilityMentalHealthSpecialist ->
-                                    ( viewSendToMentalSpecialistForm, Nothing )
-
-                                FacilityARVProgram ->
-                                    ( viewSendToARVProgramForm, Just SetAccompanyToHC )
-
-                                FacilityNCDProgram ->
-                                    -- @todo
-                                    ( viewSendToARVProgramForm, Nothing )
-                    in
-                    getMeasurementValueFunc measurements.sendToHC
-                        |> prenatalReferralFormWithDefault data.referralForm
-                        |> viewFormFunc language
-                            currentDate
-                            SetReferToHealthCenter
-                            SetReasonForNonReferral
-                            SetHandReferralForm
-                            accompanyConfig
+                    -- @todo
+                    -- let
+                    --     ( viewFormFunc, accompanyConfig ) =
+                    --         case referralFacility of
+                    --             FacilityHealthCenter ->
+                    --                 ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
+                    --
+                    --             FacilityHospital ->
+                    --                 ( viewSendToHospitalForm referralReasons, Nothing )
+                    --
+                    --             FacilityMentalHealthSpecialist ->
+                    --                 ( viewSendToMentalSpecialistForm, Nothing )
+                    --
+                    --             FacilityARVProgram ->
+                    --                 ( viewSendToARVProgramForm, Just SetAccompanyToHC )
+                    --
+                    --             FacilityNCDProgram ->
+                    --                 ( viewSendToARVProgramForm, Nothing )
+                    -- in
+                    -- getMeasurementValueFunc measurements.sendToHC
+                    --     |> prenatalReferralFormWithDefault data.referralForm
+                    --     |> viewFormFunc language
+                    --         currentDate
+                    --         SetReferToHealthCenter
+                    --         SetReasonForNonReferral
+                    --         SetHandReferralForm
+                    --         accompanyConfig
+                    emptyNode
 
                 Just NextStepsHealthEducation ->
                     measurements.healthEducation

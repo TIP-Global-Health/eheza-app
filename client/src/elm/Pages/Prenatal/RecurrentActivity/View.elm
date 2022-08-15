@@ -20,7 +20,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (InvokationModule(..), VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils exposing (vitalsFormWithDefault)
 import Measurement.View exposing (viewSendToHospitalForm, viewVitalsForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
@@ -877,19 +877,21 @@ viewNextStepsContent language currentDate assembled data =
         viewForm =
             case activeTask of
                 Just NextStepsSendToHC ->
-                    let
-                        referralReasons =
-                            diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
-                    in
-                    getMeasurementValueFunc measurements.sendToHC
-                        |> prenatalReferralFormWithDefault data.sendToHCForm
-                        |> viewSendToHospitalForm referralReasons
-                            language
-                            currentDate
-                            SetReferToHealthCenter
-                            SetReasonForNonReferral
-                            SetHandReferralForm
-                            Nothing
+                    -- @todo
+                    -- let
+                    --     referralReasons =
+                    --         diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
+                    -- in
+                    -- getMeasurementValueFunc measurements.sendToHC
+                    --     |> prenatalReferralFormWithDefault data.referralForm
+                    --     |> viewSendToHospitalForm referralReasons
+                    --         language
+                    --         currentDate
+                    --         SetReferToHealthCenter
+                    --         SetReasonForNonReferral
+                    --         SetHandReferralForm
+                    --         Nothing
+                    emptyNode
 
                 Just NextStepsMedicationDistribution ->
                     getMeasurementValueFunc measurements.medicationDistribution

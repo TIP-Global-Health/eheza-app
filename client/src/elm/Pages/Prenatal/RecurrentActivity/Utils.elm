@@ -11,7 +11,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils exposing (vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..))
@@ -488,7 +488,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 form =
                     assembled.measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> prenatalReferralFormWithDefault data.sendToHCForm
+                        |> prenatalReferralFormWithDefault data.referralForm
 
                 ( reasonForNotSentCompleted, reasonForNotSentActive ) =
                     form.referToHealthCenter

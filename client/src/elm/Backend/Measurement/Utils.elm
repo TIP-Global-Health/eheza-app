@@ -2184,3 +2184,50 @@ prenatalMentalHealthQuestionOptionFromString value =
 
         _ ->
             Nothing
+
+
+reasonForNonReferralFromString : String -> Maybe ReasonForNonReferral
+reasonForNonReferralFromString value =
+    case value of
+        "client-refused" ->
+            Just ClientRefused
+
+        "no-ambulance" ->
+            Just NoAmbulance
+
+        "unable-to-afford-fee" ->
+            Just ClientUnableToAffordFees
+
+        "already-in-care" ->
+            Just ClientAlreadyInCare
+
+        "other" ->
+            Just ReasonForNonReferralOther
+
+        "none" ->
+            Just NoReasonForNonReferral
+
+        _ ->
+            Nothing
+
+
+reasonForNonReferralToString : ReasonForNonReferral -> String
+reasonForNonReferralToString value =
+    case value of
+        ClientRefused ->
+            "client-refused"
+
+        NoAmbulance ->
+            "no-ambulance"
+
+        ClientUnableToAffordFees ->
+            "unable-to-afford-fee"
+
+        ClientAlreadyInCare ->
+            "already-in-care"
+
+        ReasonForNonReferralOther ->
+            "other"
+
+        NoReasonForNonReferral ->
+            "none"

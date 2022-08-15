@@ -120,7 +120,7 @@ emptyLabResultsData =
 
 
 type alias NextStepsData =
-    { sendToHCForm : SendToHCForm
+    { referralForm : PrenatalReferralForm
     , medicationDistributionForm : MedicationDistributionForm
     , healthEducationForm : HealthEducationForm
     , activeTask : Maybe NextStepsTask
@@ -129,7 +129,7 @@ type alias NextStepsData =
 
 emptyNextStepsData : NextStepsData
 emptyNextStepsData =
-    { sendToHCForm = emptySendToHCForm
+    { referralForm = emptyPrenatalReferralForm
     , medicationDistributionForm = emptyMedicationDistributionForm
     , healthEducationForm = emptyHealthEducationForm
     , activeTask = Nothing
