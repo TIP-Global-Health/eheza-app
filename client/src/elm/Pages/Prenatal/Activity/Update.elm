@@ -2815,14 +2815,14 @@ update language currentDate id db msg model =
         SetReferToHealthCenter value ->
             let
                 form =
-                    model.nextStepsData.sendToHCForm
+                    model.nextStepsData.referralForm
 
                 updatedForm =
                     { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
 
                 updatedData =
                     model.nextStepsData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
+                        |> (\data -> { data | referralForm = updatedForm })
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
@@ -2832,14 +2832,14 @@ update language currentDate id db msg model =
         SetHandReferralForm value ->
             let
                 form =
-                    model.nextStepsData.sendToHCForm
+                    model.nextStepsData.referralForm
 
                 updatedForm =
                     { form | handReferralForm = Just value }
 
                 updatedData =
                     model.nextStepsData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
+                        |> (\data -> { data | referralForm = updatedForm })
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
@@ -2849,14 +2849,14 @@ update language currentDate id db msg model =
         SetAccompanyToHC value ->
             let
                 form =
-                    model.nextStepsData.sendToHCForm
+                    model.nextStepsData.referralForm
 
                 updatedForm =
                     { form | accompanyToHealthCenter = Just value }
 
                 updatedData =
                     model.nextStepsData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
+                        |> (\data -> { data | referralForm = updatedForm })
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
@@ -2866,14 +2866,14 @@ update language currentDate id db msg model =
         SetReasonForNonReferral value ->
             let
                 form =
-                    model.nextStepsData.sendToHCForm
+                    model.nextStepsData.referralForm
 
                 updatedForm =
                     { form | reasonForNotSendingToHC = Just value }
 
                 updatedData =
                     model.nextStepsData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
+                        |> (\data -> { data | referralForm = updatedForm })
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
@@ -2892,7 +2892,7 @@ update language currentDate id db msg model =
                     generateNextStepsMsgs secondPhaseRequired nextTask
 
                 appMsgs =
-                    model.nextStepsData.sendToHCForm
+                    model.nextStepsData.referralForm
                         |> toPrenatalReferralValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId

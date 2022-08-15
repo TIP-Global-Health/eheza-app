@@ -882,7 +882,7 @@ viewNextStepsContent language currentDate assembled data =
                             diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
                     in
                     getMeasurementValueFunc measurements.sendToHC
-                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
+                        |> prenatalReferralFormWithDefault data.sendToHCForm
                         |> viewSendToHospitalForm referralReasons
                             language
                             currentDate

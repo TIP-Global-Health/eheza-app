@@ -185,7 +185,7 @@ type Msg
     | SetHandReferralForm Bool
     | SetAccompanyToHC Bool
     | SetReasonForNonReferral ReasonForNonReferral
-    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe ReferralFacility) (Maybe NextStepsTask)
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe NextStepsTask)
     | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetAppointmentConfirmation Date
     | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) Bool (Maybe NextStepsTask)
@@ -647,50 +647,6 @@ emptyNextStepsData =
 
 
 -- FORMS
-
-
-type alias PrenatalReferralForm =
-    { -- Fields used for CHW:
-      handReferralForm : Maybe Bool
-    , referToHealthCenter : Maybe Bool
-    , accompanyToHealthCenter : Maybe Bool
-    , reasonForNotSendingToHC : Maybe ReasonForNonReferral
-
-    -- Fields used for Nurse:
-    , referToHospital : Maybe Bool
-    , referralFormHospital : Maybe Bool
-    , referToMentalHealthSpecialist : Maybe Bool
-    , referralFormMentalHealthSpecialist : Maybe Bool
-    , accompanyToMentalHealthSpecialist : Maybe Bool
-    , referToARVProgram : Maybe Bool
-    , referralFormARVProgram : Maybe Bool
-    , accompanyToARVProgram : Maybe Bool
-    , referToNCDProgram : Maybe Bool
-    , referralFormNCDProgram : Maybe Bool
-    , accompanyToNCDProgram : Maybe Bool
-    , facilityNonReferralReasons : Maybe (EverySet FacilityNonReferralReason)
-    }
-
-
-emptyPrenatalReferralForm : PrenatalReferralForm
-emptyPrenatalReferralForm =
-    { handReferralForm = Nothing
-    , referToHealthCenter = Nothing
-    , accompanyToHealthCenter = Nothing
-    , reasonForNotSendingToHC = Nothing
-    , referToHospital = Nothing
-    , referralFormHospital = Nothing
-    , referToMentalHealthSpecialist = Nothing
-    , referralFormMentalHealthSpecialist = Nothing
-    , accompanyToMentalHealthSpecialist = Nothing
-    , referToARVProgram = Nothing
-    , referralFormARVProgram = Nothing
-    , accompanyToARVProgram = Nothing
-    , referToNCDProgram = Nothing
-    , referralFormNCDProgram = Nothing
-    , accompanyToNCDProgram = Nothing
-    , facilityNonReferralReasons = Nothing
-    }
 
 
 type ObstetricHistoryStep

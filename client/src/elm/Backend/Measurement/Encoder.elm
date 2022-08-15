@@ -2233,11 +2233,22 @@ encodeSendToHCValueWithType type_ value =
 
 encodePrenatalReferralValue : PrenatalReferralValue -> List ( String, Value )
 encodePrenatalReferralValue value =
-    [ ( "send_to_hc", encodeEverySet encodeSendToHCSign value.signs )
-    , ( "reason_not_sent_to_hc", encodeReasonForNonReferral value.reasonForNotSendingToHC )
-    , ( "deleted", bool False )
-    , ( "type", string "prenatal_send_to_hc" )
-    ]
+    let
+        sendToHC =
+            Maybe.map (\signs -> [ ( "send_to_hc", encodeEverySet encodeSendToHCSign signs ) ])
+                value.sendToHCSigns
+                |> Maybe.withDefault []
+
+        reasonNotSentToHC =
+            Maybe.map (\reason -> [ ( "reason_not_sent_to_hc", encodeReasonForNonReferral reason ) ])
+                value.reasonForNotSendingToHC
+                |> Maybe.withDefault []
+    in
+    sendToHC
+        ++ reasonNotSentToHC
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_send_to_hc" )
+           ]
 
 
 encodeSendToHCSign : SendToHCSign -> Value

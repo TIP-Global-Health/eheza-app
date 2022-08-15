@@ -2740,14 +2740,6 @@ decodeSendToHCValue =
         |> optional "reason_not_sent_to_hc" decodeReasonForNonReferral NoReasonForNonReferral
 
 
-decodePrenatalReferralValue : Decoder PrenatalReferralValue
-decodePrenatalReferralValue =
-    succeed PrenatalReferralValue
-        |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
-        |> optional "reason_not_sent_to_hc" decodeReasonForNonReferral NoReasonForNonReferral
-        |> optional "referral_facility" (nullable decodeReferralFacility) Nothing
-
-
 decodeSendToHCSign : Decoder SendToHCSign
 decodeSendToHCSign =
     string
@@ -2784,29 +2776,145 @@ decodeReasonForNonReferral =
     string
         |> andThen
             (\event ->
-                case event of
-                    "client-refused" ->
-                        succeed ClientRefused
+                reasonForNonReferralFromString event
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            event
+                                ++ "is not a recognized ReasonForNonReferral"
+                        )
+            )
 
-                    "no-ambulance" ->
-                        succeed NoAmbulance
 
-                    "unable-to-afford-fee" ->
-                        succeed ClientUnableToAffordFees
+reasonForNonReferralFromString : String -> Maybe ReasonForNonReferral
+reasonForNonReferralFromString value =
+    case value of
+        "client-refused" ->
+            Just ClientRefused
 
-                    "already-in-care" ->
-                        succeed ClientAlreadyInCare
+        "no-ambulance" ->
+            Just NoAmbulance
 
-                    "other" ->
-                        succeed ReasonForNonReferralOther
+        "unable-to-afford-fee" ->
+            Just ClientUnableToAffordFees
+
+        "already-in-care" ->
+            Just ClientAlreadyInCare
+
+        "other" ->
+            Just ReasonForNonReferralOther
+
+        "none" ->
+            Just NoReasonForNonReferral
+
+        _ ->
+            Nothing
+
+
+decodePrenatalReferralValue : Decoder PrenatalReferralValue
+decodePrenatalReferralValue =
+    succeed PrenatalReferralValue
+        |> optional "send_to_hc" (nullable (decodeEverySet decodeSendToHCSign)) Nothing
+        |> optional "reason_not_sent_to_hc" (nullable decodeReasonForNonReferral) Nothing
+        |> optional "referrals" (nullable (decodeEverySet decodeReferToFacilitySign)) Nothing
+        |> optional "reasons_for_non_referrals" (nullable (decodeEverySet decodeFacilityNonReferralReason)) Nothing
+
+
+decodeReferToFacilitySign : Decoder ReferToFacilitySign
+decodeReferToFacilitySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "hospital" ->
+                        succeed ReferToHospital
+
+                    "hospital-referral-form" ->
+                        succeed ReferralFormHospital
+
+                    "mhs" ->
+                        succeed ReferToMentalHealthSpecialist
+
+                    "mhs-referral-form" ->
+                        succeed ReferralFormMentalHealthSpecialist
+
+                    "mhs-accompany" ->
+                        succeed AccompanyToMentalHealthSpecialist
+
+                    "arv" ->
+                        succeed ReferToARVProgram
+
+                    "arv-referral-form" ->
+                        succeed ReferralFormARVProgram
+
+                    "arv-accompany" ->
+                        succeed AccompanyToARVProgram
+
+                    "ncd" ->
+                        succeed ReferToNCDProgram
+
+                    "ncd-referral-form" ->
+                        succeed ReferralFormNCDProgram
+
+                    "ncd-accompany" ->
+                        succeed AccompanyToNCDProgram
 
                     "none" ->
-                        succeed NoReasonForNonReferral
+                        succeed NoReferToFacilitySigns
 
                     _ ->
                         fail <|
-                            event
-                                ++ "is not a recognized ReasonForNonReferral"
+                            sign
+                                ++ " is not a recognized ReferToFacilitySign"
+            )
+
+
+decodeFacilityNonReferralReason : Decoder FacilityNonReferralReason
+decodeFacilityNonReferralReason =
+    string
+        |> andThen
+            (\sign ->
+                if sign == "none" then
+                    succeed NoFacilityNonReferralReasons
+
+                else
+                    let
+                        parts =
+                            String.split "-" sign
+
+                        failure =
+                            fail <| sign ++ " is not a recognized FacilityNonReferralReason"
+                    in
+                    List.head parts
+                        |> Maybe.map
+                            (\prefix ->
+                                let
+                                    reasonForNonReferral =
+                                        List.tail parts
+                                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                                            |> Maybe.andThen reasonForNonReferralFromString
+                                in
+                                case prefix of
+                                    "hospital" ->
+                                        Maybe.map (NonReferralReasonHospital >> succeed) reasonForNonReferral
+                                            |> Maybe.withDefault failure
+
+                                    "mhs" ->
+                                        Maybe.map (NonReferralReasonMentalHealthSpecialist >> succeed) reasonForNonReferral
+                                            |> Maybe.withDefault failure
+
+                                    "arv" ->
+                                        Maybe.map (NonReferralReasonARVProgram >> succeed) reasonForNonReferral
+                                            |> Maybe.withDefault failure
+
+                                    "ncd" ->
+                                        Maybe.map (NonReferralReasonNCDProgram >> succeed) reasonForNonReferral
+                                            |> Maybe.withDefault failure
+
+                                    _ ->
+                                        failure
+                            )
+                        |> Maybe.withDefault failure
             )
 
 

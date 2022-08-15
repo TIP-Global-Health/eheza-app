@@ -2549,39 +2549,76 @@ prenatalReferralFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
-                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
-                , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
-                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
+                let
+                    resolveFromHCSignsValue sign =
+                        Maybe.map (EverySet.member sign) value.sendToHCSigns
+
+                    resolveFromFacilitySignsValue sign =
+                        Maybe.map (EverySet.member sign) value.referToFacilitySigns
+                in
+                { handReferralForm = or form.handReferralForm (resolveFromHCSignsValue HandReferrerForm)
+                , referToHealthCenter = or form.referToHealthCenter (resolveFromHCSignsValue ReferToHealthCenter)
+                , accompanyToHealthCenter = or form.accompanyToHealthCenter (resolveFromHCSignsValue PrenatalAccompanyToHC)
+                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC value.reasonForNotSendingToHC
+                , referToHospital = or form.referToHospital (resolveFromFacilitySignsValue ReferToHospital)
+                , referralFormHospital = or form.referralFormHospital (resolveFromFacilitySignsValue ReferralFormHospital)
+                , referToMentalHealthSpecialist = or form.referToMentalHealthSpecialist (resolveFromFacilitySignsValue ReferToMentalHealthSpecialist)
+                , referralFormMentalHealthSpecialist = or form.referralFormMentalHealthSpecialist (resolveFromFacilitySignsValue ReferralFormMentalHealthSpecialist)
+                , accompanyToMentalHealthSpecialist = or form.accompanyToMentalHealthSpecialist (resolveFromFacilitySignsValue AccompanyToMentalHealthSpecialist)
+                , referToARVProgram = or form.referToARVProgram (resolveFromFacilitySignsValue ReferToARVProgram)
+                , referralFormARVProgram = or form.referralFormARVProgram (resolveFromFacilitySignsValue ReferralFormARVProgram)
+                , accompanyToARVProgram = or form.accompanyToARVProgram (resolveFromFacilitySignsValue AccompanyToARVProgram)
+                , referToNCDProgram = or form.referToNCDProgram (resolveFromFacilitySignsValue ReferToNCDProgram)
+                , referralFormNCDProgram = or form.referralFormNCDProgram (resolveFromFacilitySignsValue ReferralFormNCDProgram)
+                , accompanyToNCDProgram = or form.accompanyToNCDProgram (resolveFromFacilitySignsValue AccompanyToNCDProgram)
+                , facilityNonReferralReasons = or form.facilityNonReferralReasons value.facilityNonReferralReasons
                 }
             )
 
 
-toPrenatalReferralValueWithDefault : Maybe PrenatalReferralValue -> Maybe ReferralFacility -> PrenatalReferralForm -> Maybe PrenatalReferralValue
-toPrenatalReferralValueWithDefault saved referralFacility form =
+toPrenatalReferralValueWithDefault : Maybe PrenatalReferralValue -> PrenatalReferralForm -> Maybe PrenatalReferralValue
+toPrenatalReferralValueWithDefault saved form =
     prenatalReferralFormWithDefault form saved
-        |> toPrenatalReferralValue referralFacility
+        |> toPrenatalReferralValue
 
 
-toPrenatalReferralValue : Maybe ReferralFacility -> PrenatalReferralForm -> Maybe PrenatalReferralValue
-toPrenatalReferralValue referralFacility form =
+toPrenatalReferralValue : PrenatalReferralForm -> Maybe PrenatalReferralValue
+toPrenatalReferralValue form =
     let
-        signs =
+        sendToHCSigns =
             [ ifNullableTrue HandReferrerForm form.handReferralForm
             , ifNullableTrue ReferToHealthCenter form.referToHealthCenter
             , ifNullableTrue PrenatalAccompanyToHC form.accompanyToHealthCenter
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoReferralSigns)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty)
 
-        reasonForNotSendingToHC =
-            form.reasonForNotSendingToHC
-                |> Maybe.withDefault NoReasonForNonReferral
-                |> Just
+        referToFacilitySigns =
+            [ ifNullableTrue ReferToHospital form.referToHospital
+            , ifNullableTrue ReferralFormHospital form.referralFormHospital
+            , ifNullableTrue ReferToMentalHealthSpecialist form.referToMentalHealthSpecialist
+            , ifNullableTrue ReferralFormMentalHealthSpecialist form.referralFormMentalHealthSpecialist
+            , ifNullableTrue AccompanyToMentalHealthSpecialist form.accompanyToMentalHealthSpecialist
+            , ifNullableTrue ReferToARVProgram form.referToARVProgram
+            , ifNullableTrue ReferralFormARVProgram form.referralFormARVProgram
+            , ifNullableTrue AccompanyToARVProgram form.accompanyToARVProgram
+            , ifNullableTrue ReferToNCDProgram form.referToNCDProgram
+            , ifNullableTrue ReferralFormNCDProgram form.referralFormNCDProgram
+            , ifNullableTrue AccompanyToNCDProgram form.accompanyToNCDProgram
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty)
     in
-    Maybe.map PrenatalReferralValue signs
-        |> andMap reasonForNotSendingToHC
-        |> andMap (Just referralFacility)
+    if isJust sendToHCSigns || isJust referToFacilitySigns then
+        Just
+            { sendToHCSigns = sendToHCSigns
+            , reasonForNotSendingToHC = form.reasonForNotSendingToHC
+            , referToFacilitySigns = referToFacilitySigns
+            , facilityNonReferralReasons = form.facilityNonReferralReasons
+            }
+
+    else
+        Nothing
 
 
 generateVaccinationProgress : List PrenatalMeasurements -> VaccinationProgressDict

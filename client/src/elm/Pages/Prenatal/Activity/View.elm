@@ -24,7 +24,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (sendToHCFormWithDefault, vaccinationFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils exposing (vaccinationFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToARVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewSendToMentalSpecialistForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
@@ -1866,11 +1866,10 @@ viewNextStepsContent language currentDate isChw assembled data =
 
                                 FacilityNCDProgram ->
                                     -- @todo
-                                    ( [], Nothing )
+                                    ( viewSendToARVProgramForm, Nothing )
                     in
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
-                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
+                    getMeasurementValueFunc measurements.sendToHC
+                        |> prenatalReferralFormWithDefault data.referralForm
                         |> viewFormFunc language
                             currentDate
                             SetReferToHealthCenter
@@ -1888,8 +1887,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     viewNewbornEnrolmentForm language currentDate assembled
 
                 Just NextStepsMedicationDistribution ->
-                    measurements.medicationDistribution
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
                             currentDate
@@ -1975,20 +1973,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                                         SaveFollowUp personId assesment measurements.followUp secondPhase nextTask
 
                                     NextStepsSendToHC ->
-                                        let
-                                            nonDefaultFacility =
-                                                if
-                                                    List.member referralFacility
-                                                        [ FacilityMentalHealthSpecialist
-                                                        , FacilityARVProgram
-                                                        ]
-                                                then
-                                                    Just referralFacility
-
-                                                else
-                                                    Nothing
-                                        in
-                                        SaveSendToHC personId measurements.sendToHC secondPhase nonDefaultFacility nextTask
+                                        SaveSendToHC personId measurements.sendToHC secondPhase nextTask
 
                                     NextStepsHealthEducation ->
                                         SaveHealthEducationSubActivity personId measurements.healthEducation secondPhase nextTask

@@ -24,7 +24,6 @@ import Measurement.Model exposing (VaccinationFormViewMode(..), VitalsForm)
 import Measurement.Utils
     exposing
         ( getNextVaccineDose
-        , referralFormWithDefault
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         , vitalsFormWithDefault
@@ -2967,46 +2966,48 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             )
 
         NextStepsSendToHC ->
-            let
-                form =
-                    assembled.measurements.sendToHC
-                        |> getMeasurementValueFunc
-                        |> prenatalSendToHCFormWithDefault data.referralForm
-
-                ( reasonForNotSentCompleted, reasonForNotSentActive ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( accompanyToHealthCenterCompleted, accompanyToHealthCenterActive ) =
-                    if isChw then
-                        ( taskCompleted form.accompanyToHealthCenter, 1 )
-
-                    else if
-                        referToHospitalForNonHIVDiagnosis assembled
-                            || referToHospitalDueToAdverseEvent assembled
-                            || referToHospitalDueToPastDiagnosis assembled
-                            || referToMentalHealthSpecialist assembled
-                    then
-                        ( 0, 0 )
-
-                    else
-                        ( taskCompleted form.accompanyToHealthCenter, 1 )
-            in
-            ( taskCompleted form.handReferralForm + reasonForNotSentCompleted + accompanyToHealthCenterCompleted
-            , 1 + reasonForNotSentActive + accompanyToHealthCenterActive
-            )
+            -- @todo
+            -- let
+            --     form =
+            --         assembled.measurements.sendToHC
+            --             |> getMeasurementValueFunc
+            --             |> prenatalReferralFormWithDefault data.referralForm
+            --
+            --     ( reasonForNotSentCompleted, reasonForNotSentActive ) =
+            --         form.referToHealthCenter
+            --             |> Maybe.map
+            --                 (\sentToHC ->
+            --                     if not sentToHC then
+            --                         if isJust form.reasonForNotSendingToHC then
+            --                             ( 2, 2 )
+            --
+            --                         else
+            --                             ( 1, 2 )
+            --
+            --                     else
+            --                         ( 1, 1 )
+            --                 )
+            --             |> Maybe.withDefault ( 0, 1 )
+            --
+            --     ( accompanyToHealthCenterCompleted, accompanyToHealthCenterActive ) =
+            --         if isChw then
+            --             ( taskCompleted form.accompanyToHealthCenter, 1 )
+            --
+            --         else if
+            --             referToHospitalForNonHIVDiagnosis assembled
+            --                 || referToHospitalDueToAdverseEvent assembled
+            --                 || referToHospitalDueToPastDiagnosis assembled
+            --                 || referToMentalHealthSpecialist assembled
+            --         then
+            --             ( 0, 0 )
+            --
+            --         else
+            --             ( taskCompleted form.accompanyToHealthCenter, 1 )
+            -- in
+            -- ( taskCompleted form.handReferralForm + reasonForNotSentCompleted + accompanyToHealthCenterCompleted
+            -- , 1 + reasonForNotSentActive + accompanyToHealthCenterActive
+            -- )
+            ( 0, 0 )
 
         NextStepsHealthEducation ->
             let

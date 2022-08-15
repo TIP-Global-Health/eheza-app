@@ -1240,10 +1240,10 @@ viewSendToFacilityForm language currentDate facility referralReasons setReferToH
                 FacilityMentalHealthSpecialist ->
                     [ viewCustomLabel language Translate.PrenatalMentalHealthSpecialistHelper "." "instructions" ]
 
-                PrenatalARVProgram ->
+                FacilityARVProgram ->
                     [ viewCustomLabel language Translate.PrenatalARVProgramHelper "." "instructions" ]
 
-                PrenatalNCDProgram ->
+                FacilityNCDProgram ->
                     -- @todo
                     []
 
