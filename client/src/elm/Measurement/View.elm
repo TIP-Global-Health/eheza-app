@@ -9,10 +9,8 @@ module Measurement.View exposing
     , viewMeasurementFloatDiff
     , viewMother
     , viewReferToProgramForm
-    , viewSendToARVProgramForm
     , viewSendToHealthCenterForm
     , viewSendToHospitalForm
-    , viewSendToMentalSpecialistForm
     , viewVitalsForm
     , zScoreForHeightOrLength
     )
@@ -1151,24 +1149,10 @@ viewSendToHealthCenterForm :
     -> SendToHCForm
     -> Html msg
 viewSendToHealthCenterForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHealthCenter []
+    viewSendToFacilityForm language currentDate FacilityHealthCenter
 
 
 viewSendToHospitalForm :
-    List PrenatalDiagnosis
-    -> Language
-    -> NominalDate
-    -> (Bool -> msg)
-    -> (ReasonForNonReferral -> msg)
-    -> (Bool -> msg)
-    -> Maybe (Bool -> msg)
-    -> SendToHCForm
-    -> Html msg
-viewSendToHospitalForm referralReasons language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHospital referralReasons
-
-
-viewSendToARVProgramForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
@@ -1177,75 +1161,29 @@ viewSendToARVProgramForm :
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToARVProgramForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityARVProgram []
-
-
-viewSendToMentalSpecialistForm :
-    Language
-    -> NominalDate
-    -> (Bool -> msg)
-    -> (ReasonForNonReferral -> msg)
-    -> (Bool -> msg)
-    -> Maybe (Bool -> msg)
-    -> SendToHCForm
-    -> Html msg
-viewSendToMentalSpecialistForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityMentalHealthSpecialist []
+viewSendToHospitalForm language currentDate =
+    viewSendToFacilityForm language currentDate FacilityHospital
 
 
 viewSendToFacilityForm :
     Language
     -> NominalDate
     -> ReferralFacility
-    -> List PrenatalDiagnosis
     -> (Bool -> msg)
     -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToFacilityForm language currentDate facility referralReasons setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
-    -- @todo - make for HC and Hospital only.
+viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
         headerHelper =
             case facility of
-                FacilityHealthCenter ->
-                    []
-
                 FacilityHospital ->
-                    let
-                        referralContext =
-                            if not <| List.isEmpty referralReasons then
-                                let
-                                    diagnosisTransId diagnosis =
-                                        if diagnosis == DiagnosisChronicHypertensionImmediate then
-                                            Translate.Hypertension
-
-                                        else
-                                            Translate.PrenatalDiagnosis diagnosis
-
-                                    reasons =
-                                        List.map (diagnosisTransId >> translate language) referralReasons
-                                            |> String.join ", "
-                                in
-                                div [ class "label" ] [ text <| translate language Translate.PatientDiagnosedWithLabel ++ ": " ++ reasons ++ "." ]
-
-                            else
-                                emptyNode
-                    in
-                    [ referralContext
-                    , viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions"
+                    [ viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions"
                     ]
 
-                FacilityMentalHealthSpecialist ->
-                    [ viewCustomLabel language Translate.PrenatalMentalHealthSpecialistHelper "." "instructions" ]
-
-                FacilityARVProgram ->
-                    [ viewCustomLabel language Translate.PrenatalARVProgramHelper "." "instructions" ]
-
-                FacilityNCDProgram ->
-                    -- @todo
+                _ ->
                     []
 
         sendToHCSection =
@@ -1256,18 +1194,10 @@ viewSendToFacilityForm language currentDate facility referralReasons setReferToH
 
                 reasonForNotSendingToHCInput =
                     if not sentToHealthCenter then
-                        let
-                            options =
-                                if List.member facility [ FacilityARVProgram, FacilityMentalHealthSpecialist ] then
-                                    [ ClientRefused, ClientAlreadyInCare, ReasonForNonReferralOther ]
-
-                                else
-                                    [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNonReferralOther ]
-                        in
                         [ div [ class "why-not" ]
                             [ viewQuestionLabel language Translate.WhyNot
                             , viewCheckBoxSelectInput language
-                                options
+                                [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNonReferralOther ]
                                 []
                                 form.reasonForNotSendingToHC
                                 setReasonForNonReferralMsg
@@ -1312,22 +1242,14 @@ viewSendToFacilityForm language currentDate facility referralReasons setReferToH
                 )
                 setAccompanyToHCMsg
                 |> Maybe.withDefault []
-
-        instructions =
-            case facility of
-                FacilityMentalHealthSpecialist ->
-                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing ]
-
-                _ ->
-                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
-                    , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
-                    ]
     in
     div [ class "ui form send-to-hc" ] <|
         headerHelper
             ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
                , div [ class "instructions" ]
-                    instructions
+                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+                    , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
+                    ]
                ]
             ++ sendToHCSection
             ++ handReferralFormSection
