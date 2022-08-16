@@ -2151,11 +2151,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (\value ->
                         EverySet.member FoulSmellingLochia value.vaginalExamSigns
                             || (EverySet.member EpisiotomyOrPerinealTear value.guExamSigns
-                                    && (Maybe.map
-                                            (\problems ->
-                                                List.any (\sign -> EverySet.member sign problems)
-                                                    [ HealingProblemSwelling, HealingProblemDischarge ]
-                                            )
+                                    && (Maybe.map (EverySet.member NormalPostpartumHealing >> not)
                                             value.postpartumHealingProblems
                                             |> Maybe.withDefault False
                                        )
