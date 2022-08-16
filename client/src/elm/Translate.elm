@@ -6893,7 +6893,7 @@ translationSet trans =
                     }
 
                 ReasonForNonReferralNotIndicated ->
-                    { english = "Not Indicated"
+                    { english = "Not indicated"
                     , kinyarwanda = Nothing
                     }
 
