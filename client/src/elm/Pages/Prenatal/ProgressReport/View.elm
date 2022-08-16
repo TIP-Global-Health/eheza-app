@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , MedicationDistributionSign(..)
+        , NonReferralSign(..)
         , PrenatalHIVSign(..)
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
@@ -21,6 +22,7 @@ import Backend.Measurement.Model
         , PrenatalTestVariant(..)
         , ReasonForNonReferral(..)
         , RecommendedTreatmentSign(..)
+        , ReferToFacilitySign(..)
         , ReferralFacility(..)
         , SendToHCSign(..)
         , ViralLoadStatus(..)
@@ -80,6 +82,7 @@ import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
     exposing
         ( diagnosedMalaria
+        , getCurrentReasonForNonReferral
         , hypertensionDiagnoses
         , outsideCareDiagnoses
         , outsideCareDiagnosesWithPossibleMedication
@@ -2258,72 +2261,98 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessageWithComplications ""
 
         referredToHospitalMessageWithComplications complications =
-            referredToFacilityMessageWithComplications Nothing complications
+            referredToFacilityMessageWithComplications FacilityHospital complications
 
-        referredToFacilityMessage nonDefaultReferralFacility =
-            referredToFacilityMessageWithComplications nonDefaultReferralFacility ""
+        referredToFacilityMessage facility =
+            referredToFacilityMessageWithComplications facility ""
 
-        referredToFacilityMessageWithComplications nonDefaultReferralFacility complications =
+        referredToFacilityMessageWithComplications facility complications =
             if isNothing measurements.sendToHC then
                 noTreatmentRecordedMessageWithComplications complications
 
             else
-                -- @todo
-                -- let
-                --     refferedToFacility =
-                --         getMeasurementValueFunc measurements.sendToHC
-                --             |> Maybe.map
-                --                 (\value ->
-                --                     EverySet.member ReferToHealthCenter value.signs
-                --                         && (value.referralFacility == nonDefaultReferralFacility)
-                --                 )
-                --             |> Maybe.withDefault False
-                --
-                --     referralFacility =
-                --         -- If nonDefaultReferralFacility is Nothing, we know it's
-                --         -- default facility, which is a hospital.
-                --         Maybe.withDefault FacilityHospital nonDefaultReferralFacility
-                -- in
-                -- if refferedToFacility then
-                --     diagnosisForProgressReport
-                --         ++ complications
-                --         ++ " - "
-                --         ++ (String.toLower <| translate language <| Translate.ReferredToFacility referralFacility)
-                --         ++ " "
-                --         ++ (String.toLower <| translate language Translate.On)
-                --         ++ " "
-                --         ++ formatDDMMYYYY date
-                --         |> wrapWithLI
-                --
-                -- else
-                --     let
-                --         reason =
-                --             getMeasurementValueFunc measurements.sendToHC
-                --                 |> Maybe.map .reasonForNotSendingToHC
-                --
-                --         suffix =
-                --             Maybe.map
-                --                 (\reason_ ->
-                --                     if reason_ == NoReasonForNonReferral then
-                --                         ""
-                --
-                --                     else
-                --                         " - " ++ (String.toLower <| translate language <| Translate.ReasonForNonReferral reason_)
-                --                 )
-                --                 reason
-                --                 |> Maybe.withDefault ""
-                --     in
-                --     diagnosisForProgressReport
-                --         ++ complications
-                --         ++ " - "
-                --         ++ (String.toLower <| translate language <| Translate.ReferredToFacilityNot referralFacility)
-                --         ++ " "
-                --         ++ (String.toLower <| translate language Translate.On)
-                --         ++ " "
-                --         ++ formatDDMMYYYY date
-                --         ++ suffix
-                --         |> wrapWithLI
-                []
+                let
+                    refferedToFacility =
+                        getMeasurementValueFunc measurements.sendToHC
+                            |> Maybe.andThen .referToFacilitySigns
+                            |> Maybe.map
+                                (\referToFacilitySigns ->
+                                    case facility of
+                                        FacilityHospital ->
+                                            EverySet.member ReferToHospital referToFacilitySigns
+
+                                        FacilityMentalHealthSpecialist ->
+                                            EverySet.member ReferToMentalHealthSpecialist referToFacilitySigns
+
+                                        FacilityARVProgram ->
+                                            EverySet.member ReferToARVProgram referToFacilitySigns
+
+                                        FacilityNCDProgram ->
+                                            EverySet.member ReferToNCDProgram referToFacilitySigns
+
+                                        FacilityHealthCenter ->
+                                            -- We should never get here.
+                                            False
+                                )
+                            |> Maybe.withDefault False
+                in
+                if refferedToFacility then
+                    diagnosisForProgressReport
+                        ++ complications
+                        ++ " - "
+                        ++ (String.toLower <| translate language <| Translate.ReferredToFacility facility)
+                        ++ " "
+                        ++ (String.toLower <| translate language Translate.On)
+                        ++ " "
+                        ++ formatDDMMYYYY date
+                        |> wrapWithLI
+
+                else
+                    let
+                        reason =
+                            getMeasurementValueFunc measurements.sendToHC
+                                |> Maybe.andThen
+                                    (\value ->
+                                        case facility of
+                                            FacilityHospital ->
+                                                getCurrentReasonForNonReferral NonReferralReasonHospital value.facilityNonReferralReasons
+
+                                            FacilityMentalHealthSpecialist ->
+                                                getCurrentReasonForNonReferral NonReferralReasonMentalHealthSpecialist value.facilityNonReferralReasons
+
+                                            FacilityARVProgram ->
+                                                getCurrentReasonForNonReferral NonReferralReasonARVProgram value.facilityNonReferralReasons
+
+                                            FacilityNCDProgram ->
+                                                getCurrentReasonForNonReferral NonReferralReasonNCDProgram value.facilityNonReferralReasons
+
+                                            FacilityHealthCenter ->
+                                                -- We should never get here.
+                                                Nothing
+                                    )
+
+                        suffix =
+                            Maybe.map
+                                (\reason_ ->
+                                    if reason_ == NoReasonForNonReferral then
+                                        ""
+
+                                    else
+                                        " - " ++ (String.toLower <| translate language <| Translate.ReasonForNonReferral reason_)
+                                )
+                                reason
+                                |> Maybe.withDefault ""
+                    in
+                    diagnosisForProgressReport
+                        ++ complications
+                        ++ " - "
+                        ++ (String.toLower <| translate language <| Translate.ReferredToFacilityNot facility)
+                        ++ " "
+                        ++ (String.toLower <| translate language Translate.On)
+                        ++ " "
+                        ++ formatDDMMYYYY date
+                        ++ suffix
+                        |> wrapWithLI
 
         noTreatmentRecordedMessage =
             noTreatmentRecordedMessageWithComplications ""
@@ -2395,51 +2424,44 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             getMeasurementValueFunc measurements.sendToHC
                 |> Maybe.map
                     (\value ->
-                        -- @todo
-                        -- if value.referralFacility == Just FacilityARVProgram then
-                        --     referredToFacilityMessage (Just FacilityARVProgram)
-                        --
-                        -- else
-                        getMeasurementValueFunc measurements.medicationDistribution
-                            |> Maybe.andThen
-                                (\value_ ->
-                                    let
-                                        nonAdministrationReasons =
-                                            Measurement.Utils.resolveMedicationsNonAdministrationReasons value_
-                                    in
-                                    Maybe.map2
-                                        (\tdf3TCTreatmentMessage dolutegravirTreatmentmessage ->
-                                            let
-                                                diagnosisMessage =
-                                                    diagnosisForProgressReport
-                                                        ++ " "
-                                                        ++ (String.toLower <| translate language Translate.On)
-                                                        ++ " "
-                                                        ++ formatDDMMYYYY date
-                                            in
-                                            [ li []
-                                                [ p [] [ text diagnosisMessage ]
-                                                , p [] [ text tdf3TCTreatmentMessage ]
-                                                , p [] [ text dolutegravirTreatmentmessage ]
+                        let
+                            refferedToARVProgram =
+                                Maybe.map (EverySet.member ReferToARVProgram)
+                                    value.referToFacilitySigns
+                                    |> Maybe.withDefault False
+                        in
+                        if refferedToARVProgram then
+                            referredToFacilityMessage FacilityARVProgram
+
+                        else
+                            getMeasurementValueFunc measurements.medicationDistribution
+                                |> Maybe.andThen
+                                    (\value_ ->
+                                        let
+                                            nonAdministrationReasons =
+                                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value_
+                                        in
+                                        Maybe.map2
+                                            (\tdf3TCTreatmentMessage dolutegravirTreatmentmessage ->
+                                                let
+                                                    diagnosisMessage =
+                                                        diagnosisForProgressReport
+                                                            ++ " "
+                                                            ++ (String.toLower <| translate language Translate.On)
+                                                            ++ " "
+                                                            ++ formatDDMMYYYY date
+                                                in
+                                                [ li []
+                                                    [ p [] [ text diagnosisMessage ]
+                                                    , p [] [ text tdf3TCTreatmentMessage ]
+                                                    , p [] [ text dolutegravirTreatmentmessage ]
+                                                    ]
                                                 ]
-                                            ]
-                                        )
-                                        (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons TDF3TC)
-                                        (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons Dolutegravir)
-                                )
-                            |> Maybe.withDefault
-                                -- @todo
-                                --
-                                -- (if EverySet.member ReferToHealthCenter value.signs then
-                                --     -- Patient was referred to hospital, and is supposed to get
-                                --     -- HIV treatment there.
-                                --     referredToHospitalMessage
-                                --
-                                --  else
-                                --
-                                --     noTreatmentRecordedMessage
-                                -- )
-                                noTreatmentRecordedMessage
+                                            )
+                                            (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons TDF3TC)
+                                            (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons Dolutegravir)
+                                    )
+                                |> Maybe.withDefault noTreatmentRecordedMessage
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 

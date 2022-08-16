@@ -2818,7 +2818,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                         }
 
                 FacilityNCDProgram ->
-                    -- @todo
+                    -- @todo : Implement when developing NCD feature.
                     Nothing
 
                 FacilityHealthCenter ->
@@ -2874,7 +2874,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
 
                             else
                                 ( nonReferralReasonSection language facility config.reasonToSignFunc setNonReferralReasonMsg form
-                                , [ if isJust <| getCurrentReasonForNonReferral config.reasonToSignFunc form then
+                                , [ if isJust <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form then
                                         Just True
 
                                     else
@@ -2916,7 +2916,7 @@ nonReferralReasonSection :
 nonReferralReasonSection language facility reasonToSignFunc setNonReferralReasonMsg form =
     let
         currentValue =
-            getCurrentReasonForNonReferral reasonToSignFunc form
+            getCurrentReasonForNonReferralByForm reasonToSignFunc form
 
         options =
             if facility == FacilityHospital then
@@ -2935,14 +2935,22 @@ nonReferralReasonSection language facility reasonToSignFunc setNonReferralReason
     ]
 
 
-getCurrentReasonForNonReferral :
+getCurrentReasonForNonReferralByForm :
     (ReasonForNonReferral -> NonReferralSign)
     -> ReferralForm
     -> Maybe ReasonForNonReferral
-getCurrentReasonForNonReferral reasonToSignFunc form =
+getCurrentReasonForNonReferralByForm reasonToSignFunc form =
+    getCurrentReasonForNonReferral reasonToSignFunc form.facilityNonReferralReasons
+
+
+getCurrentReasonForNonReferral :
+    (ReasonForNonReferral -> NonReferralSign)
+    -> Maybe (EverySet NonReferralSign)
+    -> Maybe ReasonForNonReferral
+getCurrentReasonForNonReferral reasonToSignFunc nonReferralReasons =
     let
         facilityNonReferralReasons =
-            Maybe.withDefault EverySet.empty form.facilityNonReferralReasons
+            Maybe.withDefault EverySet.empty nonReferralReasons
     in
     List.filterMap
         (\reason ->
@@ -2969,7 +2977,7 @@ nonReferralReasonToSign facility reason =
             NonReferralReasonARVProgram reason
 
         FacilityNCDProgram ->
-            -- @todo
+            -- @todo : Implement when developing NCD feature.
             NoNonReferralSigns
 
         FacilityHealthCenter ->

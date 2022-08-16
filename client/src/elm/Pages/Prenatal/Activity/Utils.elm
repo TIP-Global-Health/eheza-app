@@ -6508,7 +6508,7 @@ matchRequiredReferralFacility assembled facility =
             referToHIVProgram assembled
 
         FacilityNCDProgram ->
-            -- @todo
+            -- @todo : Implement when developing NCD feature.
             False
 
         FacilityHealthCenter ->
