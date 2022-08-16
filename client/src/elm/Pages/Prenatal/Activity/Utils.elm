@@ -296,7 +296,7 @@ activityCompleted currentDate assembled activity =
 
         NextSteps ->
             resolveNextStepsTasks currentDate assembled
-                |> List.all (nextStepsMeasurementTaken assembled)
+                |> List.all (nextStepsTaskCompleted assembled)
 
         PregnancyOutcome ->
             isJust assembled.participant.dateConcluded
@@ -842,8 +842,8 @@ symptomRecordedPreviously assembled symptom =
         |> not
 
 
-nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
-nextStepsMeasurementTaken assembled task =
+nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
     case task of
         NextStepsAppointmentConfirmation ->
             isJust assembled.measurements.appointmentConfirmation
@@ -852,7 +852,8 @@ nextStepsMeasurementTaken assembled task =
             isJust assembled.measurements.followUp
 
         NextStepsSendToHC ->
-            isJust assembled.measurements.sendToHC
+            resolveRequiredReferralFacilities assembled
+                |> List.all (referralToFacilityCompleted assembled)
 
         NextStepsHealthEducation ->
             isJust assembled.measurements.healthEducation
@@ -2899,7 +2900,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
         NextStepsWait ->
             let
                 completed =
-                    if nextStepsMeasurementTaken assembled NextStepsWait then
+                    if nextStepsTaskCompleted assembled NextStepsWait then
                         1
 
                     else

@@ -66,7 +66,7 @@ activityCompleted currentDate assembled activity =
         RecurrentNextSteps ->
             (not <| expectActivity currentDate assembled RecurrentNextSteps)
                 || (resolveNextStepsTasks currentDate assembled
-                        |> List.all (nextStepsMeasurementTaken assembled)
+                        |> List.all (nextStepsTaskCompleted assembled)
                    )
 
         RecurrentExamination ->
@@ -430,11 +430,12 @@ expectNextStepsTask currentDate assembled task =
             diagnosedAnyOf (DiagnosisHIVDetectableViralLoad :: diabetesDiagnoses) assembled
 
 
-nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
-nextStepsMeasurementTaken assembled task =
+nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
     case task of
         NextStepsSendToHC ->
-            isJust assembled.measurements.sendToHC
+            resolveRequiredReferralFacilities assembled
+                |> List.all (referralToFacilityCompleted assembled)
 
         NextStepsMedicationDistribution ->
             let
@@ -475,24 +476,17 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         |> getMeasurementValueFunc
                         |> referralFormWithDefault data.referralForm
 
-                ( reasonForNotSentCompleted, reasonForNotSentActive ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+                ( _, tasks ) =
+                    resolveReferralInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
             in
-            ( taskCompleted form.handReferralForm + reasonForNotSentCompleted
-            , 1 + reasonForNotSentActive
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
             )
 
         NextStepsMedicationDistribution ->

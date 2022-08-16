@@ -1493,11 +1493,9 @@ medicationDistributionMeasurementTaken : List MedicationDistributionSign -> Pren
 medicationDistributionMeasurementTaken allowedSigns measurements =
     getMeasurementValueFunc measurements.medicationDistribution
         |> Maybe.map
-            (.distributionSigns
-                >> (\signs ->
-                        List.any (\sign -> EverySet.member sign signs)
-                            allowedSigns
-                   )
+            (\value ->
+                List.any (\sign -> EverySet.member sign value.distributionSigns)
+                    allowedSigns
             )
         |> Maybe.withDefault False
 
@@ -3000,3 +2998,49 @@ nonReferralReasonToSign facility reason =
         FacilityHealthCenter ->
             -- We should never get here.
             NoNonReferralSigns
+
+
+{-| Referal to facility is completed when we mark that facility was referred to,
+or, reason was set for not referring to that facility.
+|
+-}
+referralToFacilityCompleted : AssembledData -> ReferralFacility -> Bool
+referralToFacilityCompleted assembled facility =
+    getMeasurementValueFunc assembled.measurements.sendToHC
+        |> Maybe.andThen
+            (\value ->
+                let
+                    referralConfig =
+                        case facility of
+                            FacilityHospital ->
+                                Just ( ReferToHospital, NonReferralReasonHospital )
+
+                            FacilityMentalHealthSpecialist ->
+                                Just ( ReferToMentalHealthSpecialist, NonReferralReasonMentalHealthSpecialist )
+
+                            FacilityARVProgram ->
+                                Just ( ReferToARVProgram, NonReferralReasonARVProgram )
+
+                            FacilityNCDProgram ->
+                                Just ( ReferToNCDProgram, NonReferralReasonNCDProgram )
+
+                            FacilityHealthCenter ->
+                                -- We should never get here.
+                                Nothing
+                in
+                Maybe.map
+                    (\( referralSign, nonReferralSign ) ->
+                        let
+                            facilityWasReferred =
+                                Maybe.map (EverySet.member referralSign)
+                                    value.referToFacilitySigns
+                                    |> Maybe.withDefault False
+
+                            facilityNonReferralReasonSet =
+                                isJust <| getCurrentReasonForNonReferral nonReferralSign value.facilityNonReferralReasons
+                        in
+                        facilityWasReferred || facilityNonReferralReasonSet
+                    )
+                    referralConfig
+            )
+        |> Maybe.withDefault False

@@ -1750,7 +1750,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     activeTask == Just task
 
                 isCompleted =
-                    nextStepsMeasurementTaken assembled task
+                    nextStepsTaskCompleted assembled task
 
                 navigationAction =
                     if isActive then
@@ -1787,7 +1787,7 @@ viewNextStepsContent language currentDate isChw assembled data =
             List.member NextStepsWait tasks
                 && -- There's one or less uncompleted task,
                    -- which is the Wait task.
-                   (List.filter (nextStepsMeasurementTaken assembled >> not) tasks
+                   (List.filter (nextStepsTaskCompleted assembled >> not) tasks
                         |> List.length
                         |> (\length -> length < 2)
                    )
