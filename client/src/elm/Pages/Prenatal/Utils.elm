@@ -2780,7 +2780,12 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                             , viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions"
                             ]
                         , referralField = form.referToHospital
-                        , referralUpdateFunc = \value form_ -> { form_ | referToHospital = Just value }
+                        , referralUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | referToHospital = Just value
+                                    , referralFormHospital = Nothing
+                                }
                         , formField = form.referralFormHospital
                         , formUpdateFunc = \value form_ -> { form_ | referralFormHospital = Just value }
                         , accompanyConfig = Nothing
@@ -2791,7 +2796,13 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                     Just
                         { header = [ viewCustomLabel language Translate.PrenatalMentalHealthSpecialistHelper "." "instructions" ]
                         , referralField = form.referToMentalHealthSpecialist
-                        , referralUpdateFunc = \value form_ -> { form_ | referToMentalHealthSpecialist = Just value }
+                        , referralUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | referToMentalHealthSpecialist = Just value
+                                    , referralFormMentalHealthSpecialist = Nothing
+                                    , accompanyToMentalHealthSpecialist = Nothing
+                                }
                         , formField = form.referralFormMentalHealthSpecialist
                         , formUpdateFunc = \value form_ -> { form_ | referralFormMentalHealthSpecialist = Just value }
                         , accompanyConfig =
@@ -2806,7 +2817,13 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                     Just
                         { header = [ viewCustomLabel language Translate.PrenatalARVProgramHelper "." "instructions" ]
                         , referralField = form.referToARVProgram
-                        , referralUpdateFunc = \value form_ -> { form_ | referToARVProgram = Just value }
+                        , referralUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | referToARVProgram = Just value
+                                    , referralFormARVProgram = Nothing
+                                    , accompanyToARVProgram = Nothing
+                                }
                         , formField = form.referralFormARVProgram
                         , formUpdateFunc = \value form_ -> { form_ | referralFormARVProgram = Just value }
                         , accompanyConfig =
