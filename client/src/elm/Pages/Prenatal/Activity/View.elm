@@ -1815,25 +1815,6 @@ viewNextStepsContent language currentDate isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        ( referralFacility, referralReasons ) =
-            if isChw then
-                ( FacilityHealthCenter, [] )
-
-            else
-                let
-                    hospitalReferralDiagnoses =
-                        diagnosesCausingHospitalReferral assembled
-                            |> EverySet.toList
-                in
-                if not <| List.isEmpty hospitalReferralDiagnoses then
-                    ( FacilityHospital, hospitalReferralDiagnoses )
-
-                else if referToMentalHealthSpecialist assembled then
-                    ( FacilityMentalHealthSpecialist, [] )
-
-                else
-                    ( FacilityARVProgram, [] )
-
         viewForm =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->

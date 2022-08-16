@@ -689,119 +689,19 @@ historyTaskCompleted assembled task =
             isJust assembled.measurements.outsideCare
 
 
+referToHospital : AssembledData -> Bool
+referToHospital =
+    diagnosesCausingHospitalReferral >> EverySet.isEmpty >> not
+
+
 diagnosesCausingHospitalReferral : AssembledData -> EverySet PrenatalDiagnosis
-diagnosesCausingHospitalReferral assembled =
-    let
-        nonHIV =
-            nonHIVDiagnosesCausingHospitalReferral assembled
-
-        byAdverseEvent =
-            diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled
-
-        byPastDiagnoses =
-            diagnosesCausingHospitalReferralByPastDiagnoses assembled
-
-        overall =
-            nonHIV
-                ++ byAdverseEvent
-                ++ byPastDiagnoses
-
-        additional =
-            -- There are 2 cases where patient is referred to hospital, skipping
-            -- referals to other facilities:
-            -- 1. HIV-positive patients, while there's an HIV program, at the health center.
-            -- 2. Patient with a mental health diagnosis, and available mental health
-            --   specialist at helath center.
-            -- In both cases, since we have a need to refer to the hospital, it must
-            -- be more urgent, and therefore, treatment for (HIV/Mental health) will
-            -- be given at the hospital.
-            if not <| List.isEmpty overall then
-                let
-                    hiv =
-                        if diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements then
-                            [ DiagnosisHIV ]
-
-                        else
-                            []
-
-                    mentalHealth =
-                        if mentalHealthSpecialistAtHC assembled then
-                            List.filter (\diagnosis -> diagnosed diagnosis assembled) mentalHealthDiagnosesRequiringTreatment
-
-                        else
-                            []
-                in
-                hiv
-
-            else
-                []
-    in
-    overall
-        ++ additional
-        |> EverySet.fromList
-
-
-referToHospitalForNonHIVDiagnosis : AssembledData -> Bool
-referToHospitalForNonHIVDiagnosis =
-    nonHIVDiagnosesCausingHospitalReferral >> List.isEmpty >> not
-
-
-nonHIVDiagnosesCausingHospitalReferral : AssembledData -> List PrenatalDiagnosis
-nonHIVDiagnosesCausingHospitalReferral assembled =
-    diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseInitial assembled
-        ++ diagnosesCausingHospitalReferralByMentalHealth assembled
-        ++ diagnosesCausingHospitalReferralByOtherReasons assembled
-
-
-diagnosesCausingHospitalReferralByMentalHealth : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByMentalHealth assembled =
-    if mentalHealthSpecialistAtHC assembled then
-        []
-
-    else
-        List.filter (\diagnosis -> diagnosed diagnosis assembled) mentalHealthDiagnosesRequiringTreatment
-
-
-diagnosesCausingHospitalReferralByOtherReasons : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByOtherReasons assembled =
-    let
-        severeMalariaTreatment =
-            getMeasurementValueFunc assembled.measurements.medicationDistribution
-                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
-                |> Maybe.withDefault False
-
-        malaria =
-            if diagnosedMalaria assembled && severeMalariaTreatment then
-                [ DiagnosisMalaria ]
-
-            else
-                []
-
-        hypertension =
-            if updateHypertensionTreatmentWithHospitalization assembled then
-                [ DiagnosisChronicHypertensionImmediate ]
-
-            else
-                []
-    in
-    malaria ++ hypertension
-
-
-referToHospitalForMentalHealthDiagnosis : AssembledData -> Bool
-referToHospitalForMentalHealthDiagnosis =
-    diagnosesCausingHospitalReferralByMentalHealth >> List.isEmpty >> not
+diagnosesCausingHospitalReferral =
+    diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial
 
 
 referToMentalHealthSpecialist : AssembledData -> Bool
 referToMentalHealthSpecialist assembled =
     mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnosesRequiringTreatment assembled
-
-
-mentalHealthSpecialistAtHC : AssembledData -> Bool
-mentalHealthSpecialistAtHC assembled =
-    getMeasurementValueFunc assembled.measurements.mentalHealth
-        |> Maybe.map .specialistAtHC
-        |> Maybe.withDefault False
 
 
 referToHIVProgram : AssembledData -> Bool
@@ -2321,15 +2221,6 @@ symptomsDiagnoses =
 mentalHealthDiagnoses : List PrenatalDiagnosis
 mentalHealthDiagnoses =
     DiagnosisDepressionNotLikely :: mentalHealthDiagnosesRequiringTreatment
-
-
-mentalHealthDiagnosesRequiringTreatment : List PrenatalDiagnosis
-mentalHealthDiagnosesRequiringTreatment =
-    [ DiagnosisDepressionPossible
-    , DiagnosisDepressionHighlyPossible
-    , DiagnosisDepressionProbable
-    , DiagnosisSuicideRisk
-    ]
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -6608,9 +6499,7 @@ matchRequiredReferralFacility : AssembledData -> ReferralFacility -> Bool
 matchRequiredReferralFacility assembled facility =
     case facility of
         FacilityHospital ->
-            referToHospitalForNonHIVDiagnosis assembled
-                || referToHospitalDueToAdverseEvent assembled
-                || referToHospitalDueToPastDiagnosis assembled
+            referToHospital assembled
 
         FacilityMentalHealthSpecialist ->
             referToMentalHealthSpecialist assembled

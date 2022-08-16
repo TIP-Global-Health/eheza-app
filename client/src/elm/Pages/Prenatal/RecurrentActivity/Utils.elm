@@ -780,8 +780,8 @@ matchRequiredReferralFacility : AssembledData -> ReferralFacility -> Bool
 matchRequiredReferralFacility assembled facility =
     case facility of
         FacilityHospital ->
-            diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseRecurrent assembled
-                |> List.isEmpty
+            diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseRecurrent assembled
+                |> EverySet.isEmpty
                 |> not
 
         FacilityMentalHealthSpecialist ->

@@ -877,21 +877,9 @@ viewNextStepsContent language currentDate assembled data =
         viewForm =
             case activeTask of
                 Just NextStepsSendToHC ->
-                    -- @todo
-                    -- let
-                    --     referralReasons =
-                    --         diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
-                    -- in
-                    -- getMeasurementValueFunc measurements.sendToHC
-                    --     |> referralFormWithDefault data.referralForm
-                    --     |> viewSendToHospitalForm referralReasons
-                    --         language
-                    --         currentDate
-                    --         SetReferToHealthCenter
-                    --         SetReasonForNonReferral
-                    --         SetHandReferralForm
-                    --         Nothing
-                    emptyNode
+                    getMeasurementValueFunc measurements.sendToHC
+                        |> referralFormWithDefault data.referralForm
+                        |> viewReferralForm language currentDate assembled
 
                 Just NextStepsMedicationDistribution ->
                     getMeasurementValueFunc measurements.medicationDistribution

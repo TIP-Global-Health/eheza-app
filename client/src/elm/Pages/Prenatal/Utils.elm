@@ -105,6 +105,82 @@ filterNonUrgentDiagnoses diagnoses =
     List.filter (\diagnosis -> not <| List.member diagnosis exclusions) diagnoses
 
 
+diagnosesCausingHospitalReferralByPhase : PrenatalEncounterPhase -> AssembledData -> EverySet PrenatalDiagnosis
+diagnosesCausingHospitalReferralByPhase phase assembled =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            let
+                general =
+                    diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseInitial assembled
+                        ++ diagnosesCausingHospitalReferralByMentalHealth assembled
+                        ++ diagnosesCausingHospitalReferralByOtherReasons assembled
+
+                byAdverseEvent =
+                    diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled
+
+                byPastDiagnoses =
+                    diagnosesCausingHospitalReferralByPastDiagnoses assembled
+            in
+            general
+                ++ byAdverseEvent
+                ++ byPastDiagnoses
+                |> EverySet.fromList
+
+        PrenatalEncounterPhaseRecurrent ->
+            diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseRecurrent assembled
+                |> EverySet.fromList
+
+
+diagnosesCausingHospitalReferralByMentalHealth : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByMentalHealth assembled =
+    if mentalHealthSpecialistAtHC assembled then
+        []
+
+    else
+        List.filter (\diagnosis -> diagnosed diagnosis assembled) mentalHealthDiagnosesRequiringTreatment
+
+
+mentalHealthSpecialistAtHC : AssembledData -> Bool
+mentalHealthSpecialistAtHC assembled =
+    getMeasurementValueFunc assembled.measurements.mentalHealth
+        |> Maybe.map .specialistAtHC
+        |> Maybe.withDefault False
+
+
+mentalHealthDiagnosesRequiringTreatment : List PrenatalDiagnosis
+mentalHealthDiagnosesRequiringTreatment =
+    [ DiagnosisDepressionPossible
+    , DiagnosisDepressionHighlyPossible
+    , DiagnosisDepressionProbable
+    , DiagnosisSuicideRisk
+    ]
+
+
+diagnosesCausingHospitalReferralByOtherReasons : AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByOtherReasons assembled =
+    let
+        severeMalariaTreatment =
+            getMeasurementValueFunc assembled.measurements.medicationDistribution
+                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
+                |> Maybe.withDefault False
+
+        malaria =
+            if diagnosedMalaria assembled && severeMalariaTreatment then
+                [ DiagnosisMalaria ]
+
+            else
+                []
+
+        hypertension =
+            if updateHypertensionTreatmentWithHospitalization assembled then
+                [ DiagnosisChronicHypertensionImmediate ]
+
+            else
+                []
+    in
+    malaria ++ hypertension
+
+
 diagnosesCausingHospitalReferralByImmediateDiagnoses : PrenatalEncounterPhase -> AssembledData -> List PrenatalDiagnosis
 diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
     let
@@ -1546,13 +1622,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 []
 
 
-referToHospitalDueToAdverseEvent : AssembledData -> Bool
-referToHospitalDueToAdverseEvent =
-    diagnosesCausingHospitalReferralByAdverseEventForTreatment
-        >> List.isEmpty
-        >> not
-
-
 diagnosesCausingHospitalReferralByAdverseEventForTreatment : AssembledData -> List PrenatalDiagnosis
 diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled =
     filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
@@ -1634,11 +1703,6 @@ filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment diagnoses assem
                 List.filter conditionByDiagnosis diagnoses
             )
         |> Maybe.withDefault []
-
-
-referToHospitalDueToPastDiagnosis : AssembledData -> Bool
-referToHospitalDueToPastDiagnosis =
-    diagnosesCausingHospitalReferralByPastDiagnoses >> List.isEmpty >> not
 
 
 diagnosesCausingHospitalReferralByPastDiagnoses : AssembledData -> List PrenatalDiagnosis
@@ -2688,7 +2752,8 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                 FacilityHospital ->
                     let
                         referralReasons =
-                            diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled
+                            diagnosesCausingHospitalReferralByPhase phase assembled
+                                |> EverySet.toList
 
                         referralContext =
                             if not <| List.isEmpty referralReasons then
@@ -2833,6 +2898,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                         Nothing
                    ]
                 ++ derivedSection
+                ++ [ div [ class "separator" ] [] ]
             , [ config.referralField ] ++ derivedTasks
             )
         )
