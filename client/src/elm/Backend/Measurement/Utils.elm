@@ -2201,6 +2201,9 @@ reasonForNonReferralFromString value =
         "already-in-care" ->
             Just ClientAlreadyInCare
 
+        "not-indicated" ->
+            Just ReasonForNonReferralNotIndicated
+
         "other" ->
             Just ReasonForNonReferralOther
 
@@ -2226,8 +2229,81 @@ reasonForNonReferralToString value =
         ClientAlreadyInCare ->
             "already-in-care"
 
+        ReasonForNonReferralNotIndicated ->
+            "not-indicated"
+
         ReasonForNonReferralOther ->
             "other"
 
         NoReasonForNonReferral ->
             "none"
+
+
+socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
+socialHistoryHivTestingResultFromString result =
+    case result of
+        "positive" ->
+            Just ResultHivPositive
+
+        "negative" ->
+            Just ResultHivNegative
+
+        "indeterminate" ->
+            Just ResultHivIndeterminate
+
+        "none" ->
+            Just NoHivTesting
+
+        _ ->
+            Nothing
+
+
+socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
+socialHistoryHivTestingResultToString result =
+    case result of
+        ResultHivPositive ->
+            "positive"
+
+        ResultHivNegative ->
+            "negative"
+
+        ResultHivIndeterminate ->
+            "indeterminate"
+
+        NoHivTesting ->
+            "none"
+
+
+pregnancyTestResultFromString : String -> Maybe PregnancyTestResult
+pregnancyTestResultFromString result =
+    case result of
+        "positive" ->
+            Just PregnancyTestPositive
+
+        "negative" ->
+            Just PregnancyTestNegative
+
+        "indeterminate" ->
+            Just PregnancyTestIndeterminate
+
+        "unable-to-conduct" ->
+            Just PregnancyTestUnableToConduct
+
+        _ ->
+            Nothing
+
+
+pregnancyTestResultToString : PregnancyTestResult -> String
+pregnancyTestResultToString sign =
+    case sign of
+        PregnancyTestPositive ->
+            "positive"
+
+        PregnancyTestNegative ->
+            "negative"
+
+        PregnancyTestIndeterminate ->
+            "indeterminate"
+
+        PregnancyTestUnableToConduct ->
+            "unable-to-conduct"

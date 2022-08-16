@@ -1747,6 +1747,7 @@ type ReasonForNonReferral
     | NoAmbulance
     | ClientUnableToAffordFees
     | ClientAlreadyInCare
+    | ReasonForNonReferralNotIndicated
     | ReasonForNonReferralOther
     | NoReasonForNonReferral
 

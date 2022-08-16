@@ -4400,25 +4400,6 @@ examinationTasksCompletedFromTotal assembled data task =
             )
 
 
-socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
-socialHistoryHivTestingResultFromString result =
-    case result of
-        "positive" ->
-            Just ResultHivPositive
-
-        "negative" ->
-            Just ResultHivNegative
-
-        "indeterminate" ->
-            Just ResultHivIndeterminate
-
-        "none" ->
-            Just NoHivTesting
-
-        _ ->
-            Nothing
-
-
 fromBirthPlanValue : Maybe BirthPlanValue -> BirthPlanForm
 fromBirthPlanValue saved =
     { haveInsurance = Maybe.map (.signs >> EverySet.member Insurance) saved
@@ -6429,7 +6410,12 @@ resolveReferralInputsAndTasksForCHW language currentDate assembled form =
                         ( [ div [ class "why-not" ]
                                 [ viewQuestionLabel language Translate.WhyNot
                                 , viewCheckBoxSelectInput language
-                                    [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNonReferralOther ]
+                                    [ ClientRefused
+                                    , NoAmbulance
+                                    , ClientUnableToAffordFees
+                                    , ReasonForNonReferralNotIndicated
+                                    , ReasonForNonReferralOther
+                                    ]
                                     []
                                     form.reasonForNotSendingToHC
                                     SetHealthCenterNonReferralReason

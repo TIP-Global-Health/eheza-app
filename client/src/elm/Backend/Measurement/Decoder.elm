@@ -251,25 +251,6 @@ decodePregnancyTestResult =
             )
 
 
-pregnancyTestResultFromString : String -> Maybe PregnancyTestResult
-pregnancyTestResultFromString result =
-    case result of
-        "positive" ->
-            Just PregnancyTestPositive
-
-        "negative" ->
-            Just PregnancyTestNegative
-
-        "indeterminate" ->
-            Just PregnancyTestIndeterminate
-
-        "unable-to-conduct" ->
-            Just PregnancyTestUnableToConduct
-
-        _ ->
-            Nothing
-
-
 decodePrenatalHealthEducation : Decoder PrenatalHealthEducation
 decodePrenatalHealthEducation =
     decodePrenatalMeasurement decodePrenatalHealthEducationValue

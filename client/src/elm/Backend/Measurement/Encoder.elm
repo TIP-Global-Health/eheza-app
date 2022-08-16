@@ -130,23 +130,7 @@ encodePregnancyTestValue value =
 
 encodePregnancyTestResult : PregnancyTestResult -> Value
 encodePregnancyTestResult =
-    pregnancyTestResultAsString >> string
-
-
-pregnancyTestResultAsString : PregnancyTestResult -> String
-pregnancyTestResultAsString sign =
-    case sign of
-        PregnancyTestPositive ->
-            "positive"
-
-        PregnancyTestNegative ->
-            "negative"
-
-        PregnancyTestIndeterminate ->
-            "indeterminate"
-
-        PregnancyTestUnableToConduct ->
-            "unable-to-conduct"
+    pregnancyTestResultToString >> string
 
 
 encodePrenatalHealthEducation : PrenatalHealthEducation -> List ( String, Value )
@@ -505,9 +489,8 @@ encodeViralLoadStatus value =
 
 
 encodePrenatalHIVSign : PrenatalHIVSign -> Value
-encodePrenatalHIVSign signs =
-    string <|
-        prenatalHIVSignToString signs
+encodePrenatalHIVSign =
+    prenatalHIVSignToString >> string
 
 
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
@@ -640,9 +623,8 @@ encodePrenatalSyphilisTestValue value =
 
 
 encodeIllnessSymptom : IllnessSymptom -> Value
-encodeIllnessSymptom symptom =
-    string <|
-        illnessSymptomToString symptom
+encodeIllnessSymptom =
+    illnessSymptomToString >> string
 
 
 encodePrenatalUrineDipstickTest : PrenatalUrineDipstickTest -> List ( String, Value )
@@ -1322,13 +1304,13 @@ encodeDangerSignsValue value =
 
 
 encodePostpartumMotherDangerSign : PostpartumMotherDangerSign -> Value
-encodePostpartumMotherDangerSign sign =
-    postpartumMotherDangerSignToString sign |> string
+encodePostpartumMotherDangerSign =
+    postpartumMotherDangerSignToString >> string
 
 
 encodePostpartumChildDangerSign : PostpartumChildDangerSign -> Value
-encodePostpartumChildDangerSign sign =
-    postpartumChildDangerSignToString sign |> string
+encodePostpartumChildDangerSign =
+    postpartumChildDangerSignToString >> string
 
 
 encodeDangerSigns : DangerSigns -> List ( String, Value )
@@ -1834,25 +1816,9 @@ encodeSocialHistorySign sign =
                 "none"
 
 
-socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
-socialHistoryHivTestingResultToString result =
-    case result of
-        ResultHivPositive ->
-            "positive"
-
-        ResultHivNegative ->
-            "negative"
-
-        ResultHivIndeterminate ->
-            "indeterminate"
-
-        NoHivTesting ->
-            "none"
-
-
 encodeSocialHistoryHivTestingResult : SocialHistoryHivTestingResult -> Value
-encodeSocialHistoryHivTestingResult result =
-    socialHistoryHivTestingResultToString result |> string
+encodeSocialHistoryHivTestingResult =
+    socialHistoryHivTestingResultToString >> string
 
 
 encodeSocialHistory : SocialHistory -> List ( String, Value )
@@ -2255,26 +2221,8 @@ encodeSendToHCSign sign =
 
 
 encodeReasonForNonReferral : ReasonForNonReferral -> Value
-encodeReasonForNonReferral event =
-    string <|
-        case event of
-            ClientRefused ->
-                "client-refused"
-
-            NoAmbulance ->
-                "no-ambulance"
-
-            ClientUnableToAffordFees ->
-                "unable-to-afford-fee"
-
-            ClientAlreadyInCare ->
-                "already-in-care"
-
-            ReasonForNonReferralOther ->
-                "other"
-
-            NoReasonForNonReferral ->
-                "none"
+encodeReasonForNonReferral =
+    reasonForNonReferralToString >> string
 
 
 encodePrenatalReferralValue : PrenatalReferralValue -> List ( String, Value )
@@ -2499,9 +2447,8 @@ encodeAcuteIllnessFollowUpValue value =
 
 
 encodeNutritionAssessment : NutritionAssessment -> Value
-encodeNutritionAssessment assesment =
-    nutritionAssessmentToString assesment
-        |> string
+encodeNutritionAssessment =
+    nutritionAssessmentToString >> string
 
 
 encodeFollowUpOption : FollowUpOption -> Value
@@ -2945,15 +2892,13 @@ encodeMedicationNonAdministrationSign sign =
 
 
 encodeRecommendedTreatmentSign : RecommendedTreatmentSign -> Value
-encodeRecommendedTreatmentSign sign =
-    string <|
-        recommendedTreatmentSignToString sign
+encodeRecommendedTreatmentSign =
+    recommendedTreatmentSignToString >> string
 
 
 encodeAvoidingGuidanceReason : AvoidingGuidanceReason -> Value
-encodeAvoidingGuidanceReason sign =
-    string <|
-        avoidingGuidanceReasonToString sign
+encodeAvoidingGuidanceReason =
+    avoidingGuidanceReasonToString >> string
 
 
 encodeTravelHistory : TravelHistory -> List ( String, Value )
@@ -3507,18 +3452,18 @@ encodeContactTraceItem item =
 
 
 encodeSymptomsGeneralSign : SymptomsGeneralSign -> Value
-encodeSymptomsGeneralSign sign =
-    symptomsGeneralSignToString sign |> string
+encodeSymptomsGeneralSign =
+    symptomsGeneralSignToString >> string
 
 
 encodeSymptomsRespiratorySign : SymptomsRespiratorySign -> Value
-encodeSymptomsRespiratorySign sign =
-    symptomsRespiratorySignToString sign |> string
+encodeSymptomsRespiratorySign =
+    symptomsRespiratorySignToString >> string
 
 
 encodeSymptomsGISign : SymptomsGISign -> Value
-encodeSymptomsGISign sign =
-    symptomsGISignToString sign |> string
+encodeSymptomsGISign =
+    symptomsGISignToString >> string
 
 
 encodeTraceOutcome : TraceOutcome -> Value
@@ -3881,8 +3826,8 @@ encodeWellChildVitaminAValue note =
 
 
 encodeAdministrationNote : AdministrationNote -> Value
-encodeAdministrationNote note =
-    administrationNoteToString note |> string
+encodeAdministrationNote =
+    administrationNoteToString >> string
 
 
 encodeWellChildPregnancySummary : WellChildPregnancySummary -> List ( String, Value )
@@ -3993,8 +3938,8 @@ encodeVaccinationValueWithType type_ value =
 
 
 encodeVaccinationDose : VaccineDose -> Value
-encodeVaccinationDose dose =
-    vaccineDoseToString dose |> string
+encodeVaccinationDose =
+    vaccineDoseToString >> string
 
 
 encodePrenatalSymptomReview : PrenatalSymptomReview -> List ( String, Value )
@@ -4020,21 +3965,18 @@ encodePrenatalSymptomReviewValue value =
 
 
 encodePrenatalSymptom : PrenatalSymptom -> Value
-encodePrenatalSymptom sign =
-    string <|
-        prenatalSymptomToString sign
+encodePrenatalSymptom =
+    prenatalSymptomToString >> string
 
 
 encodePrenatalSymptomQuestion : PrenatalSymptomQuestion -> Value
-encodePrenatalSymptomQuestion sign =
-    string <|
-        prenatalSymptomQuestionToString sign
+encodePrenatalSymptomQuestion =
+    prenatalSymptomQuestionToString >> string
 
 
 encodePrenatalFlankPainSign : PrenatalFlankPainSign -> Value
-encodePrenatalFlankPainSign sign =
-    string <|
-        prenatalFlankPainSignToString sign
+encodePrenatalFlankPainSign =
+    prenatalFlankPainSignToString >> string
 
 
 encodePrenatalOutsideCare : PrenatalOutsideCare -> List ( String, Value )
@@ -4070,12 +4012,10 @@ encodePrenatalOutsideCareValue value =
 
 
 encodePrenatalOutsideCareSign : PrenatalOutsideCareSign -> Value
-encodePrenatalOutsideCareSign sign =
-    string <|
-        prenatalOutsideCareSignToString sign
+encodePrenatalOutsideCareSign =
+    prenatalOutsideCareSignToString >> string
 
 
 encodePrenatalOutsideCareMedication : PrenatalOutsideCareMedication -> Value
-encodePrenatalOutsideCareMedication sign =
-    string <|
-        prenatalOutsideCareMedicationToString sign
+encodePrenatalOutsideCareMedication =
+    prenatalOutsideCareMedicationToString >> string
