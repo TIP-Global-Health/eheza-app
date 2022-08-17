@@ -1184,7 +1184,7 @@ function hedley_prenatal_field_default_field_bases() {
         'penecilin-v' => 'Penecilin V',
         'paracetamol' => 'Paracetamol',
         'ibuprofen' => 'Ibuprofen',
-        'no-treatment-mastitis' => 'No treatment for Mastitis',        
+        'no-treatment-mastitis' => 'No treatment for Mastitis',
       ),
       'allowed_values_function' => '',
     ),
@@ -1265,6 +1265,33 @@ function hedley_prenatal_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_boolean',
+  );
+
+  // Exported field_base: 'field_speciality_care_signs'.
+  $field_bases['field_speciality_care_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_speciality_care_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'arv' => 'Enrolled to ARV program',
+        'ncd' => 'Enrolled to NCD program',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_sugar_count'.
