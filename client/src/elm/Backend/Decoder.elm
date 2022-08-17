@@ -301,6 +301,9 @@ decodeRevision =
                     "prenatal_send_to_hc" ->
                         decodeWithUuid PrenatalSendToHCRevision decodePrenatalSendToHc
 
+                    "prenatal_speciality_care" ->
+                        decodeWithUuid PrenatalSpecialityCareRevision decodePrenatalSpecialityCare
+
                     "prenatal_symptom_review" ->
                         decodeWithUuid PrenatalSymptomReviewRevision decodePrenatalSymptomReview
 
