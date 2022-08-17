@@ -8281,7 +8281,7 @@ translationSet trans =
                     }
 
                 SpecialityCare ->
-                    { english = "Speciality Care"
+                    { english = "Specialty Care"
                     , kinyarwanda = Nothing
                     }
 
