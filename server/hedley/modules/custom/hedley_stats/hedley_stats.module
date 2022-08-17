@@ -40,6 +40,7 @@ define('HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS', 'sync_total_encounters_stats');
 define('HEDLEY_STATS_SYNC_CASE_MANAGEMENT', 'sync_case_management_stats');
 define('HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA', 'sync_acute_illness_data');
 define('HEDLEY_STATS_SYNC_PRENATAL_DATA', 'sync_prenatal_data');
+define('HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS', 'villages_with_residents');
 
 // Cache methods.
 define('HEDLEY_STATS_CACHE_GET', 'get');
@@ -89,7 +90,7 @@ function hedley_stats_trigger_stats_recalculation($node) {
   }
 
   // Reset statistics cache of each health center, because
-  // content affecting it's statistics has been added / changed.
+  // content affecting its statistics has been added / changed.
   foreach ($health_centers as $health_center) {
     hedley_stats_clear_caches_for_health_center($health_center, $cache_type_for_recalculation);
 
@@ -247,6 +248,7 @@ function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recal
   // Clear cache that doesn't have periods.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $nid);
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $nid);
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS, $nid);
 
   // Clear cache for all the periods.
   foreach ($periods as $period) {
@@ -390,6 +392,11 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id, $cach
  * @throws \EntityMetadataWrapperException
  */
 function hedley_stats_get_villages_with_residents($health_center_id) {
+  // Return the cache if exists.
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS, $health_center_id)) {
+    return $cache_data;
+  }
+
   $villages_ids = hedley_health_center_get_villages_by_health_center($health_center_id);
 
   $result = [];
@@ -399,6 +406,9 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
     $residents = hedley_chw_get_village_residents($village_id);
     $result[$village_uuid] = $residents;
   }
+
+  // Store in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS, $health_center_id, NULL, $result);
 
   return $result;
 }
