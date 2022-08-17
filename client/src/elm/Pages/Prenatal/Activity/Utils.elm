@@ -930,19 +930,18 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         NurseEncounter ->
             -- If we have emergency diagnosis that require immediate referral,
             -- we allow displaying Next steps right away.
-            -- diagnosedAnyOf emergencyReferralDiagnoses assembled
-            --     || (-- Otherwise, we need all activities that will appear at
-            --         -- current encounter completed, besides Photo
-            --         -- and Next Steps itself.
-            --         getAllActivities assembled
-            --             |> EverySet.fromList
-            --             |> EverySet.remove PrenatalPhoto
-            --             |> EverySet.remove NextSteps
-            --             |> EverySet.toList
-            --             |> List.filter (expectActivity currentDate assembled)
-            --             |> List.all (activityCompleted currentDate assembled)
-            --        )
-            True
+            diagnosedAnyOf emergencyReferralDiagnoses assembled
+                || (-- Otherwise, we need all activities that will appear at
+                    -- current encounter completed, besides Photo
+                    -- and Next Steps itself.
+                    getAllActivities assembled
+                        |> EverySet.fromList
+                        |> EverySet.remove PrenatalPhoto
+                        |> EverySet.remove NextSteps
+                        |> EverySet.toList
+                        |> List.filter (expectActivity currentDate assembled)
+                        |> List.all (activityCompleted currentDate assembled)
+                   )
 
         ChwFirstEncounter ->
             let

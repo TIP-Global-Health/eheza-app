@@ -2142,22 +2142,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         ++ formatDDMMYYYY date
                                         |> wrapWithLI
                             )
-                        >> Maybe.withDefault
-                            -- @tood
-                            -- (getMeasurementValueFunc measurements.sendToHC
-                            --     |> Maybe.map
-                            --         (\value ->
-                            --             if EverySet.member ReferToHealthCenter value.signs then
-                            --                 -- Patient was referred to hospital, and is supposed to get
-                            --                 -- Hypertension treatment there.
-                            --                 referredToHospitalMessage
-                            --
-                            --             else
-                            --                 noTreatmentRecordedMessage
-                            --         )
-                            --     |> Maybe.withDefault noTreatmentRecordedMessage
-                            -- )
-                            noTreatmentRecordedMessage
+                        >> Maybe.withDefault noTreatmentRecordedMessage
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
