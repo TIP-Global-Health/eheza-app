@@ -143,6 +143,10 @@ function hedley_stats_requires_nutrition_statistics_recalculation($bundle) {
       HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE,
       HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE,
       HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+      // Patients at HC needs tracking, because they may be added to
+      // HC villages, and villages residents are needed for
+      // statistics calculations.
+      HEDLEY_ACTIVITY_PERSON_CONTENT_TYPE,
     ],
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
