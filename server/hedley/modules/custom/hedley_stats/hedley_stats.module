@@ -446,6 +446,7 @@ function hedley_stats_pull_stats_for_health_center($health_center_id) {
   // UTC date and time on which statistics were generated.
   $timestamp = date('d-m-Y, H:i', $now - date('Z'));
   $stats['timestamp'] = $timestamp;
+  $stats['stats_cache_hash'] = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
 
   return $stats;
 }
