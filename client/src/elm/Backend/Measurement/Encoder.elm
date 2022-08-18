@@ -130,23 +130,7 @@ encodePregnancyTestValue value =
 
 encodePregnancyTestResult : PregnancyTestResult -> Value
 encodePregnancyTestResult =
-    pregnancyTestResultAsString >> string
-
-
-pregnancyTestResultAsString : PregnancyTestResult -> String
-pregnancyTestResultAsString sign =
-    case sign of
-        PregnancyTestPositive ->
-            "positive"
-
-        PregnancyTestNegative ->
-            "negative"
-
-        PregnancyTestIndeterminate ->
-            "indeterminate"
-
-        PregnancyTestUnableToConduct ->
-            "unable-to-conduct"
+    pregnancyTestResultToString >> string
 
 
 encodePrenatalHealthEducation : PrenatalHealthEducation -> List ( String, Value )
@@ -286,7 +270,7 @@ encodePrenatalAssesment assesment =
 
 encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )
 encodePrenatalSendToHC =
-    encodePrenatalMeasurement encodePrenatalSendToHCValue
+    encodePrenatalMeasurement encodePrenatalReferralValue
 
 
 encodeAppointmentConfirmation : PrenatalAppointmentConfirmation -> List ( String, Value )
@@ -511,9 +495,8 @@ encodeViralLoadStatus value =
 
 
 encodePrenatalHIVSign : PrenatalHIVSign -> Value
-encodePrenatalHIVSign signs =
-    string <|
-        prenatalHIVSignToString signs
+encodePrenatalHIVSign =
+    prenatalHIVSignToString >> string
 
 
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
@@ -646,9 +629,8 @@ encodePrenatalSyphilisTestValue value =
 
 
 encodeIllnessSymptom : IllnessSymptom -> Value
-encodeIllnessSymptom symptom =
-    string <|
-        illnessSymptomToString symptom
+encodeIllnessSymptom =
+    illnessSymptomToString >> string
 
 
 encodePrenatalUrineDipstickTest : PrenatalUrineDipstickTest -> List ( String, Value )
@@ -1388,13 +1370,13 @@ encodeDangerSignsValue value =
 
 
 encodePostpartumMotherDangerSign : PostpartumMotherDangerSign -> Value
-encodePostpartumMotherDangerSign sign =
-    postpartumMotherDangerSignToString sign |> string
+encodePostpartumMotherDangerSign =
+    postpartumMotherDangerSignToString >> string
 
 
 encodePostpartumChildDangerSign : PostpartumChildDangerSign -> Value
-encodePostpartumChildDangerSign sign =
-    postpartumChildDangerSignToString sign |> string
+encodePostpartumChildDangerSign =
+    postpartumChildDangerSignToString >> string
 
 
 encodeDangerSigns : DangerSigns -> List ( String, Value )
@@ -1906,25 +1888,9 @@ encodeSocialHistorySign sign =
                 "none"
 
 
-socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
-socialHistoryHivTestingResultToString result =
-    case result of
-        ResultHivPositive ->
-            "positive"
-
-        ResultHivNegative ->
-            "negative"
-
-        ResultHivIndeterminate ->
-            "indeterminate"
-
-        NoHivTesting ->
-            "none"
-
-
 encodeSocialHistoryHivTestingResult : SocialHistoryHivTestingResult -> Value
-encodeSocialHistoryHivTestingResult result =
-    socialHistoryHivTestingResultToString result |> string
+encodeSocialHistoryHivTestingResult =
+    socialHistoryHivTestingResultToString >> string
 
 
 encodeSocialHistory : SocialHistory -> List ( String, Value )
@@ -2297,26 +2263,10 @@ encodeGroupSendToHC =
 encodeSendToHCValueWithType : String -> SendToHCValue -> List ( String, Value )
 encodeSendToHCValueWithType type_ value =
     [ ( "send_to_hc", encodeEverySet encodeSendToHCSign value.signs )
-    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
+    , ( "reason_not_sent_to_hc", encodeReasonForNonReferral value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
-
-
-encodePrenatalSendToHCValue : PrenatalSendToHCValue -> List ( String, Value )
-encodePrenatalSendToHCValue value =
-    let
-        referralFacility =
-            Maybe.map (\facility -> [ ( "referral_facility", encodeReferralFacility facility ) ])
-                value.referralFacility
-                |> Maybe.withDefault []
-    in
-    [ ( "send_to_hc", encodeEverySet encodeSendToHCSign value.signs )
-    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
-    , ( "deleted", bool False )
-    , ( "type", string "prenatal_send_to_hc" )
-    ]
-        ++ referralFacility
 
 
 encodeSendToHCSign : SendToHCSign -> Value
@@ -2342,26 +2292,101 @@ encodeSendToHCSign sign =
                 "none"
 
 
-encodeReasonForNotSendingToHC : ReasonForNotSendingToHC -> Value
-encodeReasonForNotSendingToHC event =
+encodeReasonForNonReferral : ReasonForNonReferral -> Value
+encodeReasonForNonReferral =
+    reasonForNonReferralToString >> string
+
+
+encodePrenatalReferralValue : PrenatalReferralValue -> List ( String, Value )
+encodePrenatalReferralValue value =
+    let
+        sendToHC =
+            Maybe.map (\signs -> [ ( "send_to_hc", encodeEverySet encodeSendToHCSign signs ) ])
+                value.sendToHCSigns
+                |> Maybe.withDefault []
+
+        reasonNotSentToHC =
+            Maybe.map (\reason -> [ ( "reason_not_sent_to_hc", encodeReasonForNonReferral reason ) ])
+                value.reasonForNotSendingToHC
+                |> Maybe.withDefault []
+
+        referToFacilitySigns =
+            Maybe.map (\signs -> [ ( "referrals", encodeEverySet encodeReferToFacilitySign signs ) ])
+                value.referToFacilitySigns
+                |> Maybe.withDefault []
+
+        facilityNonReferralReasons =
+            Maybe.map (\reason -> [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ])
+                value.facilityNonReferralReasons
+                |> Maybe.withDefault []
+    in
+    sendToHC
+        ++ reasonNotSentToHC
+        ++ referToFacilitySigns
+        ++ facilityNonReferralReasons
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_send_to_hc" )
+           ]
+
+
+encodeReferToFacilitySign : ReferToFacilitySign -> Value
+encodeReferToFacilitySign sign =
     string <|
-        case event of
-            ClientRefused ->
-                "client-refused"
+        case sign of
+            ReferToHospital ->
+                "hospital"
 
-            NoAmbulance ->
-                "no-ambulance"
+            ReferralFormHospital ->
+                "hospital-referral-form"
 
-            ClientUnableToAffordFees ->
-                "unable-to-afford-fee"
+            ReferToMentalHealthSpecialist ->
+                "mhs"
 
-            ClientAlreadyInCare ->
-                "already-in-care"
+            ReferralFormMentalHealthSpecialist ->
+                "mhs-referral-form"
 
-            ReasonForNotSendingToHCOther ->
-                "other"
+            AccompanyToMentalHealthSpecialist ->
+                "mhs-accompany"
 
-            NoReasonForNotSendingToHC ->
+            ReferToARVProgram ->
+                "arv"
+
+            ReferralFormARVProgram ->
+                "arv-referral-form"
+
+            AccompanyToARVProgram ->
+                "arv-accompany"
+
+            ReferToNCDProgram ->
+                "ncd"
+
+            ReferralFormNCDProgram ->
+                "ncd-referral-form"
+
+            AccompanyToNCDProgram ->
+                "ncd-accompany"
+
+            NoReferToFacilitySigns ->
+                "none"
+
+
+encodeNonReferralSign : NonReferralSign -> Value
+encodeNonReferralSign sign =
+    string <|
+        case sign of
+            NonReferralReasonHospital reason ->
+                "hospital-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonMentalHealthSpecialist reason ->
+                "mhs-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonARVProgram reason ->
+                "arv-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonNCDProgram reason ->
+                "ncd-" ++ reasonForNonReferralToString reason
+
+            NoNonReferralSigns ->
                 "none"
 
 
@@ -2370,16 +2395,19 @@ encodeReferralFacility facility =
     string <|
         case facility of
             FacilityHealthCenter ->
-                "health-center"
+                "hc"
 
             FacilityHospital ->
                 "hospital"
 
-            FacilityHIVProgram ->
-                "hiv-program"
-
             FacilityMentalHealthSpecialist ->
-                "mental-health-specialist"
+                "mhs"
+
+            FacilityARVProgram ->
+                "arv"
+
+            FacilityNCDProgram ->
+                "ncd"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )
@@ -2491,9 +2519,8 @@ encodeAcuteIllnessFollowUpValue value =
 
 
 encodeNutritionAssessment : NutritionAssessment -> Value
-encodeNutritionAssessment assesment =
-    nutritionAssessmentToString assesment
-        |> string
+encodeNutritionAssessment =
+    nutritionAssessmentToString >> string
 
 
 encodeFollowUpOption : FollowUpOption -> Value
@@ -2940,15 +2967,13 @@ encodeMedicationNonAdministrationSign sign =
 
 
 encodeRecommendedTreatmentSign : RecommendedTreatmentSign -> Value
-encodeRecommendedTreatmentSign sign =
-    string <|
-        recommendedTreatmentSignToString sign
+encodeRecommendedTreatmentSign =
+    recommendedTreatmentSignToString >> string
 
 
 encodeAvoidingGuidanceReason : AvoidingGuidanceReason -> Value
-encodeAvoidingGuidanceReason sign =
-    string <|
-        avoidingGuidanceReasonToString sign
+encodeAvoidingGuidanceReason =
+    avoidingGuidanceReasonToString >> string
 
 
 encodeTravelHistory : TravelHistory -> List ( String, Value )
@@ -3502,18 +3527,18 @@ encodeContactTraceItem item =
 
 
 encodeSymptomsGeneralSign : SymptomsGeneralSign -> Value
-encodeSymptomsGeneralSign sign =
-    symptomsGeneralSignToString sign |> string
+encodeSymptomsGeneralSign =
+    symptomsGeneralSignToString >> string
 
 
 encodeSymptomsRespiratorySign : SymptomsRespiratorySign -> Value
-encodeSymptomsRespiratorySign sign =
-    symptomsRespiratorySignToString sign |> string
+encodeSymptomsRespiratorySign =
+    symptomsRespiratorySignToString >> string
 
 
 encodeSymptomsGISign : SymptomsGISign -> Value
-encodeSymptomsGISign sign =
-    symptomsGISignToString sign |> string
+encodeSymptomsGISign =
+    symptomsGISignToString >> string
 
 
 encodeTraceOutcome : TraceOutcome -> Value
@@ -3876,8 +3901,8 @@ encodeWellChildVitaminAValue note =
 
 
 encodeAdministrationNote : AdministrationNote -> Value
-encodeAdministrationNote note =
-    administrationNoteToString note |> string
+encodeAdministrationNote =
+    administrationNoteToString >> string
 
 
 encodeWellChildPregnancySummary : WellChildPregnancySummary -> List ( String, Value )
@@ -3988,8 +4013,8 @@ encodeVaccinationValueWithType type_ value =
 
 
 encodeVaccinationDose : VaccineDose -> Value
-encodeVaccinationDose dose =
-    vaccineDoseToString dose |> string
+encodeVaccinationDose =
+    vaccineDoseToString >> string
 
 
 encodePrenatalSymptomReview : PrenatalSymptomReview -> List ( String, Value )
@@ -4015,21 +4040,18 @@ encodePrenatalSymptomReviewValue value =
 
 
 encodePrenatalSymptom : PrenatalSymptom -> Value
-encodePrenatalSymptom sign =
-    string <|
-        prenatalSymptomToString sign
+encodePrenatalSymptom =
+    prenatalSymptomToString >> string
 
 
 encodePrenatalSymptomQuestion : PrenatalSymptomQuestion -> Value
-encodePrenatalSymptomQuestion sign =
-    string <|
-        prenatalSymptomQuestionToString sign
+encodePrenatalSymptomQuestion =
+    prenatalSymptomQuestionToString >> string
 
 
 encodePrenatalFlankPainSign : PrenatalFlankPainSign -> Value
-encodePrenatalFlankPainSign sign =
-    string <|
-        prenatalFlankPainSignToString sign
+encodePrenatalFlankPainSign =
+    prenatalFlankPainSignToString >> string
 
 
 encodePrenatalOutsideCare : PrenatalOutsideCare -> List ( String, Value )
@@ -4065,12 +4087,10 @@ encodePrenatalOutsideCareValue value =
 
 
 encodePrenatalOutsideCareSign : PrenatalOutsideCareSign -> Value
-encodePrenatalOutsideCareSign sign =
-    string <|
-        prenatalOutsideCareSignToString sign
+encodePrenatalOutsideCareSign =
+    prenatalOutsideCareSignToString >> string
 
 
 encodePrenatalOutsideCareMedication : PrenatalOutsideCareMedication -> Value
-encodePrenatalOutsideCareMedication sign =
-    string <|
-        prenatalOutsideCareMedicationToString sign
+encodePrenatalOutsideCareMedication =
+    prenatalOutsideCareMedicationToString >> string

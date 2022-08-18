@@ -25,16 +25,16 @@ import Measurement.Model exposing (VaccinationFormViewMode(..), VitalsForm)
 import Measurement.Utils
     exposing
         ( getNextVaccineDose
-        , sendToHCFormWithDefault
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         , vitalsFormWithDefault
         )
+import Measurement.View exposing (viewActionTakenLabel)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired, getAllActivities)
-import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), VaccinationProgressDict)
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
     exposing
@@ -404,15 +404,14 @@ expectNextStepsTask currentDate assembled task =
         NextStepsSendToHC ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    referToHospitalForNonHIVDiagnosis assembled
-                        || referToHospitalDueToAdverseEvent assembled
-                        || referToHospitalDueToPastDiagnosis assembled
-                        || referToHIVProgram assembled
-                        || referToMentalHealthSpecialist assembled
+                    resolveRequiredReferralFacilities assembled
+                        |> List.isEmpty
+                        |> not
 
                 NursePostpartumEncounter ->
-                    referToHospitalForNonHIVDiagnosis assembled
-                        || referToMentalHealthSpecialist assembled
+                    resolveRequiredReferralFacilities assembled
+                        |> List.isEmpty
+                        |> not
 
                 _ ->
                     dangerSigns
@@ -550,7 +549,8 @@ nextStepsTaskCompleted assembled task =
             isJust assembled.measurements.followUp
 
         NextStepsSendToHC ->
-            isJust assembled.measurements.sendToHC
+            resolveRequiredReferralFacilities assembled
+                |> List.all (referralToFacilityCompleted assembled)
 
         NextStepsHealthEducation ->
             isJust assembled.measurements.healthEducation
@@ -918,145 +918,19 @@ historyTaskCompleted assembled task =
             isJust assembled.measurements.outsideCare
 
 
+referToHospital : AssembledData -> Bool
+referToHospital =
+    diagnosesCausingHospitalReferral >> EverySet.isEmpty >> not
+
+
 diagnosesCausingHospitalReferral : AssembledData -> EverySet PrenatalDiagnosis
-diagnosesCausingHospitalReferral assembled =
-    let
-        nonHIV =
-            nonHIVDiagnosesCausingHospitalReferral assembled
-
-        byAdverseEvent =
-            diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled
-
-        byPastDiagnoses =
-            diagnosesCausingHospitalReferralByPastDiagnoses assembled
-
-        overall =
-            nonHIV
-                ++ byAdverseEvent
-                ++ byPastDiagnoses
-
-        additional =
-            -- There are 2 cases where patient is referred to hospital, skipping
-            -- referals to other facilities:
-            -- 1. HIV-positive patients, while there's an HIV program, at the health center.
-            -- 2. Patient with a mental health diagnosis, and available mental health
-            --   specialist at helath center.
-            -- In both cases, since we have a need to refer to the hospital, it must
-            -- be more urgent, and therefore, treatment for (HIV/Mental health) will
-            -- be given at the hospital.
-            if not <| List.isEmpty overall then
-                let
-                    hiv =
-                        if diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements then
-                            [ DiagnosisHIV ]
-
-                        else
-                            []
-
-                    mentalHealth =
-                        if mentalHealthSpecialistAtHC assembled then
-                            List.filter (\diagnosis -> diagnosed diagnosis assembled) mentalHealthDiagnosesRequiringTreatment
-
-                        else
-                            []
-                in
-                hiv
-
-            else
-                []
-    in
-    overall
-        ++ additional
-        |> EverySet.fromList
-
-
-referToHospitalForNonHIVDiagnosis : AssembledData -> Bool
-referToHospitalForNonHIVDiagnosis =
-    nonHIVDiagnosesCausingHospitalReferral >> List.isEmpty >> not
-
-
-nonHIVDiagnosesCausingHospitalReferral : AssembledData -> List PrenatalDiagnosis
-nonHIVDiagnosesCausingHospitalReferral assembled =
-    diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
-        ++ diagnosesCausingHospitalReferralByMentalHealth assembled
-        ++ diagnosesCausingHospitalReferralByOtherReasons assembled
-
-
-diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
-    let
-        immediateReferralDiagnoses =
-            emergencyReferralDiagnosesInitial
-                ++ [ DiagnosisModeratePreeclampsiaInitialPhase
-                   , DiagnosisHeartburnPersistent
-                   , DiagnosisDeepVeinThrombosis
-                   , DiagnosisPelvicPainIntense
-                   , DiagnosisPelvicPainContinued
-                   , DiagnosisPyelonephritis
-                   , DiagnosisMalariaMedicatedContinued
-                   , DiagnosisMalariaWithAnemiaMedicatedContinued
-                   , DiagnosisUrinaryTractInfectionContinued
-                   , DiagnosisCandidiasisContinued
-                   , DiagnosisGonorrheaContinued
-                   , DiagnosisTrichomonasOrBacterialVaginosisContinued
-                   , DiagnosisPostpartumUrinaryIncontinence
-                   , DiagnosisPostpartumInfection
-                   , DiagnosisPostpartumExcessiveBleeding
-                   ]
-    in
-    List.filter (\diagnosis -> diagnosed diagnosis assembled)
-        immediateReferralDiagnoses
-
-
-diagnosesCausingHospitalReferralByMentalHealth : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByMentalHealth assembled =
-    if mentalHealthSpecialistAtHC assembled then
-        []
-
-    else
-        List.filter (\diagnosis -> diagnosed diagnosis assembled) mentalHealthDiagnosesRequiringTreatment
-
-
-diagnosesCausingHospitalReferralByOtherReasons : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByOtherReasons assembled =
-    let
-        severeMalariaTreatment =
-            getMeasurementValueFunc assembled.measurements.medicationDistribution
-                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
-                |> Maybe.withDefault False
-
-        malaria =
-            if diagnosedMalaria assembled && severeMalariaTreatment then
-                [ DiagnosisMalaria ]
-
-            else
-                []
-
-        hypertension =
-            if updateHypertensionTreatmentWithHospitalization assembled then
-                [ DiagnosisChronicHypertensionImmediate ]
-
-            else
-                []
-    in
-    malaria ++ hypertension
-
-
-referToHospitalForMentalHealthDiagnosis : AssembledData -> Bool
-referToHospitalForMentalHealthDiagnosis =
-    diagnosesCausingHospitalReferralByMentalHealth >> List.isEmpty >> not
+diagnosesCausingHospitalReferral =
+    diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial
 
 
 referToMentalHealthSpecialist : AssembledData -> Bool
 referToMentalHealthSpecialist assembled =
     mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnosesRequiringTreatment assembled
-
-
-mentalHealthSpecialistAtHC : AssembledData -> Bool
-mentalHealthSpecialistAtHC assembled =
-    getMeasurementValueFunc assembled.measurements.mentalHealth
-        |> Maybe.map .specialistAtHC
-        |> Maybe.withDefault False
 
 
 referToHIVProgram : AssembledData -> Bool
@@ -2652,15 +2526,6 @@ mentalHealthDiagnoses =
     DiagnosisDepressionNotLikely :: mentalHealthDiagnosesRequiringTreatment
 
 
-mentalHealthDiagnosesRequiringTreatment : List PrenatalDiagnosis
-mentalHealthDiagnosesRequiringTreatment =
-    [ DiagnosisDepressionPossible
-    , DiagnosisDepressionHighlyPossible
-    , DiagnosisDepressionProbable
-    , DiagnosisSuicideRisk
-    ]
-
-
 undeterminedPostpartumDiagnoses : List PrenatalDiagnosis
 undeterminedPostpartumDiagnoses =
     [ DiagnosisPostpartumAbdominalPain
@@ -3341,41 +3206,24 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 form =
                     assembled.measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
+                        |> referralFormWithDefault data.referralForm
 
-                ( reasonForNotSentCompleted, reasonForNotSentActive ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
+                ( _, tasks ) =
+                    case assembled.encounter.encounterType of
+                        NurseEncounter ->
+                            resolveReferralInputsAndTasksForNurse language
+                                currentDate
+                                assembled
+                                SetReferralBoolInput
+                                SetFacilityNonReferralReason
+                                form
 
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( accompanyToHealthCenterCompleted, accompanyToHealthCenterActive ) =
-                    if isChw then
-                        ( taskCompleted form.accompanyToHealthCenter, 1 )
-
-                    else if
-                        referToHospitalForNonHIVDiagnosis assembled
-                            || referToHospitalDueToAdverseEvent assembled
-                            || referToHospitalDueToPastDiagnosis assembled
-                            || referToMentalHealthSpecialist assembled
-                    then
-                        ( 0, 0 )
-
-                    else
-                        ( taskCompleted form.accompanyToHealthCenter, 1 )
+                        _ ->
+                            resolveReferralInputsAndTasksForCHW language currentDate assembled form
             in
-            ( taskCompleted form.handReferralForm + reasonForNotSentCompleted + accompanyToHealthCenterCompleted
-            , 1 + reasonForNotSentActive + accompanyToHealthCenterActive
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
             )
 
         NextStepsHealthEducation ->
@@ -4943,25 +4791,6 @@ examinationTasksCompletedFromTotal assembled data task =
                 |> List.length
             , List.length tasks
             )
-
-
-socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
-socialHistoryHivTestingResultFromString result =
-    case result of
-        "positive" ->
-            Just ResultHivPositive
-
-        "negative" ->
-            Just ResultHivNegative
-
-        "indeterminate" ->
-            Just ResultHivIndeterminate
-
-        "none" ->
-            Just NoHivTesting
-
-        _ ->
-            Nothing
 
 
 fromBirthPlanValue : Maybe BirthPlanValue -> BirthPlanForm
@@ -7232,3 +7061,144 @@ guExamFormInputsAndTasks language assembled form =
             )
     in
     ( initialSection ++ derivedSection, initialTasks ++ derivedTasks )
+
+
+resolveReferralInputsAndTasksForCHW :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ReferralForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+resolveReferralInputsAndTasksForCHW language currentDate assembled form =
+    let
+        ( derivedSection, derivedTasks ) =
+            Maybe.map
+                (\referToHealthCenter ->
+                    if referToHealthCenter then
+                        ( [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+                          , viewBoolInput
+                                language
+                                form.handReferralForm
+                                (SetReferralBoolInput
+                                    (\value form_ ->
+                                        { form_ | handReferralForm = Just value }
+                                    )
+                                )
+                                "hand-referral-form"
+                                Nothing
+                          , viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion FacilityHealthCenter
+                          , viewBoolInput
+                                language
+                                form.accompanyToHealthCenter
+                                (SetReferralBoolInput
+                                    (\value form_ ->
+                                        { form_ | accompanyToHealthCenter = Just value }
+                                    )
+                                )
+                                "accompany-to-hc"
+                                Nothing
+                          ]
+                        , [ form.handReferralForm, form.accompanyToHealthCenter ]
+                        )
+
+                    else
+                        ( [ div [ class "why-not" ]
+                                [ viewQuestionLabel language Translate.WhyNot
+                                , viewCheckBoxSelectInput language
+                                    [ ClientRefused
+                                    , NoAmbulance
+                                    , ClientUnableToAffordFees
+                                    , ReasonForNonReferralNotIndicated
+                                    , ReasonForNonReferralOther
+                                    ]
+                                    []
+                                    form.reasonForNotSendingToHC
+                                    SetHealthCenterNonReferralReason
+                                    Translate.ReasonForNonReferral
+                                ]
+                          ]
+                        , [ if isJust form.reasonForNotSendingToHC then
+                                Just True
+
+                            else
+                                Nothing
+                          ]
+                        )
+                )
+                form.referToHealthCenter
+                |> Maybe.withDefault ( [], [] )
+    in
+    ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm FacilityHealthCenter) "icon-forms" Nothing
+            , viewActionTakenLabel language (Translate.SendPatientToFacility FacilityHealthCenter) "icon-shuttle" Nothing
+            ]
+      , viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion FacilityHealthCenter
+      , viewBoolInput
+            language
+            form.referToHealthCenter
+            (SetReferralBoolInput
+                (\value form_ ->
+                    { form_ | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+                )
+            )
+            "refer-to-hc"
+            Nothing
+      ]
+        ++ derivedSection
+    , [ form.referToHealthCenter ] ++ derivedTasks
+    )
+
+
+resolveReferralInputsAndTasksForNurse :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> ReferralForm
+    -> ( List (Html msg), List (Maybe Bool) )
+resolveReferralInputsAndTasksForNurse language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+    let
+        foldResults =
+            List.foldr
+                (\( inputs, tasks ) ( accumInputs, accumTasks ) ->
+                    ( inputs ++ accumInputs, tasks ++ accumTasks )
+                )
+                ( [], [] )
+    in
+    resolveRequiredReferralFacilities assembled
+        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate PrenatalEncounterPhaseInitial assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
+        |> foldResults
+
+
+resolveRequiredReferralFacilities : AssembledData -> List ReferralFacility
+resolveRequiredReferralFacilities assembled =
+    List.filter (matchRequiredReferralFacility assembled) referralFacilities
+
+
+matchRequiredReferralFacility : AssembledData -> ReferralFacility -> Bool
+matchRequiredReferralFacility assembled facility =
+    case facility of
+        FacilityHospital ->
+            referToHospital assembled
+
+        FacilityMentalHealthSpecialist ->
+            referToMentalHealthSpecialist assembled
+
+        FacilityARVProgram ->
+            referToHIVProgram assembled
+
+        FacilityNCDProgram ->
+            -- @todo : Implement when developing NCD feature.
+            False
+
+        FacilityHealthCenter ->
+            -- We should never get here. HC inputs are resolved
+            -- with resolveReferralInputsAndTasksForCHW.
+            False
+
+
+referralFacilities : List ReferralFacility
+referralFacilities =
+    [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram, FacilityNCDProgram ]

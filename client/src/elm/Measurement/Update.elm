@@ -188,7 +188,7 @@ updateChild msg model =
             , Nothing
             )
 
-        SetReasonForNotSendingToHC value ->
+        SetReasonForNonReferral value ->
             let
                 form =
                     model.sendToHCForm

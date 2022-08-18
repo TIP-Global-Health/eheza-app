@@ -326,7 +326,7 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                     maybeSessionId
                     |> Maybe.withDefault (createNewSessionMsg currentDate selectedHealthCenter id NursePostpartumEncounter)
 
-        -- Whether first prenatal encounter for person is in process.
+        -- Whether the first prenatal encounter for the person is in process.
         -- This is True when there's only one encounter, it's active, and
         -- it is of type NurseEncounter.
         firstEncounterInProcess =
@@ -334,8 +334,8 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
                 && isJust maybeActiveEncounterId
                 && (Maybe.map ((==) NurseEncounter) lastEncounterType |> Maybe.withDefault False)
 
-        -- Whether postpartum encounter for person is in process.
-        -- This is True when current active encounter is of
+        -- Whether postpartum encounter for the person is in process.
+        -- This is True when the current active encounter is of
         -- NursePostpartumEncounter type.
         postpartumEncounterInProcess =
             isJust maybeActiveEncounterId

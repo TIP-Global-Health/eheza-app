@@ -2347,6 +2347,34 @@ breastfeedingSignFromString value =
             Nothing
 
 
+reasonForNonReferralFromString : String -> Maybe ReasonForNonReferral
+reasonForNonReferralFromString value =
+    case value of
+        "client-refused" ->
+            Just ClientRefused
+
+        "no-ambulance" ->
+            Just NoAmbulance
+
+        "unable-to-afford-fee" ->
+            Just ClientUnableToAffordFees
+
+        "already-in-care" ->
+            Just ClientAlreadyInCare
+
+        "not-indicated" ->
+            Just ReasonForNonReferralNotIndicated
+
+        "other" ->
+            Just ReasonForNonReferralOther
+
+        "none" ->
+            Just NoReasonForNonReferral
+
+        _ ->
+            Nothing
+
+
 vaginalExamSignToString : VaginalExamSign -> String
 vaginalExamSignToString value =
     case value of
@@ -2405,6 +2433,50 @@ guExamSignFromString value =
             Nothing
 
 
+reasonForNonReferralToString : ReasonForNonReferral -> String
+reasonForNonReferralToString value =
+    case value of
+        ClientRefused ->
+            "client-refused"
+
+        NoAmbulance ->
+            "no-ambulance"
+
+        ClientUnableToAffordFees ->
+            "unable-to-afford-fee"
+
+        ClientAlreadyInCare ->
+            "already-in-care"
+
+        ReasonForNonReferralNotIndicated ->
+            "not-indicated"
+
+        ReasonForNonReferralOther ->
+            "other"
+
+        NoReasonForNonReferral ->
+            "none"
+
+
+socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
+socialHistoryHivTestingResultFromString result =
+    case result of
+        "positive" ->
+            Just ResultHivPositive
+
+        "negative" ->
+            Just ResultHivNegative
+
+        "indeterminate" ->
+            Just ResultHivIndeterminate
+
+        "none" ->
+            Just NoHivTesting
+
+        _ ->
+            Nothing
+
+
 postpartumHealingProblemToString : PostpartumHealingProblem -> String
 postpartumHealingProblemToString value =
     case value of
@@ -2450,3 +2522,54 @@ postpartumHealingProblemFromString value =
 
         _ ->
             Nothing
+
+
+socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
+socialHistoryHivTestingResultToString result =
+    case result of
+        ResultHivPositive ->
+            "positive"
+
+        ResultHivNegative ->
+            "negative"
+
+        ResultHivIndeterminate ->
+            "indeterminate"
+
+        NoHivTesting ->
+            "none"
+
+
+pregnancyTestResultFromString : String -> Maybe PregnancyTestResult
+pregnancyTestResultFromString result =
+    case result of
+        "positive" ->
+            Just PregnancyTestPositive
+
+        "negative" ->
+            Just PregnancyTestNegative
+
+        "indeterminate" ->
+            Just PregnancyTestIndeterminate
+
+        "unable-to-conduct" ->
+            Just PregnancyTestUnableToConduct
+
+        _ ->
+            Nothing
+
+
+pregnancyTestResultToString : PregnancyTestResult -> String
+pregnancyTestResultToString sign =
+    case sign of
+        PregnancyTestPositive ->
+            "positive"
+
+        PregnancyTestNegative ->
+            "negative"
+
+        PregnancyTestIndeterminate ->
+            "indeterminate"
+
+        PregnancyTestUnableToConduct ->
+            "unable-to-conduct"

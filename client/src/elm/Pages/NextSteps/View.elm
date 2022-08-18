@@ -194,7 +194,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                                     |> viewSendToHealthCenterForm language
                                         currentDate
                                         SetReferToHealthCenter
-                                        SetReasonForNotSendingToHC
+                                        SetReasonForNonReferral
                                         SetHandReferralForm
                                         Nothing
 
