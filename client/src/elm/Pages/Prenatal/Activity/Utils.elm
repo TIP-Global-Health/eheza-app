@@ -191,7 +191,7 @@ expectActivity currentDate assembled activity =
                         specialityCareSections
 
                 NextSteps ->
-                    mandatoryActivitiesForPostpartumNextStepsCompleted currentDate assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
                                 |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
@@ -1169,12 +1169,6 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         ChwPostpartumEncounter ->
             activityCompleted currentDate assembled PregnancyOutcome
                 && activityCompleted currentDate assembled DangerSigns
-
-
-mandatoryActivitiesForPostpartumNextStepsCompleted : NominalDate -> AssembledData -> Bool
-mandatoryActivitiesForPostpartumNextStepsCompleted currentDate assembled =
-    -- @todo
-    True
 
 
 expectPrenatalPhoto : NominalDate -> AssembledData -> Bool

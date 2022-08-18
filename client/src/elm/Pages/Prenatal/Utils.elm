@@ -3082,7 +3082,14 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
 
                 FacilityARVProgram ->
                     Just
-                        { header = [ viewCustomLabel language Translate.PrenatalARVProgramHelper "." "instructions" ]
+                        { header =
+                            if assembled.encounter.encounterType == NursePostpartumEncounter then
+                                [ viewCustomLabel language Translate.PrenatalARVProgramPostpartumHelper1 "." "instructions"
+                                , viewCustomLabel language Translate.PrenatalARVProgramPostpartumHelper2 "." "instructions"
+                                ]
+
+                            else
+                                [ viewCustomLabel language Translate.PrenatalARVProgramHelper "." "instructions" ]
                         , referralField = form.referToARVProgram
                         , referralUpdateFunc =
                             \value form_ ->

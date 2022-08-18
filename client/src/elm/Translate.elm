@@ -975,6 +975,8 @@ type TranslationId
     | PrenatalHealthEducationEarlyMastitisOrEngorgmentInform
     | PrenatalHealthEducationMentalHealthInform
     | PrenatalARVProgramHelper
+    | PrenatalARVProgramPostpartumHelper1
+    | PrenatalARVProgramPostpartumHelper2
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
     | PrenatalImmunisationDescription PrenatalVaccineType
@@ -1461,8 +1463,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Will you accompany the patient to Integration HIV/PMTCT"
-                    , kinyarwanda = Just "Uzaherekeza umurwayi muri serivisi ikomatanije ya HIV/PMTCT"
+                    { english = "Will you accompany the patient to ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -3152,8 +3154,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Complete an Integration HIV/PMTCT referral form"
-                    , kinyarwanda = Just "Uzuza urupapuro rwohereza umubyeyi muri service ikomatanije ya HIV/PMTCT"
+                    { english = "Complete an ARV services referral form"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -9877,8 +9879,18 @@ translationSet trans =
                     }
 
         PrenatalARVProgramHelper ->
-            { english = "Refer patient to Integration HIV/PMTCT for assessment of ARV’s"
-            , kinyarwanda = Just "Ohereza umubyeyi muri serisi ikomatanije ya HIV/PMTCT kugira ngo hakorwe isuzuma ku bijyanye n' imiti igabanya ubukana bwa Virusi itera SIDA"
+            { english = "Refer patient to ARV services for assessment of ARV’s"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalARVProgramPostpartumHelper1 ->
+            { english = "This patient was diagnosed with HIV during their pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalARVProgramPostpartumHelper2 ->
+            { english = "Refer patient to ARV services for further management of HIV"
+            , kinyarwanda = Nothing
             }
 
         PrenatalHIVSignQuestion sign ->
@@ -12250,8 +12262,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Have you referred the patient to the Integration HIV/PMTCT"
-                    , kinyarwanda = Just "Waba wohereje umurwayi (umubyeyi) muri serivisi ikomatanije ya HIV/PMTCT"
+                    { english = "Have you referred the patient to the ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
