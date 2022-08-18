@@ -974,9 +974,8 @@ type TranslationId
     | PrenatalHealthEducationSaferSexInform
     | PrenatalHealthEducationEarlyMastitisOrEngorgmentInform
     | PrenatalHealthEducationMentalHealthInform
-    | PrenatalARVProgramHelper
-    | PrenatalARVProgramPostpartumHelper1
-    | PrenatalARVProgramPostpartumHelper2
+    | PrenatalARVProgramInstructions Bool
+    | PrenatalARVProgramPostpartumHeader
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
     | PrenatalImmunisationDescription PrenatalVaccineType
@@ -1037,8 +1036,9 @@ type TranslationId
     | PrenatalMentalHealthSpecialistQuestion
     | PrenatalMentalHealthWarningPopupMessage
     | PrenatalMentalHealthWarningPopupInstructions
-    | PrenatalNCDProgramHelper1
-    | PrenatalNCDProgramHelper2
+    | PrenatalNCDProgramHeaderPrefix
+    | PrenatalNCDProgramHeaderSuffix
+    | PrenatalNCDProgramInstructions
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
     | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
@@ -9807,13 +9807,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PrenatalNCDProgramHelper1 ->
-            -- @todo set proper diagnoses instead of XXXXXXXX
-            { english = "This patient was diagnosed with XXXXXXXXXXX during their pregnancy"
+        PrenatalNCDProgramHeaderPrefix ->
+            { english = "This patient was diagnosed with"
             , kinyarwanda = Nothing
             }
 
-        PrenatalNCDProgramHelper2 ->
+        PrenatalNCDProgramHeaderSuffix ->
+            { english = "during their pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalNCDProgramInstructions ->
             { english = "Refer patient to NCD services for further management"
             , kinyarwanda = Nothing
             }
@@ -9878,18 +9882,19 @@ translationSet trans =
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-        PrenatalARVProgramHelper ->
-            { english = "Refer patient to ARV services for assessment of ARV’s"
-            , kinyarwanda = Nothing
-            }
+        PrenatalARVProgramInstructions forPostpartum ->
+            if forPostpartum then
+                { english = "Refer patient to ARV services for further management of HIV"
+                , kinyarwanda = Nothing
+                }
 
-        PrenatalARVProgramPostpartumHelper1 ->
+            else
+                { english = "Refer patient to ARV services for assessment of ARVs"
+                , kinyarwanda = Nothing
+                }
+
+        PrenatalARVProgramPostpartumHeader ->
             { english = "This patient was diagnosed with HIV during their pregnancy"
-            , kinyarwanda = Nothing
-            }
-
-        PrenatalARVProgramPostpartumHelper2 ->
-            { english = "Refer patient to ARV services for further management of HIV"
             , kinyarwanda = Nothing
             }
 
@@ -13072,7 +13077,7 @@ translationSet trans =
             }
 
         SpecialityCareHeaderSuffix ->
-            { english = "During your pregnancy"
+            { english = "during your pregnancy"
             , kinyarwanda = Nothing
             }
 

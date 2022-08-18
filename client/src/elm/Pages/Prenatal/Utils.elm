@@ -2836,6 +2836,63 @@ moderatePreeclampsiaDiagnoses =
     ]
 
 
+resolvePreviousHypertensionlikeDiagnosis : AssembledData -> Maybe PrenatalDiagnosis
+resolvePreviousHypertensionlikeDiagnosis assembled =
+    List.filterMap
+        (\( _, diagnoses, _ ) ->
+            EverySet.toList diagnoses
+                |> List.filter
+                    (\diagnosis ->
+                        List.member diagnosis hypertensionlikeDiagnoses
+                    )
+                |> Just
+        )
+        assembled.nursePreviousMeasurementsWithDates
+        |> List.concat
+        |> List.map hierarchalBloodPreasureDiagnosisToNumber
+        |> Maybe.Extra.values
+        |> List.maximum
+        |> Maybe.andThen hierarchalBloodPreasureDiagnosisFromNumber
+
+
+hypertensionlikeDiagnoses : List PrenatalDiagnosis
+hypertensionlikeDiagnoses =
+    hypertensionDiagnoses
+        ++ moderatePreeclampsiaDiagnoses
+        ++ [ DiagnosisSeverePreeclampsiaInitialPhase
+           , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+           , DiagnosisSeverePreeclampsiaRecurrentPhase
+           , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+           , DiagnosisEclampsia
+           ]
+
+
+resolvePreviousDiabetesDiagnosis : AssembledData -> Maybe PrenatalDiagnosis
+resolvePreviousDiabetesDiagnosis assembled =
+    let
+        previousDiabetesDiagnoses =
+            List.filterMap
+                (\( _, diagnoses, _ ) ->
+                    EverySet.toList diagnoses
+                        |> List.filter
+                            (\diagnosis ->
+                                List.member diagnosis diabetesDiagnoses
+                            )
+                        |> Just
+                )
+                assembled.nursePreviousMeasurementsWithDates
+                |> List.concat
+    in
+    if List.isEmpty previousDiabetesDiagnoses then
+        Nothing
+
+    else if List.member DiagnosisDiabetes previousDiabetesDiagnoses then
+        Just DiagnosisDiabetes
+
+    else
+        Just DiagnosisGestationalDiabetes
+
+
 diagnosedMalaria : AssembledData -> Bool
 diagnosedMalaria =
     diagnosedAnyOf
@@ -3083,13 +3140,18 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                 FacilityARVProgram ->
                     Just
                         { header =
-                            if assembled.encounter.encounterType == NursePostpartumEncounter then
-                                [ viewCustomLabel language Translate.PrenatalARVProgramPostpartumHelper1 "." "instructions"
-                                , viewCustomLabel language Translate.PrenatalARVProgramPostpartumHelper2 "." "instructions"
+                            let
+                                forPostpartum =
+                                    assembled.encounter.encounterType == NursePostpartumEncounter
+                            in
+                            if forPostpartum then
+                                [ viewCustomLabel language Translate.PrenatalARVProgramPostpartumHeader "." "instructions"
+                                , viewCustomLabel language (Translate.PrenatalARVProgramInstructions forPostpartum) "." "instructions"
                                 ]
 
                             else
-                                [ viewCustomLabel language Translate.PrenatalARVProgramHelper "." "instructions" ]
+                                [ viewCustomLabel language (Translate.PrenatalARVProgramInstructions forPostpartum) "." "instructions"
+                                ]
                         , referralField = form.referToARVProgram
                         , referralUpdateFunc =
                             \value form_ ->
@@ -3111,8 +3173,42 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                 FacilityNCDProgram ->
                     Just
                         { header =
-                            [ viewCustomLabel language Translate.PrenatalNCDProgramHelper1 "." "instructions"
-                            , viewCustomLabel language Translate.PrenatalNCDProgramHelper2 "." "instructions"
+                            let
+                                headerText =
+                                    translate language Translate.PrenatalNCDProgramHeaderPrefix
+                                        ++ " "
+                                        ++ diagnosesForView
+                                        ++ " "
+                                        ++ translate language Translate.PrenatalNCDProgramHeaderSuffix
+                                        ++ "."
+
+                                diagnosesForView =
+                                    case ( previousHypertensionlikeDiagnosis, previousDiabetesDiagnosis ) of
+                                        ( Just hypertensionlikeDiagnosis, Just diabetesDiagnosis ) ->
+                                            (translate language <| Translate.PrenatalDiagnosis hypertensionlikeDiagnosis)
+                                                ++ " "
+                                                ++ (String.toLower <| translate language Translate.And)
+                                                ++ " "
+                                                ++ (translate language <| Translate.PrenatalDiagnosis diabetesDiagnosis)
+
+                                        ( Just hypertensionlikeDiagnosis, Nothing ) ->
+                                            translate language <| Translate.PrenatalDiagnosis hypertensionlikeDiagnosis
+
+                                        ( Nothing, Just diabetesDiagnosis ) ->
+                                            translate language <| Translate.PrenatalDiagnosis diabetesDiagnosis
+
+                                        ( Nothing, Nothing ) ->
+                                            -- We should never get here.
+                                            ""
+
+                                previousHypertensionlikeDiagnosis =
+                                    resolvePreviousHypertensionlikeDiagnosis assembled
+
+                                previousDiabetesDiagnosis =
+                                    resolvePreviousDiabetesDiagnosis assembled
+                            in
+                            [ div [ class "label" ] [ text headerText ]
+                            , viewCustomLabel language Translate.PrenatalNCDProgramInstructions "." "instructions"
                             ]
                         , referralField = form.referToNCDProgram
                         , referralUpdateFunc =

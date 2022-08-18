@@ -790,12 +790,13 @@ expectSpecialityCareSignSection assembled sign =
             diagnosedPreviously DiagnosisHIV assembled
 
         EnrolledToNCDProgram ->
-            diagnosedHypertensionPrevoiusly assembled
+            diagnosedPreviouslyAnyOf hypertensionlikeDiagnoses assembled
 
         NoSpecialityCareSigns ->
             False
 
 
+specialityCareSections : List SpecialityCareSign
 specialityCareSections =
     [ EnrolledToARVProgram, EnrolledToNCDProgram ]
 

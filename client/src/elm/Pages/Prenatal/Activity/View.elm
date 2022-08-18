@@ -2454,7 +2454,13 @@ viewSpecialityCareContent language currentDate assembled data =
 
         ( ncdSection, ncdTasks ) =
             if expectSpecialityCareSignSection assembled EnrolledToNCDProgram then
-                ( [ sectionHeader Translate.Hypertension
+                let
+                    diagnosisTransId =
+                        resolvePreviousHypertensionlikeDiagnosis assembled
+                            |> Maybe.map Translate.PrenatalDiagnosis
+                            |> Maybe.withDefault Translate.Hypertension
+                in
+                ( [ sectionHeader diagnosisTransId
                   , viewQuestionLabel language <| Translate.SpecialityCareSignQuestion EnrolledToNCDProgram
                   , viewBoolInput
                         language
@@ -2478,7 +2484,7 @@ viewSpecialityCareContent language currentDate assembled data =
                 , text " "
                 , span [ class "highlight" ] [ text <| translate language diagnosisTransId ]
                 , text " "
-                , text <| String.toLower <| translate language Translate.SpecialityCareHeaderSuffix
+                , text <| translate language Translate.SpecialityCareHeaderSuffix
                 , text "."
                 ]
     in
