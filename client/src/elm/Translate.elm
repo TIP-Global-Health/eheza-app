@@ -11655,7 +11655,7 @@ translationSet trans =
         TestPrerequisiteQuestion value ->
             case value of
                 PrerequisiteFastFor12h ->
-                    { english = "Has the patient fasted for this test (no food for 12 hours)"
+                    { english = "Was this test performed before a meal"
                     , kinyarwanda = Nothing
                     }
 
