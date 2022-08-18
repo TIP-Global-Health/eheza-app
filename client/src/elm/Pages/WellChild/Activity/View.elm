@@ -2029,7 +2029,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                                 viewSendToHealthCenterForm language
                                     currentDate
                                     SetReferToHealthCenter
-                                    SetReasonForNotSendingToHC
+                                    SetReasonForNonReferral
                                     SetHandReferralForm
                                     Nothing
 

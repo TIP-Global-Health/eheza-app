@@ -185,11 +185,10 @@ type Msg
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId PrenatalAssesment (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) Bool (Maybe NextStepsTask)
     | SaveNewbornEnrollment Bool (Maybe NextStepsTask)
-    | SetReferToHealthCenter Bool
-    | SetHandReferralForm Bool
-    | SetAccompanyToHC Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe ReferralFacility) (Maybe NextStepsTask)
+    | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
+    | SetHealthCenterNonReferralReason ReasonForNonReferral
+    | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe NextStepsTask)
     | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetAppointmentConfirmation Date
     | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) Bool (Maybe NextStepsTask)
@@ -671,7 +670,7 @@ emptySpecialityCareForm =
 type alias NextStepsData =
     { appointmentConfirmationForm : AppointmentConfirmationForm
     , followUpForm : FollowUpForm
-    , sendToHCForm : SendToHCForm
+    , referralForm : ReferralForm
     , healthEducationForm : HealthEducationForm
     , newbornEnrolmentForm : NewbornEnrolmentForm
     , medicationDistributionForm : MedicationDistributionForm
@@ -683,7 +682,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { appointmentConfirmationForm = emptyAppointmentConfirmationForm
     , followUpForm = emptyFollowUpForm
-    , sendToHCForm = emptySendToHCForm
+    , referralForm = emptyReferralForm
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , medicationDistributionForm = emptyMedicationDistributionForm

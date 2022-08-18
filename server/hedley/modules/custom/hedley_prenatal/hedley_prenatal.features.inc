@@ -140,7 +140,7 @@ function hedley_prenatal_node_info() {
       'help' => '',
     ),
     'prenatal_send_to_hc' => array(
-      'name' => t('Prenatal Send To HC'),
+      'name' => t('Prenatal Referrals'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

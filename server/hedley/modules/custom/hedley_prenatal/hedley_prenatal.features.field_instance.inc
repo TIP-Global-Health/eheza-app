@@ -6519,7 +6519,7 @@ function hedley_prenatal_field_default_field_instances() {
     'bundle' => 'prenatal_send_to_hc',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'Field is used for storing data of reason for which patient was not referred to Health Center.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -6538,43 +6538,6 @@ function hedley_prenatal_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_reason_not_sent_to_hc',
     'label' => 'Reason for Not Sending to HC',
-    'required' => FALSE,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 11,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-prenatal_send_to_hc-field_referral_facility'.
-  $field_instances['node-prenatal_send_to_hc-field_referral_facility'] = array(
-    'bundle' => 'prenatal_send_to_hc',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 8,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_referral_facility',
-    'label' => 'Referral Facility',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -6584,7 +6547,82 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 12,
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_send_to_hc-field_reasons_for_non_referrals'.
+  $field_instances['node-prenatal_send_to_hc-field_reasons_for_non_referrals'] = array(
+    'bundle' => 'prenatal_send_to_hc',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Field is used for storing data of reasons for which patient was not referred (multiple) facilities.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reasons_for_non_referrals',
+    'label' => 'Reasons for non referrals',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 14,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_send_to_hc-field_referrals'.
+  $field_instances['node-prenatal_send_to_hc-field_referrals'] = array(
+    'bundle' => 'prenatal_send_to_hc',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Field is used for storing data of referrals (possibly multiple) made by nurse.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_referrals',
+    'label' => 'Referrals',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 13,
     ),
   );
 
@@ -6593,7 +6631,7 @@ function hedley_prenatal_field_default_field_instances() {
     'bundle' => 'prenatal_send_to_hc',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'Field is used for storing data of referral to Health center by CHW',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -9155,6 +9193,10 @@ function hedley_prenatal_field_default_field_instances() {
   t('Date concluded');
   t('Dia Repeated');
   t('Execution Date');
+  t('Field is used for storing data of reason for which patient was not referred to Health Center.');
+  t('Field is used for storing data of reasons for which patient was not referred (multiple) facilities.');
+  t('Field is used for storing data of referral to Health center by CHW');
+  t('Field is used for storing data of referrals (possibly multiple) made by nurse.');
   t('Flank pain sign');
   t('Follow up options');
   t('GU Exam Signs');
@@ -9189,8 +9231,9 @@ function hedley_prenatal_field_default_field_instances() {
   t('Prescribed medication');
   t('Protein');
   t('Reason for Not Sending to HC');
+  t('Reasons for non referrals');
   t('Recommended Treatment');
-  t('Referral Facility');
+  t('Referrals');
   t('Rhesus');
   t('Send to HC');
   t('Shards');

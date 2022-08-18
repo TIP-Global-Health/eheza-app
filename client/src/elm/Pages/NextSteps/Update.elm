@@ -63,7 +63,7 @@ update childId activity msg model =
             , []
             )
 
-        SetReasonForNotSendingToHC value ->
+        SetReasonForNonReferral value ->
             let
                 form =
                     model.sendToHCForm
