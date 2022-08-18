@@ -955,7 +955,7 @@ referToARVProgram assembled =
 referredToSpecialityCareProgram : SpecialityCareSign -> AssembledData -> Bool
 referredToSpecialityCareProgram program assembled =
     getMeasurementValueFunc assembled.measurements.specialityCare
-        |> Maybe.map (EverySet.member program)
+        |> Maybe.map (EverySet.member program >> not)
         |> Maybe.withDefault False
 
 
@@ -3226,15 +3226,21 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 ( _, tasks ) =
                     case assembled.encounter.encounterType of
                         NurseEncounter ->
-                            resolveReferralInputsAndTasksForNurse language
-                                currentDate
-                                assembled
-                                SetReferralBoolInput
-                                SetFacilityNonReferralReason
-                                form
+                            tasksForNurse
+
+                        NursePostpartumEncounter ->
+                            tasksForNurse
 
                         _ ->
                             resolveReferralInputsAndTasksForCHW language currentDate assembled form
+
+                tasksForNurse =
+                    resolveReferralInputsAndTasksForNurse language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
             in
             ( Maybe.Extra.values tasks
                 |> List.length
