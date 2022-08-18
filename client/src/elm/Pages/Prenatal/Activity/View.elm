@@ -24,8 +24,8 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (sendToHCFormWithDefault, vaccinationFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewSendToMentalSpecialistForm)
+import Measurement.Utils exposing (vaccinationFormWithDefault, vitalsFormWithDefault)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -1750,7 +1750,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     activeTask == Just task
 
                 isCompleted =
-                    nextStepsMeasurementTaken assembled task
+                    nextStepsTaskCompleted assembled task
 
                 navigationAction =
                     if isActive then
@@ -1787,7 +1787,7 @@ viewNextStepsContent language currentDate isChw assembled data =
             List.member NextStepsWait tasks
                 && -- There's one or less uncompleted task,
                    -- which is the Wait task.
-                   (List.filter (nextStepsMeasurementTaken assembled >> not) tasks
+                   (List.filter (nextStepsTaskCompleted assembled >> not) tasks
                         |> List.length
                         |> (\length -> length < 2)
                    )
@@ -1815,68 +1815,25 @@ viewNextStepsContent language currentDate isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        ( referralFacility, referralReasons ) =
-            if isChw then
-                ( FacilityHealthCenter, [] )
-
-            else
-                let
-                    hospitalReferralDiagnoses =
-                        diagnosesCausingHospitalReferral assembled
-                            |> EverySet.toList
-                in
-                if not <| List.isEmpty hospitalReferralDiagnoses then
-                    ( FacilityHospital, hospitalReferralDiagnoses )
-
-                else if referToMentalHealthSpecialist assembled then
-                    ( FacilityMentalHealthSpecialist, [] )
-
-                else
-                    ( FacilityHIVProgram, [] )
-
         viewForm =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
-                    measurements.appointmentConfirmation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.appointmentConfirmation
                         |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
                         |> viewAppointmentConfirmationForm language currentDate assembled
 
                 Just NextStepsFollowUp ->
-                    measurements.followUp
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate assembled
 
                 Just NextStepsSendToHC ->
-                    let
-                        ( viewFormFunc, accompanyConfig ) =
-                            case referralFacility of
-                                FacilityHealthCenter ->
-                                    ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
-
-                                FacilityHospital ->
-                                    ( viewSendToHospitalForm referralReasons, Nothing )
-
-                                FacilityMentalHealthSpecialist ->
-                                    ( viewSendToMentalSpecialistForm, Nothing )
-
-                                FacilityHIVProgram ->
-                                    ( viewSendToHIVProgramForm, Just SetAccompanyToHC )
-                    in
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
-                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
-                        |> viewFormFunc language
-                            currentDate
-                            SetReferToHealthCenter
-                            SetReasonForNotSendingToHC
-                            SetHandReferralForm
-                            accompanyConfig
+                    getMeasurementValueFunc measurements.sendToHC
+                        |> referralFormWithDefault data.referralForm
+                        |> viewReferralForm language currentDate assembled
 
                 Just NextStepsHealthEducation ->
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate assembled
 
@@ -1884,8 +1841,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     viewNewbornEnrolmentForm language currentDate assembled
 
                 Just NextStepsMedicationDistribution ->
-                    measurements.medicationDistribution
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
                             currentDate
@@ -1971,15 +1927,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                                         SaveFollowUp personId assesment measurements.followUp secondPhase nextTask
 
                                     NextStepsSendToHC ->
-                                        let
-                                            nonDefaultFacility =
-                                                if List.member referralFacility [ FacilityMentalHealthSpecialist, FacilityHIVProgram ] then
-                                                    Just referralFacility
-
-                                                else
-                                                    Nothing
-                                        in
-                                        SaveSendToHC personId measurements.sendToHC secondPhase nonDefaultFacility nextTask
+                                        SaveSendToHC personId measurements.sendToHC secondPhase nextTask
 
                                     NextStepsHealthEducation ->
                                         SaveHealthEducationSubActivity personId measurements.healthEducation secondPhase nextTask
@@ -4437,6 +4385,26 @@ viewMedicationTreatmentForm language currentDate setBoolInputMsg assembled form 
             resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task
     in
     div [ class "ui form medication" ] inputs
+
+
+viewReferralForm : Language -> NominalDate -> AssembledData -> ReferralForm -> Html Msg
+viewReferralForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            case assembled.encounter.encounterType of
+                NurseEncounter ->
+                    resolveReferralInputsAndTasksForNurse language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
+
+                _ ->
+                    resolveReferralInputsAndTasksForCHW language currentDate assembled form
+    in
+    div [ class "ui form referral" ]
+        inputs
 
 
 

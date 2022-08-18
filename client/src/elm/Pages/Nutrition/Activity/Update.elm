@@ -288,7 +288,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SetReasonForNotSendingToHC value ->
+        SetReasonForNonReferral value ->
             let
                 form =
                     model.nextStepsData.sendToHCForm

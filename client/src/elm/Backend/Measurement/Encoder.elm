@@ -280,7 +280,7 @@ encodePrenatalAssesment assesment =
 
 encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )
 encodePrenatalSendToHC =
-    encodePrenatalMeasurement encodePrenatalSendToHCValue
+    encodePrenatalMeasurement encodePrenatalReferralValue
 
 
 encodeAppointmentConfirmation : PrenatalAppointmentConfirmation -> List ( String, Value )
@@ -2225,26 +2225,10 @@ encodeGroupSendToHC =
 encodeSendToHCValueWithType : String -> SendToHCValue -> List ( String, Value )
 encodeSendToHCValueWithType type_ value =
     [ ( "send_to_hc", encodeEverySet encodeSendToHCSign value.signs )
-    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
+    , ( "reason_not_sent_to_hc", encodeReasonForNonReferral value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
-
-
-encodePrenatalSendToHCValue : PrenatalSendToHCValue -> List ( String, Value )
-encodePrenatalSendToHCValue value =
-    let
-        referralFacility =
-            Maybe.map (\facility -> [ ( "referral_facility", encodeReferralFacility facility ) ])
-                value.referralFacility
-                |> Maybe.withDefault []
-    in
-    [ ( "send_to_hc", encodeEverySet encodeSendToHCSign value.signs )
-    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
-    , ( "deleted", bool False )
-    , ( "type", string "prenatal_send_to_hc" )
-    ]
-        ++ referralFacility
 
 
 encodeSendToHCSign : SendToHCSign -> Value
@@ -2270,8 +2254,8 @@ encodeSendToHCSign sign =
                 "none"
 
 
-encodeReasonForNotSendingToHC : ReasonForNotSendingToHC -> Value
-encodeReasonForNotSendingToHC event =
+encodeReasonForNonReferral : ReasonForNonReferral -> Value
+encodeReasonForNonReferral event =
     string <|
         case event of
             ClientRefused ->
@@ -2286,10 +2270,103 @@ encodeReasonForNotSendingToHC event =
             ClientAlreadyInCare ->
                 "already-in-care"
 
-            ReasonForNotSendingToHCOther ->
+            ReasonForNonReferralOther ->
                 "other"
 
-            NoReasonForNotSendingToHC ->
+            NoReasonForNonReferral ->
+                "none"
+
+
+encodePrenatalReferralValue : PrenatalReferralValue -> List ( String, Value )
+encodePrenatalReferralValue value =
+    let
+        sendToHC =
+            Maybe.map (\signs -> [ ( "send_to_hc", encodeEverySet encodeSendToHCSign signs ) ])
+                value.sendToHCSigns
+                |> Maybe.withDefault []
+
+        reasonNotSentToHC =
+            Maybe.map (\reason -> [ ( "reason_not_sent_to_hc", encodeReasonForNonReferral reason ) ])
+                value.reasonForNotSendingToHC
+                |> Maybe.withDefault []
+
+        referToFacilitySigns =
+            Maybe.map (\signs -> [ ( "referrals", encodeEverySet encodeReferToFacilitySign signs ) ])
+                value.referToFacilitySigns
+                |> Maybe.withDefault []
+
+        facilityNonReferralReasons =
+            Maybe.map (\reason -> [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ])
+                value.facilityNonReferralReasons
+                |> Maybe.withDefault []
+    in
+    sendToHC
+        ++ reasonNotSentToHC
+        ++ referToFacilitySigns
+        ++ facilityNonReferralReasons
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_send_to_hc" )
+           ]
+
+
+encodeReferToFacilitySign : ReferToFacilitySign -> Value
+encodeReferToFacilitySign sign =
+    string <|
+        case sign of
+            ReferToHospital ->
+                "hospital"
+
+            ReferralFormHospital ->
+                "hospital-referral-form"
+
+            ReferToMentalHealthSpecialist ->
+                "mhs"
+
+            ReferralFormMentalHealthSpecialist ->
+                "mhs-referral-form"
+
+            AccompanyToMentalHealthSpecialist ->
+                "mhs-accompany"
+
+            ReferToARVProgram ->
+                "arv"
+
+            ReferralFormARVProgram ->
+                "arv-referral-form"
+
+            AccompanyToARVProgram ->
+                "arv-accompany"
+
+            ReferToNCDProgram ->
+                "ncd"
+
+            ReferralFormNCDProgram ->
+                "ncd-referral-form"
+
+            AccompanyToNCDProgram ->
+                "ncd-accompany"
+
+            NoReferToFacilitySigns ->
+                "none"
+
+
+encodeNonReferralSign : NonReferralSign -> Value
+encodeNonReferralSign sign =
+    string <|
+        case sign of
+            NonReferralReasonHospital reason ->
+                "hospital-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonMentalHealthSpecialist reason ->
+                "mhs-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonARVProgram reason ->
+                "arv-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonNCDProgram reason ->
+                "ncd-" ++ reasonForNonReferralToString reason
+
+            NoNonReferralSigns ->
                 "none"
 
 
@@ -2298,16 +2375,19 @@ encodeReferralFacility facility =
     string <|
         case facility of
             FacilityHealthCenter ->
-                "health-center"
+                "hc"
 
             FacilityHospital ->
                 "hospital"
 
-            FacilityHIVProgram ->
-                "hiv-program"
-
             FacilityMentalHealthSpecialist ->
-                "mental-health-specialist"
+                "mhs"
+
+            FacilityARVProgram ->
+                "arv"
+
+            FacilityNCDProgram ->
+                "ncd"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )
