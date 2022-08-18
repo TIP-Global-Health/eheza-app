@@ -937,12 +937,7 @@ historyTaskCompleted assembled task =
 
 referToHospital : AssembledData -> Bool
 referToHospital =
-    diagnosesCausingHospitalReferral >> EverySet.isEmpty >> not
-
-
-diagnosesCausingHospitalReferral : AssembledData -> EverySet PrenatalDiagnosis
-diagnosesCausingHospitalReferral =
-    diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial
+    diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial >> EverySet.isEmpty >> not
 
 
 referToMentalHealthSpecialist : AssembledData -> Bool
@@ -950,9 +945,17 @@ referToMentalHealthSpecialist assembled =
     mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnosesRequiringTreatment assembled
 
 
-referToHIVProgram : AssembledData -> Bool
-referToHIVProgram assembled =
-    diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements
+referToARVProgram : AssembledData -> Bool
+referToARVProgram assembled =
+    (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements)
+        || referredToSpecialityCareProgram EnrolledToARVProgram assembled
+
+
+referredToSpecialityCareProgram : SpecialityCareSign -> AssembledData -> Bool
+referredToSpecialityCareProgram program assembled =
+    getMeasurementValueFunc assembled.measurements.specialityCare
+        |> Maybe.map (EverySet.member program)
+        |> Maybe.withDefault False
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
@@ -7204,11 +7207,11 @@ matchRequiredReferralFacility assembled facility =
             referToMentalHealthSpecialist assembled
 
         FacilityARVProgram ->
-            referToHIVProgram assembled
+            referToARVProgram assembled
 
         FacilityNCDProgram ->
-            -- @todo : Implement when developing NCD feature.
-            False
+            referredToSpecialityCareProgram EnrolledToNCDProgram assembled
+                || diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
 
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved
