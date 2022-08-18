@@ -7232,3 +7232,30 @@ guExamFormInputsAndTasks language assembled form =
             )
     in
     ( initialSection ++ derivedSection, initialTasks ++ derivedTasks )
+
+
+specialityCareFormWithDefault : SpecialityCareForm -> Maybe SpecialityCareValue -> SpecialityCareForm
+specialityCareFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { enrolledToARVProgram = or form.enrolledToARVProgram (EverySet.member EnrolledToARVProgram value |> Just)
+                , enrolledToNCDProgram = or form.enrolledToNCDProgram (EverySet.member EnrolledToNCDProgram value |> Just)
+                }
+            )
+
+
+toSpecialityCareValueWithDefault : Maybe SpecialityCareValue -> SpecialityCareForm -> Maybe SpecialityCareValue
+toSpecialityCareValueWithDefault saved form =
+    specialityCareFormWithDefault form saved
+        |> toSpecialityCareValue
+
+
+toSpecialityCareValue : SpecialityCareForm -> Maybe SpecialityCareValue
+toSpecialityCareValue form =
+    [ ifNullableTrue EnrolledToARVProgram form.enrolledToARVProgram
+    , ifNullableTrue EnrolledToNCDProgram form.enrolledToNCDProgram
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)
