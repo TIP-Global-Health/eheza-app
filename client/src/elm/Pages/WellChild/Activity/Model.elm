@@ -83,7 +83,7 @@ type Msg
     | SetHandReferralForm Bool
     | SetEnrollToNutritionProgram Bool
     | SetReferToNutritionProgram Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SetReasonForNonReferral ReasonForNonReferral
     | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation

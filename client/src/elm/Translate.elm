@@ -838,7 +838,7 @@ type TranslationId
     | NoTreatmentAdministered
     | NoTreatmentRecorded
     | NutritionSigns
-    | ReasonForNotSendingToHC ReasonForNotSendingToHC
+    | ReasonForNonReferral ReasonForNonReferral
     | AdministrationNote AdministrationNote
     | AdministrationNoteForPrenatalImmunisation AdministrationNote
     | AdministrationNoteForWellChildImmunisation AdministrationNote
@@ -971,7 +971,7 @@ type TranslationId
     | PrenatalHealthEducationSaferSexInform
     | PrenatalHealthEducationEarlyMastitisOrEngorgmentInform
     | PrenatalHealthEducationMentalHealthInform
-    | PrenatalHIVProgramHelper
+    | PrenatalARVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
     | PrenatalImmunisationDescription PrenatalVaccineType
@@ -1447,13 +1447,18 @@ translationSet trans =
                     , kinyarwanda = Just "Uraherekeza umubyeyi ku bitaro"
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Will you accompany the patient to mental health specialist"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Will you accompany the patient to Integration HIV/PMTCT"
                     , kinyarwanda = Just "Uzaherekeza umurwayi muri serivisi ikomatanije ya HIV/PMTCT"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Will you accompany the patient to mental health specialist"
+                FacilityNCDProgram ->
+                    { english = "Will you accompany the patient to NCD services"
                     , kinyarwanda = Nothing
                     }
 
@@ -3128,13 +3133,18 @@ translationSet trans =
                     , kinyarwanda = Just "Uzuza urupapuro rumwohereza ku bitaro"
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Complete a referral form"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Complete an Integration HIV/PMTCT referral form"
                     , kinyarwanda = Just "Uzuza urupapuro rwohereza umubyeyi muri service ikomatanije ya HIV/PMTCT"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Complete a referral form"
+                FacilityNCDProgram ->
+                    { english = "Complete a NCD services referral form"
                     , kinyarwanda = Nothing
                     }
 
@@ -6968,7 +6978,7 @@ translationSet trans =
             , kinyarwanda = Just "Ibimenyetso by'imirire"
             }
 
-        ReasonForNotSendingToHC reason ->
+        ReasonForNonReferral reason ->
             case reason of
                 ClientRefused ->
                     { english = "Client refused"
@@ -6990,12 +7000,17 @@ translationSet trans =
                     , kinyarwanda = Just "Umukiriya ari kwitabwaho"
                     }
 
-                ReasonForNotSendingToHCOther ->
+                ReasonForNonReferralNotIndicated ->
+                    { english = "Not indicated"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonForNonReferralOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
                     }
 
-                NoReasonForNotSendingToHC ->
+                NoReasonForNonReferral ->
                     { english = "No Reason"
                     , kinyarwanda = Nothing
                     }
@@ -9822,7 +9837,7 @@ translationSet trans =
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-        PrenatalHIVProgramHelper ->
+        PrenatalARVProgramHelper ->
             { english = "Refer patient to Integration HIV/PMTCT for assessment of ARV’s"
             , kinyarwanda = Just "Ohereza umubyeyi muri serisi ikomatanije ya HIV/PMTCT kugira ngo hakorwe isuzuma ku bijyanye n' imiti igabanya ubukana bwa Virusi itera SIDA"
             }
@@ -12135,13 +12150,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Have you referred the patient to the specialist"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Have you referred the patient to the Integration HIV/PMTCT"
                     , kinyarwanda = Just "Waba wohereje umurwayi (umubyeyi) muri serivisi ikomatanije ya HIV/PMTCT"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Have you referred the patient to the specialist"
+                FacilityNCDProgram ->
+                    { english = "Have you referred the patient to NCD services"
                     , kinyarwanda = Nothing
                     }
 
@@ -12157,13 +12177,18 @@ translationSet trans =
                     , kinyarwanda = Just "Yoherejwe ku bitaro"
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Referred to mental health specialist"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Referred to HIV/PMTCT"
                     , kinyarwanda = Just "Yoherejwe muri serivisi ya HIV/PMTCT"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Referred to mental health specialist"
+                FacilityNCDProgram ->
+                    { english = "Referred to NCD services"
                     , kinyarwanda = Nothing
                     }
 
@@ -12179,13 +12204,18 @@ translationSet trans =
                     , kinyarwanda = Just "Ntabwo yoherejwe ku bitaro"
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Not referred to mental health specialist"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Not referred to HIV/PMTCT"
                     , kinyarwanda = Just "Ntabwo yoherejwe muri serivisi ya HIV/PMTCT"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Not referred to mental health specialist"
+                FacilityNCDProgram ->
+                    { english = "Not referred to NCD services"
                     , kinyarwanda = Nothing
                     }
 
@@ -13283,13 +13313,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Refer patient to mental health specialist for further evaluation"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Direct patient to the appropriate location"
                     , kinyarwanda = Just "Yobora umurwayi ahantu habugenewe"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Refer patient to mental health specialist for further evaluation"
+                FacilityNCDProgram ->
+                    { english = "Refer patient to NCD services for further management"
                     , kinyarwanda = Nothing
                     }
 

@@ -88,7 +88,7 @@ type Msg
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SetReasonForNonReferral ReasonForNonReferral
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)

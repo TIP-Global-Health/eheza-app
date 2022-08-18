@@ -11,9 +11,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils exposing (vitalsFormWithDefault)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..))
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.Utils exposing (..)
@@ -410,7 +410,7 @@ expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
-            diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
+            resolveRequiredReferralFacilities assembled
                 |> List.isEmpty
                 |> not
 
@@ -429,26 +429,12 @@ expectNextStepsTask currentDate assembled task =
             diagnosedAnyOf (DiagnosisHIVDetectableViralLoad :: diabetesDiagnoses) assembled
 
 
-diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
-    emergencyReferralDiagnosesRecurrent
-        ++ [ DiagnosisHepatitisB
-           , DiagnosisNeurosyphilis
-           , DiagnosisMalariaWithSevereAnemia
-           , DiagnosisSevereAnemia
-           , DiagnosisModeratePreeclampsiaRecurrentPhase
-           , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
-           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
-           , DiagnosisRhesusNegative
-           ]
-        |> List.filter (\diagnosis -> diagnosed diagnosis assembled)
-
-
 nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
 nextStepsTaskCompleted assembled task =
     case task of
         NextStepsSendToHC ->
-            isJust assembled.measurements.sendToHC
+            resolveRequiredReferralFacilities assembled
+                |> List.all (referralToFacilityCompleted assembled)
 
         NextStepsMedicationDistribution ->
             let
@@ -487,26 +473,19 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 form =
                     assembled.measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
+                        |> referralFormWithDefault data.referralForm
 
-                ( reasonForNotSentCompleted, reasonForNotSentActive ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+                ( _, tasks ) =
+                    resolveReferralInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
             in
-            ( taskCompleted form.handReferralForm + reasonForNotSentCompleted
-            , 1 + reasonForNotSentActive
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
             )
 
         NextStepsMedicationDistribution ->
@@ -764,3 +743,58 @@ toHealthEducationValue saved form =
                 , signsPhase2 = Just signsPhase2
                 }
             )
+
+
+resolveReferralInputsAndTasks :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> ReferralForm
+    -> ( List (Html msg), List (Maybe Bool) )
+resolveReferralInputsAndTasks language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+    let
+        foldResults =
+            List.foldr
+                (\( inputs, tasks ) ( accumInputs, accumTasks ) ->
+                    ( inputs ++ accumInputs, tasks ++ accumTasks )
+                )
+                ( [], [] )
+    in
+    resolveRequiredReferralFacilities assembled
+        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate PrenatalEncounterPhaseRecurrent assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
+        |> foldResults
+
+
+resolveRequiredReferralFacilities : AssembledData -> List ReferralFacility
+resolveRequiredReferralFacilities assembled =
+    List.filter (matchRequiredReferralFacility assembled) referralFacilities
+
+
+matchRequiredReferralFacility : AssembledData -> ReferralFacility -> Bool
+matchRequiredReferralFacility assembled facility =
+    case facility of
+        FacilityHospital ->
+            diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseRecurrent assembled
+                |> EverySet.isEmpty
+                |> not
+
+        FacilityMentalHealthSpecialist ->
+            False
+
+        FacilityARVProgram ->
+            False
+
+        FacilityNCDProgram ->
+            False
+
+        FacilityHealthCenter ->
+            -- We should never get here. HC inputs are resolved
+            -- with resolveReferralInputsAndTasksForCHW.
+            False
+
+
+referralFacilities : List ReferralFacility
+referralFacilities =
+    [ FacilityHospital ]
