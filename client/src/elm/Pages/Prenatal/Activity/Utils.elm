@@ -785,16 +785,15 @@ examinationTaskCompleted assembled task =
 
 expectSpecialityCareSignSection : AssembledData -> SpecialityCareSign -> Bool
 expectSpecialityCareSignSection assembled sign =
-    -- case sign of
-    --     EnrolledToARVProgram ->
-    --         diagnosedPreviously DiagnosisHIV assembled
-    --
-    --     EnrolledToNCDProgram ->
-    --         diagnosedHypertensionPrevoiusly assembled
-    --
-    --     NoSpecialityCareSigns ->
-    --         False
-    True
+    case sign of
+        EnrolledToARVProgram ->
+            diagnosedPreviously DiagnosisHIV assembled
+
+        EnrolledToNCDProgram ->
+            diagnosedHypertensionPrevoiusly assembled
+
+        NoSpecialityCareSigns ->
+            False
 
 
 specialityCareSections =
