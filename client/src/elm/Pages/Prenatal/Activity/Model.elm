@@ -253,6 +253,7 @@ type alias Model =
     , immunisationData : ImmunisationData
     , postpartumTreatmentReviewData : PostpartumTreatmentReviewData
     , breastfeedingData : BreastfeedingData
+    , specialityCareData : SpecialityCareData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe (WarningPopupType Msg)
@@ -278,6 +279,7 @@ emptyModel =
     , immunisationData = emptyImmunisationData
     , postpartumTreatmentReviewData = emptyPostpartumTreatmentReviewData
     , breastfeedingData = emptyBreastfeedingData
+    , specialityCareData = emptySpecialityCareData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -636,6 +638,30 @@ emptyImmunisationData : ImmunisationData
 emptyImmunisationData =
     { tetanusForm = emptyVaccinationForm
     , activeTask = Nothing
+    }
+
+
+type alias SpecialityCareData =
+    { form : SpecialityCareForm
+    }
+
+
+emptySpecialityCareData : SpecialityCareData
+emptySpecialityCareData =
+    { form = emptySpecialityCareForm
+    }
+
+
+type alias SpecialityCareForm =
+    { enrolledToARVProgram : Maybe Bool
+    , enrolledToNCDProgram : Maybe Bool
+    }
+
+
+emptySpecialityCareForm : SpecialityCareForm
+emptySpecialityCareForm =
+    { enrolledToARVProgram = Nothing
+    , enrolledToNCDProgram = Nothing
     }
 
 
