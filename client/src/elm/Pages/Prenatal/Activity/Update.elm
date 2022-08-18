@@ -4,7 +4,6 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (PrenatalEncounterId)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Decoder exposing (pregnancyTestResultFromString)
 import Backend.Measurement.Model
     exposing
         ( AbdomenCPESign(..)
@@ -25,7 +24,13 @@ import Backend.Measurement.Model
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultFromString)
+import Backend.Measurement.Utils
+    exposing
+        ( getMeasurementValueFunc
+        , pregnancyTestResultFromString
+        , prenatalTestResultFromString
+        , socialHistoryHivTestingResultFromString
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))

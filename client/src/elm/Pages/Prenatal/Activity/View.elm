@@ -3,9 +3,18 @@ module Pages.Prenatal.Activity.View exposing (view, warningPopup)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getHeightValue, getMeasurementValueFunc, muacIndication, muacValueFunc, prenatalTestResultToString, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( getHeightValue
+        , getMeasurementValueFunc
+        , muacIndication
+        , muacValueFunc
+        , pregnancyTestResultToString
+        , prenatalTestResultToString
+        , socialHistoryHivTestingResultToString
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -1448,7 +1457,7 @@ viewLaboratoryContentForChw language currentDate assembled data =
                         |> List.map
                             (\result ->
                                 option
-                                    [ value (pregnancyTestResultAsString result)
+                                    [ value (pregnancyTestResultToString result)
                                     , selected (form.pregnancyTestResult == Just result)
                                     ]
                                     [ text <| translate language <| Translate.PregnancyTestResult result ]

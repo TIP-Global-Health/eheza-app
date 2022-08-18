@@ -1097,6 +1097,7 @@ function hedley_acute_illness_field_default_field_bases() {
         'no-ambulance' => 'No ambulance available',
         'unable-to-afford-fee' => 'Client unable to afford fees',
         'already-in-care' => 'Client already in care',
+        'not-indicated' => 'Not indicated',
         'other' => 'Other',
         'none' => 'None',
       ),

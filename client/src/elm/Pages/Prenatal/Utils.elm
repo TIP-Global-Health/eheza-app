@@ -2935,10 +2935,19 @@ nonReferralReasonSection language facility reasonToSignFunc setNonReferralReason
 
         options =
             if facility == FacilityHospital then
-                [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNonReferralOther ]
+                [ ClientRefused
+                , NoAmbulance
+                , ClientUnableToAffordFees
+                , ReasonForNonReferralNotIndicated
+                , ReasonForNonReferralOther
+                ]
 
             else
-                [ ClientRefused, ClientAlreadyInCare, ReasonForNonReferralOther ]
+                [ ClientRefused
+                , ClientAlreadyInCare
+                , ReasonForNonReferralNotIndicated
+                , ReasonForNonReferralOther
+                ]
     in
     [ viewQuestionLabel language Translate.WhyNot
     , viewCheckBoxSelectInput language
@@ -2975,7 +2984,13 @@ getCurrentReasonForNonReferral reasonToSignFunc nonReferralReasons =
             else
                 Nothing
         )
-        [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ClientAlreadyInCare, ReasonForNonReferralOther ]
+        [ ClientRefused
+        , NoAmbulance
+        , ClientUnableToAffordFees
+        , ClientAlreadyInCare
+        , ReasonForNonReferralNotIndicated
+        , ReasonForNonReferralOther
+        ]
         |> List.head
 
 

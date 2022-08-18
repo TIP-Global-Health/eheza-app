@@ -1180,8 +1180,7 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
         headerHelper =
             case facility of
                 FacilityHospital ->
-                    [ viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions"
-                    ]
+                    [ viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions" ]
 
                 _ ->
                     []
@@ -1197,7 +1196,12 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
                         [ div [ class "why-not" ]
                             [ viewQuestionLabel language Translate.WhyNot
                             , viewCheckBoxSelectInput language
-                                [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNonReferralOther ]
+                                [ ClientRefused
+                                , NoAmbulance
+                                , ClientUnableToAffordFees
+                                , ReasonForNonReferralNotIndicated
+                                , ReasonForNonReferralOther
+                                ]
                                 []
                                 form.reasonForNotSendingToHC
                                 setReasonForNonReferralMsg

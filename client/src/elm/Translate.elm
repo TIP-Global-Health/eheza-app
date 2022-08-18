@@ -6892,6 +6892,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umukiriya ari kwitabwaho"
                     }
 
+                ReasonForNonReferralNotIndicated ->
+                    { english = "Not indicated"
+                    , kinyarwanda = Nothing
+                    }
+
                 ReasonForNonReferralOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
