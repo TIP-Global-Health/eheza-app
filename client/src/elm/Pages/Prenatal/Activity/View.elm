@@ -4752,15 +4752,21 @@ viewReferralForm language currentDate assembled form =
         ( inputs, _ ) =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    resolveReferralInputsAndTasksForNurse language
-                        currentDate
-                        assembled
-                        SetReferralBoolInput
-                        SetFacilityNonReferralReason
-                        form
+                    viewForNurse
+
+                NursePostpartumEncounter ->
+                    viewForNurse
 
                 _ ->
                     resolveReferralInputsAndTasksForCHW language currentDate assembled form
+
+        viewForNurse =
+            resolveReferralInputsAndTasksForNurse language
+                currentDate
+                assembled
+                SetReferralBoolInput
+                SetFacilityNonReferralReason
+                form
     in
     div [ class "ui form referral" ]
         inputs

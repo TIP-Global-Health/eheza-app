@@ -1035,6 +1035,8 @@ type TranslationId
     | PrenatalMentalHealthSpecialistQuestion
     | PrenatalMentalHealthWarningPopupMessage
     | PrenatalMentalHealthWarningPopupInstructions
+    | PrenatalNCDProgramHelper1
+    | PrenatalNCDProgramHelper2
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
     | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
@@ -9803,6 +9805,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PrenatalNCDProgramHelper1 ->
+            -- @todo set proper diagnoses instead of XXXXXXXX
+            { english = "This patient was diagnosed with XXXXXXXXXXX during their pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalNCDProgramHelper2 ->
+            { english = "Refer patient to NCD services for further management"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalNextStepsTask isChw task ->
             case task of
                 Pages.Prenatal.Activity.Types.NextStepsAppointmentConfirmation ->
@@ -13432,8 +13445,8 @@ translationSet trans =
                     }
 
                 FacilityNCDProgram ->
-                    { english = "Refer patient to NCD services for further management"
-                    , kinyarwanda = Nothing
+                    { english = "Direct patient to the appropriate location"
+                    , kinyarwanda = Just "Yobora umurwayi ahantu habugenewe"
                     }
 
         ShowAll ->

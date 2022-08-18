@@ -3102,8 +3102,28 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                         }
 
                 FacilityNCDProgram ->
-                    -- @todo : Implement when developing NCD feature.
-                    Nothing
+                    Just
+                        { header =
+                            [ viewCustomLabel language Translate.PrenatalNCDProgramHelper1 "." "instructions"
+                            , viewCustomLabel language Translate.PrenatalNCDProgramHelper2 "." "instructions"
+                            ]
+                        , referralField = form.referToNCDProgram
+                        , referralUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | referToNCDProgram = Just value
+                                    , referralFormNCDProgram = Nothing
+                                    , accompanyToNCDProgram = Nothing
+                                }
+                        , formField = form.referralFormNCDProgram
+                        , formUpdateFunc = \value form_ -> { form_ | referralFormNCDProgram = Just value }
+                        , accompanyConfig =
+                            Just
+                                ( form.accompanyToNCDProgram
+                                , \value form_ -> { form_ | accompanyToNCDProgram = Just value }
+                                )
+                        , reasonToSignFunc = NonReferralReasonNCDProgram
+                        }
 
                 FacilityHealthCenter ->
                     -- We should never get here.
@@ -3130,7 +3150,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                     ( accompanySection, accompanyTasks ) =
                                         Maybe.map
                                             (\( field, updateFunc ) ->
-                                                ( [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion FacilityHealthCenter
+                                                ( [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion facility
                                                   , viewBoolInput
                                                         language
                                                         field
@@ -3276,8 +3296,7 @@ nonReferralReasonToSign facility reason =
             NonReferralReasonARVProgram reason
 
         FacilityNCDProgram ->
-            -- @todo : Implement when developing NCD feature.
-            NoNonReferralSigns
+            NonReferralReasonNCDProgram reason
 
         FacilityHealthCenter ->
             -- We should never get here.
