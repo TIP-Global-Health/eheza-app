@@ -187,7 +187,8 @@ expectActivity currentDate assembled activity =
                     True
 
                 SpecialityCare ->
-                    True
+                    List.any (expectSpecialityCareSignSection assembled)
+                        specialityCareSections
 
                 NextSteps ->
                     mandatoryActivitiesForPostpartumNextStepsCompleted currentDate assembled
@@ -354,8 +355,7 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.breastfeeding
 
         SpecialityCare ->
-            -- @todo
-            False
+            isJust assembled.measurements.specialityCare
 
         PostpartumTreatmentReview ->
             isJust assembled.measurements.medication
@@ -781,6 +781,24 @@ examinationTaskCompleted assembled task =
 
         GUExam ->
             isJust assembled.measurements.guExam
+
+
+expectSpecialityCareSignSection : AssembledData -> SpecialityCareSign -> Bool
+expectSpecialityCareSignSection assembled sign =
+    -- case sign of
+    --     EnrolledToARVProgram ->
+    --         diagnosedPreviously DiagnosisHIV assembled
+    --
+    --     EnrolledToNCDProgram ->
+    --         diagnosedHypertensionPrevoiusly assembled
+    --
+    --     NoSpecialityCareSigns ->
+    --         False
+    True
+
+
+specialityCareSections =
+    [ EnrolledToARVProgram, EnrolledToNCDProgram ]
 
 
 referredToHIVProgramPreviously : AssembledData -> Bool
@@ -7259,3 +7277,8 @@ toSpecialityCareValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)
+
+
+specialityCareFormInputsAndTasks : Language -> AssembledData -> SpecialityCareForm -> ( List (Html Msg), List (Maybe Bool) )
+specialityCareFormInputsAndTasks language assembled form =
+    ( [], [] )

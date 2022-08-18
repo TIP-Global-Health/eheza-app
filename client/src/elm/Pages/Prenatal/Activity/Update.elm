@@ -3734,3 +3734,43 @@ update language currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetSpecialityCareBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.specialityCareData.form
+
+                updatedData =
+                    model.specialityCareData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | specialityCareData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSpecialityCare personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.specialityCareData.form
+                        |> toSpecialityCareValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveSpecialityCare personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

@@ -215,7 +215,7 @@ type Msg
     | SetMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | SetSpecialistAtHC Bool
     | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
-      -- IMMUNISATION
+      -- IMMUNISATIONMsgs
     | SetActiveImmunisationTask ImmunisationTask
     | SetVaccinationFormViewMode PrenatalVaccineType VaccinationFormViewMode
     | SetUpdatePreviousVaccines PrenatalVaccineType VaccineDose Bool
@@ -226,13 +226,16 @@ type Msg
     | SaveVaccinationUpdateDate PrenatalVaccineType VaccineDose
     | DeleteVaccinationUpdateDate PrenatalVaccineType VaccineDose NominalDate
     | SaveTetanusImmunisation PersonId (Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation ))
-      -- PostpartumTreatmentReview
+      -- PostpartumTreatmentReviewMsgs
     | SetPostpartumTreatmentReviewBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
     | SavePostpartumTreatmentReview PersonId (Maybe ( MedicationId, Medication ))
-      -- BREASTFEEDING
+      -- BREASTFEEDINGMsgs
     | SetBreastfeedingBoolInput (Bool -> BreastfeedingForm -> BreastfeedingForm) Bool
     | SetReasonForNotBreastfeeding BreastfeedingSign
     | SaveBreastfeeding PersonId (Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding ))
+      --  SpecialityCareMsgs
+    | SetSpecialityCareBoolInput (Bool -> SpecialityCareForm -> SpecialityCareForm) Bool
+    | SaveSpecialityCare PersonId (Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare ))
 
 
 type alias Model =

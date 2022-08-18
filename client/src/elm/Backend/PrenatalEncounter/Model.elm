@@ -109,6 +109,7 @@ type alias Model =
     , saveTetanusImmunisation : WebData ()
     , saveBreastfeeding : WebData ()
     , saveGUExam : WebData ()
+    , saveSpecialityCare : WebData ()
     }
 
 
@@ -153,6 +154,7 @@ emptyModel =
     , saveTetanusImmunisation = NotAsked
     , saveBreastfeeding = NotAsked
     , saveGUExam = NotAsked
+    , saveSpecialityCare = NotAsked
     }
 
 
@@ -238,3 +240,5 @@ type Msg
     | HandleSavedBreastfeeding (WebData ())
     | SaveGUExam PersonId (Maybe PrenatalGUExamId) GUExamValue
     | HandleSavedGUExam (WebData ())
+    | SaveSpecialityCare PersonId (Maybe PrenatalSpecialityCareId) SpecialityCareValue
+    | HandleSavedSpecialityCare (WebData ())

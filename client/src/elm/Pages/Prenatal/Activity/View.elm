@@ -304,8 +304,7 @@ viewActivity language currentDate isChw activity assembled db model =
             viewPostpartumTreatmentReviewContent language currentDate assembled model.postpartumTreatmentReviewData
 
         SpecialityCare ->
-            -- @todo
-            []
+            viewSpecialityCareContent language currentDate assembled model.specialityCareData
 
         NextSteps ->
             viewNextStepsContent language currentDate isChw assembled model.nextStepsData
@@ -2455,6 +2454,87 @@ viewImmunisationContent language currentDate assembled data =
             [ formForView
             , actions
             ]
+        ]
+    ]
+
+
+viewSpecialityCareContent : Language -> NominalDate -> AssembledData -> SpecialityCareData -> List (Html Msg)
+viewSpecialityCareContent language currentDate assembled data =
+    let
+        form =
+            getMeasurementValueFunc assembled.measurements.specialityCare
+                |> specialityCareFormWithDefault data.form
+
+        tasksCompleted =
+            Maybe.Extra.values tasks
+                |> List.length
+
+        totalTasks =
+            List.length tasks
+
+        tasks =
+            arvTasks ++ ncdTasks
+
+        ( arvSection, arvTasks ) =
+            if expectSpecialityCareSignSection assembled EnrolledToARVProgram then
+                ( [ sectionHeader (Translate.PrenatalDiagnosis DiagnosisHIV)
+                  , viewQuestionLabel language <| Translate.SpecialityCareSignQuestion EnrolledToARVProgram
+                  , viewBoolInput
+                        language
+                        form.enrolledToARVProgram
+                        (SetSpecialityCareBoolInput
+                            (\value form_ -> { form_ | enrolledToARVProgram = Just value })
+                        )
+                        "arv"
+                        Nothing
+                  , div [ class "separator" ] []
+                  ]
+                , [ form.enrolledToARVProgram ]
+                )
+
+            else
+                ( [], [] )
+
+        ( ncdSection, ncdTasks ) =
+            if expectSpecialityCareSignSection assembled EnrolledToNCDProgram then
+                ( [ sectionHeader Translate.Hypertension
+                  , viewQuestionLabel language <| Translate.SpecialityCareSignQuestion EnrolledToNCDProgram
+                  , viewBoolInput
+                        language
+                        form.enrolledToNCDProgram
+                        (SetSpecialityCareBoolInput
+                            (\value form_ -> { form_ | enrolledToNCDProgram = Just value })
+                        )
+                        "ncd"
+                        Nothing
+                  , div [ class "separator" ] []
+                  ]
+                , [ form.enrolledToNCDProgram ]
+                )
+
+            else
+                ( [], [] )
+
+        sectionHeader diagnosisTransId =
+            div [ class "label header" ]
+                [ text <| translate language Translate.SpecialityCareHeaderPrefix
+                , text " "
+                , span [ class "highlight" ] [ text <| translate language diagnosisTransId ]
+                , text " "
+                , text <| String.toLower <| translate language Translate.SpecialityCareHeaderSuffix
+                , text "."
+                ]
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form speciality-care" ] <|
+                arvSection
+                    ++ ncdSection
+            ]
+        , viewSaveAction language
+            (SaveSpecialityCare assembled.participant.person assembled.measurements.specialityCare)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
