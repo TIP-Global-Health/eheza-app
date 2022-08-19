@@ -282,8 +282,8 @@ hierarchalBloodPreasureDiagnoses =
     ]
 
 
-hierarchalBloodPreasureDiagnosisToNumber : PrenatalDiagnosis -> Maybe Int
-hierarchalBloodPreasureDiagnosisToNumber diagnosis =
+hierarchalHypertensionlikeDiagnosisToNumber : PrenatalDiagnosis -> Maybe Int
+hierarchalHypertensionlikeDiagnosisToNumber diagnosis =
     case diagnosis of
         DiagnosisEclampsia ->
             Just 50
@@ -328,8 +328,8 @@ hierarchalBloodPreasureDiagnosisToNumber diagnosis =
             Nothing
 
 
-hierarchalBloodPreasureDiagnosisFromNumber : Int -> Maybe PrenatalDiagnosis
-hierarchalBloodPreasureDiagnosisFromNumber number =
+hierarchalHypertensionlikeDiagnosisFromNumber : Int -> Maybe PrenatalDiagnosis
+hierarchalHypertensionlikeDiagnosisFromNumber number =
     case number of
         50 ->
             Just DiagnosisEclampsia
@@ -2807,10 +2807,10 @@ resolvePreviousHypertensionDiagnosis nursePreviousMeasurementsWithDates =
         )
         nursePreviousMeasurementsWithDates
         |> List.concat
-        |> List.map hierarchalBloodPreasureDiagnosisToNumber
+        |> List.map hierarchalHypertensionlikeDiagnosisToNumber
         |> Maybe.Extra.values
         |> List.maximum
-        |> Maybe.andThen hierarchalBloodPreasureDiagnosisFromNumber
+        |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
 
 
 hypertensionDiagnoses : List PrenatalDiagnosis
@@ -2836,6 +2836,38 @@ moderatePreeclampsiaDiagnoses =
     ]
 
 
+resolveARVReferralDiagnosis : AssembledData -> Maybe PrenatalDiagnosis
+resolveARVReferralDiagnosis assembled =
+    List.filterMap
+        (\( _, diagnoses, measurements ) ->
+            if EverySet.member DiagnosisHIV diagnoses || knownAsHIVPositive measurements then
+                Just DiagnosisHIV
+
+            else if EverySet.member DiagnosisDiscordantPartnership diagnoses then
+                Just DiagnosisDiscordantPartnership
+
+            else
+                Nothing
+        )
+        assembled.nursePreviousMeasurementsWithDates
+        |> List.head
+
+
+knownAsHIVPositive : PrenatalMeasurements -> Bool
+knownAsHIVPositive measurements =
+    getMeasurementValueFunc measurements.hivTest
+        |> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
+        |> Maybe.withDefault False
+
+
+resolveNCDReferralDiagnoses : AssembledData -> List PrenatalDiagnosis
+resolveNCDReferralDiagnoses assembled =
+    Maybe.Extra.values
+        [ resolvePreviousHypertensionlikeDiagnosis assembled
+        , resolvePreviousDiabetesDiagnosis assembled
+        ]
+
+
 resolvePreviousHypertensionlikeDiagnosis : AssembledData -> Maybe PrenatalDiagnosis
 resolvePreviousHypertensionlikeDiagnosis assembled =
     List.filterMap
@@ -2849,10 +2881,10 @@ resolvePreviousHypertensionlikeDiagnosis assembled =
         )
         assembled.nursePreviousMeasurementsWithDates
         |> List.concat
-        |> List.map hierarchalBloodPreasureDiagnosisToNumber
+        |> List.map hierarchalHypertensionlikeDiagnosisToNumber
         |> Maybe.Extra.values
         |> List.maximum
-        |> Maybe.andThen hierarchalBloodPreasureDiagnosisFromNumber
+        |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
 
 
 hypertensionlikeDiagnoses : List PrenatalDiagnosis
@@ -2869,28 +2901,18 @@ hypertensionlikeDiagnoses =
 
 resolvePreviousDiabetesDiagnosis : AssembledData -> Maybe PrenatalDiagnosis
 resolvePreviousDiabetesDiagnosis assembled =
-    let
-        previousDiabetesDiagnoses =
-            List.filterMap
-                (\( _, diagnoses, _ ) ->
-                    EverySet.toList diagnoses
-                        |> List.filter
-                            (\diagnosis ->
-                                List.member diagnosis diabetesDiagnoses
-                            )
-                        |> Just
-                )
-                assembled.nursePreviousMeasurementsWithDates
-                |> List.concat
-    in
-    if List.isEmpty previousDiabetesDiagnoses then
-        Nothing
-
-    else if List.member DiagnosisDiabetes previousDiabetesDiagnoses then
-        Just DiagnosisDiabetes
-
-    else
-        Just DiagnosisGestationalDiabetes
+    List.filterMap
+        (\( _, diagnoses, _ ) ->
+            EverySet.toList diagnoses
+                |> List.filter
+                    (\diagnosis ->
+                        List.member diagnosis diabetesDiagnoses
+                    )
+                |> Just
+        )
+        assembled.nursePreviousMeasurementsWithDates
+        |> List.concat
+        |> List.head
 
 
 diagnosedMalaria : AssembledData -> Bool
@@ -3183,23 +3205,9 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                         ++ "."
 
                                 diagnosesForView =
-                                    case ( previousHypertensionlikeDiagnosis, previousDiabetesDiagnosis ) of
-                                        ( Just hypertensionlikeDiagnosis, Just diabetesDiagnosis ) ->
-                                            (translate language <| Translate.PrenatalDiagnosis hypertensionlikeDiagnosis)
-                                                ++ " "
-                                                ++ (String.toLower <| translate language Translate.And)
-                                                ++ " "
-                                                ++ (translate language <| Translate.PrenatalDiagnosis diabetesDiagnosis)
-
-                                        ( Just hypertensionlikeDiagnosis, Nothing ) ->
-                                            translate language <| Translate.PrenatalDiagnosis hypertensionlikeDiagnosis
-
-                                        ( Nothing, Just diabetesDiagnosis ) ->
-                                            translate language <| Translate.PrenatalDiagnosis diabetesDiagnosis
-
-                                        ( Nothing, Nothing ) ->
-                                            -- We should never get here.
-                                            ""
+                                    resolveNCDReferralDiagnoses assembled
+                                        |> List.map (Translate.PrenatalDiagnosis >> translate language)
+                                        |> String.join ", "
 
                                 previousHypertensionlikeDiagnosis =
                                     resolvePreviousHypertensionlikeDiagnosis assembled

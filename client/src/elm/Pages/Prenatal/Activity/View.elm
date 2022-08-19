@@ -2433,34 +2433,35 @@ viewSpecialityCareContent language currentDate assembled data =
             arvTasks ++ ncdTasks
 
         ( arvSection, arvTasks ) =
-            if expectSpecialityCareSignSection assembled EnrolledToARVProgram then
-                ( [ sectionHeader (Translate.PrenatalDiagnosis DiagnosisHIV)
-                  , viewQuestionLabel language <| Translate.SpecialityCareSignQuestion EnrolledToARVProgram
-                  , viewBoolInput
-                        language
-                        form.enrolledToARVProgram
-                        (SetSpecialityCareBoolInput
-                            (\value form_ -> { form_ | enrolledToARVProgram = Just value })
+            resolveARVReferralDiagnosis assembled
+                |> Maybe.map
+                    (\referraDiagnosis ->
+                        ( [ sectionHeader (translate language <| Translate.PrenatalDiagnosis referraDiagnosis)
+                          , viewQuestionLabel language <| Translate.SpecialityCareSignQuestion EnrolledToARVProgram
+                          , viewBoolInput
+                                language
+                                form.enrolledToARVProgram
+                                (SetSpecialityCareBoolInput
+                                    (\value form_ -> { form_ | enrolledToARVProgram = Just value })
+                                )
+                                "arv"
+                                Nothing
+                          , div [ class "separator" ] []
+                          ]
+                        , [ form.enrolledToARVProgram ]
                         )
-                        "arv"
-                        Nothing
-                  , div [ class "separator" ] []
-                  ]
-                , [ form.enrolledToARVProgram ]
-                )
-
-            else
-                ( [], [] )
+                    )
+                |> Maybe.withDefault ( [], [] )
 
         ( ncdSection, ncdTasks ) =
-            if expectSpecialityCareSignSection assembled EnrolledToNCDProgram then
-                let
-                    diagnosisTransId =
-                        resolvePreviousHypertensionlikeDiagnosis assembled
-                            |> Maybe.map Translate.PrenatalDiagnosis
-                            |> Maybe.withDefault Translate.Hypertension
-                in
-                ( [ sectionHeader diagnosisTransId
+            let
+                referraDiagnoses =
+                    resolveNCDReferralDiagnoses assembled
+            in
+            if not <| List.isEmpty referraDiagnoses then
+                ( [ List.map (Translate.PrenatalDiagnosis >> translate language) referraDiagnoses
+                        |> String.join ", "
+                        |> sectionHeader
                   , viewQuestionLabel language <| Translate.SpecialityCareSignQuestion EnrolledToNCDProgram
                   , viewBoolInput
                         language
@@ -2478,11 +2479,11 @@ viewSpecialityCareContent language currentDate assembled data =
             else
                 ( [], [] )
 
-        sectionHeader diagnosisTransId =
+        sectionHeader diagnoses =
             div [ class "label header" ]
                 [ text <| translate language Translate.SpecialityCareHeaderPrefix
                 , text " "
-                , span [ class "highlight" ] [ text <| translate language diagnosisTransId ]
+                , span [ class "highlight" ] [ text diagnoses ]
                 , text " "
                 , text <| translate language Translate.SpecialityCareHeaderSuffix
                 , text "."

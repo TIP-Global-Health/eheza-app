@@ -9884,7 +9884,7 @@ translationSet trans =
 
         PrenatalARVProgramInstructions forPostpartum ->
             if forPostpartum then
-                { english = "Refer patient to ARV services for further management of HIV"
+                { english = "Refer patient to ARV services for further management"
                 , kinyarwanda = Nothing
                 }
 

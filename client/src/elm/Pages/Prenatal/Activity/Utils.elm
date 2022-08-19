@@ -787,10 +787,13 @@ expectSpecialityCareSignSection : AssembledData -> SpecialityCareSign -> Bool
 expectSpecialityCareSignSection assembled sign =
     case sign of
         EnrolledToARVProgram ->
-            diagnosedPreviously DiagnosisHIV assembled
+            resolveARVReferralDiagnosis assembled
+                |> isJust
 
         EnrolledToNCDProgram ->
-            diagnosedPreviouslyAnyOf hypertensionlikeDiagnoses assembled
+            resolveNCDReferralDiagnoses assembled
+                |> List.isEmpty
+                |> not
 
         NoSpecialityCareSigns ->
             False
@@ -1407,21 +1410,21 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
 
 applyDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyDiagnosesHierarchy =
-    applyBloodPreasureDiagnosesHierarchy >> applyMastitisDiagnosesHierarchy
+    applyHypertensionlikeDiagnosesHierarchy >> applyMastitisDiagnosesHierarchy
 
 
-applyBloodPreasureDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyBloodPreasureDiagnosesHierarchy diagnoses =
+applyHypertensionlikeDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyHypertensionlikeDiagnosesHierarchy diagnoses =
     let
         ( bloodPreasureDiagnoses, others ) =
             EverySet.toList diagnoses
                 |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPreasureDiagnoses)
 
         topBloodPreasureDiagnosis =
-            List.map hierarchalBloodPreasureDiagnosisToNumber bloodPreasureDiagnoses
+            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPreasureDiagnoses
                 |> Maybe.Extra.values
                 |> List.maximum
-                |> Maybe.andThen hierarchalBloodPreasureDiagnosisFromNumber
+                |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in
