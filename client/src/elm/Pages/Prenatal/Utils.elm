@@ -3208,12 +3208,6 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                     resolveNCDReferralDiagnoses assembled
                                         |> List.map (Translate.PrenatalDiagnosis >> translate language)
                                         |> String.join ", "
-
-                                previousHypertensionlikeDiagnosis =
-                                    resolvePreviousHypertensionlikeDiagnosis assembled
-
-                                previousDiabetesDiagnosis =
-                                    resolvePreviousDiabetesDiagnosis assembled
                             in
                             [ div [ class "label" ] [ text headerText ]
                             , viewCustomLabel language Translate.PrenatalNCDProgramInstructions "." "instructions"
