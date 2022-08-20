@@ -3452,3 +3452,21 @@ referralToFacilityCompleted assembled facility =
                     referralConfig
             )
         |> Maybe.withDefault False
+
+
+resolveUndeterminedPostpartumDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
+resolveUndeterminedPostpartumDiagnoses encounterDiagnoses =
+    let
+        allPossible =
+            [ DiagnosisPostpartumAbdominalPain
+            , DiagnosisPostpartumHeadache
+            , DiagnosisPostpartumFatigue
+            , DiagnosisPostpartumFever
+            , DiagnosisPostpartumPerinealPainOrDischarge
+            ]
+    in
+    if List.member DiagnosisPostpartumMastitis encounterDiagnoses then
+        List.filter ((/=) DiagnosisPostpartumFever) allPossible
+
+    else
+        allPossible

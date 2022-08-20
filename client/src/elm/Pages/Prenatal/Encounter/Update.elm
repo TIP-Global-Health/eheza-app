@@ -53,3 +53,6 @@ update id msg model =
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
+
+        UndeterminedDiagnosesWarningAcknowledged ->
+            ( { model | undeterminedDiagnosesWarningAcknowledged = True }, Cmd.none, [] )

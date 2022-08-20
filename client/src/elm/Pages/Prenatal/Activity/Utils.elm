@@ -1060,7 +1060,9 @@ provideMentalHealthEducation : AssembledData -> Bool
 provideMentalHealthEducation assembled =
     -- Mental health survey was taken and none of
     -- mental health diagnoses was determined.
-    isJust assembled.measurements.mentalHealth
+    -- No need to display at Postpartum encoounter.
+    (assembled.encounter.encounterType == NurseEncounter)
+        && isJust assembled.measurements.mentalHealth
         && diagnosedNoneOf mentalHealthDiagnosesRequiringTreatment assembled
 
 
@@ -2542,16 +2544,6 @@ symptomsDiagnoses =
 mentalHealthDiagnoses : List PrenatalDiagnosis
 mentalHealthDiagnoses =
     DiagnosisDepressionNotLikely :: mentalHealthDiagnosesRequiringTreatment
-
-
-undeterminedPostpartumDiagnoses : List PrenatalDiagnosis
-undeterminedPostpartumDiagnoses =
-    [ DiagnosisPostpartumAbdominalPain
-    , DiagnosisPostpartumHeadache
-    , DiagnosisPostpartumFatigue
-    , DiagnosisPostpartumFever
-    , DiagnosisPostpartumPerinealPainOrDischarge
-    ]
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )

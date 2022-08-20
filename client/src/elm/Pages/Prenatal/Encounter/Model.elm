@@ -9,6 +9,7 @@ type alias Model =
     , showAlertsDialog : Bool
     , showWarningForChw : Bool
     , showEndEncounterDialog : Bool
+    , undeterminedDiagnosesWarningAcknowledged : Bool
     }
 
 
@@ -18,6 +19,7 @@ emptyModel =
     , showAlertsDialog = False
     , showWarningForChw = False
     , showEndEncounterDialog = False
+    , undeterminedDiagnosesWarningAcknowledged = False
     }
 
 
@@ -28,6 +30,7 @@ type Msg
     | SetChwWarningVisible Bool
     | SetEndEncounterDialogState Bool
     | SetSelectedTab Tab
+    | UndeterminedDiagnosesWarningAcknowledged
 
 
 type Tab

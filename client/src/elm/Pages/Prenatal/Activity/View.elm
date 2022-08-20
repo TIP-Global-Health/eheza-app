@@ -43,7 +43,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewPauseEncounterButton)
+import Pages.Prenatal.View exposing (customWarningPopup, viewMedicationDistributionForm, viewPauseEncounterButton)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -138,7 +138,7 @@ warningPopup :
     -> (Maybe (WarningPopupType msg) -> msg)
     -> Maybe (WarningPopupType msg)
     -> Maybe (Html msg)
-warningPopup language currentDate isChw diagnoses setStateMsg state =
+warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
     Maybe.andThen
         (\popupType ->
             let
@@ -147,7 +147,7 @@ warningPopup language currentDate isChw diagnoses setStateMsg state =
                         WarningPopupRegular ->
                             let
                                 nonUrgentDiagnoses =
-                                    EverySet.toList diagnoses |> filterNonUrgentDiagnoses
+                                    EverySet.toList encounterDiagnoses |> filterNonUrgentDiagnoses
                             in
                             if List.isEmpty nonUrgentDiagnoses then
                                 Nothing
@@ -156,6 +156,9 @@ warningPopup language currentDate isChw diagnoses setStateMsg state =
                                 let
                                     ( undetermined, determined ) =
                                         List.partition (\diagnosis -> List.member diagnosis undeterminedPostpartumDiagnoses) nonUrgentDiagnoses
+
+                                    undeterminedPostpartumDiagnoses =
+                                        resolveUndeterminedPostpartumDiagnoses nonUrgentDiagnoses
 
                                     top =
                                         case determined of
@@ -232,30 +235,6 @@ warningPopup language currentDate isChw diagnoses setStateMsg state =
             Maybe.map (customWarningPopup language) data
         )
         state
-
-
-customWarningPopup : Language -> ( Html msg, Html msg, msg ) -> Html msg
-customWarningPopup language ( topMessage, bottomMessage, action ) =
-    div [ class "ui active modal diagnosis-popup" ]
-        [ div [ class "content" ] <|
-            [ div [ class "popup-heading-wrapper" ]
-                [ img [ src "assets/images/exclamation-red.png" ] []
-                , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
-                ]
-            , div [ class "popup-title" ]
-                [ topMessage
-                , bottomMessage
-                ]
-            ]
-        , div
-            [ class "actions" ]
-            [ button
-                [ class "ui primary fluid button"
-                , onClick action
-                ]
-                [ text <| translate language Translate.Continue ]
-            ]
-        ]
 
 
 viewActivity : Language -> NominalDate -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
