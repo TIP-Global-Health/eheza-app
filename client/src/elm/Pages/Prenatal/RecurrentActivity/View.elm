@@ -100,7 +100,6 @@ viewLabsHistoryContent language currentDate lab db data assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate False assembled Nothing
             ++ viewLab language currentDate lab assembled data
-            ++ []
 
 
 viewLab : Language -> NominalDate -> PrenatalLaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)

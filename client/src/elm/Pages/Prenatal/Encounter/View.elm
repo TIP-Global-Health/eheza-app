@@ -528,7 +528,7 @@ viewActionButton language pendingActivities completedActivities pauseMsg setDial
                     [] ->
                         True
 
-                    -- Or only one none mandatory activity remains
+                    -- Or only one non mandatory activity remains
                     [ PrenatalPhoto ] ->
                         True
 
