@@ -3454,19 +3454,15 @@ referralToFacilityCompleted assembled facility =
         |> Maybe.withDefault False
 
 
-resolveUndeterminedPostpartumDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
-resolveUndeterminedPostpartumDiagnoses encounterDiagnoses =
-    let
-        allPossible =
-            [ DiagnosisPostpartumAbdominalPain
-            , DiagnosisPostpartumHeadache
-            , DiagnosisPostpartumFatigue
-            , DiagnosisPostpartumFever
-            , DiagnosisPostpartumPerinealPainOrDischarge
-            ]
-    in
-    if List.member DiagnosisPostpartumMastitis encounterDiagnoses then
-        List.filter ((/=) DiagnosisPostpartumFever) allPossible
+undeterminedPostpartumDiagnoses : List PrenatalDiagnosis
+undeterminedPostpartumDiagnoses =
+    [ DiagnosisPostpartumAbdominalPain
+    , DiagnosisPostpartumHeadache
+    , DiagnosisPostpartumFatigue
+    , DiagnosisPostpartumPerinealPainOrDischarge
 
-    else
-        allPossible
+    -- Fever is considered undertermined only when Mastitis is not
+    -- diagnosed. If it is, Fever diagnosis will be eliminated
+    -- by applyGeneralDiagnosesHierarchy.
+    , DiagnosisPostpartumFever
+    ]

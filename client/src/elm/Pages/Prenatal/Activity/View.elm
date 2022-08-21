@@ -157,9 +157,6 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
                                     ( undetermined, determined ) =
                                         List.partition (\diagnosis -> List.member diagnosis undeterminedPostpartumDiagnoses) nonUrgentDiagnoses
 
-                                    undeterminedPostpartumDiagnoses =
-                                        resolveUndeterminedPostpartumDiagnoses nonUrgentDiagnoses
-
                                     top =
                                         case determined of
                                             [] ->

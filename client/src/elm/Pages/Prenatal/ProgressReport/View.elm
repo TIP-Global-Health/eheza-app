@@ -88,6 +88,7 @@ import Pages.Prenatal.Utils
         , outsideCareDiagnosesWithPossibleMedication
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
+        , recommendedTreatmentSignsForMastitis
         , recommendedTreatmentSignsForSyphilis
         )
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
@@ -2339,6 +2340,16 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         ++ suffix
                         |> wrapWithLI
 
+        undeterminedDiagnosisMessage =
+            diagnosisForProgressReport
+                ++ " - "
+                ++ translate language Translate.UndeterminedDiagnosisMessage
+                ++ " "
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+                |> wrapWithLI
+
         noTreatmentRecordedMessage =
             noTreatmentRecordedMessageWithComplications ""
 
@@ -2908,35 +2919,28 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             mentalHealthMessage
 
         DiagnosisPostpartumAbdominalPain ->
-            -- @todo
-            []
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumHeadache ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumFatigue ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumFever ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumPerinealPainOrDischarge ->
+            undeterminedDiagnosisMessage
 
         DiagnosisPostpartumUrinaryIncontinence ->
             referredToHospitalMessage
 
-        DiagnosisPostpartumHeadache ->
-            -- @todo
-            []
-
-        DiagnosisPostpartumFatigue ->
-            -- @todo
-            []
-
-        DiagnosisPostpartumFever ->
-            -- @todo
-            []
-
-        DiagnosisPostpartumPerinealPainOrDischarge ->
-            -- @todo
-            []
-
         DiagnosisPostpartumInfection ->
-            -- @todo
-            []
+            referredToHospitalMessage
 
         DiagnosisPostpartumExcessiveBleeding ->
-            -- @todo
-            []
+            referredToHospitalMessage
 
         DiagnosisPostpartumEarlyMastitisOrEngorgment ->
             getMeasurementValueFunc measurements.medicationDistribution
@@ -2962,8 +2966,41 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
         DiagnosisPostpartumMastitis ->
-            -- @todo
-            []
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
+                |> Maybe.map
+                    (EverySet.toList
+                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMastitis)
+                        >> (\treatment ->
+                                if List.isEmpty treatment then
+                                    noTreatmentRecordedMessage
+
+                                else if List.member NoTreatmentForMastitis treatment then
+                                    noTreatmentAdministeredMessage
+
+                                else
+                                    let
+                                        treatedWithMessage =
+                                            List.head treatment
+                                                |> Maybe.map
+                                                    (\medication ->
+                                                        " - "
+                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
+                                                            ++ " "
+                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+                                                    )
+                                                |> Maybe.withDefault ""
+                                    in
+                                    diagnosisForProgressReport
+                                        ++ treatedWithMessage
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                        |> wrapWithLI
+                           )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
 
         DiagnosisOther ->
             -- Other diagnosis is used only at outside care diagnostics.

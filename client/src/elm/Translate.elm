@@ -1314,6 +1314,7 @@ type TranslationId
     | UbudeheLabel
     | UbudeheNumber Ubudehe
     | UndeterminedDiagnoses
+    | UndeterminedDiagnosisMessage
     | UnitCopiesPerMM3
     | UnitGramsPerDeciliter
     | UnitMilliGramsPerDeciliter
@@ -13896,6 +13897,11 @@ translationSet trans =
 
         UndeterminedDiagnoses ->
             { english = "Undetermined Diagnoses"
+            , kinyarwanda = Nothing
+            }
+
+        UndeterminedDiagnosisMessage ->
+            { english = "Undetermined diagnosis - followed Post-Partum Protocols"
             , kinyarwanda = Nothing
             }
 

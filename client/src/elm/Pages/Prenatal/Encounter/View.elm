@@ -36,7 +36,7 @@ import Pages.Prenatal.Activity.Utils exposing (activityCompleted, expectActivity
 import Pages.Prenatal.Encounter.Model exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Prenatal.Utils exposing (resolveUndeterminedPostpartumDiagnoses)
+import Pages.Prenatal.Utils exposing (undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButton)
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -159,9 +159,6 @@ viewUndeterminedDiagnosesWarningPopup language currentDate assembled model =
 
                 ( undetermined, determined ) =
                     List.partition (\diagnosis -> List.member diagnosis undeterminedPostpartumDiagnoses) diagnoses
-
-                undeterminedPostpartumDiagnoses =
-                    resolveUndeterminedPostpartumDiagnoses diagnoses
             in
             if List.isEmpty undetermined then
                 Nothing

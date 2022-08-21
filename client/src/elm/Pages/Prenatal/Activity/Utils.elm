@@ -1060,7 +1060,7 @@ provideMentalHealthEducation : AssembledData -> Bool
 provideMentalHealthEducation assembled =
     -- Mental health survey was taken and none of
     -- mental health diagnoses was determined.
-    -- No need to display at Postpartum encoounter.
+    -- No need to display at Postpartum encounter.
     (assembled.encounter.encounterType == NurseEncounter)
         && isJust assembled.measurements.mentalHealth
         && diagnosedNoneOf mentalHealthDiagnosesRequiringTreatment assembled
@@ -1104,7 +1104,6 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
             activityCompleted currentDate assembled DangerSigns
 
         NursePostpartumEncounter ->
-            --@todo
             True
 
         _ ->
@@ -1113,6 +1112,19 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
+    let
+        mandatoryActivitiesFoNurseCompleted =
+            -- All activities that will appear at
+            -- current encounter are completed, besides
+            -- Photo and Next Steps itself.
+            getAllActivities assembled
+                |> EverySet.fromList
+                |> EverySet.remove PrenatalPhoto
+                |> EverySet.remove NextSteps
+                |> EverySet.toList
+                |> List.filter (expectActivity currentDate assembled)
+                |> List.all (activityCompleted currentDate assembled)
+    in
     case assembled.encounter.encounterType of
         NurseEncounter ->
             -- If we have emergency diagnosis that require immediate referral,
@@ -1121,17 +1133,11 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
                 || (-- Otherwise, we need all activities that will appear at
                     -- current encounter completed, besides Photo
                     -- and Next Steps itself.
-                    getAllActivities assembled
-                        |> EverySet.fromList
-                        |> EverySet.remove PrenatalPhoto
-                        |> EverySet.remove NextSteps
-                        |> EverySet.toList
-                        |> List.filter (expectActivity currentDate assembled)
-                        |> List.all (activityCompleted currentDate assembled)
+                    mandatoryActivitiesFoNurseCompleted
                    )
 
         NursePostpartumEncounter ->
-            activityCompleted currentDate assembled SymptomReview
+            mandatoryActivitiesFoNurseCompleted
 
         ChwFirstEncounter ->
             let
@@ -1412,7 +1418,9 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
 
 applyDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyDiagnosesHierarchy =
-    applyHypertensionlikeDiagnosesHierarchy >> applyMastitisDiagnosesHierarchy
+    applyHypertensionlikeDiagnosesHierarchy
+        >> applyMastitisDiagnosesHierarchy
+        >> applyGeneralDiagnosesHierarchy
 
 
 applyHypertensionlikeDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
@@ -1453,6 +1461,17 @@ applyMastitisDiagnosesHierarchy diagnoses =
     topMastitisDiagnosis
         ++ others
         |> EverySet.fromList
+
+
+applyGeneralDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyGeneralDiagnosesHierarchy diagnoses =
+    -- When Mastitis is diagnosed, we eliminate Fever diagnosis, because
+    -- fever is one of the symptoms for Mastitis.
+    if EverySet.member DiagnosisPostpartumMastitis diagnoses then
+        EverySet.remove DiagnosisPostpartumFever diagnoses
+
+    else
+        diagnoses
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
