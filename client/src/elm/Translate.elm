@@ -1107,6 +1107,7 @@ type TranslationId
     | ReferredPatientToFacilityQuestion ReferralFacility
     | ReferredToFacility ReferralFacility
     | ReferredToFacilityNot ReferralFacility
+    | ReferredToFacilityPostpartum ReferralFacility
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -9902,8 +9903,8 @@ translationSet trans =
         PrenatalHIVSignQuestion sign ->
             case sign of
                 HIVProgramHC ->
-                    { english = "Does the health center have a HIV/PMTCT program"
-                    , kinyarwanda = Just "Ikigo Nderabuzima gifite porogaramu ya HIV/PMTCT"
+                    { english = "Does the health center have a ARV services program"
+                    , kinyarwanda = Nothing
                     }
 
                 PartnerHIVPositive ->
@@ -12295,8 +12296,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Referred to HIV/PMTCT"
-                    , kinyarwanda = Just "Yoherejwe muri serivisi ya HIV/PMTCT"
+                    { english = "Referred to ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -12322,12 +12323,29 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Not referred to HIV/PMTCT"
-                    , kinyarwanda = Just "Ntabwo yoherejwe muri serivisi ya HIV/PMTCT"
+                    { english = "Not referred to ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
                     { english = "Not referred to NCD services"
+                    , kinyarwanda = Nothing
+                    }
+
+        ReferredToFacilityPostpartum facility ->
+            case facility of
+                FacilityARVProgram ->
+                    { english = "referred to ARV services for post-partum management"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityNCDProgram ->
+                    { english = "referred to NCD program for post-partum management"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -13901,7 +13919,7 @@ translationSet trans =
             }
 
         UndeterminedDiagnosisMessage ->
-            { english = "Undetermined diagnosis - followed Post-Partum Protocols"
+            { english = "undetermined diagnosis - followed Post-Partum Protocols"
             , kinyarwanda = Nothing
             }
 

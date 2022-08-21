@@ -25,6 +25,7 @@ import Backend.Measurement.Model
         , ReferToFacilitySign(..)
         , ReferralFacility(..)
         , SendToHCSign(..)
+        , SpecialityCareSign(..)
         , ViralLoadStatus(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
@@ -90,6 +91,8 @@ import Pages.Prenatal.Utils
         , recommendedTreatmentSignsForMalaria
         , recommendedTreatmentSignsForMastitis
         , recommendedTreatmentSignsForSyphilis
+        , resolveARVReferralDiagnosis
+        , resolveNCDReferralDiagnoses
         )
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -415,8 +418,44 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
 
                         knownAsPositiveEntries =
                             viewKnownPositives language date measurements
+
+                        programReferralEntries =
+                            getMeasurementValueFunc measurements.specialityCare
+                                |> Maybe.map
+                                    (\value ->
+                                        let
+                                            arvEntry =
+                                                resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
+                                                    |> Maybe.map
+                                                        (\diagnosis ->
+                                                            if not <| EverySet.member EnrolledToARVProgram value then
+                                                                viewProgramReferralEntry language date diagnosis FacilityARVProgram
+
+                                                            else
+                                                                []
+                                                        )
+                                                    |> Maybe.withDefault []
+
+                                            ncdEntries =
+                                                resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+                                                    |> List.map
+                                                        (\diagnosis ->
+                                                            if not <| EverySet.member EnrolledToARVProgram value then
+                                                                viewProgramReferralEntry language date diagnosis FacilityNCDProgram
+
+                                                            else
+                                                                []
+                                                        )
+                                                    |> List.concat
+                                        in
+                                        arvEntry ++ ncdEntries
+                                    )
+                                |> Maybe.withDefault []
                     in
-                    knownAsPositiveEntries ++ diagnosesEntries ++ outsideCareDiagnosesEntries
+                    knownAsPositiveEntries
+                        ++ diagnosesEntries
+                        ++ outsideCareDiagnosesEntries
+                        ++ programReferralEntries
                 )
                 allMeasurementsWithDates
                 |> List.concat
@@ -433,6 +472,18 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
             dignoses
                 :: alerts
         ]
+
+
+viewProgramReferralEntry : Language -> NominalDate -> PrenatalDiagnosis -> ReferralFacility -> List (Html Msg)
+viewProgramReferralEntry language date diagnosis facility =
+    diagnosisForProgressReportToString language diagnosis
+        ++ " - "
+        ++ (translate language <| Translate.ReferredToFacilityPostpartum facility)
+        ++ " "
+        ++ (String.toLower <| translate language Translate.On)
+        ++ " "
+        ++ formatDDMMYYYY date
+        |> wrapWithLI
 
 
 viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg

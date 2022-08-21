@@ -787,11 +787,11 @@ expectSpecialityCareSignSection : AssembledData -> SpecialityCareSign -> Bool
 expectSpecialityCareSignSection assembled sign =
     case sign of
         EnrolledToARVProgram ->
-            resolveARVReferralDiagnosis assembled
+            resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
                 |> isJust
 
         EnrolledToNCDProgram ->
-            resolveNCDReferralDiagnoses assembled
+            resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
                 |> List.isEmpty
                 |> not
 

@@ -2409,7 +2409,7 @@ viewSpecialityCareContent language currentDate assembled data =
             arvTasks ++ ncdTasks
 
         ( arvSection, arvTasks ) =
-            resolveARVReferralDiagnosis assembled
+            resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
                 |> Maybe.map
                     (\referraDiagnosis ->
                         ( [ sectionHeader (translate language <| Translate.PrenatalDiagnosis referraDiagnosis)
@@ -2432,7 +2432,7 @@ viewSpecialityCareContent language currentDate assembled data =
         ( ncdSection, ncdTasks ) =
             let
                 referraDiagnoses =
-                    resolveNCDReferralDiagnoses assembled
+                    resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
             in
             if not <| List.isEmpty referraDiagnoses then
                 ( [ List.map (Translate.PrenatalDiagnosis >> translate language) referraDiagnoses

@@ -2836,8 +2836,8 @@ moderatePreeclampsiaDiagnoses =
     ]
 
 
-resolveARVReferralDiagnosis : AssembledData -> Maybe PrenatalDiagnosis
-resolveARVReferralDiagnosis assembled =
+resolveARVReferralDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
+resolveARVReferralDiagnosis nursePreviousMeasurementsWithDates =
     List.filterMap
         (\( _, diagnoses, measurements ) ->
             if EverySet.member DiagnosisHIV diagnoses || knownAsHIVPositive measurements then
@@ -2849,7 +2849,7 @@ resolveARVReferralDiagnosis assembled =
             else
                 Nothing
         )
-        assembled.nursePreviousMeasurementsWithDates
+        nursePreviousMeasurementsWithDates
         |> List.head
 
 
@@ -2860,16 +2860,16 @@ knownAsHIVPositive measurements =
         |> Maybe.withDefault False
 
 
-resolveNCDReferralDiagnoses : AssembledData -> List PrenatalDiagnosis
-resolveNCDReferralDiagnoses assembled =
+resolveNCDReferralDiagnoses : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> List PrenatalDiagnosis
+resolveNCDReferralDiagnoses nursePreviousMeasurementsWithDates =
     Maybe.Extra.values
-        [ resolvePreviousHypertensionlikeDiagnosis assembled
-        , resolvePreviousDiabetesDiagnosis assembled
+        [ resolvePreviousHypertensionlikeDiagnosis nursePreviousMeasurementsWithDates
+        , resolvePreviousDiabetesDiagnosis nursePreviousMeasurementsWithDates
         ]
 
 
-resolvePreviousHypertensionlikeDiagnosis : AssembledData -> Maybe PrenatalDiagnosis
-resolvePreviousHypertensionlikeDiagnosis assembled =
+resolvePreviousHypertensionlikeDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
+resolvePreviousHypertensionlikeDiagnosis nursePreviousMeasurementsWithDates =
     List.filterMap
         (\( _, diagnoses, _ ) ->
             EverySet.toList diagnoses
@@ -2879,7 +2879,7 @@ resolvePreviousHypertensionlikeDiagnosis assembled =
                     )
                 |> Just
         )
-        assembled.nursePreviousMeasurementsWithDates
+        nursePreviousMeasurementsWithDates
         |> List.concat
         |> List.map hierarchalHypertensionlikeDiagnosisToNumber
         |> Maybe.Extra.values
@@ -2899,8 +2899,8 @@ hypertensionlikeDiagnoses =
            ]
 
 
-resolvePreviousDiabetesDiagnosis : AssembledData -> Maybe PrenatalDiagnosis
-resolvePreviousDiabetesDiagnosis assembled =
+resolvePreviousDiabetesDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
+resolvePreviousDiabetesDiagnosis nursePreviousMeasurementsWithDates =
     List.filterMap
         (\( _, diagnoses, _ ) ->
             EverySet.toList diagnoses
@@ -2910,7 +2910,7 @@ resolvePreviousDiabetesDiagnosis assembled =
                     )
                 |> Just
         )
-        assembled.nursePreviousMeasurementsWithDates
+        nursePreviousMeasurementsWithDates
         |> List.concat
         |> List.head
 
@@ -3205,7 +3205,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                         ++ "."
 
                                 diagnosesForView =
-                                    resolveNCDReferralDiagnoses assembled
+                                    resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
                                         |> List.map (Translate.PrenatalDiagnosis >> translate language)
                                         |> String.join ", "
                             in
