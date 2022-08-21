@@ -4507,7 +4507,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test id =
                                                         test :: completedTests
 
                                                     resolutionDate =
-                                                        -- When all performed tests are completed, and Next Stepas are either
+                                                        -- When all performed tests are completed, and Next Steps are either
                                                         -- completed, or not required, setting today as resolution date.
                                                         if
                                                             (List.length updatedCompletedTests == List.length performedTests)
