@@ -81,6 +81,7 @@ var tableForType = {
     medication_distribution: 'shards',
     mother_fbf: 'shards',
     muac: 'shards',
+    ncd_encounter: 'shards',
     nurse: 'nodes',
     nutrition: 'shards',
     nutrition_caring: 'shards',

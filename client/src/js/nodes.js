@@ -125,6 +125,9 @@
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
+                else if (type === 'ncd-measurements') {
+                    return viewMeasurements('ncd_encounter', uuid);
+                }
                 else {
                     return view(type, uuid);
                 }
@@ -499,6 +502,9 @@
                     else if (key === 'well_child_encounter') {
                         target = node.well_child_encounter;
                     }
+                    else if (key === 'ncd_encounter') {
+                        target = node.ncd_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
@@ -749,10 +755,11 @@
                 }
 
                 var encounterTypes = [
-                  'prenatal_encounter',
-                  'nutrition_encounter',
                   'acute_illness_encounter',
                   'home_visit_encounter',
+                  'ncd_encounter',
+                  'nutrition_encounter',
+                  'prenatal_encounter',
                   'well_child_encounter'
                 ];
 
