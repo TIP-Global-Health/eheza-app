@@ -1173,3 +1173,11 @@ type alias PrenatalSpecialityCareId =
 
 type PrenatalSpecialityCareUuidType
     = PrenatalSpecialityCareUuidType
+
+
+type alias NCDEncounterId =
+    EntityUuid NCDEncounterUuidType
+
+
+type NCDEncounterUuidType
+    = NCDEncounterUuidType
