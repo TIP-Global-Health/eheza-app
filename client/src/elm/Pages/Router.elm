@@ -11,6 +11,8 @@ import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator)
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString, individualEncounterTypeToString)
 import Backend.Measurement.Model exposing (PrenatalLaboratoryTest)
+import Backend.NCDActivity.Model exposing (NCDActivity(..))
+import Backend.NCDActivity.Utils
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionActivity.Utils
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
@@ -167,6 +169,9 @@ pageToFragment current =
                 WellChildParticipantPage initiator id ->
                     Just <| "well-child-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragmemt initiator
 
+                NCDParticipantPage initiator id ->
+                    Just <| "ncd-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragmemt initiator
+
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
 
@@ -284,6 +289,15 @@ pageToFragment current =
                 WellChildProgressReportPage id ->
                     Just <| "well-child-progress-report/" ++ fromEntityUuid id
 
+                NCDEncounterPage id ->
+                    Just <| "ncd-encounter/" ++ fromEntityUuid id
+
+                NCDActivityPage id activity ->
+                    Just <| "ncd-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.NCDActivity.Utils.activityToString activity
+
+                NCDProgressReportPage encounterId ->
+                    Just <| "ncd-progress-report/" ++ fromEntityUuid encounterId
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -318,6 +332,7 @@ parser =
         , map (\id initiator -> UserPage <| NutritionParticipantPage initiator id) (s "nutrition-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| AcuteIllnessParticipantPage initiator id) (s "acute-illness-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| WellChildParticipantPage initiator id) (s "well-child-participant" </> parseUuid </> parseIndividualParticipantInitiator)
+        , map (\id initiator -> UserPage <| NCDParticipantPage initiator id) (s "ncd-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
@@ -341,6 +356,9 @@ parser =
         , map (\id -> UserPage <| WellChildEncounterPage id) (s "well-child-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| WellChildActivityPage id activity) (s "well-child-activity" </> parseUuid </> parseWellChildActivity)
         , map (\id -> UserPage <| WellChildProgressReportPage id) (s "well-child-progress-report" </> parseUuid)
+        , map (\id -> UserPage <| NCDEncounterPage id) (s "ncd-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| NCDActivityPage id activity) (s "ncd-activity" </> parseUuid </> parseNCDActivity)
+        , map (\id -> UserPage <| NCDProgressReportPage id) (s "ncd-progress-report" </> parseUuid)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
 
@@ -421,6 +439,11 @@ parseHomeVisitActivity =
 parseWellChildActivity : Parser (WellChildActivity -> c) c
 parseWellChildActivity =
     custom "WellChildActivity" Backend.WellChildActivity.Utils.decodeActivityFromString
+
+
+parseNCDActivity : Parser (NCDActivity -> c) c
+parseNCDActivity =
+    custom "NCDActivity" Backend.NCDActivity.Utils.activityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

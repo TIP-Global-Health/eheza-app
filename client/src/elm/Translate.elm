@@ -15110,6 +15110,26 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                NCDParticipantPage _ _ ->
+                    { english = "NCD Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDEncounterPage _ ->
+                    { english = "NCD Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDActivityPage _ _ ->
+                    { english = "NCD Activity"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDProgressReportPage _ ->
+                    { english = "NCD Progress Report"
+                    , kinyarwanda = Nothing
+                    }
+
                 TraceContactPage _ ->
                     { english = "Trace Contact"
                     , kinyarwanda = Nothing

@@ -55,6 +55,7 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
 import Backend.Measurement.Model exposing (PrenatalLaboratoryTest)
+import Backend.NCDActivity.Model exposing (NCDActivity)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator)
@@ -185,6 +186,10 @@ type UserPage
     | WellChildEncounterPage WellChildEncounterId -- well child activities index.
     | WellChildActivityPage WellChildEncounterId WellChildActivity -- record well child activity.
     | WellChildProgressReportPage WellChildEncounterId -- well child progress report.
+    | NCDParticipantPage IndividualParticipantInitiator PersonId
+    | NCDEncounterPage NCDEncounterId -- NCD activities index.
+    | NCDActivityPage NCDEncounterId NCDActivity -- record NCD activity.
+    | NCDProgressReportPage NCDEncounterId
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
 
