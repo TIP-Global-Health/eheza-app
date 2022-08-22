@@ -617,6 +617,15 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , title = Translate.People
                             }
 
+                        NCDEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage NCDEncounter)
+                            , expectedAge = ExpectAdultOrChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorTo = today
+                            , title = Translate.People
+                            }
+
                 GroupEncounterOrigin sessionId ->
                     let
                         expectedAge =

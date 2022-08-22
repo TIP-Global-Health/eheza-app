@@ -683,7 +683,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get id loggedInModel.ncdEncounterPages
                                     |> Maybe.withDefault Pages.NCD.Encounter.Model.emptyModel
                         in
-                        Pages.NCD.Encounter.View.view model.language currentDate model.zscores id isChw model.indexedDb page_
+                        Pages.NCD.Encounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDEncounter id)
                             |> flexPageWrapper model
 
@@ -693,7 +693,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get ( id, activity ) loggedInModel.ncdActivityPages
                                     |> Maybe.withDefault Pages.NCD.Activity.Model.emptyModel
                         in
-                        Pages.NCD.Activity.View.view model.language currentDate model.zscores id activity isChw model.indexedDb page_
+                        Pages.NCD.Activity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDActivity id activity)
                             |> flexPageWrapper model
 
@@ -703,7 +703,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.ncdProgressReportPages
                                     |> Maybe.withDefault Pages.NCD.ProgressReport.Model.emptyModel
                         in
-                        Pages.NCD.ProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
+                        Pages.NCD.ProgressReport.View.view model.language currentDate encounterId model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDProgressReport encounterId)
                             |> flexPageWrapper model
 

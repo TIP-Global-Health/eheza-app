@@ -29,6 +29,9 @@ individualEncounterTypeToString encounterType =
         WellChildEncounter ->
             "well-child"
 
+        NCDEncounter ->
+            "ncd"
+
 
 individualEncounterTypeFromString : String -> Maybe IndividualEncounterType
 individualEncounterTypeFromString string =
@@ -50,6 +53,9 @@ individualEncounterTypeFromString string =
 
         "well-child" ->
             Just WellChildEncounter
+
+        "ncd" ->
+            Just NCDEncounter
 
         _ ->
             Nothing

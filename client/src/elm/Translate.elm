@@ -4198,6 +4198,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NCDEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         EncounterTypePageLabel page ->
             case page of
                 AcuteIllnessPage subPage ->
@@ -5364,6 +5369,11 @@ translationSet trans =
                     , kinyarwanda = Just "Isura rya mbere ku mwana"
                     }
 
+                NCDEncounter ->
+                    { english = "First NCD Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterLabel encounterType isChw ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -5401,6 +5411,11 @@ translationSet trans =
                         { english = "Standard Pediatric Visit Encounter"
                         , kinyarwanda = Just "Isura risanzwe ry'Umwana"
                         }
+
+                NCDEncounter ->
+                    { english = "NCD Encounter"
+                    , kinyarwanda = Nothing
+                    }
 
         IndividualEncounterSelectVisit encounterType isChw ->
             case encounterType of
@@ -5440,6 +5455,11 @@ translationSet trans =
                         , kinyarwanda = Just "Hitamo isura ry'umwana"
                         }
 
+                NCDEncounter ->
+                    { english = "Select NCD Visit"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterSubsequentVisit encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -5469,6 +5489,11 @@ translationSet trans =
 
                 WellChildEncounter ->
                     { english = "Subsequent Standard Pediatric Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDEncounter ->
+                    { english = "Subsequent NCD Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -5509,6 +5534,11 @@ translationSet trans =
                         { english = "Standard Pediatric Visit"
                         , kinyarwanda = Just "Kujyana Umwana mu Isuzumiro"
                         }
+
+                NCDEncounter ->
+                    { english = "NCD"
+                    , kinyarwanda = Nothing
+                    }
 
         IndividualEncounterTypes ->
             { english = "Individual Encounter Types"
@@ -14955,6 +14985,11 @@ translateActivePage page =
 
                         WellChildEncounter ->
                             { english = "Standard Pediatric Visit Participant"
+                            , kinyarwanda = Nothing
+                            }
+
+                        NCDEncounter ->
+                            { english = "NCD Participants"
                             , kinyarwanda = Nothing
                             }
 

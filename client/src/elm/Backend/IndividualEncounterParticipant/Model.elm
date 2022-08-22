@@ -77,6 +77,7 @@ type IndividualEncounterType
     | InmmunizationEncounter
     | NutritionEncounter
     | WellChildEncounter
+    | NCDEncounter
 
 
 type DeliveryLocation

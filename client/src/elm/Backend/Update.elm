@@ -2603,6 +2603,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                     HomeVisitEncounter ->
                                                         IndividualEncounterTypesPage
 
+                                                    NCDEncounter ->
+                                                        NCDParticipantPage InitiatorParticipantsPage personId
+
                                                     -- Note yet implemented. Providing 'default'
                                                     -- page, to satisfy compiler.
                                                     InmmunizationEncounter ->
@@ -2814,6 +2817,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                                         _ ->
                                             []
+
+                                NCDEncounter ->
+                                    [ Backend.NCDEncounter.Model.emptyNCDEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostNCDEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
 
                                 InmmunizationEncounter ->
                                     []
