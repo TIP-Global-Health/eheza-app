@@ -27,6 +27,7 @@ import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantExtraData)
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -84,6 +85,7 @@ type alias ModelIndexedDb =
     , individualSessionRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
     , homeVisitEncounterRequests : Dict HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Model
     , wellChildEncounterRequests : Dict WellChildEncounterId Backend.WellChildEncounter.Model.Model
+    , ncdEncounterRequests : Dict NCDEncounterId Backend.NCDEncounter.Model.Model
     , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
@@ -107,6 +109,7 @@ type alias ModelIndexedDb =
     , acuteIllnessEncounters : Dict AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     , homeVisitEncounters : Dict HomeVisitEncounterId (WebData HomeVisitEncounter)
     , wellChildEncounters : Dict WellChildEncounterId (WebData WellChildEncounter)
+    , ncdEncounters : Dict NCDEncounterId (WebData NCDEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     , traceContacts : Dict AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
 
@@ -117,12 +120,14 @@ type alias ModelIndexedDb =
     , acuteIllnessEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     , homeVisitEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict HomeVisitEncounterId HomeVisitEncounter))
     , wellChildEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict WellChildEncounterId WellChildEncounter))
+    , ncdEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict NCDEncounterId NCDEncounter))
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
     , acuteIllnessMeasurements : Dict AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     , followUpMeasurements : Dict HealthCenterId (WebData FollowUpMeasurements)
     , homeVisitMeasurements : Dict HomeVisitEncounterId (WebData HomeVisitMeasurements)
     , wellChildMeasurements : Dict WellChildEncounterId (WebData WellChildMeasurements)
+    , ncdMeasurements : Dict NCDEncounterId (WebData NCDMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -142,6 +147,7 @@ type alias ModelIndexedDb =
     , postAcuteIllnessEncounter : Dict IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
     , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
     , postWellChildEncounter : Dict IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
+    , postNCDEncounter : Dict IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
 
     -- Dashboard Statistics.
     , computedDashboards : Dict HealthCenterId ComputedDashboard
@@ -175,6 +181,9 @@ emptyModelIndexedDb =
     , wellChildEncounters = Dict.empty
     , wellChildEncountersByParticipant = Dict.empty
     , wellChildMeasurements = Dict.empty
+    , ncdEncounters = Dict.empty
+    , ncdEncountersByParticipant = Dict.empty
+    , ncdMeasurements = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
@@ -188,6 +197,7 @@ emptyModelIndexedDb =
     , postHomeVisitEncounter = Dict.empty
     , postWellChildEncounter = Dict.empty
     , postAcuteIllnessEncounter = Dict.empty
+    , postNCDEncounter = Dict.empty
     , postRelationship = Dict.empty
     , postSession = NotAsked
     , prenatalEncounterRequests = Dict.empty
@@ -195,6 +205,7 @@ emptyModelIndexedDb =
     , acuteIllnessEncounterRequests = Dict.empty
     , homeVisitEncounterRequests = Dict.empty
     , wellChildEncounterRequests = Dict.empty
+    , ncdEncounterRequests = Dict.empty
     , traceContactRequests = Dict.empty
     , individualSessionRequests = Dict.empty
     , individualParticipants = Dict.empty
@@ -359,6 +370,7 @@ type MsgIndexedDb
     | MsgAcuteIllnessEncounter AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Msg
     | MsgHomeVisitEncounter HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Msg
     | MsgWellChildEncounter WellChildEncounterId Backend.WellChildEncounter.Model.Msg
+    | MsgNCDEncounter NCDEncounterId Backend.NCDEncounter.Model.Msg
     | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | ResetFailedToFetchAuthorities

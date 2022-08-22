@@ -2515,6 +2515,12 @@ type alias WellChildMeasurements =
     }
 
 
+{-| A set of NCD measurements that correspond to the same NCD encounter.
+-}
+type alias NCDMeasurements =
+    {}
+
+
 {-| This is like `ChildMeasurementList`, except that it just covers one
 of each kind of measurements (rather than a list of each kind).
 
