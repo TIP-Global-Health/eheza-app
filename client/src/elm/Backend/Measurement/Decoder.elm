@@ -231,6 +231,11 @@ decodeWellChildMeasurements =
         |> optional "well_child_rotarix_immunisation" (decodeHead decodeWellChildRotarixImmunisation) Nothing
 
 
+decodeNCDMeasurements : Decoder NCDMeasurements
+decodeNCDMeasurements =
+    succeed NCDMeasurements
+
+
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
 decodeHead =
     map List.head << list << decodeWithEntityUuid

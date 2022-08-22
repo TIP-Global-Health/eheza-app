@@ -1050,3 +1050,8 @@ ncdEncounterEndpoint =
     swEndpoint "nodes/ncd_encounter" decodeNCDEncounter
         |> withValueEncoder (object << encodeNCDEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
+
+
+ncdMeasurementsEndpoint : ReadOnlyEndPoint Error NCDEncounterId NCDMeasurements ()
+ncdMeasurementsEndpoint =
+    swEndpoint "nodes/ncd-measurements" decodeNCDMeasurements
