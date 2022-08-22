@@ -36,6 +36,8 @@ import Backend.Measurement.Utils
         , splitMotherMeasurements
         )
 import Backend.Model exposing (..)
+import Backend.NCDEncounter.Model
+import Backend.NCDEncounter.Update
 import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
@@ -2214,6 +2216,25 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | wellChildEncounterRequests = Dict.insert encounterId subModel model.wellChildEncounterRequests }
             , Cmd.map (MsgWellChildEncounter encounterId) subCmd
+            , []
+            )
+
+        MsgNCDEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.ncdEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.ncdEncounterRequests
+                        |> Maybe.withDefault Backend.NCDEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.NCDEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | ncdEncounterRequests = Dict.insert encounterId subModel model.ncdEncounterRequests }
+            , Cmd.map (MsgNCDEncounter encounterId) subCmd
             , []
             )
 
