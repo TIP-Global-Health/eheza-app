@@ -23,6 +23,9 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
+import Backend.NCDEncounter.Encoder exposing (encodeNCDEncounter)
+import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
@@ -1040,3 +1043,10 @@ prenatalSpecialityCareEndpoint : ReadWriteEndPoint Error PrenatalSpecialityCareI
 prenatalSpecialityCareEndpoint =
     swEndpoint "nodes/prenatal_speciality_care" decodePrenatalSpecialityCare
         |> withValueEncoder (object << encodePrenatalSpecialityCare)
+
+
+ncdEncounterEndpoint : ReadWriteEndPoint Error NCDEncounterId NCDEncounter NCDEncounter (Maybe IndividualEncounterParticipantId)
+ncdEncounterEndpoint =
+    swEndpoint "nodes/ncd_encounter" decodeNCDEncounter
+        |> withValueEncoder (object << encodeNCDEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
