@@ -36,6 +36,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'pmtct_participant' => 'pmtct-participants',
   'individual_participant' => 'individual-participants',
   'prenatal_encounter' => 'prenatal-encounters',
+  'ncd_encounter' => 'ncd-encounter',
   'nutrition_encounter' => 'nutrition-encounters',
   'acute_illness_encounter' => 'acute-illness-encounters',
   'home_visit_encounter' => 'home-visit-encounter',
