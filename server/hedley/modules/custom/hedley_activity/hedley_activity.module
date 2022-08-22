@@ -204,6 +204,13 @@ function hedley_activity_node_presave($node) {
     return;
   }
 
+  if (!isset($wrapper->field_person->field_birth_date)) {
+    return;
+  }
+  if (!isset($wrapper->field_person->field_gender)) {
+    return;
+  }
+
   $birth = $wrapper->field_person->field_birth_date->value();
   $gender = $wrapper->field_person->field_gender->value();
   $measured = $wrapper->field_date_measured->value();
