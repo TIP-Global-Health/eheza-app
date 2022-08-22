@@ -37,6 +37,13 @@ import Pages.HomeVisit.Encounter.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
+import Pages.NCD.Activity.Model
+import Pages.NCD.Activity.View
+import Pages.NCD.Encounter.Model
+import Pages.NCD.Encounter.View
+import Pages.NCD.Participant.View
+import Pages.NCD.ProgressReport.Model
+import Pages.NCD.ProgressReport.View
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.View
 import Pages.Nutrition.Encounter.Model
@@ -435,6 +442,9 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id)
                             |> flexPageWrapper model
 
+                    NCDParticipantPage initiator id ->
+                        Pages.NCD.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb
+
                     IndividualEncounterParticipantsPage encounterType ->
                         Pages.IndividualEncounterParticipants.View.view model.language
                             currentDate
@@ -665,6 +675,36 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.WellChild.ProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
+                            |> flexPageWrapper model
+
+                    NCDEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.ncdEncounterPages
+                                    |> Maybe.withDefault Pages.NCD.Encounter.Model.emptyModel
+                        in
+                        Pages.NCD.Encounter.View.view model.language currentDate model.zscores id isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNCDEncounter id)
+                            |> flexPageWrapper model
+
+                    NCDActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.ncdActivityPages
+                                    |> Maybe.withDefault Pages.NCD.Activity.Model.emptyModel
+                        in
+                        Pages.NCD.Activity.View.view model.language currentDate model.zscores id activity isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNCDActivity id activity)
+                            |> flexPageWrapper model
+
+                    NCDProgressReportPage encounterId ->
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.ncdProgressReportPages
+                                    |> Maybe.withDefault Pages.NCD.ProgressReport.Model.emptyModel
+                        in
+                        Pages.NCD.ProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNCDProgressReport encounterId)
                             |> flexPageWrapper model
 
                     TraceContactPage traceContactId ->

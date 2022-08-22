@@ -8,6 +8,7 @@ import App.Utils exposing (getLoggedInData, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
+import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator(..))
@@ -47,6 +48,12 @@ import Pages.HomeVisit.Activity.Update
 import Pages.HomeVisit.Encounter.Model
 import Pages.HomeVisit.Encounter.Update
 import Pages.IndividualEncounterParticipants.Update
+import Pages.NCD.Activity.Model
+import Pages.NCD.Activity.Update
+import Pages.NCD.Encounter.Model
+import Pages.NCD.Encounter.Update
+import Pages.NCD.ProgressReport.Model
+import Pages.NCD.ProgressReport.Update
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.Update
 import Pages.Nutrition.Encounter.Model
@@ -458,6 +465,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageNCDEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NCD.Encounter.Model.emptyModel
+                                        |> Pages.NCD.Encounter.Update.update subMsg
+                            in
+                            ( { data | ncdEncounterPages = Dict.insert id subModel data.ncdEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -554,6 +574,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageNCDActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.NCD.Activity.Model.emptyModel
+                                        |> Pages.NCD.Activity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | ncdActivityPages = Dict.insert ( id, activity ) subModel data.ncdActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePregnancyOutcome id subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -603,6 +636,19 @@ update msg model =
                             in
                             ( { data | wellChildProgressReportPages = Dict.insert id subModel data.wellChildProgressReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageWellChildProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNCDProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NCD.ProgressReport.Model.emptyModel
+                                        |> Pages.NCD.ProgressReport.Update.update subMsg
+                            in
+                            ( { data | ncdProgressReportPages = Dict.insert id subModel data.ncdProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDProgressReport id) subCmd
                             , extraMsgs
                             )
 
