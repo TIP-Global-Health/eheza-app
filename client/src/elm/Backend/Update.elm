@@ -569,6 +569,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchNCDEncountersForParticipant id ->
+            ( { model | ncdEncountersByParticipant = Dict.insert id Loading model.ncdEncountersByParticipant }
+            , sw.select ncdEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedNCDEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedNCDEncountersForParticipant id data ->
+            ( { model | ncdEncountersByParticipant = Dict.insert id data model.ncdEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -643,6 +656,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedWellChildMeasurements id data ->
             ( { model | wellChildMeasurements = Dict.insert id data model.wellChildMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchNCDMeasurements id ->
+            ( { model | ncdMeasurements = Dict.insert id Loading model.ncdMeasurements }
+            , sw.get ncdMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedNCDMeasurements id)
+            , []
+            )
+
+        HandleFetchedNCDMeasurements id data ->
+            ( { model | ncdMeasurements = Dict.insert id data model.ncdMeasurements }
             , Cmd.none
             , []
             )
@@ -937,6 +963,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedAcuteIllnessEncounter id data ->
             ( { model | acuteIllnessEncounters = Dict.insert id data model.acuteIllnessEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchNCDEncounter id ->
+            ( { model | ncdEncounters = Dict.insert id Loading model.ncdEncounters }
+            , sw.get ncdEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedNCDEncounter id)
+            , []
+            )
+
+        HandleFetchedNCDEncounter id data ->
+            ( { model | ncdEncounters = Dict.insert id data model.ncdEncounters }
             , Cmd.none
             , []
             )
@@ -2905,6 +2944,28 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     [ App.Model.SetActivePage <|
                         UserPage <|
                             Pages.Page.AcuteIllnessEncounterPage acuteIllnessEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
+        PostNCDEncounter ncdEncounter ->
+            ( { model | postNCDEncounter = Dict.insert ncdEncounter.participant Loading model.postNCDEncounter }
+            , sw.post ncdEncounterEndpoint ncdEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedNCDEncounter ncdEncounter.participant)
+            , []
+            )
+
+        HandlePostedNCDEncounter participantId data ->
+            ( { model | postNCDEncounter = Dict.insert participantId data model.postNCDEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( ncdEncounterId, _ ) ->
+                    [-- @todo
+                     -- App.Model.SetActivePage <|
+                     --     UserPage <|
+                     --         Pages.Page.NCDEncounterPage ncdEncounterId
                     ]
                 )
                 data

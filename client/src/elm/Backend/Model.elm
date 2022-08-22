@@ -279,6 +279,9 @@ type MsgIndexedDb
     | FetchWellChildEncounter WellChildEncounterId
     | FetchWellChildEncountersForParticipant IndividualEncounterParticipantId
     | FetchWellChildMeasurements WellChildEncounterId
+    | FetchNCDEncounter NCDEncounterId
+    | FetchNCDEncountersForParticipant IndividualEncounterParticipantId
+    | FetchNCDMeasurements NCDEncounterId
     | FetchParticipantForms
     | FetchParticipantsForPerson PersonId
     | FetchPeopleByName String
@@ -319,6 +322,9 @@ type MsgIndexedDb
     | HandleFetchedWellChildEncounter WellChildEncounterId (WebData WellChildEncounter)
     | HandleFetchedWellChildEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict WellChildEncounterId WellChildEncounter))
     | HandleFetchedWellChildMeasurements WellChildEncounterId (WebData WellChildMeasurements)
+    | HandleFetchedNCDEncounter NCDEncounterId (WebData NCDEncounter)
+    | HandleFetchedNCDEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict NCDEncounterId NCDEncounter))
+    | HandleFetchedNCDMeasurements NCDEncounterId (WebData NCDMeasurements)
     | HandleFetchedParticipantForms (WebData (Dict ParticipantFormId ParticipantForm))
     | HandleFetchedParticipantsForPerson PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))
@@ -345,6 +351,7 @@ type MsgIndexedDb
     | PostAcuteIllnessEncounter AcuteIllnessEncounter
     | PostHomeVisitEncounter HomeVisitEncounter
     | PostWellChildEncounter WellChildEncounter
+    | PostNCDEncounter NCDEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
     | HandlePatchedPerson PersonId (WebData Person)
@@ -357,6 +364,7 @@ type MsgIndexedDb
     | HandlePostedAcuteIllnessEncounter IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
     | HandlePostedHomeVisitEncounter IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
     | HandlePostedWellChildEncounter IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
+    | HandlePostedNCDEncounter IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout
       -- Process some revisions we've received from the backend. In some cases,
