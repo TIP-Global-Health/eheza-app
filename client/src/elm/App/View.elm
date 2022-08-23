@@ -427,6 +427,7 @@ viewUserPage page deviceName model configured =
 
                     NutritionParticipantPage initiator id ->
                         Pages.Nutrition.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb
+                            |> flexPageWrapper model
 
                     WellChildParticipantPage initiator id ->
                         Pages.WellChild.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb
@@ -443,7 +444,8 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     NCDParticipantPage initiator id ->
-                        Pages.NCD.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb
+                        Pages.NCD.Participant.View.view model.language currentDate healthCenterId id initiator model.indexedDb
+                            |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->
                         Pages.IndividualEncounterParticipants.View.view model.language

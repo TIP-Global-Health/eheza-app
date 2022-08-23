@@ -114,7 +114,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                     False
 
                 InmmunizationEncounter ->
-                    -- Not in use (possibly future develpment).
+                    -- Not in use (possibly future development).
                     False
 
                 NCDEncounter ->
@@ -226,7 +226,7 @@ viewParticipant language currentDate encounterType db id person =
                     []
 
                 InmmunizationEncounter ->
-                    -- Not in use (possibly future develpment).
+                    -- Not in use (possibly future development).
                     []
 
                 NCDEncounter ->
