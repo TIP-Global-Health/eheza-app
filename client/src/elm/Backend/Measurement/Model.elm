@@ -868,24 +868,46 @@ type PrenatalAssesment
 
 
 type alias PrenatalSendToHC =
-    PrenatalMeasurement PrenatalSendToHCValue
+    PrenatalMeasurement PrenatalReferralValue
 
 
-type alias PrenatalSendToHCValue =
-    { signs : EverySet SendToHCSign
-    , reasonForNotSendingToHC : ReasonForNotSendingToHC
-
-    -- This field will be populated in case of non standard facility.
-    -- Standards are Health center for CHW and Hopital for nurse.
-    , referralFacility : Maybe ReferralFacility
+type alias PrenatalReferralValue =
+    { sendToHCSigns : Maybe (EverySet SendToHCSign)
+    , reasonForNotSendingToHC : Maybe ReasonForNonReferral
+    , referToFacilitySigns : Maybe (EverySet ReferToFacilitySign)
+    , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
     }
+
+
+type ReferToFacilitySign
+    = ReferToHospital
+    | ReferralFormHospital
+    | ReferToMentalHealthSpecialist
+    | ReferralFormMentalHealthSpecialist
+    | AccompanyToMentalHealthSpecialist
+    | ReferToARVProgram
+    | ReferralFormARVProgram
+    | AccompanyToARVProgram
+    | ReferToNCDProgram
+    | ReferralFormNCDProgram
+    | AccompanyToNCDProgram
+    | NoReferToFacilitySigns
+
+
+type NonReferralSign
+    = NonReferralReasonHospital ReasonForNonReferral
+    | NonReferralReasonMentalHealthSpecialist ReasonForNonReferral
+    | NonReferralReasonARVProgram ReasonForNonReferral
+    | NonReferralReasonNCDProgram ReasonForNonReferral
+    | NoNonReferralSigns
 
 
 type ReferralFacility
     = FacilityHealthCenter
     | FacilityHospital
-    | FacilityHIVProgram
     | FacilityMentalHealthSpecialist
+    | FacilityARVProgram
+    | FacilityNCDProgram
 
 
 type alias PrenatalAppointmentConfirmationValue =
@@ -1301,6 +1323,7 @@ type PrenatalOutsideCareSign
     = SeenAtAnotherFacility
     | GivenNewDiagnoses
     | GivenMedicine
+    | PlannedFollowUpCareWithSpecialist
     | NoPrenatalOutsideCareSigns
 
 
@@ -1629,7 +1652,7 @@ type alias Call114 =
 
 type alias SendToHCValue =
     { signs : EverySet SendToHCSign
-    , reasonForNotSendingToHC : ReasonForNotSendingToHC
+    , reasonForNotSendingToHC : ReasonForNonReferral
     }
 
 
@@ -1719,13 +1742,14 @@ type alias AcuteIllnessMuac =
     AcuteIllnessMeasurement MuacInCm
 
 
-type ReasonForNotSendingToHC
+type ReasonForNonReferral
     = ClientRefused
     | NoAmbulance
     | ClientUnableToAffordFees
     | ClientAlreadyInCare
-    | ReasonForNotSendingToHCOther
-    | NoReasonForNotSendingToHC
+    | ReasonForNonReferralNotIndicated
+    | ReasonForNonReferralOther
+    | NoReasonForNonReferral
 
 
 type TreatmentOngoingSign

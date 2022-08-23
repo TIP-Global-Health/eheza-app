@@ -667,7 +667,7 @@ type TranslationId
     | HypertensionBeforePregnancy
     | HypertensionRecommendedTreatmentHeader
     | HypertensionRecommendedTreatmentHelper
-    | HypertensionRecommendedTreatmentUpdateHeader
+    | HypertensionRecommendedTreatmentUpdateHeader Bool
     | HypertensionRecommendedTreatmentUpdateBPLabel
     | HypertensionRecommendedTreatmentUpdateCurrentTreatment
     | HypertensionRecommendedTreatmentUpdateNewTreatment HypertensionTreatementUpdateOption
@@ -787,6 +787,7 @@ type TranslationId
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
     | ModeratelyUnderweight
+    | ModeratePreeclampsia
     | Month
     | MonthAbbrev
     | MonthSinglePlural Int
@@ -828,7 +829,7 @@ type TranslationId
     | NoTreatmentAdministered
     | NoTreatmentRecorded
     | NutritionSigns
-    | ReasonForNotSendingToHC ReasonForNotSendingToHC
+    | ReasonForNonReferral ReasonForNonReferral
     | AdministrationNote AdministrationNote
     | AdministrationNoteForPrenatalImmunisation AdministrationNote
     | AdministrationNoteForWellChildImmunisation AdministrationNote
@@ -958,7 +959,7 @@ type TranslationId
     | PrenatalHealthEducationPelvicPainInform
     | PrenatalHealthEducationSaferSexInform
     | PrenatalHealthEducationMentalHealthInform
-    | PrenatalHIVProgramHelper
+    | PrenatalARVProgramHelper
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
     | PrenatalImmunisationDescription PrenatalVaccineType
@@ -1265,7 +1266,7 @@ type TranslationId
     | Treatment
     | TreatmentDetailsAnemia
     | TreatmentDetailsHIV Bool Bool
-    | TreatmentDetailsHypertension RecommendedTreatmentSign
+    | TreatmentDetailsHypertension Bool RecommendedTreatmentSign
     | TreatmentDetailsMalaria RecommendedTreatmentSign
     | TreatmentDetailsSyphilis RecommendedTreatmentSign
     | TreatmentReviewQuestionAdverseEvents
@@ -1273,7 +1274,7 @@ type TranslationId
     | TreatmentReviewQuestionMedicationByPMTCT
     | TreatmentReviewQuestionMissedDoses
     | TreatmentReviewQuestionStillTaking
-    | TreatmentReviewTask TreatmentReviewTask
+    | TreatmentReviewTask Bool TreatmentReviewTask
     | TreatmentReviewWarningPopupMessage
     | TreatmentReviewWarningPopupInstructions
     | TrySyncing
@@ -1427,13 +1428,18 @@ translationSet trans =
                     , kinyarwanda = Just "Uraherekeza umubyeyi ku bitaro"
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Will you accompany the patient to mental health specialist"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Will you accompany the patient to Integration HIV/PMTCT"
                     , kinyarwanda = Just "Uzaherekeza umurwayi muri serivisi ikomatanije ya HIV/PMTCT"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Will you accompany the patient to mental health specialist"
+                FacilityNCDProgram ->
+                    { english = "Will you accompany the patient to NCD services"
                     , kinyarwanda = Nothing
                     }
 
@@ -3066,13 +3072,18 @@ translationSet trans =
                     , kinyarwanda = Just "Uzuza urupapuro rumwohereza ku bitaro"
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Complete a referral form"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Complete an Integration HIV/PMTCT referral form"
                     , kinyarwanda = Just "Uzuza urupapuro rwohereza umubyeyi muri service ikomatanije ya HIV/PMTCT"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Complete a referral form"
+                FacilityNCDProgram ->
+                    { english = "Complete a NCD services referral form"
                     , kinyarwanda = Nothing
                     }
 
@@ -5090,10 +5101,16 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
             }
 
-        HypertensionRecommendedTreatmentUpdateHeader ->
-            { english = "This patient was previously diagnosed with Hypertension"
-            , kinyarwanda = Nothing
-            }
+        HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia ->
+            if forModeratePreeclamsia then
+                { english = "This patient was previously diagnosed with Moderate Preeclamsia"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "This patient was previously diagnosed with Hypertension"
+                , kinyarwanda = Nothing
+                }
 
         HypertensionRecommendedTreatmentUpdateBPLabel ->
             { english = "The patients current BP is"
@@ -5712,7 +5729,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryRandomBloodSugar _ ->
-                    { english = "74-110 mg/dl"
+                    { english = "74-110 mg/dL"
                     , kinyarwanda = Nothing
                     }
 
@@ -6563,6 +6580,11 @@ translationSet trans =
             , kinyarwanda = Just "Imirire mibi yoroheje ku biro"
             }
 
+        ModeratePreeclampsia ->
+            { english = "Moderate Preeclampsia"
+            , kinyarwanda = Nothing
+            }
+
         Month ->
             { english = "Month"
             , kinyarwanda = Just "Ukwezi"
@@ -6848,7 +6870,7 @@ translationSet trans =
             , kinyarwanda = Just "Ibimenyetso by'imirire"
             }
 
-        ReasonForNotSendingToHC reason ->
+        ReasonForNonReferral reason ->
             case reason of
                 ClientRefused ->
                     { english = "Client refused"
@@ -6870,12 +6892,17 @@ translationSet trans =
                     , kinyarwanda = Just "Umukiriya ari kwitabwaho"
                     }
 
-                ReasonForNotSendingToHCOther ->
+                ReasonForNonReferralNotIndicated ->
+                    { english = "Not indicated"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonForNonReferralOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
                     }
 
-                NoReasonForNotSendingToHC ->
+                NoReasonForNonReferral ->
                     { english = "No Reason"
                     , kinyarwanda = Nothing
                     }
@@ -9485,7 +9512,7 @@ translationSet trans =
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-        PrenatalHIVProgramHelper ->
+        PrenatalARVProgramHelper ->
             { english = "Refer patient to Integration HIV/PMTCT for assessment of ARV’s"
             , kinyarwanda = Just "Ohereza umubyeyi muri serisi ikomatanije ya HIV/PMTCT kugira ngo hakorwe isuzuma ku bijyanye n' imiti igabanya ubukana bwa Virusi itera SIDA"
             }
@@ -10575,6 +10602,11 @@ translationSet trans =
 
                 GivenMedicine ->
                     { english = "Were you given medicine"
+                    , kinyarwanda = Nothing
+                    }
+
+                PlannedFollowUpCareWithSpecialist ->
+                    { english = "Do you have follow up care planned with a specialist"
                     , kinyarwanda = Nothing
                     }
 
@@ -11706,13 +11738,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Have you referred the patient to the specialist"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Have you referred the patient to the Integration HIV/PMTCT"
                     , kinyarwanda = Just "Waba wohereje umurwayi (umubyeyi) muri serivisi ikomatanije ya HIV/PMTCT"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Have you referred the patient to the specialist"
+                FacilityNCDProgram ->
+                    { english = "Have you referred the patient to NCD services"
                     , kinyarwanda = Nothing
                     }
 
@@ -11728,13 +11765,18 @@ translationSet trans =
                     , kinyarwanda = Just "Yoherejwe ku bitaro"
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Referred to mental health specialist"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Referred to HIV/PMTCT"
                     , kinyarwanda = Just "Yoherejwe muri serivisi ya HIV/PMTCT"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Referred to mental health specialist"
+                FacilityNCDProgram ->
+                    { english = "Referred to NCD services"
                     , kinyarwanda = Nothing
                     }
 
@@ -11750,13 +11792,18 @@ translationSet trans =
                     , kinyarwanda = Just "Ntabwo yoherejwe ku bitaro"
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Not referred to mental health specialist"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Not referred to HIV/PMTCT"
                     , kinyarwanda = Just "Ntabwo yoherejwe muri serivisi ya HIV/PMTCT"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Not referred to mental health specialist"
+                FacilityNCDProgram ->
+                    { english = "Not referred to NCD services"
                     , kinyarwanda = Nothing
                     }
 
@@ -12854,13 +12901,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                FacilityHIVProgram ->
+                FacilityMentalHealthSpecialist ->
+                    { english = "Refer patient to mental health specialist for further evaluation"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityARVProgram ->
                     { english = "Direct patient to the appropriate location"
                     , kinyarwanda = Just "Yobora umurwayi ahantu habugenewe"
                     }
 
-                FacilityMentalHealthSpecialist ->
-                    { english = "Refer patient to mental health specialist for further evaluation"
+                FacilityNCDProgram ->
+                    { english = "Refer patient to NCD services for further management"
                     , kinyarwanda = Nothing
                     }
 
@@ -13062,30 +13114,38 @@ translationSet trans =
                 , kinyarwanda = Nothing
                 }
 
-        TreatmentDetailsHypertension sign ->
+        TreatmentDetailsHypertension forModeratePreeclamsia sign ->
+            let
+                diagnosis =
+                    if forModeratePreeclamsia then
+                        "Moderate Preeclampsia"
+
+                    else
+                        "Hypertension"
+            in
             case sign of
                 TreatmentMethyldopa2 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 2x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 2x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa3 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 3x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 3x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa4 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day and Carvedilol (6.25mg), by mouth 2x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day and Carvedilol (6.25mg), by mouth 2x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
-                    { english = "At the previous visit you were given Methyldopa (250mg,) by mouth 4x a day, Carvedilol (6.25mg), by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for hypertension."
+                    { english = "At the previous visit you were given Methyldopa (250mg,) by mouth 4x a day, Carvedilol (6.25mg), by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
@@ -13169,7 +13229,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TreatmentReviewTask task ->
+        TreatmentReviewTask forModeratePreeclamsia task ->
             case task of
                 TreatmentReviewPrenatalMedication ->
                     { english = "Prenatal Medication"
@@ -13182,9 +13242,15 @@ translationSet trans =
                     }
 
                 TreatmentReviewHypertension ->
-                    { english = "Hypertension Medication"
-                    , kinyarwanda = Nothing
-                    }
+                    if forModeratePreeclamsia then
+                        { english = "Moderate Preeclamsia Medication"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Hypertension Medication"
+                        , kinyarwanda = Nothing
+                        }
 
                 TreatmentReviewMalaria ->
                     { english = "Malaria Medication"
