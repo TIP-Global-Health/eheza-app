@@ -109,8 +109,16 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                             |> Maybe.map not
                             |> Maybe.withDefault False
 
-                _ ->
+                HomeVisitEncounter ->
+                    -- We do not have direct access to Home Visit encounter.
                     False
+
+                InmmunizationEncounter ->
+                    -- Not in use (possibly future develpment).
+                    False
+
+                NCDEncounter ->
+                    True
 
         -- For CHW nurse, we present people only from the village that was selected.
         chwCondition person =
@@ -213,8 +221,16 @@ viewParticipant language currentDate encounterType db id person =
                 WellChildEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage InitiatorParticipantsPage id ]
 
-                _ ->
+                HomeVisitEncounter ->
+                    -- We do not have direct access to Home Visit encounter.
                     []
+
+                InmmunizationEncounter ->
+                    -- Not in use (possibly future develpment).
+                    []
+
+                NCDEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| NCDParticipantPage InitiatorParticipantsPage id ]
 
         viewAction =
             div [ class "action" ]

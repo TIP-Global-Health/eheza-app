@@ -5536,7 +5536,7 @@ translationSet trans =
                         }
 
                 NCDEncounter ->
-                    { english = "NCD"
+                    { english = "Noncommunicable Diseases"
                     , kinyarwanda = Nothing
                     }
 
