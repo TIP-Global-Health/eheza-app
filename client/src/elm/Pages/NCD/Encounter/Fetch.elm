@@ -16,21 +16,31 @@ fetch id db =
                 |> RemoteData.toMaybe
                 |> Maybe.map .participant
 
-        maybePersonId =
-            participantId
-                |> Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
+        personId =
+            Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants) participantId
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .person
+
+        encountersIds =
+            Maybe.map
+                (\participantId_ ->
+                    Dict.get participantId_ db.ncdEncountersByParticipant
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.map Dict.keys
+                        |> RemoteData.withDefault []
+                )
+                participantId
+                |> Maybe.withDefault []
+
+        -- We fetch measurements of all encounters.
+        fetchMeasurementsMsgs =
+            List.map FetchNCDMeasurements encountersIds
     in
     Maybe.Extra.values
-        [ Just <| FetchNCDEncounter id
-        , Maybe.map FetchIndividualEncounterParticipant participantId
+        [ Maybe.map FetchIndividualEncounterParticipant participantId
+        , Maybe.map FetchPerson personId
+        , Maybe.map FetchNCDEncountersForParticipant participantId
+        , Just <| FetchNCDEncounter id
         ]
-
-
-
--- @todo
--- ++ (Maybe.map (\personId -> Backend.NCDEncounter.Fetch.fetch personId db) maybePersonId
---         |> Maybe.withDefault []
---    )
+        ++ fetchMeasurementsMsgs
