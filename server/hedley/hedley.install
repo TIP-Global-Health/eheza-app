@@ -627,3 +627,10 @@ function hedley_update_7032() {
   module_enable(['hedley_case_management']);
 }
 
+/**
+ * Enable the Hedley NCD module.
+ */
+function hedley_update_7033() {
+  module_enable(['hedley_ncd']);
+}
+
