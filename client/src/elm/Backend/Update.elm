@@ -3438,6 +3438,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
+        NCDEncounterRevision uuid data ->
+            let
+                ncdEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.ncdEncounters
+
+                ncdEncountersByParticipant =
+                    Dict.remove data.participant model.ncdEncountersByParticipant
+            in
+            ( { model
+                | ncdEncounters = ncdEncounters
+                , ncdEncountersByParticipant = ncdEncountersByParticipant
+              }
+            , recalc
+            )
+
         NurseRevision uuid data ->
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
             noChange

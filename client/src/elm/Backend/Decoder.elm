@@ -166,6 +166,9 @@ decodeRevision =
                     "muac" ->
                         decodeWithUuid MuacRevision decodeMuac
 
+                    "ncd_encounter" ->
+                        decodeWithUuid NCDEncounterRevision decodeNCDEncounter
+
                     "nurse" ->
                         decodeWithUuid NurseRevision decodeNurse
 

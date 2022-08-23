@@ -435,6 +435,7 @@ type Revision
     | MedicationDistributionRevision MedicationDistributionId MedicationDistribution
     | MotherFbfRevision MotherFbfId Fbf
     | MuacRevision MuacId Muac
+    | NCDEncounterRevision NCDEncounterId NCDEncounter
     | NurseRevision NurseId Nurse
     | NutritionCaringRevision NutritionCaringId NutritionCaring
     | NutritionContributingFactorsRevision NutritionContributingFactorsId NutritionContributingFactors
