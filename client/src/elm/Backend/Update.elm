@@ -2971,10 +2971,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , Cmd.none
             , RemoteData.map
                 (\( ncdEncounterId, _ ) ->
-                    [-- @todo
-                     -- App.Model.SetActivePage <|
-                     --     UserPage <|
-                     --         Pages.Page.NCDEncounterPage ncdEncounterId
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.NCDEncounterPage ncdEncounterId
                     ]
                 )
                 data

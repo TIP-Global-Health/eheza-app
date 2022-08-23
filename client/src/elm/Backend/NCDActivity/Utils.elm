@@ -66,10 +66,10 @@ getActivityIcon activity =
 getAllActivities : List NCDActivity
 getAllActivities =
     [ DangerSigns
-    , Examination
-    , FamilyPlanning
-    , Laboratory
-    , MedicalHistory
-    , NextSteps
     , SymptomReview
+    , MedicalHistory
+    , Examination
+    , Laboratory
+    , FamilyPlanning
+    , NextSteps
     ]

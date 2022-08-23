@@ -26,7 +26,7 @@ expectActivity currentDate assembled db activity =
     case activity of
         -- @todo
         _ ->
-            False
+            True
 
 
 activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> NCDActivity -> Bool

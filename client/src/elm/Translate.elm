@@ -33,6 +33,7 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model
     exposing
@@ -817,6 +818,7 @@ type TranslationId
     | MyRelatedByQuestion MyRelatedBy
     | Name
     | NationalIdNumber
+    | NCDActivityTitle NCDActivity
     | Neck
     | NeckCPESign NeckCPESign
     | NegativeLabel
@@ -948,7 +950,7 @@ type TranslationId
     | PregnancyTestResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
     | PregnancyUrineTest
-    | PrenatalActivitiesTitle PrenatalActivity
+    | PrenatalActivityTitle PrenatalActivity
     | PrenatalRecurrentActivitiesTitle PrenatalRecurrentActivity
     | PrenatalAssesment PrenatalAssesment
     | PrenatalDiagnosis PrenatalDiagnosis
@@ -6837,6 +6839,43 @@ translationSet trans =
             , kinyarwanda = Just "Numero y'irangamuntu"
             }
 
+        NCDActivityTitle activity ->
+            case activity of
+                Backend.NCDActivity.Model.DangerSigns ->
+                    { english = "Danger Signs"
+                    , kinyarwanda = Just "Ibimenyetso mpuruza"
+                    }
+
+                Backend.NCDActivity.Model.Examination ->
+                    { english = "Examination"
+                    , kinyarwanda = Just "Gusuzuma"
+                    }
+
+                Backend.NCDActivity.Model.FamilyPlanning ->
+                    { english = "Family Planning"
+                    , kinyarwanda = Just "Kuboneza Urubyaro"
+                    }
+
+                Backend.NCDActivity.Model.MedicalHistory ->
+                    { english = "Medical History"
+                    , kinyarwanda = Just "Amateka y'uburwayi busanzwe"
+                    }
+
+                Backend.NCDActivity.Model.Laboratory ->
+                    { english = "Laboratory"
+                    , kinyarwanda = Just "Ibizamini"
+                    }
+
+                Backend.NCDActivity.Model.NextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Just "Ibikurikiyeho"
+                    }
+
+                Backend.NCDActivity.Model.SymptomReview ->
+                    { english = "Symptom Review"
+                    , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
+                    }
+
         Neck ->
             { english = "Neck"
             , kinyarwanda = Just "Ijosi"
@@ -8242,14 +8281,14 @@ translationSet trans =
             , kinyarwanda = Just "Ikizamini cy'inkari gisuzuma ko umugore atwite"
             }
 
-        PrenatalActivitiesTitle activity ->
+        PrenatalActivityTitle activity ->
             case activity of
-                DangerSigns ->
+                Backend.PrenatalActivity.Model.DangerSigns ->
                     { english = "Danger Signs"
                     , kinyarwanda = Just "Ibimenyetso mpuruza"
                     }
 
-                Examination ->
+                Backend.PrenatalActivity.Model.Examination ->
                     { english = "Examination"
                     , kinyarwanda = Just "Gusuzuma"
                     }
@@ -8274,7 +8313,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                Laboratory ->
+                Backend.PrenatalActivity.Model.Laboratory ->
                     { english = "Laboratory"
                     , kinyarwanda = Just "Ibizamini"
                     }

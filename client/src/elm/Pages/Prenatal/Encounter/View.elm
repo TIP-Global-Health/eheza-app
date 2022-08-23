@@ -489,7 +489,7 @@ generateActivityData : PrenatalActivity -> AssembledData -> ( TranslationId, Str
 generateActivityData activity assembled =
     let
         default =
-            ( Translate.PrenatalActivitiesTitle activity, getActivityIcon activity )
+            ( Translate.PrenatalActivityTitle activity, getActivityIcon activity )
     in
     case activity of
         NextSteps ->
