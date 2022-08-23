@@ -16,7 +16,7 @@ type MedicalHistoryTask
 
 type LaboratoryTask
     = TaskRandomBloodSugarTest
-    | TaskCreatineTest
+    | TaskCreatinineTest
     | TaskUrineDipstickTest
     | TaskHIVTest
     | TaskPregnancyTest
