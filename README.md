@@ -68,6 +68,15 @@ The installation script will perform following steps:
   sites/default/files directory.
 * The database is dropped during the installation.
 
+#### Getting started
+
+First of all, you need to create a Device.
+1. `ddev drush uli`
+1. Fulfill https://eheza-app.ddev.site:4443/node/add/device , note the Pairing code.
+1. Fulfill https://eheza-app.ddev.site:4443/admin/people/create , note the PIN code, assign it to group(s) and health center(s).
+1. `ddev gulp`
+1. Visit , supply the Pairing code and the PIN.
+
 #### Deploy
 
 The default method assumes Pantheon as the hosting service provider.
