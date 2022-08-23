@@ -489,6 +489,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityMuac identifier ->
                 viewMeasurement identifier "Muac"
 
+            BackendAuthorityNCDEncounter identifier ->
+                text ("NCDEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
             BackendAuthorityNutrition identifier ->
                 viewMeasurement identifier "Nutrition"
 

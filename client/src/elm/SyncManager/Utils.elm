@@ -11,6 +11,7 @@ import Backend.IndividualEncounterParticipant.Encoder
 import Backend.Measurement.Encoder
 import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Model exposing (Revision(..))
+import Backend.NCDEncounter.Encoder
 import Backend.Nurse.Encoder
 import Backend.NutritionEncounter.Encoder
 import Backend.ParticipantConsent.Encoder
@@ -494,6 +495,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityMuac identifier ->
             getIdentifier identifier "muac"
+
+        BackendAuthorityNCDEncounter identifier ->
+            getIdentifier identifier "ncd_encounter"
 
         BackendAuthorityNutrition identifier ->
             getIdentifier identifier "nutrition"
@@ -1077,6 +1081,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityMuac identifier ->
             encode Backend.Measurement.Encoder.encodeMuac identifier
 
+        BackendAuthorityNCDEncounter identifier ->
+            encode Backend.NCDEncounter.Encoder.encodeNCDEncounter identifier
+
         BackendAuthorityNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeNutrition identifier
 
@@ -1621,6 +1628,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityMuac identifier ->
             MuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDEncounter identifier ->
+            NCDEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutrition identifier ->
             ChildNutritionRevision (toEntityUuid identifier.uuid) identifier.entity

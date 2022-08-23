@@ -15,6 +15,7 @@ import Backend.HealthCenter.Decoder
 import Backend.HomeVisitEncounter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
 import Backend.Measurement.Decoder
+import Backend.NCDEncounter.Decoder
 import Backend.Nurse.Decoder
 import Backend.NutritionEncounter.Decoder
 import Backend.ParticipantConsent.Decoder
@@ -529,6 +530,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeMuac
                             BackendAuthorityMuac
+
+                    "ncd_encounter" ->
+                        doDecode
+                            Backend.NCDEncounter.Decoder.decodeNCDEncounter
+                            BackendAuthorityNCDEncounter
 
                     "nutrition" ->
                         doDecode
