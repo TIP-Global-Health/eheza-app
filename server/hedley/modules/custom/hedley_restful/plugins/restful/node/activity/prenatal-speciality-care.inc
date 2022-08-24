@@ -6,12 +6,12 @@
  */
 
 $plugin = array(
-  'label' => t('Prenatal Speciality Care'),
+  'label' => t('Prenatal Specialty Care'),
   'resource' => 'prenatal-speciality-care',
   'name' => 'prenatal-speciality-care',
   'entity_type' => 'node',
   'bundle' => 'prenatal_speciality_care',
-  'description' => t('Exports the Prenatal Speciality Care bundle.'),
+  'description' => t('Exports the Prenatal Specialty Care bundle.'),
   'class' => 'HedleyRestfulPrenatalSpecialityCare',
   'authentication_types' => TRUE,
 );

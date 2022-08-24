@@ -6,6 +6,7 @@ dependencies[] = features
 dependencies[] = hedley_view_export
 dependencies[] = menu
 dependencies[] = views_data_export
+dependencies[] = views_litepager
 features[ctools][] = views:views_default:3.0
 features[features_api][] = api:2
 features[menu_custom][] = main-menu
