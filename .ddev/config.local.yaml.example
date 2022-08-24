@@ -20,6 +20,9 @@ hooks:
     - exec: drush fra -y
     - exec: drush uli
   post-start:
+    - exec-host: ddev nvm install 9.0
+    - exec-host: ddev nvm use 9.0
+    - exec-host: ddev client-install
     - exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"
     # If DDEV creates server/www/, it is owned by root for some reasons,
     # so we have a placeholder .gitignore there, that ignores everything, but

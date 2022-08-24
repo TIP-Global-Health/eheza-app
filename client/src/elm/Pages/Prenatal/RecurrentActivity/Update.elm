@@ -506,6 +506,8 @@ update language currentDate id db msg model =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault
                     (let
+                        -- When Next steps are completed, and all lab results were
+                        -- entered, we close the entry.
                         closeLabsResultsMsg =
                             Dict.get id db.prenatalMeasurements
                                 |> Maybe.andThen RemoteData.toMaybe
@@ -515,12 +517,6 @@ update language currentDate id db msg model =
                                         let
                                             ( performedTests, completedTests ) =
                                                 prenatalLabsResultsTestData currentDate results
-
-                                            _ =
-                                                Debug.log "performedTests" performedTests
-
-                                            _ =
-                                                Debug.log "completedTests" completedTests
                                         in
                                         if List.length performedTests == List.length completedTests then
                                             let
