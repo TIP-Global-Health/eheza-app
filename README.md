@@ -27,7 +27,7 @@ Primary ports:
 2. Login with `admin` / `admin` into the Drupal backend.
 3. Choose "Remote Explorer" on the left and open port 3000 too, either in new browser window or in preview.
 4. Use `12345678` as the pairing code (tied to Device nodes at the Drupal side).
-5. Use `1234` as the PIN code (tied to the user accounts at the Drupal side).
+5. Use `1234` as the PIN code (tied to the Nurse nodes at the Drupal side).
 6. Initiate a sync process. The device status page allows you to initiate a manual sync with the backend.
    You can also choose which health centers to sync, for instance "Nyange Health Center" for the tests.
 7. Choose the synced health center.
@@ -37,7 +37,7 @@ Primary ports:
 
 ### Requirements
 
-- https://ddev.readthedocs.io/en/latest/#installation
+- https://ddev.readthedocs.io/en/latest/#installation . Minimum version: [v1.21.1](https://github.com/drud/ddev/releases/tag/v1.21.1)
 
 ### Backend
 
@@ -67,6 +67,7 @@ The installation script will perform following steps:
 * The process above will not preserve the data located in the
   sites/default/files directory.
 * The database is dropped during the installation.
+
 
 #### Deploy
 
@@ -133,7 +134,7 @@ Make sure the following is installed:
 
 #### Installation
 
-* ddev client-install
+* Install backend first.
 * `cp src/elm/LocalConfig.Example.elm src/elm/LocalConfig.elm`
 
 You may need to update `src/elm/LocalConfig.elm` if your local URLs are different from the default setting.
@@ -143,6 +144,20 @@ You may need to update `src/elm/LocalConfig.elm` if your local URLs are differen
 1. Serve locally, and watch file changes: `ddev gulp`
 2. Prepare file for publishing (e.g. minify, and rev file names): `ddev gulp publish`
 3. Deploy to GitHub's pages (`gh-pages` branch of your repository): `ddev gulp deploy`
+
+#### Getting started
+
+Frontend: http://localhost:3000 (that comes from inside DDEV after `ddev gulp`)
+
+The Drupal migration creates Devices, Nurses out of the box, so you can
+1. Use `12345678` as the pairing code (tied to Device nodes at the Drupal side).
+1. Use `1234` as the PIN code (tied to the Nurse nodes at the Drupal side).
+
+If you have a dump from another source, to be able to work locally, first of all, you need to create a Device and a Nurse.
+1. `ddev drush uli` to login as `admin`
+1. Fulfill https://eheza-app.ddev.site:4443/node/add/device , note the Pairing code.
+1. Fulfill https://eheza-app.ddev.site:4443/node/add/nurse , note the PIN code, assign it to group(s) and health center(s).
+1. Visit http://localhost:3000 (that comes from inside DDEV), supply the Pairing code and the PIN.
 
 #### Z-Scores
 
