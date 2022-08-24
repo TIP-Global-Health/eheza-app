@@ -11,7 +11,7 @@
 require_once __DIR__ . '/report_common.inc';
 
 
-drush_print("# Acute Illness report  - " . date('D/m/Y'));
+drush_print("# Acute Illness report - " . date('D/m/Y'));
 
 $result = db_query("SELECT
   field_acute_illness_diagnosis_value AS type,
