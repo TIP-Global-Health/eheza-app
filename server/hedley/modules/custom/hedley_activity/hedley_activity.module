@@ -34,6 +34,7 @@ define('HEDLEY_ACTIVITY_CALL_114_CONTENT_TYPE', 'call_114');
 define('HEDLEY_ACTIVITY_HC_CONTAC_CONTENT_TYPE', 'hc_contact');
 define('HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE', 'danger_signs');
 define('HEDLEY_ACTIVITY_WELL_CHILD_HEAD_CIRCUMFERENCE_CONTENT_TYPE', 'well_child_head_circumference');
+define('HEDLEY_ACTIVITY_PERSON_CONTENT_TYPE', 'person');
 
 
 const HEDLEY_ACTIVITY_HEIGHT_BUNDLES = [
@@ -201,6 +202,13 @@ function hedley_activity_node_presave($node) {
 
   if (empty($wrapper->field_person->value())) {
     // We need the child for birthdate and gender ...
+    return;
+  }
+
+  if (!isset($wrapper->field_person->field_birth_date)) {
+    return;
+  }
+  if (!isset($wrapper->field_person->field_gender)) {
     return;
   }
 

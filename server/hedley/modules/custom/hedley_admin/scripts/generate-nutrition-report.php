@@ -132,7 +132,7 @@ while ($processed < $total) {
 
 drush_print('Done!');
 
-drush_print("# Nutrition report  - " . date('D/m/Y'));
+drush_print("# Nutrition report - " . date('D/m/Y'));
 drush_print('');
 
 $skeleton = [

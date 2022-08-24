@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_forms.features.field_instance.inc
@@ -20,6 +21,7 @@ function hedley_forms_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
