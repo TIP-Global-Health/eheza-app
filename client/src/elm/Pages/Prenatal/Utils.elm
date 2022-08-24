@@ -282,8 +282,8 @@ hierarchalBloodPreasureDiagnoses =
     ]
 
 
-hierarchalBloodPreasureDiagnosisToNumber : PrenatalDiagnosis -> Maybe Int
-hierarchalBloodPreasureDiagnosisToNumber diagnosis =
+hierarchalHypertensionlikeDiagnosisToNumber : PrenatalDiagnosis -> Maybe Int
+hierarchalHypertensionlikeDiagnosisToNumber diagnosis =
     case diagnosis of
         DiagnosisEclampsia ->
             Just 50
@@ -328,8 +328,8 @@ hierarchalBloodPreasureDiagnosisToNumber diagnosis =
             Nothing
 
 
-hierarchalBloodPreasureDiagnosisFromNumber : Int -> Maybe PrenatalDiagnosis
-hierarchalBloodPreasureDiagnosisFromNumber number =
+hierarchalHypertensionlikeDiagnosisFromNumber : Int -> Maybe PrenatalDiagnosis
+hierarchalHypertensionlikeDiagnosisFromNumber number =
     case number of
         50 ->
             Just DiagnosisEclampsia
@@ -2807,10 +2807,10 @@ resolvePreviousHypertensionDiagnosis nursePreviousMeasurementsWithDates =
         )
         nursePreviousMeasurementsWithDates
         |> List.concat
-        |> List.map hierarchalBloodPreasureDiagnosisToNumber
+        |> List.map hierarchalHypertensionlikeDiagnosisToNumber
         |> Maybe.Extra.values
         |> List.maximum
-        |> Maybe.andThen hierarchalBloodPreasureDiagnosisFromNumber
+        |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
 
 
 hypertensionDiagnoses : List PrenatalDiagnosis
@@ -2834,6 +2834,85 @@ moderatePreeclampsiaDiagnoses =
     , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
     , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
     ]
+
+
+resolveARVReferralDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
+resolveARVReferralDiagnosis nursePreviousMeasurementsWithDates =
+    List.filterMap
+        (\( _, diagnoses, measurements ) ->
+            if EverySet.member DiagnosisHIV diagnoses || knownAsHIVPositive measurements then
+                Just DiagnosisHIV
+
+            else if EverySet.member DiagnosisDiscordantPartnership diagnoses then
+                Just DiagnosisDiscordantPartnership
+
+            else
+                Nothing
+        )
+        nursePreviousMeasurementsWithDates
+        |> List.head
+
+
+knownAsHIVPositive : PrenatalMeasurements -> Bool
+knownAsHIVPositive measurements =
+    getMeasurementValueFunc measurements.hivTest
+        |> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
+        |> Maybe.withDefault False
+
+
+resolveNCDReferralDiagnoses : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> List PrenatalDiagnosis
+resolveNCDReferralDiagnoses nursePreviousMeasurementsWithDates =
+    Maybe.Extra.values
+        [ resolvePreviousHypertensionlikeDiagnosis nursePreviousMeasurementsWithDates
+        , resolvePreviousDiabetesDiagnosis nursePreviousMeasurementsWithDates
+        ]
+
+
+resolvePreviousHypertensionlikeDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
+resolvePreviousHypertensionlikeDiagnosis nursePreviousMeasurementsWithDates =
+    List.filterMap
+        (\( _, diagnoses, _ ) ->
+            EverySet.toList diagnoses
+                |> List.filter
+                    (\diagnosis ->
+                        List.member diagnosis hypertensionlikeDiagnoses
+                    )
+                |> Just
+        )
+        nursePreviousMeasurementsWithDates
+        |> List.concat
+        |> List.map hierarchalHypertensionlikeDiagnosisToNumber
+        |> Maybe.Extra.values
+        |> List.maximum
+        |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
+
+
+hypertensionlikeDiagnoses : List PrenatalDiagnosis
+hypertensionlikeDiagnoses =
+    hypertensionDiagnoses
+        ++ moderatePreeclampsiaDiagnoses
+        ++ [ DiagnosisSeverePreeclampsiaInitialPhase
+           , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+           , DiagnosisSeverePreeclampsiaRecurrentPhase
+           , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+           , DiagnosisEclampsia
+           ]
+
+
+resolvePreviousDiabetesDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
+resolvePreviousDiabetesDiagnosis nursePreviousMeasurementsWithDates =
+    List.filterMap
+        (\( _, diagnoses, _ ) ->
+            EverySet.toList diagnoses
+                |> List.filter
+                    (\diagnosis ->
+                        List.member diagnosis diabetesDiagnoses
+                    )
+                |> Just
+        )
+        nursePreviousMeasurementsWithDates
+        |> List.concat
+        |> List.head
 
 
 diagnosedMalaria : AssembledData -> Bool
@@ -3082,7 +3161,19 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
 
                 FacilityARVProgram ->
                     Just
-                        { header = [ viewCustomLabel language Translate.PrenatalARVProgramHelper "." "instructions" ]
+                        { header =
+                            let
+                                forPostpartum =
+                                    assembled.encounter.encounterType == NursePostpartumEncounter
+                            in
+                            if forPostpartum then
+                                [ viewCustomLabel language Translate.PrenatalARVProgramPostpartumHeader "." "instructions"
+                                , viewCustomLabel language (Translate.PrenatalARVProgramInstructions forPostpartum) "." "instructions"
+                                ]
+
+                            else
+                                [ viewCustomLabel language (Translate.PrenatalARVProgramInstructions forPostpartum) "." "instructions"
+                                ]
                         , referralField = form.referToARVProgram
                         , referralUpdateFunc =
                             \value form_ ->
@@ -3102,8 +3193,42 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                         }
 
                 FacilityNCDProgram ->
-                    -- @todo : Implement when developing NCD feature.
-                    Nothing
+                    Just
+                        { header =
+                            let
+                                headerText =
+                                    translate language Translate.PrenatalNCDProgramHeaderPrefix
+                                        ++ " "
+                                        ++ diagnosesForView
+                                        ++ " "
+                                        ++ translate language Translate.PrenatalNCDProgramHeaderSuffix
+                                        ++ "."
+
+                                diagnosesForView =
+                                    resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+                                        |> List.map (Translate.PrenatalDiagnosis >> translate language)
+                                        |> String.join ", "
+                            in
+                            [ div [ class "label" ] [ text headerText ]
+                            , viewCustomLabel language Translate.PrenatalNCDProgramInstructions "." "instructions"
+                            ]
+                        , referralField = form.referToNCDProgram
+                        , referralUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | referToNCDProgram = Just value
+                                    , referralFormNCDProgram = Nothing
+                                    , accompanyToNCDProgram = Nothing
+                                }
+                        , formField = form.referralFormNCDProgram
+                        , formUpdateFunc = \value form_ -> { form_ | referralFormNCDProgram = Just value }
+                        , accompanyConfig =
+                            Just
+                                ( form.accompanyToNCDProgram
+                                , \value form_ -> { form_ | accompanyToNCDProgram = Just value }
+                                )
+                        , reasonToSignFunc = NonReferralReasonNCDProgram
+                        }
 
                 FacilityHealthCenter ->
                     -- We should never get here.
@@ -3130,7 +3255,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                     ( accompanySection, accompanyTasks ) =
                                         Maybe.map
                                             (\( field, updateFunc ) ->
-                                                ( [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion FacilityHealthCenter
+                                                ( [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion facility
                                                   , viewBoolInput
                                                         language
                                                         field
@@ -3276,8 +3401,7 @@ nonReferralReasonToSign facility reason =
             NonReferralReasonARVProgram reason
 
         FacilityNCDProgram ->
-            -- @todo : Implement when developing NCD feature.
-            NoNonReferralSigns
+            NonReferralReasonNCDProgram reason
 
         FacilityHealthCenter ->
             -- We should never get here.
@@ -3328,3 +3452,17 @@ referralToFacilityCompleted assembled facility =
                     referralConfig
             )
         |> Maybe.withDefault False
+
+
+undeterminedPostpartumDiagnoses : List PrenatalDiagnosis
+undeterminedPostpartumDiagnoses =
+    [ DiagnosisPostpartumAbdominalPain
+    , DiagnosisPostpartumHeadache
+    , DiagnosisPostpartumFatigue
+    , DiagnosisPostpartumPerinealPainOrDischarge
+
+    -- Fever is considered undertermined only when Mastitis is not
+    -- diagnosed. If it is, Fever diagnosis will be eliminated
+    -- by applyGeneralDiagnosesHierarchy.
+    , DiagnosisPostpartumFever
+    ]

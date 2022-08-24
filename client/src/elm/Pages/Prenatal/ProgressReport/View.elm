@@ -25,6 +25,7 @@ import Backend.Measurement.Model
         , ReferToFacilitySign(..)
         , ReferralFacility(..)
         , SendToHCSign(..)
+        , SpecialityCareSign(..)
         , ViralLoadStatus(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
@@ -88,7 +89,10 @@ import Pages.Prenatal.Utils
         , outsideCareDiagnosesWithPossibleMedication
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
+        , recommendedTreatmentSignsForMastitis
         , recommendedTreatmentSignsForSyphilis
+        , resolveARVReferralDiagnosis
+        , resolveNCDReferralDiagnoses
         )
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -414,8 +418,44 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
 
                         knownAsPositiveEntries =
                             viewKnownPositives language date measurements
+
+                        programReferralEntries =
+                            getMeasurementValueFunc measurements.specialityCare
+                                |> Maybe.map
+                                    (\value ->
+                                        let
+                                            arvEntry =
+                                                resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
+                                                    |> Maybe.map
+                                                        (\diagnosis ->
+                                                            if not <| EverySet.member EnrolledToARVProgram value then
+                                                                viewProgramReferralEntry language date diagnosis FacilityARVProgram
+
+                                                            else
+                                                                []
+                                                        )
+                                                    |> Maybe.withDefault []
+
+                                            ncdEntries =
+                                                resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+                                                    |> List.map
+                                                        (\diagnosis ->
+                                                            if not <| EverySet.member EnrolledToARVProgram value then
+                                                                viewProgramReferralEntry language date diagnosis FacilityNCDProgram
+
+                                                            else
+                                                                []
+                                                        )
+                                                    |> List.concat
+                                        in
+                                        arvEntry ++ ncdEntries
+                                    )
+                                |> Maybe.withDefault []
                     in
-                    knownAsPositiveEntries ++ diagnosesEntries ++ outsideCareDiagnosesEntries
+                    knownAsPositiveEntries
+                        ++ diagnosesEntries
+                        ++ outsideCareDiagnosesEntries
+                        ++ programReferralEntries
                 )
                 allMeasurementsWithDates
                 |> List.concat
@@ -432,6 +472,18 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
             dignoses
                 :: alerts
         ]
+
+
+viewProgramReferralEntry : Language -> NominalDate -> PrenatalDiagnosis -> ReferralFacility -> List (Html Msg)
+viewProgramReferralEntry language date diagnosis facility =
+    diagnosisForProgressReportToString language diagnosis
+        ++ " - "
+        ++ (translate language <| Translate.ReferredToFacilityPostpartum facility)
+        ++ " "
+        ++ (String.toLower <| translate language Translate.On)
+        ++ " "
+        ++ formatDDMMYYYY date
+        |> wrapWithLI
 
 
 viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
@@ -2339,6 +2391,16 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         ++ suffix
                         |> wrapWithLI
 
+        undeterminedDiagnosisMessage =
+            diagnosisForProgressReport
+                ++ " - "
+                ++ translate language Translate.UndeterminedDiagnosisMessage
+                ++ " "
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+                |> wrapWithLI
+
         noTreatmentRecordedMessage =
             noTreatmentRecordedMessageWithComplications ""
 
@@ -2908,35 +2970,28 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             mentalHealthMessage
 
         DiagnosisPostpartumAbdominalPain ->
-            -- @todo
-            []
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumHeadache ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumFatigue ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumFever ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumPerinealPainOrDischarge ->
+            undeterminedDiagnosisMessage
 
         DiagnosisPostpartumUrinaryIncontinence ->
             referredToHospitalMessage
 
-        DiagnosisPostpartumHeadache ->
-            -- @todo
-            []
-
-        DiagnosisPostpartumFatigue ->
-            -- @todo
-            []
-
-        DiagnosisPostpartumFever ->
-            -- @todo
-            []
-
-        DiagnosisPostpartumPerinealPainOrDischarge ->
-            -- @todo
-            []
-
         DiagnosisPostpartumInfection ->
-            -- @todo
-            []
+            referredToHospitalMessage
 
         DiagnosisPostpartumExcessiveBleeding ->
-            -- @todo
-            []
+            referredToHospitalMessage
 
         DiagnosisPostpartumEarlyMastitisOrEngorgment ->
             getMeasurementValueFunc measurements.medicationDistribution
@@ -2962,8 +3017,41 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
         DiagnosisPostpartumMastitis ->
-            -- @todo
-            []
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
+                |> Maybe.map
+                    (EverySet.toList
+                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMastitis)
+                        >> (\treatment ->
+                                if List.isEmpty treatment then
+                                    noTreatmentRecordedMessage
+
+                                else if List.member NoTreatmentForMastitis treatment then
+                                    noTreatmentAdministeredMessage
+
+                                else
+                                    let
+                                        treatedWithMessage =
+                                            List.head treatment
+                                                |> Maybe.map
+                                                    (\medication ->
+                                                        " - "
+                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
+                                                            ++ " "
+                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+                                                    )
+                                                |> Maybe.withDefault ""
+                                    in
+                                    diagnosisForProgressReport
+                                        ++ treatedWithMessage
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                        |> wrapWithLI
+                           )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
 
         DiagnosisOther ->
             -- Other diagnosis is used only at outside care diagnostics.

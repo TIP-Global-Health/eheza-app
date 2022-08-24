@@ -974,7 +974,8 @@ type TranslationId
     | PrenatalHealthEducationSaferSexInform
     | PrenatalHealthEducationEarlyMastitisOrEngorgmentInform
     | PrenatalHealthEducationMentalHealthInform
-    | PrenatalARVProgramHelper
+    | PrenatalARVProgramInstructions Bool
+    | PrenatalARVProgramPostpartumHeader
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
     | PrenatalImmunisationDescription PrenatalVaccineType
@@ -1035,6 +1036,9 @@ type TranslationId
     | PrenatalMentalHealthSpecialistQuestion
     | PrenatalMentalHealthWarningPopupMessage
     | PrenatalMentalHealthWarningPopupInstructions
+    | PrenatalNCDProgramHeaderPrefix
+    | PrenatalNCDProgramHeaderSuffix
+    | PrenatalNCDProgramInstructions
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
     | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
@@ -1103,6 +1107,7 @@ type TranslationId
     | ReferredPatientToFacilityQuestion ReferralFacility
     | ReferredToFacility ReferralFacility
     | ReferredToFacilityNot ReferralFacility
+    | ReferredToFacilityPostpartum ReferralFacility
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -1310,6 +1315,7 @@ type TranslationId
     | UbudeheLabel
     | UbudeheNumber Ubudehe
     | UndeterminedDiagnoses
+    | UndeterminedDiagnosisMessage
     | UnitCopiesPerMM3
     | UnitGramsPerDeciliter
     | UnitMilliGramsPerDeciliter
@@ -1459,8 +1465,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Will you accompany the patient to Integration HIV/PMTCT"
-                    , kinyarwanda = Just "Uzaherekeza umurwayi muri serivisi ikomatanije ya HIV/PMTCT"
+                    { english = "Will you accompany the patient to ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -3150,8 +3156,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Complete an Integration HIV/PMTCT referral form"
-                    , kinyarwanda = Just "Uzuza urupapuro rwohereza umubyeyi muri service ikomatanije ya HIV/PMTCT"
+                    { english = "Complete an ARV services referral form"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -9803,6 +9809,21 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PrenatalNCDProgramHeaderPrefix ->
+            { english = "This patient was diagnosed with"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalNCDProgramHeaderSuffix ->
+            { english = "during her pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalNCDProgramInstructions ->
+            { english = "Refer patient to NCD services for further management"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalNextStepsTask isChw task ->
             case task of
                 Pages.Prenatal.Activity.Types.NextStepsAppointmentConfirmation ->
@@ -9863,16 +9884,27 @@ translationSet trans =
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-        PrenatalARVProgramHelper ->
-            { english = "Refer patient to Integration HIV/PMTCT for assessment of ARV’s"
-            , kinyarwanda = Just "Ohereza umubyeyi muri serisi ikomatanije ya HIV/PMTCT kugira ngo hakorwe isuzuma ku bijyanye n' imiti igabanya ubukana bwa Virusi itera SIDA"
+        PrenatalARVProgramInstructions forPostpartum ->
+            if forPostpartum then
+                { english = "Refer patient to ARV services for further management"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Refer patient to ARV services for assessment of ARVs"
+                , kinyarwanda = Nothing
+                }
+
+        PrenatalARVProgramPostpartumHeader ->
+            { english = "This patient was diagnosed with HIV during her pregnancy"
+            , kinyarwanda = Nothing
             }
 
         PrenatalHIVSignQuestion sign ->
             case sign of
                 HIVProgramHC ->
-                    { english = "Does the health center have a HIV/PMTCT program"
-                    , kinyarwanda = Just "Ikigo Nderabuzima gifite porogaramu ya HIV/PMTCT"
+                    { english = "Does the health center have a ARV services program"
+                    , kinyarwanda = Nothing
                     }
 
                 PartnerHIVPositive ->
@@ -11625,7 +11657,7 @@ translationSet trans =
         TestPrerequisiteQuestion value ->
             case value of
                 PrerequisiteFastFor12h ->
-                    { english = "Has the patient fasted for this test (no food for 12 hours)"
+                    { english = "Was this test performed before a meal"
                     , kinyarwanda = Nothing
                     }
 
@@ -12237,8 +12269,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Have you referred the patient to the Integration HIV/PMTCT"
-                    , kinyarwanda = Just "Waba wohereje umurwayi (umubyeyi) muri serivisi ikomatanije ya HIV/PMTCT"
+                    { english = "Have you referred the patient to the ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -12264,8 +12296,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Referred to HIV/PMTCT"
-                    , kinyarwanda = Just "Yoherejwe muri serivisi ya HIV/PMTCT"
+                    { english = "Referred to ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -12291,12 +12323,29 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Not referred to HIV/PMTCT"
-                    , kinyarwanda = Just "Ntabwo yoherejwe muri serivisi ya HIV/PMTCT"
+                    { english = "Not referred to ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
                     { english = "Not referred to NCD services"
+                    , kinyarwanda = Nothing
+                    }
+
+        ReferredToFacilityPostpartum facility ->
+            case facility of
+                FacilityARVProgram ->
+                    { english = "referred to ARV services for post-partum management"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityNCDProgram ->
+                    { english = "referred to NCD program for post-partum management"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -13047,7 +13096,7 @@ translationSet trans =
             }
 
         SpecialityCareHeaderSuffix ->
-            { english = "During your pregnancy"
+            { english = "during your pregnancy"
             , kinyarwanda = Nothing
             }
 
@@ -13432,8 +13481,8 @@ translationSet trans =
                     }
 
                 FacilityNCDProgram ->
-                    { english = "Refer patient to NCD services for further management"
-                    , kinyarwanda = Nothing
+                    { english = "Direct patient to the appropriate location"
+                    , kinyarwanda = Just "Yobora umurwayi ahantu habugenewe"
                     }
 
         ShowAll ->
@@ -13866,6 +13915,11 @@ translationSet trans =
 
         UndeterminedDiagnoses ->
             { english = "Undetermined Diagnoses"
+            , kinyarwanda = Nothing
+            }
+
+        UndeterminedDiagnosisMessage ->
+            { english = "undetermined diagnosis - followed Post-Partum Protocols"
             , kinyarwanda = Nothing
             }
 

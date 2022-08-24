@@ -191,7 +191,7 @@ expectActivity currentDate assembled activity =
                         specialityCareSections
 
                 NextSteps ->
-                    mandatoryActivitiesForPostpartumNextStepsCompleted currentDate assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
                                 |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
@@ -787,15 +787,19 @@ expectSpecialityCareSignSection : AssembledData -> SpecialityCareSign -> Bool
 expectSpecialityCareSignSection assembled sign =
     case sign of
         EnrolledToARVProgram ->
-            diagnosedPreviously DiagnosisHIV assembled
+            resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
+                |> isJust
 
         EnrolledToNCDProgram ->
-            diagnosedHypertensionPrevoiusly assembled
+            resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+                |> List.isEmpty
+                |> not
 
         NoSpecialityCareSigns ->
             False
 
 
+specialityCareSections : List SpecialityCareSign
 specialityCareSections =
     [ EnrolledToARVProgram, EnrolledToNCDProgram ]
 
@@ -937,12 +941,7 @@ historyTaskCompleted assembled task =
 
 referToHospital : AssembledData -> Bool
 referToHospital =
-    diagnosesCausingHospitalReferral >> EverySet.isEmpty >> not
-
-
-diagnosesCausingHospitalReferral : AssembledData -> EverySet PrenatalDiagnosis
-diagnosesCausingHospitalReferral =
-    diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial
+    diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial >> EverySet.isEmpty >> not
 
 
 referToMentalHealthSpecialist : AssembledData -> Bool
@@ -950,9 +949,17 @@ referToMentalHealthSpecialist assembled =
     mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnosesRequiringTreatment assembled
 
 
-referToHIVProgram : AssembledData -> Bool
-referToHIVProgram assembled =
-    diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements
+referToARVProgram : AssembledData -> Bool
+referToARVProgram assembled =
+    (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements)
+        || referredToSpecialityCareProgram EnrolledToARVProgram assembled
+
+
+referredToSpecialityCareProgram : SpecialityCareSign -> AssembledData -> Bool
+referredToSpecialityCareProgram program assembled =
+    getMeasurementValueFunc assembled.measurements.specialityCare
+        |> Maybe.map (EverySet.member program >> not)
+        |> Maybe.withDefault False
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
@@ -1053,7 +1060,9 @@ provideMentalHealthEducation : AssembledData -> Bool
 provideMentalHealthEducation assembled =
     -- Mental health survey was taken and none of
     -- mental health diagnoses was determined.
-    isJust assembled.measurements.mentalHealth
+    -- No need to display at Postpartum encounter.
+    (assembled.encounter.encounterType == NurseEncounter)
+        && isJust assembled.measurements.mentalHealth
         && diagnosedNoneOf mentalHealthDiagnosesRequiringTreatment assembled
 
 
@@ -1095,7 +1104,6 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
             activityCompleted currentDate assembled DangerSigns
 
         NursePostpartumEncounter ->
-            --@todo
             True
 
         _ ->
@@ -1104,6 +1112,19 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
+    let
+        mandatoryActivitiesFoNurseCompleted =
+            -- All activities that will appear at
+            -- current encounter are completed, besides
+            -- Photo and Next Steps itself.
+            getAllActivities assembled
+                |> EverySet.fromList
+                |> EverySet.remove PrenatalPhoto
+                |> EverySet.remove NextSteps
+                |> EverySet.toList
+                |> List.filter (expectActivity currentDate assembled)
+                |> List.all (activityCompleted currentDate assembled)
+    in
     case assembled.encounter.encounterType of
         NurseEncounter ->
             -- If we have emergency diagnosis that require immediate referral,
@@ -1112,17 +1133,11 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
                 || (-- Otherwise, we need all activities that will appear at
                     -- current encounter completed, besides Photo
                     -- and Next Steps itself.
-                    getAllActivities assembled
-                        |> EverySet.fromList
-                        |> EverySet.remove PrenatalPhoto
-                        |> EverySet.remove NextSteps
-                        |> EverySet.toList
-                        |> List.filter (expectActivity currentDate assembled)
-                        |> List.all (activityCompleted currentDate assembled)
+                    mandatoryActivitiesFoNurseCompleted
                    )
 
         NursePostpartumEncounter ->
-            activityCompleted currentDate assembled SymptomReview
+            mandatoryActivitiesFoNurseCompleted
 
         ChwFirstEncounter ->
             let
@@ -1166,12 +1181,6 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         ChwPostpartumEncounter ->
             activityCompleted currentDate assembled PregnancyOutcome
                 && activityCompleted currentDate assembled DangerSigns
-
-
-mandatoryActivitiesForPostpartumNextStepsCompleted : NominalDate -> AssembledData -> Bool
-mandatoryActivitiesForPostpartumNextStepsCompleted currentDate assembled =
-    -- @todo
-    True
 
 
 expectPrenatalPhoto : NominalDate -> AssembledData -> Bool
@@ -1409,21 +1418,23 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
 
 applyDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyDiagnosesHierarchy =
-    applyBloodPreasureDiagnosesHierarchy >> applyMastitisDiagnosesHierarchy
+    applyHypertensionlikeDiagnosesHierarchy
+        >> applyMastitisDiagnosesHierarchy
+        >> applyGeneralDiagnosesHierarchy
 
 
-applyBloodPreasureDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyBloodPreasureDiagnosesHierarchy diagnoses =
+applyHypertensionlikeDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyHypertensionlikeDiagnosesHierarchy diagnoses =
     let
         ( bloodPreasureDiagnoses, others ) =
             EverySet.toList diagnoses
                 |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPreasureDiagnoses)
 
         topBloodPreasureDiagnosis =
-            List.map hierarchalBloodPreasureDiagnosisToNumber bloodPreasureDiagnoses
+            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPreasureDiagnoses
                 |> Maybe.Extra.values
                 |> List.maximum
-                |> Maybe.andThen hierarchalBloodPreasureDiagnosisFromNumber
+                |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in
@@ -1450,6 +1461,17 @@ applyMastitisDiagnosesHierarchy diagnoses =
     topMastitisDiagnosis
         ++ others
         |> EverySet.fromList
+
+
+applyGeneralDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyGeneralDiagnosesHierarchy diagnoses =
+    -- When Mastitis is diagnosed, we eliminate Fever diagnosis, because
+    -- fever is one of the symptoms for Mastitis.
+    if EverySet.member DiagnosisPostpartumMastitis diagnoses then
+        EverySet.remove DiagnosisPostpartumFever diagnoses
+
+    else
+        diagnoses
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
@@ -2543,16 +2565,6 @@ mentalHealthDiagnoses =
     DiagnosisDepressionNotLikely :: mentalHealthDiagnosesRequiringTreatment
 
 
-undeterminedPostpartumDiagnoses : List PrenatalDiagnosis
-undeterminedPostpartumDiagnoses =
-    [ DiagnosisPostpartumAbdominalPain
-    , DiagnosisPostpartumHeadache
-    , DiagnosisPostpartumFatigue
-    , DiagnosisPostpartumFever
-    , DiagnosisPostpartumPerinealPainOrDischarge
-    ]
-
-
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled healthEducationForm =
     let
@@ -3228,15 +3240,21 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 ( _, tasks ) =
                     case assembled.encounter.encounterType of
                         NurseEncounter ->
-                            resolveReferralInputsAndTasksForNurse language
-                                currentDate
-                                assembled
-                                SetReferralBoolInput
-                                SetFacilityNonReferralReason
-                                form
+                            tasksForNurse
+
+                        NursePostpartumEncounter ->
+                            tasksForNurse
 
                         _ ->
                             resolveReferralInputsAndTasksForCHW language currentDate assembled form
+
+                tasksForNurse =
+                    resolveReferralInputsAndTasksForNurse language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
             in
             ( Maybe.Extra.values tasks
                 |> List.length
@@ -7204,11 +7222,11 @@ matchRequiredReferralFacility assembled facility =
             referToMentalHealthSpecialist assembled
 
         FacilityARVProgram ->
-            referToHIVProgram assembled
+            referToARVProgram assembled
 
         FacilityNCDProgram ->
-            -- @todo : Implement when developing NCD feature.
-            False
+            referredToSpecialityCareProgram EnrolledToNCDProgram assembled
+                || diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
 
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved

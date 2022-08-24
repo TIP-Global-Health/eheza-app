@@ -43,7 +43,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm, viewPauseEncounterButton)
+import Pages.Prenatal.View exposing (customWarningPopup, viewMedicationDistributionForm, viewPauseEncounterButton)
 import Pages.Utils
     exposing
         ( emptySelectOption
@@ -138,7 +138,7 @@ warningPopup :
     -> (Maybe (WarningPopupType msg) -> msg)
     -> Maybe (WarningPopupType msg)
     -> Maybe (Html msg)
-warningPopup language currentDate isChw diagnoses setStateMsg state =
+warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
     Maybe.andThen
         (\popupType ->
             let
@@ -147,7 +147,7 @@ warningPopup language currentDate isChw diagnoses setStateMsg state =
                         WarningPopupRegular ->
                             let
                                 nonUrgentDiagnoses =
-                                    EverySet.toList diagnoses |> filterNonUrgentDiagnoses
+                                    EverySet.toList encounterDiagnoses |> filterNonUrgentDiagnoses
                             in
                             if List.isEmpty nonUrgentDiagnoses then
                                 Nothing
@@ -232,30 +232,6 @@ warningPopup language currentDate isChw diagnoses setStateMsg state =
             Maybe.map (customWarningPopup language) data
         )
         state
-
-
-customWarningPopup : Language -> ( Html msg, Html msg, msg ) -> Html msg
-customWarningPopup language ( topMessage, bottomMessage, action ) =
-    div [ class "ui active modal diagnosis-popup" ]
-        [ div [ class "content" ] <|
-            [ div [ class "popup-heading-wrapper" ]
-                [ img [ src "assets/images/exclamation-red.png" ] []
-                , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
-                ]
-            , div [ class "popup-title" ]
-                [ topMessage
-                , bottomMessage
-                ]
-            ]
-        , div
-            [ class "actions" ]
-            [ button
-                [ class "ui primary fluid button"
-                , onClick action
-                ]
-                [ text <| translate language Translate.Continue ]
-            ]
-        ]
 
 
 viewActivity : Language -> NominalDate -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
@@ -2433,28 +2409,35 @@ viewSpecialityCareContent language currentDate assembled data =
             arvTasks ++ ncdTasks
 
         ( arvSection, arvTasks ) =
-            if expectSpecialityCareSignSection assembled EnrolledToARVProgram then
-                ( [ sectionHeader (Translate.PrenatalDiagnosis DiagnosisHIV)
-                  , viewQuestionLabel language <| Translate.SpecialityCareSignQuestion EnrolledToARVProgram
-                  , viewBoolInput
-                        language
-                        form.enrolledToARVProgram
-                        (SetSpecialityCareBoolInput
-                            (\value form_ -> { form_ | enrolledToARVProgram = Just value })
+            resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
+                |> Maybe.map
+                    (\referraDiagnosis ->
+                        ( [ sectionHeader (translate language <| Translate.PrenatalDiagnosis referraDiagnosis)
+                          , viewQuestionLabel language <| Translate.SpecialityCareSignQuestion EnrolledToARVProgram
+                          , viewBoolInput
+                                language
+                                form.enrolledToARVProgram
+                                (SetSpecialityCareBoolInput
+                                    (\value form_ -> { form_ | enrolledToARVProgram = Just value })
+                                )
+                                "arv"
+                                Nothing
+                          , div [ class "separator" ] []
+                          ]
+                        , [ form.enrolledToARVProgram ]
                         )
-                        "arv"
-                        Nothing
-                  , div [ class "separator" ] []
-                  ]
-                , [ form.enrolledToARVProgram ]
-                )
-
-            else
-                ( [], [] )
+                    )
+                |> Maybe.withDefault ( [], [] )
 
         ( ncdSection, ncdTasks ) =
-            if expectSpecialityCareSignSection assembled EnrolledToNCDProgram then
-                ( [ sectionHeader Translate.Hypertension
+            let
+                referraDiagnoses =
+                    resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+            in
+            if not <| List.isEmpty referraDiagnoses then
+                ( [ List.map (Translate.PrenatalDiagnosis >> translate language) referraDiagnoses
+                        |> String.join ", "
+                        |> sectionHeader
                   , viewQuestionLabel language <| Translate.SpecialityCareSignQuestion EnrolledToNCDProgram
                   , viewBoolInput
                         language
@@ -2472,13 +2455,13 @@ viewSpecialityCareContent language currentDate assembled data =
             else
                 ( [], [] )
 
-        sectionHeader diagnosisTransId =
+        sectionHeader diagnoses =
             div [ class "label header" ]
                 [ text <| translate language Translate.SpecialityCareHeaderPrefix
                 , text " "
-                , span [ class "highlight" ] [ text <| translate language diagnosisTransId ]
+                , span [ class "highlight" ] [ text diagnoses ]
                 , text " "
-                , text <| String.toLower <| translate language Translate.SpecialityCareHeaderSuffix
+                , text <| translate language Translate.SpecialityCareHeaderSuffix
                 , text "."
                 ]
     in
@@ -4752,15 +4735,21 @@ viewReferralForm language currentDate assembled form =
         ( inputs, _ ) =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    resolveReferralInputsAndTasksForNurse language
-                        currentDate
-                        assembled
-                        SetReferralBoolInput
-                        SetFacilityNonReferralReason
-                        form
+                    viewForNurse
+
+                NursePostpartumEncounter ->
+                    viewForNurse
 
                 _ ->
                     resolveReferralInputsAndTasksForCHW language currentDate assembled form
+
+        viewForNurse =
+            resolveReferralInputsAndTasksForNurse language
+                currentDate
+                assembled
+                SetReferralBoolInput
+                SetFacilityNonReferralReason
+                form
     in
     div [ class "ui form referral" ]
         inputs
