@@ -42,6 +42,7 @@ projects[entitycache][version] = 1.2
 
 projects[entityreference][subdir] = "contrib"
 projects[entityreference][version] = "1.5"
+projects[entityreference][patch][] = "https://gist.githubusercontent.com/AronNovak/28c7ea79823db3da7cf3ee77c4799577/raw/4cf996dbf56486f5d36eff5105646e31402625fa/entityreference-devel-generate-speedup.patch"
 
 projects[entity_validator][subdir] = "contrib"
 projects[entity_validator][version] = "1.2"
