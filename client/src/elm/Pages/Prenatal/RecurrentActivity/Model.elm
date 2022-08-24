@@ -50,9 +50,8 @@ type Msg
     | SaveHIVPCRResult PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
-    | SetReferToHealthCenter Bool
-    | SetHandReferralForm Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
+    | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
     | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) (Maybe NextStepsTask)
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
@@ -120,7 +119,7 @@ emptyLabResultsData =
 
 
 type alias NextStepsData =
-    { sendToHCForm : SendToHCForm
+    { referralForm : ReferralForm
     , medicationDistributionForm : MedicationDistributionForm
     , healthEducationForm : HealthEducationForm
     , activeTask : Maybe NextStepsTask
@@ -129,7 +128,7 @@ type alias NextStepsData =
 
 emptyNextStepsData : NextStepsData
 emptyNextStepsData =
-    { sendToHCForm = emptySendToHCForm
+    { referralForm = emptyReferralForm
     , medicationDistributionForm = emptyMedicationDistributionForm
     , healthEducationForm = emptyHealthEducationForm
     , activeTask = Nothing
@@ -169,12 +168,13 @@ type alias PrenatalBloodGpRsResultForm =
     , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 emptyPrenatalBloodGpRsResultForm : PrenatalBloodGpRsResultForm
 emptyPrenatalBloodGpRsResultForm =
-    PrenatalBloodGpRsResultForm Nothing Nothing Nothing Nothing
+    PrenatalBloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias PrenatalUrineDipstickResultForm =

@@ -209,6 +209,9 @@ viewContentForOther language currentDate isChw personId person patientType initi
                 FilterAntenatal ->
                     viewAntenatalPane language currentDate personId pregnancies db
 
+                FilterFamilyPlanning ->
+                    viewFamilyPlanningPane language currentDate personId (List.map Tuple.first pregnancies) db
+
                 FilterDemographics ->
                     emptyNode
     in
@@ -364,6 +367,7 @@ viewFilters language person patientType model =
                     if patientType == PatientAdult then
                         [ FilterAcuteIllness
                         , FilterAntenatal
+                        , FilterFamilyPlanning
                         , FilterDemographics
                         ]
 
@@ -508,3 +512,77 @@ viewAntenatalEntry language currentDate personId db ( ( participantId, status ),
             )
         )
         maybeLastEncounterId
+
+
+viewFamilyPlanningPane :
+    Language
+    -> NominalDate
+    -> PersonId
+    -> List IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> Html Msg
+viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db =
+    let
+        entriesHeading =
+            div [ class "heading family-planning" ]
+                [ div [ class "date" ] [ text <| translate language Translate.EncounterDate ]
+                , div [ class "signs" ] [ text <| translate language Translate.SelectedFamilyPlanningMethod ]
+                ]
+
+        content =
+            groupFamilyPlannings
+                ++ prenatalFamilyPlannings
+                |> List.sortWith sortTuplesByDateDesc
+                |> List.map (viewFamilyPlanningEntry language)
+
+        groupFamilyPlannings =
+            Dict.get personId db.motherMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map (.familyPlannings >> Dict.values)
+                |> Maybe.withDefault []
+                |> List.map prepareEntryData
+
+        prenatalFamilyPlannings =
+            List.map
+                (\encounterId ->
+                    Dict.get encounterId db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map .familyPlanning
+                )
+                prenatalEncountersIds
+                |> Maybe.Extra.values
+                |> Maybe.Extra.values
+                |> List.map (Tuple.second >> prepareEntryData)
+
+        prepareEntryData familyPlanning =
+            ( familyPlanning.dateMeasured, familyPlanning.value )
+
+        prenatalEncountersIds =
+            List.map
+                (\participantId ->
+                    Dict.get participantId db.prenatalEncountersByParticipant
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map Dict.keys
+                )
+                prenatalParticipantsIds
+                |> Maybe.Extra.values
+                |> List.concat
+    in
+    div [ class "pane family-planning" ]
+        [ viewPaneHeading language <| Translate.PatientRecordFilter FilterFamilyPlanning
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: content
+        ]
+
+
+viewFamilyPlanningEntry language ( date, signs ) =
+    div [ class "entry family-planning" ]
+        [ div [ class "date" ] [ text <| formatDDMMYYYY date ]
+        , div [ class "signs" ]
+            [ EverySet.toList signs
+                |> List.map (Translate.FamilyPlanningSignLabel >> translate language)
+                |> String.join ", "
+                |> text
+            ]
+        ]
