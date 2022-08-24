@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cd ../..
+if [[ ! -f ~/.composer/vendor/bin/phpcs ]]; then
+  bash ci-scripts/install_coder.sh
+fi
+
+export REVIEW_STANDARD="Drupal"
+bash ci-scripts/test_coder.sh
+export REVIEW_STANDARD="DrupalPractice"
+bash ci-scripts/test_coder.sh
