@@ -9815,7 +9815,7 @@ translationSet trans =
             }
 
         PrenatalNCDProgramHeaderSuffix ->
-            { english = "during their pregnancy"
+            { english = "during her pregnancy"
             , kinyarwanda = Nothing
             }
 
@@ -9896,7 +9896,7 @@ translationSet trans =
                 }
 
         PrenatalARVProgramPostpartumHeader ->
-            { english = "This patient was diagnosed with HIV during their pregnancy"
+            { english = "This patient was diagnosed with HIV during her pregnancy"
             , kinyarwanda = Nothing
             }
 
