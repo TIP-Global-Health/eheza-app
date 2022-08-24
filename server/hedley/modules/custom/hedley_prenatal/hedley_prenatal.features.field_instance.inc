@@ -7005,7 +7005,7 @@ function hedley_prenatal_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_speciality_care_signs',
-    'label' => 'Speciality Care Signs',
+    'label' => 'Specialty Care Signs',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -9238,7 +9238,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Send to HC');
   t('Shards');
   t('Specialist at HC');
-  t('Speciality Care Signs');
+  t('Specialty Care Signs');
   t('Sugar Count');
   t('Sys Repeated');
   t('Test Execution Note');
