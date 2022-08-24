@@ -2,6 +2,13 @@
 
 /**
  * @file
+ * Code for the Hedley view export feature.
+ */
+
+include_once 'hedley_view_export.features.inc';
+
+/**
+ * @file
  * Export views with advanced queue.
  */
 
