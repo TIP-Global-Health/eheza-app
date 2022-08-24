@@ -338,6 +338,7 @@ type TranslationId
     | AdministerFolicAcidHelper
     | AdministerHIVARVHelper
     | AdministerIronHelper
+    | AdministerParacetamolHelper
     | AdministerVitaminAHelperPrenatal
     | AdministerVitaminAHelperWellChild
     | Administered
@@ -754,6 +755,8 @@ type TranslationId
     | MalnutritionWithComplications
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
+    | MastitisRecommendedTreatmentHeader
+    | MastitisRecommendedTreatmentHelper
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -1961,6 +1964,11 @@ translationSet trans =
         AdministerIronHelper ->
             { english = "Take 1 60 mg tabs 2x a day x 3 months"
             , kinyarwanda = Just "Fata mg 1 60 inshuro 2 ku munsi mu mezi atatu"
+            }
+
+        AdministerParacetamolHelper ->
+            { english = "Take 1 tablet by mouth 3 times a day for 5 days"
+            , kinyarwanda = Nothing
             }
 
         AdministerVitaminAHelperPrenatal ->
@@ -6263,6 +6271,16 @@ translationSet trans =
                     , kinyarwanda = Just "Umupfakazi"
                     }
 
+        MastitisRecommendedTreatmentHeader ->
+            { english = "This patient has Mastitis"
+            , kinyarwanda = Nothing
+            }
+
+        MastitisRecommendedTreatmentHelper ->
+            { english = "Select the best treatment option for the patient below"
+            , kinyarwanda = Nothing
+            }
+
         MeasurementNoChange ->
             { english = "No Change"
             , kinyarwanda = Just "nta cyahindutse"
@@ -9403,22 +9421,22 @@ translationSet trans =
                     }
 
                 DiagnosisPostpartumInfection ->
-                    { english = "Infection"
+                    { english = "Patient shows signs of Infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPostpartumExcessiveBleeding ->
-                    { english = "Excessive Bleeding"
+                    { english = "Patient shows signs of Excessive Bleeding"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-                    { english = "Early Mastitis or Engorgment"
+                    { english = "Patient shows signs of Early Mastitis or Engorgment"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPostpartumMastitis ->
-                    { english = "Mastitis"
+                    { english = "Patient shows signs of Mastitis"
                     , kinyarwanda = Nothing
                     }
 
@@ -9626,6 +9644,11 @@ translationSet trans =
 
                 EducationEarlyMastitisOrEngorgment ->
                     { english = "Early Mastitis or Engorgment"
+                    , kinyarwanda = Nothing
+                    }
+
+                EducationMastitis ->
+                    { english = "Mastitis"
                     , kinyarwanda = Nothing
                     }
 
@@ -11987,6 +12010,31 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentCloxacillin ->
+                    { english = "2 capsules by mouth 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMastitisAmoxicillin ->
+                    { english = "2 capsules by mouth 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentPenecilinV ->
+                    { english = "2 tablets by mouth 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentParacetamol ->
+                    { english = "1 tablet by mouth 3 times a day for 5 days or"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentIbuprofen ->
+                    { english = "1 tablet by mouth 3 times a day for 5 days"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Dosage is not applicable for other options.
                 _ ->
                     { english = ""
@@ -12081,6 +12129,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NoTreatmentForHypertension ->
+                    { english = "No Treatment Administered"
+                    , kinyarwanda = Just "Nta muti watanzwe"
+                    }
+
                 TreatmentAluminiumHydroxide ->
                     { english = "Aluminium Hydroxide (500mg)"
                     , kinyarwanda = Nothing
@@ -12111,7 +12164,32 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NoTreatmentForHypertension ->
+                TreatmentCloxacillin ->
+                    { english = "Cloxacillin (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMastitisAmoxicillin ->
+                    { english = "Amoxicillin (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentPenecilinV ->
+                    { english = "Penecilin V (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentParacetamol ->
+                    { english = "Paracetamol (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentIbuprofen ->
+                    { english = "Ibuprofen (400mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoTreatmentForMastitis ->
                     { english = "No Treatment Administered"
                     , kinyarwanda = Just "Nta muti watanzwe"
                     }

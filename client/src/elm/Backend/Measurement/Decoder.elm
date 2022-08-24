@@ -343,6 +343,9 @@ decodePrenatalHealthEducationSign =
                     "early-mastitis-engorgment" ->
                         succeed EducationEarlyMastitisOrEngorgment
 
+                    "mastitis" ->
+                        succeed EducationMastitis
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

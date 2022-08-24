@@ -852,6 +852,7 @@ type PrenatalHealthEducationSign
     | EducationMentalHealth
     | EducationDiabetes
     | EducationEarlyMastitisOrEngorgment
+    | EducationMastitis
     | NoPrenatalHealthEducationSigns
 
 
@@ -1247,6 +1248,13 @@ type RecommendedTreatmentSign
       -- For Candidiasis:
     | TreatmentClotrimaxazole200
     | TreatmentClotrimaxazole500
+      -- For Mastitis:
+    | TreatmentCloxacillin
+    | TreatmentMastitisAmoxicillin
+    | TreatmentPenecilinV
+    | TreatmentParacetamol
+    | TreatmentIbuprofen
+    | NoTreatmentForMastitis
 
 
 type AvoidingGuidanceReason
