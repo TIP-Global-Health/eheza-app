@@ -338,6 +338,7 @@ type TranslationId
     | AdministerFolicAcidHelper
     | AdministerHIVARVHelper
     | AdministerIronHelper
+    | AdministerParacetamolHelper
     | AdministerVitaminAHelperPrenatal
     | AdministerVitaminAHelperWellChild
     | Administered
@@ -754,6 +755,8 @@ type TranslationId
     | MalnutritionWithComplications
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
+    | MastitisRecommendedTreatmentHeader
+    | MastitisRecommendedTreatmentHelper
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
@@ -971,7 +974,8 @@ type TranslationId
     | PrenatalHealthEducationSaferSexInform
     | PrenatalHealthEducationEarlyMastitisOrEngorgmentInform
     | PrenatalHealthEducationMentalHealthInform
-    | PrenatalARVProgramHelper
+    | PrenatalARVProgramInstructions Bool
+    | PrenatalARVProgramPostpartumHeader
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
     | PrenatalImmunisationDescription PrenatalVaccineType
@@ -1032,6 +1036,9 @@ type TranslationId
     | PrenatalMentalHealthSpecialistQuestion
     | PrenatalMentalHealthWarningPopupMessage
     | PrenatalMentalHealthWarningPopupInstructions
+    | PrenatalNCDProgramHeaderPrefix
+    | PrenatalNCDProgramHeaderSuffix
+    | PrenatalNCDProgramInstructions
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
     | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
     | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
@@ -1100,6 +1107,7 @@ type TranslationId
     | ReferredPatientToFacilityQuestion ReferralFacility
     | ReferredToFacility ReferralFacility
     | ReferredToFacilityNot ReferralFacility
+    | ReferredToFacilityPostpartum ReferralFacility
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -1209,6 +1217,9 @@ type TranslationId
     | Shared
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
+    | SpecialityCareHeaderPrefix
+    | SpecialityCareHeaderSuffix
+    | SpecialityCareSignQuestion SpecialityCareSign
     | StillbornPreviousDelivery
     | SubsequentAntenatalVisit
     | SubsequentEncounter
@@ -1304,6 +1315,7 @@ type TranslationId
     | UbudeheLabel
     | UbudeheNumber Ubudehe
     | UndeterminedDiagnoses
+    | UndeterminedDiagnosisMessage
     | UnitCopiesPerMM3
     | UnitGramsPerDeciliter
     | UnitMilliGramsPerDeciliter
@@ -1453,8 +1465,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Will you accompany the patient to Integration HIV/PMTCT"
-                    , kinyarwanda = Just "Uzaherekeza umurwayi muri serivisi ikomatanije ya HIV/PMTCT"
+                    { english = "Will you accompany the patient to ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -1961,6 +1973,11 @@ translationSet trans =
         AdministerIronHelper ->
             { english = "Take 1 60 mg tabs 2x a day x 3 months"
             , kinyarwanda = Just "Fata mg 1 60 inshuro 2 ku munsi mu mezi atatu"
+            }
+
+        AdministerParacetamolHelper ->
+            { english = "Take 1 tablet by mouth 3 times a day for 5 days"
+            , kinyarwanda = Nothing
             }
 
         AdministerVitaminAHelperPrenatal ->
@@ -3139,8 +3156,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Complete an Integration HIV/PMTCT referral form"
-                    , kinyarwanda = Just "Uzuza urupapuro rwohereza umubyeyi muri service ikomatanije ya HIV/PMTCT"
+                    { english = "Complete an ARV services referral form"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -6263,6 +6280,16 @@ translationSet trans =
                     , kinyarwanda = Just "Umupfakazi"
                     }
 
+        MastitisRecommendedTreatmentHeader ->
+            { english = "This patient has Mastitis"
+            , kinyarwanda = Nothing
+            }
+
+        MastitisRecommendedTreatmentHelper ->
+            { english = "Select the best treatment option for the patient below"
+            , kinyarwanda = Nothing
+            }
+
         MeasurementNoChange ->
             { english = "No Change"
             , kinyarwanda = Just "nta cyahindutse"
@@ -8278,7 +8305,7 @@ translationSet trans =
                     }
 
                 SpecialityCare ->
-                    { english = "Speciality Care"
+                    { english = "Specialty Care"
                     , kinyarwanda = Nothing
                     }
 
@@ -9403,22 +9430,22 @@ translationSet trans =
                     }
 
                 DiagnosisPostpartumInfection ->
-                    { english = "Infection"
+                    { english = "Patient shows signs of Infection"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPostpartumExcessiveBleeding ->
-                    { english = "Excessive Bleeding"
+                    { english = "Patient shows signs of Excessive Bleeding"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-                    { english = "Early Mastitis or Engorgment"
+                    { english = "Patient shows signs of Early Mastitis or Engorgment"
                     , kinyarwanda = Nothing
                     }
 
                 DiagnosisPostpartumMastitis ->
-                    { english = "Mastitis"
+                    { english = "Patient shows signs of Mastitis"
                     , kinyarwanda = Nothing
                     }
 
@@ -9629,6 +9656,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                EducationMastitis ->
+                    { english = "Mastitis"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -9777,6 +9809,21 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PrenatalNCDProgramHeaderPrefix ->
+            { english = "This patient was diagnosed with"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalNCDProgramHeaderSuffix ->
+            { english = "during her pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalNCDProgramInstructions ->
+            { english = "Refer patient to NCD services for further management"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalNextStepsTask isChw task ->
             case task of
                 Pages.Prenatal.Activity.Types.NextStepsAppointmentConfirmation ->
@@ -9837,16 +9884,27 @@ translationSet trans =
                     , kinyarwanda = Just "Inyigisho ku buzima"
                     }
 
-        PrenatalARVProgramHelper ->
-            { english = "Refer patient to Integration HIV/PMTCT for assessment of ARV’s"
-            , kinyarwanda = Just "Ohereza umubyeyi muri serisi ikomatanije ya HIV/PMTCT kugira ngo hakorwe isuzuma ku bijyanye n' imiti igabanya ubukana bwa Virusi itera SIDA"
+        PrenatalARVProgramInstructions forPostpartum ->
+            if forPostpartum then
+                { english = "Refer patient to ARV services for further management"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Refer patient to ARV services for assessment of ARVs"
+                , kinyarwanda = Nothing
+                }
+
+        PrenatalARVProgramPostpartumHeader ->
+            { english = "This patient was diagnosed with HIV during her pregnancy"
+            , kinyarwanda = Nothing
             }
 
         PrenatalHIVSignQuestion sign ->
             case sign of
                 HIVProgramHC ->
-                    { english = "Does the health center have a HIV/PMTCT program"
-                    , kinyarwanda = Just "Ikigo Nderabuzima gifite porogaramu ya HIV/PMTCT"
+                    { english = "Does the health center have a ARV services program"
+                    , kinyarwanda = Nothing
                     }
 
                 PartnerHIVPositive ->
@@ -11599,7 +11657,7 @@ translationSet trans =
         TestPrerequisiteQuestion value ->
             case value of
                 PrerequisiteFastFor12h ->
-                    { english = "Has the patient fasted for this test (no food for 12 hours)"
+                    { english = "Was this test performed before a meal"
                     , kinyarwanda = Nothing
                     }
 
@@ -11987,6 +12045,31 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentCloxacillin ->
+                    { english = "2 capsules by mouth 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMastitisAmoxicillin ->
+                    { english = "2 capsules by mouth 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentPenecilinV ->
+                    { english = "2 tablets by mouth 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentParacetamol ->
+                    { english = "1 tablet by mouth 3 times a day for 5 days or"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentIbuprofen ->
+                    { english = "1 tablet by mouth 3 times a day for 5 days"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Dosage is not applicable for other options.
                 _ ->
                     { english = ""
@@ -12081,6 +12164,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NoTreatmentForHypertension ->
+                    { english = "No Treatment Administered"
+                    , kinyarwanda = Just "Nta muti watanzwe"
+                    }
+
                 TreatmentAluminiumHydroxide ->
                     { english = "Aluminium Hydroxide (500mg)"
                     , kinyarwanda = Nothing
@@ -12111,7 +12199,32 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NoTreatmentForHypertension ->
+                TreatmentCloxacillin ->
+                    { english = "Cloxacillin (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMastitisAmoxicillin ->
+                    { english = "Amoxicillin (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentPenecilinV ->
+                    { english = "Penecilin V (250mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentParacetamol ->
+                    { english = "Paracetamol (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentIbuprofen ->
+                    { english = "Ibuprofen (400mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoTreatmentForMastitis ->
                     { english = "No Treatment Administered"
                     , kinyarwanda = Just "Nta muti watanzwe"
                     }
@@ -12156,8 +12269,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Have you referred the patient to the Integration HIV/PMTCT"
-                    , kinyarwanda = Just "Waba wohereje umurwayi (umubyeyi) muri serivisi ikomatanije ya HIV/PMTCT"
+                    { english = "Have you referred the patient to the ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -12183,8 +12296,8 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Referred to HIV/PMTCT"
-                    , kinyarwanda = Just "Yoherejwe muri serivisi ya HIV/PMTCT"
+                    { english = "Referred to ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
@@ -12210,12 +12323,29 @@ translationSet trans =
                     }
 
                 FacilityARVProgram ->
-                    { english = "Not referred to HIV/PMTCT"
-                    , kinyarwanda = Just "Ntabwo yoherejwe muri serivisi ya HIV/PMTCT"
+                    { english = "Not referred to ARV services"
+                    , kinyarwanda = Nothing
                     }
 
                 FacilityNCDProgram ->
                     { english = "Not referred to NCD services"
+                    , kinyarwanda = Nothing
+                    }
+
+        ReferredToFacilityPostpartum facility ->
+            case facility of
+                FacilityARVProgram ->
+                    { english = "referred to ARV services for post-partum management"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityNCDProgram ->
+                    { english = "referred to NCD program for post-partum management"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -12960,6 +13090,33 @@ translationSet trans =
                     , kinyarwanda = Just "Ntibibonetse"
                     }
 
+        SpecialityCareHeaderPrefix ->
+            { english = "You were diagnosed with"
+            , kinyarwanda = Nothing
+            }
+
+        SpecialityCareHeaderSuffix ->
+            { english = "during your pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        SpecialityCareSignQuestion sign ->
+            case sign of
+                EnrolledToARVProgram ->
+                    { english = "Are you currently enrolled in ARV services at the health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                EnrolledToNCDProgram ->
+                    { english = "Are you currently enrolled in NCD services at the health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoSpecialityCareSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
             , kinyarwanda = Just "Aheruka kubyara umwana upfuye"
@@ -13324,8 +13481,8 @@ translationSet trans =
                     }
 
                 FacilityNCDProgram ->
-                    { english = "Refer patient to NCD services for further management"
-                    , kinyarwanda = Nothing
+                    { english = "Direct patient to the appropriate location"
+                    , kinyarwanda = Just "Yobora umurwayi ahantu habugenewe"
                     }
 
         ShowAll ->
@@ -13758,6 +13915,11 @@ translationSet trans =
 
         UndeterminedDiagnoses ->
             { english = "Undetermined Diagnoses"
+            , kinyarwanda = Nothing
+            }
+
+        UndeterminedDiagnosisMessage ->
+            { english = "undetermined diagnosis - followed Post-Partum Protocols"
             , kinyarwanda = Nothing
             }
 

@@ -3738,6 +3738,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalSpecialityCareRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | specialityCare = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalSymptomReviewRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId

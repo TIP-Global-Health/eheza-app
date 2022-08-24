@@ -214,7 +214,7 @@ type Msg
     | SetMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | SetSpecialistAtHC Bool
     | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
-      -- IMMUNISATION
+      -- IMMUNISATIONMsgs
     | SetActiveImmunisationTask ImmunisationTask
     | SetVaccinationFormViewMode PrenatalVaccineType VaccinationFormViewMode
     | SetUpdatePreviousVaccines PrenatalVaccineType VaccineDose Bool
@@ -225,13 +225,16 @@ type Msg
     | SaveVaccinationUpdateDate PrenatalVaccineType VaccineDose
     | DeleteVaccinationUpdateDate PrenatalVaccineType VaccineDose NominalDate
     | SaveTetanusImmunisation PersonId (Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation ))
-      -- PostpartumTreatmentReview
+      -- PostpartumTreatmentReviewMsgs
     | SetPostpartumTreatmentReviewBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
     | SavePostpartumTreatmentReview PersonId (Maybe ( MedicationId, Medication ))
-      -- BREASTFEEDING
+      -- BREASTFEEDINGMsgs
     | SetBreastfeedingBoolInput (Bool -> BreastfeedingForm -> BreastfeedingForm) Bool
     | SetReasonForNotBreastfeeding BreastfeedingSign
     | SaveBreastfeeding PersonId (Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding ))
+      --  SpecialityCareMsgs
+    | SetSpecialityCareBoolInput (Bool -> SpecialityCareForm -> SpecialityCareForm) Bool
+    | SaveSpecialityCare PersonId (Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare ))
 
 
 type alias Model =
@@ -252,6 +255,7 @@ type alias Model =
     , immunisationData : ImmunisationData
     , postpartumTreatmentReviewData : PostpartumTreatmentReviewData
     , breastfeedingData : BreastfeedingData
+    , specialityCareData : SpecialityCareData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe (WarningPopupType Msg)
@@ -277,6 +281,7 @@ emptyModel =
     , immunisationData = emptyImmunisationData
     , postpartumTreatmentReviewData = emptyPostpartumTreatmentReviewData
     , breastfeedingData = emptyBreastfeedingData
+    , specialityCareData = emptySpecialityCareData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -635,6 +640,30 @@ emptyImmunisationData : ImmunisationData
 emptyImmunisationData =
     { tetanusForm = emptyVaccinationForm
     , activeTask = Nothing
+    }
+
+
+type alias SpecialityCareData =
+    { form : SpecialityCareForm
+    }
+
+
+emptySpecialityCareData : SpecialityCareData
+emptySpecialityCareData =
+    { form = emptySpecialityCareForm
+    }
+
+
+type alias SpecialityCareForm =
+    { enrolledToARVProgram : Maybe Bool
+    , enrolledToNCDProgram : Maybe Bool
+    }
+
+
+emptySpecialityCareForm : SpecialityCareForm
+emptySpecialityCareForm =
+    { enrolledToARVProgram = Nothing
+    , enrolledToNCDProgram = Nothing
     }
 
 

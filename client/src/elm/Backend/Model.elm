@@ -459,6 +459,7 @@ type Revision
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | PrenatalRandomBloodSugarTestRevision PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest
     | PrenatalSendToHCRevision PrenatalSendToHCId PrenatalSendToHC
+    | PrenatalSpecialityCareRevision PrenatalSpecialityCareId PrenatalSpecialityCare
     | PrenatalSymptomReviewRevision PrenatalSymptomReviewId PrenatalSymptomReview
     | PrenatalSyphilisTestRevision PrenatalSyphilisTestId PrenatalSyphilisTest
     | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation

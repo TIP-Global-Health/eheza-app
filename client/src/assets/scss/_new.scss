@@ -1786,7 +1786,8 @@ div.page-activity.prenatal {
 
       .form.referral,
       .form.history.outside-care,
-      .form.medication-distribution {
+      .form.medication-distribution,
+      .form.speciality-care {
 
         .separator:last-of-type {
           display: none;
@@ -1862,6 +1863,10 @@ div.page-activity.prenatal {
         .checkbox-select-input {
           margin-bottom: 40px;
         }
+      }
+
+      .form.speciality-care .label.header {
+        margin-bottom: 20px;
       }
 
       .ui.form.vaccination .header.icon-label {

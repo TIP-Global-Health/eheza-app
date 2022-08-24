@@ -852,6 +852,7 @@ type PrenatalHealthEducationSign
     | EducationMentalHealth
     | EducationDiabetes
     | EducationEarlyMastitisOrEngorgment
+    | EducationMastitis
     | NoPrenatalHealthEducationSigns
 
 
@@ -1247,6 +1248,13 @@ type RecommendedTreatmentSign
       -- For Candidiasis:
     | TreatmentClotrimaxazole200
     | TreatmentClotrimaxazole500
+      -- For Mastitis:
+    | TreatmentCloxacillin
+    | TreatmentMastitisAmoxicillin
+    | TreatmentPenecilinV
+    | TreatmentParacetamol
+    | TreatmentIbuprofen
+    | NoTreatmentForMastitis
 
 
 type AvoidingGuidanceReason
@@ -1457,6 +1465,20 @@ type PostpartumHealingProblem
     | HealingProblemReleaseOfSutures
     | HealingProblemHematoma
     | HealingProblemBruising
+
+
+type alias PrenatalSpecialityCare =
+    PrenatalMeasurement SpecialityCareValue
+
+
+type alias SpecialityCareValue =
+    EverySet SpecialityCareSign
+
+
+type SpecialityCareSign
+    = EnrolledToARVProgram
+    | EnrolledToNCDProgram
+    | NoSpecialityCareSigns
 
 
 
@@ -2346,6 +2368,7 @@ type alias PrenatalMeasurements =
     , tetanusImmunisation : Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation )
     , breastfeeding : Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding )
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
+    , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
     }
 
 
@@ -2389,6 +2412,7 @@ emptyPrenatalMeasurements =
     , tetanusImmunisation = Nothing
     , breastfeeding = Nothing
     , guExam = Nothing
+    , specialityCare = Nothing
     }
 
 

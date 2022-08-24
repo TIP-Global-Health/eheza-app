@@ -81,14 +81,10 @@ thumbnailDimensions =
 
 updateChronicHypertensionDiagnoses : NominalDate -> EverySet PrenatalDiagnosis -> AssembledData -> List PrenatalDiagnosis -> List PrenatalDiagnosis
 updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled filterList =
-    List.filter
-        -- We want to be looking at encounters performed
-        -- before the encounter we're processing, to be able to locate
-        -- previous chronic diagnosis.
-        (\( date, _, _ ) ->
-            Date.compare date encounterDate == LT
-        )
-        assembled.nursePreviousMeasurementsWithDates
+    -- We want to be looking at encounters performed
+    -- before the encounter we're processing, to be able to locate
+    -- previous chronic diagnosis.
+    filterNurseMeasurementsWithDatesToDate encounterDate assembled.nursePreviousMeasurementsWithDates
         |> resolvePreviousHypertensionDiagnosis
         |> Maybe.map
             (\previousHypertensionDiagnosis ->
@@ -97,6 +93,18 @@ updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled fi
         |> Maybe.withDefault encounterDiagnoses
         |> EverySet.toList
         |> List.filter (\diagnosis -> List.member diagnosis filterList)
+
+
+filterNurseMeasurementsWithDatesToDate :
+    NominalDate
+    -> List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
+    -> List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
+filterNurseMeasurementsWithDatesToDate limitDate nursePreviousMeasurementsWithDates =
+    List.filter
+        (\( date, _, _ ) ->
+            Date.compare date limitDate == LT
+        )
+        nursePreviousMeasurementsWithDates
 
 
 hivResultNormal : PrenatalTestReport -> Bool

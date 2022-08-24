@@ -1534,6 +1534,7 @@ function hedley_activity_field_default_field_bases() {
         'safer-sex' => 'Safer sex',
         'mental-health' => 'Mental Health',
         'early-mastitis-engorgment' => 'Early Mastitis or Engorgment',
+        'mastitis' => 'Mastitis',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

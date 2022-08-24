@@ -134,6 +134,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_tetanus_immunisation" (decodeHead decodePrenatalTetanusImmunisation) Nothing
         |> optional "prenatal_breastfeeding" (decodeHead decodePrenatalBreastfeeding) Nothing
         |> optional "prenatal_gu_exam" (decodeHead decodePrenatalGUExam) Nothing
+        |> optional "prenatal_speciality_care" (decodeHead decodePrenatalSpecialityCare) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -342,6 +343,9 @@ decodePrenatalHealthEducationSign =
 
                     "early-mastitis-engorgment" ->
                         succeed EducationEarlyMastitisOrEngorgment
+
+                    "mastitis" ->
+                        succeed EducationMastitis
 
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
@@ -1017,6 +1021,38 @@ decodePostpartumHealingProblem =
                             s
                                 ++ " is not a recognized PostpartumHealingProblem"
                         )
+            )
+
+
+decodePrenatalSpecialityCare : Decoder PrenatalSpecialityCare
+decodePrenatalSpecialityCare =
+    decodePrenatalMeasurement decodeSpecialityCareValue
+
+
+decodeSpecialityCareValue : Decoder SpecialityCareValue
+decodeSpecialityCareValue =
+    field "speciality_care_signs" (decodeEverySet decodeSpecialityCareSign)
+
+
+decodeSpecialityCareSign : Decoder SpecialityCareSign
+decodeSpecialityCareSign =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "arv" ->
+                        succeed EnrolledToARVProgram
+
+                    "ncd" ->
+                        succeed EnrolledToNCDProgram
+
+                    "none" ->
+                        succeed NoSpecialityCareSigns
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized SpecialityCareSign"
             )
 
 

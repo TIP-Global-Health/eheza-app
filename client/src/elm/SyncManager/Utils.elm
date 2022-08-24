@@ -624,6 +624,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalSendToHC identifier ->
             getIdentifier identifier "prenatal_send_to_hc"
 
+        BackendAuthorityPrenatalSpecialityCare identifier ->
+            getIdentifier identifier "prenatal_speciality_care"
+
         BackendAuthorityPrenatalSymptomReview identifier ->
             getIdentifier identifier "prenatal_symptom_review"
 
@@ -1203,6 +1206,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalSendToHC identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalSendToHC identifier
 
+        BackendAuthorityPrenatalSpecialityCare identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalSpecialityCare identifier
+
         BackendAuthorityPrenatalSymptomReview identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalSymptomReview identifier
 
@@ -1744,6 +1750,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalSendToHC identifier ->
             PrenatalSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalSpecialityCare identifier ->
+            PrenatalSpecialityCareRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalSymptomReview identifier ->
             PrenatalSymptomReviewRevision (toEntityUuid identifier.uuid) identifier.entity

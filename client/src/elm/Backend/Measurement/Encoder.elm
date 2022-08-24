@@ -229,6 +229,9 @@ encodePrenatalHealthEducationSign sign =
             EducationEarlyMastitisOrEngorgment ->
                 "early-mastitis-engorgment"
 
+            EducationMastitis ->
+                "mastitis"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
@@ -923,6 +926,33 @@ encodeGUExamSign =
 encodePostpartumHealingProblem : PostpartumHealingProblem -> Value
 encodePostpartumHealingProblem =
     postpartumHealingProblemToString >> string
+
+
+encodePrenatalSpecialityCare : PrenatalSpecialityCare -> List ( String, Value )
+encodePrenatalSpecialityCare =
+    encodePrenatalMeasurement encodeSpecialityCareValue
+
+
+encodeSpecialityCareValue : SpecialityCareValue -> List ( String, Value )
+encodeSpecialityCareValue value =
+    [ ( "speciality_care_signs", encodeEverySet encodeSpecialityCareSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_speciality_care" )
+    ]
+
+
+encodeSpecialityCareSign : SpecialityCareSign -> Value
+encodeSpecialityCareSign sign =
+    string <|
+        case sign of
+            EnrolledToARVProgram ->
+                "arv"
+
+            EnrolledToNCDProgram ->
+                "ncd"
+
+            NoSpecialityCareSigns ->
+                "none"
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )

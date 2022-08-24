@@ -187,10 +187,11 @@ expectActivity currentDate assembled activity =
                     True
 
                 SpecialityCare ->
-                    True
+                    List.any (expectSpecialityCareSignSection assembled)
+                        specialityCareSections
 
                 NextSteps ->
-                    mandatoryActivitiesForPostpartumNextStepsCompleted currentDate assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
                                 |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
@@ -354,8 +355,7 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.breastfeeding
 
         SpecialityCare ->
-            -- @todo
-            False
+            isJust assembled.measurements.specialityCare
 
         PostpartumTreatmentReview ->
             isJust assembled.measurements.medication
@@ -452,6 +452,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
                                     , DiagnosisPostpartumEarlyMastitisOrEngorgment
+                                    , DiagnosisPostpartumMastitis
                                     ]
                                     assembled
                                 || provideMentalHealthEducation assembled
@@ -515,6 +516,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisCandidiasis
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
+                                    , DiagnosisPostpartumMastitis
                                     ]
                                     assembled
                            )
@@ -595,6 +597,13 @@ nextStepsTaskCompleted assembled task =
 
                     else
                         True
+
+                mastitisTreatmentCompleted =
+                    if diagnosed DiagnosisPostpartumMastitis assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMastitis assembled.measurements
+
+                    else
+                        True
             in
             medicationDistributionMeasurementTaken allowedSigns assembled.measurements
                 && malariaTreatmentCompleted
@@ -602,6 +611,7 @@ nextStepsTaskCompleted assembled task =
                 && hypertensionTreatmentCompleted
                 && candidiasisTreatmentCompleted
                 && urinaryTractInfectionTreatmentCompleted
+                && mastitisTreatmentCompleted
 
         NextStepsWait ->
             getMeasurementValueFunc assembled.measurements.labsResults
@@ -773,6 +783,27 @@ examinationTaskCompleted assembled task =
             isJust assembled.measurements.guExam
 
 
+expectSpecialityCareSignSection : AssembledData -> SpecialityCareSign -> Bool
+expectSpecialityCareSignSection assembled sign =
+    case sign of
+        EnrolledToARVProgram ->
+            resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
+                |> isJust
+
+        EnrolledToNCDProgram ->
+            resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+                |> List.isEmpty
+                |> not
+
+        NoSpecialityCareSigns ->
+            False
+
+
+specialityCareSections : List SpecialityCareSign
+specialityCareSections =
+    [ EnrolledToARVProgram, EnrolledToNCDProgram ]
+
+
 referredToHIVProgramPreviously : AssembledData -> Bool
 referredToHIVProgramPreviously assembled =
     List.filterMap
@@ -910,12 +941,7 @@ historyTaskCompleted assembled task =
 
 referToHospital : AssembledData -> Bool
 referToHospital =
-    diagnosesCausingHospitalReferral >> EverySet.isEmpty >> not
-
-
-diagnosesCausingHospitalReferral : AssembledData -> EverySet PrenatalDiagnosis
-diagnosesCausingHospitalReferral =
-    diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial
+    diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial >> EverySet.isEmpty >> not
 
 
 referToMentalHealthSpecialist : AssembledData -> Bool
@@ -923,9 +949,17 @@ referToMentalHealthSpecialist assembled =
     mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnosesRequiringTreatment assembled
 
 
-referToHIVProgram : AssembledData -> Bool
-referToHIVProgram assembled =
-    diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements
+referToARVProgram : AssembledData -> Bool
+referToARVProgram assembled =
+    (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements)
+        || referredToSpecialityCareProgram EnrolledToARVProgram assembled
+
+
+referredToSpecialityCareProgram : SpecialityCareSign -> AssembledData -> Bool
+referredToSpecialityCareProgram program assembled =
+    getMeasurementValueFunc assembled.measurements.specialityCare
+        |> Maybe.map (EverySet.member program >> not)
+        |> Maybe.withDefault False
 
 
 provideNauseaAndVomitingEducation : AssembledData -> Bool
@@ -1026,7 +1060,9 @@ provideMentalHealthEducation : AssembledData -> Bool
 provideMentalHealthEducation assembled =
     -- Mental health survey was taken and none of
     -- mental health diagnoses was determined.
-    isJust assembled.measurements.mentalHealth
+    -- No need to display at Postpartum encounter.
+    (assembled.encounter.encounterType == NurseEncounter)
+        && isJust assembled.measurements.mentalHealth
         && diagnosedNoneOf mentalHealthDiagnosesRequiringTreatment assembled
 
 
@@ -1068,7 +1104,6 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
             activityCompleted currentDate assembled DangerSigns
 
         NursePostpartumEncounter ->
-            --@todo
             True
 
         _ ->
@@ -1077,6 +1112,19 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
+    let
+        mandatoryActivitiesFoNurseCompleted =
+            -- All activities that will appear at
+            -- current encounter are completed, besides
+            -- Photo and Next Steps itself.
+            getAllActivities assembled
+                |> EverySet.fromList
+                |> EverySet.remove PrenatalPhoto
+                |> EverySet.remove NextSteps
+                |> EverySet.toList
+                |> List.filter (expectActivity currentDate assembled)
+                |> List.all (activityCompleted currentDate assembled)
+    in
     case assembled.encounter.encounterType of
         NurseEncounter ->
             -- If we have emergency diagnosis that require immediate referral,
@@ -1085,18 +1133,11 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
                 || (-- Otherwise, we need all activities that will appear at
                     -- current encounter completed, besides Photo
                     -- and Next Steps itself.
-                    getAllActivities assembled
-                        |> EverySet.fromList
-                        |> EverySet.remove PrenatalPhoto
-                        |> EverySet.remove NextSteps
-                        |> EverySet.toList
-                        |> List.filter (expectActivity currentDate assembled)
-                        |> List.all (activityCompleted currentDate assembled)
+                    mandatoryActivitiesFoNurseCompleted
                    )
 
         NursePostpartumEncounter ->
-            -- @todo:
-            True
+            mandatoryActivitiesFoNurseCompleted
 
         ChwFirstEncounter ->
             let
@@ -1140,12 +1181,6 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         ChwPostpartumEncounter ->
             activityCompleted currentDate assembled PregnancyOutcome
                 && activityCompleted currentDate assembled DangerSigns
-
-
-mandatoryActivitiesForPostpartumNextStepsCompleted : NominalDate -> AssembledData -> Bool
-mandatoryActivitiesForPostpartumNextStepsCompleted currentDate assembled =
-    -- @todo
-    True
 
 
 expectPrenatalPhoto : NominalDate -> AssembledData -> Bool
@@ -1378,27 +1413,65 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
     EverySet.union emergencyDiagnoses diagnosesByLabResultsAndExamination
         |> EverySet.union diagnosesBySymptoms
         |> EverySet.union diagnosesByMentalHealth
-        |> applyBloodPreasureDiagnosesHierarchy
+        |> applyDiagnosesHierarchy
 
 
-applyBloodPreasureDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyBloodPreasureDiagnosesHierarchy diagnoses =
+applyDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyDiagnosesHierarchy =
+    applyHypertensionlikeDiagnosesHierarchy
+        >> applyMastitisDiagnosesHierarchy
+        >> applyGeneralDiagnosesHierarchy
+
+
+applyHypertensionlikeDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyHypertensionlikeDiagnosesHierarchy diagnoses =
     let
         ( bloodPreasureDiagnoses, others ) =
             EverySet.toList diagnoses
                 |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPreasureDiagnoses)
 
         topBloodPreasureDiagnosis =
-            List.map hierarchalBloodPreasureDiagnosisToNumber bloodPreasureDiagnoses
+            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPreasureDiagnoses
                 |> Maybe.Extra.values
                 |> List.maximum
-                |> Maybe.andThen hierarchalBloodPreasureDiagnosisFromNumber
+                |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in
     topBloodPreasureDiagnosis
         ++ others
         |> EverySet.fromList
+
+
+applyMastitisDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyMastitisDiagnosesHierarchy diagnoses =
+    let
+        ( mastitisDiagnoses, others ) =
+            EverySet.toList diagnoses
+                |> List.partition (\diagnosis -> List.member diagnosis hierarchalMastitisDiagnoses)
+
+        topMastitisDiagnosis =
+            List.map hierarchalMastitisDiagnosisToNumber mastitisDiagnoses
+                |> Maybe.Extra.values
+                |> List.maximum
+                |> Maybe.andThen hierarchalMastitisDiagnosisFromNumber
+                |> Maybe.map List.singleton
+                |> Maybe.withDefault []
+    in
+    topMastitisDiagnosis
+        ++ others
+        |> EverySet.fromList
+
+
+applyGeneralDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyGeneralDiagnosesHierarchy diagnoses =
+    -- When Mastitis is diagnosed, we eliminate Fever diagnosis, because
+    -- fever is one of the symptoms for Mastitis.
+    if EverySet.member DiagnosisPostpartumMastitis diagnoses then
+        EverySet.remove DiagnosisPostpartumFever diagnoses
+
+    else
+        diagnoses
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
@@ -1932,6 +2005,8 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map ((==) RhesusNegative)
                 |> Maybe.withDefault False
 
+        -- If criterias for DiagnosisPostpartumMastitis also matches, this
+        -- diagnosis will be filtered out when applying diagnoses hierarchy.
         DiagnosisPostpartumEarlyMastitisOrEngorgment ->
             let
                 byBreastfeeding =
@@ -1958,6 +2033,49 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             in
             (assembled.encounter.encounterType == NursePostpartumEncounter)
                 && (byBreastfeeding || byBreastExam)
+
+        DiagnosisPostpartumMastitis ->
+            let
+                byBreastfeeding =
+                    getMeasurementValueFunc assembled.measurements.breastfeeding
+                        |> Maybe.map
+                            (\signs ->
+                                List.any (\sign -> EverySet.member sign signs)
+                                    [ BreastPain, BreastRedness ]
+                            )
+                        |> Maybe.withDefault False
+
+                byBreastExam =
+                    getMeasurementValueFunc assembled.measurements.breastExam
+                        |> Maybe.map
+                            (\value ->
+                                List.any (\sign -> EverySet.member sign value.exam)
+                                    [ Warmth, Discharge ]
+                            )
+                        |> Maybe.withDefault False
+            in
+            (assembled.encounter.encounterType == NursePostpartumEncounter)
+                && symptomRecorded assembled.measurements PostpartumFever
+                && (byBreastfeeding || byBreastExam)
+
+        DiagnosisPostpartumInfection ->
+            getMeasurementValueFunc assembled.measurements.guExam
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member FoulSmellingLochia value.vaginalExamSigns
+                            || (EverySet.member EpisiotomyOrPerinealTear value.guExamSigns
+                                    && (Maybe.map (EverySet.member NormalPostpartumHealing >> not)
+                                            value.postpartumHealingProblems
+                                            |> Maybe.withDefault False
+                                       )
+                               )
+                    )
+                |> Maybe.withDefault False
+
+        DiagnosisPostpartumExcessiveBleeding ->
+            getMeasurementValueFunc assembled.measurements.guExam
+                |> Maybe.map (.vaginalExamSigns >> EverySet.member ExcessiveVaginalBleeding)
+                |> Maybe.withDefault False
 
         -- Non Lab Results diagnoses.
         _ ->
@@ -2408,6 +2526,9 @@ labResultsAndExaminationDiagnoses =
     , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
     , DiagnosisRhesusNegative
     , DiagnosisPostpartumEarlyMastitisOrEngorgment
+    , DiagnosisPostpartumMastitis
+    , DiagnosisPostpartumInfection
+    , DiagnosisPostpartumExcessiveBleeding
     ]
 
 
@@ -2442,16 +2563,6 @@ symptomsDiagnoses =
 mentalHealthDiagnoses : List PrenatalDiagnosis
 mentalHealthDiagnoses =
     DiagnosisDepressionNotLikely :: mentalHealthDiagnosesRequiringTreatment
-
-
-undeterminedPostpartumDiagnoses : List PrenatalDiagnosis
-undeterminedPostpartumDiagnoses =
-    [ DiagnosisPostpartumAbdominalPain
-    , DiagnosisPostpartumHeadache
-    , DiagnosisPostpartumFatigue
-    , DiagnosisPostpartumFever
-    , DiagnosisPostpartumPerinealPainOrDischarge
-    ]
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -2719,36 +2830,49 @@ healthEducationFormInputsAndTasksForNurse language assembled form =
             else
                 ( [], Nothing )
 
-        earlyMastitisOrEngorgment =
-            let
-                reliefMethods =
-                    List.map
-                        (Translate.EarlyMastitisOrEngorgmentReliefMethod
-                            >> translate language
-                            >> String.toLower
-                            >> text
-                            >> List.singleton
-                            >> li []
-                        )
-                        [ ReliefMethodBreastMassage
-                        , ReliefMethodIncreaseFluid
-                        , ReliefMethodBreastfeedingOrHandExpression
-                        ]
-                        |> ul []
-            in
-            if diagnosed DiagnosisPostpartumEarlyMastitisOrEngorgment assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationEarlyMastitisOrEngorgment) "" "label header"
+        hierarchalMastitis =
+            if diagnosedAnyOf [ DiagnosisPostpartumEarlyMastitisOrEngorgment, DiagnosisPostpartumMastitis ] assembled then
+                let
+                    reliefMethods =
+                        List.map
+                            (Translate.EarlyMastitisOrEngorgmentReliefMethod
+                                >> translate language
+                                >> String.toLower
+                                >> text
+                                >> List.singleton
+                                >> li []
+                            )
+                            [ ReliefMethodBreastMassage
+                            , ReliefMethodIncreaseFluid
+                            , ReliefMethodBreastfeedingOrHandExpression
+                            ]
+                            |> ul []
+
+                    ( eudcationSign, formField, updateFunc ) =
+                        if diagnosed DiagnosisPostpartumMastitis assembled then
+                            ( EducationMastitis
+                            , form.mastitis
+                            , \value form_ -> { form_ | mastitis = Just value }
+                            )
+
+                        else
+                            ( EducationEarlyMastitisOrEngorgment
+                            , form.earlyMastitisOrEngorgment
+                            , \value form_ -> { form_ | earlyMastitisOrEngorgment = Just value }
+                            )
+                in
+                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel eudcationSign) "" "label header"
                   , viewCustomLabel language Translate.PrenatalHealthEducationEarlyMastitisOrEngorgmentInform ":" "label paragraph"
                   , reliefMethods
                   , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
                   , viewBoolInput
                         language
-                        form.earlyMastitisOrEngorgment
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | earlyMastitisOrEngorgment = Just value }))
-                        "mental-health"
+                        formField
+                        (SetHealthEducationSubActivityBoolInput updateFunc)
+                        "mastitis"
                         Nothing
                   ]
-                , Just form.earlyMastitisOrEngorgment
+                , Just formField
                 )
 
             else
@@ -2765,7 +2889,7 @@ healthEducationFormInputsAndTasksForNurse language assembled form =
             , pelvicPain
             , saferSex
             , mentalHealth
-            , earlyMastitisOrEngorgment
+            , hierarchalMastitis
             ]
     in
     ( hivInputs
@@ -3116,15 +3240,21 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 ( _, tasks ) =
                     case assembled.encounter.encounterType of
                         NurseEncounter ->
-                            resolveReferralInputsAndTasksForNurse language
-                                currentDate
-                                assembled
-                                SetReferralBoolInput
-                                SetFacilityNonReferralReason
-                                form
+                            tasksForNurse
+
+                        NursePostpartumEncounter ->
+                            tasksForNurse
 
                         _ ->
                             resolveReferralInputsAndTasksForCHW language currentDate assembled form
+
+                tasksForNurse =
+                    resolveReferralInputsAndTasksForNurse language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
             in
             ( Maybe.Extra.values tasks
                 |> List.length
@@ -6658,6 +6788,7 @@ healthEducationFormWithDefault form saved =
                 , saferSex = or form.saferSex (EverySet.member EducationSaferSex value.signs |> Just)
                 , mentalHealth = or form.mentalHealth (EverySet.member EducationMentalHealth value.signs |> Just)
                 , earlyMastitisOrEngorgment = or form.earlyMastitisOrEngorgment (EverySet.member EducationEarlyMastitisOrEngorgment value.signs |> Just)
+                , mastitis = or form.mastitis (EverySet.member EducationMastitis value.signs |> Just)
 
                 -- Signs that do not participate at initial phase. Resolved directly from value.
                 , hivDetectableViralLoad = Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2
@@ -6690,6 +6821,7 @@ toHealthEducationValue saved form =
     , ifNullableTrue EducationSaferSex form.saferSex
     , ifNullableTrue EducationMentalHealth form.mentalHealth
     , ifNullableTrue EducationEarlyMastitisOrEngorgment form.earlyMastitisOrEngorgment
+    , ifNullableTrue EducationMastitis form.mastitis
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
@@ -7090,11 +7222,11 @@ matchRequiredReferralFacility assembled facility =
             referToMentalHealthSpecialist assembled
 
         FacilityARVProgram ->
-            referToHIVProgram assembled
+            referToARVProgram assembled
 
         FacilityNCDProgram ->
-            -- @todo : Implement when developing NCD feature.
-            False
+            referredToSpecialityCareProgram EnrolledToNCDProgram assembled
+                || diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
 
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved
@@ -7105,3 +7237,30 @@ matchRequiredReferralFacility assembled facility =
 referralFacilities : List ReferralFacility
 referralFacilities =
     [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram, FacilityNCDProgram ]
+
+
+specialityCareFormWithDefault : SpecialityCareForm -> Maybe SpecialityCareValue -> SpecialityCareForm
+specialityCareFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { enrolledToARVProgram = or form.enrolledToARVProgram (EverySet.member EnrolledToARVProgram value |> Just)
+                , enrolledToNCDProgram = or form.enrolledToNCDProgram (EverySet.member EnrolledToNCDProgram value |> Just)
+                }
+            )
+
+
+toSpecialityCareValueWithDefault : Maybe SpecialityCareValue -> SpecialityCareForm -> Maybe SpecialityCareValue
+toSpecialityCareValueWithDefault saved form =
+    specialityCareFormWithDefault form saved
+        |> toSpecialityCareValue
+
+
+toSpecialityCareValue : SpecialityCareForm -> Maybe SpecialityCareValue
+toSpecialityCareValue form =
+    [ ifNullableTrue EnrolledToARVProgram form.enrolledToARVProgram
+    , ifNullableTrue EnrolledToNCDProgram form.enrolledToNCDProgram
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)
