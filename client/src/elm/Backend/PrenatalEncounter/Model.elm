@@ -191,11 +191,11 @@ type Msg
     | HandleSavedBirthPlan (WebData ())
     | SavePregnancyTest PersonId (Maybe PregnancyTestId) PregnancyTestResult
     | HandleSavedPregnancyTest (WebData ())
-    | SaveHealthEducation PersonId (Maybe PrenatalHealthEducationId) (EverySet PrenatalHealthEducationSign)
+    | SaveHealthEducation PersonId (Maybe PrenatalHealthEducationId) PrenatalHealthEducationValue
     | HandleSavedHealthEducation (WebData ())
     | SaveFollowUp PersonId (Maybe PrenatalFollowUpId) PrenatalFollowUpValue
     | HandleSavedFollowUp (WebData ())
-    | SaveSendToHC PersonId (Maybe PrenatalSendToHCId) PrenatalSendToHCValue
+    | SaveSendToHC PersonId (Maybe PrenatalSendToHCId) PrenatalReferralValue
     | HandleSavedSendToHC (WebData ())
     | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
     | HandleSavedAppointmentConfirmation (WebData ())

@@ -3,7 +3,7 @@ module Pages.Prenatal.ProgressReport.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortTuplesByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
@@ -79,12 +79,12 @@ thumbnailDimensions =
     }
 
 
-generateFilteredDiagnoses : NominalDate -> EverySet PrenatalDiagnosis -> AssembledData -> List PrenatalDiagnosis -> List PrenatalDiagnosis
-generateFilteredDiagnoses encounterDate encounterDiagnoses assembled filterList =
+updateChronicHypertensionDiagnoses : NominalDate -> EverySet PrenatalDiagnosis -> AssembledData -> List PrenatalDiagnosis -> List PrenatalDiagnosis
+updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled filterList =
     List.filter
         -- We want to be looking at encounters performed
         -- before the encounter we're processing, to be able to locate
-        -- previous cronichal diagnosis.
+        -- previous chronic diagnosis.
         (\( date, _, _ ) ->
             Date.compare date encounterDate == LT
         )
@@ -207,3 +207,40 @@ diagnosisForProgressReportToString language diagnosis =
 wrapWithLI : String -> List (Html any)
 wrapWithLI =
     text >> List.singleton >> li [] >> List.singleton
+
+
+chwActionToColor : CHWAction -> String
+chwActionToColor action =
+    case action of
+        ActionPregnancyDating ->
+            "purple"
+
+        ActionLabs ->
+            "purple"
+
+        ActionDangerSignsPresent ->
+            "velvet"
+
+        ActionReferredToHealthCenter ->
+            "velvet"
+
+        ActionAppointmentConfirmation ->
+            "cyan"
+
+        ActionHealthEducation ->
+            "cyan"
+
+        ActionBirthPlan ->
+            "cyan"
+
+
+allCHWActions : List CHWAction
+allCHWActions =
+    [ ActionPregnancyDating
+    , ActionLabs
+    , ActionDangerSignsPresent
+    , ActionReferredToHealthCenter
+    , ActionAppointmentConfirmation
+    , ActionHealthEducation
+    , ActionBirthPlan
+    ]

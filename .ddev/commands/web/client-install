@@ -4,6 +4,8 @@
 ## Usage: client-install
 ## Example: "ddev client-install".
 
+npm install -g bower
+
 cd ../../client
 npm install --no-audit --no-fund
 bower install

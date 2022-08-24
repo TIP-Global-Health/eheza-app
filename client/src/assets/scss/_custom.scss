@@ -2355,6 +2355,20 @@ input::placeholder {
   }
 }
 
+.icon-next-steps-referral {
+  .active &:after {
+    background-image: url(#{$img-path}icon-cross-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-cross-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-cross-gray.svg);
+  }
+}
+
 .icon-next-steps-wait {
   .active &:after {
     background-image: url(#{$img-path}icon-sand-watch-white.svg);

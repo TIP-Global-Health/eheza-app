@@ -69,10 +69,14 @@ obstetricalDiagnoses : List PrenatalDiagnosis
 obstetricalDiagnoses =
     [ DiagnosisGestationalHypertensionImmediate
     , DiagnosisGestationalHypertensionAfterRecheck
-    , DiagnosisModeratePreeclampsiaImmediate
-    , DiagnosisModeratePreeclampsiaAfterRecheck
-    , DiagnosisSeverePreeclampsiaImmediate
-    , DiagnosisSeverePreeclampsiaAfterRecheck
+    , DiagnosisModeratePreeclampsiaInitialPhase
+    , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaInitialPhase
+    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaRecurrentPhase
+    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
     , DiagnosisEclampsia
     , DiagnosisMiscarriage
     , DiagnosisMolarPregnancy
@@ -98,6 +102,7 @@ obstetricalDiagnoses =
     , DiagnosisPelvicPainIntense
     , DiagnosisPelvicPainContinued
     , DiagnosisGestationalDiabetes
+    , DiagnosisRhesusNegative
     , DiagnosisDepressionNotLikely
     , DiagnosisDepressionPossible
     , DiagnosisDepressionHighlyPossible
@@ -136,6 +141,16 @@ medicalDiagnoses =
     , DiagnosisDiabetes
     , DiagnosisOther
     ]
+
+
+type CHWAction
+    = ActionPregnancyDating
+    | ActionLabs
+    | ActionDangerSignsPresent
+    | ActionReferredToHealthCenter
+    | ActionAppointmentConfirmation
+    | ActionHealthEducation
+    | ActionBirthPlan
 
 
 type Msg

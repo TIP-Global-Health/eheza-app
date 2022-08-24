@@ -23,7 +23,7 @@ type Msg
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SetReasonForNonReferral ReasonForNonReferral
     | SaveSendToHC PersonId (Maybe ( NutritionSendToHCId, NutritionSendToHC )) (Maybe NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
