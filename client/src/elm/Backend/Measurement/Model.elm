@@ -1467,6 +1467,20 @@ type PostpartumHealingProblem
     | HealingProblemBruising
 
 
+type alias PrenatalSpecialityCare =
+    PrenatalMeasurement SpecialityCareValue
+
+
+type alias SpecialityCareValue =
+    EverySet SpecialityCareSign
+
+
+type SpecialityCareSign
+    = EnrolledToARVProgram
+    | EnrolledToNCDProgram
+    | NoSpecialityCareSigns
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -2354,6 +2368,7 @@ type alias PrenatalMeasurements =
     , tetanusImmunisation : Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation )
     , breastfeeding : Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding )
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
+    , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
     }
 
 
@@ -2397,6 +2412,7 @@ emptyPrenatalMeasurements =
     , tetanusImmunisation = Nothing
     , breastfeeding = Nothing
     , guExam = Nothing
+    , specialityCare = Nothing
     }
 
 

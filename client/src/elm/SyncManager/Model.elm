@@ -132,6 +132,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalPhoto (BackendEntity PrenatalPhoto)
     | BackendAuthorityPrenatalRandomBloodSugarTest (BackendEntity PrenatalRandomBloodSugarTest)
     | BackendAuthorityPrenatalSendToHC (BackendEntity PrenatalSendToHC)
+    | BackendAuthorityPrenatalSpecialityCare (BackendEntity PrenatalSpecialityCare)
     | BackendAuthorityPrenatalSymptomReview (BackendEntity PrenatalSymptomReview)
     | BackendAuthorityPrenatalSyphilisTest (BackendEntity PrenatalSyphilisTest)
     | BackendAuthorityPrenatalTetanusImmunisation (BackendEntity PrenatalTetanusImmunisation)

@@ -147,6 +147,14 @@ function hedley_prenatal_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatal_speciality_care' => array(
+      'name' => t('Prenatal Specialty Care'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'prenatal_symptom_review' => array(
       'name' => t('Prenatal Symptom Review'),
       'base' => 'node_content',

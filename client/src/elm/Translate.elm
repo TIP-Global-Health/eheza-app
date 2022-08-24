@@ -1212,6 +1212,9 @@ type TranslationId
     | Shared
     | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
+    | SpecialityCareHeaderPrefix
+    | SpecialityCareHeaderSuffix
+    | SpecialityCareSignQuestion SpecialityCareSign
     | StillbornPreviousDelivery
     | SubsequentAntenatalVisit
     | SubsequentEncounter
@@ -8296,7 +8299,7 @@ translationSet trans =
                     }
 
                 SpecialityCare ->
-                    { english = "Speciality Care"
+                    { english = "Specialty Care"
                     , kinyarwanda = Nothing
                     }
 
@@ -13036,6 +13039,33 @@ translationSet trans =
                 NoHivTesting ->
                     { english = "No HIV Testing"
                     , kinyarwanda = Just "Ntibibonetse"
+                    }
+
+        SpecialityCareHeaderPrefix ->
+            { english = "You were diagnosed with"
+            , kinyarwanda = Nothing
+            }
+
+        SpecialityCareHeaderSuffix ->
+            { english = "During your pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        SpecialityCareSignQuestion sign ->
+            case sign of
+                EnrolledToARVProgram ->
+                    { english = "Are you currently enrolled in ARV services at the health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                EnrolledToNCDProgram ->
+                    { english = "Are you currently enrolled in NCD services at the health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoSpecialityCareSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         StillbornPreviousDelivery ->

@@ -187,7 +187,8 @@ expectActivity currentDate assembled activity =
                     True
 
                 SpecialityCare ->
-                    True
+                    List.any (expectSpecialityCareSignSection assembled)
+                        specialityCareSections
 
                 NextSteps ->
                     mandatoryActivitiesForPostpartumNextStepsCompleted currentDate assembled
@@ -354,8 +355,7 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.breastfeeding
 
         SpecialityCare ->
-            -- @todo
-            False
+            isJust assembled.measurements.specialityCare
 
         PostpartumTreatmentReview ->
             isJust assembled.measurements.medication
@@ -781,6 +781,23 @@ examinationTaskCompleted assembled task =
 
         GUExam ->
             isJust assembled.measurements.guExam
+
+
+expectSpecialityCareSignSection : AssembledData -> SpecialityCareSign -> Bool
+expectSpecialityCareSignSection assembled sign =
+    case sign of
+        EnrolledToARVProgram ->
+            diagnosedPreviously DiagnosisHIV assembled
+
+        EnrolledToNCDProgram ->
+            diagnosedHypertensionPrevoiusly assembled
+
+        NoSpecialityCareSigns ->
+            False
+
+
+specialityCareSections =
+    [ EnrolledToARVProgram, EnrolledToNCDProgram ]
 
 
 referredToHIVProgramPreviously : AssembledData -> Bool
@@ -7202,3 +7219,30 @@ matchRequiredReferralFacility assembled facility =
 referralFacilities : List ReferralFacility
 referralFacilities =
     [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram, FacilityNCDProgram ]
+
+
+specialityCareFormWithDefault : SpecialityCareForm -> Maybe SpecialityCareValue -> SpecialityCareForm
+specialityCareFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { enrolledToARVProgram = or form.enrolledToARVProgram (EverySet.member EnrolledToARVProgram value |> Just)
+                , enrolledToNCDProgram = or form.enrolledToNCDProgram (EverySet.member EnrolledToNCDProgram value |> Just)
+                }
+            )
+
+
+toSpecialityCareValueWithDefault : Maybe SpecialityCareValue -> SpecialityCareForm -> Maybe SpecialityCareValue
+toSpecialityCareValueWithDefault saved form =
+    specialityCareFormWithDefault form saved
+        |> toSpecialityCareValue
+
+
+toSpecialityCareValue : SpecialityCareForm -> Maybe SpecialityCareValue
+toSpecialityCareValue form =
+    [ ifNullableTrue EnrolledToARVProgram form.enrolledToARVProgram
+    , ifNullableTrue EnrolledToNCDProgram form.enrolledToNCDProgram
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)

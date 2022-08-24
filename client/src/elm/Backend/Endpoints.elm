@@ -1034,3 +1034,9 @@ prenatalGUExamEndpoint : ReadWriteEndPoint Error PrenatalGUExamId PrenatalGUExam
 prenatalGUExamEndpoint =
     swEndpoint "nodes/prenatal_gu_exam" decodePrenatalGUExam
         |> withValueEncoder (object << encodePrenatalGUExam)
+
+
+prenatalSpecialityCareEndpoint : ReadWriteEndPoint Error PrenatalSpecialityCareId PrenatalSpecialityCare PrenatalSpecialityCare ()
+prenatalSpecialityCareEndpoint =
+    swEndpoint "nodes/prenatal_speciality_care" decodePrenatalSpecialityCare
+        |> withValueEncoder (object << encodePrenatalSpecialityCare)

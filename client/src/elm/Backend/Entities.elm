@@ -1165,3 +1165,11 @@ type alias PrenatalGUExamId =
 
 type PrenatalGUExamUuidType
     = PrenatalGUExamUuidType
+
+
+type alias PrenatalSpecialityCareId =
+    EntityUuid PrenatalSpecialityCareUuidType
+
+
+type PrenatalSpecialityCareUuidType
+    = PrenatalSpecialityCareUuidType
