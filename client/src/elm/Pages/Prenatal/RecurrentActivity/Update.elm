@@ -515,12 +515,6 @@ update language currentDate id db msg model =
                                         let
                                             ( performedTests, completedTests ) =
                                                 prenatalLabsResultsTestData currentDate results
-
-                                            _ =
-                                                Debug.log "performedTests" performedTests
-
-                                            _ =
-                                                Debug.log "completedTests" completedTests
                                         in
                                         if List.length performedTests == List.length completedTests then
                                             let
