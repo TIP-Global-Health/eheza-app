@@ -74,9 +74,6 @@ function hedley_general_advanced_queue_task_exists($queue_machine_name, $title, 
         // which is set to 20 minutes, by default.
         return TRUE;
       }
-      else {
-        watchdog('hedley_aq', "AQ task suspected as stuck: $task->item_id");
-      }
     }
   }
 
@@ -366,6 +363,9 @@ function hedley_general_shard_by_health_center($nid) {
   }
 
   $wrapper = entity_metadata_wrapper('node', $nid);
+  if (!isset($wrapper->field_health_center)) {
+    return FALSE;
+  }
   $shard = $wrapper->field_health_center->getIdentifier();
 
   return !empty($shard) ? $shard : FALSE;
@@ -387,6 +387,9 @@ function hedley_general_shards_by_person($nid) {
   }
 
   $wrapper = entity_metadata_wrapper('node', $nid);
+  if (!isset($wrapper->field_shards)) {
+    return [];
+  }
   $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
 
   return !empty($shards) ? $shards : [];
