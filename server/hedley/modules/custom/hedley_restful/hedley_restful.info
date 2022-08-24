@@ -7,6 +7,7 @@ dependencies[] = entity_validator
 
 files[] = plugins/restful/node/activity/HedleyRestfulActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulGroupActivityBase.class.php
+files[] = plugins/restful/node/activity/HedleyRestfulNCDActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulNutritionActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulPrenatalActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulAcuteIllnessActivityBase.class.php
