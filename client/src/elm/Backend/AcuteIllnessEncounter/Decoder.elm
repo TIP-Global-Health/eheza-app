@@ -17,7 +17,7 @@ decodeAcuteIllnessEncounter =
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> optional "sequence_number" decodeInt 1
-        |> required "ai_encounter_type" (decodeWithDefault AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType)
+        |> optional "ai_encounter_type" (decodeWithDefault AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType) AcuteIllnessEncounterCHW
         |> required "acute_illness_diagnosis" decodeAcuteIllnessDiagnosis
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 

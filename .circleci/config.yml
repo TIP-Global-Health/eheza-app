@@ -16,7 +16,7 @@ workflows:
 jobs:
   lint_phpcs:
     docker:
-      - image: cimg/php:7.4.26
+      - image: cimg/php:7.3.28
     steps:
       - checkout
       - run: ci-scripts/install_coder.sh
