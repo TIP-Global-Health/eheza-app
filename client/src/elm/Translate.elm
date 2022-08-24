@@ -4227,12 +4227,12 @@ translationSet trans =
             case status of
                 StatusOngoing ->
                     { english = "Open"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igikorwa Kiracyafunguye"
                     }
 
                 StatusResolved ->
                     { english = "Concluded"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Byasojwe"
                     }
 
         EntryStatusDiagnosis status ->
@@ -7671,7 +7671,7 @@ translationSet trans =
 
         PatientRecord ->
             { english = "Patient Record"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru y'Umurwayi"
             }
 
         PatientInformation ->
@@ -7699,22 +7699,22 @@ translationSet trans =
             case filter of
                 Pages.PatientRecord.Model.FilterAcuteIllness ->
                     { english = "Acute Illness"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uburwayi butunguranye"
                     }
 
                 Pages.PatientRecord.Model.FilterAntenatal ->
                     { english = "Antenatal Care"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
                     }
 
                 FilterDemographics ->
                     { english = "Demographics"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwirondoro"
                     }
 
                 FilterFamilyPlanning ->
                     { english = "Family Planning"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuboneza Urubyaro"
                     }
 
         PauseEncounter ->
@@ -7988,12 +7988,12 @@ translationSet trans =
 
         PregnancyConclusion ->
             { english = "Pregnancy Conclusion"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Iherezo ry'Inda"
             }
 
         PregnancyStart ->
             { english = "Pregnancy Start"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itangira ryo Gutwita"
             }
 
         PregnancyTestResult result ->
@@ -11188,7 +11188,7 @@ translationSet trans =
 
         ProgressReports ->
             { english = "Progress Reports"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Raporo z’ibyakozwe"
             }
 
         ProgressTimeline ->
@@ -12923,7 +12923,7 @@ translationSet trans =
 
         StartEncounter ->
             { english = "Start an encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Tangira igikorwa"
             }
 
         StartEndDate ->
@@ -14516,7 +14516,7 @@ translateActivePage page =
 
                 PatientRecordPage _ _ ->
                     { english = "Patient Record"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru y'Umurwayi"
                     }
 
                 PrenatalLabsHistoryPage _ _ _ ->
