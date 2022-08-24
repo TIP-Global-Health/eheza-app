@@ -2057,21 +2057,19 @@ viewSymptomReviewContent language currentDate assembled data =
         instructionLabel =
             case data.step of
                 SymptomReviewStepSymptoms ->
-                    [ div [ class "ui form symptom-review" ] <|
-                        inputs
-                    ]
+                    emptyNode
 
                 SymptomReviewStepQuestions ->
-                    [ div [ class "ui form symptom-review" ] <|
-                        div [ class "instructions" ]
-                            [ viewLabel language Translate.PrenatalSymptomQuestionsHeader ]
-                            :: inputs
-                    ]
+                    div [ class "instructions" ]
+                        [ viewLabel language Translate.PrenatalSymptomQuestionsHeader ]
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            instructionLabel
+            [ div [ class "ui form symptom-review" ] <|
+                instructionLabel
+                    :: inputs
+            ]
         , actions
         ]
     ]
