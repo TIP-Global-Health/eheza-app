@@ -21,6 +21,12 @@ import RemoteData exposing (RemoteData(..))
 expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> NCDActivity -> Bool
 expectActivity currentDate assembled db activity =
     case activity of
+        DangerSigns ->
+            True
+
+        SymptomReview ->
+            True
+
         -- @todo
         _ ->
             True
@@ -29,6 +35,12 @@ expectActivity currentDate assembled db activity =
 activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> NCDActivity -> Bool
 activityCompleted currentDate assembled db activity =
     case activity of
+        DangerSigns ->
+            isJust assembled.measurements.dangerSigns
+
+        SymptomReview ->
+            isJust assembled.measurements.symptomReview
+
         -- @todo
         _ ->
             False
