@@ -5,6 +5,8 @@
  * Generate Hedley demo content via Drush.
  */
 
+const HEDLEY_MIGRATE_HEALTH_CENTER_NYANGE = 7089;
+
 /**
  * Hook for defining drush commands.
  */
@@ -15,8 +17,54 @@ function hedley_migrate_drush_command() {
     'arguments' => [],
     'options' => [],
   ];
+  // Command for creating fake nurses and devices.
+  $items['create-dummy-nurses-devices'] = [
+    'callback' => 'hedley_migrate_create_dummy_nurses_devices',
+    'description' => 'Create fake nurses and devices',
+    'arguments' => [],
+    'options' => [],
+  ];
 
   return $items;
+}
+
+/**
+ * Creates fake nurses and devices.
+ */
+function hedley_migrate_create_dummy_nurses_devices() {
+  for ($i = 0; $i < 100; $i++) {
+    $device = entity_create('node', [
+      'type' => 'device',
+      'title' => 'Device ' . $i,
+      'field_pairing_code' => [
+        LANGUAGE_NONE => [
+          0 => [
+            'value' => '000000' . sprintf('%04d', $i),
+          ],
+        ],
+      ],
+    ]);
+    node_save($device);
+    $nurse = entity_create('node', [
+      'type' => 'nurse',
+      'title' => 'Nurse ' . $i,
+      'field_pin_code' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => sprintf('%04d', $i),
+          ],
+        ],
+      ],
+      'field_health_centers' => [
+        LANGUAGE_NONE => [
+          [
+            'target_id' => HEDLEY_MIGRATE_HEALTH_CENTER_NYANGE,
+          ],
+        ],
+      ],
+    ]);
+    node_save($nurse);
+  }
 }
 
 /**
