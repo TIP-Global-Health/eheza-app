@@ -49,6 +49,11 @@ decodeWellChildMeasurement =
     decodeMeasurement "well_child_encounter"
 
 
+decodeNCDMeasurement : Decoder value -> Decoder (Measurement NCDEncounterId value)
+decodeNCDMeasurement =
+    decodeMeasurement "ncd_encounter"
+
+
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
 decodeMeasurement encounterTag valueDecoder =
     succeed Measurement
@@ -234,6 +239,26 @@ decodeWellChildMeasurements =
 decodeNCDMeasurements : Decoder NCDMeasurements
 decodeNCDMeasurements =
     succeed NCDMeasurements
+        |> optional "ncd_co_morbidities" (decodeHead decodeNCDCoMorbidities) Nothing
+        |> optional "ncd_core_exam" (decodeHead decodeNCDCoreExam) Nothing
+        |> optional "ncd_creatinine_test" (decodeHead decodeNCDCreatinineTest) Nothing
+        |> optional "ncd_danger_signs" (decodeHead decodeNCDDangerSigns) Nothing
+        |> optional "ncd_family_history" (decodeHead decodeNCDFamilyHistory) Nothing
+        |> optional "ncd_family_planning" (decodeHead decodeNCDFamilyPlanning) Nothing
+        |> optional "ncd_health_education" (decodeHead decodeNCDHealthEducation) Nothing
+        |> optional "ncd_hiv_test" (decodeHead decodeNCDHivTest) Nothing
+        |> optional "ncd_labs_results" (decodeHead decodeNCDLabsResults) Nothing
+        |> optional "ncd_liver_function_test" (decodeHead decodeNCDLiverFunctionTest) Nothing
+        |> optional "ncd_medication_distribution" (decodeHead decodeNCDMedicationDistribution) Nothing
+        |> optional "ncd_medication_history" (decodeHead decodeNCDMedicationHistory) Nothing
+        |> optional "ncd_outside_care" (decodeHead decodeNCDOutsideCare) Nothing
+        |> optional "ncd_pregnancy_test" (decodeHead decodeNCDPregnancyTest) Nothing
+        |> optional "ncd_random_blood_sugar_test" (decodeHead decodeNCDRandomBloodSugarTest) Nothing
+        |> optional "ncd_referral" (decodeHead decodeNCDReferral) Nothing
+        |> optional "ncd_social_history" (decodeHead decodeNCDSocialHistory) Nothing
+        |> optional "ncd_symptom_review" (decodeHead decodeNCDSymptomReview) Nothing
+        |> optional "ncd_urine_dipstick_test" (decodeHead decodeNCDUrineDipstickTest) Nothing
+        |> optional "ncd_vitals" (decodeHead decodeNCDVitals) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -4546,3 +4571,203 @@ decodePrenatalOutsideCareMedication =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalOutsideCareMedication")
             )
+
+
+decodeNCDCoMorbidities : Decoder NCDCoMorbidities
+decodeNCDCoMorbidities =
+    decodeNCDMeasurement decodeNCDCoMorbiditiesValue
+
+
+decodeNCDCoMorbiditiesValue : Decoder NCDCoMorbiditiesValue
+decodeNCDCoMorbiditiesValue =
+    succeed NCDCoMorbiditiesValue
+
+
+decodeNCDCoreExam : Decoder NCDCoreExam
+decodeNCDCoreExam =
+    decodeNCDMeasurement decodeNCDCoreExamValue
+
+
+decodeNCDCoreExamValue : Decoder NCDCoreExamValue
+decodeNCDCoreExamValue =
+    succeed NCDCoreExamValue
+
+
+decodeNCDCreatinineTest : Decoder NCDCreatinineTest
+decodeNCDCreatinineTest =
+    decodeNCDMeasurement decodeNCDCreatinineTestValue
+
+
+decodeNCDCreatinineTestValue : Decoder NCDCreatinineTestValue
+decodeNCDCreatinineTestValue =
+    succeed NCDCreatinineTestValue
+
+
+decodeNCDDangerSigns : Decoder NCDDangerSigns
+decodeNCDDangerSigns =
+    decodeNCDMeasurement decodeNCDDangerSignsValue
+
+
+decodeNCDDangerSignsValue : Decoder NCDDangerSignsValue
+decodeNCDDangerSignsValue =
+    succeed NCDDangerSignsValue
+
+
+decodeNCDFamilyHistory : Decoder NCDFamilyHistory
+decodeNCDFamilyHistory =
+    decodeNCDMeasurement decodeNCDFamilyHistoryValue
+
+
+decodeNCDFamilyHistoryValue : Decoder NCDFamilyHistoryValue
+decodeNCDFamilyHistoryValue =
+    succeed NCDFamilyHistoryValue
+
+
+decodeNCDFamilyPlanning : Decoder NCDFamilyPlanning
+decodeNCDFamilyPlanning =
+    decodeNCDMeasurement decodeNCDFamilyPlanningValue
+
+
+decodeNCDFamilyPlanningValue : Decoder NCDFamilyPlanningValue
+decodeNCDFamilyPlanningValue =
+    succeed NCDFamilyPlanningValue
+
+
+decodeNCDHealthEducation : Decoder NCDHealthEducation
+decodeNCDHealthEducation =
+    decodeNCDMeasurement decodeNCDHealthEducationValue
+
+
+decodeNCDHealthEducationValue : Decoder NCDHealthEducationValue
+decodeNCDHealthEducationValue =
+    succeed NCDHealthEducationValue
+
+
+decodeNCDHivTest : Decoder NCDHivTest
+decodeNCDHivTest =
+    decodeNCDMeasurement decodeNCDHivTestValue
+
+
+decodeNCDHivTestValue : Decoder NCDHivTestValue
+decodeNCDHivTestValue =
+    succeed NCDHivTestValue
+
+
+decodeNCDLabsResults : Decoder NCDLabsResults
+decodeNCDLabsResults =
+    decodeNCDMeasurement decodeNCDLabsResultsValue
+
+
+decodeNCDLabsResultsValue : Decoder NCDLabsResultsValue
+decodeNCDLabsResultsValue =
+    succeed NCDLabsResultsValue
+
+
+decodeNCDLiverFunctionTest : Decoder NCDLiverFunctionTest
+decodeNCDLiverFunctionTest =
+    decodeNCDMeasurement decodeNCDLiverFunctionTestValue
+
+
+decodeNCDLiverFunctionTestValue : Decoder NCDLiverFunctionTestValue
+decodeNCDLiverFunctionTestValue =
+    succeed NCDLiverFunctionTestValue
+
+
+decodeNCDMedicationDistribution : Decoder NCDMedicationDistribution
+decodeNCDMedicationDistribution =
+    decodeNCDMeasurement decodeNCDMedicationDistributionValue
+
+
+decodeNCDMedicationDistributionValue : Decoder NCDMedicationDistributionValue
+decodeNCDMedicationDistributionValue =
+    succeed NCDMedicationDistributionValue
+
+
+decodeNCDMedicationHistory : Decoder NCDMedicationHistory
+decodeNCDMedicationHistory =
+    decodeNCDMeasurement decodeNCDMedicationHistoryValue
+
+
+decodeNCDMedicationHistoryValue : Decoder NCDMedicationHistoryValue
+decodeNCDMedicationHistoryValue =
+    succeed NCDMedicationHistoryValue
+
+
+decodeNCDOutsideCare : Decoder NCDOutsideCare
+decodeNCDOutsideCare =
+    decodeNCDMeasurement decodeNCDOutsideCareValue
+
+
+decodeNCDOutsideCareValue : Decoder NCDOutsideCareValue
+decodeNCDOutsideCareValue =
+    succeed NCDOutsideCareValue
+
+
+decodeNCDPregnancyTest : Decoder NCDPregnancyTest
+decodeNCDPregnancyTest =
+    decodeNCDMeasurement decodeNCDPregnancyTestValue
+
+
+decodeNCDPregnancyTestValue : Decoder NCDPregnancyTestValue
+decodeNCDPregnancyTestValue =
+    succeed NCDPregnancyTestValue
+
+
+decodeNCDRandomBloodSugarTest : Decoder NCDRandomBloodSugarTest
+decodeNCDRandomBloodSugarTest =
+    decodeNCDMeasurement decodeNCDRandomBloodSugarTestValue
+
+
+decodeNCDRandomBloodSugarTestValue : Decoder NCDRandomBloodSugarTestValue
+decodeNCDRandomBloodSugarTestValue =
+    succeed NCDRandomBloodSugarTestValue
+
+
+decodeNCDReferral : Decoder NCDReferral
+decodeNCDReferral =
+    decodeNCDMeasurement decodeNCDReferralValue
+
+
+decodeNCDReferralValue : Decoder NCDReferralValue
+decodeNCDReferralValue =
+    succeed NCDReferralValue
+
+
+decodeNCDSocialHistory : Decoder NCDSocialHistory
+decodeNCDSocialHistory =
+    decodeNCDMeasurement decodeNCDSocialHistoryValue
+
+
+decodeNCDSocialHistoryValue : Decoder NCDSocialHistoryValue
+decodeNCDSocialHistoryValue =
+    succeed NCDSocialHistoryValue
+
+
+decodeNCDSymptomReview : Decoder NCDSymptomReview
+decodeNCDSymptomReview =
+    decodeNCDMeasurement decodeNCDSymptomReviewValue
+
+
+decodeNCDSymptomReviewValue : Decoder NCDSymptomReviewValue
+decodeNCDSymptomReviewValue =
+    succeed NCDSymptomReviewValue
+
+
+decodeNCDUrineDipstickTest : Decoder NCDUrineDipstickTest
+decodeNCDUrineDipstickTest =
+    decodeNCDMeasurement decodeNCDUrineDipstickTestValue
+
+
+decodeNCDUrineDipstickTestValue : Decoder NCDUrineDipstickTestValue
+decodeNCDUrineDipstickTestValue =
+    succeed NCDUrineDipstickTestValue
+
+
+decodeNCDVitals : Decoder NCDVitals
+decodeNCDVitals =
+    decodeNCDMeasurement decodeNCDVitalsValue
+
+
+decodeNCDVitalsValue : Decoder NCDVitalsValue
+decodeNCDVitalsValue =
+    succeed NCDVitalsValue

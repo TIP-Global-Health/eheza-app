@@ -2688,7 +2688,7 @@ type alias WellChildMeasurements =
 type alias NCDMeasurements =
     { coMorbidities : Maybe ( NCDCoMorbiditiesId, NCDCoMorbidities )
     , coreExam : Maybe ( NCDCoreExamId, NCDCoreExam )
-    , creatinineTest : Maybe ( NCDCreatinineTest, NCDCreatinineTest )
+    , creatinineTest : Maybe ( NCDCreatinineTestId, NCDCreatinineTest )
     , dangerSigns : Maybe ( NCDDangerSignsId, NCDDangerSigns )
     , familyHistory : Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )
     , familyPlanning : Maybe ( NCDFamilyPlanningId, NCDFamilyPlanning )
