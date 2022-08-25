@@ -1181,3 +1181,163 @@ type alias NCDEncounterId =
 
 type NCDEncounterUuidType
     = NCDEncounterUuidType
+
+
+type alias NCDCoMorbiditiesId =
+    EntityUuid NCDCoMorbiditiesUuidType
+
+
+type NCDCoMorbiditiesUuidType
+    = NCDCoMorbiditiesUuidType
+
+
+type alias NCDCoreExamId =
+    EntityUuid NCDCoreExamUuidType
+
+
+type NCDCoreExamUuidType
+    = NCDCoreExamUuidType
+
+
+type alias NCDCreatinineTestId =
+    EntityUuid NCDCreatinineTestUuidType
+
+
+type NCDCreatinineTestUuidType
+    = NCDCreatinineTestUuidType
+
+
+type alias NCDDangerSignsId =
+    EntityUuid NCDDangerSignsUuidType
+
+
+type NCDDangerSignsUuidType
+    = NCDDangerSignsUuidType
+
+
+type alias NCDFamilyHistoryId =
+    EntityUuid NCDFamilyHistoryUuidType
+
+
+type NCDFamilyHistoryUuidType
+    = NCDFamilyHistoryUuidType
+
+
+type alias NCDFamilyPlanningId =
+    EntityUuid NCDFamilyPlanningUuidType
+
+
+type NCDFamilyPlanningUuidType
+    = NCDFamilyPlanningUuidType
+
+
+type alias NCDHealthEducationId =
+    EntityUuid NCDHealthEducationUuidType
+
+
+type NCDHealthEducationUuidType
+    = NCDHealthEducationUuidType
+
+
+type alias NCDHivTestId =
+    EntityUuid NCDHivTestUuidType
+
+
+type NCDHivTestUuidType
+    = NCDHivTestUuidType
+
+
+type alias NCDLabsResultsId =
+    EntityUuid NCDLabsResultsUuidType
+
+
+type NCDLabsResultsUuidType
+    = NCDLabsResultsUuidType
+
+
+type alias NCDLiverFunctionTestId =
+    EntityUuid NCDLiverFunctionTestUuidType
+
+
+type NCDLiverFunctionTestUuidType
+    = NCDLiverFunctionTestUuidType
+
+
+type alias NCDMedicationDistributionId =
+    EntityUuid NCDMedicationDistributionUuidType
+
+
+type NCDMedicationDistributionUuidType
+    = NCDMedicationDistributionUuidType
+
+
+type alias NCDMedicationHistoryId =
+    EntityUuid NCDMedicationHistoryUuidType
+
+
+type NCDMedicationHistoryUuidType
+    = NCDMedicationHistoryUuidType
+
+
+type alias NCDOutsideCareId =
+    EntityUuid NCDOutsideCareUuidType
+
+
+type NCDOutsideCareUuidType
+    = NCDOutsideCareUuidType
+
+
+type alias NCDPregnancyTestId =
+    EntityUuid NCDPregnancyTestUuidType
+
+
+type NCDPregnancyTestUuidType
+    = NCDPregnancyTestUuidType
+
+
+type alias NCDRandomBloodSugarTestId =
+    EntityUuid NCDRandomBloodSugarTestUuidType
+
+
+type NCDRandomBloodSugarTestUuidType
+    = NCDRandomBloodSugarTestUuidType
+
+
+type alias NCDReferralId =
+    EntityUuid NCDReferralUuidType
+
+
+type NCDReferralUuidType
+    = NCDReferralUuidType
+
+
+type alias NCDSocialHistoryId =
+    EntityUuid NCDSocialHistoryUuidType
+
+
+type NCDSocialHistoryUuidType
+    = NCDSocialHistoryUuidType
+
+
+type alias NCDSymptomReviewId =
+    EntityUuid NCDSymptomReviewUuidType
+
+
+type NCDSymptomReviewUuidType
+    = NCDSymptomReviewUuidType
+
+
+type alias NCDUrineDipstickTestId =
+    EntityUuid NCDUrineDipstickTestUuidType
+
+
+type NCDUrineDipstickTestUuidType
+    = NCDUrineDipstickTestUuidType
+
+
+type alias NCDVitalsId =
+    EntityUuid NCDVitalsUuidType
+
+
+type NCDVitalsUuidType
+    = NCDVitalsUuidType
