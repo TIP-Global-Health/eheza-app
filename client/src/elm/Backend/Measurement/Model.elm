@@ -2699,7 +2699,7 @@ type alias NCDMeasurements =
     , medicationDistribution : Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )
     , medicationHistory : Maybe ( NCDMedicationHistoryId, NCDMedicationHistory )
     , outsideCare : Maybe ( NCDOutsideCareId, NCDOutsideCare )
-    , pregnancyTest : Maybe ( NCDOutsideCareId, NCDOutsideCare )
+    , pregnancyTest : Maybe ( NCDPregnancyTestId, NCDPregnancyTest )
     , randomBloodSugarTest : Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )
     , referral : Maybe ( NCDReferralId, NCDReferral )
     , socialHistory : Maybe ( NCDSocialHistoryId, NCDSocialHistory )

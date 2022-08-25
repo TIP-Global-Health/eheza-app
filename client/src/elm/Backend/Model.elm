@@ -435,7 +435,27 @@ type Revision
     | MedicationDistributionRevision MedicationDistributionId MedicationDistribution
     | MotherFbfRevision MotherFbfId Fbf
     | MuacRevision MuacId Muac
+    | NCDCoMorbiditiesRevision NCDCoMorbiditiesId NCDCoMorbidities
+    | NCDCoreExamRevision NCDCoreExamId NCDCoreExam
+    | NCDCreatinineTestRevision NCDCreatinineTestId NCDCreatinineTest
+    | NCDDangerSignsRevision NCDDangerSignsId NCDDangerSigns
     | NCDEncounterRevision NCDEncounterId NCDEncounter
+    | NCDFamilyHistoryRevision NCDFamilyHistoryId NCDFamilyHistory
+    | NCDFamilyPlanningRevision NCDFamilyPlanningId NCDFamilyPlanning
+    | NCDHealthEducationRevision NCDHealthEducationId NCDHealthEducation
+    | NCDHivTestRevision NCDHivTestId NCDHivTest
+    | NCDLabsResultsRevision NCDLabsResultsId NCDLabsResults
+    | NCDLiverFunctionTestRevision NCDLiverFunctionTestId NCDLiverFunctionTest
+    | NCDMedicationDistributionRevision NCDMedicationDistributionId NCDMedicationDistribution
+    | NCDMedicationHistoryRevision NCDMedicationHistoryId NCDMedicationHistory
+    | NCDOutsideCareRevision NCDOutsideCareId NCDOutsideCare
+    | NCDPregnancyTestRevision NCDPregnancyTestId NCDPregnancyTest
+    | NCDRandomBloodSugarTestRevision NCDRandomBloodSugarTestId NCDRandomBloodSugarTest
+    | NCDReferralRevision NCDReferralId NCDReferral
+    | NCDSocialHistoryRevision NCDSocialHistoryId NCDSocialHistory
+    | NCDSymptomReviewRevision NCDSymptomReviewId NCDSymptomReview
+    | NCDUrineDipstickTestRevision NCDUrineDipstickTestId NCDUrineDipstickTest
+    | NCDVitalsRevision NCDVitalsId NCDVitals
     | NurseRevision NurseId Nurse
     | NutritionCaringRevision NutritionCaringId NutritionCaring
     | NutritionContributingFactorsRevision NutritionContributingFactorsId NutritionContributingFactors
