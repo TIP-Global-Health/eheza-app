@@ -10,4 +10,11 @@
  */
 class HedleyRestfulNCDDangerSigns extends HedleyRestfulNCDActivityBase {
 
+  /**
+   * {@inheritdoc}
+   */
+  protected $multiFields = [
+    'field_ncd_danger_signs',
+  ];
+
 }
