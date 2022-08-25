@@ -1084,6 +1084,11 @@ encodeWellChildMeasurement =
     encodeMeasurement "well_child_encounter"
 
 
+encodeNCDMeasurement : (value -> List ( String, Value )) -> NCDMeasurement value -> List ( String, Value )
+encodeNCDMeasurement =
+    encodeMeasurement "ncd_encounter"
+
+
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMeasurement encounterTag encoder measurement =
     List.concat
@@ -4121,3 +4126,243 @@ encodePrenatalOutsideCareSign =
 encodePrenatalOutsideCareMedication : PrenatalOutsideCareMedication -> Value
 encodePrenatalOutsideCareMedication =
     prenatalOutsideCareMedicationToString >> string
+
+
+encodeNCDCoMorbidities : NCDCoMorbidities -> List ( String, Value )
+encodeNCDCoMorbidities =
+    encodeNCDMeasurement encodeNCDCoMorbiditiesValue
+
+
+encodeNCDCoMorbiditiesValue : NCDCoMorbiditiesValue -> List ( String, Value )
+encodeNCDCoMorbiditiesValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_co_morbidities" )
+    ]
+
+
+encodeNCDCoreExam : NCDCoreExam -> List ( String, Value )
+encodeNCDCoreExam =
+    encodeNCDMeasurement encodeNCDCoreExamValue
+
+
+encodeNCDCoreExamValue : NCDCoreExamValue -> List ( String, Value )
+encodeNCDCoreExamValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_core_exam" )
+    ]
+
+
+encodeNCDCreatinineTest : NCDCreatinineTest -> List ( String, Value )
+encodeNCDCreatinineTest =
+    encodeNCDMeasurement encodeNCDCreatinineTestValue
+
+
+encodeNCDCreatinineTestValue : NCDCreatinineTestValue -> List ( String, Value )
+encodeNCDCreatinineTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_creatinine_test" )
+    ]
+
+
+encodeNCDDangerSigns : NCDDangerSigns -> List ( String, Value )
+encodeNCDDangerSigns =
+    encodeNCDMeasurement encodeNCDDangerSignsValue
+
+
+encodeNCDDangerSignsValue : NCDDangerSignsValue -> List ( String, Value )
+encodeNCDDangerSignsValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_danger_signs" )
+    ]
+
+
+encodeNCDFamilyHistory : NCDFamilyHistory -> List ( String, Value )
+encodeNCDFamilyHistory =
+    encodeNCDMeasurement encodeNCDFamilyHistoryValue
+
+
+encodeNCDFamilyHistoryValue : NCDFamilyHistoryValue -> List ( String, Value )
+encodeNCDFamilyHistoryValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_family_history" )
+    ]
+
+
+encodeNCDFamilyPlanning : NCDFamilyPlanning -> List ( String, Value )
+encodeNCDFamilyPlanning =
+    encodeNCDMeasurement encodeNCDFamilyPlanningValue
+
+
+encodeNCDFamilyPlanningValue : NCDFamilyPlanningValue -> List ( String, Value )
+encodeNCDFamilyPlanningValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_family_planning" )
+    ]
+
+
+encodeNCDHealthEducation : NCDHealthEducation -> List ( String, Value )
+encodeNCDHealthEducation =
+    encodeNCDMeasurement encodeNCDHealthEducationValue
+
+
+encodeNCDHealthEducationValue : NCDHealthEducationValue -> List ( String, Value )
+encodeNCDHealthEducationValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_health_education" )
+    ]
+
+
+encodeNCDHivTest : NCDHivTest -> List ( String, Value )
+encodeNCDHivTest =
+    encodeNCDMeasurement encodeNCDHivTestValue
+
+
+encodeNCDHivTestValue : NCDHivTestValue -> List ( String, Value )
+encodeNCDHivTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_hiv_test" )
+    ]
+
+
+encodeNCDLabsResults : NCDLabsResults -> List ( String, Value )
+encodeNCDLabsResults =
+    encodeNCDMeasurement encodeNCDLabsResultsValue
+
+
+encodeNCDLabsResultsValue : NCDLabsResultsValue -> List ( String, Value )
+encodeNCDLabsResultsValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_labs_results" )
+    ]
+
+
+encodeNCDLiverFunctionTest : NCDLiverFunctionTest -> List ( String, Value )
+encodeNCDLiverFunctionTest =
+    encodeNCDMeasurement encodeNCDLiverFunctionTestValue
+
+
+encodeNCDLiverFunctionTestValue : NCDLiverFunctionTestValue -> List ( String, Value )
+encodeNCDLiverFunctionTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_liver_function_test" )
+    ]
+
+
+encodeNCDMedicationDistribution : NCDMedicationDistribution -> List ( String, Value )
+encodeNCDMedicationDistribution =
+    encodeNCDMeasurement encodeNCDMedicationDistributionValue
+
+
+encodeNCDMedicationDistributionValue : NCDMedicationDistributionValue -> List ( String, Value )
+encodeNCDMedicationDistributionValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_medication_distribution" )
+    ]
+
+
+encodeNCDMedicationHistory : NCDMedicationHistory -> List ( String, Value )
+encodeNCDMedicationHistory =
+    encodeNCDMeasurement encodeNCDMedicationHistoryValue
+
+
+encodeNCDMedicationHistoryValue : NCDMedicationHistoryValue -> List ( String, Value )
+encodeNCDMedicationHistoryValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_medication_history" )
+    ]
+
+
+encodeNCDOutsideCare : NCDOutsideCare -> List ( String, Value )
+encodeNCDOutsideCare =
+    encodeNCDMeasurement encodeNCDOutsideCareValue
+
+
+encodeNCDOutsideCareValue : NCDOutsideCareValue -> List ( String, Value )
+encodeNCDOutsideCareValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_outside_care" )
+    ]
+
+
+encodeNCDPregnancyTest : NCDPregnancyTest -> List ( String, Value )
+encodeNCDPregnancyTest =
+    encodeNCDMeasurement encodeNCDPregnancyTestValue
+
+
+encodeNCDPregnancyTestValue : NCDPregnancyTestValue -> List ( String, Value )
+encodeNCDPregnancyTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_pregnancy_test" )
+    ]
+
+
+encodeNCDRandomBloodSugarTest : NCDRandomBloodSugarTest -> List ( String, Value )
+encodeNCDRandomBloodSugarTest =
+    encodeNCDMeasurement encodeNCDRandomBloodSugarTestValue
+
+
+encodeNCDRandomBloodSugarTestValue : NCDRandomBloodSugarTestValue -> List ( String, Value )
+encodeNCDRandomBloodSugarTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_random_blood_sugar_test" )
+    ]
+
+
+encodeNCDReferral : NCDReferral -> List ( String, Value )
+encodeNCDReferral =
+    encodeNCDMeasurement encodeNCDReferralValue
+
+
+encodeNCDReferralValue : NCDReferralValue -> List ( String, Value )
+encodeNCDReferralValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_referral" )
+    ]
+
+
+encodeNCDSocialHistory : NCDSocialHistory -> List ( String, Value )
+encodeNCDSocialHistory =
+    encodeNCDMeasurement encodeNCDSocialHistoryValue
+
+
+encodeNCDSocialHistoryValue : NCDSocialHistoryValue -> List ( String, Value )
+encodeNCDSocialHistoryValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_social_history" )
+    ]
+
+
+encodeNCDSymptomReview : NCDSymptomReview -> List ( String, Value )
+encodeNCDSymptomReview =
+    encodeNCDMeasurement encodeNCDSymptomReviewValue
+
+
+encodeNCDSymptomReviewValue : NCDSymptomReviewValue -> List ( String, Value )
+encodeNCDSymptomReviewValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_symptom_review" )
+    ]
+
+
+encodeNCDUrineDipstickTest : NCDUrineDipstickTest -> List ( String, Value )
+encodeNCDUrineDipstickTest =
+    encodeNCDMeasurement encodeNCDUrineDipstickTestValue
+
+
+encodeNCDUrineDipstickTestValue : NCDUrineDipstickTestValue -> List ( String, Value )
+encodeNCDUrineDipstickTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_urine_dipstick_test" )
+    ]
+
+
+encodeNCDVitals : NCDVitals -> List ( String, Value )
+encodeNCDVitals =
+    encodeNCDMeasurement encodeNCDVitalsValue
+
+
+encodeNCDVitalsValue : NCDVitalsValue -> List ( String, Value )
+encodeNCDVitalsValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_vitals" )
+    ]
