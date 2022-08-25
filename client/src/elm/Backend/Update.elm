@@ -3437,21 +3437,6 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
-        NCDEncounterRevision uuid data ->
-            let
-                ncdEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.ncdEncounters
-
-                ncdEncountersByParticipant =
-                    Dict.remove data.participant model.ncdEncountersByParticipant
-            in
-            ( { model
-                | ncdEncounters = ncdEncounters
-                , ncdEncountersByParticipant = ncdEncountersByParticipant
-              }
-            , recalc
-            )
-
         NCDCoMorbiditiesRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
@@ -3481,6 +3466,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
                 model
+            , recalc
+            )
+
+        NCDEncounterRevision uuid data ->
+            let
+                ncdEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.ncdEncounters
+
+                ncdEncountersByParticipant =
+                    Dict.remove data.participant model.ncdEncountersByParticipant
+            in
+            ( { model
+                | ncdEncounters = ncdEncounters
+                , ncdEncountersByParticipant = ncdEncountersByParticipant
+              }
             , recalc
             )
 
