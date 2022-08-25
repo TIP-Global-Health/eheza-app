@@ -60,6 +60,10 @@ type alias WellChildMeasurement value =
     Measurement WellChildEncounterId value
 
 
+type alias NCDMeasurement value =
+    Measurement NCDEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -2246,6 +2250,170 @@ type alias VaccinationValue =
 
 
 
+-- NCD MEASUREMENTS
+
+
+type alias NCDCoMorbidities =
+    NCDMeasurement NCDCoMorbiditiesValue
+
+
+type alias NCDCoMorbiditiesValue =
+    {}
+
+
+type alias NCDCoreExam =
+    NCDMeasurement NCDCoreExamValue
+
+
+type alias NCDCoreExamValue =
+    {}
+
+
+type alias NCDCreatinineTest =
+    NCDMeasurement NCDCreatinineTestValue
+
+
+type alias NCDCreatinineTestValue =
+    {}
+
+
+type alias NCDDangerSigns =
+    NCDMeasurement NCDDangerSignsValue
+
+
+type alias NCDDangerSignsValue =
+    {}
+
+
+type alias NCDFamilyHistory =
+    NCDMeasurement NCDFamilyHistoryValue
+
+
+type alias NCDFamilyHistoryValue =
+    {}
+
+
+type alias NCDFamilyPlanning =
+    NCDMeasurement NCDFamilyPlanningValue
+
+
+type alias NCDFamilyPlanningValue =
+    {}
+
+
+type alias NCDHealthEducation =
+    NCDMeasurement NCDHealthEducationValue
+
+
+type alias NCDHealthEducationValue =
+    {}
+
+
+type alias NCDHivTest =
+    NCDMeasurement NCDHivTestValue
+
+
+type alias NCDHivTestValue =
+    {}
+
+
+type alias NCDLabsResults =
+    NCDMeasurement NCDLabsResultsValue
+
+
+type alias NCDLabsResultsValue =
+    {}
+
+
+type alias NCDLiverFunctionTest =
+    NCDMeasurement NCDLiverFunctionTestValue
+
+
+type alias NCDLiverFunctionTestValue =
+    {}
+
+
+type alias NCDMedicationDistribution =
+    NCDMeasurement NCDMedicationDistributionValue
+
+
+type alias NCDMedicationDistributionValue =
+    {}
+
+
+type alias NCDMedicationHistory =
+    NCDMeasurement NCDMedicationHistoryValue
+
+
+type alias NCDMedicationHistoryValue =
+    {}
+
+
+type alias NCDOutsideCare =
+    NCDMeasurement NCDOutsideCareValue
+
+
+type alias NCDOutsideCareValue =
+    {}
+
+
+type alias NCDPregnancyTest =
+    NCDMeasurement NCDPregnancyTestValue
+
+
+type alias NCDPregnancyTestValue =
+    {}
+
+
+type alias NCDRandomBloodSugarTest =
+    NCDMeasurement NCDRandomBloodSugarTestValue
+
+
+type alias NCDRandomBloodSugarTestValue =
+    {}
+
+
+type alias NCDReferral =
+    NCDMeasurement NCDReferralValue
+
+
+type alias NCDReferralValue =
+    {}
+
+
+type alias NCDSocialHistory =
+    NCDMeasurement NCDSocialHistoryValue
+
+
+type alias NCDSocialHistoryValue =
+    {}
+
+
+type alias NCDSymptomReview =
+    NCDMeasurement NCDSymptomReviewValue
+
+
+type alias NCDSymptomReviewValue =
+    {}
+
+
+type alias NCDUrineDipstickTest =
+    NCDMeasurement NCDUrineDipstickTestValue
+
+
+type alias NCDUrineDipstickTestValue =
+    {}
+
+
+type alias NCDVitals =
+    NCDMeasurement NCDVitalsValue
+
+
+type alias NCDVitalsValue =
+    {}
+
+
+
 -- LISTS OF MEASUREMENTS
 
 
@@ -2518,7 +2686,27 @@ type alias WellChildMeasurements =
 {-| A set of NCD measurements that correspond to the same NCD encounter.
 -}
 type alias NCDMeasurements =
-    {}
+    { coMorbidities : Maybe ( NCDCoMorbiditiesId, NCDCoMorbidities )
+    , coreExam : Maybe ( NCDCoreExamId, NCDCoreExam )
+    , creatinineTest : Maybe ( NCDCreatinineTest, NCDCreatinineTest )
+    , dangerSigns : Maybe ( NCDDangerSignsId, NCDDangerSigns )
+    , familyHistory : Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )
+    , familyPlanning : Maybe ( NCDFamilyPlanningId, NCDFamilyPlanning )
+    , healthEducation : Maybe ( NCDHealthEducationId, NCDHealthEducation )
+    , hivTest : Maybe ( NCDHivTestId, NCDHivTest )
+    , labsResults : Maybe ( NCDLabsResultsId, NCDLabsResults )
+    , liverFunctionTest : Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )
+    , medicationDistribution : Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )
+    , medicationHistory : Maybe ( NCDMedicationHistoryId, NCDMedicationHistory )
+    , outsideCare : Maybe ( NCDOutsideCareId, NCDOutsideCare )
+    , pregnancyTest : Maybe ( NCDOutsideCareId, NCDOutsideCare )
+    , randomBloodSugarTest : Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )
+    , referral : Maybe ( NCDReferralId, NCDReferral )
+    , socialHistory : Maybe ( NCDSocialHistoryId, NCDSocialHistory )
+    , symptomReview : Maybe ( NCDSymptomReviewId, NCDSymptomReview )
+    , urineDipstickTest : Maybe ( NCDUrineDipstickTestId, NCDUrineDipstickTest )
+    , vitals : Maybe ( NCDVitalsId, NCDVitals )
+    }
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one
