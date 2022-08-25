@@ -1358,7 +1358,7 @@ translationSet trans =
     case trans of
         Abdomen ->
             { english = "Abdomen"
-            , kinyarwanda = Just "Isanzwe"
+            , kinyarwanda = Just "Inda"
             }
 
         AbdomenCPESign option ->
@@ -2652,7 +2652,7 @@ translationSet trans =
             case option of
                 Mass ->
                     { english = "Mass"
-                    , kinyarwanda = Just "Uburemere"
+                    , kinyarwanda = Just "Utubyimba mu Ibere"
                     }
 
                 Discharge ->
@@ -3993,7 +3993,7 @@ translationSet trans =
 
         Edd ->
             { english = "EDD"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itariki y'agateganyo yo kubyara"
             }
 
         EddHeader ->
@@ -4013,7 +4013,7 @@ translationSet trans =
 
         Ega ->
             { english = "EGA"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibyumweru inda imaze"
             }
 
         EgaHeader ->
@@ -4227,7 +4227,7 @@ translationSet trans =
             case status of
                 StatusOngoing ->
                     { english = "Open"
-                    , kinyarwanda = Just "Igikorwa Kiracyafunguye"
+                    , kinyarwanda = Nothing
                     }
 
                 StatusResolved ->
@@ -4698,7 +4698,7 @@ translationSet trans =
 
         Gravida ->
             { english = "Gravida"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Inda zose watwise"
             }
 
         HalfOfDosage dosage ->
@@ -5907,7 +5907,7 @@ translationSet trans =
 
         LmpDateConfidentHeader ->
             { english = "Is the Patient confident of LMP Date"
-            , kinyarwanda = Just "Ese umubyeyi azi neza itariki aherukira mu mihango?"
+            , kinyarwanda = Just "Ese umubyeyi azi neza itariki aherukira mu mihango"
             }
 
         LmpDateHeader ->
@@ -5922,7 +5922,7 @@ translationSet trans =
 
         LmpRangeHeader ->
             { english = "When was the Patient's Last Menstrual Period"
-            , kinyarwanda = Just "Ni ryari umubyeyi aherukira mu mihango?"
+            , kinyarwanda = Just "Ni ryari umubyeyi aherukira mu mihango"
             }
 
         LmpRange range ->
@@ -7571,7 +7571,7 @@ translationSet trans =
 
         Para ->
             { english = "Para"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imbyaro"
             }
 
         ParacetamolPrescriptionForAdult ->
