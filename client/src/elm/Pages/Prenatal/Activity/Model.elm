@@ -159,7 +159,7 @@ type Msg
     | SetHemoglobinTestExecutionDate NominalDate
     | SetHemoglobinTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
-    | SetRandomBloodSugarTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
+    | SetRandomBloodSugarTestFormBoolInput (Bool -> PrenatalRandomBloodSugarForm -> PrenatalRandomBloodSugarForm) Bool
     | SetRandomBloodSugarTestExecutionNote PrenatalTestExecutionNote
     | SetRandomBloodSugarTestExecutionDate NominalDate
     | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
@@ -181,11 +181,10 @@ type Msg
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId PrenatalAssesment (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) Bool (Maybe NextStepsTask)
     | SaveNewbornEnrollment Bool (Maybe NextStepsTask)
-    | SetReferToHealthCenter Bool
-    | SetHandReferralForm Bool
-    | SetAccompanyToHC Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe ReferralFacility) (Maybe NextStepsTask)
+    | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
+    | SetHealthCenterNonReferralReason ReasonForNonReferral
+    | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe NextStepsTask)
     | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetAppointmentConfirmation Date
     | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) Bool (Maybe NextStepsTask)
@@ -483,7 +482,7 @@ type alias LaboratoryData =
     , hepatitisBTestForm : PrenatalLabsNonRDTForm
     , hivTestForm : PrenatalHIVTestForm
     , malariaTestForm : PrenatalMalariaTestForm
-    , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
+    , randomBloodSugarTestForm : PrenatalRandomBloodSugarForm
     , syphilisTestForm : PrenatalLabsNonRDTForm
     , urineDipstickTestForm : PrenatalUrineDipstickForm
     , hivPCRTestForm : PrenatalLabsNonRDTForm
@@ -500,7 +499,7 @@ emptyLaboratoryData =
     , hepatitisBTestForm = emptyPrenatalLabsNonRDTForm
     , hivTestForm = emptyPrenatalHIVTestForm
     , malariaTestForm = emptyPrenatalMalariaTestForm
-    , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
+    , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarForm
     , syphilisTestForm = emptyPrenatalLabsNonRDTForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
     , hivPCRTestForm = emptyPrenatalLabsNonRDTForm
@@ -625,7 +624,7 @@ emptyImmunisationData =
 type alias NextStepsData =
     { appointmentConfirmationForm : AppointmentConfirmationForm
     , followUpForm : FollowUpForm
-    , sendToHCForm : SendToHCForm
+    , referralForm : ReferralForm
     , healthEducationForm : HealthEducationForm
     , newbornEnrolmentForm : NewbornEnrolmentForm
     , medicationDistributionForm : MedicationDistributionForm
@@ -637,7 +636,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { appointmentConfirmationForm = emptyAppointmentConfirmationForm
     , followUpForm = emptyFollowUpForm
-    , sendToHCForm = emptySendToHCForm
+    , referralForm = emptyReferralForm
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , medicationDistributionForm = emptyMedicationDistributionForm
@@ -794,6 +793,7 @@ type alias OutsideCareForm =
     { seenAtAnotherFacility : Maybe Bool
     , givenNewDiagnosis : Maybe Bool
     , givenMedicine : Maybe Bool
+    , plannedFollowUp : Maybe Bool
     , diagnoses : Maybe (List PrenatalDiagnosis)
     , diagnosesDirty : Bool
     , malariaMedications : Maybe (List PrenatalOutsideCareMedication)
@@ -809,6 +809,7 @@ emptyOutsideCareForm =
     { seenAtAnotherFacility = Nothing
     , givenNewDiagnosis = Nothing
     , givenMedicine = Nothing
+    , plannedFollowUp = Nothing
     , diagnoses = Nothing
     , diagnosesDirty = False
     , malariaMedications = Nothing
@@ -996,6 +997,35 @@ type alias PrenatalMalariaTestForm =
 emptyPrenatalMalariaTestForm : PrenatalMalariaTestForm
 emptyPrenatalMalariaTestForm =
     PrenatalMalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
+
+
+type alias PrenatalRandomBloodSugarForm =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , patientFasted : Maybe Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe PrenatalTestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    }
+
+
+emptyPrenatalRandomBloodSugarForm : PrenatalRandomBloodSugarForm
+emptyPrenatalRandomBloodSugarForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , patientFasted = Nothing
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , dateSelectorPopupState = Nothing
+    }
 
 
 type alias PrenatalLabsNonRDTForm =

@@ -4,7 +4,6 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (PrenatalEncounterId)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Decoder exposing (pregnancyTestResultFromString)
 import Backend.Measurement.Model
     exposing
         ( AbdomenCPESign(..)
@@ -25,7 +24,13 @@ import Backend.Measurement.Model
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultFromString)
+import Backend.Measurement.Utils
+    exposing
+        ( getMeasurementValueFunc
+        , pregnancyTestResultFromString
+        , prenatalTestResultFromString
+        , socialHistoryHivTestingResultFromString
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -103,6 +108,16 @@ update language currentDate id db msg model =
                     )
                 |> Maybe.withDefault model.historyData.outsideCareForm
 
+        referralForm =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.sendToHC
+                        >> getMeasurementValueFunc
+                        >> referralFormWithDefault model.nextStepsData.referralForm
+                    )
+                |> Maybe.withDefault model.nextStepsData.referralForm
+
         resolveVaccinationForm vaccineType form =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
@@ -171,7 +186,7 @@ update language currentDate id db msg model =
                 nonUrgentDiagnoses =
                     Dict.get id db.prenatalEncounters
                         |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map (.diagnoses >> EverySet.toList >> listNonUrgentDiagnoses)
+                        |> Maybe.map (.diagnoses >> EverySet.toList >> filterNonUrgentDiagnoses)
                         |> Maybe.withDefault []
 
                 extraMsgs =
@@ -2516,7 +2531,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.randomBloodSugarTestForm
-                        |> toPrenatalNonRDTValueWithDefault measurement toRandomBloodSugarTestValueWithEmptyResults
+                        |> toPrenatalRandomBloodSugarValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2685,9 +2700,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.healthEducationData.form
-                        |> -- Health Education activity is explicitly for CHW,
-                           -- therefore we select CHW specific function.
-                           toHealthEducationValueWithDefaultChw measurement
+                        |> toHealthEducationValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
@@ -2716,11 +2729,10 @@ update language currentDate id db msg model =
 
         SetHealthEducationSubActivityBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.nextStepsData.healthEducationForm
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.nextStepsData.healthEducationForm
-                    in
                     model.nextStepsData
                         |> (\data -> { data | healthEducationForm = updatedForm })
             in
@@ -2742,9 +2754,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.nextStepsData.healthEducationForm
-                        |> -- Health Education sub activity is explicitly
-                           -- for nurses, therefore we select nurse specific function.
-                           toHealthEducationValueWithDefaultInitialPhase measurement
+                        |> toHealthEducationValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2787,9 +2797,11 @@ update language currentDate id db msg model =
                 extraMsgs =
                     generateNextStepsMsgs secondPhaseRequired nextTask
 
-                appMsgs =
+                form =
                     model.nextStepsData.followUpForm
-                        |> toFollowUpValueWithDefault measurement
+
+                appMsgs =
+                    toFollowUpValueWithDefault measurement { form | assesment = Just assesment }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveFollowUp personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2815,75 +2827,69 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SetReferToHealthCenter value ->
+        SetReferralBoolInput updateFunc value ->
             let
-                form =
-                    model.nextStepsData.sendToHCForm
-
                 updatedForm =
-                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+                    updateFunc value model.nextStepsData.referralForm
 
                 updatedData =
                     model.nextStepsData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
+                        |> (\data -> { data | referralForm = updatedForm })
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
             , []
             )
 
-        SetHandReferralForm value ->
+        SetHealthCenterNonReferralReason value ->
             let
                 form =
-                    model.nextStepsData.sendToHCForm
-
-                updatedForm =
-                    { form | handReferralForm = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetAccompanyToHC value ->
-            let
-                form =
-                    model.nextStepsData.sendToHCForm
-
-                updatedForm =
-                    { form | accompanyToHealthCenter = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetReasonForNotSendingToHC value ->
-            let
-                form =
-                    model.nextStepsData.sendToHCForm
+                    model.nextStepsData.referralForm
 
                 updatedForm =
                     { form | reasonForNotSendingToHC = Just value }
 
                 updatedData =
                     model.nextStepsData
-                        |> (\data -> { data | sendToHCForm = updatedForm })
+                        |> (\data -> { data | referralForm = updatedForm })
             in
             ( { model | nextStepsData = updatedData }
             , Cmd.none
             , []
             )
 
-        SaveSendToHC personId saved secondPhaseRequired referralFacility nextTask ->
+        SetFacilityNonReferralReason currentValue facility reason ->
+            let
+                updatedValue =
+                    nonReferralReasonToSign facility reason
+
+                updatedFacilityNonReferralReasons =
+                    Maybe.map
+                        (\facilityNonReferralReasons ->
+                            case currentValue of
+                                Just value ->
+                                    EverySet.remove (nonReferralReasonToSign facility value) facilityNonReferralReasons
+                                        |> EverySet.insert updatedValue
+
+                                Nothing ->
+                                    EverySet.insert updatedValue facilityNonReferralReasons
+                        )
+                        referralForm.facilityNonReferralReasons
+                        |> Maybe.withDefault (EverySet.singleton updatedValue)
+
+                updatedForm =
+                    { referralForm | facilityNonReferralReasons = Just updatedFacilityNonReferralReasons }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | referralForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSendToHC personId saved secondPhaseRequired nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -2895,8 +2901,8 @@ update language currentDate id db msg model =
                     generateNextStepsMsgs secondPhaseRequired nextTask
 
                 appMsgs =
-                    model.nextStepsData.sendToHCForm
-                        |> toPrenatalSendToHCValueWithDefault measurement referralFacility
+                    model.nextStepsData.referralForm
+                        |> toPrenatalReferralValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

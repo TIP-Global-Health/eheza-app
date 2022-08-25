@@ -656,6 +656,7 @@ function hedley_prenatal_field_default_field_bases() {
         'seen-at-another-facility' => 'Seen at another facility',
         'given-new-diagnoses' => 'Given new diagnoses',
         'given-medicine' => 'Given medicine',
+        'follow-up-with-specialist' => 'Planned follow up care with specialist',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -684,6 +685,9 @@ function hedley_prenatal_field_default_field_bases() {
         'syphilis-complications' => 'Syphilis with Complications',
         'neurosyphilis' => 'Neurosyphilis',
         'hepatitis-b' => 'Hepatitis B',
+        'diabetes' => 'Diabetes',
+        'gestational-diabetes' => 'Gestational diabetes',
+        'rhesus-negative' => 'Rhesus negative',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -825,10 +829,14 @@ function hedley_prenatal_field_default_field_bases() {
         'chronic-hypertension-recheck' => 'Chronic Hypertension After Recheck',
         'gestational-hypertension-immediate' => 'Gestational Hypertension Immediate',
         'gestational-hypertension-recheck' => 'Gestational Hypertension After Recheck',
-        'moderate-preeclampsia-immediate' => 'Moderate Preeclampsia Immediate',
-        'moderate-preeclampsia-recheck' => 'Moderate Preeclampsia After Recheck',
-        'severe-preeclampsia-immediate' => 'Severe Preeclampsia Immediate',
-        'severe-preeclampsia-recheck' => 'Severe Preeclampsia After Recheck',
+        'moderate-preeclampsia-initial' => 'Moderate Preeclampsia Initial',
+        'moderate-preeclampsia-initial-ega-37+' => 'Moderate Preeclampsia Initial EGA 37 or more',
+        'moderate-preeclampsia-recurrent' => 'Moderate Preeclampsia Recurrent',
+        'moderate-preeclampsia-recurrent-ega-37+' => 'Moderate Preeclampsia Recurrent EGA 37 or more',
+        'severe-preeclampsia-initial' => 'Severe Preeclampsia Initial',
+        'severe-preeclampsia-initial-ega-37+' => 'Severe Preeclampsia Initial EGA 37 or more',
+        'severe-preeclampsia-recurrent' => 'Severe Preeclampsia Recurrent',
+        'severe-preeclampsia-recurrent-ega-37+' => 'Severe Preeclampsia Recurrent EGA 37 or more',
         'eclampsia' => 'Eclampsia',
         'hiv' => 'HIV',
         'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
@@ -856,6 +864,8 @@ function hedley_prenatal_field_default_field_bases() {
         'pprom' => 'PPROM',
         'hyperemesis-gravidum' => 'Hyperemesis Gravidum',
         'hyperemesis-gravidum-by-symptoms' => 'Hyperemesis Gravidum by Symptoms',
+        'severe-vomiting' => 'Severe Vomiting',
+        'severe-vomiting-by-symptoms' => 'Severe Vomiting by Symptoms',
         'maternal-complications' => 'Maternal Complications',
         'infection' => 'Infection',
         'imminent-delivery' => 'Imminent delivery',
@@ -875,6 +885,9 @@ function hedley_prenatal_field_default_field_bases() {
         'trichomonas-or-bv' => 'Trichomonas or Bacterial Vaginosis',
         'trichomonas-or-bv-continued' => 'Trichomonas or Bacterial Vaginosis Continued',
         'tuberculosis' => 'Tuberculosis',
+        'diabetes' => 'Diabetes',
+        'gestational-diabetes' => 'Gestational diabetes',
+        'rhesus-negative' => 'Rhesus negative',
         'depression-not-likely' => 'Depression Not Likely',
         'depression-possible' => 'Depression Possible',
         'depression-highly-possible' => 'Depression Highly Possible',
@@ -1018,6 +1031,48 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_reasons_for_non_referrals'.
+  $field_bases['field_reasons_for_non_referrals'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_reasons_for_non_referrals',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hospital-client-refused' => 'Hospital - Client refused',
+        'hospital-no-ambulance' => 'Hospital - ambulance available',
+        'hospital-unable-to-afford-fee' => 'Hospital - client unable to afford fees',
+        'hospital-not-indicated' => 'Hospital - Not indicated',
+        'hospital-other' => 'Hospital - Other',
+        'mhs-client-refused' => 'Mental health specialist - Client refused',
+        'mhs-already-in-care' => 'Mental health specialist - Client already in care',
+        'mhs-not-indicated' => 'Mental health specialist - Not indicated',
+        'mhs-other' => 'Mental health specialist - Other',
+        'arv-client-refused' => 'ARV program - Client refused',
+        'arv-already-in-care' => 'ARV program - Client already in care',
+        'arv-not-indicated' => 'ARV program - Not indicated',
+        'arv-other' => 'ARV program - Other',
+        'ncd-client-refused' => 'NCD program - Client refused',
+        'ncd-already-in-care' => 'NCD program - Client already in care',
+        'ncd-not-indicated' => 'NCD program - Not indicated',
+        'ncd-other' => 'NCD program - Other',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_recommended_treatment'.
   $field_bases['field_recommended_treatment'] = array(
     'active' => 1,
@@ -1064,13 +1119,14 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_referral_facility'.
-  $field_bases['field_referral_facility'] = array(
+  // Exported field_base: 'field_referrals'.
+  $field_bases['field_referrals'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
+    'entity_id_type' => NULL,
     'entity_types' => array(),
-    'field_name' => 'field_referral_facility',
+    'field_name' => 'field_referrals',
     'indexes' => array(
       'value' => array(
         0 => 'value',
@@ -1080,8 +1136,18 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'hiv-program' => 'HIV program',
-        'mental-health-specialist' => 'Mental health specialist',
+        'hospital' => 'Hospital',
+        'hospital-referral-form' => 'Hospital - referral form',
+        'mhs' => 'Mental health specialist',
+        'mhs-referral-form' => 'Mental health specialist - referral form',
+        'mhs-accompany' => 'Mental health specialist - accompany',
+        'arv' => 'ARV program',
+        'arv-referral-form' => 'ARV program - referral form',
+        'arv-accompany' => 'ARV program - accompany',
+        'ncd' => 'NCD program',
+        'ncd-referral-form' => 'NCD program - referral form',
+        'ncd-accompany' => 'NCD program - accompany',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
@@ -1149,9 +1215,11 @@ function hedley_prenatal_field_default_field_bases() {
     'indexes' => array(),
     'locked' => 0,
     'module' => 'number',
-    'settings' => array(),
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
     'translatable' => 0,
-    'type' => 'number_integer',
+    'type' => 'number_float',
   );
 
   // Exported field_base: 'field_sys_repeated'.
@@ -1195,6 +1263,32 @@ function hedley_prenatal_field_default_field_bases() {
         'broken-equipment' => 'Broken Equipment',
         'not-indicated' => 'Not Indicated',
         'known-as-positive' => 'Known as Positive',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_test_prerequisites'.
+  $field_bases['field_test_prerequisites'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_test_prerequisites',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'fasting-12h' => 'Fasting for 12 hours',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),

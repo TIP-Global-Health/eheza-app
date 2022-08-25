@@ -537,6 +537,51 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_blood_gprs_test-field_originating_encounter'.
+  $field_instances['node-prenatal_blood_gprs_test-field_originating_encounter'] = array(
+    'bundle' => 'prenatal_blood_gprs_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_originating_encounter',
+    'label' => 'Originating encounter',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 15,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_blood_gprs_test-field_person'.
   $field_instances['node-prenatal_blood_gprs_test-field_person'] = array(
     'bundle' => 'prenatal_blood_gprs_test',
@@ -786,44 +831,6 @@ function hedley_prenatal_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-prenatal_encounter-field_prenatal_diagnoses'.
-  $field_instances['node-prenatal_encounter-field_prenatal_diagnoses'] = array(
-    'bundle' => 'prenatal_encounter',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 6,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_prenatal_diagnoses',
-    'label' => 'Prenatal Diagnoses',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 5,
-    ),
-  );
-
-  // Exported field_instance:
   // 'node-prenatal_encounter-field_past_prenatal_diagnoses'.
   $field_instances['node-prenatal_encounter-field_past_prenatal_diagnoses'] = array(
     'bundle' => 'prenatal_encounter',
@@ -858,6 +865,44 @@ function hedley_prenatal_field_default_field_instances() {
       'settings' => array(),
       'type' => 'options_select',
       'weight' => 15,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_encounter-field_prenatal_diagnoses'.
+  $field_instances['node-prenatal_encounter-field_prenatal_diagnoses'] = array(
+    'bundle' => 'prenatal_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_prenatal_diagnoses',
+    'label' => 'Prenatal Diagnoses',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 5,
     ),
   );
 
@@ -5134,7 +5179,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -5191,7 +5236,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 11,
+      'weight' => 9,
     ),
   );
 
@@ -5236,7 +5281,52 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_random_blood_sugar_test-field_originating_encounter'.
+  $field_instances['node-prenatal_random_blood_sugar_test-field_originating_encounter'] = array(
+    'bundle' => 'prenatal_random_blood_sugar_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_originating_encounter',
+    'label' => 'Originating encounter',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 12,
     ),
   );
 
@@ -5281,7 +5371,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -5326,7 +5416,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -5371,7 +5461,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -5389,10 +5479,10 @@ function hedley_prenatal_field_default_field_instances() {
         'settings' => array(
           'decimal_separator' => '.',
           'prefix_suffix' => TRUE,
-          'scale' => 0,
+          'scale' => 2,
           'thousand_separator' => '',
         ),
-        'type' => 'number_integer',
+        'type' => 'number_decimal',
         'weight' => 8,
       ),
       'teaser' => array(
@@ -5418,7 +5508,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 12,
+      'weight' => 10,
     ),
   );
 
@@ -5456,7 +5546,45 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 9,
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_random_blood_sugar_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_random_blood_sugar_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_random_blood_sugar_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 8,
     ),
   );
 
@@ -5696,7 +5824,7 @@ function hedley_prenatal_field_default_field_instances() {
     'bundle' => 'prenatal_send_to_hc',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'Field is used for storing data of reason for which patient was not referred to Health Center.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -5715,43 +5843,6 @@ function hedley_prenatal_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_reason_not_sent_to_hc',
     'label' => 'Reason for Not Sending to HC',
-    'required' => FALSE,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 11,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-prenatal_send_to_hc-field_referral_facility'.
-  $field_instances['node-prenatal_send_to_hc-field_referral_facility'] = array(
-    'bundle' => 'prenatal_send_to_hc',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 8,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_referral_facility',
-    'label' => 'Referral Facility',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -5761,7 +5852,82 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 12,
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_send_to_hc-field_reasons_for_non_referrals'.
+  $field_instances['node-prenatal_send_to_hc-field_reasons_for_non_referrals'] = array(
+    'bundle' => 'prenatal_send_to_hc',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Field is used for storing data of reasons for which patient was not referred (multiple) facilities.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reasons_for_non_referrals',
+    'label' => 'Reasons for non referrals',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 14,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_send_to_hc-field_referrals'.
+  $field_instances['node-prenatal_send_to_hc-field_referrals'] = array(
+    'bundle' => 'prenatal_send_to_hc',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Field is used for storing data of referrals (possibly multiple) made by nurse.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_referrals',
+    'label' => 'Referrals',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 13,
     ),
   );
 
@@ -5770,7 +5936,7 @@ function hedley_prenatal_field_default_field_instances() {
     'bundle' => 'prenatal_send_to_hc',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'Field is used for storing data of referral to Health center by CHW',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -8019,6 +8185,10 @@ function hedley_prenatal_field_default_field_instances() {
   t('Date concluded');
   t('Dia Repeated');
   t('Execution Date');
+  t('Field is used for storing data of reason for which patient was not referred to Health Center.');
+  t('Field is used for storing data of reasons for which patient was not referred (multiple) facilities.');
+  t('Field is used for storing data of referral to Health center by CHW');
+  t('Field is used for storing data of referrals (possibly multiple) made by nurse.');
   t('Flank pain sign');
   t('Follow up options');
   t('Glucose');
@@ -8038,19 +8208,22 @@ function hedley_prenatal_field_default_field_instances() {
   t('Outside Care Medications');
   t('Outside Care Signs');
   t('PH');
+  t('Past Prenatal Diagnoses');
   t('Patient Notified');
   t('Performed tests');
   t('Person');
   t('Prenatal Assesment');
   t('Prenatal Diagnoses');
   t('Prenatal Encounter');
+  t('Prenatal Indicators');
   t('Prenatal Symptom Questions');
   t('Prenatal Symptoms');
   t('Prescribed medication');
   t('Protein');
   t('Reason for Not Sending to HC');
+  t('Reasons for non referrals');
   t('Recommended Treatment');
-  t('Referral Facility');
+  t('Referrals');
   t('Rhesus');
   t('Send to HC');
   t('Shards');
@@ -8058,6 +8231,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Sugar Count');
   t('Sys Repeated');
   t('Test Execution Note');
+  t('Test Prerequisites');
   t('Test Result');
   t('Test variant');
   t('UUID');

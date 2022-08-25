@@ -7,9 +7,11 @@ import Backend.Measurement.Model
     exposing
         ( AvoidingGuidanceReason
         , MedicationNonAdministrationSign
+        , NonReferralSign
         , ObstetricHistoryValue
         , PrenatalMeasurements
         , PrenatalVaccineType
+        , ReasonForNonReferral
         , RecommendedTreatmentSign
         , VaccineDose
         )
@@ -105,6 +107,7 @@ type alias HealthEducationForm =
     , saferSex : Maybe Bool
     , mentalHealth : Maybe Bool
     , hivDetectableViralLoad : Maybe Bool
+    , diabetes : Maybe Bool
     }
 
 
@@ -132,6 +135,51 @@ emptyHealthEducationForm =
     , saferSex = Nothing
     , mentalHealth = Nothing
     , hivDetectableViralLoad = Nothing
+    , diabetes = Nothing
+    }
+
+
+type alias ReferralForm =
+    { -- Fields used for CHW:
+      handReferralForm : Maybe Bool
+    , referToHealthCenter : Maybe Bool
+    , accompanyToHealthCenter : Maybe Bool
+    , reasonForNotSendingToHC : Maybe ReasonForNonReferral
+
+    -- Fields used for Nurse:
+    , referToHospital : Maybe Bool
+    , referralFormHospital : Maybe Bool
+    , referToMentalHealthSpecialist : Maybe Bool
+    , referralFormMentalHealthSpecialist : Maybe Bool
+    , accompanyToMentalHealthSpecialist : Maybe Bool
+    , referToARVProgram : Maybe Bool
+    , referralFormARVProgram : Maybe Bool
+    , accompanyToARVProgram : Maybe Bool
+    , referToNCDProgram : Maybe Bool
+    , referralFormNCDProgram : Maybe Bool
+    , accompanyToNCDProgram : Maybe Bool
+    , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
+    }
+
+
+emptyReferralForm : ReferralForm
+emptyReferralForm =
+    { handReferralForm = Nothing
+    , referToHealthCenter = Nothing
+    , accompanyToHealthCenter = Nothing
+    , reasonForNotSendingToHC = Nothing
+    , referToHospital = Nothing
+    , referralFormHospital = Nothing
+    , referToMentalHealthSpecialist = Nothing
+    , referralFormMentalHealthSpecialist = Nothing
+    , accompanyToMentalHealthSpecialist = Nothing
+    , referToARVProgram = Nothing
+    , referralFormARVProgram = Nothing
+    , accompanyToARVProgram = Nothing
+    , referToNCDProgram = Nothing
+    , referralFormNCDProgram = Nothing
+    , accompanyToNCDProgram = Nothing
+    , facilityNonReferralReasons = Nothing
     }
 
 

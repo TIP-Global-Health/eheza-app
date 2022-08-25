@@ -82,17 +82,29 @@ decodePrenatalDiagnosis =
                     "gestational-hypertension-recheck" ->
                         succeed DiagnosisGestationalHypertensionAfterRecheck
 
-                    "moderate-preeclampsia-immediate" ->
-                        succeed DiagnosisModeratePreeclampsiaImmediate
+                    "moderate-preeclampsia-initial" ->
+                        succeed DiagnosisModeratePreeclampsiaInitialPhase
 
-                    "moderate-preeclampsia-recheck" ->
-                        succeed DiagnosisModeratePreeclampsiaAfterRecheck
+                    "moderate-preeclampsia-initial-ega-37+" ->
+                        succeed DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
 
-                    "severe-preeclampsia-immediate" ->
-                        succeed DiagnosisSeverePreeclampsiaImmediate
+                    "moderate-preeclampsia-recurrent" ->
+                        succeed DiagnosisModeratePreeclampsiaRecurrentPhase
 
-                    "severe-preeclampsia-recheck" ->
-                        succeed DiagnosisSeverePreeclampsiaAfterRecheck
+                    "moderate-preeclampsia-recurrent-ega-37+" ->
+                        succeed DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+
+                    "severe-preeclampsia-initial" ->
+                        succeed DiagnosisSeverePreeclampsiaInitialPhase
+
+                    "severe-preeclampsia-initial-ega-37+" ->
+                        succeed DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+
+                    "severe-preeclampsia-recurrent" ->
+                        succeed DiagnosisSeverePreeclampsiaRecurrentPhase
+
+                    "severe-preeclampsia-recurrent-ega-37+" ->
+                        succeed DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
 
                     "eclampsia" ->
                         succeed DiagnosisEclampsia
@@ -178,6 +190,12 @@ decodePrenatalDiagnosis =
                     "hyperemesis-gravidum-by-symptoms" ->
                         succeed DiagnosisHyperemesisGravidumBySymptoms
 
+                    "severe-vomiting" ->
+                        succeed DiagnosisSevereVomiting
+
+                    "severe-vomiting-by-symptoms" ->
+                        succeed DiagnosisSevereVomitingBySymptoms
+
                     "maternal-complications" ->
                         succeed DiagnosisMaternalComplications
 
@@ -231,6 +249,15 @@ decodePrenatalDiagnosis =
 
                     "tuberculosis" ->
                         succeed DiagnosisTuberculosis
+
+                    "diabetes" ->
+                        succeed DiagnosisDiabetes
+
+                    "gestational-diabetes" ->
+                        succeed DiagnosisGestationalDiabetes
+
+                    "rhesus-negative" ->
+                        succeed DiagnosisRhesusNegative
 
                     "depression-not-likely" ->
                         succeed DiagnosisDepressionNotLikely

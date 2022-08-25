@@ -755,6 +755,33 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_health_education_signs_ph2'.
+  $field_bases['field_health_education_signs_ph2'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_health_education_signs_ph2',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
+        'diabetes' => 'Diabetes',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_heart'.
   $field_bases['field_heart'] = array(
     'active' => 1,
@@ -1502,11 +1529,8 @@ function hedley_activity_field_default_field_bases() {
         'leg-pain-redness' => 'Leg Pain Redness',
         'pelvic-pain' => 'Pelvic Pain',
         'safer-sex' => 'Safer sex',
-        'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
         'mental-health' => 'Mental Health',
         'none' => 'None',
-        'none-initial' => 'None Initial Phase',
-        'none-recurrent' => 'None Recurrent Phase',
       ),
       'allowed_values_function' => '',
     ),

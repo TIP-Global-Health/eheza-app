@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , MedicationDistributionSign(..)
+        , NonReferralSign(..)
         , PrenatalHIVSign(..)
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
@@ -19,8 +20,9 @@ import Backend.Measurement.Model
         , PrenatalTestExecutionNote(..)
         , PrenatalTestResult(..)
         , PrenatalTestVariant(..)
-        , ReasonForNotSendingToHC(..)
+        , ReasonForNonReferral(..)
         , RecommendedTreatmentSign(..)
+        , ReferToFacilitySign(..)
         , ReferralFacility(..)
         , SendToHCSign(..)
         , ViralLoadStatus(..)
@@ -80,13 +82,13 @@ import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
     exposing
         ( diagnosedMalaria
+        , getCurrentReasonForNonReferral
         , hypertensionDiagnoses
         , outsideCareDiagnoses
         , outsideCareDiagnosesWithPossibleMedication
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
         , recommendedTreatmentSignsForSyphilis
-        , resolvePreviousHypertensionDiagnosis
         )
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -263,6 +265,7 @@ viewContent language currentDate isChw initiator model assembled =
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
                     , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                    , viewChwActivityPane language currentDate isChw assembled
                     , viewPatientProgressPane language currentDate isChw assembled
                     , viewLabsPane language currentDate assembled
                     , viewProgressPhotosPane language currentDate isChw assembled
@@ -388,11 +391,11 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
             List.map
                 (\( date, diagnoses, measurements ) ->
                     let
-                        filteredDiagnoses =
-                            generateFilteredDiagnoses date diagnoses assembled medicalDiagnoses
+                        diagnosesIncludingChronic =
+                            updateChronicHypertensionDiagnoses date diagnoses assembled medicalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) diagnosesIncludingChronic
                                 |> List.concat
 
                         outsideCareDiagnosesEntries =
@@ -449,11 +452,11 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                 (\( date, _, measurements ) accum ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> Maybe.map
-                            (\signs ->
+                            (\value ->
                                 let
                                     signRecord sign =
                                         if
-                                            EverySet.member sign signs
+                                            EverySet.member sign value.signs
                                                 && (isNothing <| Dict.get sign accum)
                                         then
                                             Just ( sign, date )
@@ -482,11 +485,11 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
             List.map
                 (\( date, diagnoses, measurements ) ->
                     let
-                        filteredDiagnoses =
-                            generateFilteredDiagnoses date diagnoses assembled obstetricalDiagnoses
+                        diagnosesIncludingChronic =
+                            updateChronicHypertensionDiagnoses date diagnoses assembled obstetricalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) filteredDiagnoses
+                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) diagnosesIncludingChronic
                                 |> List.concat
 
                         outsideCareDiagnosesEntries =
@@ -506,13 +509,13 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                         healthEducationDiagnosesEntries =
                             getMeasurementValueFunc measurements.healthEducation
                                 |> Maybe.map
-                                    (\signs ->
+                                    (\value ->
                                         let
                                             formatedDate =
                                                 formatDDMMYYYY date
 
                                             messageForSign sign =
-                                                if EverySet.member sign signs then
+                                                if EverySet.member sign value.signs then
                                                     Dict.get sign initialHealthEducationOccurances
                                                         |> Maybe.map
                                                             (\initialDate ->
@@ -558,6 +561,96 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
             dignoses
                 :: alerts
         ]
+
+
+viewChwActivityPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
+viewChwActivityPane language currentDate isChw assembled =
+    let
+        allMeasurementsWithDates =
+            assembled.chwPreviousMeasurementsWithDates
+                ++ (if isChw then
+                        [ ( currentDate, assembled.encounter.encounterType, assembled.measurements ) ]
+
+                    else
+                        []
+                   )
+                |> List.sortWith (sortByDateDesc (\( date, _, _ ) -> date))
+
+        activitiesWithDate =
+            List.map
+                (\( date, _, measurements ) ->
+                    ( date, List.filter (matchCHWActivityAtEncounter measurements) allCHWActions )
+                )
+                allMeasurementsWithDates
+
+        heading =
+            div [ class "heading" ]
+                [ div [ class "date" ] [ text <| translate language Translate.Date ]
+                , div [ class "chw-actions" ] [ text <| translate language Translate.Actions ]
+                ]
+
+        actions =
+            List.map
+                (\( date, activities ) ->
+                    div [ class "table-row" ]
+                        [ div [ class "date" ] [ text <| formatDDMMYYYY date ]
+                        , List.map
+                            (\activity ->
+                                li [ class <| chwActionToColor activity ]
+                                    [ text <| translate language <| Translate.CHWAction activity ]
+                            )
+                            activities
+                            |> ul [ class "chw-actions" ]
+                        ]
+                )
+                activitiesWithDate
+    in
+    div [ class "chw-activities" ]
+        [ viewItemHeading language Translate.ChwActivity "blue"
+        , div [ class "pane-content" ] <|
+            heading
+                :: actions
+        ]
+
+
+matchCHWActivityAtEncounter : PrenatalMeasurements -> CHWAction -> Bool
+matchCHWActivityAtEncounter measurements activity =
+    case activity of
+        ActionPregnancyDating ->
+            isJust measurements.lastMenstrualPeriod
+
+        ActionLabs ->
+            isJust measurements.pregnancyTest
+
+        ActionDangerSignsPresent ->
+            getMeasurementValueFunc measurements.dangerSigns
+                |> Maybe.map
+                    (\value ->
+                        case EverySet.toList value.signs of
+                            [] ->
+                                False
+
+                            [ NoDangerSign ] ->
+                                False
+
+                            _ ->
+                                True
+                    )
+                |> Maybe.withDefault False
+
+        ActionReferredToHealthCenter ->
+            getMeasurementValueFunc measurements.sendToHC
+                |> Maybe.andThen (.sendToHCSigns >> Maybe.map (EverySet.member ReferToHealthCenter))
+                |> Maybe.withDefault False
+
+        ActionAppointmentConfirmation ->
+            isJust measurements.appointmentConfirmation
+
+        ActionHealthEducation ->
+            isJust measurements.healthEducation
+
+        ActionBirthPlan ->
+            isJust measurements.birthPlan
 
 
 viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
@@ -1604,7 +1697,7 @@ viewLabResultsEntry language currentDate results =
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
-                    { label = Translate.PrenatalLaboratoryGlucoseLabel
+                    { label = Translate.PrenatalLaboratoryLeukocytesLabel
                     , recentResult = Maybe.map (Translate.PrenatalLaboratoryLeukocytesValue >> translate language) recentResultValue
                     , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
@@ -1807,7 +1900,7 @@ viewUncompetedResult language currentDate resultDate =
         transId =
             Maybe.map
                 (\date ->
-                    if Date.diff Days date currentDate > prenatalLabExpirationPeriod then
+                    if Date.diff Days date currentDate >= prenatalLabExpirationPeriod then
                         Translate.ResultsMissing
 
                     else
@@ -2016,13 +2109,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                 else
                                     let
                                         continued =
-                                            if
-                                                List.any
-                                                    (\hypertensionDiagnosis ->
-                                                        EverySet.member hypertensionDiagnosis allDiagnoses
-                                                    )
-                                                    hypertensionDiagnoses
-                                            then
+                                            if EverySet.member diagnosis allDiagnoses then
                                                 ""
 
                                             else
@@ -2055,20 +2142,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         ++ formatDDMMYYYY date
                                         |> wrapWithLI
                             )
-                        >> Maybe.withDefault
-                            (getMeasurementValueFunc measurements.sendToHC
-                                |> Maybe.map
-                                    (\value ->
-                                        if EverySet.member ReferToHealthCenter value.signs then
-                                            -- Patient was referred to hospital, and is supposed to get
-                                            -- Hypertension treatment there.
-                                            referredToHospitalMessage
-
-                                        else
-                                            noTreatmentRecordedMessage
-                                    )
-                                |> Maybe.withDefault noTreatmentRecordedMessage
-                            )
+                        >> Maybe.withDefault noTreatmentRecordedMessage
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
@@ -2172,12 +2246,12 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessageWithComplications ""
 
         referredToHospitalMessageWithComplications complications =
-            referredToFacilityMessageWithComplications Nothing complications
+            referredToFacilityMessageWithComplications FacilityHospital complications
 
-        referredToFacilityMessage nonDefaultReferralFacility =
-            referredToFacilityMessageWithComplications nonDefaultReferralFacility ""
+        referredToFacilityMessage facility =
+            referredToFacilityMessageWithComplications facility ""
 
-        referredToFacilityMessageWithComplications nonDefaultReferralFacility complications =
+        referredToFacilityMessageWithComplications facility complications =
             if isNothing measurements.sendToHC then
                 noTreatmentRecordedMessageWithComplications complications
 
@@ -2185,23 +2259,33 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 let
                     refferedToFacility =
                         getMeasurementValueFunc measurements.sendToHC
+                            |> Maybe.andThen .referToFacilitySigns
                             |> Maybe.map
-                                (\value ->
-                                    EverySet.member ReferToHealthCenter value.signs
-                                        && (value.referralFacility == nonDefaultReferralFacility)
+                                (\referToFacilitySigns ->
+                                    case facility of
+                                        FacilityHospital ->
+                                            EverySet.member ReferToHospital referToFacilitySigns
+
+                                        FacilityMentalHealthSpecialist ->
+                                            EverySet.member ReferToMentalHealthSpecialist referToFacilitySigns
+
+                                        FacilityARVProgram ->
+                                            EverySet.member ReferToARVProgram referToFacilitySigns
+
+                                        FacilityNCDProgram ->
+                                            EverySet.member ReferToNCDProgram referToFacilitySigns
+
+                                        FacilityHealthCenter ->
+                                            -- We should never get here.
+                                            False
                                 )
                             |> Maybe.withDefault False
-
-                    referralFacility =
-                        -- If nonDefaultReferralFacility is Nothing, we know it's
-                        -- default facility, which is a hospital.
-                        Maybe.withDefault FacilityHospital nonDefaultReferralFacility
                 in
                 if refferedToFacility then
                     diagnosisForProgressReport
                         ++ complications
                         ++ " - "
-                        ++ (String.toLower <| translate language <| Translate.ReferredToFacility referralFacility)
+                        ++ (String.toLower <| translate language <| Translate.ReferredToFacility facility)
                         ++ " "
                         ++ (String.toLower <| translate language Translate.On)
                         ++ " "
@@ -2212,16 +2296,34 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     let
                         reason =
                             getMeasurementValueFunc measurements.sendToHC
-                                |> Maybe.map .reasonForNotSendingToHC
+                                |> Maybe.andThen
+                                    (\value ->
+                                        case facility of
+                                            FacilityHospital ->
+                                                getCurrentReasonForNonReferral NonReferralReasonHospital value.facilityNonReferralReasons
+
+                                            FacilityMentalHealthSpecialist ->
+                                                getCurrentReasonForNonReferral NonReferralReasonMentalHealthSpecialist value.facilityNonReferralReasons
+
+                                            FacilityARVProgram ->
+                                                getCurrentReasonForNonReferral NonReferralReasonARVProgram value.facilityNonReferralReasons
+
+                                            FacilityNCDProgram ->
+                                                getCurrentReasonForNonReferral NonReferralReasonNCDProgram value.facilityNonReferralReasons
+
+                                            FacilityHealthCenter ->
+                                                -- We should never get here.
+                                                Nothing
+                                    )
 
                         suffix =
                             Maybe.map
                                 (\reason_ ->
-                                    if reason_ == NoReasonForNotSendingToHC then
+                                    if reason_ == NoReasonForNonReferral then
                                         ""
 
                                     else
-                                        " - " ++ (String.toLower <| translate language <| Translate.ReasonForNotSendingToHC reason_)
+                                        " - " ++ (String.toLower <| translate language <| Translate.ReasonForNonReferral reason_)
                                 )
                                 reason
                                 |> Maybe.withDefault ""
@@ -2229,7 +2331,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     diagnosisForProgressReport
                         ++ complications
                         ++ " - "
-                        ++ (String.toLower <| translate language <| Translate.ReferredToFacilityNot referralFacility)
+                        ++ (String.toLower <| translate language <| Translate.ReferredToFacilityNot facility)
                         ++ " "
                         ++ (String.toLower <| translate language Translate.On)
                         ++ " "
@@ -2307,8 +2409,14 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             getMeasurementValueFunc measurements.sendToHC
                 |> Maybe.map
                     (\value ->
-                        if value.referralFacility == Just FacilityHIVProgram then
-                            referredToFacilityMessage (Just FacilityHIVProgram)
+                        let
+                            refferedToARVProgram =
+                                Maybe.map (EverySet.member ReferToARVProgram)
+                                    value.referToFacilitySigns
+                                    |> Maybe.withDefault False
+                        in
+                        if refferedToARVProgram then
+                            referredToFacilityMessage FacilityARVProgram
 
                         else
                             getMeasurementValueFunc measurements.medicationDistribution
@@ -2338,15 +2446,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                             (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons TDF3TC)
                                             (treatmentMessageForMedication value_.distributionSigns nonAdministrationReasons Dolutegravir)
                                     )
-                                |> Maybe.withDefault
-                                    (if EverySet.member ReferToHealthCenter value.signs then
-                                        -- Patient was referred to hospital, and is supposed to get
-                                        -- HIV treatment there.
-                                        referredToHospitalMessage
-
-                                     else
-                                        noTreatmentRecordedMessage
-                                    )
+                                |> Maybe.withDefault noTreatmentRecordedMessage
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
@@ -2470,6 +2570,15 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisHyperemesisGravidum ->
             referredToHospitalMessage
 
+        DiagnosisHyperemesisGravidumBySymptoms ->
+            referredToHospitalMessage
+
+        DiagnosisSevereVomiting ->
+            referredToHospitalMessage
+
+        DiagnosisSevereVomitingBySymptoms ->
+            referredToHospitalMessage
+
         DiagnosisMaternalComplications ->
             referredToHospitalMessage
 
@@ -2591,19 +2700,36 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisNeurosyphilis ->
             referredToHospitalMessage
 
-        DiagnosisModeratePreeclampsiaImmediate ->
+        DiagnosisModeratePreeclampsiaInitialPhase ->
+            if EverySet.member DiagnosisModeratePreeclampsiaInitialPhase allDiagnoses then
+                referredToHospitalMessage
+
+            else
+                hypertensionTreatmentMessage
+
+        DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
             referredToHospitalMessage
 
-        DiagnosisModeratePreeclampsiaAfterRecheck ->
+        DiagnosisModeratePreeclampsiaRecurrentPhase ->
+            if EverySet.member DiagnosisModeratePreeclampsiaRecurrentPhase allDiagnoses then
+                referredToHospitalMessage
+
+            else
+                hypertensionTreatmentMessage
+
+        DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
             referredToHospitalMessage
 
-        DiagnosisSeverePreeclampsiaImmediate ->
+        DiagnosisSeverePreeclampsiaInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisSeverePreeclampsiaAfterRecheck ->
+        DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
             referredToHospitalMessage
 
-        DiagnosisHyperemesisGravidumBySymptoms ->
+        DiagnosisSeverePreeclampsiaRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
             referredToHospitalMessage
 
         DiagnosisHeartburn ->
@@ -2756,6 +2882,15 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ " "
                 ++ formatDDMMYYYY date
                 |> wrapWithLI
+
+        DiagnosisDiabetes ->
+            referredToHospitalMessage
+
+        DiagnosisGestationalDiabetes ->
+            referredToHospitalMessage
+
+        DiagnosisRhesusNegative ->
+            referredToHospitalMessage
 
         DiagnosisDepressionNotLikely ->
             mentalHealthMessage

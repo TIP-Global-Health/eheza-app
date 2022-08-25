@@ -24,17 +24,17 @@ import Measurement.Model exposing (VaccinationFormViewMode(..), VitalsForm)
 import Measurement.Utils
     exposing
         ( getNextVaccineDose
-        , sendToHCFormWithDefault
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         , vitalsFormWithDefault
         )
+import Measurement.View exposing (viewActionTakenLabel)
 import Pages.AcuteIllness.Activity.Utils exposing (getCurrentReasonForMedicationNonAdministration, nonAdministrationReasonToSign)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired)
-import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), VaccinationProgressDict)
+import Pages.Prenatal.Encounter.Utils exposing (diagnosisRequiresEmergencyReferal, emergencyReferalRequired, getAllActivities)
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
     exposing
@@ -296,7 +296,7 @@ activityCompleted currentDate assembled activity =
 
         NextSteps ->
             resolveNextStepsTasks currentDate assembled
-                |> List.all (nextStepsMeasurementTaken assembled)
+                |> List.all (nextStepsTaskCompleted assembled)
 
         PregnancyOutcome ->
             isJust assembled.participant.dateConcluded
@@ -356,11 +356,9 @@ expectNextStepsTask currentDate assembled task =
         NextStepsSendToHC ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    referToHospitalForNonHIVDiagnosis assembled
-                        || referToHospitalDueToAdverseEvent assembled
-                        || referToHospitalDueToPastDiagnosis assembled
-                        || referToHIVProgram assembled
-                        || referToMentalHealthSpecialist assembled
+                    resolveRequiredReferralFacilities assembled
+                        |> List.isEmpty
+                        |> not
 
                 _ ->
                     dangerSigns
@@ -418,8 +416,18 @@ expectNextStepsTask currentDate assembled task =
                             , DiagnosisTrichomonasOrBacterialVaginosis
                             ]
                             assembled
-                        || (updateHypertensionTreatmentWithMedication assembled
-                                && (not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled)
+                        || (-- Indicators show that Hypertension / Moderate Preeclamsia
+                            -- treatment should be updated.
+                            updateHypertensionTreatmentWithMedication assembled
+                                && (-- Hypertension / Moderate Preeclamsia treatemnt
+                                    -- did not cause and adverse event.
+                                    not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
+                                   )
+                                && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
+                                    -- in referral to hospital. EGA37 diagnoses are not included, since they
+                                    -- trigger emergency referral.
+                                    not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
+                                   )
                            )
                    )
 
@@ -561,10 +569,19 @@ latestMedicationTreatmentForHIV assembled =
         prescribedMedications
 
 
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+-}
 latestMedicationTreatmentForHypertension : AssembledData -> Maybe Translate.TranslationId
 latestMedicationTreatmentForHypertension assembled =
     getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled
-        |> Maybe.map Translate.TreatmentDetailsHypertension
+        |> Maybe.map
+            (\treatment ->
+                let
+                    forModeratePreeclamsia =
+                        diagnosedModeratePreeclampsiaPrevoiusly assembled
+                in
+                Translate.TreatmentDetailsHypertension forModeratePreeclamsia treatment
+            )
 
 
 latestMedicationTreatmentForMalaria : AssembledData -> Maybe Translate.TranslationId
@@ -672,142 +689,19 @@ historyTaskCompleted assembled task =
             isJust assembled.measurements.outsideCare
 
 
+referToHospital : AssembledData -> Bool
+referToHospital =
+    diagnosesCausingHospitalReferral >> EverySet.isEmpty >> not
+
+
 diagnosesCausingHospitalReferral : AssembledData -> EverySet PrenatalDiagnosis
-diagnosesCausingHospitalReferral assembled =
-    let
-        nonHIV =
-            nonHIVDiagnosesCausingHospitalReferral assembled
-
-        byAdverseEvent =
-            diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled
-
-        byPastDiagnoses =
-            diagnosesCausingHospitalReferralByPastDiagnoses assembled
-
-        overall =
-            nonHIV
-                ++ byAdverseEvent
-                ++ byPastDiagnoses
-
-        additional =
-            -- There are 2 cases where patient is referred to hospital, skipping
-            -- referals to other facilities:
-            -- 1. HIV-positive patients, while there's an HIV program, at the health center.
-            -- 2. Patient with a mental health diagnosis, and available mental health
-            --   specialist at helath center.
-            -- In both cases, since we have a need to refer to the hospital, it must
-            -- be more urgent, and therefore, treatment for (HIV/Mental health) will
-            -- be given at the hospital.
-            if not <| List.isEmpty overall then
-                let
-                    hiv =
-                        if diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements then
-                            [ DiagnosisHIV ]
-
-                        else
-                            []
-
-                    mentalHealth =
-                        if mentalHealthSpecialistAtHC assembled then
-                            List.filter (\diagnosis -> diagnosed diagnosis assembled) mentalHealthDiagnosesRequiringTreatment
-
-                        else
-                            []
-                in
-                hiv
-
-            else
-                []
-    in
-    overall
-        ++ additional
-        |> EverySet.fromList
-
-
-referToHospitalForNonHIVDiagnosis : AssembledData -> Bool
-referToHospitalForNonHIVDiagnosis =
-    nonHIVDiagnosesCausingHospitalReferral >> List.isEmpty >> not
-
-
-nonHIVDiagnosesCausingHospitalReferral : AssembledData -> List PrenatalDiagnosis
-nonHIVDiagnosesCausingHospitalReferral assembled =
-    diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
-        ++ diagnosesCausingHospitalReferralByMentalHealth assembled
-        ++ diagnosesCausingHospitalReferralByOtherReasons assembled
-
-
-diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
-    let
-        immediateReferralDiagnoses =
-            emergencyReferralDiagnosesInitial
-                ++ [ DiagnosisModeratePreeclampsiaImmediate
-                   , DiagnosisHeartburnPersistent
-                   , DiagnosisDeepVeinThrombosis
-                   , DiagnosisPelvicPainIntense
-                   , DiagnosisPelvicPainContinued
-                   , DiagnosisPyelonephritis
-                   , DiagnosisMalariaMedicatedContinued
-                   , DiagnosisMalariaWithAnemiaMedicatedContinued
-                   , DiagnosisUrinaryTractInfectionContinued
-                   , DiagnosisCandidiasisContinued
-                   , DiagnosisGonorrheaContinued
-                   , DiagnosisTrichomonasOrBacterialVaginosisContinued
-                   ]
-    in
-    List.filter (\diagnosis -> diagnosed diagnosis assembled)
-        immediateReferralDiagnoses
-
-
-diagnosesCausingHospitalReferralByMentalHealth : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByMentalHealth assembled =
-    if mentalHealthSpecialistAtHC assembled then
-        []
-
-    else
-        List.filter (\diagnosis -> diagnosed diagnosis assembled) mentalHealthDiagnosesRequiringTreatment
-
-
-diagnosesCausingHospitalReferralByOtherReasons : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByOtherReasons assembled =
-    let
-        severeMalariaTreatment =
-            getMeasurementValueFunc assembled.measurements.medicationDistribution
-                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
-                |> Maybe.withDefault False
-
-        malaria =
-            if diagnosedMalaria assembled && severeMalariaTreatment then
-                [ DiagnosisMalaria ]
-
-            else
-                []
-
-        hypertension =
-            if updateHypertensionTreatmentWithHospitalization assembled then
-                [ DiagnosisChronicHypertensionImmediate ]
-
-            else
-                []
-    in
-    malaria ++ hypertension
-
-
-referToHospitalForMentalHealthDiagnosis : AssembledData -> Bool
-referToHospitalForMentalHealthDiagnosis =
-    diagnosesCausingHospitalReferralByMentalHealth >> List.isEmpty >> not
+diagnosesCausingHospitalReferral =
+    diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial
 
 
 referToMentalHealthSpecialist : AssembledData -> Bool
 referToMentalHealthSpecialist assembled =
     mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnosesRequiringTreatment assembled
-
-
-mentalHealthSpecialistAtHC : AssembledData -> Bool
-mentalHealthSpecialistAtHC assembled =
-    getMeasurementValueFunc assembled.measurements.mentalHealth
-        |> Maybe.map .specialistAtHC
-        |> Maybe.withDefault False
 
 
 referToHIVProgram : AssembledData -> Bool
@@ -948,8 +842,8 @@ symptomRecordedPreviously assembled symptom =
         |> not
 
 
-nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
-nextStepsMeasurementTaken assembled task =
+nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
     case task of
         NextStepsAppointmentConfirmation ->
             isJust assembled.measurements.appointmentConfirmation
@@ -958,7 +852,8 @@ nextStepsMeasurementTaken assembled task =
             isJust assembled.measurements.followUp
 
         NextStepsSendToHC ->
-            isJust assembled.measurements.sendToHC
+            resolveRequiredReferralFacilities assembled
+                |> List.all (referralToFacilityCompleted assembled)
 
         NextStepsHealthEducation ->
             isJust assembled.measurements.healthEducation
@@ -1019,11 +914,34 @@ nextStepsMeasurementTaken assembled task =
                 |> Maybe.withDefault False
 
 
+mandatoryActivitiesForAssessmentCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForAssessmentCompleted currentDate assembled =
+    case assembled.encounter.encounterType of
+        NurseEncounter ->
+            activityCompleted currentDate assembled DangerSigns
+
+        _ ->
+            mandatoryActivitiesForNextStepsCompleted currentDate assembled
+
+
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
-            activityCompleted currentDate assembled DangerSigns
+            -- If we have emergency diagnosis that require immediate referral,
+            -- we allow displaying Next steps right away.
+            diagnosedAnyOf emergencyReferralDiagnoses assembled
+                || (-- Otherwise, we need all activities that will appear at
+                    -- current encounter completed, besides Photo
+                    -- and Next Steps itself.
+                    getAllActivities assembled
+                        |> EverySet.fromList
+                        |> EverySet.remove PrenatalPhoto
+                        |> EverySet.remove NextSteps
+                        |> EverySet.toList
+                        |> List.filter (expectActivity currentDate assembled)
+                        |> List.all (activityCompleted currentDate assembled)
+                   )
 
         ChwFirstEncounter ->
             let
@@ -1260,36 +1178,26 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 (calculateEGAWeeks currentDate)
                 assembled.globalLmpDate
 
-        diagnosesByLabResults =
-            List.filter (matchLabResultsPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
-                labResultsDiagnoses
-                |> EverySet.fromList
-
         dangerSignsList =
             generateDangerSignsListForNurse assembled
 
-        emergencyReferalDiagnoses =
+        emergencyDiagnoses =
             List.filter
                 (matchEmergencyReferalPrenatalDiagnosis
                     egaInWeeks
                     dangerSignsList
                     assembled
                 )
-                emergencyReferralDiagnosesInitial
+                emergencyReferralDiagnoses
                 |> EverySet.fromList
 
-        diagnosesByExamination =
-            Maybe.map
-                (\egaWeeks ->
-                    List.filter (matchExaminationPrenatalDiagnosis egaWeeks assembled)
-                        examinationDiagnoses
-                        |> EverySet.fromList
-                )
-                egaInWeeks
-                |> Maybe.withDefault EverySet.empty
+        diagnosesByLabResultsAndExamination =
+            List.filter (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
+                labResultsAndExaminationDiagnoses
+                |> EverySet.fromList
 
         diagnosesBySymptoms =
-            List.filter (matchSymptomsPrenatalDiagnosis assembled)
+            List.filter (matchSymptomsPrenatalDiagnosis egaInWeeks assembled)
                 symptomsDiagnoses
                 |> EverySet.fromList
 
@@ -1298,17 +1206,89 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                 mentalHealthDiagnoses
                 |> EverySet.fromList
     in
-    EverySet.union diagnosesByLabResults emergencyReferalDiagnoses
-        |> EverySet.union diagnosesByExamination
+    EverySet.union emergencyDiagnoses diagnosesByLabResultsAndExamination
         |> EverySet.union diagnosesBySymptoms
         |> EverySet.union diagnosesByMentalHealth
+        |> applyBloodPreasureDiagnosesHierarchy
+
+
+applyBloodPreasureDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyBloodPreasureDiagnosesHierarchy diagnoses =
+    let
+        ( bloodPreasureDiagnoses, others ) =
+            EverySet.toList diagnoses
+                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPreasureDiagnoses)
+
+        topBloodPreasureDiagnosis =
+            List.map hierarchalBloodPreasureDiagnosisToNumber bloodPreasureDiagnoses
+                |> Maybe.Extra.values
+                |> List.maximum
+                |> Maybe.andThen hierarchalBloodPreasureDiagnosisFromNumber
+                |> Maybe.map List.singleton
+                |> Maybe.withDefault []
+    in
+    topBloodPreasureDiagnosis
+        ++ others
+        |> EverySet.fromList
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
 matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
+    let
+        measurements =
+            assembled.measurements
+
+        resolveEGAWeeksAndThen func =
+            resolveEGAInWeeksAndThen func egaInWeeks
+    in
     case diagnosis of
-        DiagnosisSeverePreeclampsiaImmediate ->
-            List.member HeadacheBlurredVision signs
+        DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 37)
+                            && moderatePreeclampsiaByMeasurements measurements
+                    )
+
+        DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && (-- If diagnosed Moderate Preeclampsia at initial stage, we do not
+                    -- need to diagnose again.
+                    not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus assembled
+                   )
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 37)
+                            && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                    )
+
+        DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
+            resolveEGAWeeksAndThen
+                (\egaWeeks ->
+                    (egaWeeks >= 37)
+                        && severePreeclampsiaByDangerSigns signs
+                )
+
+        DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
+            (-- If diagnosed Severe Preeclampsia at initial stage, we do not
+             -- need to diagnose again.
+             not <| diagnosed DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus assembled
+            )
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 37)
+                            && severePreeclampsiaRecurrentPhase signs measurements
+                    )
 
         DiagnosisEclampsia ->
             List.member Convulsions signs
@@ -1379,13 +1359,27 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 |> Maybe.withDefault False
 
         DiagnosisHyperemesisGravidum ->
-            List.member SevereVomiting signs
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks < 20) && List.member SevereVomiting signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisSevereVomiting ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks >= 20) && List.member SevereVomiting signs
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
 
         DiagnosisMaternalComplications ->
             List.member ExtremeWeakness signs
                 || List.member Unconscious signs
                 || List.member LooksVeryIll signs
 
+        -- Infection diagnosis will be available at latter phase.
         DiagnosisInfection ->
             List.member Fever signs
                 && (List.member ExtremeWeakness signs || respiratoryRateElevated assembled.measurements)
@@ -1396,13 +1390,58 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
         DiagnosisLaborAndDelivery ->
             List.member Labor signs
 
+        DiagnosisSevereAnemiaWithComplications ->
+            severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
+
         -- Non Emergency Referral diagnoses.
         _ ->
             False
 
 
-matchLabResultsPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
-matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
+resolveEGAInWeeksAndThen : (Int -> Bool) -> Maybe Int -> Bool
+resolveEGAInWeeksAndThen func =
+    Maybe.map func
+        >> Maybe.withDefault False
+
+
+severeAnemiaWithComplicationsDiagnosed : List DangerSign -> PrenatalMeasurements -> Bool
+severeAnemiaWithComplicationsDiagnosed dangerSigns measurements =
+    let
+        hemoglobinCount =
+            resolveHemoglobinCount measurements
+    in
+    (-- Hemoglobin test was performed, and, hemoglobin
+     -- count indicates severe anemia.
+     Maybe.map (\count -> count < 7) hemoglobinCount
+        |> Maybe.withDefault False
+    )
+        && anemiaComplicationSignsPresent dangerSigns measurements
+
+
+anemiaComplicationSignsPresent : List DangerSign -> PrenatalMeasurements -> Bool
+anemiaComplicationSignsPresent dangerSigns measurements =
+    let
+        anemiaComplicationSignsByExamination =
+            getMeasurementValueFunc measurements.corePhysicalExam
+                |> Maybe.map
+                    (\exam ->
+                        EverySet.member PallorHands exam.hands || EverySet.member PaleConjuctiva exam.eyes
+                    )
+                |> Maybe.withDefault False
+    in
+    respiratoryRateElevated measurements
+        || List.member DifficultyBreathing dangerSigns
+        || anemiaComplicationSignsByExamination
+
+
+resolveHemoglobinCount : PrenatalMeasurements -> Maybe Float
+resolveHemoglobinCount measurements =
+    getMeasurementValueFunc measurements.hemoglobinTest
+        |> Maybe.andThen .hemoglobinCount
+
+
+matchLabResultsAndExaminationPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
+matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
     let
         measurements =
             assembled.measurements
@@ -1420,21 +1459,7 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                 |> Maybe.withDefault False
 
         hemoglobinCount =
-            getMeasurementValueFunc measurements.hemoglobinTest
-                |> Maybe.andThen .hemoglobinCount
-
-        anemiaComplicationSignsPresent =
-            respiratoryRateElevated measurements
-                || List.member DifficultyBreathing dangerSigns
-                || anemiaComplicationSignsByExamination
-
-        anemiaComplicationSignsByExamination =
-            getMeasurementValueFunc measurements.corePhysicalExam
-                |> Maybe.map
-                    (\exam ->
-                        EverySet.member PallorHands exam.hands || EverySet.member PaleConjuctiva exam.eyes
-                    )
-                |> Maybe.withDefault False
+            resolveHemoglobinCount measurements
 
         malariaDiagnosed =
             positiveMalariaTest
@@ -1447,7 +1472,7 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                            -- we view Malaria as separate diagnosis.
                            -- There's not 'Malaria and Severe Anemia with
                            -- complications' diagnosis.
-                           severeAnemiaWithComplicationsDiagnosed
+                           severeAnemiaWithComplicationsDiagnosed dangerSigns measurements
                    )
 
         malariaWithAnemiaDiagnosed =
@@ -1458,28 +1483,145 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                         |> Maybe.withDefault False
                    )
 
-        severeAnemiaWithComplicationsDiagnosed =
-            (-- No indication for being positive for malaria,
-             -- Hemoglobin test was performed, and, hemoglobin
-             -- count indicates severe anemia.
-             Maybe.map (\count -> count < 7) hemoglobinCount
+        diabetesDiagnosed =
+            getMeasurementValueFunc measurements.randomBloodSugarTest
+                |> Maybe.map
+                    (\value ->
+                        let
+                            bySugarCount =
+                                Maybe.map2
+                                    (\testPrerequisites sugarCount ->
+                                        if EverySet.member PrerequisiteFastFor12h testPrerequisites then
+                                            sugarCount > 126
+
+                                        else
+                                            sugarCount >= 200
+                                    )
+                                    value.testPrerequisites
+                                    value.sugarCount
+                                    |> Maybe.withDefault False
+
+                            byUrineGlucose =
+                                if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                                    -- If random blood sugar test was perfomed, we determine by its results.
+                                    False
+
+                                else
+                                    -- If random blood sugar test was not perfomed, we determine by
+                                    -- glucose level at urine dipstick test.
+                                    getMeasurementValueFunc measurements.urineDipstickTest
+                                        |> Maybe.andThen .glucose
+                                        |> Maybe.map (\glucose -> List.member glucose [ GlucosePlus2, GlucosePlus3, GlucosePlus4 ])
+                                        |> Maybe.withDefault False
+                        in
+                        bySugarCount || byUrineGlucose
+                    )
                 |> Maybe.withDefault False
-            )
-                && anemiaComplicationSignsPresent
+
+        resolveEGAWeeksAndThen func =
+            resolveEGAInWeeksAndThen func egaInWeeks
     in
     case diagnosis of
-        DiagnosisSeverePreeclampsiaAfterRecheck ->
-            Maybe.map
+        DiagnosisChronicHypertensionImmediate ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && resolveEGAWeeksAndThen (chronicHypertensionByMeasurements measurements)
+
+        DiagnosisChronicHypertensionAfterRecheck ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && resolveEGAWeeksAndThen (chronicHypertensionByMeasurementsAfterRecheck measurements)
+
+        DiagnosisGestationalHypertensionImmediate ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurements measurements)
+
+        DiagnosisGestationalHypertensionAfterRecheck ->
+            -- Hypertension is a chronic diagnosis for whole duration
+            -- of pregnancy.
+            -- Moderate Preeclamsia is higher level of Hypertension disease.
+            -- and a chronic diagnosis as well.
+            -- Therefore, if Hypertension or Moderate Preeclamsia were
+            -- diagnosed once, we do not need to diagnose Hypertension again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurementsAfterRecheck measurements)
+
+        DiagnosisModeratePreeclampsiaInitialPhase ->
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 20)
+                            && (egaWeeks < 37)
+                            && moderatePreeclampsiaByMeasurements measurements
+                    )
+
+        DiagnosisModeratePreeclampsiaRecurrentPhase ->
+            -- Moderate Preeclampsia is a chronic diagnosis for whole duration
+            -- of pregnancy. Therefore, if diagnosed once, we do not need
+            -- to diagnose it again.
+            -- Instead, we adjust medication, or send to hospital, depending
+            -- on current BP and previous treatment.
+            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                && -- If diagnosed Moderate Preeclampsia at initial stage, we do not
+                   -- need to diagnose again.
+                   (not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhase assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks >= 20)
+                            && (egaWeeks < 37)
+                            && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                    )
+
+        DiagnosisSeverePreeclampsiaInitialPhase ->
+            resolveEGAWeeksAndThen
                 (\egaWeeks ->
-                    (egaWeeks >= 20)
-                        && (highBloodPressure measurements
-                                || repeatedHighBloodPressure measurements
-                           )
-                        && highUrineProtein measurements
-                        && severePreeclampsiaSigns measurements
+                    (egaWeeks < 37)
+                        && severePreeclampsiaByDangerSigns dangerSigns
                 )
-                egaInWeeks
-                |> Maybe.withDefault False
+
+        DiagnosisSeverePreeclampsiaRecurrentPhase ->
+            (-- If diagnosed Severe Preeclampsia at initial stage, we do not
+             -- need to diagnose again.
+             not <| diagnosed DiagnosisSeverePreeclampsiaInitialPhase assembled
+            )
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        (egaWeeks < 37)
+                            && severePreeclampsiaRecurrentPhase dangerSigns measurements
+                    )
 
         DiagnosisHIV ->
             testedPositiveAt .hivTest
@@ -1599,55 +1741,35 @@ matchLabResultsPrenatalDiagnosis egaInWeeks dangerSigns assembled diagnosis =
                     Maybe.map (\count -> count < 7) hemoglobinCount
                         |> Maybe.withDefault False
                    )
-                && not anemiaComplicationSignsPresent
+                && (not <| anemiaComplicationSignsPresent dangerSigns measurements)
 
-        DiagnosisSevereAnemiaWithComplications ->
-            severeAnemiaWithComplicationsDiagnosed
+        Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        egaWeeks <= 20 && diabetesDiagnosed
+                    )
+
+        Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        egaWeeks > 20 && diabetesDiagnosed
+                    )
+
+        DiagnosisRhesusNegative ->
+            getMeasurementValueFunc measurements.bloodGpRsTest
+                |> Maybe.andThen .rhesus
+                |> Maybe.map ((==) RhesusNegative)
+                |> Maybe.withDefault False
 
         -- Non Lab Results diagnoses.
         _ ->
             False
 
 
-matchExaminationPrenatalDiagnosis : Int -> AssembledData -> PrenatalDiagnosis -> Bool
-matchExaminationPrenatalDiagnosis egaInWeeks assembled diagnosis =
-    let
-        measurements =
-            assembled.measurements
-    in
-    case diagnosis of
-        DiagnosisChronicHypertensionImmediate ->
-            -- Hypertension is a chronic diagnosis for whole duration
-            -- of pregnancy. Therefore, if diagnosed once, we do not need
-            -- to diagnose it again.
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (egaInWeeks < 20 && immediateHypertensionByMeasurements measurements)
-
-        DiagnosisChronicHypertensionAfterRecheck ->
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (egaInWeeks < 20 && recheckedHypertensionByMeasurements measurements)
-
-        DiagnosisGestationalHypertensionImmediate ->
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (egaInWeeks >= 20 && immediateHypertensionByMeasurements measurements)
-
-        DiagnosisGestationalHypertensionAfterRecheck ->
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (egaInWeeks >= 20 && recheckedHypertensionByMeasurements measurements)
-
-        DiagnosisModeratePreeclampsiaImmediate ->
-            egaInWeeks >= 20 && immediatePreeclampsiaByMeasurements measurements
-
-        DiagnosisModeratePreeclampsiaAfterRecheck ->
-            egaInWeeks >= 20 && recheckedPreeclampsiaByMeasurements measurements
-
-        -- Non Examination diagnoses.
-        _ ->
-            False
-
-
-matchSymptomsPrenatalDiagnosis : AssembledData -> PrenatalDiagnosis -> Bool
-matchSymptomsPrenatalDiagnosis assembled diagnosis =
+matchSymptomsPrenatalDiagnosis : Maybe Int -> AssembledData -> PrenatalDiagnosis -> Bool
+matchSymptomsPrenatalDiagnosis egaInWeeks assembled diagnosis =
     let
         heartburnDiagnosed =
             symptomRecorded assembled.measurements Heartburn
@@ -1700,7 +1822,20 @@ matchSymptomsPrenatalDiagnosis assembled diagnosis =
     in
     case diagnosis of
         DiagnosisHyperemesisGravidumBySymptoms ->
-            hospitalizeDueToNauseaAndVomiting assembled
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks < 20) && hospitalizeDueToNauseaAndVomiting assembled
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
+
+        DiagnosisSevereVomitingBySymptoms ->
+            Maybe.map
+                (\egaWeeks ->
+                    (egaWeeks >= 20) && hospitalizeDueToNauseaAndVomiting assembled
+                )
+                egaInWeeks
+                |> Maybe.withDefault False
 
         DiagnosisHeartburn ->
             heartburnDiagnosed
@@ -1855,32 +1990,71 @@ flankPainPresent sign =
             True
 
 
-immediateHypertensionByMeasurements : PrenatalMeasurements -> Bool
-immediateHypertensionByMeasurements =
-    highBloodPressure
+chronicHypertensionByMeasurements : PrenatalMeasurements -> Int -> Bool
+chronicHypertensionByMeasurements measurements egaWeeks =
+    egaWeeks < 20 && highBloodPressure measurements
 
 
-recheckedHypertensionByMeasurements : PrenatalMeasurements -> Bool
-recheckedHypertensionByMeasurements =
-    repeatedTestForMarginalBloodPressure
+chronicHypertensionByMeasurementsAfterRecheck : PrenatalMeasurements -> Int -> Bool
+chronicHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
+    egaWeeks < 20 && repeatedTestForMarginalBloodPressure measurements
 
 
-immediatePreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
-immediatePreeclampsiaByMeasurements measurements =
+gestationalHypertensionByMeasurements : PrenatalMeasurements -> Int -> Bool
+gestationalHypertensionByMeasurements measurements egaWeeks =
+    (egaWeeks >= 20) && highBloodPressure measurements
+
+
+gestationalHypertensionByMeasurementsAfterRecheck : PrenatalMeasurements -> Int -> Bool
+gestationalHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
+    egaWeeks >= 20 && repeatedTestForMarginalBloodPressure measurements
+
+
+moderatePreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
+moderatePreeclampsiaByMeasurements measurements =
     highBloodPressure measurements
         && edemaOnHandOrLegs measurements
 
 
-recheckedPreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
-recheckedPreeclampsiaByMeasurements measurements =
-    repeatedTestForMarginalBloodPressure measurements
-        && ((highUrineProtein measurements
-                && -- Adding this, so we would not have both Moderate and
-                   -- Severe Preeclapsia diagnoses.
-                   (not <| severePreeclampsiaSigns measurements)
-            )
-                || edemaOnHandOrLegs measurements
+moderatePreeclampsiaByMeasurementsRecurrentPhase : PrenatalMeasurements -> Bool
+moderatePreeclampsiaByMeasurementsRecurrentPhase measurements =
+    let
+        highProtein =
+            highUrineProtein measurements
+    in
+    (highBloodPressure measurements && highProtein)
+        || (repeatedTestForMarginalBloodPressure measurements
+                && (edemaOnHandOrLegs measurements || highProtein)
            )
+
+
+severePreeclampsiaByDangerSigns : List DangerSign -> Bool
+severePreeclampsiaByDangerSigns =
+    List.member HeadacheBlurredVision
+
+
+severePreeclampsiaRecurrentPhase : List DangerSign -> PrenatalMeasurements -> Bool
+severePreeclampsiaRecurrentPhase dangerSigns measurements =
+    let
+        byBloodPreasure =
+            getMeasurementValueFunc measurements.vitals
+                |> Maybe.andThen
+                    (\value ->
+                        Maybe.map4
+                            (\dia sys diaRepeated sysRepeated ->
+                                (dia >= 110 && sys >= 160)
+                                    || (diaRepeated >= 110 && sys >= 160)
+                            )
+                            value.dia
+                            value.sys
+                            value.diaRepeated
+                            value.sysRepeated
+                    )
+                |> Maybe.withDefault False
+    in
+    byBloodPreasure
+        && highUrineProtein measurements
+        && severePreeclampsiaSigns measurements
 
 
 highBloodPressure : PrenatalMeasurements -> Bool
@@ -1907,8 +2081,13 @@ repeatedHighBloodPressure measurements =
         |> Maybe.withDefault False
 
 
+highBloodPressureCondition : Float -> Float -> Bool
+highBloodPressureCondition dia sys =
+    dia >= 110 || sys >= 160
+
+
 {-| We measure BP again when we suspect Hypertension or Preeclamsia
-(dia between 90 and 110, and dia between 140 and 160).
+(dia between 90 and 110, and sys between 140 and 160).
 We diagnose Hypertension if repeated measurements are within
 those boundries, or exceed them.
 -}
@@ -1922,11 +2101,6 @@ repeatedTestForMarginalBloodPressure measurements =
                     value.sysRepeated
             )
         |> Maybe.withDefault False
-
-
-highBloodPressureCondition : Float -> Float -> Bool
-highBloodPressureCondition dia sys =
-    dia >= 110 || sys >= 160
 
 
 edemaOnHandOrLegs : PrenatalMeasurements -> Bool
@@ -1982,9 +2156,25 @@ maternityWardDiagnoses =
     ]
 
 
-labResultsDiagnoses : List PrenatalDiagnosis
-labResultsDiagnoses =
-    [ DiagnosisSeverePreeclampsiaAfterRecheck
+immediateDeliveryDiagnoses : List PrenatalDiagnosis
+immediateDeliveryDiagnoses =
+    [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+    ]
+
+
+labResultsAndExaminationDiagnoses : List PrenatalDiagnosis
+labResultsAndExaminationDiagnoses =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
+    , DiagnosisModeratePreeclampsiaInitialPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisSeverePreeclampsiaInitialPhase
+    , DiagnosisSeverePreeclampsiaRecurrentPhase
     , DiagnosisHIV
     , DiagnosisHIVDetectableViralLoad
     , DiagnosisDiscordantPartnership
@@ -2000,23 +2190,16 @@ labResultsDiagnoses =
     , DiagnosisModerateAnemia
     , DiagnosisSevereAnemia
     , DiagnosisSevereAnemiaWithComplications
-    ]
-
-
-examinationDiagnoses : List PrenatalDiagnosis
-examinationDiagnoses =
-    [ DiagnosisChronicHypertensionImmediate
-    , DiagnosisChronicHypertensionAfterRecheck
-    , DiagnosisGestationalHypertensionImmediate
-    , DiagnosisGestationalHypertensionAfterRecheck
-    , DiagnosisModeratePreeclampsiaImmediate
-    , DiagnosisModeratePreeclampsiaAfterRecheck
+    , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
+    , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
+    , DiagnosisRhesusNegative
     ]
 
 
 symptomsDiagnoses : List PrenatalDiagnosis
 symptomsDiagnoses =
     [ DiagnosisHyperemesisGravidumBySymptoms
+    , DiagnosisSevereVomitingBySymptoms
     , DiagnosisHeartburn
     , DiagnosisHeartburnPersistent
     , DiagnosisDeepVeinThrombosis
@@ -2040,22 +2223,13 @@ mentalHealthDiagnoses =
     DiagnosisDepressionNotLikely :: mentalHealthDiagnosesRequiringTreatment
 
 
-mentalHealthDiagnosesRequiringTreatment : List PrenatalDiagnosis
-mentalHealthDiagnosesRequiringTreatment =
-    [ DiagnosisDepressionPossible
-    , DiagnosisDepressionHighlyPossible
-    , DiagnosisDepressionProbable
-    , DiagnosisSuicideRisk
-    ]
-
-
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled healthEducationForm =
     let
         form =
             assembled.measurements.healthEducation
                 |> getMeasurementValueFunc
-                |> healthEducationFormWithDefaultInitialPhase healthEducationForm
+                |> healthEducationFormWithDefault healthEducationForm
     in
     case assembled.encounter.encounterType of
         NurseEncounter ->
@@ -2664,49 +2838,31 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 form =
                     assembled.measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
+                        |> referralFormWithDefault data.referralForm
 
-                ( reasonForNotSentCompleted, reasonForNotSentActive ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
+                ( _, tasks ) =
+                    case assembled.encounter.encounterType of
+                        NurseEncounter ->
+                            resolveReferralInputsAndTasksForNurse language
+                                currentDate
+                                assembled
+                                SetReferralBoolInput
+                                SetFacilityNonReferralReason
+                                form
 
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( accompanyToHealthCenterCompleted, accompanyToHealthCenterActive ) =
-                    if isChw then
-                        ( taskCompleted form.accompanyToHealthCenter, 1 )
-
-                    else if
-                        referToHospitalForNonHIVDiagnosis assembled
-                            || referToHospitalDueToAdverseEvent assembled
-                            || referToHospitalDueToPastDiagnosis assembled
-                            || referToMentalHealthSpecialist assembled
-                    then
-                        ( 0, 0 )
-
-                    else
-                        ( taskCompleted form.accompanyToHealthCenter, 1 )
+                        _ ->
+                            resolveReferralInputsAndTasksForCHW language currentDate assembled form
             in
-            ( taskCompleted form.handReferralForm + reasonForNotSentCompleted + accompanyToHealthCenterCompleted
-            , 1 + reasonForNotSentActive + accompanyToHealthCenterActive
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
             )
 
         NextStepsHealthEducation ->
             let
                 form =
-                    assembled.measurements.healthEducation
-                        |> getMeasurementValueFunc
-                        |> healthEducationFormWithDefaultInitialPhase data.healthEducationForm
+                    getMeasurementValueFunc assembled.measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
 
                 ( _, tasks ) =
                     healthEducationFormInputsAndTasks language assembled form
@@ -2743,7 +2899,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
         NextStepsWait ->
             let
                 completed =
-                    if nextStepsMeasurementTaken assembled NextStepsWait then
+                    if nextStepsTaskCompleted assembled NextStepsWait then
                         1
 
                     else
@@ -4250,25 +4406,6 @@ examinationTasksCompletedFromTotal assembled data task =
             )
 
 
-socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
-socialHistoryHivTestingResultFromString result =
-    case result of
-        "positive" ->
-            Just ResultHivPositive
-
-        "negative" ->
-            Just ResultHivNegative
-
-        "indeterminate" ->
-            Just ResultHivIndeterminate
-
-        "none" ->
-            Just NoHivTesting
-
-        _ ->
-            Nothing
-
-
 fromBirthPlanValue : Maybe BirthPlanValue -> BirthPlanForm
 fromBirthPlanValue saved =
     { haveInsurance = Maybe.map (.signs >> EverySet.member Insurance) saved
@@ -4576,6 +4713,69 @@ toPrenatalUrineDipstickTestValue form =
         form.executionNote
 
 
+prenatalRandomBloodSugarFormWithDefault : PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarForm
+prenatalRandomBloodSugarFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    testPerformedValue =
+                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
+
+                    patientFastedValue =
+                        Maybe.map (EverySet.member PrerequisiteFastFor12h)
+                            value.testPrerequisites
+                in
+                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
+                , patientFasted = or form.patientFasted patientFastedValue
+                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedTodayDirty = form.testPerformedTodayDirty
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
+                }
+            )
+
+
+toPrenatalRandomBloodSugarValueWithDefault : Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue
+toPrenatalRandomBloodSugarValueWithDefault saved form =
+    prenatalRandomBloodSugarFormWithDefault form saved
+        |> toPrenatalRandomBloodSugarTestValue
+
+
+toPrenatalRandomBloodSugarTestValue : PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue
+toPrenatalRandomBloodSugarTestValue form =
+    Maybe.map
+        (\executionNote ->
+            let
+                testPrerequisites =
+                    Maybe.map
+                        (\patientFasted ->
+                            if patientFasted then
+                                EverySet.singleton PrerequisiteFastFor12h
+
+                            else
+                                EverySet.singleton NoTestPrerequisites
+                        )
+                        form.patientFasted
+            in
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testPrerequisites = testPrerequisites
+            , sugarCount = Nothing
+            , originatingEncounter = Nothing
+            }
+        )
+        form.executionNote
+
+
 prenatalNonRDTFormWithDefault :
     PrenatalLabsNonRDTForm
     -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
@@ -4638,14 +4838,9 @@ toHemoglobinTestValueWithEmptyResults note date =
     PrenatalHemoglobinTestValue note date Nothing
 
 
-toRandomBloodSugarTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalRandomBloodSugarTestValue
-toRandomBloodSugarTestValueWithEmptyResults note date =
-    PrenatalRandomBloodSugarTestValue note date Nothing
-
-
 toBloodGpRsTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalBloodGpRsTestValue
 toBloodGpRsTestValueWithEmptyResults note date =
-    PrenatalBloodGpRsTestValue note date Nothing Nothing
+    PrenatalBloodGpRsTestValue note date Nothing Nothing Nothing
 
 
 toHIVPCRTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHIVPCRTestValue
@@ -4757,7 +4952,7 @@ expectLaboratoryTask currentDate assembled task =
                         |> Maybe.withDefault (isInitialTest test)
 
                 -- This function checks if patient has reported of having a disease.
-                -- HIV and Hepatitis B are considered chronical diseases.
+                -- HIV and Hepatitis B are considered chronic diseases.
                 -- If patient declared to have one of them, there's no point
                 -- in testing for it.
                 isKnownAsPositive getMeasurementFunc =
@@ -4800,7 +4995,8 @@ expectLaboratoryTask currentDate assembled task =
                     True
 
                 TaskRandomBloodSugarTest ->
-                    isInitialTest TaskRandomBloodSugarTest
+                    List.all (\diagnosis -> not <| EverySet.member diagnosis assembled.encounter.pastDiagnoses)
+                        diabetesDiagnoses
 
                 TaskHIVPCRTest ->
                     isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
@@ -4872,8 +5068,8 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
                                         -- we treat the test as if it was not performed.
                                         Nothing
 
-                                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate > prenatalLabExpirationPeriod) then
-                                        -- No results were entered for more than 14 days since the
+                                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= prenatalLabExpirationPeriod) then
+                                        -- No results were entered for more than 35 days since the
                                         -- day on which measurement was taken.
                                         -- Test is considered expired, and is being ignored
                                         -- (as if it was never performed).
@@ -5335,6 +5531,7 @@ outsideCareFormWithDefault form saved =
                 { seenAtAnotherFacility = or form.seenAtAnotherFacility (EverySet.member SeenAtAnotherFacility value.signs |> Just)
                 , givenNewDiagnosis = or form.givenNewDiagnosis (EverySet.member GivenNewDiagnoses value.signs |> Just)
                 , givenMedicine = or form.givenMedicine (EverySet.member GivenMedicine value.signs |> Just)
+                , plannedFollowUp = or form.plannedFollowUp (EverySet.member PlannedFollowUpCareWithSpecialist value.signs |> Just)
                 , diagnoses = maybeValueConsideringIsDirtyField form.diagnosesDirty form.diagnoses (value.diagnoses |> Maybe.map EverySet.toList)
                 , diagnosesDirty = form.diagnosesDirty
                 , malariaMedications = or form.malariaMedications malariaMedications
@@ -5359,6 +5556,7 @@ toPrenatalOutsideCareValue form =
             [ Maybe.map (ifTrue SeenAtAnotherFacility) form.seenAtAnotherFacility
             , ifNullableTrue GivenNewDiagnoses form.givenNewDiagnosis
             , ifNullableTrue GivenMedicine form.givenMedicine
+            , ifNullableTrue PlannedFollowUpCareWithSpecialist form.plannedFollowUp
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalOutsideCareSigns)
@@ -5453,6 +5651,15 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                                     (Just DiagnosisOther)
                                     SetOutsideCareDiagnosis
                                     Translate.PrenatalDiagnosis
+                              , viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion PlannedFollowUpCareWithSpecialist
+                              , viewBoolInput
+                                    language
+                                    form.plannedFollowUp
+                                    (SetOutsideCareSignBoolInput
+                                        (\value form_ -> { form_ | plannedFollowUp = Just value })
+                                    )
+                                    "planned-follow-up"
+                                    Nothing
                               ]
                                 ++ givenMedicineSection
                             , [ if isJust form.diagnoses then
@@ -5460,6 +5667,7 @@ outsideCareFormInputsAndTasksDiagnoses language form =
 
                                 else
                                     Nothing
+                              , form.plannedFollowUp
                               ]
                                 ++ givenMedicineTasks
                             )
@@ -5544,9 +5752,18 @@ outsideCareFormInputsAndTasksMedications language form =
                             List.any (\diagnosis -> List.member diagnosis diagnoses)
                                 [ DiagnosisGestationalHypertensionImmediate
                                 , DiagnosisChronicHypertensionImmediate
+                                , DiagnosisModeratePreeclampsiaInitialPhase
                                 ]
                         then
-                            ( [ viewHeader Translate.Hypertension
+                            let
+                                headerTransId =
+                                    if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
+                                        Translate.ModeratePreeclampsia
+
+                                    else
+                                        Translate.Hypertension
+                            in
+                            ( [ viewHeader headerTransId
                               , selectTreatmentOptionsInput outsideCareMedicationOptionsHypertension
                                     NoOutsideCareMedicationForHypertension
                                     form.hypertensionMedications
@@ -6076,3 +6293,223 @@ getMeasurementByVaccineTypeFunc vaccineType measurements =
     case vaccineType of
         VaccineTetanus ->
             getMeasurementValueFunc measurements.tetanusImmunisation
+
+
+toHealthEducationValueWithDefault : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue saved
+
+
+healthEducationFormWithDefault :
+    HealthEducationForm
+    -> Maybe PrenatalHealthEducationValue
+    -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { expectations = or form.expectations (EverySet.member EducationExpectations value.signs |> Just)
+                , visitsReview = or form.visitsReview (EverySet.member EducationVisitsReview value.signs |> Just)
+                , warningSigns = or form.warningSigns (EverySet.member EducationWarningSigns value.signs |> Just)
+                , hemorrhaging = or form.hemorrhaging (EverySet.member EducationHemorrhaging value.signs |> Just)
+                , familyPlanning = or form.familyPlanning (EverySet.member EducationFamilyPlanning value.signs |> Just)
+                , breastfeeding = or form.breastfeeding (EverySet.member EducationBreastfeeding value.signs |> Just)
+                , immunization = or form.immunization (EverySet.member EducationImmunization value.signs |> Just)
+                , hygiene = or form.hygiene (EverySet.member EducationHygiene value.signs |> Just)
+                , positiveHIV = or form.positiveHIV (EverySet.member EducationPositiveHIV value.signs |> Just)
+                , saferSexHIV = or form.saferSexHIV (EverySet.member EducationSaferSexHIV value.signs |> Just)
+                , partnerTesting = or form.partnerTesting (EverySet.member EducationPartnerTesting value.signs |> Just)
+                , nauseaVomiting = or form.nauseaVomiting (EverySet.member EducationNauseaVomiting value.signs |> Just)
+                , legCramps = or form.legCramps (EverySet.member EducationLegCramps value.signs |> Just)
+                , lowBackPain = or form.lowBackPain (EverySet.member EducationLowBackPain value.signs |> Just)
+                , constipation = or form.constipation (EverySet.member EducationConstipation value.signs |> Just)
+                , heartburn = or form.heartburn (EverySet.member EducationHeartburn value.signs |> Just)
+                , varicoseVeins = or form.varicoseVeins (EverySet.member EducationVaricoseVeins value.signs |> Just)
+                , legPainRedness = or form.legPainRedness (EverySet.member EducationLegPainRedness value.signs |> Just)
+                , pelvicPain = or form.pelvicPain (EverySet.member EducationPelvicPain value.signs |> Just)
+                , saferSex = or form.saferSex (EverySet.member EducationSaferSex value.signs |> Just)
+                , mentalHealth = or form.mentalHealth (EverySet.member EducationMentalHealth value.signs |> Just)
+
+                -- Only signs that do not participate at recurrent phase. Resolved directly
+                -- from value.
+                , hivDetectableViralLoad = Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2
+                , diabetes = Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2
+                }
+            )
+
+
+toHealthEducationValue : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
+toHealthEducationValue saved form =
+    [ ifNullableTrue EducationExpectations form.expectations
+    , ifNullableTrue EducationVisitsReview form.visitsReview
+    , ifNullableTrue EducationWarningSigns form.warningSigns
+    , ifNullableTrue EducationHemorrhaging form.hemorrhaging
+    , ifNullableTrue EducationFamilyPlanning form.familyPlanning
+    , ifNullableTrue EducationBreastfeeding form.breastfeeding
+    , ifNullableTrue EducationImmunization form.immunization
+    , ifNullableTrue EducationHygiene form.hygiene
+    , ifNullableTrue EducationPositiveHIV form.positiveHIV
+    , ifNullableTrue EducationSaferSexHIV form.saferSexHIV
+    , ifNullableTrue EducationPartnerTesting form.partnerTesting
+    , ifNullableTrue EducationNauseaVomiting form.nauseaVomiting
+    , ifNullableTrue EducationLegCramps form.legCramps
+    , ifNullableTrue EducationLowBackPain form.lowBackPain
+    , ifNullableTrue EducationConstipation form.constipation
+    , ifNullableTrue EducationHeartburn form.heartburn
+    , ifNullableTrue EducationVaricoseVeins form.varicoseVeins
+    , ifNullableTrue EducationLegPainRedness form.legPainRedness
+    , ifNullableTrue EducationPelvicPain form.pelvicPain
+    , ifNullableTrue EducationSaferSex form.saferSex
+    , ifNullableTrue EducationMentalHealth form.mentalHealth
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
+        |> Maybe.map
+            (\signs ->
+                { signs = signs
+                , signsPhase2 = Maybe.andThen .signsPhase2 saved
+                }
+            )
+
+
+resolveReferralInputsAndTasksForCHW :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ReferralForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+resolveReferralInputsAndTasksForCHW language currentDate assembled form =
+    let
+        ( derivedSection, derivedTasks ) =
+            Maybe.map
+                (\referToHealthCenter ->
+                    if referToHealthCenter then
+                        ( [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+                          , viewBoolInput
+                                language
+                                form.handReferralForm
+                                (SetReferralBoolInput
+                                    (\value form_ ->
+                                        { form_ | handReferralForm = Just value }
+                                    )
+                                )
+                                "hand-referral-form"
+                                Nothing
+                          , viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion FacilityHealthCenter
+                          , viewBoolInput
+                                language
+                                form.accompanyToHealthCenter
+                                (SetReferralBoolInput
+                                    (\value form_ ->
+                                        { form_ | accompanyToHealthCenter = Just value }
+                                    )
+                                )
+                                "accompany-to-hc"
+                                Nothing
+                          ]
+                        , [ form.handReferralForm, form.accompanyToHealthCenter ]
+                        )
+
+                    else
+                        ( [ div [ class "why-not" ]
+                                [ viewQuestionLabel language Translate.WhyNot
+                                , viewCheckBoxSelectInput language
+                                    [ ClientRefused
+                                    , NoAmbulance
+                                    , ClientUnableToAffordFees
+                                    , ReasonForNonReferralNotIndicated
+                                    , ReasonForNonReferralOther
+                                    ]
+                                    []
+                                    form.reasonForNotSendingToHC
+                                    SetHealthCenterNonReferralReason
+                                    Translate.ReasonForNonReferral
+                                ]
+                          ]
+                        , [ if isJust form.reasonForNotSendingToHC then
+                                Just True
+
+                            else
+                                Nothing
+                          ]
+                        )
+                )
+                form.referToHealthCenter
+                |> Maybe.withDefault ( [], [] )
+    in
+    ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm FacilityHealthCenter) "icon-forms" Nothing
+            , viewActionTakenLabel language (Translate.SendPatientToFacility FacilityHealthCenter) "icon-shuttle" Nothing
+            ]
+      , viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion FacilityHealthCenter
+      , viewBoolInput
+            language
+            form.referToHealthCenter
+            (SetReferralBoolInput
+                (\value form_ ->
+                    { form_ | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+                )
+            )
+            "refer-to-hc"
+            Nothing
+      ]
+        ++ derivedSection
+    , [ form.referToHealthCenter ] ++ derivedTasks
+    )
+
+
+resolveReferralInputsAndTasksForNurse :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> ReferralForm
+    -> ( List (Html msg), List (Maybe Bool) )
+resolveReferralInputsAndTasksForNurse language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+    let
+        foldResults =
+            List.foldr
+                (\( inputs, tasks ) ( accumInputs, accumTasks ) ->
+                    ( inputs ++ accumInputs, tasks ++ accumTasks )
+                )
+                ( [], [] )
+    in
+    resolveRequiredReferralFacilities assembled
+        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate PrenatalEncounterPhaseInitial assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
+        |> foldResults
+
+
+resolveRequiredReferralFacilities : AssembledData -> List ReferralFacility
+resolveRequiredReferralFacilities assembled =
+    List.filter (matchRequiredReferralFacility assembled) referralFacilities
+
+
+matchRequiredReferralFacility : AssembledData -> ReferralFacility -> Bool
+matchRequiredReferralFacility assembled facility =
+    case facility of
+        FacilityHospital ->
+            referToHospital assembled
+
+        FacilityMentalHealthSpecialist ->
+            referToMentalHealthSpecialist assembled
+
+        FacilityARVProgram ->
+            referToHIVProgram assembled
+
+        FacilityNCDProgram ->
+            -- @todo : Implement when developing NCD feature.
+            False
+
+        FacilityHealthCenter ->
+            -- We should never get here. HC inputs are resolved
+            -- with resolveReferralInputsAndTasksForCHW.
+            False
+
+
+referralFacilities : List ReferralFacility
+referralFacilities =
+    [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram, FacilityNCDProgram ]

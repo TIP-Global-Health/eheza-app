@@ -7,12 +7,14 @@ import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
-import Html exposing (Html)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils exposing (vitalsFormWithDefault)
 import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.Utils exposing (..)
@@ -26,6 +28,7 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCustomLabel
         , viewQuestionLabel
         )
 import Translate exposing (Language, TranslationId, translate)
@@ -63,7 +66,7 @@ activityCompleted currentDate assembled activity =
         RecurrentNextSteps ->
             (not <| expectActivity currentDate assembled RecurrentNextSteps)
                 || (resolveNextStepsTasks currentDate assembled
-                        |> List.all (nextStepsMeasurementTaken assembled)
+                        |> List.all (nextStepsTaskCompleted assembled)
                    )
 
         RecurrentExamination ->
@@ -257,6 +260,7 @@ prenatalBloodGpRsResultFormWithDefault form saved =
                 , executionDate = or form.executionDate value.executionDate
                 , bloodGroup = or form.bloodGroup value.bloodGroup
                 , rhesus = or form.rhesus value.rhesus
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -275,6 +279,7 @@ toPrenatalBloodGpRsResultsValue form =
             , executionDate = form.executionDate
             , bloodGroup = form.bloodGroup
             , rhesus = form.rhesus
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote
@@ -319,7 +324,9 @@ prenatalRandomBloodSugarResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , sugarCount = or form.sugarCount value.sugarCount
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
@@ -336,7 +343,9 @@ toPrenatalRandomBloodSugarResultsValue form =
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
             , sugarCount = form.sugarCount
+            , originatingEncounter = form.originatingEncounter
             }
         )
         form.executionNote
@@ -402,7 +411,7 @@ expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
         NextStepsSendToHC ->
-            diagnosesCausingHospitalReferralByImmediateDiagnoses assembled
+            resolveRequiredReferralFacilities assembled
                 |> List.isEmpty
                 |> not
 
@@ -418,26 +427,15 @@ expectNextStepsTask currentDate assembled task =
                    )
 
         NextStepsHealthEducation ->
-            diagnosed DiagnosisHIVDetectableViralLoad assembled
+            diagnosedAnyOf (DiagnosisHIVDetectableViralLoad :: diabetesDiagnoses) assembled
 
 
-diagnosesCausingHospitalReferralByImmediateDiagnoses : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByImmediateDiagnoses assembled =
-    emergencyReferralDiagnosesRecurrent
-        ++ [ DiagnosisHepatitisB
-           , DiagnosisNeurosyphilis
-           , DiagnosisMalariaWithSevereAnemia
-           , DiagnosisSevereAnemia
-           , DiagnosisModeratePreeclampsiaAfterRecheck
-           ]
-        |> List.filter (\diagnosis -> diagnosed diagnosis assembled)
-
-
-nextStepsMeasurementTaken : AssembledData -> NextStepsTask -> Bool
-nextStepsMeasurementTaken assembled task =
+nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
     case task of
         NextStepsSendToHC ->
-            isJust assembled.measurements.sendToHC
+            resolveRequiredReferralFacilities assembled
+                |> List.all (referralToFacilityCompleted assembled)
 
         NextStepsMedicationDistribution ->
             let
@@ -464,11 +462,7 @@ nextStepsMeasurementTaken assembled task =
 
         NextStepsHealthEducation ->
             getMeasurementValueFunc assembled.measurements.healthEducation
-                |> Maybe.map
-                    (\signs ->
-                        List.any (\sign -> EverySet.member sign signs)
-                            [ EducationHIVDetectableViralLoad, NoPrenatalHealthEducationSignsRecurrentPhase ]
-                    )
+                |> Maybe.map (.signsPhase2 >> isJust)
                 |> Maybe.withDefault False
 
 
@@ -480,26 +474,19 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 form =
                     assembled.measurements.sendToHC
                         |> getMeasurementValueFunc
-                        |> prenatalSendToHCFormWithDefault data.sendToHCForm
+                        |> referralFormWithDefault data.referralForm
 
-                ( reasonForNotSentCompleted, reasonForNotSentActive ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+                ( _, tasks ) =
+                    resolveReferralInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
             in
-            ( taskCompleted form.handReferralForm + reasonForNotSentCompleted
-            , 1 + reasonForNotSentActive
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
             )
 
         NextStepsMedicationDistribution ->
@@ -525,10 +512,14 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             let
                 form =
                     getMeasurementValueFunc assembled.measurements.healthEducation
-                        |> healthEducationFormWithDefaultRecurrentPhase data.healthEducationForm
+                        |> healthEducationFormWithDefault data.healthEducationForm
+
+                ( _, tasks ) =
+                    healthEducationFormInputsAndTasks language assembled form
             in
-            ( taskCompleted form.hivDetectableViralLoad
-            , 1
+            ( List.map taskCompleted tasks
+                |> List.sum
+            , List.length tasks
             )
 
 
@@ -560,6 +551,7 @@ expectExaminationTask currentDate assembled task =
             -- of pregnancy. If diagnised, we do not need to recheck the BP.
             -- Measurement taken at initial phase of encounter is sufficient.
             (not <| diagnosedHypertensionPrevoiusly assembled)
+                && (not <| diagnosedAnyOf hierarchalBloodPreasureDiagnoses assembled)
                 && (getMeasurementValueFunc assembled.measurements.vitals
                         |> Maybe.andThen
                             (\value ->
@@ -631,3 +623,176 @@ toPrenatalHIVPCRResultsValue form =
             }
         )
         form.executionNote
+
+
+healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasks language assembled form =
+    let
+        detectableViralLoad =
+            if diagnosed DiagnosisHIVDetectableViralLoad assembled then
+                ( [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.hivDetectableViralLoad
+                        (SetHealthEducationBoolInput (\value form_ -> { form_ | hivDetectableViralLoad = Just value }))
+                        "hiv-detectable-viral-load"
+                        Nothing
+                  ]
+                , Just form.hivDetectableViralLoad
+                )
+
+            else
+                ( [], Nothing )
+
+        diabetes =
+            if diagnosedAnyOf diabetesDiagnoses assembled then
+                let
+                    header =
+                        if diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetes assembled then
+                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisDiabetes
+
+                        else
+                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
+                in
+                ( [ viewCustomLabel language header "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationDiabetesInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.diabetes
+                        (SetHealthEducationBoolInput (\value form_ -> { form_ | diabetes = Just value }))
+                        "diabetes"
+                        Nothing
+                  ]
+                , Just form.diabetes
+                )
+
+            else
+                ( [], Nothing )
+
+        inputsAndTasks =
+            [ detectableViralLoad
+            , diabetes
+            ]
+    in
+    ( List.map Tuple.first inputsAndTasks
+        |> List.concat
+    , List.map Tuple.second inputsAndTasks
+        |> Maybe.Extra.values
+    )
+
+
+toHealthEducationValueWithDefault : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue saved
+
+
+healthEducationFormWithDefault :
+    HealthEducationForm
+    -> Maybe PrenatalHealthEducationValue
+    -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { expectations = EverySet.member EducationExpectations value.signs |> Just
+                , visitsReview = EverySet.member EducationVisitsReview value.signs |> Just
+                , warningSigns = EverySet.member EducationWarningSigns value.signs |> Just
+                , hemorrhaging = EverySet.member EducationHemorrhaging value.signs |> Just
+                , familyPlanning = EverySet.member EducationFamilyPlanning value.signs |> Just
+                , breastfeeding = EverySet.member EducationBreastfeeding value.signs |> Just
+                , immunization = EverySet.member EducationImmunization value.signs |> Just
+                , hygiene = EverySet.member EducationHygiene value.signs |> Just
+                , positiveHIV = EverySet.member EducationPositiveHIV value.signs |> Just
+                , saferSexHIV = EverySet.member EducationSaferSexHIV value.signs |> Just
+                , partnerTesting = EverySet.member EducationPartnerTesting value.signs |> Just
+                , nauseaVomiting = EverySet.member EducationNauseaVomiting value.signs |> Just
+                , legCramps = EverySet.member EducationLegCramps value.signs |> Just
+                , lowBackPain = EverySet.member EducationLowBackPain value.signs |> Just
+                , constipation = EverySet.member EducationConstipation value.signs |> Just
+                , heartburn = EverySet.member EducationHeartburn value.signs |> Just
+                , varicoseVeins = EverySet.member EducationVaricoseVeins value.signs |> Just
+                , legPainRedness = EverySet.member EducationLegPainRedness value.signs |> Just
+                , pelvicPain = EverySet.member EducationPelvicPain value.signs |> Just
+                , saferSex = EverySet.member EducationSaferSex value.signs |> Just
+                , mentalHealth = EverySet.member EducationMentalHealth value.signs |> Just
+                , hivDetectableViralLoad = or form.hivDetectableViralLoad (Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2)
+                , diabetes = or form.diabetes (Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2)
+                }
+            )
+
+
+toHealthEducationValue : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
+toHealthEducationValue saved form =
+    [ ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
+    , ifNullableTrue EducationDiabetes form.diabetes
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
+        |> Maybe.map
+            (\signsPhase2 ->
+                { signs =
+                    Maybe.map .signs saved
+                        |> Maybe.withDefault (EverySet.singleton NoPrenatalHealthEducationSigns)
+                , signsPhase2 = Just signsPhase2
+                }
+            )
+
+
+resolveReferralInputsAndTasks :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> ReferralForm
+    -> ( List (Html msg), List (Maybe Bool) )
+resolveReferralInputsAndTasks language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+    let
+        foldResults =
+            List.foldr
+                (\( inputs, tasks ) ( accumInputs, accumTasks ) ->
+                    ( inputs ++ accumInputs, tasks ++ accumTasks )
+                )
+                ( [], [] )
+    in
+    resolveRequiredReferralFacilities assembled
+        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate PrenatalEncounterPhaseRecurrent assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
+        |> foldResults
+
+
+resolveRequiredReferralFacilities : AssembledData -> List ReferralFacility
+resolveRequiredReferralFacilities assembled =
+    List.filter (matchRequiredReferralFacility assembled) referralFacilities
+
+
+matchRequiredReferralFacility : AssembledData -> ReferralFacility -> Bool
+matchRequiredReferralFacility assembled facility =
+    case facility of
+        FacilityHospital ->
+            diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseRecurrent assembled
+                |> EverySet.isEmpty
+                |> not
+
+        FacilityMentalHealthSpecialist ->
+            False
+
+        FacilityARVProgram ->
+            False
+
+        FacilityNCDProgram ->
+            False
+
+        FacilityHealthCenter ->
+            -- We should never get here. HC inputs are resolved
+            -- with resolveReferralInputsAndTasksForCHW.
+            False
+
+
+referralFacilities : List ReferralFacility
+referralFacilities =
+    [ FacilityHospital ]
