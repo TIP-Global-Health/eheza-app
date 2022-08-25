@@ -2807,7 +2807,7 @@ ncdPainSymptomFromString sign =
             Just PainAbdomen
 
         "none" ->
-            Just NoNCDPainSymptom
+            Just NoNCDPainSymptoms
 
         _ ->
             Nothing
@@ -2831,5 +2831,5 @@ ncdPainSymptomToString sign =
         PainAbdomen ->
             "abdomen"
 
-        NoNCDPainSymptom ->
+        NoNCDPainSymptoms ->
             "none"

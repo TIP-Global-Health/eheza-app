@@ -4368,11 +4368,6 @@ toObstetricHistoryStep2Value form =
         |> andMap obstetricHistorySet
 
 
-fromFamilyPlanningValue : Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm
-fromFamilyPlanningValue saved =
-    { signs = Maybe.map EverySet.toList saved }
-
-
 familyPlanningFormWithDefault : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm
 familyPlanningFormWithDefault form saved =
     saved

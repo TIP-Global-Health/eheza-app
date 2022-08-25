@@ -2431,7 +2431,7 @@ type NCDPainSymptom
     | PainFeet
     | PainNeck
     | PainAbdomen
-    | NoNCDPainSymptom
+    | NoNCDPainSymptoms
 
 
 type NCDGroup2Symptom
