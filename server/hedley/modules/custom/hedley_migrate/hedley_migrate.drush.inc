@@ -31,8 +31,8 @@ function hedley_migrate_drush_command() {
 /**
  * Creates fake nurses and devices.
  */
-function hedley_migrate_create_dummy_nurses_devices() {
-  for ($i = 0; $i < 100; $i++) {
+function hedley_migrate_create_dummy_nurses_devices($amount = 100) {
+  for ($i = 0; $i < $amount; $i++) {
     $device = entity_create('node', [
       'type' => 'device',
       'title' => 'Device ' . $i,
