@@ -4171,9 +4171,15 @@ encodeNCDDangerSigns =
 
 encodeNCDDangerSignsValue : NCDDangerSignsValue -> List ( String, Value )
 encodeNCDDangerSignsValue value =
-    [ ( "deleted", bool False )
+    [ ( "ncd_danger_signs", encodeEverySet encodeNCDDangerSign value )
+    , ( "deleted", bool False )
     , ( "type", string "ncd_danger_signs" )
     ]
+
+
+encodeNCDDangerSign : NCDDangerSign -> Value
+encodeNCDDangerSign =
+    ncdDangerSignToString >> string
 
 
 encodeNCDFamilyHistory : NCDFamilyHistory -> List ( String, Value )
@@ -4339,9 +4345,27 @@ encodeNCDSymptomReview =
 
 encodeNCDSymptomReviewValue : NCDSymptomReviewValue -> List ( String, Value )
 encodeNCDSymptomReviewValue value =
-    [ ( "deleted", bool False )
+    [ ( "ncd_group1_symptoms", encodeEverySet encodeNCDGroup1Symptom value.group1Symptoms )
+    , ( "ncd_group2_symptoms", encodeEverySet encodeNCDGroup2Symptom value.group2Symptoms )
+    , ( "ncd_pain_symptoms", encodeEverySet encodeNCDPainSymptom value.painSymptoms )
+    , ( "deleted", bool False )
     , ( "type", string "ncd_symptom_review" )
     ]
+
+
+encodeNCDGroup1Symptom : NCDGroup1Symptom -> Value
+encodeNCDGroup1Symptom =
+    ncdGroup1SymptomToString >> string
+
+
+encodeNCDGroup2Symptom : NCDGroup2Symptom -> Value
+encodeNCDGroup2Symptom =
+    ncdGroup2SymptomToString >> string
+
+
+encodeNCDPainSymptom : NCDPainSymptom -> Value
+encodeNCDPainSymptom =
+    ncdPainSymptomToString >> string
 
 
 encodeNCDUrineDipstickTest : NCDUrineDipstickTest -> List ( String, Value )

@@ -2282,7 +2282,18 @@ type alias NCDDangerSigns =
 
 
 type alias NCDDangerSignsValue =
-    {}
+    EverySet NCDDangerSign
+
+
+type NCDDangerSign
+    = Dyspnea
+    | VisionChanges
+    | ChestPain
+    | FlankPain
+    | Hematuria
+    | SevereHeadaches
+    | LossOfConciousness
+    | NoNCDDangerSigns
 
 
 type alias NCDFamilyHistory =
@@ -2394,7 +2405,47 @@ type alias NCDSymptomReview =
 
 
 type alias NCDSymptomReviewValue =
-    {}
+    { group1Symptoms : EverySet NCDGroup1Symptom
+    , group2Symptoms : EverySet NCDGroup2Symptom
+    , painSymptoms : EverySet NCDPainSymptom
+    }
+
+
+type NCDGroup1Symptom
+    = SwellingInLegs
+    | UrinaryFrequency
+    | Anxiety
+    | WeightLoss
+    | Palpitations
+    | Tremor
+    | SwellingInFace
+    | SwellingInAbdomen
+    | DizzinessWithChangingPosition
+    | MildHeadache
+    | NoNCDGroup1Symptoms
+
+
+type NCDPainSymptom
+    = PainFlank
+    | PainLowerBack
+    | PainFeet
+    | PainNeck
+    | PainAbdomen
+    | NoNCDPainSymptom
+
+
+type NCDGroup2Symptom
+    = WeaknessOfOneSideOfTheBody
+    | ProblemsWithWalking
+    | ProblemsWithTalking
+    | DecreasedVision
+    | BlurryVision
+    | IncreasedFatigueWithDailyActivities
+    | ShortOfBreathWhenLayingDown
+    | ShortOfBreathAtNight
+    | KidneyProblems
+    | NCDIncreasedThirst
+    | NoNCDGroup2Symptoms
 
 
 type alias NCDUrineDipstickTest =

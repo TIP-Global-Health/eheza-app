@@ -4610,7 +4610,18 @@ decodeNCDDangerSigns =
 
 decodeNCDDangerSignsValue : Decoder NCDDangerSignsValue
 decodeNCDDangerSignsValue =
-    succeed NCDDangerSignsValue
+    field "ncd_danger_signs" (decodeEverySet decodeNCDDangerSign)
+
+
+decodeNCDDangerSign : Decoder NCDDangerSign
+decodeNCDDangerSign =
+    string
+        |> andThen
+            (\s ->
+                ncdDangerSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDDangerSign")
+            )
 
 
 decodeNCDFamilyHistory : Decoder NCDFamilyHistory
@@ -4751,6 +4762,42 @@ decodeNCDSymptomReview =
 decodeNCDSymptomReviewValue : Decoder NCDSymptomReviewValue
 decodeNCDSymptomReviewValue =
     succeed NCDSymptomReviewValue
+        |> required "ncd_group1_symptoms" (decodeEverySet decodeNCDGroup1Symptom)
+        |> required "ncd_group2_symptoms" (decodeEverySet decodeNCDGroup2Symptom)
+        |> required "ncd_pain_symptoms" (decodeEverySet decodeNCDPainSymptom)
+
+
+decodeNCDGroup1Symptom : Decoder NCDGroup1Symptom
+decodeNCDGroup1Symptom =
+    string
+        |> andThen
+            (\s ->
+                ncdGroup1SymptomFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDGroup1Symptom")
+            )
+
+
+decodeNCDGroup2Symptom : Decoder NCDGroup2Symptom
+decodeNCDGroup2Symptom =
+    string
+        |> andThen
+            (\s ->
+                ncdGroup2SymptomFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDGroup2Symptom")
+            )
+
+
+decodeNCDPainSymptom : Decoder NCDPainSymptom
+decodeNCDPainSymptom =
+    string
+        |> andThen
+            (\s ->
+                ncdPainSymptomFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDPainSymptom")
+            )
 
 
 decodeNCDUrineDipstickTest : Decoder NCDUrineDipstickTest
