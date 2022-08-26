@@ -10835,62 +10835,62 @@ translationSet trans =
             case value of
                 BurningWithUrination ->
                     { english = "Burning with Urination"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunyara Ukababara"
                     }
 
                 AbnormalVaginalDischarge ->
                     { english = "Abnormal Vaginal Discharge"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusohora ibintu bidasanzwe mu gitsina"
                     }
 
                 NauseaAndVomiting ->
                     { english = "Nausea and Vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Iseseme no kuruka"
                     }
 
                 Heartburn ->
                     { english = "Heartburn"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikirungurira"
                     }
 
                 LegCramps ->
                     { english = "Leg Cramps"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinya mu maguru"
                     }
 
                 LowBackPain ->
                     { english = "Lower Back Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara umugongo wo hasi"
                     }
 
                 CoughContinuous ->
                     { english = "Cough for >2 weeks"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inkorora irengeje ibyumweru 2"
                     }
 
                 PelvicPain ->
                     { english = "Pelvic Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara mu kiziba cy'inda"
                     }
 
                 Constipation ->
                     { english = "Constipation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwituma impatwe"
                     }
 
                 VaricoseVeins ->
                     { english = "Varicose Veins"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubyimba kw'imitsi (imigarura) y'amaraso"
                     }
 
                 LegPainRedness ->
                     { english = "Leg Pain or Redness (One Leg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara akaguru kamwe cyangwa gutukura ku kuguru kumwe"
                     }
 
                 NoPrenatalSymptoms ->
                     { english = "None"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
         PrenatalSymptomQuestion value ->
