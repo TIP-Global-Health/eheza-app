@@ -1,0 +1,38 @@
+- name: Puppeteer-based stress test
+  hosts: all
+  remote_user: root
+
+  tasks:
+    - name: Update and upgrade apt packages
+      become: true
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400
+
+    - name: NodeJs
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+         - nodejs
+         - npm
+
+    - name: Sync the source code of the test
+      copy:
+        src: "."
+        dest: "/root/"
+
+    - name: Install Puppeteer
+      shell: "npm install"
+
+    - name: Start date
+      debug:
+        var=ansible_date_time.iso8601
+
+    - name: Execute
+      shell: 'cd /root && node index.js 12345678 1234'
+
+    - name: End date
+      debug:
+        var=ansible_date_time.iso8601
