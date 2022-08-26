@@ -19,8 +19,10 @@ SELECT
 FROM
   field_data_field_birth_date b
     LEFT JOIN field_data_field_gender g ON b.entity_id = g.entity_id
+    LEFT JOIN node on b.entity_id = node.nid
 WHERE
-      field_birth_date_value + INTERVAL 1 MONTH > CURDATE();
+      field_birth_date_value + INTERVAL 1 MONTH > :limit
+      AND FROM_UNIXTIME(node.created) < :limit;
 INSERT
 INTO
   person_classified
@@ -31,9 +33,11 @@ SELECT
 FROM
   field_data_field_birth_date b
     LEFT JOIN field_data_field_gender g ON b.entity_id = g.entity_id
+    LEFT JOIN node on b.entity_id = node.nid
 WHERE
-      field_birth_date_value + INTERVAL 2 YEAR > CURDATE()
-AND field_birth_date_value + INTERVAL 1 MONTH <= CURDATE();
+      field_birth_date_value + INTERVAL 2 YEAR > :limit
+AND field_birth_date_value + INTERVAL 1 MONTH <= :limit
+AND FROM_UNIXTIME(node.created) < :limit;
 INSERT
 INTO
   person_classified
@@ -44,9 +48,11 @@ SELECT
 FROM
   field_data_field_birth_date b
     LEFT JOIN field_data_field_gender g ON b.entity_id = g.entity_id
+    LEFT JOIN node on b.entity_id = node.nid
 WHERE
-      field_birth_date_value + INTERVAL 5 YEAR > CURDATE()
-AND field_birth_date_value + INTERVAL 2 YEAR <= CURDATE();
+      field_birth_date_value + INTERVAL 5 YEAR > :limit
+AND field_birth_date_value + INTERVAL 2 YEAR <= :limit
+AND FROM_UNIXTIME(node.created) < :limit;
 INSERT
 INTO
   person_classified
@@ -57,9 +63,11 @@ SELECT
 FROM
   field_data_field_birth_date b
     LEFT JOIN field_data_field_gender g ON b.entity_id = g.entity_id
+    LEFT JOIN node on b.entity_id = node.nid
 WHERE
-      field_birth_date_value + INTERVAL 10 YEAR > CURDATE()
-AND field_birth_date_value + INTERVAL 5 YEAR <= CURDATE();
+      field_birth_date_value + INTERVAL 10 YEAR > :limit
+AND field_birth_date_value + INTERVAL 5 YEAR <= :limit
+AND FROM_UNIXTIME(node.created) < :limit;
 INSERT
 INTO
   person_classified
@@ -70,9 +78,11 @@ SELECT
 FROM
   field_data_field_birth_date b
     LEFT JOIN field_data_field_gender g ON b.entity_id = g.entity_id
+    LEFT JOIN node on b.entity_id = node.nid
 WHERE
-      field_birth_date_value + INTERVAL 20 YEAR > CURDATE()
-AND field_birth_date_value + INTERVAL 10 YEAR <= CURDATE();
+      field_birth_date_value + INTERVAL 20 YEAR > :limit
+AND field_birth_date_value + INTERVAL 10 YEAR <= :limit
+AND FROM_UNIXTIME(node.created) < :limit;
 INSERT
 INTO
   person_classified
@@ -83,9 +93,11 @@ SELECT
 FROM
   field_data_field_birth_date b
     LEFT JOIN field_data_field_gender g ON b.entity_id = g.entity_id
+    LEFT JOIN node on b.entity_id = node.nid
 WHERE
-      field_birth_date_value + INTERVAL 50 YEAR > CURDATE()
-AND field_birth_date_value + INTERVAL 20 YEAR <= CURDATE();
+      field_birth_date_value + INTERVAL 50 YEAR > :limit
+AND field_birth_date_value + INTERVAL 20 YEAR <= :limit
+AND FROM_UNIXTIME(node.created) < :limit;
 INSERT
 INTO
   person_classified
@@ -96,8 +108,10 @@ SELECT
 FROM
   field_data_field_birth_date b
     LEFT JOIN field_data_field_gender g ON b.entity_id = g.entity_id
+    LEFT JOIN node on b.entity_id = node.nid
 WHERE
-      field_birth_date_value + INTERVAL 50 YEAR < CURDATE();
+      field_birth_date_value + INTERVAL 50 YEAR < :limit
+      AND FROM_UNIXTIME(node.created) < :limit;
 # Exclude deleted person.
 DELETE
 FROM
@@ -151,6 +165,7 @@ FROM
     LEFT JOIN field_data_field_acute_illness_encounter acute ON acute.entity_id = ms.nid
 WHERE
     ms.type IN (__MEASUREMENT_TYPES_LIST__)
+AND FROM_UNIXTIME(ms.created) < :limit
 AND ((sess.field_session_target_id IS NOT NULL AND clinic.field_clinic_target_id IS NOT NULL) OR
      nutr.field_nutrition_encounter_target_id IS NOT NULL OR pren.field_prenatal_encounter_target_id IS NOT NULL OR
      acute.field_acute_illness_encounter_target_id IS NOT NULL)
