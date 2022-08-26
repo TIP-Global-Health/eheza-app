@@ -1430,7 +1430,7 @@ translationSet trans =
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Will you accompany the patient to mental health specialist"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzaherekeza umurwayi ku muganaga winzobere k'ubuzima bwo mu mutwe"
                     }
 
                 FacilityARVProgram ->
@@ -1440,7 +1440,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Will you accompany the patient to NCD services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzaherekeza umurwayi muri serivisi y'indwara zitandura"
                     }
 
         AccessDenied ->
@@ -1450,7 +1450,7 @@ translationSet trans =
 
         Actions ->
             { english = "Actions"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibikorwa"
             }
 
         ActionsTaken ->
@@ -1861,7 +1861,7 @@ translationSet trans =
 
         AddedToPatientRecordOn ->
             { english = "Added to patient record on"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yongewe ku makuru y umurwayi kuwa"
             }
 
         AddFamilyMember ->
@@ -1901,12 +1901,12 @@ translationSet trans =
 
         AdministerAzithromycinHelper ->
             { english = "By mouth 1x"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Inshuro imwe mu kanwa"
             }
 
         AdministerCeftriaxoneHelper ->
             { english = "IM once"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Urushinge mu mikaya inshuro imwe"
             }
 
         AdministerMebendezoleHelper ->
@@ -1916,7 +1916,7 @@ translationSet trans =
 
         AdministerMetronidazoleHelper ->
             { english = "By mouth twice a day for 7 days"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kunywa ikinini inshuro ebyiri ku munsi mu minsi irindwi"
             }
 
         AdministerAlbendazoleHelper ->
@@ -2535,7 +2535,7 @@ translationSet trans =
 
                 AvoidingGuidanceHypertensionReinforceAdherence ->
                     { english = "Reinforce adherence of existing dosage"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Shimangira umwigisha akamaro ko kubahiriza gufata imiti asanganwe"
                     }
 
                 AvoidingGuidanceHypertensionOther ->
@@ -2705,17 +2705,17 @@ translationSet trans =
 
         CandidiasisRecommendedTreatmentHeader ->
             { english = "This patient shows signs of Candidiasis"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi agaragaza ibimenyetso bya Kandidoze"
             }
 
         CandidiasisRecommendedTreatmentHelper ->
             { english = "Select the medication and dosage you will administer to the patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
             }
 
         CandidiasisRecommendedTreatmentInstructions ->
             { english = "Ensure the patient is not allergic to the medication before prescribing"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Menya neza ko umurwayi adafite aleriji ku miti mbere yo kuyimwandikira"
             }
 
         CannotStartEncounterLabel ->
@@ -2935,42 +2935,42 @@ translationSet trans =
             case value of
                 ActionPregnancyDating ->
                     { english = "Pregnancy Dating"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igihe inda imaze"
                     }
 
                 ActionLabs ->
                     { english = "Labs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibizamini byafashwe"
                     }
 
                 ActionDangerSignsPresent ->
                     { english = "Danger Signs Present"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hagaragaye Ibimenyetso Mpuruza"
                     }
 
                 ActionReferredToHealthCenter ->
                     { english = "Referred to Health Center"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yoherejwe Ku Kigonderbuzima"
                     }
 
                 ActionAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwemeza Itariki yo Kugarukaho"
                     }
 
                 ActionHealthEducation ->
                     { english = "Health Education"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inyigisho ku Buzima"
                     }
 
                 ActionBirthPlan ->
                     { english = "Birth Plan"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutegura gahunda yo kubyara"
                     }
 
         ChwActivity ->
             { english = "Chw Activity"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igikorwa cy'Umujyana w'Ubuzima"
             }
 
         ChildOf ->
@@ -3074,7 +3074,7 @@ translationSet trans =
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Complete a referral form"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzuza urupapuro rwo koherza umurwayi"
                     }
 
                 FacilityARVProgram ->
@@ -3084,7 +3084,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Complete a NCD services referral form"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzuza urupapuro rwo koherza umurwayi muri service y'indwara zitandura"
                     }
 
         Contacted114 ->
@@ -3139,7 +3139,7 @@ translationSet trans =
 
         Continued ->
             { english = "Continued"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yakomeje"
             }
 
         ContributingFactor factor ->
@@ -3637,7 +3637,7 @@ translationSet trans =
 
         DetectableViralLoad ->
             { english = "Detectable Viral Load"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ingano ya virusi itera SIDA iracyagaragara mu maraso"
             }
 
         Device ->
@@ -3667,17 +3667,17 @@ translationSet trans =
 
         DiagnosedAtAnotherFacilityPrefix ->
             { english = "You were diagnosed with"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wasuzumwe "
             }
 
         DiagnosedAtAnotherFacilitySuffix ->
             { english = "at another facility and were given medication. Which medication was given?"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ku rindi vuriro wagiyeho ugahabwa imiti. Ni iyihe miti wahawe"
             }
 
         DiagnosedByOutsideCare ->
             { english = "Diagnosed by outside care"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yasuzumiwe ku rindi vuriro"
             }
 
         Diagnosis ->
@@ -4038,12 +4038,12 @@ translationSet trans =
 
         EmergencyReferralHelperReferToHospitalForEvaluation ->
             { english = "Refer patient to hospital for further evaluation"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umurwayi ku bitaro kugirango asuzumwe byimbitse"
             }
 
         EmergencyReferralHelperReferToHospitalForImmediateDelivery ->
             { english = "Refer patient to hospital for immediate delivery"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umubyeyi aka kanya ku bitaro abyarireyo"
             }
 
         EmergencyReferralHelperReferToHospitalImmediately ->
@@ -4264,7 +4264,7 @@ translationSet trans =
 
         EPDSPreformedOn ->
             { english = "EPDS performed on"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igipimo cy'ukuntu yiyumva nyuma yo kubyara cyakozwe kuwa"
             }
 
         ErrorCheckLocalConfig ->
@@ -4813,32 +4813,32 @@ translationSet trans =
             case method of
                 ReliefMethodAvoidLargeMeals ->
                     { english = "Avoid large, fatty meals"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Irinde ibiribwa byinshi, byongera ibinure"
                     }
 
                 ReliefMethodCeaseSmoking ->
                     { english = "Cease smoking "
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hagarika kunywa itabi"
                     }
 
                 ReliefMethodAvoidAlcohom ->
                     { english = "Avoid alcohol consumption "
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Irinde kunywa ibisindisha"
                     }
 
                 ReliefMethodSleepWithHeadRaised ->
                     { english = "Sleep with their head raised in the bed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gerageza kuryama umutwe wegutse/useguye"
                     }
 
         HeartburnRecommendedTreatmentHeader ->
             { english = "This patient has signs of persistent heartburn"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi afite ikirungurira gihoraho"
             }
 
         HeartburnRecommendedTreatmentHelper ->
             { english = "Select the best treatment option for the patient below"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umuti ukwiye wo guha uyu murwayi"
             }
 
         HeartMurmur ->
@@ -4968,7 +4968,7 @@ translationSet trans =
             case result of
                 ResultSuppressedViralLoad ->
                     { english = "<20 copies"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Munsi ya kopi 20"
                     }
 
                 ResultDetectibleViralLoad value ->
@@ -5012,22 +5012,22 @@ translationSet trans =
             case sign of
                 HIVTreatmentNoMedicineNotSeenAtPMTCT ->
                     { english = "Never seen at PMTCT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntiyigeze agera muri PMTCT"
                     }
 
                 HIVTreatmentNoMedicineOutOfStock ->
                     { english = "Stock Out"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta miti iri mu bubiko"
                     }
 
                 HIVTreatmentNoMedicinePatientRefused ->
                     { english = "Patient Refused"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi yabyanze"
                     }
 
                 HIVTreatmentNoMedicineOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 -- We do not require translation for other signs.
@@ -5083,7 +5083,7 @@ translationSet trans =
 
         Hypertension ->
             { english = "Hypertension"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Indwara y'umuvuduko w'amaraso"
             }
 
         HypertensionBeforePregnancy ->
@@ -11507,7 +11507,7 @@ translationSet trans =
             case sign of
                 TreatmentPenecilin1 ->
                     { english = "IM x 1"
-                    , kinyarwanda = Just "IM inshuro 1 "
+                    , kinyarwanda = Just "IM inshuro 1"
                     }
 
                 TreatmentPenecilin3 ->
