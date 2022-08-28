@@ -82,7 +82,7 @@ viewActivity : Language -> NominalDate -> NCDActivity -> AssembledData -> ModelI
 viewActivity language currentDate activity assembled db model =
     case activity of
         DangerSigns ->
-            viewNCDDangerSignsContent language currentDate assembled model.dangerSignsData
+            viewDangerSignsContent language currentDate assembled model.dangerSignsData
 
         Examination ->
             -- @todo
@@ -105,8 +105,7 @@ viewActivity language currentDate activity assembled db model =
             []
 
         SymptomReview ->
-            -- viewSymptomReviewContent language currentDate assembled model.symptomReviewData
-            []
+            viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
         NextSteps ->
             -- @todo
@@ -114,8 +113,8 @@ viewActivity language currentDate activity assembled db model =
             []
 
 
-viewNCDDangerSignsContent : Language -> NominalDate -> AssembledData -> DangerSignsData -> List (Html Msg)
-viewNCDDangerSignsContent language currentDate assembled data =
+viewDangerSignsContent : Language -> NominalDate -> AssembledData -> DangerSignsData -> List (Html Msg)
+viewDangerSignsContent language currentDate assembled data =
     let
         form =
             assembled.measurements.dangerSigns
@@ -146,6 +145,75 @@ viewNCDDangerSignsContent language currentDate assembled data =
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                 , onClick <| SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
+viewSymptomReviewContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.symptomReview
+                |> getMeasurementValueFunc
+                |> symptomReviewFormWithDefault data.form
+
+        ( inputs, tasksCompleted, totalTasks ) =
+            ( [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+              , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+              , viewCheckBoxMultipleSelectInput language
+                    [ SwellingInLegs, UrinaryFrequency, Anxiety, WeightLoss, Palpitations, Tremor ]
+                    [ SwellingInFace, SwellingInAbdomen, DizzinessWithChangingPosition, MildHeadache ]
+                    (form.group1Symptoms |> Maybe.withDefault [])
+                    (Just NoNCDGroup1Symptoms)
+                    SetGroup1Symptom
+                    Translate.NCDGroup1Symptom
+              , viewQuestionLabel language Translate.PatientGotPainAnywhewre
+              , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+              , viewCheckBoxMultipleSelectInput language
+                    [ PainFlank, PainLowerBack, PainFeet ]
+                    [ PainAbdomen, PainNeck ]
+                    (form.painSymptoms |> Maybe.withDefault [])
+                    (Just NoNCDPainSymptoms)
+                    SetPainSymptom
+                    Translate.NCDPainSymptom
+              , viewQuestionLabel language Translate.PatientGotAnySymptoms
+              , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+              , viewCheckBoxMultipleSelectInput language
+                    [ WeaknessOfOneSideOfTheBody
+                    , ProblemsWithWalking
+                    , ProblemsWithTalking
+                    , DecreasedVision
+                    , BlurryVision
+                    , IncreasedFatigueWithDailyActivities
+                    ]
+                    [ ShortOfBreathWhenLayingDown
+                    , ShortOfBreathAtNight
+                    , KidneyProblems
+                    , NCDIncreasedThirst
+                    ]
+                    (form.group2Symptoms |> Maybe.withDefault [])
+                    (Just NoNCDGroup2Symptoms)
+                    SetGroup2Symptom
+                    Translate.NCDGroup2Symptom
+              ]
+            , taskCompleted form.group1Symptoms + taskCompleted form.painSymptoms + taskCompleted form.group2Symptoms
+            , 3
+            )
+
+        -- PatientGotPainAnywhewre
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form symptom-review" ] inputs
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview
                 ]
                 [ text <| translate language Translate.Save ]
             ]

@@ -11,6 +11,11 @@ type Msg
       -- DangerSignsMsgs
     | SetDangerSign NCDDangerSign
     | SaveDangerSigns PersonId (Maybe ( NCDDangerSignsId, NCDDangerSigns ))
+      -- SymptomReviewMsgs
+    | SetGroup1Symptom NCDGroup1Symptom
+    | SetGroup2Symptom NCDGroup2Symptom
+    | SetPainSymptom NCDPainSymptom
+    | SaveSymptomReview PersonId (Maybe ( NCDSymptomReviewId, NCDSymptomReview ))
 
 
 type alias Model =

@@ -1993,6 +1993,7 @@ div.page-activity.well-child {
 
     .helper {
       font-style: italic;
+      margin-top: -10px;
     }
 
     .ui.form {
@@ -2004,18 +2005,22 @@ div.page-activity.well-child {
         width: 100%;
         border: 1px solid;
       }
-    }
-    
-    .ui.checkbox.activity {
-      margin-top: 30px;
 
-      label {
-        padding-left: 40px;
+      .checkbox-select-input {
+        margin-bottom: 40px;
       }
 
-      label:before,
-      label:after {
-        left: 0;
+      .checkbox-select-input .ui.checkbox.activity {
+        margin-top: 30px;
+
+        label {
+          padding-left: 40px;
+        }
+
+        label:before,
+        label:after {
+          left: 0;
+        }
       }
     }
   }

@@ -820,6 +820,9 @@ type TranslationId
     | NationalIdNumber
     | NCDActivityTitle NCDActivity
     | NCDDangerSign NCDDangerSign
+    | NCDGroup1Symptom NCDGroup1Symptom
+    | NCDGroup2Symptom NCDGroup2Symptom
+    | NCDPainSymptom NCDPainSymptom
     | Neck
     | NeckCPESign NeckCPESign
     | NegativeLabel
@@ -913,6 +916,7 @@ type TranslationId
     | PatientExhibitAnyRespiratoryFindings
     | PatientGotAnyDangerSigns
     | PatientGotAnySymptoms
+    | PatientGotPainAnywhewre
     | PatientProgress
     | PatientRecord
     | PatientInformation
@@ -6920,6 +6924,152 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        NCDGroup1Symptom symptom ->
+            case symptom of
+                SwellingInLegs ->
+                    { english = "Swelling in Legs"
+                    , kinyarwanda = Nothing
+                    }
+
+                UrinaryFrequency ->
+                    { english = "Urinary Frequency"
+                    , kinyarwanda = Nothing
+                    }
+
+                Anxiety ->
+                    { english = "Anxiety"
+                    , kinyarwanda = Nothing
+                    }
+
+                WeightLoss ->
+                    { english = "Weight Loss"
+                    , kinyarwanda = Nothing
+                    }
+
+                Palpitations ->
+                    { english = "Palpitations"
+                    , kinyarwanda = Nothing
+                    }
+
+                Tremor ->
+                    { english = "Tremor"
+                    , kinyarwanda = Nothing
+                    }
+
+                SwellingInFace ->
+                    { english = "Swelling in Face"
+                    , kinyarwanda = Nothing
+                    }
+
+                SwellingInAbdomen ->
+                    { english = "Swelling in Abdomen"
+                    , kinyarwanda = Nothing
+                    }
+
+                DizzinessWithChangingPosition ->
+                    { english = "Dizziness with Changing Position"
+                    , kinyarwanda = Nothing
+                    }
+
+                MildHeadache ->
+                    { english = "Mild Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDGroup1Symptoms ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDGroup2Symptom symptom ->
+            case symptom of
+                WeaknessOfOneSideOfTheBody ->
+                    { english = "Weakness of One Side of the Body"
+                    , kinyarwanda = Nothing
+                    }
+
+                ProblemsWithWalking ->
+                    { english = "Problems with Walking"
+                    , kinyarwanda = Nothing
+                    }
+
+                ProblemsWithTalking ->
+                    { english = "Problems with Talking"
+                    , kinyarwanda = Nothing
+                    }
+
+                DecreasedVision ->
+                    { english = "Decreased Vision"
+                    , kinyarwanda = Nothing
+                    }
+
+                BlurryVision ->
+                    { english = "Blurry Vision"
+                    , kinyarwanda = Nothing
+                    }
+
+                IncreasedFatigueWithDailyActivities ->
+                    { english = "Increased Fatigue with Daily Activities"
+                    , kinyarwanda = Nothing
+                    }
+
+                ShortOfBreathWhenLayingDown ->
+                    { english = "Short of Breath When Laying Down"
+                    , kinyarwanda = Nothing
+                    }
+
+                ShortOfBreathAtNight ->
+                    { english = "Short of Breath at Night"
+                    , kinyarwanda = Nothing
+                    }
+
+                KidneyProblems ->
+                    { english = "Kidney Problems"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDIncreasedThirst ->
+                    { english = "Increased Thirst"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDGroup2Symptoms ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDPainSymptom symptom ->
+            case symptom of
+                PainFlank ->
+                    { english = "Flank"
+                    , kinyarwanda = Nothing
+                    }
+
+                PainLowerBack ->
+                    { english = "Lower Back"
+                    , kinyarwanda = Nothing
+                    }
+
+                PainFeet ->
+                    { english = "Feet"
+                    , kinyarwanda = Nothing
+                    }
+
+                PainNeck ->
+                    { english = "Neck"
+                    , kinyarwanda = Nothing
+                    }
+
+                PainAbdomen ->
+                    { english = "Abdomen"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDPainSymptoms ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
         Neck ->
             { english = "Neck"
             , kinyarwanda = Just "Ijosi"
@@ -7915,6 +8065,11 @@ translationSet trans =
         PatientGotAnySymptoms ->
             { english = "Does the patient have any of these symptoms"
             , kinyarwanda = Just "Umurwayi yaba afite bimwe muri ibi bimenyetso"
+            }
+
+        PatientGotPainAnywhewre ->
+            { english = "Does the patient have pain anywhere"
+            , kinyarwanda = Nothing
             }
 
         PatientProgress ->
