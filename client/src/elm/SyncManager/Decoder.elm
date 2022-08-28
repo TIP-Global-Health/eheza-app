@@ -548,8 +548,8 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "ncd_danger_signs" ->
                         doDecode
-                            Backend.Measurement.Decoder.decodeNCDCoMorbidities
-                            BackendAuthorityNCDCoMorbidities
+                            Backend.Measurement.Decoder.decodeNCDDangerSigns
+                            BackendAuthorityNCDDangerSigns
 
                     "ncd_encounter" ->
                         doDecode
