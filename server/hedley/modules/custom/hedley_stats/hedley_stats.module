@@ -1018,7 +1018,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
   }
 
   if (empty($fbf_clinics)) {
-    $result = [[],[]];
+    $result = [[], []];
     // No clinics found.
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id, NULL, $result);
     return $result;
