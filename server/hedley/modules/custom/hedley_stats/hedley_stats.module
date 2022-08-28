@@ -523,7 +523,9 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
 
   $individual_participants = array_keys($result);
   if (empty($individual_participants)) {
-    return [];
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA, $health_center_id, NULL, $result);
+    return $result;
   }
 
   // For each illness, pull the patient and outcome data.
@@ -704,7 +706,9 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $result = hedley_stats_run_node_query_in_batches($query);
 
   if (empty($result)) {
-    return [];
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id, NULL, $result);
+    return $result;
   }
 
   $items = [];
@@ -1008,14 +1012,16 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
  * @throws \Exception
  */
 function hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, array $fbf_clinics) {
-  if (empty($fbf_clinics)) {
-    // No clinics found.
-    return [];
-  }
-
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id)) {
     return $cache_data;
+  }
+
+  if (empty($fbf_clinics)) {
+    $result = [[],[]];
+    // No clinics found.
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id, NULL, $result);
+    return $result;
   }
 
   $periods = [
@@ -1993,8 +1999,8 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
 
     case HEDLEY_STATS_CACHE_SET:
       $cached = [
-       'timestamp' => time(),
-       'value' => $cache_data,
+        'timestamp' => time(),
+        'value' => $cache_data,
       ];
       cache_set($cache_id, $cached);
       break;
