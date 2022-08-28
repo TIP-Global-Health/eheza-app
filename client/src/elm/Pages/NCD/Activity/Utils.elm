@@ -7,6 +7,7 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
@@ -27,6 +28,12 @@ expectActivity currentDate assembled db activity =
         SymptomReview ->
             True
 
+        Examination ->
+            True
+
+        FamilyPlanning ->
+            isPersonAFertileWoman currentDate assembled.person
+
         -- @todo
         _ ->
             True
@@ -40,6 +47,14 @@ activityCompleted currentDate assembled db activity =
 
         SymptomReview ->
             isJust assembled.measurements.symptomReview
+
+        Examination ->
+            isJust assembled.measurements.coreExam
+                && isJust assembled.measurements.vitals
+
+        FamilyPlanning ->
+            (not <| expectActivity currentDate assembled db FamilyPlanning)
+                || isJust assembled.measurements.familyPlanning
 
         -- @todo
         _ ->
