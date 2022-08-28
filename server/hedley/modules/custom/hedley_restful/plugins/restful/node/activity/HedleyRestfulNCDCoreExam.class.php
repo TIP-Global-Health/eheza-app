@@ -11,4 +11,3 @@
 class HedleyRestfulNCDCoreExam extends HedleyRestfulNCDActivityBase {
 
 }
-
