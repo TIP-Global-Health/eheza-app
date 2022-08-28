@@ -1036,3 +1036,21 @@ insertIntoSet value set =
     Maybe.map (EverySet.insert value) set
         |> Maybe.withDefault (EverySet.singleton value)
         |> Just
+
+
+saveButton : Language -> Bool -> msg -> Html msg
+saveButton language active msg =
+    customSaveButton language active msg Translate.Save
+
+
+customSaveButton : Language -> Bool -> msg -> Translate.TranslationId -> Html msg
+customSaveButton language active msg label =
+    button
+        [ classList
+            [ ( "ui fluid primary button", True )
+            , ( "active", active )
+            , ( "disabled", not active )
+            ]
+        , onClick msg
+        ]
+        [ text <| translate language label ]

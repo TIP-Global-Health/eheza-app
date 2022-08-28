@@ -25,7 +25,8 @@ import Pages.NCD.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( taskCompleted
+        ( saveButton
+        , taskCompleted
         , viewCheckBoxMultipleSelectInput
         , viewCustomLabel
         , viewLabel
@@ -141,13 +142,9 @@ viewDangerSignsContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form danger-signs" ] inputs
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , saveButton language
+            (tasksCompleted /= totalTasks)
+            (SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns)
         ]
     ]
 
@@ -202,21 +199,15 @@ viewSymptomReviewContent language currentDate assembled data =
             , taskCompleted form.group1Symptoms + taskCompleted form.painSymptoms + taskCompleted form.group2Symptoms
             , 3
             )
-
-        -- PatientGotPainAnywhewre
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form symptom-review" ] inputs
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , saveButton language
+            (tasksCompleted /= totalTasks)
+            (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
         ]
     ]
 
@@ -240,12 +231,8 @@ viewFamilyPlanningContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ viewFamilyPlanningForm language Translate.FamilyPlanningCurentlyQuestion SetFamilyPlanningSign form
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , saveButton language
+            (tasksCompleted /= totalTasks)
+            (SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning)
         ]
     ]

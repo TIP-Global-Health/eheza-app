@@ -67,8 +67,10 @@ import Pages.Prenatal.Utils exposing (..)
 import Pages.Prenatal.View exposing (customWarningPopup, viewMedicationDistributionForm, viewPauseEncounterButton)
 import Pages.Utils
     exposing
-        ( emptySelectOption
+        ( customSaveButton
+        , emptySelectOption
         , isTaskCompleted
+        , saveButton
         , taskAllCompleted
         , taskCompleted
         , tasksBarId
@@ -4829,21 +4831,3 @@ viewWarning language maybeMessage =
                 div [ class "five wide column" ]
                     [ text message ]
             )
-
-
-saveButton : Language -> Bool -> Msg -> Html Msg
-saveButton language active msg =
-    customSaveButton language active msg Translate.Save
-
-
-customSaveButton : Language -> Bool -> Msg -> Translate.TranslationId -> Html Msg
-customSaveButton language active msg label =
-    button
-        [ classList
-            [ ( "ui fluid primary button", True )
-            , ( "active", active )
-            , ( "disabled", not active )
-            ]
-        , onClick msg
-        ]
-        [ text <| translate language label ]
