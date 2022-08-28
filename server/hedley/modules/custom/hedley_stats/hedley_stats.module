@@ -1978,7 +1978,7 @@ function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY
  * @param string $period
  *   Optional; A period for the cache ID.
  * @param mixed $cache_data
- *   Optional; The cache data to set, if empty it won't be set.
+ *   Optional; The cache data to set.
  *
  * @return mixed|null
  *   Either the cache data or nothing if we are setting it.
@@ -1988,13 +1988,15 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
 
   switch ($method) {
     case HEDLEY_STATS_CACHE_GET:
-      $cache = cache_get($cache_id);
-      return !empty($cache) ? $cache->data : NULL;
+      $cached = cache_get($cache_id);
+      return !empty($cached) ? $cached->data['value'] : NULL;
 
     case HEDLEY_STATS_CACHE_SET:
-      if ($cache_data) {
-        cache_set($cache_id, $cache_data);
-      }
+      $cached = [
+       'timestamp' => time(),
+       'value' => $cache_data,
+      ];
+      cache_set($cache_id, $cached);
       break;
 
     case HEDLEY_STATS_CACHE_CLEAR:
