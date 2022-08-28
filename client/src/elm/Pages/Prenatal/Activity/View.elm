@@ -32,8 +32,16 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (vaccinationFormWithDefault, vitalsFormWithDefault)
+import Measurement.Model
+    exposing
+        ( CorePhysicalExamForm
+        , InvokationModule(..)
+        , SendToHCForm
+        , VaccinationFormViewMode(..)
+        , VitalsForm
+        , VitalsFormMode(..)
+        )
+import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vaccinationFormWithDefault, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)

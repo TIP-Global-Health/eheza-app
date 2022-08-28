@@ -469,3 +469,40 @@ type alias VaccinationFormDynamicContentAndTasksConfig msg =
     , getIntervalForVaccine : VaccineDose -> ( Int, Unit )
     , firstDoseExpectedFrom : NominalDate
     }
+
+
+type alias CorePhysicalExamForm =
+    { brittleHair : Maybe Bool
+    , paleConjuctiva : Maybe Bool
+    , neck : Maybe (List NeckCPESign)
+    , heart : Maybe HeartCPESign
+    , heartMurmur : Maybe Bool
+    , lungs : Maybe (List LungsCPESign)
+    , abdomen : Maybe (List AbdomenCPESign)
+    , hands : Maybe (List HandsCPESign)
+    , legs : Maybe (List LegsCPESign)
+    }
+
+
+emptyCorePhysicalExamForm : CorePhysicalExamForm
+emptyCorePhysicalExamForm =
+    { brittleHair = Nothing
+    , paleConjuctiva = Nothing
+    , neck = Nothing
+    , heart = Nothing
+    , heartMurmur = Nothing
+    , lungs = Nothing
+    , abdomen = Nothing
+    , hands = Nothing
+    , legs = Nothing
+    }
+
+
+type alias FamilyPlanningForm =
+    { signs : Maybe (List FamilyPlanningSign)
+    }
+
+
+emptyFamilyPlanningForm : FamilyPlanningForm
+emptyFamilyPlanningForm =
+    FamilyPlanningForm Nothing

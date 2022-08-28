@@ -3,6 +3,16 @@ module Pages.NCD.Activity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
+import Measurement.Model
+    exposing
+        ( CorePhysicalExamForm
+        , FamilyPlanningForm
+        , VitalsForm
+        , emptyCorePhysicalExamForm
+        , emptyFamilyPlanningForm
+        , emptyVitalsForm
+        )
+import Pages.NCD.Activity.Types exposing (..)
 import Pages.Page exposing (Page)
 
 
@@ -21,6 +31,8 @@ type Msg
 type alias Model =
     { dangerSignsData : DangerSignsData
     , symptomReviewData : SymptomReviewData
+    , examinationData : ExaminationData
+    , familyPlanningData : FamilyPlanningData
     }
 
 
@@ -28,6 +40,8 @@ emptyModel : Model
 emptyModel =
     { dangerSignsData = emptyDangerSignsData
     , symptomReviewData = emptySymptomReviewData
+    , examinationData = emptyExaminationData
+    , familyPlanningData = emptyFamilyPlanningData
     }
 
 
@@ -73,3 +87,29 @@ type alias SymptomReviewForm =
 emptySymptomReviewForm : SymptomReviewForm
 emptySymptomReviewForm =
     SymptomReviewForm Nothing Nothing Nothing
+
+
+type alias ExaminationData =
+    { vitalsForm : VitalsForm
+    , corePhysicalExamForm : CorePhysicalExamForm
+    , activeTask : Maybe ExaminationTask
+    }
+
+
+emptyExaminationData : ExaminationData
+emptyExaminationData =
+    { vitalsForm = emptyVitalsForm
+    , corePhysicalExamForm = emptyCorePhysicalExamForm
+    , activeTask = Nothing
+    }
+
+
+type alias FamilyPlanningData =
+    { form : FamilyPlanningForm
+    }
+
+
+emptyFamilyPlanningData : FamilyPlanningData
+emptyFamilyPlanningData =
+    { form = emptyFamilyPlanningForm
+    }
