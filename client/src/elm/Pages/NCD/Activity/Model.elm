@@ -8,60 +8,63 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
+      -- DangerSignsMsgs
+    | SetDangerSign NCDDangerSign
+    | SaveDangerSigns PersonId (Maybe ( NCDDangerSignsId, NCDDangerSigns ))
 
 
 type alias Model =
-    { dangerSignsData : NCDDangerSignsData
-    , symptomReviewData : NCDSymptomReviewData
+    { dangerSignsData : DangerSignsData
+    , symptomReviewData : SymptomReviewData
     }
 
 
 emptyModel : Model
 emptyModel =
-    { dangerSignsData = emptyNCDDangerSignsData
-    , symptomReviewData = emptyNCDSymptomReviewData
+    { dangerSignsData = emptyDangerSignsData
+    , symptomReviewData = emptySymptomReviewData
     }
 
 
-type alias NCDDangerSignsData =
-    { form : NCDDangerSignsForm
+type alias DangerSignsData =
+    { form : DangerSignsForm
     }
 
 
-emptyNCDDangerSignsData : NCDDangerSignsData
-emptyNCDDangerSignsData =
-    { form = emptyNCDDangerSignsForm
+emptyDangerSignsData : DangerSignsData
+emptyDangerSignsData =
+    { form = emptyDangerSignsForm
     }
 
 
-type alias NCDDangerSignsForm =
+type alias DangerSignsForm =
     { signs : Maybe (List NCDDangerSign)
     }
 
 
-emptyNCDDangerSignsForm : NCDDangerSignsForm
-emptyNCDDangerSignsForm =
-    NCDDangerSignsForm Nothing
+emptyDangerSignsForm : DangerSignsForm
+emptyDangerSignsForm =
+    DangerSignsForm Nothing
 
 
-type alias NCDSymptomReviewData =
-    { form : NCDSymptomReviewForm
+type alias SymptomReviewData =
+    { form : SymptomReviewForm
     }
 
 
-emptyNCDSymptomReviewData : NCDSymptomReviewData
-emptyNCDSymptomReviewData =
-    { form = emptyNCDSymptomReviewForm
+emptySymptomReviewData : SymptomReviewData
+emptySymptomReviewData =
+    { form = emptySymptomReviewForm
     }
 
 
-type alias NCDSymptomReviewForm =
+type alias SymptomReviewForm =
     { group1Symptoms : Maybe (List NCDGroup1Symptom)
     , group2Symptoms : Maybe (List NCDGroup2Symptom)
     , painSymptoms : Maybe (List NCDPainSymptom)
     }
 
 
-emptyNCDSymptomReviewForm : NCDSymptomReviewForm
-emptyNCDSymptomReviewForm =
-    NCDSymptomReviewForm Nothing Nothing Nothing
+emptySymptomReviewForm : SymptomReviewForm
+emptySymptomReviewForm =
+    SymptomReviewForm Nothing Nothing Nothing

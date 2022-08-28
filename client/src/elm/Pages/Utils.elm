@@ -19,7 +19,7 @@ import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -100,6 +100,76 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
                         ]
                 )
             |> Maybe.withDefault emptyNode
+        ]
+    ]
+
+
+viewPersonDetailsExtended : Language -> NominalDate -> Person -> List (Html any)
+viewPersonDetailsExtended language currentDate person =
+    let
+        isAdult =
+            isPersonAnAdult currentDate person
+                |> Maybe.withDefault True
+
+        isAboveAgeOf2Years =
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age >= 2)
+                |> Maybe.withDefault False
+
+        ( thumbnailClass, ageEntry ) =
+            if isAdult then
+                ( "mother"
+                , ageInYears currentDate person
+                    |> Maybe.map (\ageYears -> viewEntry Translate.AgeWord (Translate.YearsOld ageYears |> translate language))
+                    |> Maybe.withDefault emptyNode
+                )
+
+            else
+                let
+                    renderAgeFunc =
+                        if isAboveAgeOf2Years then
+                            renderAgeYearsMonths
+
+                        else
+                            renderAgeMonthsDays
+                in
+                ( "child"
+                , person.birthDate
+                    |> Maybe.map
+                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate))
+                    |> Maybe.withDefault emptyNode
+                )
+
+        dateOfBirthEntry =
+            Maybe.map
+                (\birthDate ->
+                    viewEntry Translate.DateOfBirth (formatDDMMYYYY birthDate)
+                )
+                person.birthDate
+                |> Maybe.withDefault emptyNode
+
+        genderEntry =
+            viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)
+
+        villageEntry =
+            Maybe.map (viewEntry Translate.Village) person.village
+                |> Maybe.withDefault emptyNode
+
+        viewEntry labelTransId content =
+            p []
+                [ span [ class "label" ] [ text <| translate language labelTransId ++ ": " ]
+                , span [] [ text content ]
+                ]
+    in
+    [ div [ class "ui image" ]
+        [ thumbnailImage thumbnailClass person.avatarUrl person.name 140 140 ]
+    , div [ class "details" ]
+        [ h2 [ class "ui header" ]
+            [ text person.name ]
+        , ageEntry
+        , dateOfBirthEntry
+        , genderEntry
+        , villageEntry
         ]
     ]
 

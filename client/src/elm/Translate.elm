@@ -819,6 +819,7 @@ type TranslationId
     | Name
     | NationalIdNumber
     | NCDActivityTitle NCDActivity
+    | NCDDangerSign NCDDangerSign
     | Neck
     | NeckCPESign NeckCPESign
     | NegativeLabel
@@ -910,6 +911,7 @@ type TranslationId
     | PatientDiagnosedWithLabel
     | PatientExhibitAnyFindings
     | PatientExhibitAnyRespiratoryFindings
+    | PatientGotAnyDangerSigns
     | PatientGotAnySymptoms
     | PatientProgress
     | PatientRecord
@@ -6876,6 +6878,48 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
 
+        NCDDangerSign sign ->
+            case sign of
+                Dyspnea ->
+                    { english = "Acute Shortness of Breath (Dyspnea)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VisionChanges ->
+                    { english = "Vision Changes"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChestPain ->
+                    { english = "Chest Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                FlankPain ->
+                    { english = "Flank Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                Hematuria ->
+                    { english = "Blood in Urine (Hematuria)"
+                    , kinyarwanda = Nothing
+                    }
+
+                SevereHeadaches ->
+                    { english = "Severe Headaches"
+                    , kinyarwanda = Nothing
+                    }
+
+                LossOfConciousness ->
+                    { english = "Loss of Conciousness Since Last Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDDangerSigns ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
         Neck ->
             { english = "Neck"
             , kinyarwanda = Just "Ijosi"
@@ -7861,6 +7905,11 @@ translationSet trans =
         PatientExhibitAnyRespiratoryFindings ->
             { english = "Does the patient exhibit any of these Respiratory findings"
             , kinyarwanda = Just "Umurwayi agaragaza bimwe muri ibi bimenyetso by'ubuhumekero"
+            }
+
+        PatientGotAnyDangerSigns ->
+            { english = "Does the patient have any of these danger signs"
+            , kinyarwanda = Nothing
             }
 
         PatientGotAnySymptoms ->

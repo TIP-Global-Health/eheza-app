@@ -31,3 +31,23 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | closeNCDEncounter = data }
             , Cmd.none
             )
+
+        SaveDangerSigns personId valueId value ->
+            ( { model | saveDangerSigns = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdDangerSignsEndpoint HandleSavedDangerSigns
+            )
+
+        HandleSavedDangerSigns data ->
+            ( { model | saveDangerSigns = data }
+            , Cmd.none
+            )
+
+        SaveSymptomReview personId valueId value ->
+            ( { model | saveSymptomReview = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdSymptomReviewEndpoint HandleSavedSymptomReview
+            )
+
+        HandleSavedSymptomReview data ->
+            ( { model | saveSymptomReview = data }
+            , Cmd.none
+            )

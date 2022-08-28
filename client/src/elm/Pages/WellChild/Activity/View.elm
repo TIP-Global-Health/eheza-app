@@ -51,6 +51,7 @@ import Pages.Utils
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
+        , viewPersonDetailsExtended
         , viewPreviousMeasurement
         , viewQuestionLabel
         , viewSaveAction
@@ -60,7 +61,6 @@ import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Activity.Utils exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
-import Pages.WellChild.Encounter.View exposing (viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
@@ -114,7 +114,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate zscores id isChw activity db model assembled =
-    ((viewPersonDetails language currentDate assembled.person |> div [ class "item" ])
+    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
         :: viewActivity language currentDate zscores id isChw activity assembled db model
     )
         |> div [ class "ui unstackable items" ]

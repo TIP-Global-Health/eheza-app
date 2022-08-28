@@ -29,15 +29,23 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeNCDEncounter : WebData ()
+    , saveDangerSigns : WebData ()
+    , saveSymptomReview : WebData ()
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeNCDEncounter = NotAsked
+    , saveDangerSigns = NotAsked
+    , saveSymptomReview = NotAsked
     }
 
 
 type Msg
     = CloseNCDEncounter
     | HandleClosedNCDEncounter (WebData ())
+    | SaveDangerSigns PersonId (Maybe NCDDangerSignsId) NCDDangerSignsValue
+    | HandleSavedDangerSigns (WebData ())
+    | SaveSymptomReview PersonId (Maybe NCDSymptomReviewId) NCDSymptomReviewValue
+    | HandleSavedSymptomReview (WebData ())

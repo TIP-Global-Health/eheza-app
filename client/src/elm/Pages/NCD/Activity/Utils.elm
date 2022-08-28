@@ -46,8 +46,8 @@ activityCompleted currentDate assembled db activity =
             False
 
 
-ncdDangerSignsFormWithDefault : NCDDangerSignsForm -> Maybe NCDDangerSignsValue -> NCDDangerSignsForm
-ncdDangerSignsFormWithDefault form saved =
+dangerSignsFormWithDefault : DangerSignsForm -> Maybe NCDDangerSignsValue -> DangerSignsForm
+dangerSignsFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -56,19 +56,19 @@ ncdDangerSignsFormWithDefault form saved =
             )
 
 
-toNCDDangerSignsValueWithDefault : Maybe NCDDangerSignsValue -> NCDDangerSignsForm -> Maybe NCDDangerSignsValue
-toNCDDangerSignsValueWithDefault saved form =
-    ncdDangerSignsFormWithDefault form saved
-        |> toNCDDangerSignsValue
+toDangerSignsValueWithDefault : Maybe NCDDangerSignsValue -> DangerSignsForm -> Maybe NCDDangerSignsValue
+toDangerSignsValueWithDefault saved form =
+    dangerSignsFormWithDefault form saved
+        |> toDangerSignsValue
 
 
-toNCDDangerSignsValue : NCDDangerSignsForm -> Maybe NCDDangerSignsValue
-toNCDDangerSignsValue form =
+toDangerSignsValue : DangerSignsForm -> Maybe NCDDangerSignsValue
+toDangerSignsValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NoNCDDangerSigns) form.signs
 
 
-ncdSymptomReviewFormWithDefault : NCDSymptomReviewForm -> Maybe NCDSymptomReviewValue -> NCDSymptomReviewForm
-ncdSymptomReviewFormWithDefault form saved =
+symptomReviewFormWithDefault : SymptomReviewForm -> Maybe NCDSymptomReviewValue -> SymptomReviewForm
+symptomReviewFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -80,14 +80,14 @@ ncdSymptomReviewFormWithDefault form saved =
             )
 
 
-toNCDSymptomReviewValueWithDefault : Maybe NCDSymptomReviewValue -> NCDSymptomReviewForm -> Maybe NCDSymptomReviewValue
-toNCDSymptomReviewValueWithDefault saved form =
-    ncdSymptomReviewFormWithDefault form saved
-        |> toNCDSymptomReviewValue
+toSymptomReviewValueWithDefault : Maybe NCDSymptomReviewValue -> SymptomReviewForm -> Maybe NCDSymptomReviewValue
+toSymptomReviewValueWithDefault saved form =
+    symptomReviewFormWithDefault form saved
+        |> toSymptomReviewValue
 
 
-toNCDSymptomReviewValue : NCDSymptomReviewForm -> Maybe NCDSymptomReviewValue
-toNCDSymptomReviewValue form =
+toSymptomReviewValue : SymptomReviewForm -> Maybe NCDSymptomReviewValue
+toSymptomReviewValue form =
     let
         group1Symptoms =
             Maybe.map (EverySet.fromList >> ifEverySetEmpty NoNCDGroup1Symptoms) form.group1Symptoms
