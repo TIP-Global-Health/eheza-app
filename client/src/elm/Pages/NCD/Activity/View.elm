@@ -16,6 +16,8 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Utils exposing (familyPlanningFormWithDefault)
+import Measurement.View exposing (viewFamilyPlanningForm)
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
 import Pages.NCD.Encounter.Model exposing (AssembledData)
@@ -90,9 +92,7 @@ viewActivity language currentDate activity assembled db model =
             []
 
         FamilyPlanning ->
-            -- @todo
-            -- viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
-            []
+            viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
 
         Laboratory ->
             -- @todo
@@ -214,6 +214,36 @@ viewSymptomReviewContent language currentDate assembled data =
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                 , onClick <| SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewFamilyPlanningContent : Language -> NominalDate -> AssembledData -> FamilyPlanningData -> List (Html Msg)
+viewFamilyPlanningContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.familyPlanning
+                |> getMeasurementValueFunc
+                |> familyPlanningFormWithDefault data.form
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted form.signs
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewFamilyPlanningForm language Translate.FamilyPlanningCurentlyQuestion SetFamilyPlanningSign form
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning
                 ]
                 [ text <| translate language Translate.Save ]
             ]

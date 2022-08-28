@@ -1136,3 +1136,24 @@ toCorePhysicalExamValue form =
         |> andMap (Maybe.map EverySet.fromList form.abdomen)
         |> andMap (Maybe.map EverySet.fromList form.hands)
         |> andMap (Maybe.map EverySet.fromList form.legs)
+
+
+familyPlanningFormWithDefault : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm
+familyPlanningFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just) }
+            )
+
+
+toFamilyPlanningValueWithDefault : Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
+toFamilyPlanningValueWithDefault saved form =
+    familyPlanningFormWithDefault form saved
+        |> toFamilyPlanningValue
+
+
+toFamilyPlanningValue : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
+toFamilyPlanningValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoFamilyPlanning) form.signs

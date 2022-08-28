@@ -26,6 +26,9 @@ type Msg
     | SetGroup2Symptom NCDGroup2Symptom
     | SetPainSymptom NCDPainSymptom
     | SaveSymptomReview PersonId (Maybe ( NCDSymptomReviewId, NCDSymptomReview ))
+      -- FamilyPlanningMsgs
+    | SetFamilyPlanningSign FamilyPlanningSign
+    | SaveFamilyPlanning PersonId (Maybe ( NCDFamilyPlanningId, NCDFamilyPlanning ))
 
 
 type alias Model =

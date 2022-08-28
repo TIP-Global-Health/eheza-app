@@ -41,8 +41,21 @@ import Measurement.Model
         , VitalsForm
         , VitalsFormMode(..)
         )
-import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vaccinationFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.Utils
+    exposing
+        ( corePhysicalExamFormWithDefault
+        , familyPlanningFormWithDefault
+        , vaccinationFormWithDefault
+        , vitalsFormWithDefault
+        )
+import Measurement.View
+    exposing
+        ( viewActionTakenLabel
+        , viewFamilyPlanningForm
+        , viewFamilyPlanningInput
+        , viewSendToHealthCenterForm
+        , viewSendToHospitalForm
+        )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -965,16 +978,7 @@ viewFamilyPlanningContent language currentDate assembled data =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form family-planning" ]
-                [ viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
-                , viewCheckBoxMultipleSelectInput language
-                    [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
-                    [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
-                    (form.signs |> Maybe.withDefault [])
-                    (Just NoFamilyPlanning)
-                    SetFamilyPlanningSign
-                    Translate.FamilyPlanningSignLabel
-                ]
+            [ viewFamilyPlanningForm language Translate.FamilyPlanningInFutureQuestion SetFamilyPlanningSign form
             ]
         , div [ class "actions" ]
             [ button
@@ -1283,13 +1287,7 @@ viewBirthPlanContent language currentDate assembled data =
                     "saved-money"
                     Nothing
                 , viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
-                , viewCheckBoxMultipleSelectInput language
-                    [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
-                    [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
-                    (form.familyPlanning |> Maybe.withDefault [])
-                    (Just NoFamilyPlanning)
-                    SetBirthPlanFamilyPlanning
-                    Translate.FamilyPlanningSignLabel
+                , viewFamilyPlanningInput language SetBirthPlanFamilyPlanning form.familyPlanning
                 , viewQuestionLabel language Translate.TransportationPlanQuestion
                 , viewBoolInput
                     language

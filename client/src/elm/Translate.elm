@@ -592,6 +592,7 @@ type TranslationId
     | Failure
     | FamilyInformation
     | FamilyMembers
+    | FamilyPlanningCurentlyQuestion
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
@@ -4477,6 +4478,11 @@ translationSet trans =
         FamilyMembers ->
             { english = "Family Members"
             , kinyarwanda = Just "Abagize umuryango"
+            }
+
+        FamilyPlanningCurentlyQuestion ->
+            { english = "Which, if any, of the following methods do you use"
+            , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha"
             }
 
         FamilyPlanningInFutureQuestion ->

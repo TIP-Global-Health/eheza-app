@@ -4,6 +4,8 @@ module Measurement.View exposing
     , viewChild
     , viewColorAlertIndication
     , viewContributingFactorsForm
+    , viewFamilyPlanningForm
+    , viewFamilyPlanningInput
     , viewFollowUpForm
     , viewHealthEducationForm
     , viewMeasurementFloatDiff
@@ -2079,3 +2081,22 @@ viewFbfForm language measurement activity clinicType setDistributedAmountMsg set
                 measurement
                 Nothing
         ]
+
+
+viewFamilyPlanningForm : Language -> TranslationId -> (FamilyPlanningSign -> msg) -> FamilyPlanningForm -> Html msg
+viewFamilyPlanningForm language questionTransId setFamilyPlanningSignMsg form =
+    div [ class "ui form family-planning" ]
+        [ viewQuestionLabel language questionTransId
+        , viewFamilyPlanningInput language setFamilyPlanningSignMsg form.signs
+        ]
+
+
+viewFamilyPlanningInput : Language -> (FamilyPlanningSign -> msg) -> Maybe (List FamilyPlanningSign) -> Html msg
+viewFamilyPlanningInput language setFamilyPlanningSignMsg currentValue =
+    viewCheckBoxMultipleSelectInput language
+        [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
+        [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
+        (Maybe.withDefault [] currentValue)
+        (Just NoFamilyPlanning)
+        setFamilyPlanningSignMsg
+        Translate.FamilyPlanningSignLabel

@@ -6,7 +6,8 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model
     exposing
-        ( NCDDangerSign(..)
+        ( FamilyPlanningSign(..)
+        , NCDDangerSign(..)
         , NCDGroup1Symptom(..)
         , NCDGroup2Symptom(..)
         , NCDPainSymptom(..)
@@ -16,6 +17,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Utils exposing (familyPlanningFormWithDefault, toFamilyPlanningValueWithDefault)
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -28,8 +30,7 @@ update currentDate id db msg model =
     let
         symptomReviewForm =
             Dict.get id db.ncdMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
                     (.symptomReview
                         >> getMeasurementValueFunc
@@ -168,6 +169,60 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.NCDEncounter.Model.SaveSymptomReview personId measurementId value
+                                    |> Backend.Model.MsgNCDEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| NCDEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetFamilyPlanningSign sign ->
+            let
+                form =
+                    Dict.get id db.ncdMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.familyPlanning
+                                >> getMeasurementValueFunc
+                                >> familyPlanningFormWithDefault model.familyPlanningData.form
+                            )
+                        |> Maybe.withDefault model.familyPlanningData.form
+
+                updatedForm =
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoFamilyPlanning
+                        sign
+                        form
+
+                updatedData =
+                    model.familyPlanningData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | familyPlanningData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFamilyPlanning personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.familyPlanningData.form
+                        |> toFamilyPlanningValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.NCDEncounter.Model.SaveFamilyPlanning personId measurementId value
                                     |> Backend.Model.MsgNCDEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| NCDEncounterPage id

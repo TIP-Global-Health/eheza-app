@@ -4306,27 +4306,6 @@ toObstetricHistoryStep2Value form =
         |> andMap obstetricHistorySet
 
 
-familyPlanningFormWithDefault : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm
-familyPlanningFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
-            )
-
-
-toFamilyPlanningValueWithDefault : Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
-toFamilyPlanningValueWithDefault saved form =
-    familyPlanningFormWithDefault form saved
-        |> toFamilyPlanningValue
-
-
-toFamilyPlanningValue : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
-toFamilyPlanningValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoFamilyPlanning) form.signs
-
-
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
 fromPrenatalNutritionValue saved =
     { height = Maybe.map (.height >> getHeightValue) saved

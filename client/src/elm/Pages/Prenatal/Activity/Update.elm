@@ -46,7 +46,9 @@ import Measurement.Model exposing (VaccinationFormViewMode(..))
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
+        , familyPlanningFormWithDefault
         , toCorePhysicalExamValueWithDefault
+        , toFamilyPlanningValueWithDefault
         , toSendToHCValueWithDefault
         , toVaccinationValueWithDefault
         , toVitalsValueWithDefault
