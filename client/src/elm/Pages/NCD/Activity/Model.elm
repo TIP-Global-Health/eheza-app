@@ -29,6 +29,21 @@ type Msg
       -- FamilyPlanningMsgs
     | SetFamilyPlanningSign FamilyPlanningSign
     | SaveFamilyPlanning PersonId (Maybe ( NCDFamilyPlanningId, NCDFamilyPlanning ))
+      -- ExaminationMsgs
+    | SetActiveExaminationTask ExaminationTask
+      -- ExaminationMsgs, Vitals
+    | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
+    | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
+    | SaveVitals PersonId (Maybe ( NCDVitalsId, NCDVitals )) (Maybe ExaminationTask)
+      -- ExaminationMsgs, Core Exam
+    | SetCoreExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
+    | SetCoreExamHeart HeartCPESign
+    | SetCoreExamNeck NeckCPESign
+    | SetCoreExamLungs LungsCPESign
+    | SetCoreExamAbdomen AbdomenCPESign
+    | SetCoreExamHands HandsCPESign
+    | SetCoreExamLegs LegsCPESign
+    | SaveCoreExam PersonId (Maybe ( NCDCoreExamId, NCDCoreExam )) (Maybe ExaminationTask)
 
 
 type alias Model =
@@ -94,7 +109,7 @@ emptySymptomReviewForm =
 
 type alias ExaminationData =
     { vitalsForm : VitalsForm
-    , corePhysicalExamForm : CorePhysicalExamForm
+    , coreExamForm : CorePhysicalExamForm
     , activeTask : Maybe ExaminationTask
     }
 
@@ -102,7 +117,7 @@ type alias ExaminationData =
 emptyExaminationData : ExaminationData
 emptyExaminationData =
     { vitalsForm = emptyVitalsForm
-    , corePhysicalExamForm = emptyCorePhysicalExamForm
+    , coreExamForm = emptyCorePhysicalExamForm
     , activeTask = Nothing
     }
 

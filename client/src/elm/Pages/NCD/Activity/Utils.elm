@@ -13,7 +13,9 @@ import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
+import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vitalsFormWithDefault)
 import Pages.NCD.Activity.Model exposing (..)
+import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (ifEverySetEmpty, taskCompleted)
 import RemoteData exposing (RemoteData(..))
@@ -59,6 +61,30 @@ activityCompleted currentDate assembled db activity =
         -- @todo
         _ ->
             False
+
+
+resolvePreviousValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> b) -> Maybe b
+resolvePreviousValue assembled measurementFunc valueFunc =
+    assembled.previousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, ( _, measurements ) ) ->
+                measurementFunc measurements
+                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
+
+
+resolvePreviousMaybeValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> Maybe b) -> Maybe b
+resolvePreviousMaybeValue assembled measurementFunc valueFunc =
+    assembled.previousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, ( _, measurements ) ) ->
+                measurementFunc measurements
+                    |> Maybe.andThen (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
 
 
 dangerSignsFormWithDefault : DangerSignsForm -> Maybe NCDDangerSignsValue -> DangerSignsForm
@@ -116,3 +142,67 @@ toSymptomReviewValue form =
     Maybe.map NCDSymptomReviewValue group1Symptoms
         |> andMap group2Symptoms
         |> andMap painSymptoms
+
+
+examinationTasksCompletedFromTotal : NominalDate -> AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
+examinationTasksCompletedFromTotal currentDate assembled data task =
+    case task of
+        TaskVitals ->
+            Maybe.map
+                (\birthDate ->
+                    let
+                        form =
+                            assembled.measurements.vitals
+                                |> getMeasurementValueFunc
+                                |> vitalsFormWithDefault data.vitalsForm
+
+                        ageYears =
+                            Gizra.NominalDate.diffYears birthDate currentDate
+
+                        ( ageDependentInputsCompleted, ageDependentInputsActive ) =
+                            if ageYears < 12 then
+                                ( 0, 0 )
+
+                            else
+                                ( taskCompleted form.sysBloodPressure
+                                    + taskCompleted form.diaBloodPressure
+                                , 2
+                                )
+                    in
+                    ( taskCompleted form.heartRate
+                        + taskCompleted form.respiratoryRate
+                        + taskCompleted form.bodyTemperature
+                        + ageDependentInputsCompleted
+                    , 3 + ageDependentInputsActive
+                    )
+                )
+                assembled.person.birthDate
+                |> Maybe.withDefault ( 0, 0 )
+
+        TaskCoreExam ->
+            let
+                form =
+                    assembled.measurements.coreExam
+                        |> getMeasurementValueFunc
+                        |> corePhysicalExamFormWithDefault data.coreExamForm
+
+                extremitiesTaskCompleted =
+                    if isJust form.hands && isJust form.legs then
+                        1
+
+                    else
+                        0
+            in
+            ( extremitiesTaskCompleted
+                + taskCompleted form.neck
+                + taskCompleted form.lungs
+                + taskCompleted form.abdomen
+                + taskCompleted form.heart
+                + ([ form.brittleHair
+                   , form.paleConjuctiva
+                   ]
+                    |> List.map taskCompleted
+                    |> List.sum
+                  )
+            , 7
+            )

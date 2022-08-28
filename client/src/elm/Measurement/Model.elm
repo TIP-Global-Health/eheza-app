@@ -409,6 +409,7 @@ type InvokationModule
     = InvokationModulePrenatal
     | InvokationModuleAcuteIllness
     | InvokationModuleWellChild
+    | InvokationModuleNCD
 
 
 type alias VaccinationForm msg =
@@ -495,6 +496,17 @@ emptyCorePhysicalExamForm =
     , abdomen = Nothing
     , hands = Nothing
     , legs = Nothing
+    }
+
+
+type alias CorePhysicalExamFormConfig msg =
+    { setBoolInputMsg : (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) -> Bool -> msg
+    , setNeckMsg : NeckCPESign -> msg
+    , setHeartMsg : HeartCPESign -> msg
+    , setLungsMsg : LungsCPESign -> msg
+    , setAbdomenMsg : AbdomenCPESign -> msg
+    , setHandsMsg : HandsCPESign -> msg
+    , setLegsMsg : LegsCPESign -> msg
     }
 
 
