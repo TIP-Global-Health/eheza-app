@@ -1020,11 +1020,6 @@ encodeAttendance =
     encodeGroupMeasurement encodeAttendanceValue
 
 
-encodeFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
-encodeFamilyPlanningValue signs =
-    encodeFamilyPlanningValueWithType "family_planning" signs
-
-
 encodeFamilyPlanningValueWithType : String -> EverySet FamilyPlanningSign -> List ( String, Value )
 encodeFamilyPlanningValueWithType type_ signs =
     [ ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign signs )
@@ -1035,7 +1030,7 @@ encodeFamilyPlanningValueWithType type_ signs =
 
 encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
 encodeFamilyPlanning =
-    encodeGroupMeasurement encodeFamilyPlanningValue
+    encodeGroupMeasurement (encodeFamilyPlanningValueWithType "family_planning")
 
 
 encodeLactationValue : EverySet LactationSign -> List ( String, Value )
@@ -1323,8 +1318,8 @@ encodeLegsCPESign sign =
                 "normal"
 
 
-encodeCorePhysicalExamValue : CorePhysicalExamValue -> List ( String, Value )
-encodeCorePhysicalExamValue value =
+encodeCorePhysicalExamValueWithType : String -> CorePhysicalExamValue -> List ( String, Value )
+encodeCorePhysicalExamValueWithType type_ value =
     [ ( "head_hair", encodeEverySet encodeHairHeadCPESign value.hairHead )
     , ( "eyes", encodeEverySet encodeEyesCPESign value.eyes )
     , ( "heart", encodeEverySet encodeHeartCPESign value.heart )
@@ -1335,13 +1330,13 @@ encodeCorePhysicalExamValue value =
     , ( "hands", encodeEverySet encodeHandsCPESign value.hands )
     , ( "legs", encodeEverySet encodeLegsCPESign value.legs )
     , ( "deleted", bool False )
-    , ( "type", string "core_physical_exam" )
+    , ( "type", string type_ )
     ]
 
 
 encodeCorePhysicalExam : CorePhysicalExam -> List ( String, Value )
 encodeCorePhysicalExam =
-    encodePrenatalMeasurement encodeCorePhysicalExamValue
+    encodePrenatalMeasurement (encodeCorePhysicalExamValueWithType "core_physical_exam")
 
 
 encodeDangerSign : DangerSign -> Value
@@ -1859,12 +1854,7 @@ encodeBirthPlanSign sign =
 
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
 encodePrenatalFamilyPlanning =
-    encodePrenatalMeasurement encodePrenatalFamilyPlanningValue
-
-
-encodePrenatalFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
-encodePrenatalFamilyPlanningValue signs =
-    encodeFamilyPlanningValueWithType "prenatal_family_planning" signs
+    encodePrenatalMeasurement (encodeFamilyPlanningValueWithType "prenatal_family_planning")
 
 
 encodePrenatalNutrition : PrenatalNutrition -> List ( String, Value )
@@ -4142,14 +4132,7 @@ encodeNCDCoMorbiditiesValue value =
 
 encodeNCDCoreExam : NCDCoreExam -> List ( String, Value )
 encodeNCDCoreExam =
-    encodeNCDMeasurement encodeNCDCoreExamValue
-
-
-encodeNCDCoreExamValue : NCDCoreExamValue -> List ( String, Value )
-encodeNCDCoreExamValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_core_exam" )
-    ]
+    encodeNCDMeasurement (encodeCorePhysicalExamValueWithType "ncd_core_exam")
 
 
 encodeNCDCreatinineTest : NCDCreatinineTest -> List ( String, Value )
@@ -4196,14 +4179,7 @@ encodeNCDFamilyHistoryValue value =
 
 encodeNCDFamilyPlanning : NCDFamilyPlanning -> List ( String, Value )
 encodeNCDFamilyPlanning =
-    encodeNCDMeasurement encodeNCDFamilyPlanningValue
-
-
-encodeNCDFamilyPlanningValue : NCDFamilyPlanningValue -> List ( String, Value )
-encodeNCDFamilyPlanningValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_family_planning" )
-    ]
+    encodeNCDMeasurement (encodeFamilyPlanningValueWithType "ncd_family_planning")
 
 
 encodeNCDHealthEducation : NCDHealthEducation -> List ( String, Value )
@@ -4382,11 +4358,4 @@ encodeNCDUrineDipstickTestValue value =
 
 encodeNCDVitals : NCDVitals -> List ( String, Value )
 encodeNCDVitals =
-    encodeNCDMeasurement encodeNCDVitalsValue
-
-
-encodeNCDVitalsValue : NCDVitalsValue -> List ( String, Value )
-encodeNCDVitalsValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_vitals" )
-    ]
+    encodeNCDMeasurement (encodeVitalsValueWithType "ncd_vitals")

@@ -2262,11 +2262,7 @@ type alias NCDCoMorbiditiesValue =
 
 
 type alias NCDCoreExam =
-    NCDMeasurement NCDCoreExamValue
-
-
-type alias NCDCoreExamValue =
-    {}
+    NCDMeasurement CorePhysicalExamValue
 
 
 type alias NCDCreatinineTest =
@@ -2309,7 +2305,7 @@ type alias NCDFamilyPlanning =
 
 
 type alias NCDFamilyPlanningValue =
-    {}
+    EverySet FamilyPlanningSign
 
 
 type alias NCDHealthEducation =
@@ -2457,11 +2453,7 @@ type alias NCDUrineDipstickTestValue =
 
 
 type alias NCDVitals =
-    NCDMeasurement NCDVitalsValue
-
-
-type alias NCDVitalsValue =
-    {}
+    NCDMeasurement VitalsValue
 
 
 

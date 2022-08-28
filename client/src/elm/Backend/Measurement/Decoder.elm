@@ -1608,6 +1608,11 @@ decodeLegsCPESign =
 
 decodeCorePhysicalExam : Decoder CorePhysicalExam
 decodeCorePhysicalExam =
+    decodePrenatalMeasurement decodeCorePhysicalExamValue
+
+
+decodeCorePhysicalExamValue : Decoder CorePhysicalExamValue
+decodeCorePhysicalExamValue =
     succeed CorePhysicalExamValue
         |> required "head_hair" (decodeEverySet decodeHairHeadCPESign)
         |> required "eyes" (decodeEverySet decodeEyesCPESign)
@@ -1618,7 +1623,6 @@ decodeCorePhysicalExam =
         |> required "abdomen" (decodeEverySet decodeAbdomenCPESign)
         |> required "hands" (decodeEverySet decodeHandsCPESign)
         |> required "legs" (decodeEverySet decodeLegsCPESign)
-        |> decodePrenatalMeasurement
 
 
 decodeDangerSign : Decoder DangerSign
@@ -4585,12 +4589,7 @@ decodeNCDCoMorbiditiesValue =
 
 decodeNCDCoreExam : Decoder NCDCoreExam
 decodeNCDCoreExam =
-    decodeNCDMeasurement decodeNCDCoreExamValue
-
-
-decodeNCDCoreExamValue : Decoder NCDCoreExamValue
-decodeNCDCoreExamValue =
-    succeed NCDCoreExamValue
+    decodeNCDMeasurement decodeCorePhysicalExamValue
 
 
 decodeNCDCreatinineTest : Decoder NCDCreatinineTest
@@ -4636,12 +4635,9 @@ decodeNCDFamilyHistoryValue =
 
 decodeNCDFamilyPlanning : Decoder NCDFamilyPlanning
 decodeNCDFamilyPlanning =
-    decodeNCDMeasurement decodeNCDFamilyPlanningValue
-
-
-decodeNCDFamilyPlanningValue : Decoder NCDFamilyPlanningValue
-decodeNCDFamilyPlanningValue =
-    succeed NCDFamilyPlanningValue
+    decodeEverySet decodeFamilyPlanningSign
+        |> field "family_planning_signs"
+        |> decodeNCDMeasurement
 
 
 decodeNCDHealthEducation : Decoder NCDHealthEducation
@@ -4812,9 +4808,4 @@ decodeNCDUrineDipstickTestValue =
 
 decodeNCDVitals : Decoder NCDVitals
 decodeNCDVitals =
-    decodeNCDMeasurement decodeNCDVitalsValue
-
-
-decodeNCDVitalsValue : Decoder NCDVitalsValue
-decodeNCDVitalsValue =
-    succeed NCDVitalsValue
+    decodeNCDMeasurement decodeVitalsValue
