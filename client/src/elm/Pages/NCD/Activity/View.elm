@@ -143,9 +143,11 @@ viewDangerSignsContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form danger-signs" ] inputs
             ]
-        , saveButton language
-            (tasksCompleted /= totalTasks)
-            (SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns)
+        , div [ class "actions" ]
+            [ saveButton language
+                (tasksCompleted == totalTasks)
+                (SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns)
+            ]
         ]
     ]
 
@@ -206,9 +208,11 @@ viewSymptomReviewContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form symptom-review" ] inputs
             ]
-        , saveButton language
-            (tasksCompleted /= totalTasks)
-            (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
+        , div [ class "actions" ]
+            [ saveButton language
+                (tasksCompleted == totalTasks)
+                (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
+            ]
         ]
     ]
 
@@ -232,9 +236,11 @@ viewFamilyPlanningContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ viewFamilyPlanningForm language Translate.FamilyPlanningCurentlyQuestion SetFamilyPlanningSign form
             ]
-        , saveButton language
-            (tasksCompleted /= totalTasks)
-            (SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning)
+        , div [ class "actions" ]
+            [ saveButton language
+                (tasksCompleted == totalTasks)
+                (SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning)
+            ]
         ]
     ]
 
@@ -297,7 +303,7 @@ viewExaminationContent language currentDate assembled data =
             div [ class <| "column " ++ iconClass ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.ExaminationTask task)
+                    , text <| translate language (Translate.NCDExaminationTask task)
                     ]
                 ]
 
@@ -347,9 +353,10 @@ viewExaminationContent language currentDate assembled data =
                                     SaveVitals personId measurements.vitals nextTask
 
                                 TaskCoreExam ->
-                                    SaveCoreExam personId measurements.corePhysicalExam nextTask
+                                    SaveCoreExam personId measurements.coreExam nextTask
                     in
-                    saveButton language (tasksCompleted /= totalTasks) saveAction
+                    div [ class "actions" ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveAction ]
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode

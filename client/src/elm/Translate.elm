@@ -91,6 +91,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
+import Pages.NCD.Activity.Types exposing (ExaminationTask(..))
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
@@ -821,6 +822,7 @@ type TranslationId
     | NationalIdNumber
     | NCDActivityTitle NCDActivity
     | NCDDangerSign NCDDangerSign
+    | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
@@ -6928,6 +6930,18 @@ translationSet trans =
                 NoNCDDangerSigns ->
                     { english = "None of the Above"
                     , kinyarwanda = Nothing
+                    }
+
+        NCDExaminationTask task ->
+            case task of
+                TaskCoreExam ->
+                    { english = "Core Physical Exam"
+                    , kinyarwanda = Just "Isuzuma ryimbitse"
+                    }
+
+                TaskVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
         NCDGroup1Symptom symptom ->
