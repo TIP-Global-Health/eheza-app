@@ -1333,8 +1333,9 @@ viewVitalsForm language currentDate config form =
                 diaBloodPressureUpdateFunc
                 config.sysBloodPressurePreviousValue
                 config.diaBloodPressurePreviousValue
+                True
 
-        viewBloodPressureSection sys dia sysUpdateFunc diaUpdateFunc sysPrevValue diaPrevValue =
+        viewBloodPressureSection sys dia sysUpdateFunc diaUpdateFunc sysPrevValue diaPrevValue addSeparator =
             Maybe.map
                 (\ageYears ->
                     if ageYears < 12 then
@@ -1397,6 +1398,7 @@ viewVitalsForm language currentDate config form =
                             "dia-blood-pressure"
                             Translate.MMHGUnit
                         , Pages.Utils.viewPreviousMeasurement language diaPrevValue Translate.MMHGUnit
+                        , separator |> showIf addSeparator
                         ]
                 )
                 ageInYears
@@ -1452,6 +1454,7 @@ viewVitalsForm language currentDate config form =
                 "heart-rate"
                 Translate.BeatsPerMinuteUnitLabel
             , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
+            , separator
             ]
 
         respiratoryRateSection =
@@ -1498,6 +1501,7 @@ viewVitalsForm language currentDate config form =
                 "respiratory-rate"
                 Translate.BreathsPerMinuteUnitLabel
             , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
+            , separator
             ]
 
         bodyTemperatureSection =
@@ -1520,22 +1524,18 @@ viewVitalsForm language currentDate config form =
             ]
 
         separator =
-            [ div [ class "separator" ] [] ]
+            div [ class "separator" ] []
 
         content =
             case config.mode of
                 VitalsFormBasic ->
                     respiratoryRateSection
-                        ++ separator
                         ++ bodyTemperatureSection
 
                 VitalsFormFull ->
                     bloodPressureSection
-                        ++ separator
                         ++ heartRateSection
-                        ++ separator
                         ++ respiratoryRateSection
-                        ++ separator
                         ++ bodyTemperatureSection
 
                 VitalsFormRepeated ->
@@ -1546,6 +1546,7 @@ viewVitalsForm language currentDate config form =
                         diaRepeatedUpdateFunc
                         form.sysBloodPressure
                         form.diaBloodPressure
+                        False
     in
     div [ class <| "ui form " ++ config.formClass ]
         content
