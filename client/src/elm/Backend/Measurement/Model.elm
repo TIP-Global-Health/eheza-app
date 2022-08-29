@@ -2258,7 +2258,38 @@ type alias NCDCoMorbidities =
 
 
 type alias NCDCoMorbiditiesValue =
-    {}
+    EverySet MedicalCondition
+
+
+type MedicalCondition
+    = MedicalConditionHIV
+    | MedicalConditionDiabetes
+    | MedicalConditionKidneyDisease
+    | MedicalConditionPregnancy
+    | MedicalConditionHypertension
+    | MedicalConditionGestationalDiabetes
+    | MedicalConditionPregnancyRelatedHypertension
+    | NoMedicalConditions
+
+
+
+-- HIV
+-- Diabetes
+-- KidneyDisease
+-- Pregnancy
+-- Hypertension
+-- GestationalDiabetes
+-- PregnancyRelatedHypertension
+-- None
+--
+-- hiv
+-- diabetes
+-- kidney-disease
+-- pregnancy
+-- hypertension
+-- gestational-diabetes
+-- pregnancy-related-hypertension
+-- none
 
 
 type alias NCDCoreExam =
@@ -2297,7 +2328,49 @@ type alias NCDFamilyHistory =
 
 
 type alias NCDFamilyHistoryValue =
-    {}
+    { signs : EverySet NCDFamilyHistorySign
+    , hypertensionPredecessors : Maybe (EverySet Predecessor)
+    , heartProblemPredecessors : Maybe (EverySet Predecessor)
+    , diabetesPredecessors : Maybe (EverySet Predecessor)
+    }
+
+
+type NCDFamilyHistorySign
+    = SignHypertensionHistory
+    | SignHeartProblemHistory
+    | SignDiabetesHistory
+    | NoNCDFamilyHistorySigns
+
+
+
+-- HypertensionHistory
+-- HeartProblemHistory
+-- DiabetesHistory
+-- None
+--
+-- hypertension-history
+-- heart-problem-history
+-- diabetes-history
+-- none
+
+
+type Predecessor
+    = PredecessorFather
+    | PredecessorMother
+    | PredecessorGrandFather
+    | PredecessorGrandMother
+
+
+
+-- Father
+-- Mother
+-- GrandFather
+-- GrandMother
+--
+-- father
+-- mother
+-- grand-father
+-- grand-mother
 
 
 type alias NCDFamilyPlanning =
@@ -2353,7 +2426,82 @@ type alias NCDMedicationHistory =
 
 
 type alias NCDMedicationHistoryValue =
-    {}
+    { medicationCausingHypertension : EverySet MedicationCausingHypertension
+    , medicationTreatingHypertension : EverySet MedicationTreatingnHypertension
+    , medicationTreatingDiabetes : EverySet MedicationTreatingnDiabetes
+    }
+
+
+type MedicationCausingHypertension
+    = MedicationOestrogens
+    | MedicationSteroids
+    | MedicationAmitriptyline
+    | MedicationIbuprofen
+    | NoMedicationCausingHypertension
+
+
+
+-- Oestrogens
+-- Steroids
+-- Amitriptyline
+-- Ibuprofen
+-- None
+--
+-- oestrogens
+-- steroids
+-- amitriptyline
+-- ibuprofen
+-- none
+
+
+type MedicationTreatingnHypertension
+    = MedicationAceInhibitors
+    | MedicationARBs
+    | MedicationHCTZ
+    | MedicationCalciumChannelBlockers
+    | MedicationMethyldopa
+    | MedicationBetaBlockers
+    | MedicationHydralazine
+    | NoMedicationTreatingnHypertension
+
+
+
+-- AceInhibitors
+-- ARBs
+-- HCTZ
+-- CalciumChannelBlockers
+-- Methyldopa
+-- BetaBlockers
+-- Hydralazine
+-- None
+--
+-- ace-inhibitors
+-- arbs
+-- hctz
+-- calcium-channel-blockers
+-- methyldopa
+-- beta-blockers
+-- hydralazine
+-- none
+
+
+type MedicationTreatingnDiabetes
+    = MedicationMetformin
+    | MedicationGlibenclamide
+    | MedicationInsulin
+    | NoMedicationTreatingnDiabetes
+
+
+
+-- Metformin
+-- Glibenclamide
+-- Insulin
+-- None
+--
+-- metformin
+-- glibenclamide
+-- insulin
+-- none
 
 
 type alias NCDOutsideCare =
@@ -2393,7 +2541,53 @@ type alias NCDSocialHistory =
 
 
 type alias NCDSocialHistoryValue =
-    {}
+    { signs : EverySet NCDSocialHistorySign
+    , foodGroup : FoodGroup
+    , beveragesPerWeek : Maybe Int
+    , cigarettesPerWeek : Maybe Int
+    }
+
+
+type NCDSocialHistorySign
+    = SignDrinkAlcohol
+    | SignSmokeCigarettes
+    | SignConsumeSalt
+    | SignDifficult4TimesAYear
+    | SignHelpWithTreatmentAtHome
+    | NoNCDSocialHistorySigns
+
+
+
+-- DrinkAlcohol
+-- SmokeCigarettes
+-- ConsumeSalt
+-- Difficult4TimesAYear
+-- HelpWithTreatmentAtHome
+-- None
+--
+-- drink-alcohol
+-- smoke-cigarettes
+-- consume-salt
+-- difficult-4-times-a-year
+-- help-with-treatment-at-home
+-- none
+
+
+type FoodGroup
+    = FoodGroupVegetables
+    | FoodGroupCarbohydrates
+    | FoodGroupProtein
+
+
+
+-- Vegetables
+-- Carbohydrates
+-- Protein
+--
+--
+-- vegetables
+-- carbohydrates
+-- protein
 
 
 type alias NCDSymptomReview =
