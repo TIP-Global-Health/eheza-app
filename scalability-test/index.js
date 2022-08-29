@@ -31,9 +31,13 @@ const baseUrl = 'http://localhost:3000';
     await page.click(buttonSelector);
     await page.waitForSelector(pinCodeSelector);
     await page.type(pinCodeSelector, pinCode);
+    await delay(500);
+    await page.screenshot({path: 'beforepin.png', fullPage: true, captureBeyondViewport: true});
     await page.waitForSelector('.primary.button:not([disabled])')
     await delay(500);
     await page.click(buttonSelector);
+    await delay(500);
+    await page.screenshot({path: 'after.png', fullPage: true, captureBeyondViewport: true});
   }
 
   async function syncDevice(page) {
