@@ -32,14 +32,20 @@ function hedley_migrate_drush_command() {
  * Creates fake nurses and devices.
  */
 function hedley_migrate_create_dummy_nurses_devices($amount = 100) {
+  $pins = [];
+  $pairing_codes = [];
   for ($i = 0; $i < $amount; $i++) {
+    $pin = hedley_user_get_unique_pincode();
+    $pairing_code = hedley_device_get_unique_pairing_code();
+    $pins[] = $pin;
+    $pairing_codes[] = $pairing_code;
     $device = entity_create('node', [
       'type' => 'device',
-      'title' => 'Device ' . $i,
+      'title' => 'Device ' . $pairing_code,
       'field_pairing_code' => [
         LANGUAGE_NONE => [
           0 => [
-            'value' => '000000' . sprintf('%04d', $i),
+            'value' => $pairing_code,
           ],
         ],
       ],
@@ -47,11 +53,11 @@ function hedley_migrate_create_dummy_nurses_devices($amount = 100) {
     node_save($device);
     $nurse = entity_create('node', [
       'type' => 'nurse',
-      'title' => 'Nurse ' . $i,
+      'title' => 'Nurse ' . $pin,
       'field_pin_code' => [
         LANGUAGE_NONE => [
           [
-            'value' => sprintf('%04d', $i),
+            'value' => $pin,
           ],
         ],
       ],
@@ -65,6 +71,8 @@ function hedley_migrate_create_dummy_nurses_devices($amount = 100) {
     ]);
     node_save($nurse);
   }
+  file_put_contents('pins.txt', implode("\n", $pins));
+  file_put_contents('pairing_codes.txt', implode("\n", $pairing_codes));
 }
 
 /**
