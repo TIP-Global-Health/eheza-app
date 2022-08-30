@@ -17,7 +17,7 @@ import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vitalsFormWi
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Encounter.Model exposing (AssembledData)
-import Pages.Utils exposing (ifEverySetEmpty, taskCompleted)
+import Pages.Utils exposing (ifEverySetEmpty, ifTrue, maybeValueConsideringIsDirtyField, taskCompleted)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -206,3 +206,80 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
                   )
             , 7
             )
+
+
+coMorbiditiesFormWithDefault : CoMorbiditiesForm -> Maybe NCDCoMorbiditiesValue -> CoMorbiditiesForm
+coMorbiditiesFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { conditions = or form.conditions (EverySet.toList value |> Just) }
+            )
+
+
+toCoMorbiditiesValueWithDefault : Maybe NCDCoMorbiditiesValue -> CoMorbiditiesForm -> Maybe NCDCoMorbiditiesValue
+toCoMorbiditiesValueWithDefault saved form =
+    coMorbiditiesFormWithDefault form saved
+        |> toCoMorbiditiesValue
+
+
+toCoMorbiditiesValue : CoMorbiditiesForm -> Maybe NCDCoMorbiditiesValue
+toCoMorbiditiesValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoMedicalConditions) form.conditions
+
+
+familyHistoryFormWithDefault : FamilyHistoryForm -> Maybe NCDFamilyHistoryValue -> FamilyHistoryForm
+familyHistoryFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { hypertensionInFamily = or form.hypertensionInFamily (EverySet.member SignHypertensionHistory value.signs |> Just)
+                , heartProblemInFamily = or form.heartProblemInFamily (EverySet.member SignHeartProblemHistory value.signs |> Just)
+                , diabetesInFamily = or form.diabetesInFamily (EverySet.member SignDiabetesHistory value.signs |> Just)
+                , hypertensionPredecessors =
+                    maybeValueConsideringIsDirtyField form.hypertensionPredecessorsDirty
+                        form.hypertensionPredecessors
+                        (Maybe.map EverySet.toList value.hypertensionPredecessors)
+                , hypertensionPredecessorsDirty = form.hypertensionPredecessorsDirty
+                , heartProblemPredecessors =
+                    maybeValueConsideringIsDirtyField form.heartProblemPredecessorsDirty
+                        form.hypertensionPredecessors
+                        (Maybe.map EverySet.toList value.heartProblemPredecessors)
+                , heartProblemPredecessorsDirty = form.heartProblemPredecessorsDirty
+                , diabetesPredecessors =
+                    maybeValueConsideringIsDirtyField form.diabetesPredecessorsDirty
+                        form.diabetesPredecessors
+                        (Maybe.map EverySet.toList value.diabetesPredecessors)
+                , diabetesPredecessorsDirty = form.diabetesPredecessorsDirty
+                }
+            )
+
+
+toFamilyHistoryValueWithDefault : Maybe NCDFamilyHistoryValue -> FamilyHistoryForm -> Maybe NCDFamilyHistoryValue
+toFamilyHistoryValueWithDefault saved form =
+    familyHistoryFormWithDefault form saved
+        |> toFamilyHistoryValue
+
+
+toFamilyHistoryValue : FamilyHistoryForm -> Maybe NCDFamilyHistoryValue
+toFamilyHistoryValue form =
+    let
+        maybeSigns =
+            [ Maybe.map (ifTrue SignHypertensionHistory) form.hypertensionInFamily
+            , Maybe.map (ifTrue SignHeartProblemHistory) form.heartProblemInFamily
+            , Maybe.map (ifTrue SignDiabetesHistory) form.diabetesInFamily
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDFamilyHistorySigns)
+    in
+    Maybe.map
+        (\signs ->
+            { signs = signs
+            , hypertensionPredecessors = Maybe.map EverySet.fromList form.hypertensionPredecessors
+            , heartProblemPredecessors = Maybe.map EverySet.fromList form.heartProblemPredecessors
+            , diabetesPredecessors = Maybe.map EverySet.fromList form.diabetesPredecessors
+            }
+        )
+        maybeSigns

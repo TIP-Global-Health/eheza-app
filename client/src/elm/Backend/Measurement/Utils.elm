@@ -3173,13 +3173,3 @@ foodGroupToString value =
 
         FoodGroupProtein ->
             "protein"
-
-
-
--- medicalConditionFromString : String -> Maybe MedicalCondition
--- medicalConditionFromString value =
---     case value of
---
--- medicalConditionToString : MedicalCondition -> String
--- medicalConditionToString value =
---     case value of
