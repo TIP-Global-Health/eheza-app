@@ -4125,9 +4125,15 @@ encodeNCDCoMorbidities =
 
 encodeNCDCoMorbiditiesValue : NCDCoMorbiditiesValue -> List ( String, Value )
 encodeNCDCoMorbiditiesValue value =
-    [ ( "deleted", bool False )
+    [ ( "comorbidities", encodeEverySet encodeMedicalCondition value )
+    , ( "deleted", bool False )
     , ( "type", string "ncd_co_morbidities" )
     ]
+
+
+encodeMedicalCondition : MedicalCondition -> Value
+encodeMedicalCondition =
+    medicalConditionToString >> string
 
 
 encodeNCDCoreExam : NCDCoreExam -> List ( String, Value )
@@ -4172,9 +4178,48 @@ encodeNCDFamilyHistory =
 
 encodeNCDFamilyHistoryValue : NCDFamilyHistoryValue -> List ( String, Value )
 encodeNCDFamilyHistoryValue value =
-    [ ( "deleted", bool False )
+    let
+        hypertensionPredecessors =
+            Maybe.map
+                (\predecessors ->
+                    [ ( "hypertension_predecessors", encodeEverySet encodePredecessor predecessors ) ]
+                )
+                value.hypertensionPredecessors
+                |> Maybe.withDefault []
+
+        heartProblemPredecessors =
+            Maybe.map
+                (\predecessors ->
+                    [ ( "heart_problem_predecessors", encodeEverySet encodePredecessor predecessors ) ]
+                )
+                value.heartProblemPredecessors
+                |> Maybe.withDefault []
+
+        diabetesPredecessors =
+            Maybe.map
+                (\predecessors ->
+                    [ ( "diabetes_predecessors", encodeEverySet encodePredecessor predecessors ) ]
+                )
+                value.diabetesPredecessors
+                |> Maybe.withDefault []
+    in
+    [ ( "ncd_family_history_signs", encodeEverySet encodeNCDFamilyHistorySign value.signs )
+    , ( "deleted", bool False )
     , ( "type", string "ncd_family_history" )
     ]
+        ++ hypertensionPredecessors
+        ++ heartProblemPredecessors
+        ++ diabetesPredecessors
+
+
+encodeNCDFamilyHistorySign : NCDFamilyHistorySign -> Value
+encodeNCDFamilyHistorySign =
+    ncdFamilyHistorySignToString >> string
+
+
+encodePredecessor : Predecessor -> Value
+encodePredecessor =
+    predecessorToString >> string
 
 
 encodeNCDFamilyPlanning : NCDFamilyPlanning -> List ( String, Value )
@@ -4249,9 +4294,27 @@ encodeNCDMedicationHistory =
 
 encodeNCDMedicationHistoryValue : NCDMedicationHistoryValue -> List ( String, Value )
 encodeNCDMedicationHistoryValue value =
-    [ ( "deleted", bool False )
+    [ ( "causing_hypertension", encodeEverySet encodeMedicationCausingHypertension value.medicationCausingHypertension )
+    , ( "treating_hypertension", encodeEverySet encodeMedicationTreatingHypertension value.medicationTreatingHypertension )
+    , ( "treating_diabetes", encodeEverySet encodeMedicationTreatingDiabetes value.medicationTreatingDiabetes )
+    , ( "deleted", bool False )
     , ( "type", string "ncd_medication_history" )
     ]
+
+
+encodeMedicationCausingHypertension : MedicationCausingHypertension -> Value
+encodeMedicationCausingHypertension =
+    medicationCausingHypertensionToString >> string
+
+
+encodeMedicationTreatingHypertension : MedicationTreatingHypertension -> Value
+encodeMedicationTreatingHypertension =
+    medicationTreatingHypertensionToString >> string
+
+
+encodeMedicationTreatingDiabetes : MedicationTreatingDiabetes -> Value
+encodeMedicationTreatingDiabetes =
+    medicationTreatingDiabetesToString >> string
 
 
 encodeNCDOutsideCare : NCDOutsideCare -> List ( String, Value )
@@ -4309,9 +4372,40 @@ encodeNCDSocialHistory =
 
 encodeNCDSocialHistoryValue : NCDSocialHistoryValue -> List ( String, Value )
 encodeNCDSocialHistoryValue value =
-    [ ( "deleted", bool False )
+    let
+        beveragesPerWeek =
+            Maybe.map
+                (\perWeek ->
+                    [ ( "beverages_per_week", int perWeek ) ]
+                )
+                value.beveragesPerWeek
+                |> Maybe.withDefault []
+
+        cigarettesPerWeek =
+            Maybe.map
+                (\perWeek ->
+                    [ ( "cigarettes_per_week", int perWeek ) ]
+                )
+                value.cigarettesPerWeek
+                |> Maybe.withDefault []
+    in
+    [ ( "ncd_social_history_signs", encodeEverySet encodeNCDSocialHistorySign value.signs )
+    , ( "food_group", encodeFoodGroup value.foodGroup )
+    , ( "deleted", bool False )
     , ( "type", string "ncd_social_history" )
     ]
+        ++ beveragesPerWeek
+        ++ cigarettesPerWeek
+
+
+encodeNCDSocialHistorySign : NCDSocialHistorySign -> Value
+encodeNCDSocialHistorySign =
+    ncdSocialHistorySignToString >> string
+
+
+encodeFoodGroup : FoodGroup -> Value
+encodeFoodGroup =
+    foodGroupToString >> string
 
 
 encodeNCDSymptomReview : NCDSymptomReview -> List ( String, Value )

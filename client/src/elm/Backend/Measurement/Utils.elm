@@ -2833,3 +2833,353 @@ ncdPainSymptomToString sign =
 
         NoNCDPainSymptoms ->
             "none"
+
+
+medicalConditionFromString : String -> Maybe MedicalCondition
+medicalConditionFromString value =
+    case value of
+        "hiv" ->
+            Just MedicalConditionHIV
+
+        "diabetes" ->
+            Just MedicalConditionDiabetes
+
+        "kidney-disease" ->
+            Just MedicalConditionKidneyDisease
+
+        "pregnancy" ->
+            Just MedicalConditionPregnancy
+
+        "hypertension" ->
+            Just MedicalConditionHypertension
+
+        "gestational-diabetes" ->
+            Just MedicalConditionGestationalDiabetes
+
+        "pregnancy-related-hypertension" ->
+            Just MedicalConditionPregnancyRelatedHypertension
+
+        "none" ->
+            Just NoMedicalConditions
+
+        _ ->
+            Nothing
+
+
+medicalConditionToString : MedicalCondition -> String
+medicalConditionToString value =
+    case value of
+        MedicalConditionHIV ->
+            "hiv"
+
+        MedicalConditionDiabetes ->
+            "diabetes"
+
+        MedicalConditionKidneyDisease ->
+            "kidney-disease"
+
+        MedicalConditionPregnancy ->
+            "pregnancy"
+
+        MedicalConditionHypertension ->
+            "hypertension"
+
+        MedicalConditionGestationalDiabetes ->
+            "gestational-diabetes"
+
+        MedicalConditionPregnancyRelatedHypertension ->
+            "pregnancy-related-hypertension"
+
+        NoMedicalConditions ->
+            "none"
+
+
+ncdFamilyHistorySignFromString : String -> Maybe NCDFamilyHistorySign
+ncdFamilyHistorySignFromString value =
+    case value of
+        "hypertension-history" ->
+            Just SignHypertensionHistory
+
+        "heart-problem-history" ->
+            Just SignHeartProblemHistory
+
+        "diabetes-history" ->
+            Just SignDiabetesHistory
+
+        "none" ->
+            Just NoNCDFamilyHistorySigns
+
+        _ ->
+            Nothing
+
+
+ncdFamilyHistorySignToString : NCDFamilyHistorySign -> String
+ncdFamilyHistorySignToString value =
+    case value of
+        SignHypertensionHistory ->
+            "hypertension-history"
+
+        SignHeartProblemHistory ->
+            "heart-problem-history"
+
+        SignDiabetesHistory ->
+            "diabetes-history"
+
+        NoNCDFamilyHistorySigns ->
+            "none"
+
+
+predecessorFromString : String -> Maybe Predecessor
+predecessorFromString value =
+    case value of
+        "father" ->
+            Just PredecessorFather
+
+        "mother" ->
+            Just PredecessorMother
+
+        "grand-father" ->
+            Just PredecessorGrandFather
+
+        "grand-mother" ->
+            Just PredecessorGrandMother
+
+        _ ->
+            Nothing
+
+
+predecessorToString : Predecessor -> String
+predecessorToString value =
+    case value of
+        PredecessorFather ->
+            "father"
+
+        PredecessorMother ->
+            "mother"
+
+        PredecessorGrandFather ->
+            "grand-father"
+
+        PredecessorGrandMother ->
+            "grand-mother"
+
+
+medicationCausingHypertensionFromString : String -> Maybe MedicationCausingHypertension
+medicationCausingHypertensionFromString value =
+    case value of
+        "oestrogens" ->
+            Just MedicationOestrogens
+
+        "steroids" ->
+            Just MedicationSteroids
+
+        "amitriptyline" ->
+            Just MedicationAmitriptyline
+
+        "ibuprofen" ->
+            Just MedicationIbuprofen
+
+        "none" ->
+            Just NoMedicationCausingHypertension
+
+        _ ->
+            Nothing
+
+
+medicationCausingHypertensionToString : MedicationCausingHypertension -> String
+medicationCausingHypertensionToString value =
+    case value of
+        MedicationOestrogens ->
+            "oestrogens"
+
+        MedicationSteroids ->
+            "steroids"
+
+        MedicationAmitriptyline ->
+            "amitriptyline"
+
+        MedicationIbuprofen ->
+            "ibuprofen"
+
+        NoMedicationCausingHypertension ->
+            "none"
+
+
+medicationTreatingHypertensionFromString : String -> Maybe MedicationTreatingHypertension
+medicationTreatingHypertensionFromString value =
+    case value of
+        "ace-inhibitors" ->
+            Just MedicationAceInhibitors
+
+        "arbs" ->
+            Just MedicationARBs
+
+        "hctz" ->
+            Just MedicationHCTZ
+
+        "calcium-channel-blockers" ->
+            Just MedicationCalciumChannelBlockers
+
+        "methyldopa" ->
+            Just MedicationMethyldopa
+
+        "beta-blockers" ->
+            Just MedicationBetaBlockers
+
+        "hydralazine" ->
+            Just MedicationHydralazine
+
+        "none" ->
+            Just NoMedicationTreatingHypertension
+
+        _ ->
+            Nothing
+
+
+medicationTreatingHypertensionToString : MedicationTreatingHypertension -> String
+medicationTreatingHypertensionToString value =
+    case value of
+        MedicationAceInhibitors ->
+            "ace-inhibitors"
+
+        MedicationARBs ->
+            "arbs"
+
+        MedicationHCTZ ->
+            "hctz"
+
+        MedicationCalciumChannelBlockers ->
+            "calcium-channel-blockers"
+
+        MedicationMethyldopa ->
+            "methyldopa"
+
+        MedicationBetaBlockers ->
+            "beta-blockers"
+
+        MedicationHydralazine ->
+            "hydralazine"
+
+        NoMedicationTreatingHypertension ->
+            "none"
+
+
+medicationTreatingDiabetesFromString : String -> Maybe MedicationTreatingDiabetes
+medicationTreatingDiabetesFromString value =
+    case value of
+        "metformin" ->
+            Just MedicationMetformin
+
+        "glibenclamide" ->
+            Just MedicationGlibenclamide
+
+        "insulin" ->
+            Just MedicationInsulin
+
+        "none" ->
+            Just NoMedicationTreatingDiabetes
+
+        _ ->
+            Nothing
+
+
+medicationTreatingDiabetesToString : MedicationTreatingDiabetes -> String
+medicationTreatingDiabetesToString value =
+    case value of
+        MedicationMetformin ->
+            "metformin"
+
+        MedicationGlibenclamide ->
+            "glibenclamide"
+
+        MedicationInsulin ->
+            "insulin"
+
+        NoMedicationTreatingDiabetes ->
+            "none"
+
+
+ncdSocialHistorySignFromString : String -> Maybe NCDSocialHistorySign
+ncdSocialHistorySignFromString value =
+    case value of
+        "drink-alcohol" ->
+            Just SignDrinkAlcohol
+
+        "smoke-cigarettes" ->
+            Just SignSmokeCigarettes
+
+        "consume-salt" ->
+            Just SignConsumeSalt
+
+        "difficult-4-times-a-year" ->
+            Just SignDifficult4TimesAYear
+
+        "help-with-treatment-at-home" ->
+            Just SignHelpWithTreatmentAtHome
+
+        "none" ->
+            Just NoNCDSocialHistorySigns
+
+        _ ->
+            Nothing
+
+
+ncdSocialHistorySignToString : NCDSocialHistorySign -> String
+ncdSocialHistorySignToString value =
+    case value of
+        SignDrinkAlcohol ->
+            "drink-alcohol"
+
+        SignSmokeCigarettes ->
+            "smoke-cigarettes"
+
+        SignConsumeSalt ->
+            "consume-salt"
+
+        SignDifficult4TimesAYear ->
+            "difficult-4-times-a-year"
+
+        SignHelpWithTreatmentAtHome ->
+            "help-with-treatment-at-home"
+
+        NoNCDSocialHistorySigns ->
+            "none"
+
+
+foodGroupFromString : String -> Maybe FoodGroup
+foodGroupFromString value =
+    case value of
+        "vegetables" ->
+            Just FoodGroupVegetables
+
+        "carbohydrates" ->
+            Just FoodGroupCarbohydrates
+
+        "protein" ->
+            Just FoodGroupProtein
+
+        _ ->
+            Nothing
+
+
+foodGroupToString : FoodGroup -> String
+foodGroupToString value =
+    case value of
+        FoodGroupVegetables ->
+            "vegetables"
+
+        FoodGroupCarbohydrates ->
+            "carbohydrates"
+
+        FoodGroupProtein ->
+            "protein"
+
+
+
+-- medicalConditionFromString : String -> Maybe MedicalCondition
+-- medicalConditionFromString value =
+--     case value of
+--
+-- medicalConditionToString : MedicalCondition -> String
+-- medicalConditionToString value =
+--     case value of

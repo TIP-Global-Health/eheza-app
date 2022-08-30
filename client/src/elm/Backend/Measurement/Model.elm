@@ -2272,26 +2272,6 @@ type MedicalCondition
     | NoMedicalConditions
 
 
-
--- HIV
--- Diabetes
--- KidneyDisease
--- Pregnancy
--- Hypertension
--- GestationalDiabetes
--- PregnancyRelatedHypertension
--- None
---
--- hiv
--- diabetes
--- kidney-disease
--- pregnancy
--- hypertension
--- gestational-diabetes
--- pregnancy-related-hypertension
--- none
-
-
 type alias NCDCoreExam =
     NCDMeasurement CorePhysicalExamValue
 
@@ -2342,35 +2322,11 @@ type NCDFamilyHistorySign
     | NoNCDFamilyHistorySigns
 
 
-
--- HypertensionHistory
--- HeartProblemHistory
--- DiabetesHistory
--- None
---
--- hypertension-history
--- heart-problem-history
--- diabetes-history
--- none
-
-
 type Predecessor
     = PredecessorFather
     | PredecessorMother
     | PredecessorGrandFather
     | PredecessorGrandMother
-
-
-
--- Father
--- Mother
--- GrandFather
--- GrandMother
---
--- father
--- mother
--- grand-father
--- grand-mother
 
 
 type alias NCDFamilyPlanning =
@@ -2427,8 +2383,8 @@ type alias NCDMedicationHistory =
 
 type alias NCDMedicationHistoryValue =
     { medicationCausingHypertension : EverySet MedicationCausingHypertension
-    , medicationTreatingHypertension : EverySet MedicationTreatingnHypertension
-    , medicationTreatingDiabetes : EverySet MedicationTreatingnDiabetes
+    , medicationTreatingHypertension : EverySet MedicationTreatingHypertension
+    , medicationTreatingDiabetes : EverySet MedicationTreatingDiabetes
     }
 
 
@@ -2440,21 +2396,7 @@ type MedicationCausingHypertension
     | NoMedicationCausingHypertension
 
 
-
--- Oestrogens
--- Steroids
--- Amitriptyline
--- Ibuprofen
--- None
---
--- oestrogens
--- steroids
--- amitriptyline
--- ibuprofen
--- none
-
-
-type MedicationTreatingnHypertension
+type MedicationTreatingHypertension
     = MedicationAceInhibitors
     | MedicationARBs
     | MedicationHCTZ
@@ -2462,46 +2404,14 @@ type MedicationTreatingnHypertension
     | MedicationMethyldopa
     | MedicationBetaBlockers
     | MedicationHydralazine
-    | NoMedicationTreatingnHypertension
+    | NoMedicationTreatingHypertension
 
 
-
--- AceInhibitors
--- ARBs
--- HCTZ
--- CalciumChannelBlockers
--- Methyldopa
--- BetaBlockers
--- Hydralazine
--- None
---
--- ace-inhibitors
--- arbs
--- hctz
--- calcium-channel-blockers
--- methyldopa
--- beta-blockers
--- hydralazine
--- none
-
-
-type MedicationTreatingnDiabetes
+type MedicationTreatingDiabetes
     = MedicationMetformin
     | MedicationGlibenclamide
     | MedicationInsulin
-    | NoMedicationTreatingnDiabetes
-
-
-
--- Metformin
--- Glibenclamide
--- Insulin
--- None
---
--- metformin
--- glibenclamide
--- insulin
--- none
+    | NoMedicationTreatingDiabetes
 
 
 type alias NCDOutsideCare =
@@ -2557,37 +2467,10 @@ type NCDSocialHistorySign
     | NoNCDSocialHistorySigns
 
 
-
--- DrinkAlcohol
--- SmokeCigarettes
--- ConsumeSalt
--- Difficult4TimesAYear
--- HelpWithTreatmentAtHome
--- None
---
--- drink-alcohol
--- smoke-cigarettes
--- consume-salt
--- difficult-4-times-a-year
--- help-with-treatment-at-home
--- none
-
-
 type FoodGroup
     = FoodGroupVegetables
     | FoodGroupCarbohydrates
     | FoodGroupProtein
-
-
-
--- Vegetables
--- Carbohydrates
--- Protein
---
---
--- vegetables
--- carbohydrates
--- protein
 
 
 type alias NCDSymptomReview =

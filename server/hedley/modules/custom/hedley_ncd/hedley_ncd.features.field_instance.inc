@@ -3935,7 +3935,7 @@ function hedley_ncd_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_treating_hypertension',
-    'label' => 'Medications Treatingn Hypertension',
+    'label' => 'Medications Treating Hypertension',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -6705,7 +6705,7 @@ function hedley_ncd_field_default_field_instances() {
   t('Lungs');
   t('Medications Causing Hypertension');
   t('Medications Treating Diabetes');
-  t('Medications Treatingn Hypertension');
+  t('Medications Treating Hypertension');
   t('NCD Danger Signs');
   t('NCD Encounter');
   t('NCD Family History Signs');
