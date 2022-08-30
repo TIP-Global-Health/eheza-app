@@ -3751,7 +3751,7 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         ( [], [] )
 
                 stillTakingTranslate =
-                    if config.latestMedicationTreatment == latestMedicationTreatmentForHIV assembled then
+                    if task == TreatmentReviewHIV then
                         Translate.TreatmentReviewQuestionStillTakingForHIV
 
                     else
