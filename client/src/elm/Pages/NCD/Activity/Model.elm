@@ -169,8 +169,11 @@ type alias FamilyHistoryForm =
     , heartProblemInFamily : Maybe Bool
     , diabetesInFamily : Maybe Bool
     , hypertensionPredecessors : Maybe (List Predecessor)
+    , hypertensionPredecessorsDirty : Bool
     , heartProblemPredecessors : Maybe (List Predecessor)
+    , heartProblemPredecessorsDirty : Bool
     , diabetesPredecessors : Maybe (List Predecessor)
+    , diabetesPredecessorsDirty : Bool
     }
 
 
@@ -180,8 +183,11 @@ emptyFamilyHistoryForm =
     , heartProblemInFamily = Nothing
     , diabetesInFamily = Nothing
     , hypertensionPredecessors = Nothing
+    , hypertensionPredecessorsDirty = False
     , heartProblemPredecessors = Nothing
+    , heartProblemPredecessorsDirty = False
     , diabetesPredecessors = Nothing
+    , diabetesPredecessorsDirty = False
     }
 
 
@@ -205,7 +211,9 @@ type alias SocialHistoryForm =
     , helpAtHome : Maybe Bool
     , foodGroup : Maybe FoodGroup
     , beveragesPerWeek : Maybe String
+    , beveragesPerWeekDirty : Bool
     , cigarettesPerWeek : Maybe String
+    , cigarettesPerWeekDirty : Bool
     }
 
 
@@ -218,5 +226,7 @@ emptySocialHistoryForm =
     , helpAtHome = Nothing
     , foodGroup = Nothing
     , beveragesPerWeek = Nothing
+    , beveragesPerWeekDirty = False
     , cigarettesPerWeek = Nothing
+    , cigarettesPerWeekDirty = False
     }
