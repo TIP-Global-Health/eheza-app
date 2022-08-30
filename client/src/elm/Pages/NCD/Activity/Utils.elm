@@ -283,3 +283,90 @@ toFamilyHistoryValue form =
             }
         )
         maybeSigns
+
+
+medicationHistoryFormWithDefault : MedicationHistoryForm -> Maybe NCDMedicationHistoryValue -> MedicationHistoryForm
+medicationHistoryFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { medicationCausingHypertension = or form.medicationCausingHypertension (EverySet.toList value.medicationCausingHypertension |> Just)
+                , medicationTreatingHypertension = or form.medicationTreatingHypertension (EverySet.toList value.medicationTreatingHypertension |> Just)
+                , medicationTreatingDiabetes = or form.medicationTreatingDiabetes (EverySet.toList value.medicationTreatingDiabetes |> Just)
+                }
+            )
+
+
+toMedicationHistoryValueWithDefault : Maybe NCDMedicationHistoryValue -> MedicationHistoryForm -> Maybe NCDMedicationHistoryValue
+toMedicationHistoryValueWithDefault saved form =
+    medicationHistoryFormWithDefault form saved
+        |> toMedicationHistoryValue
+
+
+toMedicationHistoryValue : MedicationHistoryForm -> Maybe NCDMedicationHistoryValue
+toMedicationHistoryValue form =
+    let
+        medicationCausingHypertension =
+            Maybe.map (EverySet.fromList >> ifEverySetEmpty NoMedicationCausingHypertension) form.medicationCausingHypertension
+
+        medicationTreatingHypertension =
+            Maybe.map (EverySet.fromList >> ifEverySetEmpty NoMedicationTreatingHypertension) form.medicationTreatingHypertension
+
+        medicationTreatingDiabetes =
+            Maybe.map (EverySet.fromList >> ifEverySetEmpty NoMedicationTreatingDiabetes) form.medicationTreatingDiabetes
+    in
+    Maybe.map NCDMedicationHistoryValue medicationCausingHypertension
+        |> andMap medicationTreatingHypertension
+        |> andMap medicationTreatingDiabetes
+
+
+socialHistoryFormWithDefault : SocialHistoryForm -> Maybe NCDSocialHistoryValue -> SocialHistoryForm
+socialHistoryFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { alcohol = or form.alcohol (EverySet.member SignDrinkAlcohol value.signs |> Just)
+                , cigarettes = or form.cigarettes (EverySet.member SignSmokeCigarettes value.signs |> Just)
+                , salt = or form.salt (EverySet.member SignConsumeSalt value.signs |> Just)
+                , difficult4Times = or form.difficult4Times (EverySet.member SignDifficult4TimesAYear value.signs |> Just)
+                , helpAtHome = or form.helpAtHome (EverySet.member SignHelpWithTreatmentAtHome value.signs |> Just)
+                , foodGroup = or form.foodGroup (Just value.foodGroup)
+                , beveragesPerWeek = maybeValueConsideringIsDirtyField form.beveragesPerWeekDirty form.beveragesPerWeek value.beveragesPerWeek
+                , beveragesPerWeekDirty = form.beveragesPerWeekDirty
+                , cigarettesPerWeek = maybeValueConsideringIsDirtyField form.cigarettesPerWeekDirty form.cigarettesPerWeek value.cigarettesPerWeek
+                , cigarettesPerWeekDirty = form.cigarettesPerWeekDirty
+                }
+            )
+
+
+toSocialHistoryValueWithDefault : Maybe NCDSocialHistoryValue -> SocialHistoryForm -> Maybe NCDSocialHistoryValue
+toSocialHistoryValueWithDefault saved form =
+    socialHistoryFormWithDefault form saved
+        |> toSocialHistoryValue
+
+
+toSocialHistoryValue : SocialHistoryForm -> Maybe NCDSocialHistoryValue
+toSocialHistoryValue form =
+    let
+        maybeSigns =
+            [ Maybe.map (ifTrue SignDrinkAlcohol) form.alcohol
+            , Maybe.map (ifTrue SignSmokeCigarettes) form.cigarettes
+            , Maybe.map (ifTrue SignConsumeSalt) form.salt
+            , Maybe.map (ifTrue SignDifficult4TimesAYear) form.salt
+            , Maybe.map (ifTrue SignHelpWithTreatmentAtHome) form.helpAtHome
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDSocialHistorySigns)
+    in
+    Maybe.map2
+        (\signs foodGroup ->
+            { signs = signs
+            , foodGroup = foodGroup
+            , beveragesPerWeek = form.beveragesPerWeek
+            , cigarettesPerWeek = form.cigarettesPerWeek
+            }
+        )
+        maybeSigns
+        form.foodGroup

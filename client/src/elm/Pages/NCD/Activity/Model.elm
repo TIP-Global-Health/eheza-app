@@ -210,9 +210,9 @@ type alias SocialHistoryForm =
     , difficult4Times : Maybe Bool
     , helpAtHome : Maybe Bool
     , foodGroup : Maybe FoodGroup
-    , beveragesPerWeek : Maybe String
+    , beveragesPerWeek : Maybe Int
     , beveragesPerWeekDirty : Bool
-    , cigarettesPerWeek : Maybe String
+    , cigarettesPerWeek : Maybe Int
     , cigarettesPerWeekDirty : Bool
     }
 
