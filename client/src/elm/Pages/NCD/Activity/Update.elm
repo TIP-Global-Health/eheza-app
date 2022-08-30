@@ -65,6 +65,10 @@ update currentDate id db msg model =
         generateExaminationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveExaminationTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| NCDEncounterPage id ]
+
+        generateMedicalHistoryMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveMedicalHistoryTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| NCDEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
@@ -481,6 +485,154 @@ update currentDate id db msg model =
                                 >> List.singleton
                             )
                         |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetActiveMedicalHistoryTask task ->
+            let
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveCoMorbidities personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicalHistoryMsgs nextTask
+
+                appMsgs =
+                    toCoMorbiditiesValueWithDefault measurement model.medicalHistoryData.coMorbiditiesForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveCoMorbidities personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveMedicationHistory personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicalHistoryMsgs nextTask
+
+                appMsgs =
+                    toMedicationHistoryValueWithDefault measurement model.medicalHistoryData.medicationHistoryForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveMedicationHistory personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveSocialHistory personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicalHistoryMsgs nextTask
+
+                appMsgs =
+                    toSocialHistoryValueWithDefault measurement model.medicalHistoryData.socialHistoryForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveSocialHistory personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveFamilyHistory personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicalHistoryMsgs nextTask
+
+                appMsgs =
+                    toFamilyHistoryValueWithDefault measurement model.medicalHistoryData.familyHistoryForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveFamilyHistory personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveOutsideCare personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicalHistoryMsgs nextTask
+
+                appMsgs =
+                    -- @todo
+                    -- toOutsideCareValueWithDefault measurement model.medicalHistoryData.outsideCareForm
+                    --     |> Maybe.map
+                    --         (Backend.NCDEncounter.Model.SaveOutsideCare personId measurementId
+                    --             >> Backend.Model.MsgNCDEncounter id
+                    --             >> App.Model.MsgIndexedDb
+                    --             >> List.singleton
+                    --         )
+                    --     |> Maybe.withDefault []
+                    []
             in
             ( model
             , Cmd.none

@@ -44,6 +44,13 @@ type Msg
     | SetCoreExamHands HandsCPESign
     | SetCoreExamLegs LegsCPESign
     | SaveCoreExam PersonId (Maybe ( NCDCoreExamId, NCDCoreExam )) (Maybe ExaminationTask)
+      -- MedicalHistoryMsgs
+    | SetActiveMedicalHistoryTask MedicalHistoryTask
+    | SaveCoMorbidities PersonId (Maybe ( NCDCoMorbiditiesId, NCDCoMorbidities )) (Maybe MedicalHistoryTask)
+    | SaveMedicationHistory PersonId (Maybe ( NCDMedicationHistoryId, NCDMedicationHistory )) (Maybe MedicalHistoryTask)
+    | SaveSocialHistory PersonId (Maybe ( NCDSocialHistoryId, NCDSocialHistory )) (Maybe MedicalHistoryTask)
+    | SaveFamilyHistory PersonId (Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )) (Maybe MedicalHistoryTask)
+    | SaveOutsideCare PersonId (Maybe ( NCDOutsideCareId, NCDOutsideCare )) (Maybe MedicalHistoryTask)
 
 
 type alias Model =

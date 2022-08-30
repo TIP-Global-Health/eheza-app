@@ -91,7 +91,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
-import Pages.NCD.Activity.Types exposing (ExaminationTask(..))
+import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
@@ -823,6 +823,7 @@ type TranslationId
     | NCDActivityTitle NCDActivity
     | NCDDangerSign NCDDangerSign
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
+    | NCDMedicalHistoryTask Pages.NCD.Activity.Types.MedicalHistoryTask
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
@@ -6942,6 +6943,33 @@ translationSet trans =
                 TaskVitals ->
                     { english = "Vitals"
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
+                    }
+
+        NCDMedicalHistoryTask task ->
+            case task of
+                TaskCoMorbidities ->
+                    { english = "Co-Morbidities"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskMedicationHistory ->
+                    { english = "Medication History"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskSocialHistory ->
+                    { english = "Social History"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskFamilyHistory ->
+                    { english = "Family History"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskOutsideCare ->
+                    { english = "Outside Care"
+                    , kinyarwanda = Nothing
                     }
 
         NCDGroup1Symptom symptom ->

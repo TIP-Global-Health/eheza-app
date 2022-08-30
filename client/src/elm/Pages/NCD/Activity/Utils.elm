@@ -370,3 +370,22 @@ toSocialHistoryValue form =
         )
         maybeSigns
         form.foodGroup
+
+
+medicalHistoryTasksCompletedFromTotal : NominalDate -> AssembledData -> MedicalHistoryData -> MedicalHistoryTask -> ( Int, Int )
+medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
+    case task of
+        TaskCoMorbidities ->
+            ( 0, 1 )
+
+        TaskMedicationHistory ->
+            ( 0, 1 )
+
+        TaskSocialHistory ->
+            ( 0, 1 )
+
+        TaskFamilyHistory ->
+            ( 0, 1 )
+
+        TaskOutsideCare ->
+            ( 0, 1 )

@@ -81,3 +81,53 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveVitals = data }
             , Cmd.none
             )
+
+        SaveCoMorbidities personId valueId value ->
+            ( { model | saveCoMorbidities = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdCoMorbiditiesEndpoint HandleSavedCoMorbidities
+            )
+
+        HandleSavedCoMorbidities data ->
+            ( { model | saveCoMorbidities = data }
+            , Cmd.none
+            )
+
+        SaveMedicationHistory personId valueId value ->
+            ( { model | saveMedicationHistory = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdMedicationHistoryEndpoint HandleSavedMedicationHistory
+            )
+
+        HandleSavedMedicationHistory data ->
+            ( { model | saveMedicationHistory = data }
+            , Cmd.none
+            )
+
+        SaveSocialHistory personId valueId value ->
+            ( { model | saveSocialHistory = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdSocialHistoryEndpoint HandleSavedSocialHistory
+            )
+
+        HandleSavedSocialHistory data ->
+            ( { model | saveSocialHistory = data }
+            , Cmd.none
+            )
+
+        SaveFamilyHistory personId valueId value ->
+            ( { model | saveFamilyHistory = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdFamilyHistoryEndpoint HandleSavedFamilyHistory
+            )
+
+        HandleSavedFamilyHistory data ->
+            ( { model | saveFamilyHistory = data }
+            , Cmd.none
+            )
+
+        SaveOutsideCare personId valueId value ->
+            ( { model | saveOutsideCare = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdOutsideCareEndpoint HandleSavedOutsideCare
+            )
+
+        HandleSavedOutsideCare data ->
+            ( { model | saveOutsideCare = data }
+            , Cmd.none
+            )
