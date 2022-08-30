@@ -51,6 +51,7 @@ type alias Model =
     , symptomReviewData : SymptomReviewData
     , examinationData : ExaminationData
     , familyPlanningData : FamilyPlanningData
+    , medicalHistoryData : MedicalHistoryData
     }
 
 
@@ -60,6 +61,7 @@ emptyModel =
     , symptomReviewData = emptySymptomReviewData
     , examinationData = emptyExaminationData
     , familyPlanningData = emptyFamilyPlanningData
+    , medicalHistoryData = emptyMedicalHistoryData
     }
 
 
@@ -130,4 +132,91 @@ type alias FamilyPlanningData =
 emptyFamilyPlanningData : FamilyPlanningData
 emptyFamilyPlanningData =
     { form = emptyFamilyPlanningForm
+    }
+
+
+type alias MedicalHistoryData =
+    { coMorbiditiesForm : CoMorbiditiesForm
+    , familyHistoryForm : FamilyHistoryForm
+    , medicationHistoryForm : MedicationHistoryForm
+    , socialHistoryForm : SocialHistoryForm
+    , activeTask : Maybe MedicalHistoryTask
+    }
+
+
+emptyMedicalHistoryData : MedicalHistoryData
+emptyMedicalHistoryData =
+    { coMorbiditiesForm = emptyCoMorbiditiesForm
+    , familyHistoryForm = emptyFamilyHistoryForm
+    , medicationHistoryForm = emptyMedicationHistoryForm
+    , socialHistoryForm = emptySocialHistoryForm
+    , activeTask = Nothing
+    }
+
+
+type alias CoMorbiditiesForm =
+    { conditions : Maybe (List MedicalCondition)
+    }
+
+
+emptyCoMorbiditiesForm : CoMorbiditiesForm
+emptyCoMorbiditiesForm =
+    CoMorbiditiesForm Nothing
+
+
+type alias FamilyHistoryForm =
+    { hypertensionInFamily : Maybe Bool
+    , heartProblemInFamily : Maybe Bool
+    , diabetesInFamily : Maybe Bool
+    , hypertensionPredecessors : Maybe (List Predecessor)
+    , heartProblemPredecessors : Maybe (List Predecessor)
+    , diabetesPredecessors : Maybe (List Predecessor)
+    }
+
+
+emptyFamilyHistoryForm : FamilyHistoryForm
+emptyFamilyHistoryForm =
+    { hypertensionInFamily = Nothing
+    , heartProblemInFamily = Nothing
+    , diabetesInFamily = Nothing
+    , hypertensionPredecessors = Nothing
+    , heartProblemPredecessors = Nothing
+    , diabetesPredecessors = Nothing
+    }
+
+
+type alias MedicationHistoryForm =
+    { medicationCausingHypertension : Maybe (List MedicationCausingHypertension)
+    , medicationTreatingHypertension : Maybe (List MedicationTreatingHypertension)
+    , medicationTreatingDiabetes : Maybe (List MedicationTreatingDiabetes)
+    }
+
+
+emptyMedicationHistoryForm : MedicationHistoryForm
+emptyMedicationHistoryForm =
+    MedicationHistoryForm Nothing Nothing Nothing
+
+
+type alias SocialHistoryForm =
+    { alcohol : Maybe Bool
+    , cigarettes : Maybe Bool
+    , salt : Maybe Bool
+    , difficult4Times : Maybe Bool
+    , helpAtHome : Maybe Bool
+    , foodGroup : Maybe FoodGroup
+    , beveragesPerWeek : Maybe String
+    , cigarettesPerWeek : Maybe String
+    }
+
+
+emptySocialHistoryForm : SocialHistoryForm
+emptySocialHistoryForm =
+    { alcohol = Nothing
+    , cigarettes = Nothing
+    , salt = Nothing
+    , difficult4Times = Nothing
+    , helpAtHome = Nothing
+    , foodGroup = Nothing
+    , beveragesPerWeek = Nothing
+    , cigarettesPerWeek = Nothing
     }
