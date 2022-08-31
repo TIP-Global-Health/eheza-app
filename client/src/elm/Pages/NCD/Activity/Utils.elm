@@ -192,8 +192,7 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
         TaskCoreExam ->
             let
                 form =
-                    assembled.measurements.coreExam
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.coreExam
                         |> corePhysicalExamFormWithDefault data.coreExamForm
 
                 extremitiesTaskCompleted =
@@ -386,7 +385,12 @@ medicalHistoryTasksCompletedFromTotal : NominalDate -> AssembledData -> MedicalH
 medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
     case task of
         TaskCoMorbidities ->
-            ( 0, 1 )
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.coMorbidities
+                        |> coMorbiditiesFormWithDefault data.coMorbiditiesForm
+            in
+            ( taskCompleted form.conditions, 1 )
 
         TaskMedicationHistory ->
             ( 0, 1 )

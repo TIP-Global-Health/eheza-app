@@ -763,6 +763,8 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MedicalCondition MedicalCondition
+    | MedicalConditionQuestion
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicationCausesSideEffectsQuestion
@@ -6350,6 +6352,53 @@ translationSet trans =
         MeasurementLost amount ->
             { english = "Lost " ++ String.fromFloat amount
             , kinyarwanda = Just <| "Kwiyongera " ++ String.fromFloat amount
+            }
+
+        MedicalCondition condition ->
+            case condition of
+                MedicalConditionHIV ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionDiabetes ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionKidneyDisease ->
+                    { english = "Kidney Disease"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionPregnancy ->
+                    { english = "Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionHypertension ->
+                    { english = "Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionGestationalDiabetes ->
+                    { english = "Gestational Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionPregnancyRelatedHypertension ->
+                    { english = "Pregnancy Related Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicalConditions ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicalConditionQuestion ->
+            { english = "Have you ever been diagnosed with any of these conditions"
+            , kinyarwanda = Nothing
             }
 
         MedicalDiagnosis ->

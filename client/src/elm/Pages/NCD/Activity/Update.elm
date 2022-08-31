@@ -12,6 +12,7 @@ import Backend.Measurement.Model
         , HandsCPESign(..)
         , LegsCPESign(..)
         , LungsCPESign(..)
+        , MedicalCondition(..)
         , NCDDangerSign(..)
         , NCDGroup1Symptom(..)
         , NCDGroup2Symptom(..)
@@ -497,6 +498,34 @@ update currentDate id db msg model =
                 updatedData =
                     model.medicalHistoryData
                         |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicalCondition condition ->
+            let
+                form =
+                    Dict.get id db.ncdMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.coMorbidities
+                                >> getMeasurementValueFunc
+                                >> coMorbiditiesFormWithDefault model.medicalHistoryData.coMorbiditiesForm
+                            )
+                        |> Maybe.withDefault model.medicalHistoryData.coMorbiditiesForm
+
+                updatedForm =
+                    setMultiSelectInputValue .conditions
+                        (\conditions -> { form | conditions = conditions })
+                        NoMedicalConditions
+                        condition
+                        form
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | coMorbiditiesForm = updatedForm })
             in
             ( { model | medicalHistoryData = updatedData }
             , Cmd.none

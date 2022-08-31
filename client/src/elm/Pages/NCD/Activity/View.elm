@@ -504,7 +504,9 @@ viewMedicalHistoryContent language currentDate assembled data =
         viewForm =
             case activeTask of
                 Just TaskCoMorbidities ->
-                    emptyNode
+                    getMeasurementValueFunc assembled.measurements.coMorbidities
+                        |> coMorbiditiesFormWithDefault data.coMorbiditiesForm
+                        |> viewCoMorbiditiesForm language currentDate
 
                 Just TaskMedicationHistory ->
                     emptyNode
@@ -569,3 +571,25 @@ viewMedicalHistoryContent language currentDate assembled data =
             ]
         ]
     ]
+
+
+viewCoMorbiditiesForm : Language -> NominalDate -> CoMorbiditiesForm -> Html Msg
+viewCoMorbiditiesForm language currentDate form =
+    div [ class "ui form danger-signs" ]
+        [ viewQuestionLabel language Translate.MedicalConditionQuestion
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ MedicalConditionHIV
+            , MedicalConditionDiabetes
+            , MedicalConditionKidneyDisease
+            , MedicalConditionPregnancy
+            , MedicalConditionHypertension
+            , MedicalConditionGestationalDiabetes
+            , MedicalConditionPregnancyRelatedHypertension
+            ]
+            []
+            (Maybe.withDefault [] form.conditions)
+            (Just NoMedicalConditions)
+            SetMedicalCondition
+            Translate.MedicalCondition
+        ]
