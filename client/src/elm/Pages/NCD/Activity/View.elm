@@ -509,7 +509,9 @@ viewMedicalHistoryContent language currentDate assembled data =
                         |> viewCoMorbiditiesForm language currentDate
 
                 Just TaskMedicationHistory ->
-                    emptyNode
+                    getMeasurementValueFunc assembled.measurements.medicationHistory
+                        |> medicationHistoryFormWithDefault data.medicationHistoryForm
+                        |> viewMedicationHistoryForm language currentDate
 
                 Just TaskSocialHistory ->
                     emptyNode
@@ -575,7 +577,7 @@ viewMedicalHistoryContent language currentDate assembled data =
 
 viewCoMorbiditiesForm : Language -> NominalDate -> CoMorbiditiesForm -> Html Msg
 viewCoMorbiditiesForm language currentDate form =
-    div [ class "ui form danger-signs" ]
+    div [ class "ui form co-morbidities" ]
         [ viewQuestionLabel language Translate.MedicalConditionQuestion
         , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
         , viewCheckBoxMultipleSelectInput language
@@ -592,4 +594,52 @@ viewCoMorbiditiesForm language currentDate form =
             (Just NoMedicalConditions)
             SetMedicalCondition
             Translate.MedicalCondition
+        ]
+
+
+viewMedicationHistoryForm : Language -> NominalDate -> MedicationHistoryForm -> Html Msg
+viewMedicationHistoryForm language currentDate form =
+    div [ class "ui form medication-history" ]
+        [ viewQuestionLabel language Translate.MedicationCausingHypertensionQuestion
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ MedicationOestrogens
+            , MedicationSteroids
+            , MedicationAmitriptyline
+            ]
+            [ MedicationIbuprofen
+            , NoMedicationCausingHypertension
+            ]
+            (Maybe.withDefault [] form.medicationCausingHypertension)
+            Nothing
+            SetMedicationCausingHypertension
+            Translate.MedicationCausingHypertension
+        , viewQuestionLabel language Translate.MedicationTreatingHypertensionQuestion
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ MedicationAceInhibitors
+            , MedicationARBs
+            , MedicationHCTZ
+            , MedicationCalciumChannelBlockers
+            ]
+            [ MedicationMethyldopa
+            , MedicationBetaBlockers
+            , MedicationHydralazine
+            , NoMedicationTreatingHypertension
+            ]
+            (Maybe.withDefault [] form.medicationTreatingHypertension)
+            Nothing
+            SetMedicationTreatingHypertension
+            Translate.MedicationTreatingHypertension
+        , viewQuestionLabel language Translate.MedicationTreatingDiabetesQuestion
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ MedicationMetformin
+            , MedicationGlibenclamide
+            ]
+            [ MedicationInsulin, NoMedicationTreatingDiabetes ]
+            (Maybe.withDefault [] form.medicationTreatingDiabetes)
+            Nothing
+            SetMedicationTreatingDiabetes
+            Translate.MedicationTreatingDiabetes
         ]

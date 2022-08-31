@@ -763,8 +763,14 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MedicationCausingHypertension MedicationCausingHypertension
+    | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
     | MedicalConditionQuestion
+    | MedicationTreatingDiabetes MedicationTreatingDiabetes
+    | MedicationTreatingDiabetesQuestion
+    | MedicationTreatingHypertension MedicationTreatingHypertension
+    | MedicationTreatingHypertensionQuestion
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicationCausesSideEffectsQuestion
@@ -6354,6 +6360,38 @@ translationSet trans =
             , kinyarwanda = Just <| "Kwiyongera " ++ String.fromFloat amount
             }
 
+        MedicationCausingHypertension medication ->
+            case medication of
+                MedicationOestrogens ->
+                    { english = "Oestrogens (Family Planning)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationSteroids ->
+                    { english = "Steroids (Prednisolone)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationAmitriptyline ->
+                    { english = "Amitriptyline"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationIbuprofen ->
+                    { english = "Ibuprofen (Diclofenac)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationCausingHypertension ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicationCausingHypertensionQuestion ->
+            { english = "Has the patient taken or currently take any of the following hypertension causing medications"
+            , kinyarwanda = Nothing
+            }
+
         MedicalCondition condition ->
             case condition of
                 MedicalConditionHIV ->
@@ -6397,6 +6435,80 @@ translationSet trans =
                     }
 
         MedicalConditionQuestion ->
+            { english = "Have you ever been diagnosed with any of these conditions"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationTreatingDiabetes medication ->
+            case medication of
+                MedicationMetformin ->
+                    { english = "Metformin"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationGlibenclamide ->
+                    { english = "Glibenclamide"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationInsulin ->
+                    { english = "Insulin"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationTreatingDiabetes ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicationTreatingDiabetesQuestion ->
+            { english = "Have you ever been diagnosed with any of these conditions"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationTreatingHypertension medication ->
+            case medication of
+                MedicationAceInhibitors ->
+                    { english = "Ace-Inhibitors (Example: Captopril)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationARBs ->
+                    { english = "Angiotensine Receptor Blockers (ARBs)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationHCTZ ->
+                    { english = "HCTZ"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationCalciumChannelBlockers ->
+                    { english = "Calcium Channel Blockers"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationMethyldopa ->
+                    { english = "Methyldopa"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationBetaBlockers ->
+                    { english = "Beta-Blockers"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationHydralazine ->
+                    { english = "Hydralazine"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationTreatingHypertension ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicationTreatingHypertensionQuestion ->
             { english = "Have you ever been diagnosed with any of these conditions"
             , kinyarwanda = Nothing
             }

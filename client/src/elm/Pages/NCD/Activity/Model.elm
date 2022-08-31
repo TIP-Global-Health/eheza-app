@@ -48,6 +48,9 @@ type Msg
     | SetActiveMedicalHistoryTask MedicalHistoryTask
     | SetMedicalCondition MedicalCondition
     | SaveCoMorbidities PersonId (Maybe ( NCDCoMorbiditiesId, NCDCoMorbidities )) (Maybe MedicalHistoryTask)
+    | SetMedicationCausingHypertension MedicationCausingHypertension
+    | SetMedicationTreatingHypertension MedicationTreatingHypertension
+    | SetMedicationTreatingDiabetes MedicationTreatingDiabetes
     | SaveMedicationHistory PersonId (Maybe ( NCDMedicationHistoryId, NCDMedicationHistory )) (Maybe MedicalHistoryTask)
     | SaveSocialHistory PersonId (Maybe ( NCDSocialHistoryId, NCDSocialHistory )) (Maybe MedicalHistoryTask)
     | SaveFamilyHistory PersonId (Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )) (Maybe MedicalHistoryTask)

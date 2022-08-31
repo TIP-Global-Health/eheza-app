@@ -13,6 +13,9 @@ import Backend.Measurement.Model
         , LegsCPESign(..)
         , LungsCPESign(..)
         , MedicalCondition(..)
+        , MedicationCausingHypertension(..)
+        , MedicationTreatingDiabetes(..)
+        , MedicationTreatingHypertension(..)
         , NCDDangerSign(..)
         , NCDGroup1Symptom(..)
         , NCDGroup2Symptom(..)
@@ -62,6 +65,16 @@ update currentDate id db msg model =
                         >> corePhysicalExamFormWithDefault model.examinationData.coreExamForm
                     )
                 |> Maybe.withDefault model.examinationData.coreExamForm
+
+        medicationHistoryForm =
+            Dict.get id db.ncdMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.medicationHistory
+                        >> getMeasurementValueFunc
+                        >> medicationHistoryFormWithDefault model.medicalHistoryData.medicationHistoryForm
+                    )
+                |> Maybe.withDefault model.medicalHistoryData.medicationHistoryForm
 
         generateExaminationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveExaminationTask task ]) nextTask
@@ -558,6 +571,60 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetMedicationCausingHypertension medication ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .medicationCausingHypertension
+                        (\medications -> { medicationHistoryForm | medicationCausingHypertension = medications })
+                        NoMedicationCausingHypertension
+                        medication
+                        medicationHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | medicationHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationTreatingHypertension medication ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .medicationTreatingHypertension
+                        (\medications -> { medicationHistoryForm | medicationTreatingHypertension = medications })
+                        NoMedicationTreatingHypertension
+                        medication
+                        medicationHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | medicationHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationTreatingDiabetes medication ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .medicationTreatingDiabetes
+                        (\medications -> { medicationHistoryForm | medicationTreatingDiabetes = medications })
+                        NoMedicationTreatingDiabetes
+                        medication
+                        medicationHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | medicationHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveMedicationHistory personId saved nextTask ->
             let

@@ -393,7 +393,16 @@ medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
             ( taskCompleted form.conditions, 1 )
 
         TaskMedicationHistory ->
-            ( 0, 1 )
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.medicationHistory
+                        |> medicationHistoryFormWithDefault data.medicationHistoryForm
+            in
+            ( taskCompleted form.medicationCausingHypertension
+                + taskCompleted form.medicationTreatingHypertension
+                + taskCompleted form.medicationTreatingDiabetes
+            , 3
+            )
 
         TaskSocialHistory ->
             ( 0, 1 )
