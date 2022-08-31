@@ -36,6 +36,9 @@ expectActivity currentDate assembled db activity =
         FamilyPlanning ->
             isPersonAFertileWoman currentDate assembled.person
 
+        MedicalHistory ->
+            True
+
         -- @todo
         _ ->
             True
@@ -57,6 +60,13 @@ activityCompleted currentDate assembled db activity =
         FamilyPlanning ->
             (not <| expectActivity currentDate assembled db FamilyPlanning)
                 || isJust assembled.measurements.familyPlanning
+
+        MedicalHistory ->
+            isJust assembled.measurements.coMorbidities
+                && isJust assembled.measurements.medicationHistory
+                && isJust assembled.measurements.socialHistory
+                && isJust assembled.measurements.familyHistory
+                && isJust assembled.measurements.outsideCare
 
         -- @todo
         _ ->
