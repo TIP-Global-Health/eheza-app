@@ -300,9 +300,9 @@ medicationHistoryFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { medicationCausingHypertension = or form.medicationCausingHypertension (EverySet.toList value.medicationCausingHypertension |> Just)
-                , medicationTreatingHypertension = or form.medicationTreatingHypertension (EverySet.toList value.medicationTreatingHypertension |> Just)
-                , medicationTreatingDiabetes = or form.medicationTreatingDiabetes (EverySet.toList value.medicationTreatingDiabetes |> Just)
+                { medicationsCausingHypertension = or form.medicationsCausingHypertension (EverySet.toList value.medicationsCausingHypertension |> Just)
+                , medicationsTreatingHypertension = or form.medicationsTreatingHypertension (EverySet.toList value.medicationsTreatingHypertension |> Just)
+                , medicationsTreatingDiabetes = or form.medicationsTreatingDiabetes (EverySet.toList value.medicationsTreatingDiabetes |> Just)
                 }
             )
 
@@ -316,18 +316,18 @@ toMedicationHistoryValueWithDefault saved form =
 toMedicationHistoryValue : MedicationHistoryForm -> Maybe NCDMedicationHistoryValue
 toMedicationHistoryValue form =
     let
-        medicationCausingHypertension =
-            Maybe.map (EverySet.fromList >> ifEverySetEmpty NoMedicationCausingHypertension) form.medicationCausingHypertension
+        medicationsCausingHypertension =
+            Maybe.map (EverySet.fromList >> ifEverySetEmpty NoMedicationCausingHypertension) form.medicationsCausingHypertension
 
-        medicationTreatingHypertension =
-            Maybe.map (EverySet.fromList >> ifEverySetEmpty NoMedicationTreatingHypertension) form.medicationTreatingHypertension
+        medicationsTreatingHypertension =
+            Maybe.map (EverySet.fromList >> ifEverySetEmpty NoMedicationTreatingHypertension) form.medicationsTreatingHypertension
 
-        medicationTreatingDiabetes =
-            Maybe.map (EverySet.fromList >> ifEverySetEmpty NoMedicationTreatingDiabetes) form.medicationTreatingDiabetes
+        medicationsTreatingDiabetes =
+            Maybe.map (EverySet.fromList >> ifEverySetEmpty NoMedicationTreatingDiabetes) form.medicationsTreatingDiabetes
     in
-    Maybe.map NCDMedicationHistoryValue medicationCausingHypertension
-        |> andMap medicationTreatingHypertension
-        |> andMap medicationTreatingDiabetes
+    Maybe.map NCDMedicationHistoryValue medicationsCausingHypertension
+        |> andMap medicationsTreatingHypertension
+        |> andMap medicationsTreatingDiabetes
 
 
 socialHistoryFormWithDefault : SocialHistoryForm -> Maybe NCDSocialHistoryValue -> SocialHistoryForm
@@ -398,9 +398,9 @@ medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
                     getMeasurementValueFunc assembled.measurements.medicationHistory
                         |> medicationHistoryFormWithDefault data.medicationHistoryForm
             in
-            ( taskCompleted form.medicationCausingHypertension
-                + taskCompleted form.medicationTreatingHypertension
-                + taskCompleted form.medicationTreatingDiabetes
+            ( taskCompleted form.medicationsCausingHypertension
+                + taskCompleted form.medicationsTreatingHypertension
+                + taskCompleted form.medicationsTreatingDiabetes
             , 3
             )
 

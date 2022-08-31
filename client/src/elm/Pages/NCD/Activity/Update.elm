@@ -575,8 +575,8 @@ update currentDate id db msg model =
         SetMedicationCausingHypertension medication ->
             let
                 updatedForm =
-                    setMultiSelectInputValue .medicationCausingHypertension
-                        (\medications -> { medicationHistoryForm | medicationCausingHypertension = medications })
+                    setMultiSelectInputValue .medicationsCausingHypertension
+                        (\medications -> { medicationHistoryForm | medicationsCausingHypertension = medications })
                         NoMedicationCausingHypertension
                         medication
                         medicationHistoryForm
@@ -593,8 +593,8 @@ update currentDate id db msg model =
         SetMedicationTreatingHypertension medication ->
             let
                 updatedForm =
-                    setMultiSelectInputValue .medicationTreatingHypertension
-                        (\medications -> { medicationHistoryForm | medicationTreatingHypertension = medications })
+                    setMultiSelectInputValue .medicationsTreatingHypertension
+                        (\medications -> { medicationHistoryForm | medicationsTreatingHypertension = medications })
                         NoMedicationTreatingHypertension
                         medication
                         medicationHistoryForm
@@ -611,8 +611,8 @@ update currentDate id db msg model =
         SetMedicationTreatingDiabetes medication ->
             let
                 updatedForm =
-                    setMultiSelectInputValue .medicationTreatingDiabetes
-                        (\medications -> { medicationHistoryForm | medicationTreatingDiabetes = medications })
+                    setMultiSelectInputValue .medicationsTreatingDiabetes
+                        (\medications -> { medicationHistoryForm | medicationsTreatingDiabetes = medications })
                         NoMedicationTreatingDiabetes
                         medication
                         medicationHistoryForm

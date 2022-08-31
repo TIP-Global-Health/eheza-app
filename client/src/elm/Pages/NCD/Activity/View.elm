@@ -610,7 +610,7 @@ viewMedicationHistoryForm language currentDate form =
             [ MedicationIbuprofen
             , NoMedicationCausingHypertension
             ]
-            (Maybe.withDefault [] form.medicationCausingHypertension)
+            (Maybe.withDefault [] form.medicationsCausingHypertension)
             Nothing
             SetMedicationCausingHypertension
             Translate.MedicationCausingHypertension
@@ -627,7 +627,7 @@ viewMedicationHistoryForm language currentDate form =
             , MedicationHydralazine
             , NoMedicationTreatingHypertension
             ]
-            (Maybe.withDefault [] form.medicationTreatingHypertension)
+            (Maybe.withDefault [] form.medicationsTreatingHypertension)
             Nothing
             SetMedicationTreatingHypertension
             Translate.MedicationTreatingHypertension
@@ -638,7 +638,7 @@ viewMedicationHistoryForm language currentDate form =
             , MedicationGlibenclamide
             ]
             [ MedicationInsulin, NoMedicationTreatingDiabetes ]
-            (Maybe.withDefault [] form.medicationTreatingDiabetes)
+            (Maybe.withDefault [] form.medicationsTreatingDiabetes)
             Nothing
             SetMedicationTreatingDiabetes
             Translate.MedicationTreatingDiabetes

@@ -2382,9 +2382,9 @@ type alias NCDMedicationHistory =
 
 
 type alias NCDMedicationHistoryValue =
-    { medicationCausingHypertension : EverySet MedicationCausingHypertension
-    , medicationTreatingHypertension : EverySet MedicationTreatingHypertension
-    , medicationTreatingDiabetes : EverySet MedicationTreatingDiabetes
+    { medicationsCausingHypertension : EverySet MedicationCausingHypertension
+    , medicationsTreatingHypertension : EverySet MedicationTreatingHypertension
+    , medicationsTreatingDiabetes : EverySet MedicationTreatingDiabetes
     }
 
 

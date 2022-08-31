@@ -203,9 +203,9 @@ emptyFamilyHistoryForm =
 
 
 type alias MedicationHistoryForm =
-    { medicationCausingHypertension : Maybe (List MedicationCausingHypertension)
-    , medicationTreatingHypertension : Maybe (List MedicationTreatingHypertension)
-    , medicationTreatingDiabetes : Maybe (List MedicationTreatingDiabetes)
+    { medicationsCausingHypertension : Maybe (List MedicationCausingHypertension)
+    , medicationsTreatingHypertension : Maybe (List MedicationTreatingHypertension)
+    , medicationsTreatingDiabetes : Maybe (List MedicationTreatingDiabetes)
     }
 
 

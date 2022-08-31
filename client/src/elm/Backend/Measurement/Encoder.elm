@@ -4294,9 +4294,9 @@ encodeNCDMedicationHistory =
 
 encodeNCDMedicationHistoryValue : NCDMedicationHistoryValue -> List ( String, Value )
 encodeNCDMedicationHistoryValue value =
-    [ ( "causing_hypertension", encodeEverySet encodeMedicationCausingHypertension value.medicationCausingHypertension )
-    , ( "treating_hypertension", encodeEverySet encodeMedicationTreatingHypertension value.medicationTreatingHypertension )
-    , ( "treating_diabetes", encodeEverySet encodeMedicationTreatingDiabetes value.medicationTreatingDiabetes )
+    [ ( "causing_hypertension", encodeEverySet encodeMedicationCausingHypertension value.medicationsCausingHypertension )
+    , ( "treating_hypertension", encodeEverySet encodeMedicationTreatingHypertension value.medicationsTreatingHypertension )
+    , ( "treating_diabetes", encodeEverySet encodeMedicationTreatingDiabetes value.medicationsTreatingDiabetes )
     , ( "deleted", bool False )
     , ( "type", string "ncd_medication_history" )
     ]
