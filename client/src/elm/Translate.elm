@@ -6465,12 +6465,12 @@ translationSet trans =
                     }
 
                 MedicalConditionRentalComplications ->
-                    { english = "RentalC omplications"
+                    { english = "Rental Complications"
                     , kinyarwanda = Nothing
                     }
 
                 MedicalConditionMalaria ->
-                    { english = "alaria"
+                    { english = "Malaria"
                     , kinyarwanda = Nothing
                     }
 

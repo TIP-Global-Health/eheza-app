@@ -8,6 +8,7 @@ import Measurement.Model
         ( CorePhysicalExamForm
         , FamilyPlanningForm
         , OutsideCareForm
+        , OutsideCareStep(..)
         , VitalsForm
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
@@ -63,6 +64,14 @@ type Msg
     | SetHeartProblemPredecessor Predecessor
     | SetDiabetesPredecessor Predecessor
     | SaveFamilyHistory PersonId (Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )) (Maybe MedicalHistoryTask)
+    | SetOutsideCareStep OutsideCareStep
+    | SetOutsideCareSignBoolInput (Bool -> OutsideCareForm MedicalCondition -> OutsideCareForm MedicalCondition) Bool
+    | SetOutsideCareDiagnosis MedicalCondition
+    | SetOutsideCareMalariaMedication OutsideCareMedication
+    | SetOutsideCareHypertensionMedication OutsideCareMedication
+    | SetOutsideCareSyphilisMedication OutsideCareMedication
+    | SetOutsideCareAnemiaMedication OutsideCareMedication
+    | SetOutsideCareHIVMedication OutsideCareMedication
     | SaveOutsideCare PersonId (Maybe ( NCDOutsideCareId, NCDOutsideCare )) (Maybe MedicalHistoryTask)
 
 
@@ -161,6 +170,7 @@ type alias MedicalHistoryData =
     , medicationHistoryForm : MedicationHistoryForm
     , socialHistoryForm : SocialHistoryForm
     , outsideCareForm : OutsideCareForm MedicalCondition
+    , outsideCareStep : OutsideCareStep
     , activeTask : Maybe MedicalHistoryTask
     }
 
@@ -172,6 +182,7 @@ emptyMedicalHistoryData =
     , medicationHistoryForm = emptyMedicationHistoryForm
     , socialHistoryForm = emptySocialHistoryForm
     , outsideCareForm = emptyOutsideCareForm
+    , outsideCareStep = OutsideCareStepDiagnoses
     , activeTask = Nothing
     }
 

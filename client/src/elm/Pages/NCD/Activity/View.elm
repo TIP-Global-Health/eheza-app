@@ -16,8 +16,22 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (CorePhysicalExamForm, InvokationModule(..), VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (corePhysicalExamFormWithDefault, familyPlanningFormWithDefault, vitalsFormWithDefault)
+import Measurement.Model
+    exposing
+        ( CorePhysicalExamForm
+        , InvokationModule(..)
+        , OutsideCareStep(..)
+        , VitalsForm
+        , VitalsFormMode(..)
+        )
+import Measurement.Utils
+    exposing
+        ( corePhysicalExamFormWithDefault
+        , familyPlanningFormWithDefault
+        , outsideCareFormInputsAndTasks
+        , outsideCareFormWithDefault
+        , vitalsFormWithDefault
+        )
 import Measurement.View exposing (viewCorePhysicalExamForm, viewFamilyPlanningForm, viewVitalsForm)
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
@@ -495,7 +509,17 @@ viewMedicalHistoryContent language currentDate assembled data =
         tasksCompletedFromTotalDict =
             List.map
                 (\task ->
-                    ( task, medicalHistoryTasksCompletedFromTotal currentDate assembled data task )
+                    case task of
+                        TaskOutsideCare ->
+                            ( TaskOutsideCare
+                            , ( Maybe.Extra.values outsideCareTasks
+                                    |> List.length
+                              , List.length outsideCareTasks
+                              )
+                            )
+
+                        _ ->
+                            ( task, medicalHistoryTasksCompletedFromTotal currentDate assembled data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -503,6 +527,49 @@ viewMedicalHistoryContent language currentDate assembled data =
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
+
+        outsideCareForm =
+            assembled.measurements.outsideCare
+                |> getMeasurementValueFunc
+                |> outsideCareFormWithDefault data.outsideCareForm
+
+        ( outsideCareInputs, outsideCareTasks ) =
+            case data.outsideCareStep of
+                OutsideCareStepDiagnoses ->
+                    ( outsideCareInputsStep1, outsideCareTasksStep1 )
+
+                OutsideCareStepMedications ->
+                    ( outsideCareInputsStep2, outsideCareTasksStep2 )
+
+        outsideCareConfig =
+            { setBoolInputMsg = SetOutsideCareSignBoolInput
+            , setDiagnosisMsg = SetOutsideCareDiagnosis
+            , setMalariaMedicationMsg = SetOutsideCareMalariaMedication
+            , setHypertensionMedicationMsg = SetOutsideCareHypertensionMedication
+            , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
+            , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
+            , setHIVMedicationMsg = SetOutsideCareHIVMedication
+            , malariaDiagnoses = [ MedicalConditionMalaria ]
+            , hypertensionDiagnoses = [ MedicalConditionHypertension ]
+            , syphilisDiagnoses = [ MedicalConditionSyphilis ]
+            , anemiaDiagnoses = [ MedicalConditionAnemia ]
+            , hivDiagnoses = [ MedicalConditionHIV ]
+            , malariaHeaderTransId = Translate.MedicalCondition MedicalConditionMalaria
+            , resolveHypertensionHeaderTransId = always (Translate.MedicalCondition MedicalConditionHypertension)
+            , syphilisHeaderTransId = Translate.MedicalCondition MedicalConditionSyphilis
+            , anemiaHeaderTransId = Translate.MedicalCondition MedicalConditionAnemia
+            , hivHeaderTransId = Translate.MedicalCondition MedicalConditionHIV
+            , diagnosesLeftColumn = outsideCareDiagnosesLeftColumn
+            , diagnosesRightColumn = outsideCareDiagnosesRightColumn
+            , otherDiagnosis = MedicalConditionOther
+            , diagnosisTransId = Translate.MedicalCondition
+            }
+
+        ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
+            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
+
+        ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
+            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepMedications outsideCareForm
 
         viewForm =
             case activeTask of
@@ -527,7 +594,8 @@ viewMedicalHistoryContent language currentDate assembled data =
                         |> viewFamilyHistoryForm language currentDate
 
                 Just TaskOutsideCare ->
-                    emptyNode
+                    div [ class "ui form history outside-care" ]
+                        outsideCareInputs
 
                 Nothing ->
                     emptyNode

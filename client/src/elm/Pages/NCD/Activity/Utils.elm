@@ -671,3 +671,25 @@ familyHistoryFormInputsAndTasks language currentDate form =
     ( hypertensionInputs ++ heartProblemInputs ++ diabetesInputs
     , hypertensionTasks ++ heartProblemTasks ++ diabetesTasks
     )
+
+
+outsideCareDiagnosesLeftColumn : List MedicalCondition
+outsideCareDiagnosesLeftColumn =
+    [ MedicalConditionNeuropathy
+    , MedicalConditionHIV
+    , MedicalConditionRentalComplications
+    , MedicalConditionMalaria
+    , MedicalConditionTuberculosis
+    , MedicalConditionHypertension
+    ]
+
+
+outsideCareDiagnosesRightColumn : List MedicalCondition
+outsideCareDiagnosesRightColumn =
+    [ MedicalConditionHepatitisB
+    , MedicalConditionSyphilis
+    , MedicalConditionEyeComplications
+    , MedicalConditionAnemia
+    , MedicalConditionPregnancy
+    , MedicalConditionDiabetes
+    ]
