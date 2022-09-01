@@ -19,7 +19,7 @@ import Pages.NCD.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.NCD.Encounter.Model exposing (..)
 import Pages.NCD.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -88,7 +88,7 @@ viewHeader language assembled =
 
 viewContent : Language -> NominalDate -> NCDEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id db model assembled =
-    ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
+    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
         :: viewMainPageContent language currentDate id db assembled model
     )
         |> div [ class "ui unstackable items" ]

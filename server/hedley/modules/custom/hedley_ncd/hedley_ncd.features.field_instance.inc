@@ -883,6 +883,43 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_danger_signs-field_ncd_danger_signs'.
+  $field_instances['node-ncd_danger_signs-field_ncd_danger_signs'] = array(
+    'bundle' => 'ncd_danger_signs',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncd_danger_signs',
+    'label' => 'NCD Danger Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_danger_signs-field_ncd_encounter'.
   $field_instances['node-ncd_danger_signs-field_ncd_encounter'] = array(
     'bundle' => 'ncd_danger_signs',
@@ -4741,6 +4778,119 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-ncd_symptom_review-field_ncd_group1_symptoms'.
+  $field_instances['node-ncd_symptom_review-field_ncd_group1_symptoms'] = array(
+    'bundle' => 'ncd_symptom_review',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncd_group1_symptoms',
+    'label' => 'NCD Group1 Symptoms',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_symptom_review-field_ncd_group2_symptoms'.
+  $field_instances['node-ncd_symptom_review-field_ncd_group2_symptoms'] = array(
+    'bundle' => 'ncd_symptom_review',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncd_group2_symptoms',
+    'label' => 'NCD Group2 Symptoms',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_symptom_review-field_ncd_pain_symptoms'.
+  $field_instances['node-ncd_symptom_review-field_ncd_pain_symptoms'] = array(
+    'bundle' => 'ncd_symptom_review',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncd_pain_symptoms',
+    'label' => 'NCD Pain Symptoms',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_symptom_review-field_nurse'.
   $field_instances['node-ncd_symptom_review-field_nurse'] = array(
     'bundle' => 'ncd_symptom_review',
@@ -5462,7 +5612,11 @@ function hedley_ncd_field_default_field_instances() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Date Measured');
+  t('NCD Danger Signs');
   t('NCD Encounter');
+  t('NCD Group1 Symptoms');
+  t('NCD Group2 Symptoms');
+  t('NCD Pain Symptoms');
   t('Nurse');
   t('Person');
   t('Shards');

@@ -1984,28 +1984,53 @@ div.page-activity.prenatal {
   }
 }
 
+div.page-activity.ncd,
+div.page-activity.well-child {
+
+  .ui.full.segment .full.content {
+
+    @include next-steps;
+
+    .helper {
+      font-style: italic;
+      margin-top: -10px;
+    }
+
+    .ui.form {
+      min-height: 140px;
+
+      .separator {
+        color: $color-light-gray;
+        margin: 30px 0;
+        width: 100%;
+        border: 1px solid;
+      }
+
+      .checkbox-select-input {
+        margin-bottom: 40px;
+      }
+
+      .checkbox-select-input .ui.checkbox.activity {
+        margin-top: 30px;
+
+        label {
+          padding-left: 40px;
+        }
+
+        label:before,
+        label:after {
+          left: 0;
+        }
+      }
+    }
+  }
+}
+
 div.page-activity.well-child {
 
   .ui.full.segment {
 
     .full.content {
-
-      @include next-steps;
-
-      .helper {
-        font-style: italic;
-      }
-
-      .ui.form {
-        min-height: 140px;
-
-        .separator {
-          color: $color-light-gray;
-          margin: 30px 0;
-          width: 100%;
-          border: 1px solid;
-        }
-      }
 
       .date {
         margin-bottom: 20px;
@@ -2110,19 +2135,6 @@ div.page-activity.well-child {
       .why-not {
         margin-bottom: 30px;
         margin-left: 20px;
-      }
-
-      .ui.checkbox.activity {
-        margin-top: 30px;
-
-        label {
-          padding-left: 40px;
-        }
-
-        label:before,
-        label:after {
-          left: 0;
-        }
       }
 
       .future-vaccinations {
@@ -3288,7 +3300,9 @@ div.page-encounter.well-child,
 div.page-activity.trace-contact,
 div.page-activity.well-child,
 div.page-report.well-child,
-div.page-activity.patient-record {
+div.page-activity.patient-record,
+div.page-encounter.ncd,
+div.page-activity.ncd {
 
   .details {
     padding-left: 25px;

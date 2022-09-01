@@ -2573,3 +2573,263 @@ pregnancyTestResultToString sign =
 
         PregnancyTestUnableToConduct ->
             "unable-to-conduct"
+
+
+ncdDangerSignFromString : String -> Maybe NCDDangerSign
+ncdDangerSignFromString sign =
+    case sign of
+        "dyspnea" ->
+            Just Dyspnea
+
+        "vision-changes" ->
+            Just VisionChanges
+
+        "chest-pain" ->
+            Just ChestPain
+
+        "flank-pain" ->
+            Just FlankPain
+
+        "hematuria" ->
+            Just Hematuria
+
+        "severe-headaches" ->
+            Just SevereHeadaches
+
+        "loss-of-conciousness" ->
+            Just LossOfConciousness
+
+        "none" ->
+            Just NoNCDDangerSigns
+
+        _ ->
+            Nothing
+
+
+ncdDangerSignToString : NCDDangerSign -> String
+ncdDangerSignToString sign =
+    case sign of
+        Dyspnea ->
+            "dyspnea"
+
+        VisionChanges ->
+            "vision-changes"
+
+        ChestPain ->
+            "chest-pain"
+
+        FlankPain ->
+            "flank-pain"
+
+        Hematuria ->
+            "hematuria"
+
+        SevereHeadaches ->
+            "severe-headaches"
+
+        LossOfConciousness ->
+            "loss-of-conciousness"
+
+        NoNCDDangerSigns ->
+            "none"
+
+
+ncdGroup1SymptomFromString : String -> Maybe NCDGroup1Symptom
+ncdGroup1SymptomFromString sign =
+    case sign of
+        "swelling-in-legs" ->
+            Just SwellingInLegs
+
+        "urinary-frequency" ->
+            Just UrinaryFrequency
+
+        "anxiety" ->
+            Just Anxiety
+
+        "weight-loss" ->
+            Just WeightLoss
+
+        "palpitations" ->
+            Just Palpitations
+
+        "tremor" ->
+            Just Tremor
+
+        "swelling-in-face" ->
+            Just SwellingInFace
+
+        "swelling-in-abdomen" ->
+            Just SwellingInAbdomen
+
+        "dizziness-with-changing-position" ->
+            Just DizzinessWithChangingPosition
+
+        "mild-headache" ->
+            Just MildHeadache
+
+        "none" ->
+            Just NoNCDGroup1Symptoms
+
+        _ ->
+            Nothing
+
+
+ncdGroup1SymptomToString : NCDGroup1Symptom -> String
+ncdGroup1SymptomToString sign =
+    case sign of
+        SwellingInLegs ->
+            "swelling-in-legs"
+
+        UrinaryFrequency ->
+            "urinary-frequency"
+
+        Anxiety ->
+            "anxiety"
+
+        WeightLoss ->
+            "weight-loss"
+
+        Palpitations ->
+            "palpitations"
+
+        Tremor ->
+            "tremor"
+
+        SwellingInFace ->
+            "swelling-in-face"
+
+        SwellingInAbdomen ->
+            "swelling-in-abdomen"
+
+        DizzinessWithChangingPosition ->
+            "dizziness-with-changing-position"
+
+        MildHeadache ->
+            "mild-headache"
+
+        NoNCDGroup1Symptoms ->
+            "none"
+
+
+ncdGroup2SymptomFromString : String -> Maybe NCDGroup2Symptom
+ncdGroup2SymptomFromString sign =
+    case sign of
+        "weakness-of-one-side-of-the-body" ->
+            Just WeaknessOfOneSideOfTheBody
+
+        "problems-with-walking" ->
+            Just ProblemsWithWalking
+
+        "problems-with-talking" ->
+            Just ProblemsWithTalking
+
+        "decreased-vision" ->
+            Just DecreasedVision
+
+        "blurry-vision" ->
+            Just BlurryVision
+
+        "increased-fatigue-with-daily-activities" ->
+            Just IncreasedFatigueWithDailyActivities
+
+        "short-of-breath-when-laying-down" ->
+            Just ShortOfBreathWhenLayingDown
+
+        "short-of-breath-at-night" ->
+            Just ShortOfBreathAtNight
+
+        "kidney-problems" ->
+            Just KidneyProblems
+
+        "increased-thirst" ->
+            Just NCDIncreasedThirst
+
+        "none" ->
+            Just NoNCDGroup2Symptoms
+
+        _ ->
+            Nothing
+
+
+ncdGroup2SymptomToString : NCDGroup2Symptom -> String
+ncdGroup2SymptomToString sign =
+    case sign of
+        WeaknessOfOneSideOfTheBody ->
+            "weakness-of-one-side-of-the-body"
+
+        ProblemsWithWalking ->
+            "problems-with-walking"
+
+        ProblemsWithTalking ->
+            "problems-with-talking"
+
+        DecreasedVision ->
+            "decreased-vision"
+
+        BlurryVision ->
+            "blurry-vision"
+
+        IncreasedFatigueWithDailyActivities ->
+            "increased-fatigue-with-daily-activities"
+
+        ShortOfBreathWhenLayingDown ->
+            "short-of-breath-when-laying-down"
+
+        ShortOfBreathAtNight ->
+            "short-of-breath-at-night"
+
+        KidneyProblems ->
+            "kidney-problems"
+
+        NCDIncreasedThirst ->
+            "increased-thirst"
+
+        NoNCDGroup2Symptoms ->
+            "none"
+
+
+ncdPainSymptomFromString : String -> Maybe NCDPainSymptom
+ncdPainSymptomFromString sign =
+    case sign of
+        "flank" ->
+            Just PainFlank
+
+        "lower-back" ->
+            Just PainLowerBack
+
+        "feet" ->
+            Just PainFeet
+
+        "neck" ->
+            Just PainNeck
+
+        "abdomen" ->
+            Just PainAbdomen
+
+        "none" ->
+            Just NoNCDPainSymptoms
+
+        _ ->
+            Nothing
+
+
+ncdPainSymptomToString : NCDPainSymptom -> String
+ncdPainSymptomToString sign =
+    case sign of
+        PainFlank ->
+            "flank"
+
+        PainLowerBack ->
+            "lower-back"
+
+        PainFeet ->
+            "feet"
+
+        PainNeck ->
+            "neck"
+
+        PainAbdomen ->
+            "abdomen"
+
+        NoNCDPainSymptoms ->
+            "none"
