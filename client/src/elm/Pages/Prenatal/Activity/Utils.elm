@@ -43,6 +43,7 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , taskAllCompleted
         , taskCompleted
@@ -3901,12 +3902,7 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
                                                 Translate.HIVTreatmentSign
                                             ]
                                       ]
-                                    , [ if isJust form.hivMedicationNotGivenReason then
-                                            Just True
-
-                                        else
-                                            Nothing
-                                      ]
+                                    , [ maybeToBoolTask form.hivMedicationNotGivenReason ]
                                     )
                             )
                             form.hivMedicationByPMTCT
@@ -6030,11 +6026,7 @@ outsideCareFormInputsAndTasksDiagnoses language form =
                                     Nothing
                               ]
                                 ++ givenMedicineSection
-                            , [ if isJust form.diagnoses then
-                                    Just True
-
-                                else
-                                    Nothing
+                            , [ maybeToBoolTask form.diagnoses
                               , form.plannedFollowUp
                               ]
                                 ++ givenMedicineTasks
@@ -6104,12 +6096,7 @@ outsideCareFormInputsAndTasksMedications language form =
                                     form.malariaMedications
                                     SetOutsideCareMalariaMedication
                               ]
-                            , [ if isJust form.malariaMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
+                            , [ maybeToBoolTask form.malariaMedications ]
                             )
 
                         else
@@ -6137,12 +6124,7 @@ outsideCareFormInputsAndTasksMedications language form =
                                     form.hypertensionMedications
                                     SetOutsideCareHypertensionMedication
                               ]
-                            , [ if isJust form.hypertensionMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
+                            , [ maybeToBoolTask form.hypertensionMedications ]
                             )
 
                         else
@@ -6156,12 +6138,7 @@ outsideCareFormInputsAndTasksMedications language form =
                                     form.syphilisMedications
                                     SetOutsideCareSyphilisMedication
                               ]
-                            , [ if isJust form.syphilisMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
+                            , [ maybeToBoolTask form.syphilisMedications ]
                             )
 
                         else
@@ -6175,12 +6152,7 @@ outsideCareFormInputsAndTasksMedications language form =
                                     form.anemiaMedications
                                     SetOutsideCareAnemiaMedication
                               ]
-                            , [ if isJust form.anemiaMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
+                            , [ maybeToBoolTask form.anemiaMedications ]
                             )
 
                         else
@@ -6194,12 +6166,7 @@ outsideCareFormInputsAndTasksMedications language form =
                                     form.hivMedications
                                     SetOutsideCareHIVMedication
                               ]
-                            , [ if isJust form.hivMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
+                            , [ maybeToBoolTask form.hivMedications ]
                             )
 
                         else
@@ -6929,11 +6896,7 @@ guExamFormInputsAndTasks language assembled form =
                     "episiotomy"
                     Nothing
               ]
-            , [ if isJust form.vaginalExamSigns then
-                    Just True
-
-                else
-                    Nothing
+            , [ maybeToBoolTask form.vaginalExamSigns
               , form.episiotomyOrPerinealTear
               ]
             )
@@ -6956,12 +6919,7 @@ guExamFormInputsAndTasks language assembled form =
                                     Translate.PostpartumHealingProblem
                               , div [ class "separator double" ] []
                               ]
-                            , [ if isJust form.postpartumHealingProblems then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
+                            , [ maybeToBoolTask form.postpartumHealingProblems ]
                             )
 
                         else
@@ -7064,12 +7022,7 @@ resolveReferralInputsAndTasksForCHW language currentDate assembled form =
                                     Translate.ReasonForNonReferral
                                 ]
                           ]
-                        , [ if isJust form.reasonForNotSendingToHC then
-                                Just True
-
-                            else
-                                Nothing
-                          ]
+                        , [ maybeToBoolTask form.reasonForNotSendingToHC ]
                         )
                 )
                 form.referToHealthCenter

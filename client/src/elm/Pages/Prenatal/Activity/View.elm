@@ -70,6 +70,7 @@ import Pages.Utils
         ( customSaveButton
         , emptySelectOption
         , isTaskCompleted
+        , maybeToBoolTask
         , saveButton
         , taskAllCompleted
         , taskCompleted
@@ -4485,12 +4486,7 @@ viewBreastfeedingContent language currentDate assembled data =
                                 SetReasonForNotBreastfeeding
                                 Translate.ReasonForNotBreastfeeding
                           ]
-                        , [ if isJust form.reasonForNotBreastfeeding then
-                                Just True
-
-                            else
-                                Nothing
-                          ]
+                        , [ maybeToBoolTask form.reasonForNotBreastfeeding ]
                         )
                 )
                 form.isBreastfeeding
