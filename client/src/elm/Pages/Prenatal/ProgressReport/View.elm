@@ -15,7 +15,7 @@ import Backend.Measurement.Model
         , PrenatalHIVSign(..)
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
-        , PrenatalOutsideCareMedication(..)
+        , OutsideCareMedication(..)
         , PrenatalSymptomQuestion(..)
         , PrenatalTestExecutionNote(..)
         , PrenatalTestResult(..)
@@ -3064,7 +3064,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
 viewTreatmentForOutsideCareDiagnosis :
     Language
     -> NominalDate
-    -> Maybe (EverySet PrenatalOutsideCareMedication)
+    -> Maybe (EverySet OutsideCareMedication)
     -> PrenatalDiagnosis
     -> List (Html any)
 viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
@@ -3101,7 +3101,7 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
                                         ++ (String.toLower <| translate language Translate.TreatedWith)
                                         ++ " "
                                         ++ (List.map
-                                                (Translate.PrenatalOutsideCareMedicationLabel >> translate language)
+                                                (Translate.OutsideCareMedicationLabel >> translate language)
                                                 treatments
                                                 |> String.join ", "
                                            )

@@ -1067,9 +1067,9 @@ type TranslationId
     | PrenatalNCDProgramHeaderSuffix
     | PrenatalNCDProgramInstructions
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
-    | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
-    | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
-    | PrenatalOutsideCareMedicationDosage PrenatalOutsideCareMedication
+    | OutsideCareSignQuestion OutsideCareSign
+    | OutsideCareMedicationLabel OutsideCareMedication
+    | OutsideCareMedicationDosage OutsideCareMedication
     | PrenatalPhotoHelper
     | PrenatalRecurrentNextStepsTask Pages.Prenatal.RecurrentActivity.Types.NextStepsTask
     | PrenatalSymptom PrenatalSymptom
@@ -11574,7 +11574,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PrenatalOutsideCareSignQuestion sign ->
+        OutsideCareSignQuestion sign ->
             case sign of
                 SeenAtAnotherFacility ->
                     { english = "Have you been seen at another facility since your last visit"
@@ -11597,12 +11597,12 @@ translationSet trans =
                     }
 
                 -- There's not question for this sign.
-                NoPrenatalOutsideCareSigns ->
+                NoOutsideCareSigns ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
 
-        PrenatalOutsideCareMedicationDosage medication ->
+        OutsideCareMedicationDosage medication ->
             case medication of
                 OutsideCareMedicationQuinineSulphate ->
                     { english = "3 x a day for 7 days"
@@ -11695,7 +11695,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        PrenatalOutsideCareMedicationLabel medication ->
+        OutsideCareMedicationLabel medication ->
             case medication of
                 OutsideCareMedicationQuinineSulphate ->
                     { english = "Quinine Sulphate per os (10 mg/kg/dose)"

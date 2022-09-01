@@ -35,11 +35,13 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , taskCompleted
         , taskCompletedWithException
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
@@ -1157,3 +1159,438 @@ toFamilyPlanningValueWithDefault saved form =
 toFamilyPlanningValue : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
 toFamilyPlanningValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NoFamilyPlanning) form.signs
+
+
+outsideCareFormWithDefault : OutsideCareForm diagnosis -> Maybe (OutsideCareValue diagnosis) -> OutsideCareForm diagnosis
+outsideCareFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    malariaMedications =
+                        filterIllnessOptions outsideCareMedicationOptionsMalaria
+
+                    hypertensionMedications =
+                        filterIllnessOptions outsideCareMedicationOptionsHypertension
+
+                    syphilisMedications =
+                        filterIllnessOptions outsideCareMedicationOptionsSyphilis
+
+                    anemiaMedications =
+                        filterIllnessOptions outsideCareMedicationOptionsAnemia
+
+                    hivMedications =
+                        filterIllnessOptions outsideCareMedicationOptionsHIV
+
+                    filterIllnessOptions options =
+                        Maybe.map
+                            (EverySet.toList
+                                >> List.filter
+                                    (\medication ->
+                                        List.member medication options
+                                    )
+                            )
+                            value.medications
+                in
+                { seenAtAnotherFacility = or form.seenAtAnotherFacility (EverySet.member SeenAtAnotherFacility value.signs |> Just)
+                , givenNewDiagnosis = or form.givenNewDiagnosis (EverySet.member GivenNewDiagnoses value.signs |> Just)
+                , givenMedicine = or form.givenMedicine (EverySet.member GivenMedicine value.signs |> Just)
+                , plannedFollowUp = or form.plannedFollowUp (EverySet.member PlannedFollowUpCareWithSpecialist value.signs |> Just)
+                , diagnoses = maybeValueConsideringIsDirtyField form.diagnosesDirty form.diagnoses (value.diagnoses |> Maybe.map EverySet.toList)
+                , diagnosesDirty = form.diagnosesDirty
+                , malariaMedications = or form.malariaMedications malariaMedications
+                , hypertensionMedications = or form.hypertensionMedications hypertensionMedications
+                , syphilisMedications = or form.syphilisMedications syphilisMedications
+                , hivMedications = or form.hivMedications hivMedications
+                , anemiaMedications = or form.anemiaMedications anemiaMedications
+                }
+            )
+
+
+toOutsideCareValueWithDefault : Maybe (OutsideCareValue diagnosis) -> OutsideCareForm diagnosis -> Maybe (OutsideCareValue diagnosis)
+toOutsideCareValueWithDefault saved form =
+    outsideCareFormWithDefault form saved
+        |> toOutsideCareValue
+
+
+toOutsideCareValue : diagnosis -> OutsideCareForm diagnosis -> Maybe (OutsideCareValue diagnosis)
+toOutsideCareValue noneValue form =
+    let
+        maybeSigns =
+            [ Maybe.map (ifTrue SeenAtAnotherFacility) form.seenAtAnotherFacility
+            , ifNullableTrue GivenNewDiagnoses form.givenNewDiagnosis
+            , ifNullableTrue GivenMedicine form.givenMedicine
+            , ifNullableTrue PlannedFollowUpCareWithSpecialist form.plannedFollowUp
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoOutsideCareSigns)
+    in
+    Maybe.map
+        (\signs ->
+            let
+                diagnoses =
+                    Maybe.map (EverySet.fromList >> ifEverySetEmpty noneValue) form.diagnoses
+
+                mapMedications illnessMedications =
+                    [ Maybe.map (EverySet.fromList >> Just) illnessMedications
+                        |> Maybe.withDefault (Just EverySet.empty)
+                    ]
+
+                medications =
+                    mapMedications form.malariaMedications
+                        ++ mapMedications form.hypertensionMedications
+                        ++ mapMedications form.syphilisMedications
+                        ++ mapMedications form.anemiaMedications
+                        ++ mapMedications form.hivMedications
+                        |> Maybe.Extra.combine
+                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoOutsideCareMedications)
+            in
+            { signs = signs
+            , diagnoses = diagnoses
+            , medications = medications
+            }
+        )
+        maybeSigns
+
+
+type alias OutsideCareConfig diagnosis msg =
+    { setBoolInputMsg : Bool -> (Bool -> OutsideCareForm diagnosis -> OutsideCareForm diagnosis) -> msg
+    , setDiagnosisMsg : diagnosis -> msg
+    , setMalariaMedicationMsg : OutsideCareMedication -> msg
+    , setHypertensionMedicationMsg : OutsideCareMedication -> msg
+    , setSyphilisMedicationMsg : OutsideCareMedication -> msg
+    , setAnemiaMedicationMsg : OutsideCareMedication -> msg
+    , setHIVMedicationMsg : OutsideCareMedication -> msg
+    , diagnosesWithPossibleMedication : List diagnosis
+    , diagnosesLeftColumn : List diagnosis
+    , diagnosesRightColumn : List diagnosis
+    , otherDiagnosis : diagnosis
+    }
+
+
+outsideCareFormInputsAndTasks : Language -> OutsideCareConfig diagnosis msg -> OutsideCareStep -> OutsideCareForm diagnosis -> ( List (Html msg), List (Maybe Bool) )
+outsideCareFormInputsAndTasks language config step form =
+    case step of
+        OutsideCareStepDiagnoses ->
+            outsideCareFormInputsAndTasksDiagnoses language config form
+
+        OutsideCareStepMedications ->
+            outsideCareFormInputsAndTasksMedications language config form
+
+
+outsideCareFormInputsAndTasksDiagnoses : Language -> OutsideCareConfig diagnosis msg -> OutsideCareForm diagnosis -> ( List (Html msg), List (Maybe Bool) )
+outsideCareFormInputsAndTasksDiagnoses language config form =
+    let
+        ( givenNewDiagnosisSection, givenNewDiagnosisTasks ) =
+            if form.seenAtAnotherFacility == Just True then
+                let
+                    ( newDiagnosisSection, newDiagnosisTasks ) =
+                        if form.givenNewDiagnosis == Just True then
+                            let
+                                ( givenMedicineSection, givenMedicineTasks ) =
+                                    Maybe.map
+                                        (\diagnoses ->
+                                            if
+                                                List.any (\diagnosis -> List.member diagnosis diagnoses)
+                                                    config.diagnosesWithPossibleMedication
+                                            then
+                                                ( [ viewQuestionLabel language <| Translate.OutsideCareSignQuestion GivenMedicine
+                                                  , viewBoolInput
+                                                        language
+                                                        form.givenMedicine
+                                                        (config.setBoolInputMsg
+                                                            (\value form_ ->
+                                                                { form_
+                                                                    | givenMedicine = Just value
+                                                                    , malariaMedications = Nothing
+                                                                    , hypertensionMedications = Nothing
+                                                                    , syphilisMedications = Nothing
+                                                                    , hivMedications = Nothing
+                                                                    , anemiaMedications = Nothing
+                                                                }
+                                                            )
+                                                        )
+                                                        "given-medicine"
+                                                        Nothing
+                                                  ]
+                                                , [ form.givenMedicine ]
+                                                )
+
+                                            else
+                                                ( [], [] )
+                                        )
+                                        form.diagnoses
+                                        |> Maybe.withDefault ( [], [] )
+                            in
+                            ( [ viewLabel language Translate.SelectAllDiagnoses
+                              , viewCheckBoxMultipleSelectInput language
+                                    config.diagnosesLeftColumn
+                                    config.diagnosesRightColumn
+                                    (form.diagnoses |> Maybe.withDefault [])
+                                    (Just config.otherDiagnosis)
+                                    config.setDiagnosisMsg
+                                    Translate.PrenatalDiagnosis
+                              , viewQuestionLabel language <| Translate.OutsideCareSignQuestion PlannedFollowUpCareWithSpecialist
+                              , viewBoolInput
+                                    language
+                                    form.plannedFollowUp
+                                    (config.setBoolInputMsg
+                                        (\value form_ -> { form_ | plannedFollowUp = Just value })
+                                    )
+                                    "planned-follow-up"
+                                    Nothing
+                              ]
+                                ++ givenMedicineSection
+                            , [ maybeToBoolTask form.diagnoses
+                              , form.plannedFollowUp
+                              ]
+                                ++ givenMedicineTasks
+                            )
+
+                        else
+                            ( [], [] )
+                in
+                ( [ viewQuestionLabel language <| Translate.OutsideCareSignQuestion GivenNewDiagnoses
+                  , viewBoolInput
+                        language
+                        form.givenNewDiagnosis
+                        (config.setBoolInputMsg
+                            (\value form_ ->
+                                { form_
+                                    | givenNewDiagnosis = Just value
+                                    , givenMedicine = Nothing
+                                    , diagnoses = Nothing
+                                    , diagnosesDirty = True
+                                }
+                            )
+                        )
+                        "given-new-diagnosis"
+                        Nothing
+                  ]
+                    ++ newDiagnosisSection
+                , [ form.givenNewDiagnosis ] ++ newDiagnosisTasks
+                )
+
+            else
+                ( [], [] )
+    in
+    ( [ viewQuestionLabel language <| Translate.OutsideCareSignQuestion SeenAtAnotherFacility
+      , viewBoolInput
+            language
+            form.seenAtAnotherFacility
+            (config.setBoolInputMsg
+                (\value form_ ->
+                    { form_
+                        | seenAtAnotherFacility = Just value
+                        , givenNewDiagnosis = Nothing
+                        , givenMedicine = Nothing
+                        , diagnoses = Nothing
+                        , diagnosesDirty = True
+                    }
+                )
+            )
+            "seen-at-another-facility"
+            Nothing
+      ]
+        ++ givenNewDiagnosisSection
+    , [ form.seenAtAnotherFacility ] ++ givenNewDiagnosisTasks
+    )
+
+
+outsideCareFormInputsAndTasksMedications : Language -> OutsideCareConfig diagnosis msg -> OutsideCareForm diagnosis -> ( List (Html msg), List (Maybe Bool) )
+outsideCareFormInputsAndTasksMedications language config form =
+    if form.givenMedicine == Just True then
+        Maybe.map
+            (\diagnoses ->
+                let
+                    ( malariaInputs, malariaTasks ) =
+                        if List.member DiagnosisMalaria diagnoses then
+                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisMalaria
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsMalaria
+                                    NoOutsideCareMedicationForMalaria
+                                    form.malariaMedications
+                                    config.setMalariaMedicationMsg
+                              ]
+                            , [ maybeToBoolTask form.malariaMedications ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    ( hypertensionInputs, hypertensionTasks ) =
+                        if
+                            List.any (\diagnosis -> List.member diagnosis diagnoses)
+                                [ DiagnosisGestationalHypertensionImmediate
+                                , DiagnosisChronicHypertensionImmediate
+                                , DiagnosisModeratePreeclampsiaInitialPhase
+                                ]
+                        then
+                            let
+                                headerTransId =
+                                    if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
+                                        Translate.ModeratePreeclampsia
+
+                                    else
+                                        Translate.Hypertension
+                            in
+                            ( [ viewHeader headerTransId
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsHypertension
+                                    NoOutsideCareMedicationForHypertension
+                                    form.hypertensionMedications
+                                    config.setHypertensionMedicationMsg
+                              ]
+                            , [ maybeToBoolTask form.hypertensionMedications ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    ( syphilisInputs, syphilisTasks ) =
+                        if List.member DiagnosisSyphilis diagnoses then
+                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisSyphilis
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsSyphilis
+                                    NoOutsideCareMedicationForSyphilis
+                                    form.syphilisMedications
+                                    config.setSyphilisMedicationMsg
+                              ]
+                            , [ maybeToBoolTask form.syphilisMedications ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    ( anemiaInputs, anemiaTasks ) =
+                        if List.member DiagnosisModerateAnemia diagnoses then
+                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisModerateAnemia
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsAnemia
+                                    NoOutsideCareMedicationForAnemia
+                                    form.anemiaMedications
+                                    config.setAnemiaMedicationMsg
+                              ]
+                            , [ maybeToBoolTask form.anemiaMedications ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    ( hivInputs, hivTasks ) =
+                        if List.member DiagnosisHIV diagnoses then
+                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisHIV
+                              , selectTreatmentOptionsInput outsideCareMedicationOptionsHIV
+                                    NoOutsideCareMedicationForHIV
+                                    form.hivMedications
+                                    config.setHIVMedicationMsg
+                              ]
+                            , [ maybeToBoolTask form.hivMedications ]
+                            )
+
+                        else
+                            ( [], [] )
+
+                    selectTreatmentOptionsInput allOptions noneOption currentValue setMsg =
+                        let
+                            options =
+                                List.filter ((/=) noneOption) allOptions
+                        in
+                        viewCheckBoxMultipleSelectCustomInput language
+                            options
+                            []
+                            (Maybe.withDefault [] currentValue)
+                            (Just noneOption)
+                            setMsg
+                            (viewOutsideCareMedicationOption language)
+
+                    viewHeader diagnosisTransId =
+                        div [ class "label" ]
+                            [ span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilityPrefix ]
+                            , text " "
+                            , span [ class "diagnosis" ] [ text <| translate language diagnosisTransId ]
+                            , text " "
+                            , span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilitySuffix ]
+                            ]
+                in
+                ( malariaInputs ++ hypertensionInputs ++ syphilisInputs ++ anemiaInputs ++ hivInputs
+                , malariaTasks ++ hypertensionTasks ++ syphilisTasks ++ anemiaTasks ++ hivTasks
+                )
+            )
+            form.diagnoses
+            |> Maybe.withDefault ( [], [] )
+
+    else
+        ( [], [] )
+
+
+viewOutsideCareMedicationOption : Language -> OutsideCareMedication -> Html any
+viewOutsideCareMedicationOption language medication =
+    if List.member medication noOutsideCareMedicationOptions then
+        label [] [ text <| translate language <| Translate.OutsideCareMedicationLabel medication ]
+
+    else
+        viewOutsideCareMedicationOptionWithDosage language medication
+
+
+outsideCareMedicationOptionsMalaria : List OutsideCareMedication
+outsideCareMedicationOptionsMalaria =
+    [ OutsideCareMedicationQuinineSulphate
+    , OutsideCareMedicationCoartem
+    , NoOutsideCareMedicationForMalaria
+    ]
+
+
+outsideCareMedicationOptionsHypertension : List OutsideCareMedication
+outsideCareMedicationOptionsHypertension =
+    [ OutsideCareMedicationMethyldopa2
+    , OutsideCareMedicationMethyldopa3
+    , OutsideCareMedicationMethyldopa4
+    , OutsideCareMedicationCarvedilol
+    , OutsideCareMedicationAmlodipine
+    , NoOutsideCareMedicationForHypertension
+    ]
+
+
+outsideCareMedicationOptionsSyphilis : List OutsideCareMedication
+outsideCareMedicationOptionsSyphilis =
+    [ OutsideCareMedicationPenecilin1
+    , OutsideCareMedicationPenecilin3
+    , OutsideCareMedicationErythromycin
+    , OutsideCareMedicationAzithromycin
+    , OutsideCareMedicationCeftriaxon
+    , NoOutsideCareMedicationForSyphilis
+    ]
+
+
+outsideCareMedicationOptionsAnemia : List OutsideCareMedication
+outsideCareMedicationOptionsAnemia =
+    [ OutsideCareMedicationIron1
+    , OutsideCareMedicationIron2
+    , OutsideCareMedicationFolicAcid
+    , NoOutsideCareMedicationForAnemia
+    ]
+
+
+outsideCareMedicationOptionsHIV : List OutsideCareMedication
+outsideCareMedicationOptionsHIV =
+    [ OutsideCareMedicationTDF3TC
+    , OutsideCareMedicationDolutegravir
+    , NoOutsideCareMedicationForHIV
+    ]
+
+
+noOutsideCareMedicationOptions : List OutsideCareMedication
+noOutsideCareMedicationOptions =
+    [ NoOutsideCareMedicationForMalaria
+    , NoOutsideCareMedicationForHypertension
+    , NoOutsideCareMedicationForSyphilis
+    , NoOutsideCareMedicationForAnemia
+    , NoOutsideCareMedicationForHIV
+    ]
+
+
+viewOutsideCareMedicationOptionWithDosage : Language -> OutsideCareMedication -> Html any
+viewOutsideCareMedicationOptionWithDosage language medication =
+    label []
+        [ span [ class "treatment" ] [ text <| translate language <| Translate.OutsideCareMedicationLabel medication ]
+        , text ": "
+        , span [ class "dosage" ] [ text <| translate language <| Translate.OutsideCareMedicationDosage medication ]
+        ]

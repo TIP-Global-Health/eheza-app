@@ -58,7 +58,6 @@ import Pages.Prenatal.Utils
         ( diagnosedMalaria
         , hypertensionDiagnoses
         , outsideCareDiagnoses
-        , outsideCareDiagnosesWithPossibleMedication
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
         , recommendedTreatmentSignsForSyphilis

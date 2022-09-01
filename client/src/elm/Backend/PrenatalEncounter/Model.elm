@@ -228,7 +228,7 @@ type Msg
     | HandleSavedMedicationDistribution (WebData ())
     | SaveSymptomReview PersonId (Maybe PrenatalSymptomReviewId) PrenatalSymptomReviewValue
     | HandleSavedSymptomReview (WebData ())
-    | SaveOutsideCare PersonId (Maybe PrenatalOutsideCareId) PrenatalOutsideCareValue
+    | SaveOutsideCare PersonId (Maybe PrenatalOutsideCareId) (OutsideCareValue PrenatalDiagnosis)
     | HandleSavedOutsideCare (WebData ())
     | SaveHIVPCRTest PersonId (Maybe PrenatalHIVPCRTestId) PrenatalHIVPCRTestValue
     | HandleSavedHIVPCRTest (WebData ())

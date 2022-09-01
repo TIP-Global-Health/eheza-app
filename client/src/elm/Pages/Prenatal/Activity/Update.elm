@@ -16,11 +16,11 @@ import Backend.Measurement.Model
         , LegsCPESign(..)
         , LungsCPESign(..)
         , NeckCPESign(..)
+        , OutsideCareMedication(..)
         , PhotoUrl(..)
         , PostpartumChildDangerSign(..)
         , PostpartumHealingProblem(..)
         , PostpartumMotherDangerSign(..)
-        , PrenatalOutsideCareMedication(..)
         , PrenatalSymptom(..)
         , PreviousDeliveryPeriod(..)
         , SocialHistoryHivTestingResult(..)
@@ -772,7 +772,7 @@ update language currentDate id db msg model =
                     generateHistoryMsgs nextTask
 
                 appMsgs =
-                    toPrenatalOutsideCareValueWithDefault measurement model.historyData.outsideCareForm
+                    toOutsideCareValueWithDefault NoPrenatalDiagnosis measurement model.historyData.outsideCareForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveOutsideCare personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
