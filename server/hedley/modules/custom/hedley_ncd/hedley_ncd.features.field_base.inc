@@ -215,6 +215,43 @@ function hedley_ncd_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_medical_conditions'.
+  $field_bases['field_medical_conditions'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_medical_conditions',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hiv' => 'HIV',
+        'diabetes' => 'Diabetes',
+        'pregnancy' => 'Pregnancy',
+        'hypertension' => 'Hypertension',
+        'neuropathy' => 'Neuropathy',
+        'rental-complications' => 'Rental complications',
+        'malaria' => 'Malaria',
+        'tuberculosis' => 'Tuberculosis',
+        'hepatitis-b' => 'Hepatitis B',
+        'syphilis' => 'Syphilis',
+        'eye-complications' => 'Eye complications',
+        'anemia' => 'Anemia',
+        'other' => 'Other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_ncd_danger_signs'.
   $field_bases['field_ncd_danger_signs'] = array(
     'active' => 1,

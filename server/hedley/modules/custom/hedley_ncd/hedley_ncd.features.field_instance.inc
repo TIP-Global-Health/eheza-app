@@ -4045,6 +4045,43 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_outside_care-field_medical_conditions'.
+  $field_instances['node-ncd_outside_care-field_medical_conditions'] = array(
+    'bundle' => 'ncd_outside_care',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_medical_conditions',
+    'label' => 'Diagnosed Medical Conditions',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_outside_care-field_ncd_encounter'.
   $field_instances['node-ncd_outside_care-field_ncd_encounter'] = array(
     'bundle' => 'ncd_outside_care',
@@ -4133,6 +4170,81 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-ncd_outside_care-field_outside_care_medications'.
+  $field_instances['node-ncd_outside_care-field_outside_care_medications'] = array(
+    'bundle' => 'ncd_outside_care',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_outside_care_medications',
+    'label' => 'Outside Care Medications',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_outside_care-field_outside_care_signs'.
+  $field_instances['node-ncd_outside_care-field_outside_care_signs'] = array(
+    'bundle' => 'ncd_outside_care',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_outside_care_signs',
+    'label' => 'Outside Care Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 7,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_outside_care-field_person'.
   $field_instances['node-ncd_outside_care-field_person'] = array(
     'bundle' => 'ncd_outside_care',
@@ -4217,7 +4329,7 @@ function hedley_ncd_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 8,
+      'weight' => 6,
     ),
   );
 
@@ -4257,7 +4369,7 @@ function hedley_ncd_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 6,
+      'weight' => 5,
     ),
   );
 
