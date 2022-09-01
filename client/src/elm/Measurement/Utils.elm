@@ -41,6 +41,7 @@ import Pages.Utils
         , taskCompletedWithException
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
@@ -1208,10 +1209,10 @@ outsideCareFormWithDefault form saved =
             )
 
 
-toOutsideCareValueWithDefault : Maybe (OutsideCareValue diagnosis) -> OutsideCareForm diagnosis -> Maybe (OutsideCareValue diagnosis)
-toOutsideCareValueWithDefault saved form =
+toOutsideCareValueWithDefault : diagnosis -> Maybe (OutsideCareValue diagnosis) -> OutsideCareForm diagnosis -> Maybe (OutsideCareValue diagnosis)
+toOutsideCareValueWithDefault noneValue saved form =
     outsideCareFormWithDefault form saved
-        |> toOutsideCareValue
+        |> toOutsideCareValue noneValue
 
 
 toOutsideCareValue : diagnosis -> OutsideCareForm diagnosis -> Maybe (OutsideCareValue diagnosis)
@@ -1255,17 +1256,27 @@ toOutsideCareValue noneValue form =
 
 
 type alias OutsideCareConfig diagnosis msg =
-    { setBoolInputMsg : Bool -> (Bool -> OutsideCareForm diagnosis -> OutsideCareForm diagnosis) -> msg
+    { setBoolInputMsg : (Bool -> OutsideCareForm diagnosis -> OutsideCareForm diagnosis) -> Bool -> msg
     , setDiagnosisMsg : diagnosis -> msg
     , setMalariaMedicationMsg : OutsideCareMedication -> msg
     , setHypertensionMedicationMsg : OutsideCareMedication -> msg
     , setSyphilisMedicationMsg : OutsideCareMedication -> msg
     , setAnemiaMedicationMsg : OutsideCareMedication -> msg
     , setHIVMedicationMsg : OutsideCareMedication -> msg
-    , diagnosesWithPossibleMedication : List diagnosis
+    , malariaDiagnoses : List diagnosis
+    , hypertensionDiagnoses : List diagnosis
+    , syphilisDiagnoses : List diagnosis
+    , anemiaDiagnoses : List diagnosis
+    , hivDiagnoses : List diagnosis
+    , malariaHeaderTransId : Translate.TranslationId
+    , resolveHypertensionHeaderTransId : List diagnosis -> Translate.TranslationId
+    , syphilisHeaderTransId : Translate.TranslationId
+    , anemiaHeaderTransId : Translate.TranslationId
+    , hivHeaderTransId : Translate.TranslationId
     , diagnosesLeftColumn : List diagnosis
     , diagnosesRightColumn : List diagnosis
     , otherDiagnosis : diagnosis
+    , diagnosisTransId : diagnosis -> Translate.TranslationId
     }
 
 
@@ -1291,9 +1302,17 @@ outsideCareFormInputsAndTasksDiagnoses language config form =
                                 ( givenMedicineSection, givenMedicineTasks ) =
                                     Maybe.map
                                         (\diagnoses ->
+                                            let
+                                                diagnosesWithPossibleMedication =
+                                                    config.malariaDiagnoses
+                                                        ++ config.hypertensionDiagnoses
+                                                        ++ config.syphilisDiagnoses
+                                                        ++ config.anemiaDiagnoses
+                                                        ++ config.hivDiagnoses
+                                            in
                                             if
                                                 List.any (\diagnosis -> List.member diagnosis diagnoses)
-                                                    config.diagnosesWithPossibleMedication
+                                                    diagnosesWithPossibleMedication
                                             then
                                                 ( [ viewQuestionLabel language <| Translate.OutsideCareSignQuestion GivenMedicine
                                                   , viewBoolInput
@@ -1330,7 +1349,7 @@ outsideCareFormInputsAndTasksDiagnoses language config form =
                                     (form.diagnoses |> Maybe.withDefault [])
                                     (Just config.otherDiagnosis)
                                     config.setDiagnosisMsg
-                                    Translate.PrenatalDiagnosis
+                                    config.diagnosisTransId
                               , viewQuestionLabel language <| Translate.OutsideCareSignQuestion PlannedFollowUpCareWithSpecialist
                               , viewBoolInput
                                     language
@@ -1405,8 +1424,8 @@ outsideCareFormInputsAndTasksMedications language config form =
             (\diagnoses ->
                 let
                     ( malariaInputs, malariaTasks ) =
-                        if List.member DiagnosisMalaria diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisMalaria
+                        if List.any (\diagnosis -> List.member diagnosis diagnoses) config.malariaDiagnoses then
+                            ( [ viewHeader config.malariaHeaderTransId
                               , selectTreatmentOptionsInput outsideCareMedicationOptionsMalaria
                                     NoOutsideCareMedicationForMalaria
                                     form.malariaMedications
@@ -1419,22 +1438,8 @@ outsideCareFormInputsAndTasksMedications language config form =
                             ( [], [] )
 
                     ( hypertensionInputs, hypertensionTasks ) =
-                        if
-                            List.any (\diagnosis -> List.member diagnosis diagnoses)
-                                [ DiagnosisGestationalHypertensionImmediate
-                                , DiagnosisChronicHypertensionImmediate
-                                , DiagnosisModeratePreeclampsiaInitialPhase
-                                ]
-                        then
-                            let
-                                headerTransId =
-                                    if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
-                                        Translate.ModeratePreeclampsia
-
-                                    else
-                                        Translate.Hypertension
-                            in
-                            ( [ viewHeader headerTransId
+                        if List.any (\diagnosis -> List.member diagnosis diagnoses) config.hypertensionDiagnoses then
+                            ( [ viewHeader <| config.resolveHypertensionHeaderTransId diagnoses
                               , selectTreatmentOptionsInput outsideCareMedicationOptionsHypertension
                                     NoOutsideCareMedicationForHypertension
                                     form.hypertensionMedications
@@ -1447,8 +1452,8 @@ outsideCareFormInputsAndTasksMedications language config form =
                             ( [], [] )
 
                     ( syphilisInputs, syphilisTasks ) =
-                        if List.member DiagnosisSyphilis diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisSyphilis
+                        if List.any (\diagnosis -> List.member diagnosis diagnoses) config.syphilisDiagnoses then
+                            ( [ viewHeader config.syphilisHeaderTransId
                               , selectTreatmentOptionsInput outsideCareMedicationOptionsSyphilis
                                     NoOutsideCareMedicationForSyphilis
                                     form.syphilisMedications
@@ -1461,8 +1466,8 @@ outsideCareFormInputsAndTasksMedications language config form =
                             ( [], [] )
 
                     ( anemiaInputs, anemiaTasks ) =
-                        if List.member DiagnosisModerateAnemia diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisModerateAnemia
+                        if List.any (\diagnosis -> List.member diagnosis diagnoses) config.anemiaDiagnoses then
+                            ( [ viewHeader config.anemiaHeaderTransId
                               , selectTreatmentOptionsInput outsideCareMedicationOptionsAnemia
                                     NoOutsideCareMedicationForAnemia
                                     form.anemiaMedications
@@ -1475,8 +1480,8 @@ outsideCareFormInputsAndTasksMedications language config form =
                             ( [], [] )
 
                     ( hivInputs, hivTasks ) =
-                        if List.member DiagnosisHIV diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisHIV
+                        if List.any (\diagnosis -> List.member diagnosis diagnoses) config.hivDiagnoses then
+                            ( [ viewHeader config.hivHeaderTransId
                               , selectTreatmentOptionsInput outsideCareMedicationOptionsHIV
                                     NoOutsideCareMedicationForHIV
                                     form.hivMedications

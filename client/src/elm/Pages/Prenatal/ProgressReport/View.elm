@@ -12,10 +12,10 @@ import Backend.Measurement.Model
         , IllnessSymptom(..)
         , MedicationDistributionSign(..)
         , NonReferralSign(..)
+        , OutsideCareMedication(..)
         , PrenatalHIVSign(..)
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
-        , OutsideCareMedication(..)
         , PrenatalSymptomQuestion(..)
         , PrenatalTestExecutionNote(..)
         , PrenatalTestResult(..)
@@ -60,17 +60,16 @@ import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
-import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Activity.Utils
     exposing
         ( outsideCareMedicationOptionsAnemia
         , outsideCareMedicationOptionsHIV
         , outsideCareMedicationOptionsHypertension
         , outsideCareMedicationOptionsMalaria
         , outsideCareMedicationOptionsSyphilis
-        , respiratoryRateElevated
         )
+import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
+import Pages.Prenatal.Activity.Utils exposing (respiratoryRateElevated)
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)

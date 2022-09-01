@@ -14,6 +14,7 @@ import Measurement.Model
         , DropZoneFile
         , FamilyPlanningForm
         , OutsideCareForm
+        , OutsideCareStep(..)
         , SendToHCForm
         , VaccinationForm
         , VaccinationFormViewMode

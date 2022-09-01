@@ -47,8 +47,10 @@ import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
         , familyPlanningFormWithDefault
+        , outsideCareFormWithDefault
         , toCorePhysicalExamValueWithDefault
         , toFamilyPlanningValueWithDefault
+        , toOutsideCareValueWithDefault
         , toSendToHCValueWithDefault
         , toVaccinationValueWithDefault
         , toVitalsValueWithDefault

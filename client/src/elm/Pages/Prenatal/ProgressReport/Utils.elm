@@ -34,17 +34,17 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
-import Pages.Prenatal.Activity.Utils
+import Measurement.Utils
     exposing
         ( outsideCareMedicationOptionsAnemia
         , outsideCareMedicationOptionsHIV
         , outsideCareMedicationOptionsHypertension
         , outsideCareMedicationOptionsMalaria
         , outsideCareMedicationOptionsSyphilis
-        , respiratoryRateElevated
         )
+import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
+import Pages.Prenatal.Activity.Utils exposing (respiratoryRateElevated)
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
