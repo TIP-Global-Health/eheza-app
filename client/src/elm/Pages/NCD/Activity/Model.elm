@@ -7,9 +7,11 @@ import Measurement.Model
     exposing
         ( CorePhysicalExamForm
         , FamilyPlanningForm
+        , OutsideCareForm
         , VitalsForm
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
+        , emptyOutsideCareForm
         , emptyVitalsForm
         )
 import Pages.NCD.Activity.Types exposing (..)
@@ -158,6 +160,7 @@ type alias MedicalHistoryData =
     , familyHistoryForm : FamilyHistoryForm
     , medicationHistoryForm : MedicationHistoryForm
     , socialHistoryForm : SocialHistoryForm
+    , outsideCareForm : OutsideCareForm MedicalCondition
     , activeTask : Maybe MedicalHistoryTask
     }
 
@@ -168,6 +171,7 @@ emptyMedicalHistoryData =
     , familyHistoryForm = emptyFamilyHistoryForm
     , medicationHistoryForm = emptyMedicationHistoryForm
     , socialHistoryForm = emptySocialHistoryForm
+    , outsideCareForm = emptyOutsideCareForm
     , activeTask = Nothing
     }
 
