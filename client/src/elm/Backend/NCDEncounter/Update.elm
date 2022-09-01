@@ -51,3 +51,33 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveSymptomReview = data }
             , Cmd.none
             )
+
+        SaveFamilyPlanning personId valueId value ->
+            ( { model | saveFamilyPlanning = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdFamilyPlanningEndpoint HandleSavedFamilyPlanning
+            )
+
+        HandleSavedFamilyPlanning data ->
+            ( { model | saveFamilyPlanning = data }
+            , Cmd.none
+            )
+
+        SaveCoreExam personId valueId value ->
+            ( { model | saveCoreExam = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdCoreExamEndpoint HandleSavedCoreExam
+            )
+
+        HandleSavedCoreExam data ->
+            ( { model | saveCoreExam = data }
+            , Cmd.none
+            )
+
+        SaveVitals personId valueId value ->
+            ( { model | saveVitals = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdVitalsEndpoint HandleSavedVitals
+            )
+
+        HandleSavedVitals data ->
+            ( { model | saveVitals = data }
+            , Cmd.none
+            )

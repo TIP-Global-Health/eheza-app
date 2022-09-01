@@ -32,9 +32,30 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (vaccinationFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.Model
+    exposing
+        ( CorePhysicalExamForm
+        , InvokationModule(..)
+        , SendToHCForm
+        , VaccinationFormViewMode(..)
+        , VitalsForm
+        , VitalsFormMode(..)
+        )
+import Measurement.Utils
+    exposing
+        ( corePhysicalExamFormWithDefault
+        , familyPlanningFormWithDefault
+        , vaccinationFormWithDefault
+        , vitalsFormWithDefault
+        )
+import Measurement.View
+    exposing
+        ( viewActionTakenLabel
+        , viewFamilyPlanningForm
+        , viewFamilyPlanningInput
+        , viewSendToHealthCenterForm
+        , viewSendToHospitalForm
+        )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -46,8 +67,10 @@ import Pages.Prenatal.Utils exposing (..)
 import Pages.Prenatal.View exposing (customWarningPopup, viewMedicationDistributionForm, viewPauseEncounterButton)
 import Pages.Utils
     exposing
-        ( emptySelectOption
+        ( customSaveButton
+        , emptySelectOption
         , isTaskCompleted
+        , saveButton
         , taskAllCompleted
         , taskCompleted
         , tasksBarId
@@ -861,7 +884,7 @@ viewExaminationContent language currentDate assembled data =
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
                         |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
-                        |> viewCorePhysicalExamForm language currentDate assembled
+                        |> viewCorePhysicalExamForm language currentDate
 
                 Just ObstetricalExam ->
                     getMeasurementValueFunc assembled.measurements.obstetricalExam
@@ -957,16 +980,7 @@ viewFamilyPlanningContent language currentDate assembled data =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form family-planning" ]
-                [ viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
-                , viewCheckBoxMultipleSelectInput language
-                    [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
-                    [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
-                    (form.signs |> Maybe.withDefault [])
-                    (Just NoFamilyPlanning)
-                    SetFamilyPlanningSign
-                    Translate.FamilyPlanningSignLabel
-                ]
+            [ viewFamilyPlanningForm language Translate.FamilyPlanningInFutureQuestion SetFamilyPlanningSign form
             ]
         , div [ class "actions" ]
             [ button
@@ -1275,13 +1289,7 @@ viewBirthPlanContent language currentDate assembled data =
                     "saved-money"
                     Nothing
                 , viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
-                , viewCheckBoxMultipleSelectInput language
-                    [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
-                    [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
-                    (form.familyPlanning |> Maybe.withDefault [])
-                    (Just NoFamilyPlanning)
-                    SetBirthPlanFamilyPlanning
-                    Translate.FamilyPlanningSignLabel
+                , viewFamilyPlanningInput language SetBirthPlanFamilyPlanning form.familyPlanning
                 , viewQuestionLabel language Translate.TransportationPlanQuestion
                 , viewBoolInput
                     language
@@ -3241,162 +3249,20 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                ]
 
 
-viewCorePhysicalExamForm : Language -> NominalDate -> AssembledData -> CorePhysicalExamForm -> Html Msg
-viewCorePhysicalExamForm language currentDate assembled form =
+viewCorePhysicalExamForm : Language -> NominalDate -> CorePhysicalExamForm -> Html Msg
+viewCorePhysicalExamForm language currentDate form =
     let
-        brittleHairUpdateFunc value form_ =
-            { form_ | brittleHair = Just value }
-
-        paleConjuctivaUpdateFunc value form_ =
-            { form_ | paleConjuctiva = Just value }
-
-        heartMurmurUpdateFunc value form_ =
-            { form_ | heartMurmur = Just value }
+        config =
+            { setBoolInputMsg = SetCorePhysicalExamBoolInput
+            , setNeckMsg = SetCorePhysicalExamNeck
+            , setHeartMsg = SetCorePhysicalExamHeart
+            , setLungsMsg = SetCorePhysicalExamLungs
+            , setAbdomenMsg = SetCorePhysicalExamAbdomen
+            , setHandsMsg = SetCorePhysicalExamHands
+            , setLegsMsg = SetCorePhysicalExamLegs
+            }
     in
-    div [ class "ui form examination core-physical-exam" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HeadHair ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.brittleHair False ]
-            ]
-        , viewBoolInput
-            language
-            form.brittleHair
-            (SetCorePhysicalExamBoolInput brittleHairUpdateFunc)
-            "head-hair"
-            (Just ( Translate.BrittleHair, Translate.Normal ))
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Eyes ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.paleConjuctiva False ]
-            ]
-        , viewBoolInput
-            language
-            form.paleConjuctiva
-            (SetCorePhysicalExamBoolInput paleConjuctivaUpdateFunc)
-            "eyes"
-            (Just ( Translate.PaleConjuctiva, Translate.Normal ))
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Neck ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.neck |> Maybe.withDefault [])
-                    [ NormalNeck ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ EnlargedThyroid, EnlargedLymphNodes ]
-            [ NormalNeck ]
-            (form.neck |> Maybe.withDefault [])
-            Nothing
-            SetCorePhysicalExamNeck
-            Translate.NeckCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Heart ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    [ NormalRateAndRhythm ]
-                ]
-            ]
-        , viewCheckBoxSelectInput language
-            [ IrregularRhythm, SinusTachycardia ]
-            [ NormalRateAndRhythm ]
-            form.heart
-            SetCorePhysicalExamHeart
-            Translate.HeartCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HeartMurmur ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.heartMurmur False ]
-            ]
-        , viewBoolInput
-            language
-            form.heartMurmur
-            (SetCorePhysicalExamBoolInput heartMurmurUpdateFunc)
-            "heart-murmur"
-            Nothing
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Lungs ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.lungs |> Maybe.withDefault [])
-                    [ NormalLungs ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ Wheezes, Crackles ]
-            [ NormalLungs ]
-            (form.lungs |> Maybe.withDefault [])
-            Nothing
-            SetCorePhysicalExamLungs
-            Translate.LungsCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Abdomen ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.abdomen |> Maybe.withDefault [])
-                    [ NormalAbdomen ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ Hepatomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
-            [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
-            (form.abdomen |> Maybe.withDefault [])
-            Nothing
-            SetCorePhysicalExamAbdomen
-            Translate.AbdomenCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewLabel language Translate.Extremities ]
-            ]
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ div [ class "title hands" ] [ text <| (translate language Translate.Hands ++ ":") ] ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.hands |> Maybe.withDefault [])
-                    [ NormalHands ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ PallorHands, EdemaHands ]
-            [ NormalHands ]
-            (form.hands |> Maybe.withDefault [])
-            Nothing
-            SetCorePhysicalExamHands
-            Translate.HandsCPESign
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ] ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.legs |> Maybe.withDefault [])
-                    [ NormalLegs ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ PallorLegs, EdemaLegs ]
-            [ NormalLegs ]
-            (form.legs |> Maybe.withDefault [])
-            Nothing
-            SetCorePhysicalExamLegs
-            Translate.LegsCPESign
-        ]
+    Measurement.View.viewCorePhysicalExamForm language currentDate config form
 
 
 viewObstetricalExamForm : Language -> NominalDate -> AssembledData -> ObstetricalExamForm -> Html Msg
@@ -4823,21 +4689,3 @@ viewWarning language maybeMessage =
                 div [ class "five wide column" ]
                     [ text message ]
             )
-
-
-saveButton : Language -> Bool -> Msg -> Html Msg
-saveButton language active msg =
-    customSaveButton language active msg Translate.Save
-
-
-customSaveButton : Language -> Bool -> Msg -> Translate.TranslationId -> Html Msg
-customSaveButton language active msg label =
-    button
-        [ classList
-            [ ( "ui fluid primary button", True )
-            , ( "active", active )
-            , ( "disabled", not active )
-            ]
-        , onClick msg
-        ]
-        [ text <| translate language label ]

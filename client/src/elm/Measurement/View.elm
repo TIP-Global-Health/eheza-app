@@ -4,6 +4,9 @@ module Measurement.View exposing
     , viewChild
     , viewColorAlertIndication
     , viewContributingFactorsForm
+    , viewCorePhysicalExamForm
+    , viewFamilyPlanningForm
+    , viewFamilyPlanningInput
     , viewFollowUpForm
     , viewHealthEducationForm
     , viewMeasurementFloatDiff
@@ -67,6 +70,8 @@ import Pages.Utils
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
         , viewQuestionLabel
+        , viewRedAlertForBool
+        , viewRedAlertForSelect
         )
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -1328,8 +1333,9 @@ viewVitalsForm language currentDate config form =
                 diaBloodPressureUpdateFunc
                 config.sysBloodPressurePreviousValue
                 config.diaBloodPressurePreviousValue
+                True
 
-        viewBloodPressureSection sys dia sysUpdateFunc diaUpdateFunc sysPrevValue diaPrevValue =
+        viewBloodPressureSection sys dia sysUpdateFunc diaUpdateFunc sysPrevValue diaPrevValue addSeparator =
             Maybe.map
                 (\ageYears ->
                     if ageYears < 12 then
@@ -1392,6 +1398,7 @@ viewVitalsForm language currentDate config form =
                             "dia-blood-pressure"
                             Translate.MMHGUnit
                         , Pages.Utils.viewPreviousMeasurement language diaPrevValue Translate.MMHGUnit
+                        , separator |> showIf addSeparator
                         ]
                 )
                 ageInYears
@@ -1447,6 +1454,7 @@ viewVitalsForm language currentDate config form =
                 "heart-rate"
                 Translate.BeatsPerMinuteUnitLabel
             , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
+            , separator
             ]
 
         respiratoryRateSection =
@@ -1493,6 +1501,7 @@ viewVitalsForm language currentDate config form =
                 "respiratory-rate"
                 Translate.BreathsPerMinuteUnitLabel
             , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
+            , separator
             ]
 
         bodyTemperatureSection =
@@ -1515,22 +1524,18 @@ viewVitalsForm language currentDate config form =
             ]
 
         separator =
-            [ div [ class "separator" ] [] ]
+            div [ class "separator" ] []
 
         content =
             case config.mode of
                 VitalsFormBasic ->
                     respiratoryRateSection
-                        ++ separator
                         ++ bodyTemperatureSection
 
                 VitalsFormFull ->
                     bloodPressureSection
-                        ++ separator
                         ++ heartRateSection
-                        ++ separator
                         ++ respiratoryRateSection
-                        ++ separator
                         ++ bodyTemperatureSection
 
                 VitalsFormRepeated ->
@@ -1541,6 +1546,7 @@ viewVitalsForm language currentDate config form =
                         diaRepeatedUpdateFunc
                         form.sysBloodPressure
                         form.diaBloodPressure
+                        False
     in
     div [ class <| "ui form " ++ config.formClass ]
         content
@@ -2078,4 +2084,181 @@ viewFbfForm language measurement activity clinicType setDistributedAmountMsg set
                 saveMsg
                 measurement
                 Nothing
+        ]
+
+
+viewFamilyPlanningForm : Language -> TranslationId -> (FamilyPlanningSign -> msg) -> FamilyPlanningForm -> Html msg
+viewFamilyPlanningForm language questionTransId setFamilyPlanningSignMsg form =
+    div [ class "ui form family-planning" ]
+        [ viewQuestionLabel language questionTransId
+        , viewFamilyPlanningInput language setFamilyPlanningSignMsg form.signs
+        ]
+
+
+viewFamilyPlanningInput : Language -> (FamilyPlanningSign -> msg) -> Maybe (List FamilyPlanningSign) -> Html msg
+viewFamilyPlanningInput language setFamilyPlanningSignMsg currentValue =
+    viewCheckBoxMultipleSelectInput language
+        [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
+        [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
+        (Maybe.withDefault [] currentValue)
+        (Just NoFamilyPlanning)
+        setFamilyPlanningSignMsg
+        Translate.FamilyPlanningSignLabel
+
+
+viewCorePhysicalExamForm : Language -> NominalDate -> CorePhysicalExamFormConfig msg -> CorePhysicalExamForm -> Html msg
+viewCorePhysicalExamForm language currentDate config form =
+    let
+        brittleHairUpdateFunc value form_ =
+            { form_ | brittleHair = Just value }
+
+        paleConjuctivaUpdateFunc value form_ =
+            { form_ | paleConjuctiva = Just value }
+
+        heartMurmurUpdateFunc value form_ =
+            { form_ | heartMurmur = Just value }
+    in
+    div [ class "ui form examination core-physical-exam" ]
+        [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.HeadHair ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.brittleHair False ]
+            ]
+        , viewBoolInput
+            language
+            form.brittleHair
+            (config.setBoolInputMsg brittleHairUpdateFunc)
+            "head-hair"
+            (Just ( Translate.BrittleHair, Translate.Normal ))
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.Eyes ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.paleConjuctiva False ]
+            ]
+        , viewBoolInput
+            language
+            form.paleConjuctiva
+            (config.setBoolInputMsg paleConjuctivaUpdateFunc)
+            "eyes"
+            (Just ( Translate.PaleConjuctiva, Translate.Normal ))
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.Neck ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.neck |> Maybe.withDefault [])
+                    [ NormalNeck ]
+                ]
+            ]
+        , viewCheckBoxMultipleSelectInput language
+            [ EnlargedThyroid, EnlargedLymphNodes ]
+            [ NormalNeck ]
+            (form.neck |> Maybe.withDefault [])
+            Nothing
+            config.setNeckMsg
+            Translate.NeckCPESign
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.Heart ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    [ NormalRateAndRhythm ]
+                ]
+            ]
+        , viewCheckBoxSelectInput language
+            [ IrregularRhythm, SinusTachycardia ]
+            [ NormalRateAndRhythm ]
+            form.heart
+            config.setHeartMsg
+            Translate.HeartCPESign
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.HeartMurmur ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.heartMurmur False ]
+            ]
+        , viewBoolInput
+            language
+            form.heartMurmur
+            (config.setBoolInputMsg heartMurmurUpdateFunc)
+            "heart-murmur"
+            Nothing
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.Lungs ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.lungs |> Maybe.withDefault [])
+                    [ NormalLungs ]
+                ]
+            ]
+        , viewCheckBoxMultipleSelectInput language
+            [ Wheezes, Crackles ]
+            [ NormalLungs ]
+            (form.lungs |> Maybe.withDefault [])
+            Nothing
+            config.setLungsMsg
+            Translate.LungsCPESign
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.Abdomen ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.abdomen |> Maybe.withDefault [])
+                    [ NormalAbdomen ]
+                ]
+            ]
+        , viewCheckBoxMultipleSelectInput language
+            [ Hepatomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
+            [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
+            (form.abdomen |> Maybe.withDefault [])
+            Nothing
+            config.setAbdomenMsg
+            Translate.AbdomenCPESign
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewLabel language Translate.Extremities ]
+            ]
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ div [ class "title hands" ] [ text <| (translate language Translate.Hands ++ ":") ] ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.hands |> Maybe.withDefault [])
+                    [ NormalHands ]
+                ]
+            ]
+        , viewCheckBoxMultipleSelectInput language
+            [ PallorHands, EdemaHands ]
+            [ NormalHands ]
+            (form.hands |> Maybe.withDefault [])
+            Nothing
+            config.setHandsMsg
+            Translate.HandsCPESign
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ] ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.legs |> Maybe.withDefault [])
+                    [ NormalLegs ]
+                ]
+            ]
+        , viewCheckBoxMultipleSelectInput language
+            [ PallorLegs, EdemaLegs ]
+            [ NormalLegs ]
+            (form.legs |> Maybe.withDefault [])
+            Nothing
+            config.setLegsMsg
+            Translate.LegsCPESign
         ]

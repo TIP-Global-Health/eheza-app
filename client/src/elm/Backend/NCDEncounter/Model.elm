@@ -31,6 +31,9 @@ type alias Model =
     { closeNCDEncounter : WebData ()
     , saveDangerSigns : WebData ()
     , saveSymptomReview : WebData ()
+    , saveFamilyPlanning : WebData ()
+    , saveCoreExam : WebData ()
+    , saveVitals : WebData ()
     }
 
 
@@ -39,6 +42,9 @@ emptyModel =
     { closeNCDEncounter = NotAsked
     , saveDangerSigns = NotAsked
     , saveSymptomReview = NotAsked
+    , saveFamilyPlanning = NotAsked
+    , saveCoreExam = NotAsked
+    , saveVitals = NotAsked
     }
 
 
@@ -49,3 +55,9 @@ type Msg
     | HandleSavedDangerSigns (WebData ())
     | SaveSymptomReview PersonId (Maybe NCDSymptomReviewId) NCDSymptomReviewValue
     | HandleSavedSymptomReview (WebData ())
+    | SaveFamilyPlanning PersonId (Maybe NCDFamilyPlanningId) (EverySet FamilyPlanningSign)
+    | HandleSavedFamilyPlanning (WebData ())
+    | SaveCoreExam PersonId (Maybe NCDCoreExamId) CorePhysicalExamValue
+    | HandleSavedCoreExam (WebData ())
+    | SaveVitals PersonId (Maybe NCDVitalsId) VitalsValue
+    | HandleSavedVitals (WebData ())

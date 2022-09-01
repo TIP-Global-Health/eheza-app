@@ -409,6 +409,7 @@ type InvokationModule
     = InvokationModulePrenatal
     | InvokationModuleAcuteIllness
     | InvokationModuleWellChild
+    | InvokationModuleNCD
 
 
 type alias VaccinationForm msg =
@@ -469,3 +470,51 @@ type alias VaccinationFormDynamicContentAndTasksConfig msg =
     , getIntervalForVaccine : VaccineDose -> ( Int, Unit )
     , firstDoseExpectedFrom : NominalDate
     }
+
+
+type alias CorePhysicalExamForm =
+    { brittleHair : Maybe Bool
+    , paleConjuctiva : Maybe Bool
+    , neck : Maybe (List NeckCPESign)
+    , heart : Maybe HeartCPESign
+    , heartMurmur : Maybe Bool
+    , lungs : Maybe (List LungsCPESign)
+    , abdomen : Maybe (List AbdomenCPESign)
+    , hands : Maybe (List HandsCPESign)
+    , legs : Maybe (List LegsCPESign)
+    }
+
+
+emptyCorePhysicalExamForm : CorePhysicalExamForm
+emptyCorePhysicalExamForm =
+    { brittleHair = Nothing
+    , paleConjuctiva = Nothing
+    , neck = Nothing
+    , heart = Nothing
+    , heartMurmur = Nothing
+    , lungs = Nothing
+    , abdomen = Nothing
+    , hands = Nothing
+    , legs = Nothing
+    }
+
+
+type alias CorePhysicalExamFormConfig msg =
+    { setBoolInputMsg : (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) -> Bool -> msg
+    , setNeckMsg : NeckCPESign -> msg
+    , setHeartMsg : HeartCPESign -> msg
+    , setLungsMsg : LungsCPESign -> msg
+    , setAbdomenMsg : AbdomenCPESign -> msg
+    , setHandsMsg : HandsCPESign -> msg
+    , setLegsMsg : LegsCPESign -> msg
+    }
+
+
+type alias FamilyPlanningForm =
+    { signs : Maybe (List FamilyPlanningSign)
+    }
+
+
+emptyFamilyPlanningForm : FamilyPlanningForm
+emptyFamilyPlanningForm =
+    FamilyPlanningForm Nothing

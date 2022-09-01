@@ -9,21 +9,27 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.Person.Model exposing (Person)
 import EverySet
-import Gizra.Html exposing (showIf, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Model exposing (CorePhysicalExamForm, InvokationModule(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Utils exposing (corePhysicalExamFormWithDefault, familyPlanningFormWithDefault, vitalsFormWithDefault)
+import Measurement.View exposing (viewCorePhysicalExamForm, viewFamilyPlanningForm, viewVitalsForm)
 import Pages.NCD.Activity.Model exposing (..)
+import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
 import Pages.NCD.Encounter.Model exposing (AssembledData)
 import Pages.NCD.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( taskCompleted
+        ( isTaskCompleted
+        , saveButton
+        , taskCompleted
         , viewCheckBoxMultipleSelectInput
         , viewCustomLabel
         , viewLabel
@@ -85,14 +91,10 @@ viewActivity language currentDate activity assembled db model =
             viewDangerSignsContent language currentDate assembled model.dangerSignsData
 
         Examination ->
-            -- @todo
-            -- viewExaminationContent language currentDate assembled model.examinationData
-            []
+            viewExaminationContent language currentDate assembled model.examinationData
 
         FamilyPlanning ->
-            -- @todo
-            -- viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
-            []
+            viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
 
         Laboratory ->
             -- @todo
@@ -142,11 +144,9 @@ viewDangerSignsContent language currentDate assembled data =
             [ div [ class "ui form danger-signs" ] inputs
             ]
         , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns
-                ]
-                [ text <| translate language Translate.Save ]
+            [ saveButton language
+                (tasksCompleted == totalTasks)
+                (SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns)
             ]
         ]
     ]
@@ -202,8 +202,6 @@ viewSymptomReviewContent language currentDate assembled data =
             , taskCompleted form.group1Symptoms + taskCompleted form.painSymptoms + taskCompleted form.group2Symptoms
             , 3
             )
-
-        -- PatientGotPainAnywhewre
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -211,11 +209,207 @@ viewSymptomReviewContent language currentDate assembled data =
             [ div [ class "ui form symptom-review" ] inputs
             ]
         , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview
-                ]
-                [ text <| translate language Translate.Save ]
+            [ saveButton language
+                (tasksCompleted == totalTasks)
+                (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
             ]
         ]
     ]
+
+
+viewFamilyPlanningContent : Language -> NominalDate -> AssembledData -> FamilyPlanningData -> List (Html Msg)
+viewFamilyPlanningContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.familyPlanning
+                |> getMeasurementValueFunc
+                |> familyPlanningFormWithDefault data.form
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted form.signs
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewFamilyPlanningForm language Translate.FamilyPlanningCurentlyQuestion SetFamilyPlanningSign form
+            ]
+        , div [ class "actions" ]
+            [ saveButton language
+                (tasksCompleted == totalTasks)
+                (SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning)
+            ]
+        ]
+    ]
+
+
+viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)
+viewExaminationContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            [ TaskVitals, TaskCoreExam ]
+
+        activeTask =
+            Maybe.map
+                (\task ->
+                    if List.member task tasks then
+                        Just task
+
+                    else
+                        List.head tasks
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskVitals ->
+                            ( "vitals", isJust assembled.measurements.vitals )
+
+                        TaskCoreExam ->
+                            ( "core-physical-exam", isJust assembled.measurements.coreExam )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveExaminationTask task ]
+            in
+            div [ class <| "column " ++ iconClass ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.NCDExaminationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map
+                (\task ->
+                    ( task, examinationTasksCompletedFromTotal currentDate assembled data task )
+                )
+                tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskVitals ->
+                    getMeasurementValueFunc assembled.measurements.vitals
+                        |> vitalsFormWithDefault data.vitalsForm
+                        |> viewVitalsForm language currentDate assembled
+
+                Just TaskCoreExam ->
+                    getMeasurementValueFunc assembled.measurements.coreExam
+                        |> corePhysicalExamFormWithDefault data.coreExamForm
+                        |> viewCorePhysicalExamForm language currentDate
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        saveAction =
+                            case task of
+                                TaskVitals ->
+                                    SaveVitals personId measurements.vitals nextTask
+
+                                TaskCoreExam ->
+                                    SaveCoreExam personId measurements.coreExam nextTask
+                    in
+                    div [ class "actions" ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveAction ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate assembled form =
+    let
+        config =
+            { setIntInputMsg = SetVitalsIntInput
+            , setFloatInputMsg = SetVitalsFloatInput
+            , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
+            , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
+            , heartRatePreviousValue =
+                resolvePreviousMaybeValue assembled .vitals .heartRate
+                    |> Maybe.map toFloat
+            , respiratoryRatePreviousValue =
+                resolvePreviousValue assembled .vitals .respiratoryRate
+                    |> Maybe.map toFloat
+            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+            , birthDate = assembled.person.birthDate
+            , formClass = "vitals"
+            , mode = VitalsFormFull
+            , invokationModule = InvokationModuleNCD
+            }
+    in
+    Measurement.View.viewVitalsForm language currentDate config form
+
+
+viewCorePhysicalExamForm : Language -> NominalDate -> CorePhysicalExamForm -> Html Msg
+viewCorePhysicalExamForm language currentDate form =
+    let
+        config =
+            { setBoolInputMsg = SetCoreExamBoolInput
+            , setNeckMsg = SetCoreExamNeck
+            , setHeartMsg = SetCoreExamHeart
+            , setLungsMsg = SetCoreExamLungs
+            , setAbdomenMsg = SetCoreExamAbdomen
+            , setHandsMsg = SetCoreExamHands
+            , setLegsMsg = SetCoreExamLegs
+            }
+    in
+    Measurement.View.viewCorePhysicalExamForm language currentDate config form

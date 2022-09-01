@@ -45,7 +45,11 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (VaccinationFormViewMode(..))
 import Measurement.Utils
     exposing
-        ( toSendToHCValueWithDefault
+        ( corePhysicalExamFormWithDefault
+        , familyPlanningFormWithDefault
+        , toCorePhysicalExamValueWithDefault
+        , toFamilyPlanningValueWithDefault
+        , toSendToHCValueWithDefault
         , toVaccinationValueWithDefault
         , toVitalsValueWithDefault
         , vaccinationFormWithDefault

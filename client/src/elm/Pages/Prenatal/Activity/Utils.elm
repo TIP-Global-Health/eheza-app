@@ -21,10 +21,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (VaccinationFormViewMode(..), VitalsForm)
+import Measurement.Model exposing (FamilyPlanningForm, VaccinationFormViewMode(..), VitalsForm)
 import Measurement.Utils
     exposing
-        ( getNextVaccineDose
+        ( corePhysicalExamFormWithDefault
+        , getNextVaccineDose
+        , toEverySet
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         , vitalsFormWithDefault
@@ -3313,18 +3315,6 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             )
 
 
-{-| This is a convenience for cases where the form values ought to be redefined
-to allow multiple values. So, it should go away eventually.
--}
-toEverySet : a -> a -> Bool -> EverySet a
-toEverySet presentValue absentValue present =
-    if present then
-        EverySet.singleton presentValue
-
-    else
-        EverySet.singleton absentValue
-
-
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
     assembled.nursePreviousMeasurementsWithDates
@@ -3380,58 +3370,6 @@ toBreastExamValue form =
     -- redefined to allow more than one.
     Maybe.map BreastExamValue (Maybe.map EverySet.fromList form.breast)
         |> andMap form.selfGuidance
-
-
-fromCorePhysicalExamValue : Maybe CorePhysicalExamValue -> CorePhysicalExamForm
-fromCorePhysicalExamValue saved =
-    { brittleHair = Maybe.map (.hairHead >> EverySet.member BrittleHairCPE) saved
-    , paleConjuctiva = Maybe.map (.eyes >> EverySet.member PaleConjuctiva) saved
-    , neck = Maybe.map (.neck >> EverySet.toList) saved
-    , heart = Maybe.andThen (.heart >> EverySet.toList >> List.head) saved
-    , heartMurmur = Maybe.map .heartMurmur saved
-    , lungs = Maybe.map (.lungs >> EverySet.toList) saved
-    , abdomen = Maybe.map (.abdomen >> EverySet.toList) saved
-    , hands = Maybe.map (.hands >> EverySet.toList) saved
-    , legs = Maybe.map (.legs >> EverySet.toList) saved
-    }
-
-
-corePhysicalExamFormWithDefault : CorePhysicalExamForm -> Maybe CorePhysicalExamValue -> CorePhysicalExamForm
-corePhysicalExamFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { brittleHair = or form.brittleHair (value.hairHead |> EverySet.member BrittleHairCPE |> Just)
-                , paleConjuctiva = or form.paleConjuctiva (value.eyes |> EverySet.member PaleConjuctiva |> Just)
-                , neck = or form.neck (value.neck |> EverySet.toList |> Just)
-                , heart = or form.heart (value.heart |> EverySet.toList |> List.head)
-                , heartMurmur = or form.heartMurmur (Just value.heartMurmur)
-                , lungs = or form.lungs (value.lungs |> EverySet.toList |> Just)
-                , abdomen = or form.abdomen (value.abdomen |> EverySet.toList |> Just)
-                , hands = or form.hands (value.hands |> EverySet.toList |> Just)
-                , legs = or form.legs (value.legs |> EverySet.toList |> Just)
-                }
-            )
-
-
-toCorePhysicalExamValueWithDefault : Maybe CorePhysicalExamValue -> CorePhysicalExamForm -> Maybe CorePhysicalExamValue
-toCorePhysicalExamValueWithDefault saved form =
-    corePhysicalExamFormWithDefault form saved
-        |> toCorePhysicalExamValue
-
-
-toCorePhysicalExamValue : CorePhysicalExamForm -> Maybe CorePhysicalExamValue
-toCorePhysicalExamValue form =
-    Maybe.map CorePhysicalExamValue (Maybe.map (toEverySet BrittleHairCPE NormalHairHead) form.brittleHair)
-        |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
-        |> andMap (Maybe.map EverySet.singleton form.heart)
-        |> andMap form.heartMurmur
-        |> andMap (Maybe.map EverySet.fromList form.neck)
-        |> andMap (Maybe.map EverySet.fromList form.lungs)
-        |> andMap (Maybe.map EverySet.fromList form.abdomen)
-        |> andMap (Maybe.map EverySet.fromList form.hands)
-        |> andMap (Maybe.map EverySet.fromList form.legs)
 
 
 fromDangerSignsValue : Maybe DangerSignsValue -> DangerSignsForm
@@ -4366,27 +4304,6 @@ toObstetricHistoryStep2Value form =
         |> andMap previousDeliverySet
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
         |> andMap obstetricHistorySet
-
-
-familyPlanningFormWithDefault : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm
-familyPlanningFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
-            )
-
-
-toFamilyPlanningValueWithDefault : Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
-toFamilyPlanningValueWithDefault saved form =
-    familyPlanningFormWithDefault form saved
-        |> toFamilyPlanningValue
-
-
-toFamilyPlanningValue : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
-toFamilyPlanningValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoFamilyPlanning) form.signs
 
 
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm

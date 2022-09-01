@@ -50,6 +50,18 @@ import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
 
 
+{-| This is a convenience for cases where the form values ought to be redefined
+to allow multiple values. So, it should go away eventually.
+-}
+toEverySet : a -> a -> Bool -> EverySet a
+toEverySet presentValue absentValue present =
+    if present then
+        EverySet.singleton presentValue
+
+    else
+        EverySet.singleton absentValue
+
+
 getInputConstraintsHeight : FloatInputConstraints
 getInputConstraintsHeight =
     { minVal = 25
@@ -1086,3 +1098,62 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
                     )
     in
     ( historySection ++ inputs, tasksCompleted, tasksActive )
+
+
+corePhysicalExamFormWithDefault : CorePhysicalExamForm -> Maybe CorePhysicalExamValue -> CorePhysicalExamForm
+corePhysicalExamFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { brittleHair = or form.brittleHair (value.hairHead |> EverySet.member BrittleHairCPE |> Just)
+                , paleConjuctiva = or form.paleConjuctiva (value.eyes |> EverySet.member PaleConjuctiva |> Just)
+                , neck = or form.neck (value.neck |> EverySet.toList |> Just)
+                , heart = or form.heart (value.heart |> EverySet.toList |> List.head)
+                , heartMurmur = or form.heartMurmur (Just value.heartMurmur)
+                , lungs = or form.lungs (value.lungs |> EverySet.toList |> Just)
+                , abdomen = or form.abdomen (value.abdomen |> EverySet.toList |> Just)
+                , hands = or form.hands (value.hands |> EverySet.toList |> Just)
+                , legs = or form.legs (value.legs |> EverySet.toList |> Just)
+                }
+            )
+
+
+toCorePhysicalExamValueWithDefault : Maybe CorePhysicalExamValue -> CorePhysicalExamForm -> Maybe CorePhysicalExamValue
+toCorePhysicalExamValueWithDefault saved form =
+    corePhysicalExamFormWithDefault form saved
+        |> toCorePhysicalExamValue
+
+
+toCorePhysicalExamValue : CorePhysicalExamForm -> Maybe CorePhysicalExamValue
+toCorePhysicalExamValue form =
+    Maybe.map CorePhysicalExamValue (Maybe.map (toEverySet BrittleHairCPE NormalHairHead) form.brittleHair)
+        |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
+        |> andMap (Maybe.map EverySet.singleton form.heart)
+        |> andMap form.heartMurmur
+        |> andMap (Maybe.map EverySet.fromList form.neck)
+        |> andMap (Maybe.map EverySet.fromList form.lungs)
+        |> andMap (Maybe.map EverySet.fromList form.abdomen)
+        |> andMap (Maybe.map EverySet.fromList form.hands)
+        |> andMap (Maybe.map EverySet.fromList form.legs)
+
+
+familyPlanningFormWithDefault : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm
+familyPlanningFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just) }
+            )
+
+
+toFamilyPlanningValueWithDefault : Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
+toFamilyPlanningValueWithDefault saved form =
+    familyPlanningFormWithDefault form saved
+        |> toFamilyPlanningValue
+
+
+toFamilyPlanningValue : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
+toFamilyPlanningValue form =
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoFamilyPlanning) form.signs

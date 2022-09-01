@@ -91,6 +91,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
+import Pages.NCD.Activity.Types exposing (ExaminationTask(..))
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
@@ -592,6 +593,7 @@ type TranslationId
     | Failure
     | FamilyInformation
     | FamilyMembers
+    | FamilyPlanningCurentlyQuestion
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
@@ -820,6 +822,7 @@ type TranslationId
     | NationalIdNumber
     | NCDActivityTitle NCDActivity
     | NCDDangerSign NCDDangerSign
+    | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
@@ -4479,6 +4482,11 @@ translationSet trans =
             , kinyarwanda = Just "Abagize umuryango"
             }
 
+        FamilyPlanningCurentlyQuestion ->
+            { english = "Which, if any, of the following methods do you use"
+            , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha"
+            }
+
         FamilyPlanningInFutureQuestion ->
             { english = "Which, if any, of these methods will you use after your pregnancy"
             , kinyarwanda = Just "Niba buhari, ni ubuhe buryo uzakoresha nyuma yo kubyara?"
@@ -6922,6 +6930,18 @@ translationSet trans =
                 NoNCDDangerSigns ->
                     { english = "None of the Above"
                     , kinyarwanda = Nothing
+                    }
+
+        NCDExaminationTask task ->
+            case task of
+                TaskCoreExam ->
+                    { english = "Core Physical Exam"
+                    , kinyarwanda = Just "Isuzuma ryimbitse"
+                    }
+
+                TaskVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
         NCDGroup1Symptom symptom ->

@@ -10,11 +10,15 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
-        ( DropZoneFile
+        ( CorePhysicalExamForm
+        , DropZoneFile
+        , FamilyPlanningForm
         , SendToHCForm
         , VaccinationForm
         , VaccinationFormViewMode
         , VitalsForm
+        , emptyCorePhysicalExamForm
+        , emptyFamilyPlanningForm
         , emptySendToHCForm
         , emptyVaccinationForm
         , emptyVitalsForm
@@ -916,33 +920,6 @@ emptyNutritionAssessmentForm =
     }
 
 
-type alias CorePhysicalExamForm =
-    { brittleHair : Maybe Bool
-    , paleConjuctiva : Maybe Bool
-    , neck : Maybe (List NeckCPESign)
-    , heart : Maybe HeartCPESign
-    , heartMurmur : Maybe Bool
-    , lungs : Maybe (List LungsCPESign)
-    , abdomen : Maybe (List AbdomenCPESign)
-    , hands : Maybe (List HandsCPESign)
-    , legs : Maybe (List LegsCPESign)
-    }
-
-
-emptyCorePhysicalExamForm : CorePhysicalExamForm
-emptyCorePhysicalExamForm =
-    { brittleHair = Nothing
-    , paleConjuctiva = Nothing
-    , neck = Nothing
-    , heart = Nothing
-    , heartMurmur = Nothing
-    , lungs = Nothing
-    , abdomen = Nothing
-    , hands = Nothing
-    , legs = Nothing
-    }
-
-
 type alias ObstetricalExamForm =
     { fundalHeight : Maybe Float
     , fundalHeightDirty : Bool
@@ -999,16 +976,6 @@ emptyGUExamForm =
     , postpartumHealingProblemsDirty = False
     , rectalHemorrhoids = Nothing
     }
-
-
-type alias FamilyPlanningForm =
-    { signs : Maybe (List FamilyPlanningSign)
-    }
-
-
-emptyFamilyPlanningForm : FamilyPlanningForm
-emptyFamilyPlanningForm =
-    FamilyPlanningForm Nothing
 
 
 type alias DangerSignsForm =
