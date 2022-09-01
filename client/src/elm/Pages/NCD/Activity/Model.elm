@@ -52,6 +52,9 @@ type Msg
     | SetMedicationTreatingHypertension MedicationTreatingHypertension
     | SetMedicationTreatingDiabetes MedicationTreatingDiabetes
     | SaveMedicationHistory PersonId (Maybe ( NCDMedicationHistoryId, NCDMedicationHistory )) (Maybe MedicalHistoryTask)
+    | SetSocialHistoryBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
+    | SetSocialHistoryIntInput (Maybe Int -> SocialHistoryForm -> SocialHistoryForm) String
+    | SetFoodGroup FoodGroup
     | SaveSocialHistory PersonId (Maybe ( NCDSocialHistoryId, NCDSocialHistory )) (Maybe MedicalHistoryTask)
     | SaveFamilyHistory PersonId (Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )) (Maybe MedicalHistoryTask)
     | SaveOutsideCare PersonId (Maybe ( NCDOutsideCareId, NCDOutsideCare )) (Maybe MedicalHistoryTask)

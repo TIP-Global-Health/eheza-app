@@ -577,6 +577,24 @@ viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc option
         ]
 
 
+viewNumberInput : Language -> Maybe Int -> (String -> msg) -> String -> Html msg
+viewNumberInput language maybeCurrentValue setMsg inputClass =
+    let
+        currentValue =
+            Maybe.map String.fromInt maybeCurrentValue
+                |> Maybe.withDefault ""
+
+        inputAttrs =
+            [ type_ "number"
+            , Html.Attributes.min "0"
+            , onInput setMsg
+            , value currentValue
+            ]
+    in
+    div [ class <| "form-input number " ++ inputClass ]
+        [ input inputAttrs [] ]
+
+
 viewMeasurementInput : Language -> Maybe Float -> (String -> msg) -> String -> TranslationId -> Html msg
 viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslationId =
     let

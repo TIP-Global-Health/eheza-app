@@ -653,6 +653,49 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetSocialHistoryBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.medicalHistoryData.socialHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | socialHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSocialHistoryIntInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc (String.toInt value) model.medicalHistoryData.socialHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | socialHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetFoodGroup value ->
+            let
+                updatedForm =
+                    model.medicalHistoryData.socialHistoryForm
+                        |> (\form -> { form | foodGroup = Just value })
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | socialHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveSocialHistory personId saved nextTask ->
             let
                 measurementId =

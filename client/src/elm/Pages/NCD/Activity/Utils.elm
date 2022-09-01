@@ -10,6 +10,9 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
@@ -17,8 +20,21 @@ import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vitalsFormWi
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Encounter.Model exposing (AssembledData)
-import Pages.Utils exposing (ifEverySetEmpty, ifTrue, maybeValueConsideringIsDirtyField, taskCompleted)
+import Pages.Utils
+    exposing
+        ( ifEverySetEmpty
+        , ifTrue
+        , maybeValueConsideringIsDirtyField
+        , taskCompleted
+        , viewBoolInput
+        , viewCheckBoxSelectInput
+        , viewCustomLabel
+        , viewNumberInput
+        , viewQuestionLabel
+        )
 import RemoteData exposing (RemoteData(..))
+import Translate exposing (Language, translate)
+import Translate.Model exposing (Language(..))
 
 
 expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> NCDActivity -> Bool
@@ -405,10 +421,148 @@ medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
             )
 
         TaskSocialHistory ->
-            ( 0, 1 )
+            let
+                ( _, tasks ) =
+                    getMeasurementValueFunc assembled.measurements.socialHistory
+                        |> socialHistoryFormWithDefault data.socialHistoryForm
+                        |> socialHistoryFormInputsAndTasks English currentDate
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
 
         TaskFamilyHistory ->
             ( 0, 1 )
 
         TaskOutsideCare ->
             ( 0, 1 )
+
+
+socialHistoryFormInputsAndTasks : Language -> NominalDate -> SocialHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
+socialHistoryFormInputsAndTasks language currentDate form =
+    let
+        ( alcoholInputs, alcoholTasks ) =
+            let
+                ( derivedInput, derivedTask ) =
+                    if form.alcohol == Just True then
+                        ( [ viewQuestionLabel language Translate.HowManyPerWeek
+                          , viewNumberInput language
+                                form.beveragesPerWeek
+                                (SetSocialHistoryIntInput
+                                    (\value form_ ->
+                                        { form_ | beveragesPerWeek = value, beveragesPerWeekDirty = True }
+                                    )
+                                )
+                                "beverages"
+                          ]
+                        , [ maybeToBoolTask form.beveragesPerWeek ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion SignDrinkAlcohol
+              , viewBoolInput language
+                    form.alcohol
+                    (SetSocialHistoryBoolInput
+                        (\value form_ ->
+                            { form_ | alcohol = Just value, beveragesPerWeek = Nothing, beveragesPerWeekDirty = True }
+                        )
+                    )
+                    "alcohol"
+                    Nothing
+              ]
+                ++ derivedInput
+            , form.alcohol :: derivedTask
+            )
+
+        ( cigarettesInputs, cigarettesTasks ) =
+            let
+                ( derivedInput, derivedTask ) =
+                    if form.cigarettes == Just True then
+                        ( [ viewQuestionLabel language Translate.HowManyPerWeek
+                          , viewNumberInput language
+                                form.cigarettesPerWeek
+                                (SetSocialHistoryIntInput
+                                    (\value form_ ->
+                                        { form_ | cigarettesPerWeek = value, cigarettesPerWeekDirty = True }
+                                    )
+                                )
+                                "cigarettes"
+                          ]
+                        , [ maybeToBoolTask form.cigarettesPerWeek ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion SignSmokeCigarettes
+              , viewBoolInput language
+                    form.cigarettes
+                    (SetSocialHistoryBoolInput
+                        (\value form_ ->
+                            { form_ | cigarettes = Just value, cigarettesPerWeek = Nothing, cigarettesPerWeekDirty = True }
+                        )
+                    )
+                    "cigarettes"
+                    Nothing
+              ]
+                ++ derivedInput
+            , form.cigarettes :: derivedTask
+            )
+
+        maybeToBoolTask : Maybe a -> Maybe Bool
+        maybeToBoolTask maybe =
+            if isJust maybe then
+                Just True
+
+            else
+                Nothing
+    in
+    ( alcoholInputs
+        ++ cigarettesInputs
+        ++ [ viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion SignConsumeSalt
+           , viewBoolInput language
+                form.salt
+                (SetSocialHistoryBoolInput
+                    (\value form_ ->
+                        { form_ | salt = Just value }
+                    )
+                )
+                "salt"
+                Nothing
+           , viewQuestionLabel language Translate.NCDSocialHistoryFoodQuestion
+           , viewCustomLabel language Translate.NCDSocialHistoryFoodQuestionInstructions "." "helper"
+           , viewCheckBoxSelectInput language
+                [ FoodGroupVegetables, FoodGroupCarbohydrates, FoodGroupProtein ]
+                []
+                form.foodGroup
+                SetFoodGroup
+                Translate.FoodGroup
+           , viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion SignDifficult4TimesAYear
+           , viewBoolInput language
+                form.difficult4Times
+                (SetSocialHistoryBoolInput
+                    (\value form_ ->
+                        { form_ | difficult4Times = Just value }
+                    )
+                )
+                "difficult-4-times"
+                Nothing
+           , viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion SignHelpWithTreatmentAtHome
+           , viewBoolInput language
+                form.helpAtHome
+                (SetSocialHistoryBoolInput
+                    (\value form_ ->
+                        { form_ | helpAtHome = Just value }
+                    )
+                )
+                "help-at-home"
+                Nothing
+           ]
+    , alcoholTasks
+        ++ cigarettesTasks
+        ++ [ form.salt, form.difficult4Times, form.helpAtHome ]
+        ++ [ maybeToBoolTask form.foodGroup ]
+    )

@@ -611,6 +611,7 @@ type TranslationId
     | FirstAntenatalVisit
     | FirstName
     | FiveVisits
+    | FoodGroup FoodGroup
     | FollowPostpartumProtocols
     | FollowUpWithPatientIn
     | FollowUpWithPatientOn
@@ -674,6 +675,7 @@ type TranslationId
     | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
+    | HowManyPerWeek
     | Hypertension
     | HypertensionBeforePregnancy
     | HypertensionRecommendedTreatmentHeader
@@ -835,6 +837,9 @@ type TranslationId
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
+    | NCDSocialHistoryFoodQuestion
+    | NCDSocialHistoryFoodQuestionInstructions
+    | NCDSocialHistorySignQuestion NCDSocialHistorySign
     | Neck
     | NeckCPESign NeckCPESign
     | NegativeLabel
@@ -4684,6 +4689,23 @@ translationSet trans =
             , kinyarwanda = Just "Inshuro eshanu"
             }
 
+        FoodGroup group ->
+            case group of
+                FoodGroupVegetables ->
+                    { english = "Vegetables"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodGroupCarbohydrates ->
+                    { english = "Carbohydrates"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodGroupProtein ->
+                    { english = "Protein"
+                    , kinyarwanda = Nothing
+                    }
+
         FollowPostpartumProtocols ->
             { english = "Follow Postpartum Protocols"
             , kinyarwanda = Nothing
@@ -5225,6 +5247,11 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        HowManyPerWeek ->
+            { english = "How many per week"
+            , kinyarwanda = Nothing
+            }
 
         Hypertension ->
             { english = "Hypertension"
@@ -7276,6 +7303,48 @@ translationSet trans =
 
                 NoNCDPainSymptoms ->
                     { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDSocialHistoryFoodQuestion ->
+            { english = "What foods do you eat most"
+            , kinyarwanda = Nothing
+            }
+
+        NCDSocialHistoryFoodQuestionInstructions ->
+            { english = "Please check the most fitting group"
+            , kinyarwanda = Nothing
+            }
+
+        NCDSocialHistorySignQuestion sign ->
+            case sign of
+                SignDrinkAlcohol ->
+                    { english = "Do you drink any alcoholic beverages"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignSmokeCigarettes ->
+                    { english = "Do you smoke cigarettes"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignConsumeSalt ->
+                    { english = "Do you add salt to your food"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignDifficult4TimesAYear ->
+                    { english = "Would it be difficult for you to come to the health center 4 times a year"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignHelpWithTreatmentAtHome ->
+                    { english = "Are there people at home who can help you with treatment"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDSocialHistorySigns ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 

@@ -30,9 +30,12 @@ import Pages.Utils
         ( isTaskCompleted
         , saveButton
         , taskCompleted
+        , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
+        , viewNumberInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
         )
@@ -514,7 +517,9 @@ viewMedicalHistoryContent language currentDate assembled data =
                         |> viewMedicationHistoryForm language currentDate
 
                 Just TaskSocialHistory ->
-                    emptyNode
+                    getMeasurementValueFunc assembled.measurements.socialHistory
+                        |> socialHistoryFormWithDefault data.socialHistoryForm
+                        |> viewSocialHistoryForm language currentDate
 
                 Just TaskFamilyHistory ->
                     emptyNode
@@ -643,3 +648,13 @@ viewMedicationHistoryForm language currentDate form =
             SetMedicationTreatingDiabetes
             Translate.MedicationTreatingDiabetes
         ]
+
+
+viewSocialHistoryForm : Language -> NominalDate -> SocialHistoryForm -> Html Msg
+viewSocialHistoryForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            socialHistoryFormInputsAndTasks language currentDate form
+    in
+    div [ class "ui form social-history" ]
+        inputs
