@@ -21,6 +21,7 @@ import Backend.Measurement.Model
         , NCDGroup2Symptom(..)
         , NCDPainSymptom(..)
         , NeckCPESign(..)
+        , Predecessor(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -75,6 +76,17 @@ update currentDate id db msg model =
                         >> medicationHistoryFormWithDefault model.medicalHistoryData.medicationHistoryForm
                     )
                 |> Maybe.withDefault model.medicalHistoryData.medicationHistoryForm
+
+        familyHistoryForm =
+            Dict.get id db.ncdMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (.familyHistory
+                        >> getMeasurementValueFunc
+                        >> familyHistoryFormWithDefault model.medicalHistoryData.familyHistoryForm
+                    )
+                |> Maybe.withDefault model.medicalHistoryData.familyHistoryForm
 
         generateExaminationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveExaminationTask task ]) nextTask
@@ -722,6 +734,95 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetFamilyHistoryBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.medicalHistoryData.familyHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | familyHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHypertensionPredecessor predecessor ->
+            let
+                _ =
+                    Debug.log "SetHypertensionPredecessor" predecessor
+
+                updatedForm =
+                    setMultiSelectInputValue .hypertensionPredecessors
+                        (\hypertensionPredecessors ->
+                            { familyHistoryForm
+                                | hypertensionPredecessors = hypertensionPredecessors
+                                , hypertensionPredecessorsDirty = True
+                            }
+                        )
+                        NoPredecessors
+                        predecessor
+                        familyHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | familyHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHeartProblemPredecessor predecessor ->
+            let
+                _ =
+                    Debug.log "SetHeartProblemPredecessor" predecessor
+
+                updatedForm =
+                    setMultiSelectInputValue .heartProblemPredecessors
+                        (\heartProblemPredecessors ->
+                            { familyHistoryForm
+                                | heartProblemPredecessors = heartProblemPredecessors
+                                , heartProblemPredecessorsDirty = True
+                            }
+                        )
+                        NoPredecessors
+                        predecessor
+                        familyHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | familyHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetDiabetesPredecessor predecessor ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .diabetesPredecessors
+                        (\diabetesPredecessors ->
+                            { familyHistoryForm
+                                | diabetesPredecessors = diabetesPredecessors
+                                , diabetesPredecessorsDirty = True
+                            }
+                        )
+                        NoPredecessors
+                        predecessor
+                        familyHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | familyHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveFamilyHistory personId saved nextTask ->
             let

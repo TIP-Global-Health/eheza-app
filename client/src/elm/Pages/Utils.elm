@@ -1024,6 +1024,15 @@ isTaskCompleted dict task =
         |> Maybe.withDefault False
 
 
+maybeToBoolTask : Maybe a -> Maybe Bool
+maybeToBoolTask maybe =
+    if isJust maybe then
+        Just True
+
+    else
+        Nothing
+
+
 tasksBarId : String
 tasksBarId =
     "tasks-bar"

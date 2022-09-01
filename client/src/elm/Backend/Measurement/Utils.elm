@@ -2944,6 +2944,9 @@ predecessorFromString value =
         "grand-mother" ->
             Just PredecessorGrandMother
 
+        "none" ->
+            Just NoPredecessors
+
         _ ->
             Nothing
 
@@ -2962,6 +2965,9 @@ predecessorToString value =
 
         PredecessorGrandMother ->
             "grand-mother"
+
+        NoPredecessors ->
+            "none"
 
 
 medicationCausingHypertensionFromString : String -> Maybe MedicationCausingHypertension

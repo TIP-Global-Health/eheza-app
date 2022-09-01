@@ -2327,6 +2327,7 @@ type Predecessor
     | PredecessorMother
     | PredecessorGrandFather
     | PredecessorGrandMother
+    | NoPredecessors
 
 
 type alias NCDFamilyPlanning =

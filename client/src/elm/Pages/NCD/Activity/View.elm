@@ -522,7 +522,9 @@ viewMedicalHistoryContent language currentDate assembled data =
                         |> viewSocialHistoryForm language currentDate
 
                 Just TaskFamilyHistory ->
-                    emptyNode
+                    getMeasurementValueFunc assembled.measurements.familyHistory
+                        |> familyHistoryFormWithDefault data.familyHistoryForm
+                        |> viewFamilyHistoryForm language currentDate
 
                 Just TaskOutsideCare ->
                     emptyNode
@@ -657,4 +659,14 @@ viewSocialHistoryForm language currentDate form =
             socialHistoryFormInputsAndTasks language currentDate form
     in
     div [ class "ui form social-history" ]
+        inputs
+
+
+viewFamilyHistoryForm : Language -> NominalDate -> FamilyHistoryForm -> Html Msg
+viewFamilyHistoryForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            familyHistoryFormInputsAndTasks language currentDate form
+    in
+    div [ class "ui form family-history" ]
         inputs

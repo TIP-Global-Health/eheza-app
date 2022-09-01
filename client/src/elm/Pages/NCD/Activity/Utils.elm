@@ -24,9 +24,11 @@ import Pages.Utils
     exposing
         ( ifEverySetEmpty
         , ifTrue
+        , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , taskCompleted
         , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewNumberInput
@@ -270,7 +272,7 @@ familyHistoryFormWithDefault form saved =
                 , hypertensionPredecessorsDirty = form.hypertensionPredecessorsDirty
                 , heartProblemPredecessors =
                     maybeValueConsideringIsDirtyField form.heartProblemPredecessorsDirty
-                        form.hypertensionPredecessors
+                        form.heartProblemPredecessors
                         (Maybe.map EverySet.toList value.heartProblemPredecessors)
                 , heartProblemPredecessorsDirty = form.heartProblemPredecessorsDirty
                 , diabetesPredecessors =
@@ -433,7 +435,16 @@ medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
             )
 
         TaskFamilyHistory ->
-            ( 0, 1 )
+            let
+                ( _, tasks ) =
+                    getMeasurementValueFunc assembled.measurements.familyHistory
+                        |> familyHistoryFormWithDefault data.familyHistoryForm
+                        |> familyHistoryFormInputsAndTasks English currentDate
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
 
         TaskOutsideCare ->
             ( 0, 1 )
@@ -511,14 +522,6 @@ socialHistoryFormInputsAndTasks language currentDate form =
                 ++ derivedInput
             , form.cigarettes :: derivedTask
             )
-
-        maybeToBoolTask : Maybe a -> Maybe Bool
-        maybeToBoolTask maybe =
-            if isJust maybe then
-                Just True
-
-            else
-                Nothing
     in
     ( alcoholInputs
         ++ cigarettesInputs
@@ -565,4 +568,106 @@ socialHistoryFormInputsAndTasks language currentDate form =
         ++ cigarettesTasks
         ++ [ form.salt, form.difficult4Times, form.helpAtHome ]
         ++ [ maybeToBoolTask form.foodGroup ]
+    )
+
+
+familyHistoryFormInputsAndTasks : Language -> NominalDate -> FamilyHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
+familyHistoryFormInputsAndTasks language currentDate form =
+    let
+        ( hypertensionInputs, hypertensionTasks ) =
+            let
+                ( derivedInput, derivedTask ) =
+                    if form.hypertensionInFamily == Just True then
+                        ( viewPredecessorInput form.hypertensionPredecessors SetHypertensionPredecessor
+                        , [ maybeToBoolTask form.hypertensionPredecessors ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language <| Translate.NCDFamilyHistorySignQuestion SignHypertensionHistory
+              , viewBoolInput language
+                    form.hypertensionInFamily
+                    (SetFamilyHistoryBoolInput
+                        (\value form_ ->
+                            { form_ | hypertensionInFamily = Just value, hypertensionPredecessors = Nothing, hypertensionPredecessorsDirty = True }
+                        )
+                    )
+                    "hypertension-in-family"
+                    Nothing
+              ]
+                ++ derivedInput
+            , form.hypertensionInFamily :: derivedTask
+            )
+
+        ( heartProblemInputs, heartProblemTasks ) =
+            let
+                ( derivedInput, derivedTask ) =
+                    if form.heartProblemInFamily == Just True then
+                        ( viewPredecessorInput form.heartProblemPredecessors SetHeartProblemPredecessor
+                        , [ maybeToBoolTask form.heartProblemPredecessors ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language <| Translate.NCDFamilyHistorySignQuestion SignHeartProblemHistory
+              , viewBoolInput language
+                    form.heartProblemInFamily
+                    (SetFamilyHistoryBoolInput
+                        (\value form_ ->
+                            { form_ | heartProblemInFamily = Just value, heartProblemPredecessors = Nothing, heartProblemPredecessorsDirty = True }
+                        )
+                    )
+                    "heartProblem-in-family"
+                    Nothing
+              ]
+                ++ derivedInput
+            , form.heartProblemInFamily :: derivedTask
+            )
+
+        ( diabetesInputs, diabetesTasks ) =
+            let
+                ( derivedInput, derivedTask ) =
+                    if form.diabetesInFamily == Just True then
+                        ( viewPredecessorInput form.diabetesPredecessors SetDiabetesPredecessor
+                        , [ maybeToBoolTask form.diabetesPredecessors ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language <| Translate.NCDFamilyHistorySignQuestion SignDiabetesHistory
+              , viewBoolInput language
+                    form.diabetesInFamily
+                    (SetFamilyHistoryBoolInput
+                        (\value form_ ->
+                            { form_ | diabetesInFamily = Just value, diabetesPredecessors = Nothing, diabetesPredecessorsDirty = True }
+                        )
+                    )
+                    "diabetes-in-family"
+                    Nothing
+              ]
+                ++ derivedInput
+            , form.diabetesInFamily :: derivedTask
+            )
+
+        viewPredecessorInput formField setMsg =
+            [ viewQuestionLabel language Translate.WhoInFamilyHasCondition
+            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+            , viewCheckBoxMultipleSelectInput language
+                [ PredecessorMother
+                , PredecessorFather
+                , PredecessorGrandMother
+                , PredecessorGrandFather
+                ]
+                []
+                (Maybe.withDefault [] formField)
+                Nothing
+                setMsg
+                Translate.Predecessor
+            ]
+    in
+    ( hypertensionInputs ++ heartProblemInputs ++ diabetesInputs
+    , hypertensionTasks ++ heartProblemTasks ++ diabetesTasks
     )

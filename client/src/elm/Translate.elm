@@ -833,6 +833,7 @@ type TranslationId
     | NCDActivityTitle NCDActivity
     | NCDDangerSign NCDDangerSign
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
+    | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
     | NCDMedicalHistoryTask Pages.NCD.Activity.Types.MedicalHistoryTask
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
@@ -967,6 +968,7 @@ type TranslationId
     | PostpartumHealingProblemQuestion
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
+    | Predecessor Predecessor
     | PreeclampsiaPreviousPregnancy
     | PregnancyConclusion
     | PregnancyStart
@@ -1394,6 +1396,7 @@ type TranslationId
     | WhatType
     | WhatWasTheirResponse
     | WhoCaresForTheChildDuringTheDay
+    | WhoInFamilyHasCondition
     | WhyNot
     | WhyDifferentFbfAmount Activity
     | WrittenProtocolsFollowed
@@ -7133,6 +7136,28 @@ translationSet trans =
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
+        NCDFamilyHistorySignQuestion sign ->
+            case sign of
+                SignHypertensionHistory ->
+                    { english = "Has anyone in your family been told they have hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignHeartProblemHistory ->
+                    { english = "Has anyone in your family been told they have a problem with their heart"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignDiabetesHistory ->
+                    { english = "Has anyone in your family been told they have a problem with diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDFamilyHistorySigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         NCDMedicalHistoryTask task ->
             case task of
                 TaskCoMorbidities ->
@@ -8702,6 +8727,33 @@ translationSet trans =
                 NoPostpartumMotherDangerSigns ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta kimenyetso na kimwe"
+                    }
+
+        Predecessor predecessor ->
+            case predecessor of
+                PredecessorFather ->
+                    { english = "Father"
+                    , kinyarwanda = Nothing
+                    }
+
+                PredecessorMother ->
+                    { english = "Mother"
+                    , kinyarwanda = Nothing
+                    }
+
+                PredecessorGrandFather ->
+                    { english = "Grand-Father"
+                    , kinyarwanda = Nothing
+                    }
+
+                PredecessorGrandMother ->
+                    { english = "Grand-Mother"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPredecessors ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         PreeclampsiaPreviousPregnancy ->
@@ -15265,6 +15317,11 @@ translationSet trans =
         WhoCaresForTheChildDuringTheDay ->
             { english = "Who cares for the child during the day"
             , kinyarwanda = Just "Ni inde wita ku mwana ku manywa"
+            }
+
+        WhoInFamilyHasCondition ->
+            { english = "Who in the family has this condition"
+            , kinyarwanda = Nothing
             }
 
         WhyNot ->

@@ -56,6 +56,10 @@ type Msg
     | SetSocialHistoryIntInput (Maybe Int -> SocialHistoryForm -> SocialHistoryForm) String
     | SetFoodGroup FoodGroup
     | SaveSocialHistory PersonId (Maybe ( NCDSocialHistoryId, NCDSocialHistory )) (Maybe MedicalHistoryTask)
+    | SetFamilyHistoryBoolInput (Bool -> FamilyHistoryForm -> FamilyHistoryForm) Bool
+    | SetHypertensionPredecessor Predecessor
+    | SetHeartProblemPredecessor Predecessor
+    | SetDiabetesPredecessor Predecessor
     | SaveFamilyHistory PersonId (Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )) (Maybe MedicalHistoryTask)
     | SaveOutsideCare PersonId (Maybe ( NCDOutsideCareId, NCDOutsideCare )) (Maybe MedicalHistoryTask)
 
