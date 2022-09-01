@@ -4773,18 +4773,9 @@ decodeMedicationTreatingDiabetes =
             )
 
 
-
---
-
-
 decodeNCDOutsideCare : Decoder NCDOutsideCare
 decodeNCDOutsideCare =
-    decodeNCDMeasurement decodeNCDOutsideCareValue
-
-
-decodeNCDOutsideCareValue : Decoder NCDOutsideCareValue
-decodeNCDOutsideCareValue =
-    succeed NCDOutsideCareValue
+    decodeNCDMeasurement (decodeOutsideCareValue "medical_conditions" decodeMedicalCondition)
 
 
 decodeNCDPregnancyTest : Decoder NCDPregnancyTest

@@ -2862,6 +2862,33 @@ medicalConditionFromString value =
         "none" ->
             Just NoMedicalConditions
 
+        "neuropathy" ->
+            Just MedicalConditionNeuropathy
+
+        "rental-complications" ->
+            Just MedicalConditionRentalComplications
+
+        "malaria" ->
+            Just MedicalConditionMalaria
+
+        "tuberculosis" ->
+            Just MedicalConditionTuberculosis
+
+        "hepatitis-b" ->
+            Just MedicalConditionHepatitisB
+
+        "syphilis" ->
+            Just MedicalConditionSyphilis
+
+        "eye-complications" ->
+            Just MedicalConditionEyeComplications
+
+        "anemia" ->
+            Just MedicalConditionAnemia
+
+        "other" ->
+            Just MedicalConditionOther
+
         _ ->
             Nothing
 
@@ -2889,6 +2916,33 @@ medicalConditionToString value =
 
         MedicalConditionPregnancyRelatedHypertension ->
             "pregnancy-related-hypertension"
+
+        MedicalConditionNeuropathy ->
+            "neuropathy"
+
+        MedicalConditionRentalComplications ->
+            "rental-complications"
+
+        MedicalConditionMalaria ->
+            "malaria"
+
+        MedicalConditionTuberculosis ->
+            "tuberculosis"
+
+        MedicalConditionHepatitisB ->
+            "hepatitis-b"
+
+        MedicalConditionSyphilis ->
+            "syphilis"
+
+        MedicalConditionEyeComplications ->
+            "eye-complications"
+
+        MedicalConditionAnemia ->
+            "anemia"
+
+        MedicalConditionOther ->
+            "other"
 
         NoMedicalConditions ->
             "none"

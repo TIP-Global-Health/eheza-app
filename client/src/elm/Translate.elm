@@ -6459,6 +6459,51 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MedicalConditionNeuropathy ->
+                    { english = "Neuropathy"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionRentalComplications ->
+                    { english = "RentalC omplications"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionMalaria ->
+                    { english = "alaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionTuberculosis ->
+                    { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionHepatitisB ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionSyphilis ->
+                    { english = "Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionEyeComplications ->
+                    { english = "Eye Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionAnemia ->
+                    { english = "Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoMedicalConditions ->
                     { english = "None of the Above"
                     , kinyarwanda = Nothing

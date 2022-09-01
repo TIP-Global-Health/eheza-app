@@ -2269,7 +2269,28 @@ type MedicalCondition
     | MedicalConditionHypertension
     | MedicalConditionGestationalDiabetes
     | MedicalConditionPregnancyRelatedHypertension
+    | MedicalConditionNeuropathy
+    | MedicalConditionRentalComplications
+    | MedicalConditionMalaria
+    | MedicalConditionTuberculosis
+    | MedicalConditionHepatitisB
+    | MedicalConditionSyphilis
+    | MedicalConditionEyeComplications
+    | MedicalConditionAnemia
+    | MedicalConditionOther
     | NoMedicalConditions
+
+
+
+--     neuropathy|Neuropathy
+-- rental-complications|Rental complications
+-- malaria|Malaria
+-- tuberculosis|Tuberculosis
+-- hepatitis-b|Hepatitis B
+-- syphilis|Syphilis
+-- eye-complications|Eye complications
+-- anemia|Anemia
+-- other|Other
 
 
 type alias NCDCoreExam =
@@ -2416,11 +2437,7 @@ type MedicationTreatingDiabetes
 
 
 type alias NCDOutsideCare =
-    NCDMeasurement NCDOutsideCareValue
-
-
-type alias NCDOutsideCareValue =
-    {}
+    NCDMeasurement (OutsideCareValue MedicalCondition)
 
 
 type alias NCDPregnancyTest =

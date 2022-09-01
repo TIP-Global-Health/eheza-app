@@ -4078,11 +4078,11 @@ encodePrenatalFlankPainSign =
 
 encodePrenatalOutsideCare : PrenatalOutsideCare -> List ( String, Value )
 encodePrenatalOutsideCare =
-    encodePrenatalMeasurement (encodeOutsideCareValue "prenatal_diagnoses" encodePrenatalDiagnosis)
+    encodePrenatalMeasurement (encodeOutsideCareValue "prenatal_diagnoses" encodePrenatalDiagnosis "prenatal_outside_care")
 
 
-encodeOutsideCareValue : String -> (diagnosis -> Value) -> OutsideCareValue diagnosis -> List ( String, Value )
-encodeOutsideCareValue fieldName diagnosisEncouder value =
+encodeOutsideCareValue : String -> (diagnosis -> Value) -> String -> OutsideCareValue diagnosis -> List ( String, Value )
+encodeOutsideCareValue fieldName diagnosisEncouder type_ value =
     let
         diagnoses =
             Maybe.map
@@ -4102,7 +4102,7 @@ encodeOutsideCareValue fieldName diagnosisEncouder value =
     in
     [ ( "outside_care_signs", encodeEverySet encodeOutsideCareSign value.signs )
     , ( "deleted", bool False )
-    , ( "type", string "prenatal_outside_care" )
+    , ( "type", string type_ )
     ]
         ++ diagnoses
         ++ medications
@@ -4319,14 +4319,7 @@ encodeMedicationTreatingDiabetes =
 
 encodeNCDOutsideCare : NCDOutsideCare -> List ( String, Value )
 encodeNCDOutsideCare =
-    encodeNCDMeasurement encodeNCDOutsideCareValue
-
-
-encodeNCDOutsideCareValue : NCDOutsideCareValue -> List ( String, Value )
-encodeNCDOutsideCareValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_outside_care" )
-    ]
+    encodeNCDMeasurement (encodeOutsideCareValue "medical_conditions" encodeMedicalCondition "ncd_outside_care")
 
 
 encodeNCDPregnancyTest : NCDPregnancyTest -> List ( String, Value )

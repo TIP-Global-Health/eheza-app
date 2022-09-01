@@ -79,5 +79,5 @@ type Msg
     | HandleSavedSocialHistory (WebData ())
     | SaveFamilyHistory PersonId (Maybe NCDFamilyHistoryId) NCDFamilyHistoryValue
     | HandleSavedFamilyHistory (WebData ())
-    | SaveOutsideCare PersonId (Maybe NCDOutsideCareId) NCDOutsideCareValue
+    | SaveOutsideCare PersonId (Maybe NCDOutsideCareId) (OutsideCareValue MedicalCondition)
     | HandleSavedOutsideCare (WebData ())
