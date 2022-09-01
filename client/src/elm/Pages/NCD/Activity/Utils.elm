@@ -447,7 +447,9 @@ medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
             )
 
         TaskOutsideCare ->
-            ( 0, 1 )
+            -- This is not in use, because OutsideCare task got
+            -- special treatment at viewMedicalHistoryContent().
+            ( 0, 0 )
 
 
 socialHistoryFormInputsAndTasks : Language -> NominalDate -> SocialHistoryForm -> ( List (Html Msg), List (Maybe Bool) )

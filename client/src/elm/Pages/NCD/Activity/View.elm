@@ -613,25 +613,68 @@ viewMedicalHistoryContent language currentDate assembled data =
             Maybe.map
                 (\task ->
                     let
-                        saveAction =
+                        saveButtonActive =
+                            tasksCompleted == totalTasks
+
+                        buttons =
                             case task of
                                 TaskCoMorbidities ->
-                                    SaveCoMorbidities personId measurements.coMorbidities nextTask
+                                    [ saveButton language
+                                        saveButtonActive
+                                        (SaveCoMorbidities personId measurements.coMorbidities nextTask)
+                                    ]
 
                                 TaskMedicationHistory ->
-                                    SaveMedicationHistory personId measurements.medicationHistory nextTask
+                                    [ saveButton language
+                                        saveButtonActive
+                                        (SaveMedicationHistory personId measurements.medicationHistory nextTask)
+                                    ]
 
                                 TaskSocialHistory ->
-                                    SaveSocialHistory personId measurements.socialHistory nextTask
+                                    [ saveButton language
+                                        saveButtonActive
+                                        (SaveSocialHistory personId measurements.socialHistory nextTask)
+                                    ]
 
                                 TaskFamilyHistory ->
-                                    SaveFamilyHistory personId measurements.familyHistory nextTask
+                                    [ saveButton language
+                                        saveButtonActive
+                                        (SaveFamilyHistory personId measurements.familyHistory nextTask)
+                                    ]
 
                                 TaskOutsideCare ->
-                                    SaveOutsideCare personId measurements.outsideCare nextTask
+                                    let
+                                        saveAction =
+                                            SaveOutsideCare personId measurements.outsideCare nextTask
+                                    in
+                                    case data.outsideCareStep of
+                                        OutsideCareStepDiagnoses ->
+                                            let
+                                                actionMsg =
+                                                    if List.isEmpty outsideCareTasksStep2 then
+                                                        saveAction
+
+                                                    else
+                                                        SetOutsideCareStep OutsideCareStepMedications
+                                            in
+                                            [ saveButton language saveButtonActive actionMsg ]
+
+                                        OutsideCareStepMedications ->
+                                            [ button
+                                                [ class "ui fluid primary button"
+                                                , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
+                                                ]
+                                                [ text <| ("< " ++ translate language Translate.Back) ]
+                                            , saveButton language saveButtonActive saveAction
+                                            ]
                     in
-                    div [ class "actions" ]
-                        [ saveButton language (tasksCompleted == totalTasks) saveAction ]
+                    div
+                        [ classList
+                            [ ( "actions", True )
+                            , ( "two", task == TaskOutsideCare && data.outsideCareStep == OutsideCareStepMedications )
+                            ]
+                        ]
+                        buttons
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode

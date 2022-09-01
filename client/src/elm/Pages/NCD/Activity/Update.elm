@@ -37,6 +37,7 @@ import Measurement.Utils
         , outsideCareFormWithDefault
         , toCorePhysicalExamValueWithDefault
         , toFamilyPlanningValueWithDefault
+        , toOutsideCareValueWithDefault
         , toVitalsValueWithDefault
         )
 import Pages.NCD.Activity.Model exposing (..)
@@ -1008,16 +1009,14 @@ update currentDate id db msg model =
                     generateMedicalHistoryMsgs nextTask
 
                 appMsgs =
-                    -- @todo
-                    -- toOutsideCareValueWithDefault measurement model.medicalHistoryData.outsideCareForm
-                    --     |> Maybe.map
-                    --         (Backend.NCDEncounter.Model.SaveOutsideCare personId measurementId
-                    --             >> Backend.Model.MsgNCDEncounter id
-                    --             >> App.Model.MsgIndexedDb
-                    --             >> List.singleton
-                    --         )
-                    --     |> Maybe.withDefault []
-                    []
+                    toOutsideCareValueWithDefault NoMedicalConditions measurement model.medicalHistoryData.outsideCareForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveOutsideCare personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
