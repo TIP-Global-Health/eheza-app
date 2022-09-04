@@ -8,8 +8,10 @@ import Backend.Measurement.Model
         ( FollowUpMeasurements
         , FollowUpOption(..)
         , FollowUpValue
-        , PrenatalFollowUpValue
         , LaboratoryTest(..)
+        , LabsResultsValue
+        , NCDLabsResults
+        , PrenatalFollowUpValue
         , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -337,10 +339,20 @@ compareAcuteIllnessFollowUpItems item1 item2 =
 
 prenatalLabsResultsTestData : NominalDate -> PrenatalLabsResults -> ( List LaboratoryTest, List LaboratoryTest )
 prenatalLabsResultsTestData currentDate results =
-    if Date.compare currentDate results.dateMeasured == EQ then
-        ( EverySet.toList results.value.performedTests, EverySet.toList results.value.completedTests )
+    labsResultsTestData currentDate results.dateMeasured results.value
+
+
+ncdLabsResultsTestData : NominalDate -> NCDLabsResults -> ( List LaboratoryTest, List LaboratoryTest )
+ncdLabsResultsTestData currentDate results =
+    labsResultsTestData currentDate results.dateMeasured results.value
+
+
+labsResultsTestData : NominalDate -> NominalDate -> LabsResultsValue -> ( List LaboratoryTest, List LaboratoryTest )
+labsResultsTestData currentDate dateMeasured value =
+    if Date.compare currentDate dateMeasured == EQ then
+        ( EverySet.toList value.performedTests, EverySet.toList value.completedTests )
 
     else
-        ( EverySet.remove TestVitalsRecheck results.value.performedTests |> EverySet.toList
-        , EverySet.remove TestVitalsRecheck results.value.completedTests |> EverySet.toList
+        ( EverySet.remove TestVitalsRecheck value.performedTests |> EverySet.toList
+        , EverySet.remove TestVitalsRecheck value.completedTests |> EverySet.toList
         )

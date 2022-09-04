@@ -161,3 +161,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveRandomBloodSugarTest = data }
             , Cmd.none
             )
+
+        SaveLabsResults personId valueId value ->
+            ( { model | saveLabsResults = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdLabsResultsEndpoint HandleSavedLabsResults
+            )
+
+        HandleSavedLabsResults data ->
+            ( { model | saveLabsResults = data }
+            , Cmd.none
+            )
