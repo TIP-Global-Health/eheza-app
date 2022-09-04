@@ -10,4 +10,11 @@
  */
 class HedleyRestfulNCDCoMorbidities extends HedleyRestfulNCDActivityBase {
 
+  /**
+   * {@inheritdoc}
+   */
+  protected $multiFields = [
+    'field_comorbidities',
+  ];
+
 }

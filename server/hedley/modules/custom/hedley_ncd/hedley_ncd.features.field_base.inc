@@ -11,6 +11,210 @@
 function hedley_ncd_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_beverages_per_week'.
+  $field_bases['field_beverages_per_week'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_beverages_per_week',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_causing_hypertension'.
+  $field_bases['field_causing_hypertension'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_causing_hypertension',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'oestrogens' => 'Oestrogens',
+        'steroids' => 'Steroids',
+        'amitriptyline' => 'Amitriptyline',
+        'ibuprofen' => 'Ibuprofen',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_cigarettes_per_week'.
+  $field_bases['field_cigarettes_per_week'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_cigarettes_per_week',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_comorbidities'.
+  $field_bases['field_comorbidities'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_comorbidities',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hiv' => 'HIV',
+        'diabetes' => 'Diabetes',
+        'kidney-disease' => 'Kidney Disease',
+        'pregnancy' => 'Pregnancy',
+        'hypertension' => 'Hypertension',
+        'gestational-diabetes' => 'Gestational Diabetes',
+        'pregnancy-related-hypertension' => 'Pregnancy related Hypertension',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_diabetes_predecessors'.
+  $field_bases['field_diabetes_predecessors'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_diabetes_predecessors',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'father' => 'Father',
+        'mother' => 'Mother',
+        'grand-father' => 'Grand Father',
+        'grand-mother' => 'Grand Mother',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_food_group'.
+  $field_bases['field_food_group'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_food_group',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'vegetables' => 'Vegetables',
+        'carbohydrates' => 'Carbohydrates',
+        'protein' => 'Protein',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_heart_problem_predecessors'.
+  $field_bases['field_heart_problem_predecessors'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_heart_problem_predecessors',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'father' => 'Father',
+        'mother' => 'Mother',
+        'grand-father' => 'Grand Father',
+        'grand-mother' => 'Grand Mother',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_hypertension_predecessors'.
+  $field_bases['field_hypertension_predecessors'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_hypertension_predecessors',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'father' => 'Father',
+        'mother' => 'Mother',
+        'grand-father' => 'Grand Father',
+        'grand-mother' => 'Grand Mother',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_ncd_danger_signs'.
   $field_bases['field_ncd_danger_signs'] = array(
     'active' => 1,
@@ -77,6 +281,34 @@ function hedley_ncd_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_ncd_family_history_signs'.
+  $field_bases['field_ncd_family_history_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_ncd_family_history_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hypertension-history' => 'Hypertension History',
+        'heart-problem-history' => 'Heart Problem History',
+        'diabetes-history' => 'Diabetes History',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_ncd_group1_symptoms'.
@@ -171,6 +403,96 @@ function hedley_ncd_field_default_field_bases() {
         'feet' => 'Feet',
         'neck' => 'Neck',
         'abdomen' => 'Abdomen',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_ncd_social_history_signs'.
+  $field_bases['field_ncd_social_history_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_ncd_social_history_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'drink-alcohol' => 'Drink Alcohol',
+        'smoke-cigarettes' => 'Smoke Cigarettes',
+        'consume-salt' => 'Consume Salt',
+        'difficult-4-times-a-year' => 'Difficult to come 4 times a year to health center',
+        'help-with-treatment-at-home' => 'People at home to help with treatment',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_treating_diabetes'.
+  $field_bases['field_treating_diabetes'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_treating_diabetes',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'metformin' => 'Metformin',
+        'glibenclamide' => 'Glibenclamide',
+        'insulin' => 'Insulin',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_treating_hypertension'.
+  $field_bases['field_treating_hypertension'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_treating_hypertension',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'ace-inhibitors' => 'Ace Inhibitors',
+        'arbs' => 'ARBs',
+        'hctz' => 'HCTZ',
+        'calcium-channel-blockers' => 'Calcium Channel Blockers',
+        'methyldopa' => 'Methyldopa',
+        'beta-blockers' => 'BetaBlockers',
+        'hydralazine' => 'Hydralazine',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

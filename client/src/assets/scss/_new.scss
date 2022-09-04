@@ -568,16 +568,9 @@ div.page-activity {
       margin-bottom: 30px;
 
       // Number inputs
-      &.measurement {
+      &.measurement,
+      &.number {
         height: 50px;
-
-        .unit {
-          float: left;
-          font-weight: normal;
-          margin-left: 20px;
-          margin-top: 10px;
-          width: 35%;
-        }
 
         input,
         select {
@@ -586,6 +579,22 @@ div.page-activity {
           color: $color-text;
           float: left;
           width: 60%;
+        }
+      }
+
+      &.measurement .unit {
+        float: left;
+        font-weight: normal;
+        margin-left: 20px;
+        margin-top: 10px;
+        width: 35%;
+      }
+
+      &.number {
+
+        input,
+        select {
+          text-align: center;
         }
       }
 

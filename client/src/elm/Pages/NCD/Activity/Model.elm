@@ -44,6 +44,24 @@ type Msg
     | SetCoreExamHands HandsCPESign
     | SetCoreExamLegs LegsCPESign
     | SaveCoreExam PersonId (Maybe ( NCDCoreExamId, NCDCoreExam )) (Maybe ExaminationTask)
+      -- MedicalHistoryMsgs
+    | SetActiveMedicalHistoryTask MedicalHistoryTask
+    | SetMedicalCondition MedicalCondition
+    | SaveCoMorbidities PersonId (Maybe ( NCDCoMorbiditiesId, NCDCoMorbidities )) (Maybe MedicalHistoryTask)
+    | SetMedicationCausingHypertension MedicationCausingHypertension
+    | SetMedicationTreatingHypertension MedicationTreatingHypertension
+    | SetMedicationTreatingDiabetes MedicationTreatingDiabetes
+    | SaveMedicationHistory PersonId (Maybe ( NCDMedicationHistoryId, NCDMedicationHistory )) (Maybe MedicalHistoryTask)
+    | SetSocialHistoryBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
+    | SetSocialHistoryIntInput (Maybe Int -> SocialHistoryForm -> SocialHistoryForm) String
+    | SetFoodGroup FoodGroup
+    | SaveSocialHistory PersonId (Maybe ( NCDSocialHistoryId, NCDSocialHistory )) (Maybe MedicalHistoryTask)
+    | SetFamilyHistoryBoolInput (Bool -> FamilyHistoryForm -> FamilyHistoryForm) Bool
+    | SetHypertensionPredecessor Predecessor
+    | SetHeartProblemPredecessor Predecessor
+    | SetDiabetesPredecessor Predecessor
+    | SaveFamilyHistory PersonId (Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )) (Maybe MedicalHistoryTask)
+    | SaveOutsideCare PersonId (Maybe ( NCDOutsideCareId, NCDOutsideCare )) (Maybe MedicalHistoryTask)
 
 
 type alias Model =
@@ -51,6 +69,7 @@ type alias Model =
     , symptomReviewData : SymptomReviewData
     , examinationData : ExaminationData
     , familyPlanningData : FamilyPlanningData
+    , medicalHistoryData : MedicalHistoryData
     }
 
 
@@ -60,6 +79,7 @@ emptyModel =
     , symptomReviewData = emptySymptomReviewData
     , examinationData = emptyExaminationData
     , familyPlanningData = emptyFamilyPlanningData
+    , medicalHistoryData = emptyMedicalHistoryData
     }
 
 
@@ -130,4 +150,101 @@ type alias FamilyPlanningData =
 emptyFamilyPlanningData : FamilyPlanningData
 emptyFamilyPlanningData =
     { form = emptyFamilyPlanningForm
+    }
+
+
+type alias MedicalHistoryData =
+    { coMorbiditiesForm : CoMorbiditiesForm
+    , familyHistoryForm : FamilyHistoryForm
+    , medicationHistoryForm : MedicationHistoryForm
+    , socialHistoryForm : SocialHistoryForm
+    , activeTask : Maybe MedicalHistoryTask
+    }
+
+
+emptyMedicalHistoryData : MedicalHistoryData
+emptyMedicalHistoryData =
+    { coMorbiditiesForm = emptyCoMorbiditiesForm
+    , familyHistoryForm = emptyFamilyHistoryForm
+    , medicationHistoryForm = emptyMedicationHistoryForm
+    , socialHistoryForm = emptySocialHistoryForm
+    , activeTask = Nothing
+    }
+
+
+type alias CoMorbiditiesForm =
+    { conditions : Maybe (List MedicalCondition)
+    }
+
+
+emptyCoMorbiditiesForm : CoMorbiditiesForm
+emptyCoMorbiditiesForm =
+    CoMorbiditiesForm Nothing
+
+
+type alias FamilyHistoryForm =
+    { hypertensionInFamily : Maybe Bool
+    , heartProblemInFamily : Maybe Bool
+    , diabetesInFamily : Maybe Bool
+    , hypertensionPredecessors : Maybe (List Predecessor)
+    , hypertensionPredecessorsDirty : Bool
+    , heartProblemPredecessors : Maybe (List Predecessor)
+    , heartProblemPredecessorsDirty : Bool
+    , diabetesPredecessors : Maybe (List Predecessor)
+    , diabetesPredecessorsDirty : Bool
+    }
+
+
+emptyFamilyHistoryForm : FamilyHistoryForm
+emptyFamilyHistoryForm =
+    { hypertensionInFamily = Nothing
+    , heartProblemInFamily = Nothing
+    , diabetesInFamily = Nothing
+    , hypertensionPredecessors = Nothing
+    , hypertensionPredecessorsDirty = False
+    , heartProblemPredecessors = Nothing
+    , heartProblemPredecessorsDirty = False
+    , diabetesPredecessors = Nothing
+    , diabetesPredecessorsDirty = False
+    }
+
+
+type alias MedicationHistoryForm =
+    { medicationsCausingHypertension : Maybe (List MedicationCausingHypertension)
+    , medicationsTreatingHypertension : Maybe (List MedicationTreatingHypertension)
+    , medicationsTreatingDiabetes : Maybe (List MedicationTreatingDiabetes)
+    }
+
+
+emptyMedicationHistoryForm : MedicationHistoryForm
+emptyMedicationHistoryForm =
+    MedicationHistoryForm Nothing Nothing Nothing
+
+
+type alias SocialHistoryForm =
+    { alcohol : Maybe Bool
+    , cigarettes : Maybe Bool
+    , salt : Maybe Bool
+    , difficult4Times : Maybe Bool
+    , helpAtHome : Maybe Bool
+    , foodGroup : Maybe FoodGroup
+    , beveragesPerWeek : Maybe Int
+    , beveragesPerWeekDirty : Bool
+    , cigarettesPerWeek : Maybe Int
+    , cigarettesPerWeekDirty : Bool
+    }
+
+
+emptySocialHistoryForm : SocialHistoryForm
+emptySocialHistoryForm =
+    { alcohol = Nothing
+    , cigarettes = Nothing
+    , salt = Nothing
+    , difficult4Times = Nothing
+    , helpAtHome = Nothing
+    , foodGroup = Nothing
+    , beveragesPerWeek = Nothing
+    , beveragesPerWeekDirty = False
+    , cigarettesPerWeek = Nothing
+    , cigarettesPerWeekDirty = False
     }

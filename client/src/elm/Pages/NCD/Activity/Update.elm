@@ -12,11 +12,16 @@ import Backend.Measurement.Model
         , HandsCPESign(..)
         , LegsCPESign(..)
         , LungsCPESign(..)
+        , MedicalCondition(..)
+        , MedicationCausingHypertension(..)
+        , MedicationTreatingDiabetes(..)
+        , MedicationTreatingHypertension(..)
         , NCDDangerSign(..)
         , NCDGroup1Symptom(..)
         , NCDGroup2Symptom(..)
         , NCDPainSymptom(..)
         , NeckCPESign(..)
+        , Predecessor(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -62,8 +67,33 @@ update currentDate id db msg model =
                     )
                 |> Maybe.withDefault model.examinationData.coreExamForm
 
+        medicationHistoryForm =
+            Dict.get id db.ncdMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.medicationHistory
+                        >> getMeasurementValueFunc
+                        >> medicationHistoryFormWithDefault model.medicalHistoryData.medicationHistoryForm
+                    )
+                |> Maybe.withDefault model.medicalHistoryData.medicationHistoryForm
+
+        familyHistoryForm =
+            Dict.get id db.ncdMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (.familyHistory
+                        >> getMeasurementValueFunc
+                        >> familyHistoryFormWithDefault model.medicalHistoryData.familyHistoryForm
+                    )
+                |> Maybe.withDefault model.medicalHistoryData.familyHistoryForm
+
         generateExaminationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveExaminationTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| NCDEncounterPage id ]
+
+        generateMedicalHistoryMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveMedicalHistoryTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| NCDEncounterPage id ]
     in
     case msg of
@@ -481,6 +511,362 @@ update currentDate id db msg model =
                                 >> List.singleton
                             )
                         |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetActiveMedicalHistoryTask task ->
+            let
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicalCondition condition ->
+            let
+                form =
+                    Dict.get id db.ncdMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.coMorbidities
+                                >> getMeasurementValueFunc
+                                >> coMorbiditiesFormWithDefault model.medicalHistoryData.coMorbiditiesForm
+                            )
+                        |> Maybe.withDefault model.medicalHistoryData.coMorbiditiesForm
+
+                updatedForm =
+                    setMultiSelectInputValue .conditions
+                        (\conditions -> { form | conditions = conditions })
+                        NoMedicalConditions
+                        condition
+                        form
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | coMorbiditiesForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveCoMorbidities personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicalHistoryMsgs nextTask
+
+                appMsgs =
+                    toCoMorbiditiesValueWithDefault measurement model.medicalHistoryData.coMorbiditiesForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveCoMorbidities personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetMedicationCausingHypertension medication ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .medicationsCausingHypertension
+                        (\medications -> { medicationHistoryForm | medicationsCausingHypertension = medications })
+                        NoMedicationCausingHypertension
+                        medication
+                        medicationHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | medicationHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationTreatingHypertension medication ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .medicationsTreatingHypertension
+                        (\medications -> { medicationHistoryForm | medicationsTreatingHypertension = medications })
+                        NoMedicationTreatingHypertension
+                        medication
+                        medicationHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | medicationHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationTreatingDiabetes medication ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .medicationsTreatingDiabetes
+                        (\medications -> { medicationHistoryForm | medicationsTreatingDiabetes = medications })
+                        NoMedicationTreatingDiabetes
+                        medication
+                        medicationHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | medicationHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMedicationHistory personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicalHistoryMsgs nextTask
+
+                appMsgs =
+                    toMedicationHistoryValueWithDefault measurement model.medicalHistoryData.medicationHistoryForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveMedicationHistory personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetSocialHistoryBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.medicalHistoryData.socialHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | socialHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSocialHistoryIntInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc (String.toInt value) model.medicalHistoryData.socialHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | socialHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetFoodGroup value ->
+            let
+                updatedForm =
+                    model.medicalHistoryData.socialHistoryForm
+                        |> (\form -> { form | foodGroup = Just value })
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | socialHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSocialHistory personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicalHistoryMsgs nextTask
+
+                appMsgs =
+                    toSocialHistoryValueWithDefault measurement model.medicalHistoryData.socialHistoryForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveSocialHistory personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetFamilyHistoryBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.medicalHistoryData.familyHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | familyHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHypertensionPredecessor predecessor ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .hypertensionPredecessors
+                        (\hypertensionPredecessors ->
+                            { familyHistoryForm
+                                | hypertensionPredecessors = hypertensionPredecessors
+                                , hypertensionPredecessorsDirty = True
+                            }
+                        )
+                        NoPredecessors
+                        predecessor
+                        familyHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | familyHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHeartProblemPredecessor predecessor ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .heartProblemPredecessors
+                        (\heartProblemPredecessors ->
+                            { familyHistoryForm
+                                | heartProblemPredecessors = heartProblemPredecessors
+                                , heartProblemPredecessorsDirty = True
+                            }
+                        )
+                        NoPredecessors
+                        predecessor
+                        familyHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | familyHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetDiabetesPredecessor predecessor ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .diabetesPredecessors
+                        (\diabetesPredecessors ->
+                            { familyHistoryForm
+                                | diabetesPredecessors = diabetesPredecessors
+                                , diabetesPredecessorsDirty = True
+                            }
+                        )
+                        NoPredecessors
+                        predecessor
+                        familyHistoryForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | familyHistoryForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFamilyHistory personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicalHistoryMsgs nextTask
+
+                appMsgs =
+                    toFamilyHistoryValueWithDefault measurement model.medicalHistoryData.familyHistoryForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveFamilyHistory personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SaveOutsideCare personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicalHistoryMsgs nextTask
+
+                appMsgs =
+                    -- @todo
+                    -- toOutsideCareValueWithDefault measurement model.medicalHistoryData.outsideCareForm
+                    --     |> Maybe.map
+                    --         (Backend.NCDEncounter.Model.SaveOutsideCare personId measurementId
+                    --             >> Backend.Model.MsgNCDEncounter id
+                    --             >> App.Model.MsgIndexedDb
+                    --             >> List.singleton
+                    --         )
+                    --     |> Maybe.withDefault []
+                    []
             in
             ( model
             , Cmd.none

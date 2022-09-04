@@ -4584,7 +4584,18 @@ decodeNCDCoMorbidities =
 
 decodeNCDCoMorbiditiesValue : Decoder NCDCoMorbiditiesValue
 decodeNCDCoMorbiditiesValue =
-    succeed NCDCoMorbiditiesValue
+    field "comorbidities" (decodeEverySet decodeMedicalCondition)
+
+
+decodeMedicalCondition : Decoder MedicalCondition
+decodeMedicalCondition =
+    string
+        |> andThen
+            (\s ->
+                medicalConditionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized MedicalCondition")
+            )
 
 
 decodeNCDCoreExam : Decoder NCDCoreExam
@@ -4631,6 +4642,32 @@ decodeNCDFamilyHistory =
 decodeNCDFamilyHistoryValue : Decoder NCDFamilyHistoryValue
 decodeNCDFamilyHistoryValue =
     succeed NCDFamilyHistoryValue
+        |> required "ncd_family_history_signs" (decodeEverySet decodeNCDFamilyHistorySign)
+        |> optional "hypertension_predecessors" (nullable (decodeEverySet decodePredecessor)) Nothing
+        |> optional "heart_problem_predecessors" (nullable (decodeEverySet decodePredecessor)) Nothing
+        |> optional "diabetes_predecessors" (nullable (decodeEverySet decodePredecessor)) Nothing
+
+
+decodeNCDFamilyHistorySign : Decoder NCDFamilyHistorySign
+decodeNCDFamilyHistorySign =
+    string
+        |> andThen
+            (\s ->
+                ncdFamilyHistorySignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDFamilyHistorySign")
+            )
+
+
+decodePredecessor : Decoder Predecessor
+decodePredecessor =
+    string
+        |> andThen
+            (\s ->
+                predecessorFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized Predecessor")
+            )
 
 
 decodeNCDFamilyPlanning : Decoder NCDFamilyPlanning
@@ -4698,6 +4735,46 @@ decodeNCDMedicationHistory =
 decodeNCDMedicationHistoryValue : Decoder NCDMedicationHistoryValue
 decodeNCDMedicationHistoryValue =
     succeed NCDMedicationHistoryValue
+        |> required "causing_hypertension" (decodeEverySet decodeMedicationCausingHypertension)
+        |> required "treating_hypertension" (decodeEverySet decodeMedicationTreatingHypertension)
+        |> required "treating_diabetes" (decodeEverySet decodeMedicationTreatingDiabetes)
+
+
+decodeMedicationCausingHypertension : Decoder MedicationCausingHypertension
+decodeMedicationCausingHypertension =
+    string
+        |> andThen
+            (\s ->
+                medicationCausingHypertensionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized MedicationCausingHypertension")
+            )
+
+
+decodeMedicationTreatingHypertension : Decoder MedicationTreatingHypertension
+decodeMedicationTreatingHypertension =
+    string
+        |> andThen
+            (\s ->
+                medicationTreatingHypertensionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized MedicationTreatingHypertension")
+            )
+
+
+decodeMedicationTreatingDiabetes : Decoder MedicationTreatingDiabetes
+decodeMedicationTreatingDiabetes =
+    string
+        |> andThen
+            (\s ->
+                medicationTreatingDiabetesFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized MedicationTreatingDiabetes")
+            )
+
+
+
+--
 
 
 decodeNCDOutsideCare : Decoder NCDOutsideCare
@@ -4748,6 +4825,32 @@ decodeNCDSocialHistory =
 decodeNCDSocialHistoryValue : Decoder NCDSocialHistoryValue
 decodeNCDSocialHistoryValue =
     succeed NCDSocialHistoryValue
+        |> required "ncd_social_history_signs" (decodeEverySet decodeNCDSocialHistorySign)
+        |> required "food_group" decodeFoodGroup
+        |> optional "beverages_per_week" (nullable decodeInt) Nothing
+        |> optional "cigarettes_per_week" (nullable decodeInt) Nothing
+
+
+decodeNCDSocialHistorySign : Decoder NCDSocialHistorySign
+decodeNCDSocialHistorySign =
+    string
+        |> andThen
+            (\s ->
+                ncdSocialHistorySignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDSocialHistorySign")
+            )
+
+
+decodeFoodGroup : Decoder FoodGroup
+decodeFoodGroup =
+    string
+        |> andThen
+            (\s ->
+                foodGroupFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized FoodGroup")
+            )
 
 
 decodeNCDSymptomReview : Decoder NCDSymptomReview

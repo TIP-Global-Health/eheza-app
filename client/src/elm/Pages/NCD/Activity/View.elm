@@ -30,9 +30,12 @@ import Pages.Utils
         ( isTaskCompleted
         , saveButton
         , taskCompleted
+        , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
+        , viewNumberInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
         )
@@ -102,9 +105,7 @@ viewActivity language currentDate activity assembled db model =
             []
 
         MedicalHistory ->
-            -- @todo
-            -- viewMedicalHistoryContent language currentDate assembled model.medicalHistoryData
-            []
+            viewMedicalHistoryContent language currentDate assembled model.medicalHistoryData
 
         SymptomReview ->
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
@@ -329,7 +330,7 @@ viewExaminationContent language currentDate assembled data =
                 Just TaskCoreExam ->
                     getMeasurementValueFunc assembled.measurements.coreExam
                         |> corePhysicalExamFormWithDefault data.coreExamForm
-                        |> viewCorePhysicalExamForm language currentDate
+                        |> viewCoreExamForm language currentDate
 
                 Nothing ->
                     emptyNode
@@ -399,8 +400,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate config form
 
 
-viewCorePhysicalExamForm : Language -> NominalDate -> CorePhysicalExamForm -> Html Msg
-viewCorePhysicalExamForm language currentDate form =
+viewCoreExamForm : Language -> NominalDate -> CorePhysicalExamForm -> Html Msg
+viewCoreExamForm language currentDate form =
     let
         config =
             { setBoolInputMsg = SetCoreExamBoolInput
@@ -413,3 +414,259 @@ viewCorePhysicalExamForm language currentDate form =
             }
     in
     Measurement.View.viewCorePhysicalExamForm language currentDate config form
+
+
+viewMedicalHistoryContent : Language -> NominalDate -> AssembledData -> MedicalHistoryData -> List (Html Msg)
+viewMedicalHistoryContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            [ TaskCoMorbidities
+            , TaskMedicationHistory
+            , TaskSocialHistory
+            , TaskFamilyHistory
+            , TaskOutsideCare
+            ]
+
+        activeTask =
+            Maybe.map
+                (\task ->
+                    if List.member task tasks then
+                        Just task
+
+                    else
+                        List.head tasks
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskCoMorbidities ->
+                            ( "danger-signs", isJust assembled.measurements.coMorbidities )
+
+                        TaskMedicationHistory ->
+                            ( "medical", isJust assembled.measurements.medicationHistory )
+
+                        TaskSocialHistory ->
+                            ( "social", isJust assembled.measurements.socialHistory )
+
+                        TaskFamilyHistory ->
+                            ( "family", isJust assembled.measurements.familyHistory )
+
+                        TaskOutsideCare ->
+                            ( "outside-care", isJust assembled.measurements.outsideCare )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveMedicalHistoryTask task ]
+            in
+            div [ class <| "column " ++ iconClass ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.NCDMedicalHistoryTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map
+                (\task ->
+                    ( task, medicalHistoryTasksCompletedFromTotal currentDate assembled data task )
+                )
+                tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskCoMorbidities ->
+                    getMeasurementValueFunc assembled.measurements.coMorbidities
+                        |> coMorbiditiesFormWithDefault data.coMorbiditiesForm
+                        |> viewCoMorbiditiesForm language currentDate
+
+                Just TaskMedicationHistory ->
+                    getMeasurementValueFunc assembled.measurements.medicationHistory
+                        |> medicationHistoryFormWithDefault data.medicationHistoryForm
+                        |> viewMedicationHistoryForm language currentDate
+
+                Just TaskSocialHistory ->
+                    getMeasurementValueFunc assembled.measurements.socialHistory
+                        |> socialHistoryFormWithDefault data.socialHistoryForm
+                        |> viewSocialHistoryForm language currentDate
+
+                Just TaskFamilyHistory ->
+                    getMeasurementValueFunc assembled.measurements.familyHistory
+                        |> familyHistoryFormWithDefault data.familyHistoryForm
+                        |> viewFamilyHistoryForm language currentDate
+
+                Just TaskOutsideCare ->
+                    emptyNode
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        saveAction =
+                            case task of
+                                TaskCoMorbidities ->
+                                    SaveCoMorbidities personId measurements.coMorbidities nextTask
+
+                                TaskMedicationHistory ->
+                                    SaveMedicationHistory personId measurements.medicationHistory nextTask
+
+                                TaskSocialHistory ->
+                                    SaveSocialHistory personId measurements.socialHistory nextTask
+
+                                TaskFamilyHistory ->
+                                    SaveFamilyHistory personId measurements.familyHistory nextTask
+
+                                TaskOutsideCare ->
+                                    SaveOutsideCare personId measurements.outsideCare nextTask
+                    in
+                    div [ class "actions" ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveAction ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+viewCoMorbiditiesForm : Language -> NominalDate -> CoMorbiditiesForm -> Html Msg
+viewCoMorbiditiesForm language currentDate form =
+    div [ class "ui form co-morbidities" ]
+        [ viewQuestionLabel language Translate.MedicalConditionQuestion
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ MedicalConditionHIV
+            , MedicalConditionDiabetes
+            , MedicalConditionKidneyDisease
+            , MedicalConditionPregnancy
+            , MedicalConditionHypertension
+            , MedicalConditionGestationalDiabetes
+            , MedicalConditionPregnancyRelatedHypertension
+            ]
+            []
+            (Maybe.withDefault [] form.conditions)
+            (Just NoMedicalConditions)
+            SetMedicalCondition
+            Translate.MedicalCondition
+        ]
+
+
+viewMedicationHistoryForm : Language -> NominalDate -> MedicationHistoryForm -> Html Msg
+viewMedicationHistoryForm language currentDate form =
+    div [ class "ui form medication-history" ]
+        [ viewQuestionLabel language Translate.MedicationCausingHypertensionQuestion
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ MedicationOestrogens
+            , MedicationSteroids
+            , MedicationAmitriptyline
+            ]
+            [ MedicationIbuprofen
+            , NoMedicationCausingHypertension
+            ]
+            (Maybe.withDefault [] form.medicationsCausingHypertension)
+            Nothing
+            SetMedicationCausingHypertension
+            Translate.MedicationCausingHypertension
+        , viewQuestionLabel language Translate.MedicationTreatingHypertensionQuestion
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ MedicationAceInhibitors
+            , MedicationARBs
+            , MedicationHCTZ
+            , MedicationCalciumChannelBlockers
+            ]
+            [ MedicationMethyldopa
+            , MedicationBetaBlockers
+            , MedicationHydralazine
+            , NoMedicationTreatingHypertension
+            ]
+            (Maybe.withDefault [] form.medicationsTreatingHypertension)
+            Nothing
+            SetMedicationTreatingHypertension
+            Translate.MedicationTreatingHypertension
+        , viewQuestionLabel language Translate.MedicationTreatingDiabetesQuestion
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ MedicationMetformin
+            , MedicationGlibenclamide
+            ]
+            [ MedicationInsulin, NoMedicationTreatingDiabetes ]
+            (Maybe.withDefault [] form.medicationsTreatingDiabetes)
+            Nothing
+            SetMedicationTreatingDiabetes
+            Translate.MedicationTreatingDiabetes
+        ]
+
+
+viewSocialHistoryForm : Language -> NominalDate -> SocialHistoryForm -> Html Msg
+viewSocialHistoryForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            socialHistoryFormInputsAndTasks language currentDate form
+    in
+    div [ class "ui form social-history" ]
+        inputs
+
+
+viewFamilyHistoryForm : Language -> NominalDate -> FamilyHistoryForm -> Html Msg
+viewFamilyHistoryForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            familyHistoryFormInputsAndTasks language currentDate form
+    in
+    div [ class "ui form family-history" ]
+        inputs

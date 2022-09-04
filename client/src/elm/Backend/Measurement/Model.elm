@@ -2258,7 +2258,18 @@ type alias NCDCoMorbidities =
 
 
 type alias NCDCoMorbiditiesValue =
-    {}
+    EverySet MedicalCondition
+
+
+type MedicalCondition
+    = MedicalConditionHIV
+    | MedicalConditionDiabetes
+    | MedicalConditionKidneyDisease
+    | MedicalConditionPregnancy
+    | MedicalConditionHypertension
+    | MedicalConditionGestationalDiabetes
+    | MedicalConditionPregnancyRelatedHypertension
+    | NoMedicalConditions
 
 
 type alias NCDCoreExam =
@@ -2297,7 +2308,26 @@ type alias NCDFamilyHistory =
 
 
 type alias NCDFamilyHistoryValue =
-    {}
+    { signs : EverySet NCDFamilyHistorySign
+    , hypertensionPredecessors : Maybe (EverySet Predecessor)
+    , heartProblemPredecessors : Maybe (EverySet Predecessor)
+    , diabetesPredecessors : Maybe (EverySet Predecessor)
+    }
+
+
+type NCDFamilyHistorySign
+    = SignHypertensionHistory
+    | SignHeartProblemHistory
+    | SignDiabetesHistory
+    | NoNCDFamilyHistorySigns
+
+
+type Predecessor
+    = PredecessorFather
+    | PredecessorMother
+    | PredecessorGrandFather
+    | PredecessorGrandMother
+    | NoPredecessors
 
 
 type alias NCDFamilyPlanning =
@@ -2353,7 +2383,36 @@ type alias NCDMedicationHistory =
 
 
 type alias NCDMedicationHistoryValue =
-    {}
+    { medicationsCausingHypertension : EverySet MedicationCausingHypertension
+    , medicationsTreatingHypertension : EverySet MedicationTreatingHypertension
+    , medicationsTreatingDiabetes : EverySet MedicationTreatingDiabetes
+    }
+
+
+type MedicationCausingHypertension
+    = MedicationOestrogens
+    | MedicationSteroids
+    | MedicationAmitriptyline
+    | MedicationIbuprofen
+    | NoMedicationCausingHypertension
+
+
+type MedicationTreatingHypertension
+    = MedicationAceInhibitors
+    | MedicationARBs
+    | MedicationHCTZ
+    | MedicationCalciumChannelBlockers
+    | MedicationMethyldopa
+    | MedicationBetaBlockers
+    | MedicationHydralazine
+    | NoMedicationTreatingHypertension
+
+
+type MedicationTreatingDiabetes
+    = MedicationMetformin
+    | MedicationGlibenclamide
+    | MedicationInsulin
+    | NoMedicationTreatingDiabetes
 
 
 type alias NCDOutsideCare =
@@ -2393,7 +2452,26 @@ type alias NCDSocialHistory =
 
 
 type alias NCDSocialHistoryValue =
-    {}
+    { signs : EverySet NCDSocialHistorySign
+    , foodGroup : FoodGroup
+    , beveragesPerWeek : Maybe Int
+    , cigarettesPerWeek : Maybe Int
+    }
+
+
+type NCDSocialHistorySign
+    = SignDrinkAlcohol
+    | SignSmokeCigarettes
+    | SignConsumeSalt
+    | SignDifficult4TimesAYear
+    | SignHelpWithTreatmentAtHome
+    | NoNCDSocialHistorySigns
+
+
+type FoodGroup
+    = FoodGroupVegetables
+    | FoodGroupCarbohydrates
+    | FoodGroupProtein
 
 
 type alias NCDSymptomReview =

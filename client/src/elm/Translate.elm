@@ -91,7 +91,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
-import Pages.NCD.Activity.Types exposing (ExaminationTask(..))
+import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
@@ -611,6 +611,7 @@ type TranslationId
     | FirstAntenatalVisit
     | FirstName
     | FiveVisits
+    | FoodGroup FoodGroup
     | FollowPostpartumProtocols
     | FollowUpWithPatientIn
     | FollowUpWithPatientOn
@@ -674,6 +675,7 @@ type TranslationId
     | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
+    | HowManyPerWeek
     | Hypertension
     | HypertensionBeforePregnancy
     | HypertensionRecommendedTreatmentHeader
@@ -763,6 +765,14 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MedicationCausingHypertension MedicationCausingHypertension
+    | MedicationCausingHypertensionQuestion
+    | MedicalCondition MedicalCondition
+    | MedicalConditionQuestion
+    | MedicationTreatingDiabetes MedicationTreatingDiabetes
+    | MedicationTreatingDiabetesQuestion
+    | MedicationTreatingHypertension MedicationTreatingHypertension
+    | MedicationTreatingHypertensionQuestion
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicationCausesSideEffectsQuestion
@@ -823,9 +833,14 @@ type TranslationId
     | NCDActivityTitle NCDActivity
     | NCDDangerSign NCDDangerSign
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
+    | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
+    | NCDMedicalHistoryTask Pages.NCD.Activity.Types.MedicalHistoryTask
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
+    | NCDSocialHistoryFoodQuestion
+    | NCDSocialHistoryFoodQuestionInstructions
+    | NCDSocialHistorySignQuestion NCDSocialHistorySign
     | Neck
     | NeckCPESign NeckCPESign
     | NegativeLabel
@@ -953,6 +968,7 @@ type TranslationId
     | PostpartumHealingProblemQuestion
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
+    | Predecessor Predecessor
     | PreeclampsiaPreviousPregnancy
     | PregnancyConclusion
     | PregnancyStart
@@ -1380,6 +1396,7 @@ type TranslationId
     | WhatType
     | WhatWasTheirResponse
     | WhoCaresForTheChildDuringTheDay
+    | WhoInFamilyHasCondition
     | WhyNot
     | WhyDifferentFbfAmount Activity
     | WrittenProtocolsFollowed
@@ -4675,6 +4692,23 @@ translationSet trans =
             , kinyarwanda = Just "Inshuro eshanu"
             }
 
+        FoodGroup group ->
+            case group of
+                FoodGroupVegetables ->
+                    { english = "Vegetables"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodGroupCarbohydrates ->
+                    { english = "Carbohydrates"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodGroupProtein ->
+                    { english = "Protein"
+                    , kinyarwanda = Nothing
+                    }
+
         FollowPostpartumProtocols ->
             { english = "Follow Postpartum Protocols"
             , kinyarwanda = Nothing
@@ -5216,6 +5250,11 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        HowManyPerWeek ->
+            { english = "How many per week"
+            , kinyarwanda = Nothing
+            }
 
         Hypertension ->
             { english = "Hypertension"
@@ -6351,6 +6390,159 @@ translationSet trans =
             , kinyarwanda = Just <| "Kwiyongera " ++ String.fromFloat amount
             }
 
+        MedicationCausingHypertension medication ->
+            case medication of
+                MedicationOestrogens ->
+                    { english = "Oestrogens (Family Planning)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationSteroids ->
+                    { english = "Steroids (Prednisolone)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationAmitriptyline ->
+                    { english = "Amitriptyline"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationIbuprofen ->
+                    { english = "Ibuprofen (Diclofenac)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationCausingHypertension ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicationCausingHypertensionQuestion ->
+            { english = "Has the patient taken or currently take any of the following hypertension causing medications"
+            , kinyarwanda = Nothing
+            }
+
+        MedicalCondition condition ->
+            case condition of
+                MedicalConditionHIV ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionDiabetes ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionKidneyDisease ->
+                    { english = "Kidney Disease"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionPregnancy ->
+                    { english = "Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionHypertension ->
+                    { english = "Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionGestationalDiabetes ->
+                    { english = "Gestational Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionPregnancyRelatedHypertension ->
+                    { english = "Pregnancy Related Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicalConditions ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicalConditionQuestion ->
+            { english = "Have you ever been diagnosed with any of these conditions"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationTreatingDiabetes medication ->
+            case medication of
+                MedicationMetformin ->
+                    { english = "Metformin"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationGlibenclamide ->
+                    { english = "Glibenclamide"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationInsulin ->
+                    { english = "Insulin"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationTreatingDiabetes ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicationTreatingDiabetesQuestion ->
+            { english = "Have you ever been diagnosed with any of these conditions"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationTreatingHypertension medication ->
+            case medication of
+                MedicationAceInhibitors ->
+                    { english = "Ace-Inhibitors (Example: Captopril)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationARBs ->
+                    { english = "Angiotensine Receptor Blockers (ARBs)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationHCTZ ->
+                    { english = "HCTZ"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationCalciumChannelBlockers ->
+                    { english = "Calcium Channel Blockers"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationMethyldopa ->
+                    { english = "Methyldopa"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationBetaBlockers ->
+                    { english = "Beta-Blockers"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationHydralazine ->
+                    { english = "Hydralazine"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationTreatingHypertension ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicationTreatingHypertensionQuestion ->
+            { english = "Have you ever been diagnosed with any of these conditions"
+            , kinyarwanda = Nothing
+            }
+
         MedicalDiagnosis ->
             { english = "Medical Diagnosis"
             , kinyarwanda = Just "Uburwayi bwemejwe na Muganga"
@@ -6944,6 +7136,55 @@ translationSet trans =
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
+        NCDFamilyHistorySignQuestion sign ->
+            case sign of
+                SignHypertensionHistory ->
+                    { english = "Has anyone in your family been told they have hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignHeartProblemHistory ->
+                    { english = "Has anyone in your family been told they have a problem with their heart"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignDiabetesHistory ->
+                    { english = "Has anyone in your family been told they have a problem with diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDFamilyHistorySigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDMedicalHistoryTask task ->
+            case task of
+                TaskCoMorbidities ->
+                    { english = "Co-Morbidities"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskMedicationHistory ->
+                    { english = "Medication History"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskSocialHistory ->
+                    { english = "Social History"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskFamilyHistory ->
+                    { english = "Family History"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskOutsideCare ->
+                    { english = "Outside Care"
+                    , kinyarwanda = Nothing
+                    }
+
         NCDGroup1Symptom symptom ->
             case symptom of
                 SwellingInLegs ->
@@ -7087,6 +7328,48 @@ translationSet trans =
 
                 NoNCDPainSymptoms ->
                     { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDSocialHistoryFoodQuestion ->
+            { english = "What foods do you eat most"
+            , kinyarwanda = Nothing
+            }
+
+        NCDSocialHistoryFoodQuestionInstructions ->
+            { english = "Please check the most fitting group"
+            , kinyarwanda = Nothing
+            }
+
+        NCDSocialHistorySignQuestion sign ->
+            case sign of
+                SignDrinkAlcohol ->
+                    { english = "Do you drink any alcoholic beverages"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignSmokeCigarettes ->
+                    { english = "Do you smoke cigarettes"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignConsumeSalt ->
+                    { english = "Do you add salt to your food"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignDifficult4TimesAYear ->
+                    { english = "Would it be difficult for you to come to the health center 4 times a year"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignHelpWithTreatmentAtHome ->
+                    { english = "Are there people at home who can help you with treatment"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDSocialHistorySigns ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -8444,6 +8727,33 @@ translationSet trans =
                 NoPostpartumMotherDangerSigns ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta kimenyetso na kimwe"
+                    }
+
+        Predecessor predecessor ->
+            case predecessor of
+                PredecessorFather ->
+                    { english = "Father"
+                    , kinyarwanda = Nothing
+                    }
+
+                PredecessorMother ->
+                    { english = "Mother"
+                    , kinyarwanda = Nothing
+                    }
+
+                PredecessorGrandFather ->
+                    { english = "Grand-Father"
+                    , kinyarwanda = Nothing
+                    }
+
+                PredecessorGrandMother ->
+                    { english = "Grand-Mother"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPredecessors ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         PreeclampsiaPreviousPregnancy ->
@@ -15007,6 +15317,11 @@ translationSet trans =
         WhoCaresForTheChildDuringTheDay ->
             { english = "Who cares for the child during the day"
             , kinyarwanda = Just "Ni inde wita ku mwana ku manywa"
+            }
+
+        WhoInFamilyHasCondition ->
+            { english = "Who in the family has this condition"
+            , kinyarwanda = Nothing
             }
 
         WhyNot ->

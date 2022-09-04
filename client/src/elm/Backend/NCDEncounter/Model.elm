@@ -34,6 +34,11 @@ type alias Model =
     , saveFamilyPlanning : WebData ()
     , saveCoreExam : WebData ()
     , saveVitals : WebData ()
+    , saveCoMorbidities : WebData ()
+    , saveMedicationHistory : WebData ()
+    , saveSocialHistory : WebData ()
+    , saveFamilyHistory : WebData ()
+    , saveOutsideCare : WebData ()
     }
 
 
@@ -45,6 +50,11 @@ emptyModel =
     , saveFamilyPlanning = NotAsked
     , saveCoreExam = NotAsked
     , saveVitals = NotAsked
+    , saveCoMorbidities = NotAsked
+    , saveMedicationHistory = NotAsked
+    , saveSocialHistory = NotAsked
+    , saveFamilyHistory = NotAsked
+    , saveOutsideCare = NotAsked
     }
 
 
@@ -61,3 +71,13 @@ type Msg
     | HandleSavedCoreExam (WebData ())
     | SaveVitals PersonId (Maybe NCDVitalsId) VitalsValue
     | HandleSavedVitals (WebData ())
+    | SaveCoMorbidities PersonId (Maybe NCDCoMorbiditiesId) NCDCoMorbiditiesValue
+    | HandleSavedCoMorbidities (WebData ())
+    | SaveMedicationHistory PersonId (Maybe NCDMedicationHistoryId) NCDMedicationHistoryValue
+    | HandleSavedMedicationHistory (WebData ())
+    | SaveSocialHistory PersonId (Maybe NCDSocialHistoryId) NCDSocialHistoryValue
+    | HandleSavedSocialHistory (WebData ())
+    | SaveFamilyHistory PersonId (Maybe NCDFamilyHistoryId) NCDFamilyHistoryValue
+    | HandleSavedFamilyHistory (WebData ())
+    | SaveOutsideCare PersonId (Maybe NCDOutsideCareId) NCDOutsideCareValue
+    | HandleSavedOutsideCare (WebData ())

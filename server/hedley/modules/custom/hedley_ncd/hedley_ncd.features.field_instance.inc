@@ -11,6 +11,43 @@
 function hedley_ncd_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'node-ncd_co_morbidities-field_comorbidities'.
+  $field_instances['node-ncd_co_morbidities-field_comorbidities'] = array(
+    'bundle' => 'ncd_co_morbidities',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_comorbidities',
+    'label' => 'CoMorbidities',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_co_morbidities-field_date_measured'.
   $field_instances['node-ncd_co_morbidities-field_date_measured'] = array(
     'bundle' => 'ncd_co_morbidities',
@@ -1524,6 +1561,120 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-ncd_family_history-field_diabetes_predecessors'.
+  $field_instances['node-ncd_family_history-field_diabetes_predecessors'] = array(
+    'bundle' => 'ncd_family_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_diabetes_predecessors',
+    'label' => 'Diabetes Predecessors',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 12,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_family_history-field_heart_problem_predecessors'.
+  $field_instances['node-ncd_family_history-field_heart_problem_predecessors'] = array(
+    'bundle' => 'ncd_family_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_heart_problem_predecessors',
+    'label' => 'Heart Problem Predecessors',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_family_history-field_hypertension_predecessors'.
+  $field_instances['node-ncd_family_history-field_hypertension_predecessors'] = array(
+    'bundle' => 'ncd_family_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_hypertension_predecessors',
+    'label' => 'Hypertension Predecessors',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_family_history-field_ncd_encounter'.
   $field_instances['node-ncd_family_history-field_ncd_encounter'] = array(
     'bundle' => 'ncd_family_history',
@@ -1565,6 +1716,44 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_family_history-field_ncd_family_history_signs'.
+  $field_instances['node-ncd_family_history-field_ncd_family_history_signs'] = array(
+    'bundle' => 'ncd_family_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncd_family_history_signs',
+    'label' => 'NCD Family History Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
     ),
   );
 
@@ -3414,6 +3603,44 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-ncd_medication_history-field_causing_hypertension'.
+  $field_instances['node-ncd_medication_history-field_causing_hypertension'] = array(
+    'bundle' => 'ncd_medication_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_causing_hypertension',
+    'label' => 'Medications Causing Hypertension',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_medication_history-field_date_measured'.
   $field_instances['node-ncd_medication_history-field_date_measured'] = array(
     'bundle' => 'ncd_medication_history',
@@ -3643,6 +3870,82 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_medication_history-field_treating_diabetes'.
+  $field_instances['node-ncd_medication_history-field_treating_diabetes'] = array(
+    'bundle' => 'ncd_medication_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_treating_diabetes',
+    'label' => 'Medications Treating Diabetes',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_medication_history-field_treating_hypertension'.
+  $field_instances['node-ncd_medication_history-field_treating_hypertension'] = array(
+    'bundle' => 'ncd_medication_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_treating_hypertension',
+    'label' => 'Medications Treating Hypertension',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
     ),
   );
 
@@ -4776,6 +5079,100 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-ncd_social_history-field_beverages_per_week'.
+  $field_instances['node-ncd_social_history-field_beverages_per_week'] = array(
+    'bundle' => 'ncd_social_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_beverages_per_week',
+    'label' => 'Beverages Per Week',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_social_history-field_cigarettes_per_week'.
+  $field_instances['node-ncd_social_history-field_cigarettes_per_week'] = array(
+    'bundle' => 'ncd_social_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_cigarettes_per_week',
+    'label' => 'Cigarettes Per Week',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 12,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_social_history-field_date_measured'.
   $field_instances['node-ncd_social_history-field_date_measured'] = array(
     'bundle' => 'ncd_social_history',
@@ -4832,6 +5229,43 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_social_history-field_food_group'.
+  $field_instances['node-ncd_social_history-field_food_group'] = array(
+    'bundle' => 'ncd_social_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_food_group',
+    'label' => 'Food Group',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_social_history-field_ncd_encounter'.
   $field_instances['node-ncd_social_history-field_ncd_encounter'] = array(
     'bundle' => 'ncd_social_history',
@@ -4873,6 +5307,44 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_social_history-field_ncd_social_history_signs'.
+  $field_instances['node-ncd_social_history-field_ncd_social_history_signs'] = array(
+    'bundle' => 'ncd_social_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncd_social_history_signs',
+    'label' => 'NCD Social History Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
     ),
   );
 
@@ -6212,23 +6684,35 @@ function hedley_ncd_field_default_field_instances() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Abdomen');
+  t('Beverages Per Week');
   t('Body temperature');
+  t('Cigarettes Per Week');
+  t('CoMorbidities');
   t('Date Measured');
   t('Dia');
+  t('Diabetes Predecessors');
   t('Eyes');
   t('Family Planning');
+  t('Food Group');
   t('Hands');
   t('Head / hair');
   t('Heart');
   t('Heart Murmur');
+  t('Heart Problem Predecessors');
   t('Heart rate');
+  t('Hypertension Predecessors');
   t('Legs');
   t('Lungs');
+  t('Medications Causing Hypertension');
+  t('Medications Treating Diabetes');
+  t('Medications Treating Hypertension');
   t('NCD Danger Signs');
   t('NCD Encounter');
+  t('NCD Family History Signs');
   t('NCD Group1 Symptoms');
   t('NCD Group2 Symptoms');
   t('NCD Pain Symptoms');
+  t('NCD Social History Signs');
   t('Neck');
   t('Nurse');
   t('Person');
