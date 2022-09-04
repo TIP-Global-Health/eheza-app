@@ -2281,18 +2281,6 @@ type MedicalCondition
     | NoMedicalConditions
 
 
-
---     neuropathy|Neuropathy
--- rental-complications|Rental complications
--- malaria|Malaria
--- tuberculosis|Tuberculosis
--- hepatitis-b|Hepatitis B
--- syphilis|Syphilis
--- eye-complications|Eye complications
--- anemia|Anemia
--- other|Other
-
-
 type alias NCDCoreExam =
     NCDMeasurement CorePhysicalExamValue
 
