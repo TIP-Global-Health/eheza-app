@@ -4683,7 +4683,7 @@ generatePrenatalLabsTestAddedMsgs :
     NominalDate
     -> ModelIndexedDb
     -> Backend.Measurement.Model.PrenatalLaboratoryTest
-    -> Backend.Measurement.Model.PrenatalTestExecutionNote
+    -> Backend.Measurement.Model.TestExecutionNote
     -> PrenatalEncounterId
     -> List App.Model.Msg
 generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =

@@ -5,9 +5,9 @@ import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
+import Measurement.Model exposing (LaboratoryTask, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
-import Pages.Prenatal.Activity.Types exposing (LaboratoryTask, WarningPopupType)
+import Pages.Prenatal.Activity.Types exposing (WarningPopupType)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 
@@ -136,7 +136,7 @@ emptyNextStepsData =
 
 
 type alias SyphilisResultForm =
-    { executionNote : Maybe PrenatalTestExecutionNote
+    { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
     , symptoms : Maybe (List IllnessSymptom)
@@ -151,7 +151,7 @@ emptySyphilisResultForm =
 
 
 type alias HepatitisBResultForm =
-    { executionNote : Maybe PrenatalTestExecutionNote
+    { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
     , originatingEncounter : Maybe PrenatalEncounterId
@@ -164,7 +164,7 @@ emptyHepatitisBResultForm =
 
 
 type alias PrenatalBloodGpRsResultForm =
-    { executionNote : Maybe PrenatalTestExecutionNote
+    { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
@@ -178,8 +178,8 @@ emptyPrenatalBloodGpRsResultForm =
 
 
 type alias PrenatalUrineDipstickResultForm =
-    { testVariant : Maybe PrenatalTestVariant
-    , executionNote : Maybe PrenatalTestExecutionNote
+    { testVariant : Maybe TestVariant
+    , executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , protein : Maybe ProteinValue
     , ph : Maybe PHValue
@@ -211,7 +211,7 @@ emptyPrenatalUrineDipstickResultForm =
 
 
 type alias PrenatalHemoglobinResultForm =
-    { executionNote : Maybe PrenatalTestExecutionNote
+    { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , hemoglobinCount : Maybe Float
     }
@@ -223,7 +223,7 @@ emptyPrenatalHemoglobinResultForm =
 
 
 type alias PrenatalRandomBloodSugarResultForm =
-    { executionNote : Maybe PrenatalTestExecutionNote
+    { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
@@ -237,7 +237,7 @@ emptyPrenatalRandomBloodSugarResultForm =
 
 
 type alias PrenatalHIVPCRResultForm =
-    { executionNote : Maybe PrenatalTestExecutionNote
+    { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , hivViralLoadStatus : Maybe ViralLoadStatus
     , hivViralLoad : Maybe Float

@@ -14,13 +14,14 @@ type MedicalHistoryTask
     | TaskOutsideCare
 
 
-type LaboratoryTask
-    = TaskRandomBloodSugarTest
-    | TaskCreatinineTest
-    | TaskUrineDipstickTest
-    | TaskHIVTest
-    | TaskPregnancyTest
-    | TaskLiverFunctionTest
+
+-- type LaboratoryTask
+--     = TaskRandomBloodSugarTest
+--     | TaskCreatinineTest
+--     | TaskUrineDipstickTest
+--     | TaskHIVTest
+--     | TaskPregnancyTest
+--     | TaskLiverFunctionTest
 
 
 type NextStepsTask

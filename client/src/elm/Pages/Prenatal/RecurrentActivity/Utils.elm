@@ -11,8 +11,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils exposing (vitalsFormWithDefault)
-import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
@@ -180,7 +180,7 @@ expectLaboratoryResultTask currentDate assembled task =
             False
 
 
-hepatitisBFormWithDefault : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm
+hepatitisBFormWithDefault : HepatitisBResultForm -> Maybe HepatitisBTestValue -> HepatitisBResultForm
 hepatitisBFormWithDefault form saved =
     saved
         |> unwrap
@@ -194,13 +194,13 @@ hepatitisBFormWithDefault form saved =
             )
 
 
-toHepatitisBValueWithDefault : Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue
+toHepatitisBValueWithDefault : Maybe HepatitisBTestValue -> HepatitisBResultForm -> Maybe HepatitisBTestValue
 toHepatitisBValueWithDefault saved form =
     hepatitisBFormWithDefault form saved
         |> toHepatitisBValue
 
 
-toHepatitisBValue : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue
+toHepatitisBValue : HepatitisBResultForm -> Maybe HepatitisBTestValue
 toHepatitisBValue form =
     Maybe.map
         (\executionNote ->
@@ -213,7 +213,7 @@ toHepatitisBValue form =
         form.executionNote
 
 
-syphilisResultFormWithDefault : SyphilisResultForm -> Maybe PrenatalSyphilisTestValue -> SyphilisResultForm
+syphilisResultFormWithDefault : SyphilisResultForm -> Maybe SyphilisTestValue -> SyphilisResultForm
 syphilisResultFormWithDefault form saved =
     saved
         |> unwrap
@@ -229,13 +229,13 @@ syphilisResultFormWithDefault form saved =
             )
 
 
-toSyphilisResultValueWithDefault : Maybe PrenatalSyphilisTestValue -> SyphilisResultForm -> Maybe PrenatalSyphilisTestValue
+toSyphilisResultValueWithDefault : Maybe SyphilisTestValue -> SyphilisResultForm -> Maybe SyphilisTestValue
 toSyphilisResultValueWithDefault saved form =
     syphilisResultFormWithDefault form saved
         |> toSyphilisResultValue
 
 
-toSyphilisResultValue : SyphilisResultForm -> Maybe PrenatalSyphilisTestValue
+toSyphilisResultValue : SyphilisResultForm -> Maybe SyphilisTestValue
 toSyphilisResultValue form =
     Maybe.map
         (\executionNote ->
@@ -249,7 +249,7 @@ toSyphilisResultValue form =
         form.executionNote
 
 
-prenatalBloodGpRsResultFormWithDefault : PrenatalBloodGpRsResultForm -> Maybe PrenatalBloodGpRsTestValue -> PrenatalBloodGpRsResultForm
+prenatalBloodGpRsResultFormWithDefault : PrenatalBloodGpRsResultForm -> Maybe BloodGpRsTestValue -> PrenatalBloodGpRsResultForm
 prenatalBloodGpRsResultFormWithDefault form saved =
     saved
         |> unwrap
@@ -264,13 +264,13 @@ prenatalBloodGpRsResultFormWithDefault form saved =
             )
 
 
-toPrenatalBloodGpRsResultsValueWithDefault : Maybe PrenatalBloodGpRsTestValue -> PrenatalBloodGpRsResultForm -> Maybe PrenatalBloodGpRsTestValue
+toPrenatalBloodGpRsResultsValueWithDefault : Maybe BloodGpRsTestValue -> PrenatalBloodGpRsResultForm -> Maybe BloodGpRsTestValue
 toPrenatalBloodGpRsResultsValueWithDefault saved form =
     prenatalBloodGpRsResultFormWithDefault form saved
         |> toPrenatalBloodGpRsResultsValue
 
 
-toPrenatalBloodGpRsResultsValue : PrenatalBloodGpRsResultForm -> Maybe PrenatalBloodGpRsTestValue
+toPrenatalBloodGpRsResultsValue : PrenatalBloodGpRsResultForm -> Maybe BloodGpRsTestValue
 toPrenatalBloodGpRsResultsValue form =
     Maybe.map
         (\executionNote ->
@@ -284,7 +284,7 @@ toPrenatalBloodGpRsResultsValue form =
         form.executionNote
 
 
-prenatalHemoglobinResultFormWithDefault : PrenatalHemoglobinResultForm -> Maybe PrenatalHemoglobinTestValue -> PrenatalHemoglobinResultForm
+prenatalHemoglobinResultFormWithDefault : PrenatalHemoglobinResultForm -> Maybe HemoglobinTestValue -> PrenatalHemoglobinResultForm
 prenatalHemoglobinResultFormWithDefault form saved =
     saved
         |> unwrap
@@ -297,13 +297,13 @@ prenatalHemoglobinResultFormWithDefault form saved =
             )
 
 
-toPrenatalHemoglobinResultsValueWithDefault : Maybe PrenatalHemoglobinTestValue -> PrenatalHemoglobinResultForm -> Maybe PrenatalHemoglobinTestValue
+toPrenatalHemoglobinResultsValueWithDefault : Maybe HemoglobinTestValue -> PrenatalHemoglobinResultForm -> Maybe HemoglobinTestValue
 toPrenatalHemoglobinResultsValueWithDefault saved form =
     prenatalHemoglobinResultFormWithDefault form saved
         |> toPrenatalHemoglobinResultsValue
 
 
-toPrenatalHemoglobinResultsValue : PrenatalHemoglobinResultForm -> Maybe PrenatalHemoglobinTestValue
+toPrenatalHemoglobinResultsValue : PrenatalHemoglobinResultForm -> Maybe HemoglobinTestValue
 toPrenatalHemoglobinResultsValue form =
     Maybe.map
         (\executionNote ->
@@ -315,7 +315,7 @@ toPrenatalHemoglobinResultsValue form =
         form.executionNote
 
 
-prenatalRandomBloodSugarResultFormWithDefault : PrenatalRandomBloodSugarResultForm -> Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarResultForm
+prenatalRandomBloodSugarResultFormWithDefault : PrenatalRandomBloodSugarResultForm -> Maybe RandomBloodSugarTestValue -> PrenatalRandomBloodSugarResultForm
 prenatalRandomBloodSugarResultFormWithDefault form saved =
     saved
         |> unwrap
@@ -330,13 +330,13 @@ prenatalRandomBloodSugarResultFormWithDefault form saved =
             )
 
 
-toPrenatalRandomBloodSugarResultsValueWithDefault : Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarResultForm -> Maybe PrenatalRandomBloodSugarTestValue
+toPrenatalRandomBloodSugarResultsValueWithDefault : Maybe RandomBloodSugarTestValue -> PrenatalRandomBloodSugarResultForm -> Maybe RandomBloodSugarTestValue
 toPrenatalRandomBloodSugarResultsValueWithDefault saved form =
     prenatalRandomBloodSugarResultFormWithDefault form saved
         |> toPrenatalRandomBloodSugarResultsValue
 
 
-toPrenatalRandomBloodSugarResultsValue : PrenatalRandomBloodSugarResultForm -> Maybe PrenatalRandomBloodSugarTestValue
+toPrenatalRandomBloodSugarResultsValue : PrenatalRandomBloodSugarResultForm -> Maybe RandomBloodSugarTestValue
 toPrenatalRandomBloodSugarResultsValue form =
     Maybe.map
         (\executionNote ->
@@ -350,7 +350,7 @@ toPrenatalRandomBloodSugarResultsValue form =
         form.executionNote
 
 
-prenatalUrineDipstickResultFormWithDefault : PrenatalUrineDipstickResultForm -> Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickResultForm
+prenatalUrineDipstickResultFormWithDefault : PrenatalUrineDipstickResultForm -> Maybe UrineDipstickTestValue -> PrenatalUrineDipstickResultForm
 prenatalUrineDipstickResultFormWithDefault form saved =
     saved
         |> unwrap
@@ -372,13 +372,13 @@ prenatalUrineDipstickResultFormWithDefault form saved =
             )
 
 
-toPrenatalUrineDipstickResultsValueWithDefault : Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickResultForm -> Maybe PrenatalUrineDipstickTestValue
+toPrenatalUrineDipstickResultsValueWithDefault : Maybe UrineDipstickTestValue -> PrenatalUrineDipstickResultForm -> Maybe UrineDipstickTestValue
 toPrenatalUrineDipstickResultsValueWithDefault saved form =
     prenatalUrineDipstickResultFormWithDefault form saved
         |> toPrenatalUrineDipstickResultsValue
 
 
-toPrenatalUrineDipstickResultsValue : PrenatalUrineDipstickResultForm -> Maybe PrenatalUrineDipstickTestValue
+toPrenatalUrineDipstickResultsValue : PrenatalUrineDipstickResultForm -> Maybe UrineDipstickTestValue
 toPrenatalUrineDipstickResultsValue form =
     Maybe.map
         (\executionNote ->
@@ -591,7 +591,7 @@ examinationTasksCompletedFromTotal assembled data task =
             )
 
 
-prenatalHIVPCRResultFormWithDefault : PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue -> PrenatalHIVPCRResultForm
+prenatalHIVPCRResultFormWithDefault : PrenatalHIVPCRResultForm -> Maybe HIVPCRTestValue -> PrenatalHIVPCRResultForm
 prenatalHIVPCRResultFormWithDefault form saved =
     saved
         |> unwrap
@@ -605,13 +605,13 @@ prenatalHIVPCRResultFormWithDefault form saved =
             )
 
 
-toPrenatalHIVPCRResultsValueWithDefault : Maybe PrenatalHIVPCRTestValue -> PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue
+toPrenatalHIVPCRResultsValueWithDefault : Maybe HIVPCRTestValue -> PrenatalHIVPCRResultForm -> Maybe HIVPCRTestValue
 toPrenatalHIVPCRResultsValueWithDefault saved form =
     prenatalHIVPCRResultFormWithDefault form saved
         |> toPrenatalHIVPCRResultsValue
 
 
-toPrenatalHIVPCRResultsValue : PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue
+toPrenatalHIVPCRResultsValue : PrenatalHIVPCRResultForm -> Maybe HIVPCRTestValue
 toPrenatalHIVPCRResultsValue form =
     Maybe.map
         (\executionNote ->

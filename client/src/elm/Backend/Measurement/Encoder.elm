@@ -288,11 +288,11 @@ encodeAppointmentConfirmationValue value =
 
 encodePrenatalBloodGpRsTest : PrenatalBloodGpRsTest -> List ( String, Value )
 encodePrenatalBloodGpRsTest =
-    encodePrenatalMeasurement encodePrenatalBloodGpRsTestValue
+    encodePrenatalMeasurement encodeBloodGpRsTestValue
 
 
-encodePrenatalBloodGpRsTestValue : PrenatalBloodGpRsTestValue -> List ( String, Value )
-encodePrenatalBloodGpRsTestValue value =
+encodeBloodGpRsTestValue : BloodGpRsTestValue -> List ( String, Value )
+encodeBloodGpRsTestValue value =
     let
         executionDate =
             Maybe.map
@@ -319,7 +319,7 @@ encodePrenatalBloodGpRsTestValue value =
                 value.rhesus
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ originatingEncounter
         ++ results
@@ -340,11 +340,11 @@ encodeRhesus =
 
 encodePrenatalHemoglobinTest : PrenatalHemoglobinTest -> List ( String, Value )
 encodePrenatalHemoglobinTest =
-    encodePrenatalMeasurement encodePrenatalHemoglobinTestValue
+    encodePrenatalMeasurement encodeHemoglobinTestValue
 
 
-encodePrenatalHemoglobinTestValue : PrenatalHemoglobinTestValue -> List ( String, Value )
-encodePrenatalHemoglobinTestValue value =
+encodeHemoglobinTestValue : HemoglobinTestValue -> List ( String, Value )
+encodeHemoglobinTestValue value =
     let
         executionDate =
             Maybe.map
@@ -360,7 +360,7 @@ encodePrenatalHemoglobinTestValue value =
                 value.hemoglobinCount
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ [ ( "deleted", bool False )
@@ -370,11 +370,11 @@ encodePrenatalHemoglobinTestValue value =
 
 encodePrenatalHepatitisBTest : PrenatalHepatitisBTest -> List ( String, Value )
 encodePrenatalHepatitisBTest =
-    encodePrenatalMeasurement encodePrenatalHepatitisBTestValue
+    encodePrenatalMeasurement encodeHepatitisBTestValue
 
 
-encodePrenatalHepatitisBTestValue : PrenatalHepatitisBTestValue -> List ( String, Value )
-encodePrenatalHepatitisBTestValue value =
+encodeHepatitisBTestValue : HepatitisBTestValue -> List ( String, Value )
+encodeHepatitisBTestValue value =
     let
         executionDate =
             Maybe.map
@@ -398,7 +398,7 @@ encodePrenatalHepatitisBTestValue value =
                 value.originatingEncounter
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ originatingEncounter
@@ -409,11 +409,11 @@ encodePrenatalHepatitisBTestValue value =
 
 encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
 encodePrenatalHIVTest =
-    encodePrenatalMeasurement encodePrenatalHIVTestValue
+    encodePrenatalMeasurement encodeHIVTestValue
 
 
-encodePrenatalHIVTestValue : PrenatalHIVTestValue -> List ( String, Value )
-encodePrenatalHIVTestValue value =
+encodeHIVTestValue : HIVTestValue -> List ( String, Value )
+encodeHIVTestValue value =
     let
         executionDate =
             Maybe.map
@@ -439,7 +439,7 @@ encodePrenatalHIVTestValue value =
                 value.hivSigns
                 |> Maybe.withDefault (EverySet.singleton NoPrenatalHIVSign)
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns ) ]
@@ -450,11 +450,11 @@ encodePrenatalHIVTestValue value =
 
 encodePrenatalHIVPCRTest : PrenatalHIVPCRTest -> List ( String, Value )
 encodePrenatalHIVPCRTest =
-    encodePrenatalMeasurement encodePrenatalHIVPCRTestValue
+    encodePrenatalMeasurement encodeHIVPCRTestValue
 
 
-encodePrenatalHIVPCRTestValue : PrenatalHIVPCRTestValue -> List ( String, Value )
-encodePrenatalHIVPCRTestValue value =
+encodeHIVPCRTestValue : HIVPCRTestValue -> List ( String, Value )
+encodeHIVPCRTestValue value =
     let
         executionDate =
             Maybe.map
@@ -474,7 +474,7 @@ encodePrenatalHIVPCRTestValue value =
                 value.hivViralLoad
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ hivViralLoadStatus
         ++ hivViralLoad
@@ -501,11 +501,11 @@ encodePrenatalHIVSign =
 
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
 encodePrenatalMalariaTest =
-    encodePrenatalMeasurement encodePrenatalMalariaTestValue
+    encodePrenatalMeasurement encodeMalariaTestValue
 
 
-encodePrenatalMalariaTestValue : PrenatalMalariaTestValue -> List ( String, Value )
-encodePrenatalMalariaTestValue value =
+encodeMalariaTestValue : MalariaTestValue -> List ( String, Value )
+encodeMalariaTestValue value =
     let
         executionDate =
             Maybe.map
@@ -519,7 +519,7 @@ encodePrenatalMalariaTestValue value =
                 value.testResult
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ [ ( "deleted", bool False )
@@ -529,11 +529,11 @@ encodePrenatalMalariaTestValue value =
 
 encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )
 encodePrenatalRandomBloodSugarTest =
-    encodePrenatalMeasurement encodePrenatalRandomBloodSugarTestValue
+    encodePrenatalMeasurement encodeRandomBloodSugarTestValue
 
 
-encodePrenatalRandomBloodSugarTestValue : PrenatalRandomBloodSugarTestValue -> List ( String, Value )
-encodePrenatalRandomBloodSugarTestValue value =
+encodeRandomBloodSugarTestValue : RandomBloodSugarTestValue -> List ( String, Value )
+encodeRandomBloodSugarTestValue value =
     let
         executionDate =
             Maybe.map
@@ -563,7 +563,7 @@ encodePrenatalRandomBloodSugarTestValue value =
                 value.sugarCount
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ testPrerequisites
         ++ originatingEncounter
@@ -586,11 +586,11 @@ encodeTestPrerequisite value =
 
 encodePrenatalSyphilisTest : PrenatalSyphilisTest -> List ( String, Value )
 encodePrenatalSyphilisTest =
-    encodePrenatalMeasurement encodePrenatalSyphilisTestValue
+    encodePrenatalMeasurement encodeSyphilisTestValue
 
 
-encodePrenatalSyphilisTestValue : PrenatalSyphilisTestValue -> List ( String, Value )
-encodePrenatalSyphilisTestValue value =
+encodeSyphilisTestValue : SyphilisTestValue -> List ( String, Value )
+encodeSyphilisTestValue value =
     let
         executionDate =
             Maybe.map
@@ -618,7 +618,7 @@ encodePrenatalSyphilisTestValue value =
                 value.originatingEncounter
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ illnessSymptoms
@@ -635,15 +635,15 @@ encodeIllnessSymptom =
 
 encodePrenatalUrineDipstickTest : PrenatalUrineDipstickTest -> List ( String, Value )
 encodePrenatalUrineDipstickTest =
-    encodePrenatalMeasurement encodePrenatalUrineDipstickTestValue
+    encodePrenatalMeasurement encodeUrineDipstickTestValue
 
 
-encodePrenatalUrineDipstickTestValue : PrenatalUrineDipstickTestValue -> List ( String, Value )
-encodePrenatalUrineDipstickTestValue value =
+encodeUrineDipstickTestValue : UrineDipstickTestValue -> List ( String, Value )
+encodeUrineDipstickTestValue value =
     let
         testVariant =
             Maybe.map
-                (\variant -> [ ( "test_variant", encodePrenatalTestVariant variant ) ])
+                (\variant -> [ ( "test_variant", encodeTestVariant variant ) ])
                 value.testVariant
                 |> Maybe.withDefault []
 
@@ -688,7 +688,7 @@ encodePrenatalUrineDipstickTestValue value =
         bilirubin =
             encodeField encodeBilirubinValue "bilirubin" value.bilirubin
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: testVariant
         ++ executionDate
         ++ protein
@@ -705,8 +705,8 @@ encodePrenatalUrineDipstickTestValue value =
            ]
 
 
-encodePrenatalTestVariant : PrenatalTestVariant -> Value
-encodePrenatalTestVariant value =
+encodeTestVariant : TestVariant -> Value
+encodeTestVariant value =
     string <|
         case value of
             VariantShortTest ->
@@ -761,8 +761,8 @@ encodeBilirubinValue =
     bilirubinValueToString >> string
 
 
-encodePrenatalTestExecutionNote : PrenatalTestExecutionNote -> Value
-encodePrenatalTestExecutionNote value =
+encodeTestExecutionNote : TestExecutionNote -> Value
+encodeTestExecutionNote value =
     string <|
         case value of
             TestNoteRunToday ->

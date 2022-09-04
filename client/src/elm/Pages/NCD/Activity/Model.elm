@@ -7,12 +7,19 @@ import Measurement.Model
     exposing
         ( CorePhysicalExamForm
         , FamilyPlanningForm
+        , HIVTestForm
+        , LaboratoryTask
+        , MalariaTestForm
+        , NonRDTForm
         , OutsideCareForm
         , OutsideCareStep(..)
+        , RandomBloodSugarForm
+        , UrineDipstickForm
         , VitalsForm
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
         , emptyOutsideCareForm
+        , emptyRandomBloodSugarForm
         , emptyVitalsForm
         )
 import Pages.NCD.Activity.Types exposing (..)
@@ -268,13 +275,13 @@ emptySocialHistoryForm =
 
 
 type alias LaboratoryData =
-    { randomBloodSugarTestForm : PrenatalRandomBloodSugarForm
+    { randomBloodSugarTestForm : RandomBloodSugarForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
 
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
-    { randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarForm
+    { randomBloodSugarTestForm = emptyRandomBloodSugarForm
     , activeTask = Nothing
     }

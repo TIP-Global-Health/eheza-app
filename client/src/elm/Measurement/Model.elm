@@ -554,3 +554,149 @@ emptyOutsideCareForm =
 type OutsideCareStep
     = OutsideCareStepDiagnoses
     | OutsideCareStepMedications
+
+
+type LaboratoryTask
+    = TaskBloodGpRsTest
+    | TaskHemoglobinTest
+    | TaskHepatitisBTest
+    | TaskHIVTest
+    | TaskMalariaTest
+    | TaskRandomBloodSugarTest
+    | TaskSyphilisTest
+    | TaskUrineDipstickTest
+    | TaskHIVPCRTest
+    | TaskCompletePreviousTests
+
+
+type alias HIVTestForm msg =
+    { knownAsPositive : Maybe Bool
+    , testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe PrenatalTestResult
+    , hivProgramHC : Maybe Bool
+    , hivProgramHCDirty : Bool
+    , partnerHIVPositive : Maybe Bool
+    , partnerHIVPositiveDirty : Bool
+    , partnerTakingARV : Maybe Bool
+    , partnerTakingARVDirty : Bool
+    , partnerSurpressedViralLoad : Maybe Bool
+    , partnerSurpressedViralLoadDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyHIVTestForm : HIVTestForm msg
+emptyHIVTestForm =
+    { knownAsPositive = Nothing
+    , testPerformed = Nothing
+    , testPerformedDirty = False
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testResult = Nothing
+    , hivProgramHC = Nothing
+    , hivProgramHCDirty = False
+    , partnerHIVPositive = Nothing
+    , partnerHIVPositiveDirty = False
+    , partnerTakingARV = Nothing
+    , partnerTakingARVDirty = False
+    , partnerSurpressedViralLoad = Nothing
+    , partnerSurpressedViralLoadDirty = False
+    , dateSelectorPopupState = Nothing
+    }
+
+
+type alias MalariaTestForm msg =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe PrenatalTestResult
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyMalariaTestForm : MalariaTestForm msg
+emptyMalariaTestForm =
+    MalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
+
+
+type alias UrineDipstickForm msg =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , testVariant : Maybe TestVariant
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyUrineDipstickForm : UrineDipstickForm msg
+emptyUrineDipstickForm =
+    UrineDipstickForm Nothing False Nothing False Nothing Nothing False Nothing False Nothing
+
+
+type alias RandomBloodSugarForm msg =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , patientFasted : Maybe Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyRandomBloodSugarForm : RandomBloodSugarForm msg
+emptyRandomBloodSugarForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , patientFasted = Nothing
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , dateSelectorPopupState = Nothing
+    }
+
+
+type alias NonRDTForm msg =
+    { knownAsPositive : Maybe Bool
+    , testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyNonRDTForm : NonRDTForm msg
+emptyNonRDTForm =
+    NonRDTForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing
