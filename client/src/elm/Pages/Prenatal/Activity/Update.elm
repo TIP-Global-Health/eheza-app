@@ -30,8 +30,8 @@ import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
         , pregnancyTestResultFromString
-        , testResultFromString
         , socialHistoryHivTestingResultFromString
+        , testResultFromString
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model

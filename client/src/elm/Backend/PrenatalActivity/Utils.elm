@@ -13,8 +13,8 @@ expected (and not completed).
 import Backend.Measurement.Model
     exposing
         ( HeightInCm(..)
-        , MuacInCm(..)
         , LaboratoryTest(..)
+        , MuacInCm(..)
         , PrenatalMeasurements
         , PreviousDeliverySign(..)
         , WeightInKg(..)
