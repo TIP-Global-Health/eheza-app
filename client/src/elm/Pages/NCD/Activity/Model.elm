@@ -81,6 +81,7 @@ type alias Model =
     , examinationData : ExaminationData
     , familyPlanningData : FamilyPlanningData
     , medicalHistoryData : MedicalHistoryData
+    , laboratoryData : LaboratoryData
     }
 
 
@@ -91,6 +92,7 @@ emptyModel =
     , examinationData = emptyExaminationData
     , familyPlanningData = emptyFamilyPlanningData
     , medicalHistoryData = emptyMedicalHistoryData
+    , laboratoryData = emptyLaboratoryData
     }
 
 
@@ -262,4 +264,17 @@ emptySocialHistoryForm =
     , beveragesPerWeekDirty = False
     , cigarettesPerWeek = Nothing
     , cigarettesPerWeekDirty = False
+    }
+
+
+type alias LaboratoryData =
+    { randomBloodSugarTestForm : PrenatalRandomBloodSugarForm
+    , activeTask : Maybe LaboratoryTask
+    }
+
+
+emptyLaboratoryData : LaboratoryData
+emptyLaboratoryData =
+    { randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarForm
+    , activeTask = Nothing
     }
