@@ -108,6 +108,8 @@ const baseUrl = 'http://localhost:3000';
 
     await page.click(buttonSelector);
     await page.screenshot({path: 'regwitherrors.png', fullPage: true, captureBeyondViewport: true});
+    const errors = await page.$eval('.error.message', e => e.innerHTML);
+    console.log(errors);
   }
 
   const browser = await puppeteer.launch();
