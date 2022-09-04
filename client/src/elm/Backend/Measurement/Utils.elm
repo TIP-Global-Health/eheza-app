@@ -880,8 +880,8 @@ covidIsolationPeriod =
     10
 
 
-prenatalTestResultToString : PrenatalTestResult -> String
-prenatalTestResultToString value =
+testResultToString : TestResult -> String
+testResultToString value =
     case value of
         PrenatalTestPositive ->
             "positive"
@@ -893,8 +893,8 @@ prenatalTestResultToString value =
             "indeterminate"
 
 
-prenatalTestResultFromString : String -> Maybe PrenatalTestResult
-prenatalTestResultFromString value =
+testResultFromString : String -> Maybe TestResult
+testResultFromString value =
     case value of
         "positive" ->
             Just PrenatalTestPositive

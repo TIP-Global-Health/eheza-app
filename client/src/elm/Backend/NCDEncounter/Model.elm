@@ -39,6 +39,9 @@ type alias Model =
     , saveSocialHistory : WebData ()
     , saveFamilyHistory : WebData ()
     , saveOutsideCare : WebData ()
+    , saveHIVTest : WebData ()
+    , saveUrineDipstickTest : WebData ()
+    , saveRandomBloodSugarTest : WebData ()
     }
 
 
@@ -55,6 +58,9 @@ emptyModel =
     , saveSocialHistory = NotAsked
     , saveFamilyHistory = NotAsked
     , saveOutsideCare = NotAsked
+    , saveHIVTest = NotAsked
+    , saveUrineDipstickTest = NotAsked
+    , saveRandomBloodSugarTest = NotAsked
     }
 
 
@@ -81,3 +87,9 @@ type Msg
     | HandleSavedFamilyHistory (WebData ())
     | SaveOutsideCare PersonId (Maybe NCDOutsideCareId) (OutsideCareValue MedicalCondition)
     | HandleSavedOutsideCare (WebData ())
+    | SaveHIVTest PersonId (Maybe NCDHIVTestId) HIVTestValue
+    | HandleSavedHIVTest (WebData ())
+    | SaveUrineDipstickTest PersonId (Maybe NCDUrineDipstickTestId) UrineDipstickTestValue
+    | HandleSavedUrineDipstickTest (WebData ())
+    | SaveRandomBloodSugarTest PersonId (Maybe NCDRandomBloodSugarTestId) RandomBloodSugarTestValue
+    | HandleSavedRandomBloodSugarTest (WebData ())

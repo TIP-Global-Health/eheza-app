@@ -116,9 +116,9 @@ hivPCRResultNormal =
     (==) ResultSuppressedViralLoad
 
 
-syphilisResultNormal : PrenatalTestResult -> Bool
+syphilisResultNormal : TestResult -> Bool
 syphilisResultNormal =
-    prenatalTestResultNormal
+    testResultNormal
 
 
 hepatitisBResultNormal : PrenatalTestReport -> Bool
@@ -126,9 +126,9 @@ hepatitisBResultNormal =
     prenatalTestReportNormal
 
 
-malariaResultNormal : PrenatalTestResult -> Bool
+malariaResultNormal : TestResult -> Bool
 malariaResultNormal =
-    prenatalTestResultNormal
+    testResultNormal
 
 
 proteinResultNormal : ProteinValue -> Bool
@@ -195,14 +195,14 @@ prenatalTestReportNormal : PrenatalTestReport -> Bool
 prenatalTestReportNormal report =
     case report of
         TestPerformed result ->
-            prenatalTestResultNormal result
+            testResultNormal result
 
         TestNotPerformedKnownAsPositive ->
             True
 
 
-prenatalTestResultNormal : PrenatalTestResult -> Bool
-prenatalTestResultNormal =
+testResultNormal : TestResult -> Bool
+testResultNormal =
     (==) PrenatalTestNegative
 
 

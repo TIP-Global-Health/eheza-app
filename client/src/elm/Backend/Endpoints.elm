@@ -1099,10 +1099,10 @@ ncdHealthEducationEndpoint =
         |> withValueEncoder (object << encodeNCDHealthEducation)
 
 
-ncdHivTestEndpoint : ReadWriteEndPoint Error NCDHivTestId NCDHivTest NCDHivTest ()
-ncdHivTestEndpoint =
-    swEndpoint "nodes/ncd_hiv_test" decodeNCDHivTest
-        |> withValueEncoder (object << encodeNCDHivTest)
+ncdHIVTestEndpoint : ReadWriteEndPoint Error NCDHIVTestId NCDHIVTest NCDHIVTest ()
+ncdHIVTestEndpoint =
+    swEndpoint "nodes/ncd_hiv_test" decodeNCDHIVTest
+        |> withValueEncoder (object << encodeNCDHIVTest)
 
 
 ncdLabsResultsEndpoint : ReadWriteEndPoint Error NCDLabsResultsId NCDLabsResults NCDLabsResults ()

@@ -51,7 +51,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     data.syphilisTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value, symptoms = Nothing, symptomsDirty = True }
+                    { form | testResult = testResultFromString value, symptoms = Nothing, symptomsDirty = True }
             in
             ( { data | syphilisTestForm = updatedForm }
             , Cmd.none
@@ -115,7 +115,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     data.hepatitisBTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value }
+                    { form | testResult = testResultFromString value }
             in
             ( { data | hepatitisBTestForm = updatedForm }
             , Cmd.none
@@ -613,7 +613,7 @@ update language currentDate id db msg model =
                     model.labResultsData.syphilisTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value, symptoms = Nothing, symptomsDirty = True }
+                    { form | testResult = testResultFromString value, symptoms = Nothing, symptomsDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -685,7 +685,7 @@ update language currentDate id db msg model =
                     model.labResultsData.hepatitisBTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value }
+                    { form | testResult = testResultFromString value }
 
                 updatedData =
                     model.labResultsData

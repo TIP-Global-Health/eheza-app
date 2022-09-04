@@ -138,7 +138,7 @@ emptyNextStepsData =
 type alias SyphilisResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     , symptoms : Maybe (List IllnessSymptom)
     , symptomsDirty : Bool
     , originatingEncounter : Maybe PrenatalEncounterId
@@ -153,7 +153,7 @@ emptySyphilisResultForm =
 type alias HepatitisBResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     , originatingEncounter : Maybe PrenatalEncounterId
     }
 

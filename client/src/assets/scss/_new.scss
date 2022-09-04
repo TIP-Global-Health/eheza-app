@@ -3956,7 +3956,7 @@ div.page-activity.ncd {
 
   .ui.full.segment {
 
-    .form.history.outside-care {
+    .form.outside-care {
 
       label .treatment {
           color: $color-primary;
@@ -3971,6 +3971,18 @@ div.page-activity.ncd {
 
       .checkbox-select-input {
         margin-bottom: 40px;
+      }
+    }
+
+    .form.laboratory {
+
+      .form-input.date {
+        border: 2px solid $color-light-gray;
+        color: $color-text;
+        height: 2em;
+        padding: 5px;
+        text-align: center;
+        width: 50%;
       }
     }
 

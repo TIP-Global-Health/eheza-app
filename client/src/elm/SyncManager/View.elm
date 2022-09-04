@@ -513,8 +513,8 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityNCDHealthEducation identifier ->
                 viewMeasurement identifier "NCDHealthEducation"
 
-            BackendAuthorityNCDHivTest identifier ->
-                viewMeasurement identifier "NCDHivTest"
+            BackendAuthorityNCDHIVTest identifier ->
+                viewMeasurement identifier "NCDHIVTest"
 
             BackendAuthorityNCDLabsResults identifier ->
                 viewMeasurement identifier "NCDLabsResults"

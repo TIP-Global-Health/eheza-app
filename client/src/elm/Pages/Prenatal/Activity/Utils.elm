@@ -5112,40 +5112,6 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
         |> Dict.fromList
 
 
-laboratoryTaskIconClass : LaboratoryTask -> String
-laboratoryTaskIconClass task =
-    case task of
-        TaskHIVTest ->
-            "laboratory-hiv"
-
-        TaskSyphilisTest ->
-            "laboratory-syphilis"
-
-        TaskHepatitisBTest ->
-            "laboratory-hepatitis-b"
-
-        TaskMalariaTest ->
-            "laboratory-malaria-testing"
-
-        TaskBloodGpRsTest ->
-            "laboratory-blood-group"
-
-        TaskUrineDipstickTest ->
-            "laboratory-urine-dipstick"
-
-        TaskHemoglobinTest ->
-            "laboratory-hemoglobin"
-
-        TaskRandomBloodSugarTest ->
-            "laboratory-blood-sugar"
-
-        TaskHIVPCRTest ->
-            "laboratory-hiv"
-
-        TaskCompletePreviousTests ->
-            "laboratory-history"
-
-
 symptomReviewFormWithDefault : SymptomReviewForm -> Maybe PrenatalSymptomReviewValue -> SymptomReviewForm
 symptomReviewFormWithDefault form saved =
     saved

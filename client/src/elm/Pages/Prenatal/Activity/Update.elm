@@ -30,7 +30,7 @@ import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
         , pregnancyTestResultFromString
-        , prenatalTestResultFromString
+        , testResultFromString
         , socialHistoryHivTestingResultFromString
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -1779,7 +1779,7 @@ update language currentDate id db msg model =
 
                 updatedForm =
                     { form
-                        | testResult = prenatalTestResultFromString value
+                        | testResult = testResultFromString value
                         , hivProgramHC = Nothing
                         , hivProgramHCDirty = True
                         , partnerHIVPositive = Nothing
@@ -2102,7 +2102,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.malariaTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value }
+                    { form | testResult = testResultFromString value }
 
                 updatedData =
                     model.laboratoryData

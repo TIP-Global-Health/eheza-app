@@ -2059,7 +2059,7 @@ viewHIVTestForm language currentDate configInitial configPerformed form =
                 )
     in
     ( div [ class "ui form laboratory hiv" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskHIVTest) "" "label header"
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHIVTest) "" "label header"
         ]
             ++ initialSection
             ++ derivedSection
@@ -2081,7 +2081,7 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
             prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed TaskMalariaTest form
     in
     ( div [ class "ui form laboratory malaria" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskMalariaTest) "" "label header" ]
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskMalariaTest) "" "label header" ]
             ++ inputs
     , tasksCompleted
     , tasksTotal
@@ -2100,7 +2100,7 @@ prenatalRDTFormInputsAndTasks :
             , testPerformedToday : Maybe Bool
             , executionNote : Maybe TestExecutionNote
             , executionDate : Maybe NominalDate
-            , testResult : Maybe PrenatalTestResult
+            , testResult : Maybe TestResult
             , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
         }
     -> ( List (Html msg), Int, Int )
@@ -2141,15 +2141,15 @@ prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed
                                             else
                                                 emptyNode
                                     in
-                                    ( [ viewLabel language <| Translate.PrenatalLaboratoryTaskResult task
+                                    ( [ viewLabel language <| Translate.LaboratoryTaskResult task
                                       , emptyOption
                                             :: List.map
                                                 (\result ->
                                                     option
-                                                        [ value (prenatalTestResultToString result)
+                                                        [ value (testResultToString result)
                                                         , selected (form.testResult == Just result)
                                                         ]
-                                                        [ text <| translate language <| Translate.PrenatalTestResult result ]
+                                                        [ text <| translate language <| Translate.TestResult result ]
                                                 )
                                                 [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
                                             |> select
@@ -2214,7 +2214,7 @@ viewUrineDipstickForm language currentDate configInitial configPerformed form =
                             []
 
                         else
-                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
+                            [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
                 in
                 ( testVariantSection ++ performedTestSection ++ testResultSection
                 , performedTestTasksCompleted + testVariantTasksCompleted
@@ -2225,7 +2225,7 @@ viewUrineDipstickForm language currentDate configInitial configPerformed form =
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskUrineDipstickTest) "" "label header"
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskUrineDipstickTest) "" "label header"
         ]
             ++ initialSection
             ++ derivedSection
@@ -2270,7 +2270,7 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
                             []
 
                         else
-                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
+                            [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
                 in
                 ( testPrerequisitesSection ++ performedTestSection ++ testResultSection
                 , performedTestTasksCompleted + testPrerequisitesTasksCompleted
@@ -2281,7 +2281,7 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
         ]
             ++ initialSection
             ++ derivedSection
@@ -2311,7 +2311,7 @@ viewNonRDTFormCheckKnownAsPositive language currentDate configInitial configPerf
                 nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
     in
     ( div [ class "ui form laboratory non-rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
         ]
             ++ initialSection
             ++ derivedSection
@@ -2334,7 +2334,7 @@ viewNonRDTForm language currentDate configInitial configPerformed task form =
             nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
     in
     ( div [ class "ui form laboratory non-rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
         ]
             ++ inputs
     , tasksCompleted
@@ -2366,7 +2366,7 @@ nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task
                             []
 
                         else
-                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
+                            [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
                 in
                 ( performedTestSection ++ testResultSection
                 , performedTestTasksCompleted
@@ -2380,32 +2380,6 @@ nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
     )
-
-
-type alias ContentAndTasksLaboratoryTestInitialConfig msg =
-    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
-    , setHIVTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setHIVTestResultMsg : String -> msg
-    , setSyphilisTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setSyphilisTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setHepatitisBTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHepatitisBTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
-    , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setMalariaTestResultMsg : String -> msg
-    , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
-    , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setUrineDipstickTestVariantMsg : TestVariant -> msg
-    , setHemoglobinTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHemoglobinTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
-    , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
-    , noOpMsg : msg
-    }
 
 
 contentAndTasksLaboratoryTestInitial :
@@ -2528,38 +2502,6 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
     , taskCompleted form.testPerformed + derivedTasksCompleted
     , 1 + derivedTasksTotal
     )
-
-
-type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
-    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
-    , setHIVTestExecutionDateMsg : NominalDate -> msg
-    , setHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setSyphilisTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setSyphilisTestExecutionDateMsg : NominalDate -> msg
-    , setSyphilisTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setHepatitisBTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHepatitisBTestExecutionDateMsg : NominalDate -> msg
-    , setHepatitisBTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
-    , setMalariaTestExecutionDateMsg : NominalDate -> msg
-    , setMalariaTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setBloodGpRsTestExecutionDateMsg : NominalDate -> msg
-    , setBloodGpRsTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
-    , setUrineDipstickTestExecutionDateMsg : NominalDate -> msg
-    , setUrineDipstickTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setHemoglobinTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHemoglobinTestExecutionDateMsg : NominalDate -> msg
-    , setHemoglobinTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
-    , setRandomBloodSugarTestExecutionDateMsg : NominalDate -> msg
-    , setRandomBloodSugarTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHIVPCRTestExecutionDateMsg : NominalDate -> msg
-    , setHIVPCRTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , noOpMsg : msg
-    }
 
 
 contentAndTasksForPerformedLaboratoryTest :
@@ -2702,7 +2644,7 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                                     , 1
                                     )
                         in
-                        ( (viewLabel language <| Translate.PrenatalLaboratoryTaskDate task)
+                        ( (viewLabel language <| Translate.LaboratoryTaskDate task)
                             :: executionDateContent
                         , executionDateTasksCompleted
                         , executionDateTasksTotal
@@ -2782,3 +2724,97 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate config task fo
     , taskCompleted form.knownAsPositive
     , 1
     )
+
+
+emptyContentAndTasksLaboratoryTestInitialConfig : msg -> ContentAndTasksLaboratoryTestInitialConfig msg
+emptyContentAndTasksLaboratoryTestInitialConfig noOpMsg =
+    { setHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHIVTestExecutionNoteMsg = always noOpMsg
+    , setHIVTestResultMsg = always noOpMsg
+    , setSyphilisTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setSyphilisTestExecutionNoteMsg = always noOpMsg
+    , setHepatitisBTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHepatitisBTestExecutionNoteMsg = always noOpMsg
+    , setMalariaTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setMalariaTestExecutionNoteMsg = always noOpMsg
+    , setMalariaTestResultMsg = always noOpMsg
+    , setBloodGpRsTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setBloodGpRsTestExecutionNoteMsg = always noOpMsg
+    , setUrineDipstickTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setUrineDipstickTestExecutionNoteMsg = always noOpMsg
+    , setUrineDipstickTestVariantMsg = always noOpMsg
+    , setHemoglobinTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHemoglobinTestExecutionNoteMsg = always noOpMsg
+    , setRandomBloodSugarTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setRandomBloodSugarTestExecutionNoteMsg = always noOpMsg
+    , setHIVPCRTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHIVPCRTestExecutionNoteMsg = always noOpMsg
+    , noOpMsg = noOpMsg
+    }
+
+
+emptyContentAndTasksForPerformedLaboratoryTestConfig : msg -> ContentAndTasksForPerformedLaboratoryTestConfig msg
+emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
+    { setHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHIVTestExecutionDateMsg = always noOpMsg
+    , setHIVTestDateSelectorStateMsg = always noOpMsg
+    , setSyphilisTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setSyphilisTestExecutionDateMsg = always noOpMsg
+    , setSyphilisTestDateSelectorStateMsg = always noOpMsg
+    , setHepatitisBTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHepatitisBTestExecutionDateMsg = always noOpMsg
+    , setHepatitisBTestDateSelectorStateMsg = always noOpMsg
+    , setMalariaTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setMalariaTestExecutionDateMsg = always noOpMsg
+    , setMalariaTestDateSelectorStateMsg = always noOpMsg
+    , setBloodGpRsTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setBloodGpRsTestExecutionDateMsg = always noOpMsg
+    , setBloodGpRsTestDateSelectorStateMsg = always noOpMsg
+    , setUrineDipstickTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setUrineDipstickTestExecutionDateMsg = always noOpMsg
+    , setUrineDipstickTestDateSelectorStateMsg = always noOpMsg
+    , setHemoglobinTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHemoglobinTestExecutionDateMsg = always noOpMsg
+    , setHemoglobinTestDateSelectorStateMsg = always noOpMsg
+    , setRandomBloodSugarTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setRandomBloodSugarTestExecutionDateMsg = always noOpMsg
+    , setRandomBloodSugarTestDateSelectorStateMsg = always noOpMsg
+    , setHIVPCRTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHIVPCRTestExecutionDateMsg = always noOpMsg
+    , setHIVPCRTestDateSelectorStateMsg = always noOpMsg
+    , noOpMsg = noOpMsg
+    }
+
+
+laboratoryTaskIconClass : LaboratoryTask -> String
+laboratoryTaskIconClass task =
+    case task of
+        TaskHIVTest ->
+            "laboratory-hiv"
+
+        TaskSyphilisTest ->
+            "laboratory-syphilis"
+
+        TaskHepatitisBTest ->
+            "laboratory-hepatitis-b"
+
+        TaskMalariaTest ->
+            "laboratory-malaria-testing"
+
+        TaskBloodGpRsTest ->
+            "laboratory-blood-group"
+
+        TaskUrineDipstickTest ->
+            "laboratory-urine-dipstick"
+
+        TaskHemoglobinTest ->
+            "laboratory-hemoglobin"
+
+        TaskRandomBloodSugarTest ->
+            "laboratory-blood-sugar"
+
+        TaskHIVPCRTest ->
+            "laboratory-hiv"
+
+        TaskCompletePreviousTests ->
+            "laboratory-history"

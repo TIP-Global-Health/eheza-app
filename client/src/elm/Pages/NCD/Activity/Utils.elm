@@ -695,3 +695,60 @@ outsideCareDiagnosesRightColumn =
     , MedicalConditionPregnancy
     , MedicalConditionDiabetes
     ]
+
+
+expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
+expectLaboratoryTask currentDate assembled task =
+    case task of
+        TaskRandomBloodSugarTest ->
+            True
+
+        TaskUrineDipstickTest ->
+            True
+
+        TaskHIVTest ->
+            True
+
+        _ ->
+            -- @todo
+            False
+
+
+laboratoryTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool
+laboratoryTaskCompleted currentDate assembled task =
+    let
+        measurements =
+            assembled.measurements
+
+        taskExpected =
+            expectLaboratoryTask currentDate assembled
+    in
+    case task of
+        TaskRandomBloodSugarTest ->
+            (not <| taskExpected TaskRandomBloodSugarTest) || isJust measurements.randomBloodSugarTest
+
+        TaskUrineDipstickTest ->
+            (not <| taskExpected TaskUrineDipstickTest) || isJust measurements.urineDipstickTest
+
+        TaskHIVTest ->
+            (not <| taskExpected TaskHIVTest) || isJust measurements.hivTest
+
+        _ ->
+            -- @todo
+            True
+
+
+laboratoryTasks : List LaboratoryTask
+laboratoryTasks =
+    [ TaskRandomBloodSugarTest
+
+    -- @todo
+    --, TaskCreatinineTest
+    , TaskUrineDipstickTest
+    , TaskHIVTest
+
+    -- @todo
+    --, TaskPregnancyTest
+    -- @todo
+    --, TaskLiverFunctionTest
+    ]

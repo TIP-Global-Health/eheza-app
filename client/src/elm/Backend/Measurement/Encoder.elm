@@ -385,7 +385,7 @@ encodeHepatitisBTestValue value =
         result =
             Maybe.map
                 (\testResult ->
-                    [ ( "test_result", encodePrenatalTestResult testResult ) ]
+                    [ ( "test_result", encodeTestResult testResult ) ]
                 )
                 value.testResult
                 |> Maybe.withDefault []
@@ -409,11 +409,11 @@ encodeHepatitisBTestValue value =
 
 encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
 encodePrenatalHIVTest =
-    encodePrenatalMeasurement encodeHIVTestValue
+    encodePrenatalMeasurement (encodeHIVTestValue "prenatal_hiv_test")
 
 
-encodeHIVTestValue : HIVTestValue -> List ( String, Value )
-encodeHIVTestValue value =
+encodeHIVTestValue : String -> HIVTestValue -> List ( String, Value )
+encodeHIVTestValue type_ value =
     let
         executionDate =
             Maybe.map
@@ -423,7 +423,7 @@ encodeHIVTestValue value =
 
         result =
             Maybe.map
-                (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
+                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
                 value.testResult
                 |> Maybe.withDefault []
 
@@ -444,7 +444,7 @@ encodeHIVTestValue value =
         ++ result
         ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns ) ]
         ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_hiv_test" )
+           , ( "type", string type_ )
            ]
 
 
@@ -515,7 +515,7 @@ encodeMalariaTestValue value =
 
         result =
             Maybe.map
-                (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
+                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
                 value.testResult
                 |> Maybe.withDefault []
     in
@@ -529,11 +529,11 @@ encodeMalariaTestValue value =
 
 encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )
 encodePrenatalRandomBloodSugarTest =
-    encodePrenatalMeasurement encodeRandomBloodSugarTestValue
+    encodePrenatalMeasurement (encodeRandomBloodSugarTestValue "prenatal_random_blood_sugar_test")
 
 
-encodeRandomBloodSugarTestValue : RandomBloodSugarTestValue -> List ( String, Value )
-encodeRandomBloodSugarTestValue value =
+encodeRandomBloodSugarTestValue : String -> RandomBloodSugarTestValue -> List ( String, Value )
+encodeRandomBloodSugarTestValue type_ value =
     let
         executionDate =
             Maybe.map
@@ -569,7 +569,7 @@ encodeRandomBloodSugarTestValue value =
         ++ originatingEncounter
         ++ result
         ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_random_blood_sugar_test" )
+           , ( "type", string type_ )
            ]
 
 
@@ -600,7 +600,7 @@ encodeSyphilisTestValue value =
 
         result =
             Maybe.map
-                (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
+                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
                 value.testResult
                 |> Maybe.withDefault []
 
@@ -635,11 +635,11 @@ encodeIllnessSymptom =
 
 encodePrenatalUrineDipstickTest : PrenatalUrineDipstickTest -> List ( String, Value )
 encodePrenatalUrineDipstickTest =
-    encodePrenatalMeasurement encodeUrineDipstickTestValue
+    encodePrenatalMeasurement (encodeUrineDipstickTestValue "prenatal_urine_dipstick_test")
 
 
-encodeUrineDipstickTestValue : UrineDipstickTestValue -> List ( String, Value )
-encodeUrineDipstickTestValue value =
+encodeUrineDipstickTestValue : String -> UrineDipstickTestValue -> List ( String, Value )
+encodeUrineDipstickTestValue type_ value =
     let
         testVariant =
             Maybe.map
@@ -701,7 +701,7 @@ encodeUrineDipstickTestValue value =
         ++ ketone
         ++ bilirubin
         ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_urine_dipstick_test" )
+           , ( "type", string type_ )
            ]
 
 
@@ -790,9 +790,9 @@ encodeTestExecutionNote value =
                 "known-as-positive"
 
 
-encodePrenatalTestResult : PrenatalTestResult -> Value
-encodePrenatalTestResult =
-    prenatalTestResultToString >> string
+encodeTestResult : TestResult -> Value
+encodeTestResult =
+    testResultToString >> string
 
 
 encodePrenatalLabsResults : PrenatalLabsResults -> List ( String, Value )
@@ -4239,16 +4239,9 @@ encodeNCDHealthEducationValue value =
     ]
 
 
-encodeNCDHivTest : NCDHivTest -> List ( String, Value )
-encodeNCDHivTest =
-    encodeNCDMeasurement encodeNCDHivTestValue
-
-
-encodeNCDHivTestValue : NCDHivTestValue -> List ( String, Value )
-encodeNCDHivTestValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_hiv_test" )
-    ]
+encodeNCDHIVTest : NCDHIVTest -> List ( String, Value )
+encodeNCDHIVTest =
+    encodeNCDMeasurement (encodeHIVTestValue "ncd_hiv_test")
 
 
 encodeNCDLabsResults : NCDLabsResults -> List ( String, Value )
@@ -4336,14 +4329,7 @@ encodeNCDPregnancyTestValue value =
 
 encodeNCDRandomBloodSugarTest : NCDRandomBloodSugarTest -> List ( String, Value )
 encodeNCDRandomBloodSugarTest =
-    encodeNCDMeasurement encodeNCDRandomBloodSugarTestValue
-
-
-encodeNCDRandomBloodSugarTestValue : NCDRandomBloodSugarTestValue -> List ( String, Value )
-encodeNCDRandomBloodSugarTestValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_random_blood_sugar_test" )
-    ]
+    encodeNCDMeasurement (encodeRandomBloodSugarTestValue "ncd_random_blood_sugar_test")
 
 
 encodeNCDReferral : NCDReferral -> List ( String, Value )
@@ -4433,14 +4419,7 @@ encodeNCDPainSymptom =
 
 encodeNCDUrineDipstickTest : NCDUrineDipstickTest -> List ( String, Value )
 encodeNCDUrineDipstickTest =
-    encodeNCDMeasurement encodeNCDUrineDipstickTestValue
-
-
-encodeNCDUrineDipstickTestValue : NCDUrineDipstickTestValue -> List ( String, Value )
-encodeNCDUrineDipstickTestValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_urine_dipstick_test" )
-    ]
+    encodeNCDMeasurement (encodeUrineDipstickTestValue "ncd_urine_dipstick_test")
 
 
 encodeNCDVitals : NCDVitals -> List ( String, Value )

@@ -246,7 +246,7 @@ decodeNCDMeasurements =
         |> optional "ncd_family_history" (decodeHead decodeNCDFamilyHistory) Nothing
         |> optional "ncd_family_planning" (decodeHead decodeNCDFamilyPlanning) Nothing
         |> optional "ncd_health_education" (decodeHead decodeNCDHealthEducation) Nothing
-        |> optional "ncd_hiv_test" (decodeHead decodeNCDHivTest) Nothing
+        |> optional "ncd_hiv_test" (decodeHead decodeNCDHIVTest) Nothing
         |> optional "ncd_labs_results" (decodeHead decodeNCDLabsResults) Nothing
         |> optional "ncd_liver_function_test" (decodeHead decodeNCDLiverFunctionTest) Nothing
         |> optional "ncd_medication_distribution" (decodeHead decodeNCDMedicationDistribution) Nothing
@@ -487,7 +487,7 @@ decodeHepatitisBTestValue =
     succeed HepatitisBTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
-        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+        |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
 
 
@@ -501,7 +501,7 @@ decodeHIVTestValue =
     succeed HIVTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
-        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+        |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "hiv_signs" (nullable (decodeEverySet decodePrenatalHIVSign)) Nothing
 
 
@@ -559,7 +559,7 @@ decodeMalariaTestValue =
     succeed MalariaTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
-        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+        |> optional "test_result" (nullable decodeTestResult) Nothing
 
 
 decodePrenatalRandomBloodSugarTest : Decoder PrenatalRandomBloodSugarTest
@@ -604,7 +604,7 @@ decodeSyphilisTestValue =
     succeed SyphilisTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
-        |> optional "test_result" (nullable decodePrenatalTestResult) Nothing
+        |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "illness_symptoms" (nullable (decodeEverySet decodeIllnessSymptom)) Nothing
         |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
 
@@ -797,14 +797,14 @@ decodeTestExecutionNote =
             )
 
 
-decodePrenatalTestResult : Decoder PrenatalTestResult
-decodePrenatalTestResult =
+decodeTestResult : Decoder TestResult
+decodeTestResult =
     string
         |> andThen
             (\s ->
-                prenatalTestResultFromString s
+                testResultFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalTestResult")
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized TestResult")
             )
 
 
@@ -4687,14 +4687,9 @@ decodeNCDHealthEducationValue =
     succeed NCDHealthEducationValue
 
 
-decodeNCDHivTest : Decoder NCDHivTest
-decodeNCDHivTest =
-    decodeNCDMeasurement decodeNCDHivTestValue
-
-
-decodeNCDHivTestValue : Decoder NCDHivTestValue
-decodeNCDHivTestValue =
-    succeed NCDHivTestValue
+decodeNCDHIVTest : Decoder NCDHIVTest
+decodeNCDHIVTest =
+    decodeNCDMeasurement decodeHIVTestValue
 
 
 decodeNCDLabsResults : Decoder NCDLabsResults
@@ -4790,12 +4785,7 @@ decodeNCDPregnancyTestValue =
 
 decodeNCDRandomBloodSugarTest : Decoder NCDRandomBloodSugarTest
 decodeNCDRandomBloodSugarTest =
-    decodeNCDMeasurement decodeNCDRandomBloodSugarTestValue
-
-
-decodeNCDRandomBloodSugarTestValue : Decoder NCDRandomBloodSugarTestValue
-decodeNCDRandomBloodSugarTestValue =
-    succeed NCDRandomBloodSugarTestValue
+    decodeNCDMeasurement decodeRandomBloodSugarTestValue
 
 
 decodeNCDReferral : Decoder NCDReferral
@@ -4892,12 +4882,7 @@ decodeNCDPainSymptom =
 
 decodeNCDUrineDipstickTest : Decoder NCDUrineDipstickTest
 decodeNCDUrineDipstickTest =
-    decodeNCDMeasurement decodeNCDUrineDipstickTestValue
-
-
-decodeNCDUrineDipstickTestValue : Decoder NCDUrineDipstickTestValue
-decodeNCDUrineDipstickTestValue =
-    succeed NCDUrineDipstickTestValue
+    decodeNCDMeasurement decodeUrineDipstickTestValue
 
 
 decodeNCDVitals : Decoder NCDVitals

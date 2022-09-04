@@ -2,7 +2,9 @@ module Pages.NCD.Activity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
         ( CorePhysicalExamForm
@@ -18,8 +20,10 @@ import Measurement.Model
         , VitalsForm
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
+        , emptyHIVTestForm
         , emptyOutsideCareForm
         , emptyRandomBloodSugarForm
+        , emptyUrineDipstickForm
         , emptyVitalsForm
         )
 import Pages.NCD.Activity.Types exposing (..)
@@ -27,7 +31,8 @@ import Pages.Page exposing (Page)
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
       -- DangerSignsMsgs
     | SetDangerSign NCDDangerSign
     | SaveDangerSigns PersonId (Maybe ( NCDDangerSignsId, NCDDangerSigns ))
@@ -80,6 +85,25 @@ type Msg
     | SetOutsideCareAnemiaMedication OutsideCareMedication
     | SetOutsideCareHIVMedication OutsideCareMedication
     | SaveOutsideCare PersonId (Maybe ( NCDOutsideCareId, NCDOutsideCare )) (Maybe MedicalHistoryTask)
+      -- LABORATORYMsgs
+    | SetActiveLaboratoryTask LaboratoryTask
+    | SetHIVTestFormBoolInput (Bool -> HIVTestForm Msg -> HIVTestForm Msg) Bool
+    | SetHIVTestExecutionNote TestExecutionNote
+    | SetHIVTestExecutionDate NominalDate
+    | SetHIVTestResult String
+    | SetHIVTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveHIVTest PersonId (Maybe ( NCDHIVTestId, NCDHIVTest )) (Maybe LaboratoryTask)
+    | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickForm Msg -> UrineDipstickForm Msg) Bool
+    | SetUrineDipstickTestExecutionNote TestExecutionNote
+    | SetUrineDipstickTestVariant TestVariant
+    | SetUrineDipstickTestExecutionDate NominalDate
+    | SetUrineDipstickTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveUrineDipstickTest PersonId (Maybe ( NCDUrineDipstickTestId, NCDUrineDipstickTest )) (Maybe LaboratoryTask)
+    | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarForm Msg -> RandomBloodSugarForm Msg) Bool
+    | SetRandomBloodSugarTestExecutionNote TestExecutionNote
+    | SetRandomBloodSugarTestExecutionDate NominalDate
+    | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveRandomBloodSugarTest PersonId (Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )) (Maybe LaboratoryTask)
 
 
 type alias Model =
@@ -275,13 +299,17 @@ emptySocialHistoryForm =
 
 
 type alias LaboratoryData =
-    { randomBloodSugarTestForm : RandomBloodSugarForm Msg
+    { hivTestForm : HIVTestForm Msg
+    , urineDipstickTestForm : UrineDipstickForm Msg
+    , randomBloodSugarTestForm : RandomBloodSugarForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
 
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
-    { randomBloodSugarTestForm = emptyRandomBloodSugarForm
+    { hivTestForm = emptyHIVTestForm
+    , urineDipstickTestForm = emptyUrineDipstickForm
+    , randomBloodSugarTestForm = emptyRandomBloodSugarForm
     , activeTask = Nothing
     }

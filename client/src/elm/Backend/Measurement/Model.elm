@@ -935,7 +935,7 @@ type alias PrenatalMalariaTest =
 type alias MalariaTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     }
 
 
@@ -950,7 +950,7 @@ type TestExecutionNote
     | TestNoteKnownAsPositive
 
 
-type PrenatalTestResult
+type TestResult
     = PrenatalTestPositive
     | PrenatalTestNegative
     | PrenatalTestIndeterminate
@@ -963,7 +963,7 @@ type alias PrenatalHIVTest =
 type alias HIVTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
 
@@ -1005,7 +1005,7 @@ type ViralLoadStatus
 type alias HepatitisBTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     , originatingEncounter : Maybe PrenatalEncounterId
     }
 
@@ -1017,7 +1017,7 @@ type alias PrenatalSyphilisTest =
 type alias SyphilisTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     , symptoms : Maybe (EverySet IllnessSymptom)
     , originatingEncounter : Maybe PrenatalEncounterId
     }
@@ -2367,12 +2367,8 @@ type alias NCDHealthEducationValue =
     {}
 
 
-type alias NCDHivTest =
-    NCDMeasurement NCDHivTestValue
-
-
-type alias NCDHivTestValue =
-    {}
+type alias NCDHIVTest =
+    NCDMeasurement HIVTestValue
 
 
 type alias NCDLabsResults =
@@ -2449,11 +2445,7 @@ type alias NCDPregnancyTestValue =
 
 
 type alias NCDRandomBloodSugarTest =
-    NCDMeasurement NCDRandomBloodSugarTestValue
-
-
-type alias NCDRandomBloodSugarTestValue =
-    {}
+    NCDMeasurement RandomBloodSugarTestValue
 
 
 type alias NCDReferral =
@@ -2540,11 +2532,7 @@ type NCDGroup2Symptom
 
 
 type alias NCDUrineDipstickTest =
-    NCDMeasurement NCDUrineDipstickTestValue
-
-
-type alias NCDUrineDipstickTestValue =
-    {}
+    NCDMeasurement UrineDipstickTestValue
 
 
 type alias NCDVitals =
@@ -2831,7 +2819,7 @@ type alias NCDMeasurements =
     , familyHistory : Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )
     , familyPlanning : Maybe ( NCDFamilyPlanningId, NCDFamilyPlanning )
     , healthEducation : Maybe ( NCDHealthEducationId, NCDHealthEducation )
-    , hivTest : Maybe ( NCDHivTestId, NCDHivTest )
+    , hivTest : Maybe ( NCDHIVTestId, NCDHIVTest )
     , labsResults : Maybe ( NCDLabsResultsId, NCDLabsResults )
     , liverFunctionTest : Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )
     , medicationDistribution : Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )

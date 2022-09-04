@@ -443,7 +443,7 @@ type Revision
     | NCDFamilyHistoryRevision NCDFamilyHistoryId NCDFamilyHistory
     | NCDFamilyPlanningRevision NCDFamilyPlanningId NCDFamilyPlanning
     | NCDHealthEducationRevision NCDHealthEducationId NCDHealthEducation
-    | NCDHivTestRevision NCDHivTestId NCDHivTest
+    | NCDHIVTestRevision NCDHIVTestId NCDHIVTest
     | NCDLabsResultsRevision NCDLabsResultsId NCDLabsResults
     | NCDLiverFunctionTestRevision NCDLiverFunctionTestId NCDLiverFunctionTest
     | NCDMedicationDistributionRevision NCDMedicationDistributionId NCDMedicationDistribution

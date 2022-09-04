@@ -20,10 +20,9 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (vitalsFormWithDefault)
+import Measurement.Utils exposing (laboratoryTaskIconClass, vitalsFormWithDefault)
 import Measurement.View exposing (viewSendToHospitalForm, viewVitalsForm)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass)
 import Pages.Prenatal.Activity.View exposing (warningPopup)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
@@ -294,7 +293,7 @@ viewLabResultsContent language currentDate assembled model =
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.PrenatalLaboratoryTask task)
+                    , text <| translate language (Translate.LaboratoryTask task)
                     ]
                 ]
 
@@ -465,10 +464,10 @@ prenatalSyphilisResultFormAndTasks language currentDate task form =
                         ( [], 0, 0 )
             in
             ( viewSelectInput language
-                (Translate.PrenatalLaboratoryTaskResult task)
+                (Translate.LaboratoryTaskResult task)
                 form.testResult
-                Translate.PrenatalTestResult
-                prenatalTestResultToString
+                Translate.TestResult
+                testResultToString
                 [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
                 SetSyphilisTestResult
                 ++ symptomsSection
@@ -497,10 +496,10 @@ prenatalHepatitisBResultFormAndTasks language currentDate task form =
                         emptyNode
             in
             ( viewSelectInput language
-                (Translate.PrenatalLaboratoryTaskResult task)
+                (Translate.LaboratoryTaskResult task)
                 form.testResult
-                Translate.PrenatalTestResult
-                prenatalTestResultToString
+                Translate.TestResult
+                testResultToString
                 [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
                 SetHepatitisBTestResult
             , taskCompleted form.testResult
@@ -789,14 +788,14 @@ resultFormHeaderSection language currentDate executionDate task =
         executionDateSection =
             Maybe.map
                 (\date ->
-                    [ viewLabel language <| Translate.PrenatalLaboratoryTaskDate task
+                    [ viewLabel language <| Translate.LaboratoryTaskDate task
                     , p [ class "test-date" ] [ text <| formatDDMMYYYY date ]
                     ]
                 )
                 executionDate
                 |> Maybe.withDefault []
     in
-    viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
+    viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
         :: executionDateSection
 
 

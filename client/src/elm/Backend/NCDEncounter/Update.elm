@@ -131,3 +131,33 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveOutsideCare = data }
             , Cmd.none
             )
+
+        SaveHIVTest personId valueId value ->
+            ( { model | saveHIVTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdHIVTestEndpoint HandleSavedHIVTest
+            )
+
+        HandleSavedHIVTest data ->
+            ( { model | saveHIVTest = data }
+            , Cmd.none
+            )
+
+        SaveUrineDipstickTest personId valueId value ->
+            ( { model | saveUrineDipstickTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdUrineDipstickTestEndpoint HandleSavedUrineDipstickTest
+            )
+
+        HandleSavedUrineDipstickTest data ->
+            ( { model | saveUrineDipstickTest = data }
+            , Cmd.none
+            )
+
+        SaveRandomBloodSugarTest personId valueId value ->
+            ( { model | saveRandomBloodSugarTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdRandomBloodSugarTestEndpoint HandleSavedRandomBloodSugarTest
+            )
+
+        HandleSavedRandomBloodSugarTest data ->
+            ( { model | saveRandomBloodSugarTest = data }
+            , Cmd.none
+            )

@@ -573,8 +573,8 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "ncd_hiv_test" ->
                         doDecode
-                            Backend.Measurement.Decoder.decodeNCDHivTest
-                            BackendAuthorityNCDHivTest
+                            Backend.Measurement.Decoder.decodeNCDHIVTest
+                            BackendAuthorityNCDHIVTest
 
                     "ncd_labs_results" ->
                         doDecode
