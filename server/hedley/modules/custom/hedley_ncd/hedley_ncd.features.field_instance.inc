@@ -4703,6 +4703,63 @@ function hedley_ncd_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-ncd_random_blood_sugar_test-field_execution_date'.
+  $field_instances['node-ncd_random_blood_sugar_test-field_execution_date'] = array(
+    'bundle' => 'ncd_random_blood_sugar_test',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_execution_date',
+    'label' => 'Execution Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 14,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-ncd_random_blood_sugar_test-field_ncd_encounter'.
   $field_instances['node-ncd_random_blood_sugar_test-field_ncd_encounter'] = array(
     'bundle' => 'ncd_random_blood_sugar_test',
@@ -4876,6 +4933,128 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_random_blood_sugar_test-field_sugar_count'.
+  $field_instances['node-ncd_random_blood_sugar_test-field_sugar_count'] = array(
+    'bundle' => 'ncd_random_blood_sugar_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_sugar_count',
+    'label' => 'Sugar Count',
+    'required' => FALSE,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 16,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_random_blood_sugar_test-field_test_execution_note'.
+  $field_instances['node-ncd_random_blood_sugar_test-field_test_execution_note'] = array(
+    'bundle' => 'ncd_random_blood_sugar_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_execution_note',
+    'label' => 'Test Execution Note',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_random_blood_sugar_test-field_test_prerequisites'.
+  $field_instances['node-ncd_random_blood_sugar_test-field_test_prerequisites'] = array(
+    'bundle' => 'ncd_random_blood_sugar_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 12,
     ),
   );
 
@@ -6803,6 +6982,8 @@ function hedley_ncd_field_default_field_instances() {
   t('Date Measured');
   t('Dia');
   t('Diabetes Predecessors');
+  t('Diagnosed Medical Conditions');
+  t('Execution Date');
   t('Eyes');
   t('Family Planning');
   t('Food Group');
@@ -6827,10 +7008,15 @@ function hedley_ncd_field_default_field_instances() {
   t('NCD Social History Signs');
   t('Neck');
   t('Nurse');
+  t('Outside Care Medications');
+  t('Outside Care Signs');
   t('Person');
   t('Respiratory rate');
   t('Shards');
+  t('Sugar Count');
   t('Sys');
+  t('Test Execution Note');
+  t('Test Prerequisites');
   t('UUID');
 
   return $field_instances;
