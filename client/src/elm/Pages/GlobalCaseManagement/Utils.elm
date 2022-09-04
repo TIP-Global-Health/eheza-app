@@ -9,7 +9,7 @@ import Backend.Measurement.Model
         , FollowUpOption(..)
         , FollowUpValue
         , PrenatalFollowUpValue
-        , PrenatalLaboratoryTest(..)
+        , LaboratoryTest(..)
         , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -335,7 +335,7 @@ compareAcuteIllnessFollowUpItems item1 item2 =
         byDate
 
 
-prenatalLabsResultsTestData : NominalDate -> PrenatalLabsResults -> ( List PrenatalLaboratoryTest, List PrenatalLaboratoryTest )
+prenatalLabsResultsTestData : NominalDate -> PrenatalLabsResults -> ( List LaboratoryTest, List LaboratoryTest )
 prenatalLabsResultsTestData currentDate results =
     if Date.compare currentDate results.dateMeasured == EQ then
         ( EverySet.toList results.value.performedTests, EverySet.toList results.value.completedTests )

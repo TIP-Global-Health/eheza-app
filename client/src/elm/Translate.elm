@@ -1055,7 +1055,7 @@ type TranslationId
     | PrenatalLaboratoryRandomBloodSugarTestResult
     | PrenatalLaboratoryHIVPCRTestResult
     | PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
-    | PrenatalLaboratoryTest PrenatalLaboratoryTest
+    | LaboratoryTest LaboratoryTest
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
     | PrenatalLabsEntryState PrenatalLabsEntryState
@@ -11251,7 +11251,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PrenatalLaboratoryTest value ->
+        LaboratoryTest value ->
             case value of
                 TestBloodGpRs ->
                     { english = "Blood Group"

@@ -4682,7 +4682,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
 generatePrenatalLabsTestAddedMsgs :
     NominalDate
     -> ModelIndexedDb
-    -> Backend.Measurement.Model.PrenatalLaboratoryTest
+    -> Backend.Measurement.Model.LaboratoryTest
     -> Backend.Measurement.Model.TestExecutionNote
     -> PrenatalEncounterId
     -> List App.Model.Msg
@@ -4727,7 +4727,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                         (if testExecuted then
                             let
                                 resultsValue =
-                                    Backend.Measurement.Model.PrenatalLabsResultsValue
+                                    Backend.Measurement.Model.LabsResultsValue
                                         (EverySet.singleton test)
                                         EverySet.empty
                                         (Date.add Days prenatalLabExpirationPeriod currentDate)
@@ -4745,7 +4745,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
 generatePrenatalLabsResultsAddedMsgs :
     NominalDate
     -> ModelIndexedDb
-    -> Backend.Measurement.Model.PrenatalLaboratoryTest
+    -> Backend.Measurement.Model.LaboratoryTest
     -> PrenatalEncounterId
     -> List App.Model.Msg
 generatePrenatalLabsResultsAddedMsgs currentDate after test id =
@@ -4803,7 +4803,7 @@ saveLabsResultsMsg :
     PrenatalEncounterId
     -> PersonId
     -> Maybe PrenatalLabsResultsId
-    -> Backend.Measurement.Model.PrenatalLabsResultsValue
+    -> Backend.Measurement.Model.LabsResultsValue
     -> App.Model.Msg
 saveLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
     Backend.PrenatalEncounter.Model.SaveLabsResults personId labsResultsId labsResultsValue

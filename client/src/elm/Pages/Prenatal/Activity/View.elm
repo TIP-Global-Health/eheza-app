@@ -3710,7 +3710,7 @@ viewLabsHistoryForm language currentDate assembled form =
         viewEntry date encounterId lab index =
             div [ class "history-entry" ]
                 [ div [ class "index" ] [ text <| String.fromInt (index + 1) ]
-                , div [ class "name" ] [ text <| translate language <| Translate.PrenatalLaboratoryTest lab ]
+                , div [ class "name" ] [ text <| translate language <| Translate.LaboratoryTest lab ]
                 , div [ class "date" ] [ text <| formatDDMMYYYY date ]
                 , div
                     [ class "action"

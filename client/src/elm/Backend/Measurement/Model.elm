@@ -1188,18 +1188,18 @@ type BilirubinValue
 
 
 type alias PrenatalLabsResults =
-    PrenatalMeasurement PrenatalLabsResultsValue
+    PrenatalMeasurement LabsResultsValue
 
 
-type alias PrenatalLabsResultsValue =
-    { performedTests : EverySet PrenatalLaboratoryTest
-    , completedTests : EverySet PrenatalLaboratoryTest
+type alias LabsResultsValue =
+    { performedTests : EverySet LaboratoryTest
+    , completedTests : EverySet LaboratoryTest
     , resolutionDate : NominalDate
     , patientNotified : Bool
     }
 
 
-type PrenatalLaboratoryTest
+type LaboratoryTest
     = TestBloodGpRs
     | TestHemoglobin
     | TestHepatitisB
@@ -2372,11 +2372,7 @@ type alias NCDHIVTest =
 
 
 type alias NCDLabsResults =
-    NCDMeasurement NCDLabsResultsValue
-
-
-type alias NCDLabsResultsValue =
-    {}
+    NCDMeasurement LabsResultsValue
 
 
 type alias NCDLiverFunctionTest =

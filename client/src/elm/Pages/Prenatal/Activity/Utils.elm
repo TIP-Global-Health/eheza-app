@@ -5017,7 +5017,7 @@ expectLaboratoryTask currentDate assembled task =
             task == TaskCompletePreviousTests
 
 
-generatePendingLabsFromPreviousEncounters : AssembledData -> List ( NominalDate, PrenatalEncounterId, List PrenatalLaboratoryTest )
+generatePendingLabsFromPreviousEncounters : AssembledData -> List ( NominalDate, PrenatalEncounterId, List LaboratoryTest )
 generatePendingLabsFromPreviousEncounters assembled =
     List.filterMap
         (\( date, _, measurements ) ->

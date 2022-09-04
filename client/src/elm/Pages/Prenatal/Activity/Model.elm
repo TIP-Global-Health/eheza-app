@@ -215,7 +215,7 @@ type Msg
     | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
     | SetAvoidingGuidanceReason AvoidingGuidanceReason
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) Bool (Maybe NextStepsTask)
-    | SaveWait PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue Bool (Maybe NextStepsTask)
+    | SaveWait PersonId (Maybe PrenatalLabsResultsId) LabsResultsValue Bool (Maybe NextStepsTask)
       -- SYMPTOMREVIEWMsgs
     | SetSymptomReviewStep SymptomReviewStep
     | SetPrenatalSymptom PrenatalSymptom

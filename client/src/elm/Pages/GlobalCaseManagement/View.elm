@@ -10,7 +10,7 @@ import Backend.Measurement.Model
         , FollowUpMeasurements
         , NutritionAssessment(..)
         , PrenatalAssesment(..)
-        , PrenatalLaboratoryTest(..)
+        , LaboratoryTest(..)
         , PrenatalLabsResults
         )
 import Backend.Measurement.Utils exposing (prenatalLabExpirationPeriod)

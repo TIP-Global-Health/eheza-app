@@ -810,20 +810,20 @@ decodeTestResult =
 
 decodePrenatalLabsResults : Decoder PrenatalLabsResults
 decodePrenatalLabsResults =
-    decodePrenatalMeasurement decodePrenatalLabsResultsValue
+    decodePrenatalMeasurement decodeLabsResultsValue
 
 
-decodePrenatalLabsResultsValue : Decoder PrenatalLabsResultsValue
-decodePrenatalLabsResultsValue =
-    succeed PrenatalLabsResultsValue
-        |> required "performed_tests" (decodeEverySet decodePrenatalLaboratoryTest)
-        |> required "completed_tests" (decodeEverySet decodePrenatalLaboratoryTest)
+decodeLabsResultsValue : Decoder LabsResultsValue
+decodeLabsResultsValue =
+    succeed LabsResultsValue
+        |> required "performed_tests" (decodeEverySet decodeLaboratoryTest)
+        |> required "completed_tests" (decodeEverySet decodeLaboratoryTest)
         |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "patient_notified" bool False
 
 
-decodePrenatalLaboratoryTest : Decoder PrenatalLaboratoryTest
-decodePrenatalLaboratoryTest =
+decodeLaboratoryTest : Decoder LaboratoryTest
+decodeLaboratoryTest =
     string
         |> andThen
             (\value ->
@@ -855,7 +855,7 @@ decodePrenatalLaboratoryTest =
                     _ ->
                         fail <|
                             value
-                                ++ " is not a recognized PrenatalLaboratoryTest"
+                                ++ " is not a recognized LaboratoryTest"
             )
 
 
@@ -4694,12 +4694,7 @@ decodeNCDHIVTest =
 
 decodeNCDLabsResults : Decoder NCDLabsResults
 decodeNCDLabsResults =
-    decodeNCDMeasurement decodeNCDLabsResultsValue
-
-
-decodeNCDLabsResultsValue : Decoder NCDLabsResultsValue
-decodeNCDLabsResultsValue =
-    succeed NCDLabsResultsValue
+    decodeNCDMeasurement decodeLabsResultsValue
 
 
 decodeNCDLiverFunctionTest : Decoder NCDLiverFunctionTest

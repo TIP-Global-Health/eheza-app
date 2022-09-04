@@ -61,7 +61,7 @@ viewLabsHistory :
     -> NominalDate
     -> PrenatalEncounterId
     -> PrenatalEncounterId
-    -> PrenatalLaboratoryTest
+    -> LaboratoryTest
     -> ModelIndexedDb
     -> LabResultsData
     -> Html Msg
@@ -78,7 +78,7 @@ viewLabsHistoryHeaderAndContent :
     -> NominalDate
     -> PrenatalEncounterId
     -> PrenatalEncounterId
-    -> PrenatalLaboratoryTest
+    -> LaboratoryTest
     -> ModelIndexedDb
     -> LabResultsData
     -> AssembledData
@@ -87,20 +87,20 @@ viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labE
     div [ class "page-activity prenatal labs-history" ] <|
         [ viewHeader language
             (PrenatalActivityPage originatingEncounterId Backend.PrenatalActivity.Model.Laboratory)
-            (Translate.PrenatalLaboratoryTest lab)
+            (Translate.LaboratoryTest lab)
             assembled
         , viewLabsHistoryContent language currentDate lab db data assembled
         ]
 
 
-viewLabsHistoryContent : Language -> NominalDate -> PrenatalLaboratoryTest -> ModelIndexedDb -> LabResultsData -> AssembledData -> Html Msg
+viewLabsHistoryContent : Language -> NominalDate -> LaboratoryTest -> ModelIndexedDb -> LabResultsData -> AssembledData -> Html Msg
 viewLabsHistoryContent language currentDate lab db data assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate False assembled Nothing
             ++ viewLab language currentDate lab assembled data
 
 
-viewLab : Language -> NominalDate -> PrenatalLaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
+viewLab : Language -> NominalDate -> LaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
 viewLab language currentDate lab assembled data =
     let
         personId =

@@ -797,23 +797,31 @@ encodeTestResult =
 
 encodePrenatalLabsResults : PrenatalLabsResults -> List ( String, Value )
 encodePrenatalLabsResults =
-    encodePrenatalMeasurement encodePrenatalLabsResultsValue
+    encodePrenatalMeasurement (encodeLabsResultsValue "prenatal_labs_results")
 
 
-encodePrenatalLabsResultsValue : PrenatalLabsResultsValue -> List ( String, Value )
-encodePrenatalLabsResultsValue value =
-    [ ( "performed_tests", encodeEverySet encodePrenatalLaboratoryTest value.performedTests )
-    , ( "completed_tests", encodeEverySet encodePrenatalLaboratoryTest value.completedTests )
+encodeLabsResultsValue : String -> LabsResultsValue -> List ( String, Value )
+encodeLabsResultsValue type_ value =
+    let
+        patientNotified =
+            if value.patientNotified then
+                [ ( "patient_notified", bool True ) ]
+
+            else
+                []
+    in
+    [ ( "performed_tests", encodeEverySet encodeLaboratoryTest value.performedTests )
+    , ( "completed_tests", encodeEverySet encodeLaboratoryTest value.completedTests )
     , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.resolutionDate )
-    , ( "patient_notified", bool value.patientNotified )
     ]
+        ++ patientNotified
         ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_labs_results" )
+           , ( "type", string type_ )
            ]
 
 
-encodePrenatalLaboratoryTest : PrenatalLaboratoryTest -> Value
-encodePrenatalLaboratoryTest value =
+encodeLaboratoryTest : LaboratoryTest -> Value
+encodeLaboratoryTest value =
     string <|
         case value of
             TestSyphilis ->
@@ -4246,14 +4254,7 @@ encodeNCDHIVTest =
 
 encodeNCDLabsResults : NCDLabsResults -> List ( String, Value )
 encodeNCDLabsResults =
-    encodeNCDMeasurement encodeNCDLabsResultsValue
-
-
-encodeNCDLabsResultsValue : NCDLabsResultsValue -> List ( String, Value )
-encodeNCDLabsResultsValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_labs_results" )
-    ]
+    encodeNCDMeasurement (encodeLabsResultsValue "ncd_labs_results")
 
 
 encodeNCDLiverFunctionTest : NCDLiverFunctionTest -> List ( String, Value )

@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
-import Backend.Measurement.Model exposing (PrenatalLaboratoryTest)
+import Backend.Measurement.Model exposing (LaboratoryTest)
 import Backend.Model
 import Backend.NCDActivity.Model exposing (NCDActivity)
 import Backend.Nurse.Model exposing (Nurse)
@@ -258,7 +258,7 @@ type alias LoggedInModel =
     , prenatalRecurrentEncounterPages : Dict PrenatalEncounterId Pages.Prenatal.RecurrentEncounter.Model.Model
     , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.Prenatal.Activity.Model.Model
     , prenatalRecurrentActivityPages : Dict ( PrenatalEncounterId, PrenatalRecurrentActivity ) Pages.Prenatal.RecurrentActivity.Model.Model
-    , prenatalLabsHistoryPages : Dict ( PrenatalEncounterId, PrenatalEncounterId, PrenatalLaboratoryTest ) Pages.Prenatal.RecurrentActivity.Model.LabResultsData
+    , prenatalLabsHistoryPages : Dict ( PrenatalEncounterId, PrenatalEncounterId, LaboratoryTest ) Pages.Prenatal.RecurrentActivity.Model.LabResultsData
     , pregnancyOutcomePages : Dict IndividualEncounterParticipantId Pages.Prenatal.Outcome.Model.Model
     , sessionPages : Dict SessionId Pages.Session.Model.Model
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.Nutrition.Encounter.Model.Model
@@ -379,7 +379,7 @@ type MsgLoggedIn
     | MsgPageNCDEncounter NCDEncounterId Pages.NCD.Encounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.Prenatal.Activity.Model.Msg
     | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg
-    | MsgPagePrenatalLabsHistory PrenatalEncounterId PrenatalEncounterId PrenatalLaboratoryTest Pages.Prenatal.RecurrentActivity.Model.Msg
+    | MsgPagePrenatalLabsHistory PrenatalEncounterId PrenatalEncounterId LaboratoryTest Pages.Prenatal.RecurrentActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.Nutrition.Activity.Model.Msg
     | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllness.Activity.Model.Msg
     | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisit.Activity.Model.Msg

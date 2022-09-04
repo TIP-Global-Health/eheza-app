@@ -54,7 +54,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportI
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
-import Backend.Measurement.Model exposing (PrenatalLaboratoryTest)
+import Backend.Measurement.Model exposing (LaboratoryTest)
 import Backend.NCDActivity.Model exposing (NCDActivity)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
@@ -168,7 +168,7 @@ type UserPage
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
     | PrenatalRecurrentEncounterPage PrenatalEncounterId -- prenatal recurrent activities index
     | PrenatalRecurrentActivityPage PrenatalEncounterId PrenatalRecurrentActivity -- record prenatal arecurrent activity
-    | PrenatalLabsHistoryPage PrenatalEncounterId PrenatalEncounterId PrenatalLaboratoryTest
+    | PrenatalLabsHistoryPage PrenatalEncounterId PrenatalEncounterId LaboratoryTest
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
     | NutritionParticipantPage IndividualParticipantInitiator PersonId
