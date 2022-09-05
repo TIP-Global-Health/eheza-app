@@ -70,7 +70,7 @@ view language currentDate id activity db model =
 
 viewHeaderAndContent : Language -> NominalDate -> NCDEncounterId -> NCDRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate id activity db model assembled =
-    div [ class "page-activity prenatal" ] <|
+    div [ class "page-activity ncd" ] <|
         [ viewHeader language (NCDRecurrentEncounterPage id) (Translate.NCDRecurrentActivitiesTitle activity) assembled
         , viewContent language currentDate activity db model assembled
         ]
