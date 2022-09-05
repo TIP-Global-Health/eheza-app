@@ -118,43 +118,43 @@ viewLab language currentDate lab assembled data =
                     measurements.syphilisTest
                         |> getMeasurementValueFunc
                         |> syphilisResultFormWithDefault data.syphilisTestForm
-                        |> prenatalSyphilisResultFormAndTasks language currentDate TaskSyphilisTest
+                        |> syphilisResultFormAndTasks language currentDate TaskSyphilisTest
 
                 TestHepatitisB ->
                     measurements.hepatitisBTest
                         |> getMeasurementValueFunc
                         |> hepatitisBFormWithDefault data.hepatitisBTestForm
-                        |> prenatalHepatitisBResultFormAndTasks language currentDate TaskHepatitisBTest
+                        |> hepatitisBResultFormAndTasks language currentDate TaskHepatitisBTest
 
                 TestBloodGpRs ->
                     measurements.bloodGpRsTest
                         |> getMeasurementValueFunc
-                        |> prenatalBloodGpRsResultFormWithDefault data.bloodGpRsTestForm
-                        |> prenatalBloodGpRsResultFormAndTasks language currentDate
+                        |> bloodGpRsResultFormWithDefault data.bloodGpRsTestForm
+                        |> bloodGpRsResultFormAndTasks language currentDate
 
                 TestUrineDipstick ->
                     measurements.urineDipstickTest
                         |> getMeasurementValueFunc
-                        |> prenatalUrineDipstickResultFormWithDefault data.urineDipstickTestForm
-                        |> prenatalUrineDipstickResultFormAndTasks language currentDate
+                        |> urineDipstickResultFormWithDefault data.urineDipstickTestForm
+                        |> urineDipstickResultFormAndTasks language currentDate
 
                 TestHemoglobin ->
                     measurements.hemoglobinTest
                         |> getMeasurementValueFunc
-                        |> prenatalHemoglobinResultFormWithDefault data.hemoglobinTestForm
-                        |> prenatalHemoglobinResultFormAndTasks language currentDate
+                        |> hemoglobinResultFormWithDefault data.hemoglobinTestForm
+                        |> hemoglobinResultFormAndTasks language currentDate
 
                 TestRandomBloodSugar ->
                     measurements.randomBloodSugarTest
                         |> getMeasurementValueFunc
-                        |> prenatalRandomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
-                        |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
+                        |> randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
+                        |> randomBloodSugarResultFormAndTasks language currentDate
 
                 TestHIVPCR ->
                     measurements.hivPCRTest
                         |> getMeasurementValueFunc
-                        |> prenatalHIVPCRResultFormWithDefault data.hivPCRTestForm
-                        |> prenatalHIVPCRResultFormAndTasks language currentDate
+                        |> hivPCRResultFormWithDefault data.hivPCRTestForm
+                        |> hivPCRResultFormAndTasks language currentDate
 
                 TestVitalsRecheck ->
                     ( emptyNode, 0, 0 )
@@ -309,13 +309,13 @@ viewLabResultsContent language currentDate assembled model =
                             measurements.syphilisTest
                                 |> getMeasurementValueFunc
                                 |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
-                                |> prenatalSyphilisResultFormAndTasks language currentDate TaskSyphilisTest
+                                |> syphilisResultFormAndTasks language currentDate TaskSyphilisTest
 
                         TaskHepatitisBTest ->
                             measurements.hepatitisBTest
                                 |> getMeasurementValueFunc
                                 |> hepatitisBFormWithDefault model.labResultsData.hepatitisBTestForm
-                                |> prenatalHepatitisBResultFormAndTasks language currentDate TaskHepatitisBTest
+                                |> hepatitisBResultFormAndTasks language currentDate TaskHepatitisBTest
 
                         TaskMalariaTest ->
                             ( emptyNode, 0, 0 )
@@ -323,32 +323,32 @@ viewLabResultsContent language currentDate assembled model =
                         TaskBloodGpRsTest ->
                             measurements.bloodGpRsTest
                                 |> getMeasurementValueFunc
-                                |> prenatalBloodGpRsResultFormWithDefault model.labResultsData.bloodGpRsTestForm
-                                |> prenatalBloodGpRsResultFormAndTasks language currentDate
+                                |> bloodGpRsResultFormWithDefault model.labResultsData.bloodGpRsTestForm
+                                |> bloodGpRsResultFormAndTasks language currentDate
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
                                 |> getMeasurementValueFunc
-                                |> prenatalUrineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
-                                |> prenatalUrineDipstickResultFormAndTasks language currentDate
+                                |> urineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
+                                |> urineDipstickResultFormAndTasks language currentDate
 
                         TaskHemoglobinTest ->
                             measurements.hemoglobinTest
                                 |> getMeasurementValueFunc
-                                |> prenatalHemoglobinResultFormWithDefault model.labResultsData.hemoglobinTestForm
-                                |> prenatalHemoglobinResultFormAndTasks language currentDate
+                                |> hemoglobinResultFormWithDefault model.labResultsData.hemoglobinTestForm
+                                |> hemoglobinResultFormAndTasks language currentDate
 
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
-                                |> prenatalRandomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
-                                |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
+                                |> randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
+                                |> randomBloodSugarResultFormAndTasks language currentDate
 
                         TaskHIVPCRTest ->
                             measurements.hivPCRTest
                                 |> getMeasurementValueFunc
-                                |> prenatalHIVPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
-                                |> prenatalHIVPCRResultFormAndTasks language currentDate
+                                |> hivPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
+                                |> hivPCRResultFormAndTasks language currentDate
 
                         TaskCompletePreviousTests ->
                             ( emptyNode, 0, 0 )
@@ -435,8 +435,8 @@ viewLabResultsContent language currentDate assembled model =
     ]
 
 
-prenatalSyphilisResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> SyphilisResultForm -> ( Html Msg, Int, Int )
-prenatalSyphilisResultFormAndTasks language currentDate task form =
+syphilisResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> SyphilisResultForm -> ( Html Msg, Int, Int )
+syphilisResultFormAndTasks language currentDate task form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             let
@@ -483,8 +483,8 @@ prenatalSyphilisResultFormAndTasks language currentDate task form =
     )
 
 
-prenatalHepatitisBResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> HepatitisBResultForm -> ( Html Msg, Int, Int )
-prenatalHepatitisBResultFormAndTasks language currentDate task form =
+hepatitisBResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> HepatitisBResultForm -> ( Html Msg, Int, Int )
+hepatitisBResultFormAndTasks language currentDate task form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             let
@@ -514,8 +514,8 @@ prenatalHepatitisBResultFormAndTasks language currentDate task form =
     )
 
 
-prenatalBloodGpRsResultFormAndTasks : Language -> NominalDate -> PrenatalBloodGpRsResultForm -> ( Html Msg, Int, Int )
-prenatalBloodGpRsResultFormAndTasks language currentDate form =
+bloodGpRsResultFormAndTasks : Language -> NominalDate -> BloodGpRsResultForm -> ( Html Msg, Int, Int )
+bloodGpRsResultFormAndTasks language currentDate form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             ( viewSelectInput language
@@ -544,8 +544,8 @@ prenatalBloodGpRsResultFormAndTasks language currentDate form =
     )
 
 
-prenatalUrineDipstickResultFormAndTasks : Language -> NominalDate -> PrenatalUrineDipstickResultForm -> ( Html Msg, Int, Int )
-prenatalUrineDipstickResultFormAndTasks language currentDate form =
+urineDipstickResultFormAndTasks : Language -> NominalDate -> UrineDipstickResultForm -> ( Html Msg, Int, Int )
+urineDipstickResultFormAndTasks language currentDate form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             Maybe.map
@@ -695,8 +695,8 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
     )
 
 
-prenatalHemoglobinResultFormAndTasks : Language -> NominalDate -> PrenatalHemoglobinResultForm -> ( Html Msg, Int, Int )
-prenatalHemoglobinResultFormAndTasks language currentDate form =
+hemoglobinResultFormAndTasks : Language -> NominalDate -> HemoglobinResultForm -> ( Html Msg, Int, Int )
+hemoglobinResultFormAndTasks language currentDate form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             ( [ viewLabel language Translate.PrenatalLaboratoryHemoglobinTestResult
@@ -718,8 +718,8 @@ prenatalHemoglobinResultFormAndTasks language currentDate form =
     )
 
 
-prenatalRandomBloodSugarResultFormAndTasks : Language -> NominalDate -> PrenatalRandomBloodSugarResultForm -> ( Html Msg, Int, Int )
-prenatalRandomBloodSugarResultFormAndTasks language currentDate form =
+randomBloodSugarResultFormAndTasks : Language -> NominalDate -> RandomBloodSugarResultForm -> ( Html Msg, Int, Int )
+randomBloodSugarResultFormAndTasks language currentDate form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             ( [ viewLabel language Translate.PrenatalLaboratoryRandomBloodSugarTestResult
@@ -741,8 +741,8 @@ prenatalRandomBloodSugarResultFormAndTasks language currentDate form =
     )
 
 
-prenatalHIVPCRResultFormAndTasks : Language -> NominalDate -> PrenatalHIVPCRResultForm -> ( Html Msg, Int, Int )
-prenatalHIVPCRResultFormAndTasks language currentDate form =
+hivPCRResultFormAndTasks : Language -> NominalDate -> HIVPCRResultForm -> ( Html Msg, Int, Int )
+hivPCRResultFormAndTasks language currentDate form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             let

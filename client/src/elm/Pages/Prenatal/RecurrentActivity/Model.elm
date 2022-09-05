@@ -94,26 +94,26 @@ emptyExaminationData =
 
 
 type alias LabResultsData =
-    { bloodGpRsTestForm : PrenatalBloodGpRsResultForm
-    , hemoglobinTestForm : PrenatalHemoglobinResultForm
+    { bloodGpRsTestForm : BloodGpRsResultForm
+    , hemoglobinTestForm : HemoglobinResultForm
     , hepatitisBTestForm : HepatitisBResultForm
-    , randomBloodSugarTestForm : PrenatalRandomBloodSugarResultForm
+    , randomBloodSugarTestForm : RandomBloodSugarResultForm
     , syphilisTestForm : SyphilisResultForm
-    , urineDipstickTestForm : PrenatalUrineDipstickResultForm
-    , hivPCRTestForm : PrenatalHIVPCRResultForm
+    , urineDipstickTestForm : UrineDipstickResultForm
+    , hivPCRTestForm : HIVPCRResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
 
 emptyLabResultsData : LabResultsData
 emptyLabResultsData =
-    { bloodGpRsTestForm = emptyPrenatalBloodGpRsResultForm
-    , hemoglobinTestForm = emptyPrenatalHemoglobinResultForm
+    { bloodGpRsTestForm = emptyBloodGpRsResultForm
+    , hemoglobinTestForm = emptyHemoglobinResultForm
     , hepatitisBTestForm = emptyHepatitisBResultForm
-    , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarResultForm
+    , randomBloodSugarTestForm = emptyRandomBloodSugarResultForm
     , syphilisTestForm = emptySyphilisResultForm
-    , urineDipstickTestForm = emptyPrenatalUrineDipstickResultForm
-    , hivPCRTestForm = emptyPrenatalHIVPCRResultForm
+    , urineDipstickTestForm = emptyUrineDipstickResultForm
+    , hivPCRTestForm = emptyHIVPCRResultForm
     , activeTask = Nothing
     }
 
@@ -163,7 +163,7 @@ emptyHepatitisBResultForm =
     HepatitisBResultForm Nothing Nothing Nothing Nothing
 
 
-type alias PrenatalBloodGpRsResultForm =
+type alias BloodGpRsResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
@@ -172,12 +172,12 @@ type alias PrenatalBloodGpRsResultForm =
     }
 
 
-emptyPrenatalBloodGpRsResultForm : PrenatalBloodGpRsResultForm
-emptyPrenatalBloodGpRsResultForm =
-    PrenatalBloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing
+emptyBloodGpRsResultForm : BloodGpRsResultForm
+emptyBloodGpRsResultForm =
+    BloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing
 
 
-type alias PrenatalUrineDipstickResultForm =
+type alias UrineDipstickResultForm =
     { testVariant : Maybe TestVariant
     , executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
@@ -193,8 +193,8 @@ type alias PrenatalUrineDipstickResultForm =
     }
 
 
-emptyPrenatalUrineDipstickResultForm : PrenatalUrineDipstickResultForm
-emptyPrenatalUrineDipstickResultForm =
+emptyUrineDipstickResultForm : UrineDipstickResultForm
+emptyUrineDipstickResultForm =
     { testVariant = Nothing
     , executionNote = Nothing
     , executionDate = Nothing
@@ -210,19 +210,19 @@ emptyPrenatalUrineDipstickResultForm =
     }
 
 
-type alias PrenatalHemoglobinResultForm =
+type alias HemoglobinResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , hemoglobinCount : Maybe Float
     }
 
 
-emptyPrenatalHemoglobinResultForm : PrenatalHemoglobinResultForm
-emptyPrenatalHemoglobinResultForm =
-    PrenatalHemoglobinResultForm Nothing Nothing Nothing
+emptyHemoglobinResultForm : HemoglobinResultForm
+emptyHemoglobinResultForm =
+    HemoglobinResultForm Nothing Nothing Nothing
 
 
-type alias PrenatalRandomBloodSugarResultForm =
+type alias RandomBloodSugarResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
@@ -231,12 +231,12 @@ type alias PrenatalRandomBloodSugarResultForm =
     }
 
 
-emptyPrenatalRandomBloodSugarResultForm : PrenatalRandomBloodSugarResultForm
-emptyPrenatalRandomBloodSugarResultForm =
-    PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing Nothing Nothing
+emptyRandomBloodSugarResultForm : RandomBloodSugarResultForm
+emptyRandomBloodSugarResultForm =
+    RandomBloodSugarResultForm Nothing Nothing Nothing Nothing Nothing
 
 
-type alias PrenatalHIVPCRResultForm =
+type alias HIVPCRResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , hivViralLoadStatus : Maybe ViralLoadStatus
@@ -244,6 +244,6 @@ type alias PrenatalHIVPCRResultForm =
     }
 
 
-emptyPrenatalHIVPCRResultForm : PrenatalHIVPCRResultForm
-emptyPrenatalHIVPCRResultForm =
-    PrenatalHIVPCRResultForm Nothing Nothing Nothing Nothing
+emptyHIVPCRResultForm : HIVPCRResultForm
+emptyHIVPCRResultForm =
+    HIVPCRResultForm Nothing Nothing Nothing Nothing
