@@ -48,9 +48,10 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
+        , viewMeasurementInput
         , viewQuestionLabel
         )
-import Translate exposing (Language, translate)
+import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
 
@@ -1790,7 +1791,7 @@ toUrineDipstickTestValue form =
         form.executionNote
 
 
-randomBloodSugarFormWithDefault : RandomBloodSugarForm msg -> Maybe RandomBloodSugarTestValue -> RandomBloodSugarForm msg
+randomBloodSugarFormWithDefault : RandomBloodSugarForm msg -> Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarForm msg
 randomBloodSugarFormWithDefault form saved =
     saved
         |> unwrap
@@ -1821,13 +1822,13 @@ randomBloodSugarFormWithDefault form saved =
             )
 
 
-toRandomBloodSugarTestValueWithDefault : Maybe RandomBloodSugarTestValue -> RandomBloodSugarForm msg -> Maybe RandomBloodSugarTestValue
+toRandomBloodSugarTestValueWithDefault : Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarForm msg -> Maybe (RandomBloodSugarTestValue encounterId)
 toRandomBloodSugarTestValueWithDefault saved form =
     randomBloodSugarFormWithDefault form saved
         |> toRandomBloodSugarTestValue
 
 
-toRandomBloodSugarTestValue : RandomBloodSugarForm msg -> Maybe RandomBloodSugarTestValue
+toRandomBloodSugarTestValue : RandomBloodSugarForm msg -> Maybe (RandomBloodSugarTestValue encounterId)
 toRandomBloodSugarTestValue form =
     Maybe.map
         (\executionNote ->
@@ -1900,12 +1901,12 @@ toNonRDTValueWithDefault saved withEmptyResultsFunc form =
         formWithDefault.executionNote
 
 
-toHepatitisBTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> HepatitisBTestValue
+toHepatitisBTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> HepatitisBTestValue encounterId
 toHepatitisBTestValueWithEmptyResults note date =
     HepatitisBTestValue note date Nothing Nothing
 
 
-toSyphilisTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> SyphilisTestValue
+toSyphilisTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> SyphilisTestValue encounterId
 toSyphilisTestValueWithEmptyResults note date =
     SyphilisTestValue note date Nothing Nothing Nothing
 
@@ -1915,7 +1916,7 @@ toHemoglobinTestValueWithEmptyResults note date =
     HemoglobinTestValue note date Nothing
 
 
-toBloodGpRsTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> BloodGpRsTestValue
+toBloodGpRsTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> BloodGpRsTestValue encounterId
 toBloodGpRsTestValueWithEmptyResults note date =
     BloodGpRsTestValue note date Nothing Nothing Nothing
 
@@ -2818,3 +2819,702 @@ laboratoryTaskIconClass task =
 
         TaskCompletePreviousTests ->
             "laboratory-history"
+
+
+hepatitisBResultFormWithDefault : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId
+hepatitisBResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , testResult = or form.testResult value.testResult
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
+                }
+            )
+
+
+toHepatitisBResultsValueWithDefault : Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId)
+toHepatitisBResultsValueWithDefault saved form =
+    hepatitisBResultFormWithDefault form saved
+        |> toHepatitisBResultsValue
+
+
+toHepatitisBResultsValue : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId)
+toHepatitisBResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testResult = form.testResult
+            , originatingEncounter = form.originatingEncounter
+            }
+        )
+        form.executionNote
+
+
+syphilisResultFormWithDefault : SyphilisResultForm encounterId -> Maybe (SyphilisTestValue encounterId) -> SyphilisResultForm encounterId
+syphilisResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , testResult = or form.testResult value.testResult
+                , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms (Maybe.map EverySet.toList value.symptoms)
+                , symptomsDirty = form.symptomsDirty
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
+                }
+            )
+
+
+toSyphilisResultValueWithDefault : Maybe (SyphilisTestValue encounterId) -> SyphilisResultForm encounterId -> Maybe (SyphilisTestValue encounterId)
+toSyphilisResultValueWithDefault saved form =
+    syphilisResultFormWithDefault form saved
+        |> toSyphilisResultValue
+
+
+toSyphilisResultValue : SyphilisResultForm encounterId -> Maybe (SyphilisTestValue encounterId)
+toSyphilisResultValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testResult = form.testResult
+            , symptoms = Maybe.map EverySet.fromList form.symptoms
+            , originatingEncounter = form.originatingEncounter
+            }
+        )
+        form.executionNote
+
+
+bloodGpRsResultFormWithDefault : BloodGpRsResultForm encounterId -> Maybe (BloodGpRsTestValue encounterId) -> BloodGpRsResultForm encounterId
+bloodGpRsResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , bloodGroup = or form.bloodGroup value.bloodGroup
+                , rhesus = or form.rhesus value.rhesus
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
+                }
+            )
+
+
+toBloodGpRsResultsValueWithDefault : Maybe (BloodGpRsTestValue encounterId) -> BloodGpRsResultForm encounterId -> Maybe (BloodGpRsTestValue encounterId)
+toBloodGpRsResultsValueWithDefault saved form =
+    bloodGpRsResultFormWithDefault form saved
+        |> toBloodGpRsResultsValue
+
+
+toBloodGpRsResultsValue : BloodGpRsResultForm encounterId -> Maybe (BloodGpRsTestValue encounterId)
+toBloodGpRsResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , bloodGroup = form.bloodGroup
+            , rhesus = form.rhesus
+            , originatingEncounter = form.originatingEncounter
+            }
+        )
+        form.executionNote
+
+
+hemoglobinResultFormWithDefault : HemoglobinResultForm -> Maybe HemoglobinTestValue -> HemoglobinResultForm
+hemoglobinResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , hemoglobinCount = or form.hemoglobinCount value.hemoglobinCount
+                }
+            )
+
+
+toHemoglobinResultsValueWithDefault : Maybe HemoglobinTestValue -> HemoglobinResultForm -> Maybe HemoglobinTestValue
+toHemoglobinResultsValueWithDefault saved form =
+    hemoglobinResultFormWithDefault form saved
+        |> toHemoglobinResultsValue
+
+
+toHemoglobinResultsValue : HemoglobinResultForm -> Maybe HemoglobinTestValue
+toHemoglobinResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , hemoglobinCount = form.hemoglobinCount
+            }
+        )
+        form.executionNote
+
+
+randomBloodSugarResultFormWithDefault : RandomBloodSugarResultForm encounterId -> Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarResultForm encounterId
+randomBloodSugarResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
+                , sugarCount = or form.sugarCount value.sugarCount
+                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
+                }
+            )
+
+
+toRandomBloodSugarResultsValueWithDefault : Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarResultForm encounterId -> Maybe (RandomBloodSugarTestValue encounterId)
+toRandomBloodSugarResultsValueWithDefault saved form =
+    randomBloodSugarResultFormWithDefault form saved
+        |> toRandomBloodSugarResultsValue
+
+
+toRandomBloodSugarResultsValue : RandomBloodSugarResultForm encounterId -> Maybe (RandomBloodSugarTestValue encounterId)
+toRandomBloodSugarResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
+            , sugarCount = form.sugarCount
+            , originatingEncounter = form.originatingEncounter
+            }
+        )
+        form.executionNote
+
+
+urineDipstickResultFormWithDefault : UrineDipstickResultForm -> Maybe UrineDipstickTestValue -> UrineDipstickResultForm
+urineDipstickResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { testVariant = or form.testVariant value.testVariant
+                , executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , protein = or form.protein value.protein
+                , ph = or form.ph value.ph
+                , glucose = or form.glucose value.glucose
+                , leukocytes = or form.leukocytes value.leukocytes
+                , nitrite = or form.nitrite value.nitrite
+                , urobilinogen = or form.urobilinogen value.urobilinogen
+                , haemoglobin = or form.haemoglobin value.haemoglobin
+                , ketone = or form.ketone value.ketone
+                , bilirubin = or form.bilirubin value.bilirubin
+                }
+            )
+
+
+toUrineDipstickResultsValueWithDefault : Maybe UrineDipstickTestValue -> UrineDipstickResultForm -> Maybe UrineDipstickTestValue
+toUrineDipstickResultsValueWithDefault saved form =
+    urineDipstickResultFormWithDefault form saved
+        |> toUrineDipstickResultsValue
+
+
+toUrineDipstickResultsValue : UrineDipstickResultForm -> Maybe UrineDipstickTestValue
+toUrineDipstickResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { testVariant = form.testVariant
+            , executionNote = executionNote
+            , executionDate = form.executionDate
+            , protein = form.protein
+            , ph = form.ph
+            , glucose = form.glucose
+            , leukocytes = form.leukocytes
+            , nitrite = form.nitrite
+            , urobilinogen = form.urobilinogen
+            , haemoglobin = form.haemoglobin
+            , ketone = form.ketone
+            , bilirubin = form.bilirubin
+            }
+        )
+        form.executionNote
+
+
+hivPCRResultFormWithDefault : HIVPCRResultForm -> Maybe HIVPCRTestValue -> HIVPCRResultForm
+hivPCRResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , hivViralLoadStatus = or form.hivViralLoadStatus value.hivViralLoadStatus
+                , hivViralLoad = or form.hivViralLoad value.hivViralLoad
+                }
+            )
+
+
+toHIVPCRRResultsValueWithDefault : Maybe HIVPCRTestValue -> HIVPCRResultForm -> Maybe HIVPCRTestValue
+toHIVPCRRResultsValueWithDefault saved form =
+    hivPCRResultFormWithDefault form saved
+        |> toHIVPCRRResultsValue
+
+
+toHIVPCRRResultsValue : HIVPCRResultForm -> Maybe HIVPCRTestValue
+toHIVPCRRResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , hivViralLoadStatus = form.hivViralLoadStatus
+            , hivViralLoad = form.hivViralLoad
+            }
+        )
+        form.executionNote
+
+
+syphilisResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (IllnessSymptom -> msg)
+    -> (String -> msg)
+    -> SyphilisResultForm encounterId
+    -> ( Html msg, Int, Int )
+syphilisResultFormAndTasks language currentDate setIllnessSymptomMsg setSyphilisTestResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            let
+                ( symptomsSection, symptomsTasksCompleted, symptomsTasksTotal ) =
+                    if form.testResult == Just PrenatalTestPositive then
+                        ( [ viewLabel language Translate.SelectIllnessSymptoms
+                          , viewCheckBoxMultipleSelectInput language
+                                [ IllnessSymptomHeadache
+                                , IllnessSymptomVisionChanges
+                                , IllnessSymptomRash
+                                , IllnessSymptomPainlessUlcerMouth
+                                , IllnessSymptomPainlessUlcerGenitals
+                                ]
+                                []
+                                (form.symptoms |> Maybe.withDefault [])
+                                (Just NoIllnessSymptoms)
+                                setIllnessSymptomMsg
+                                Translate.IllnessSymptom
+                          ]
+                        , taskCompleted form.symptoms
+                        , 1
+                        )
+
+                    else
+                        ( [], 0, 0 )
+            in
+            ( viewSelectInput language
+                (Translate.LaboratoryTaskResult TaskSyphilisTest)
+                form.testResult
+                Translate.TestResult
+                testResultToString
+                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                setSyphilisTestResultMsg
+                ++ symptomsSection
+            , taskCompleted form.testResult + symptomsTasksCompleted
+            , 1 + symptomsTasksTotal
+            )
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskSyphilisTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+hepatitisBResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> HepatitisBResultForm encounterId
+    -> ( Html msg, Int, Int )
+hepatitisBResultFormAndTasks language currentDate setHepatitisBTestResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            let
+                emptyOption =
+                    if isNothing form.testResult then
+                        emptySelectOption True
+
+                    else
+                        emptyNode
+            in
+            ( viewSelectInput language
+                (Translate.LaboratoryTaskResult TaskHepatitisBTest)
+                form.testResult
+                Translate.TestResult
+                testResultToString
+                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                setHepatitisBTestResultMsg
+            , taskCompleted form.testResult
+            , 1
+            )
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskHepatitisBTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+bloodGpRsResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> BloodGpRsResultForm encounterId
+    -> ( Html msg, Int, Int )
+bloodGpRsResultFormAndTasks language currentDate setBloodGroupMsg setRhesusMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            ( viewSelectInput language
+                Translate.PrenatalLaboratoryBloodGroupTestResult
+                form.bloodGroup
+                Translate.PrenatalLaboratoryBloodGroup
+                bloodGroupToString
+                [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
+                setBloodGroupMsg
+                ++ viewSelectInput language
+                    Translate.PrenatalLaboratoryRhesusTestResult
+                    form.rhesus
+                    Translate.PrenatalLaboratoryRhesus
+                    rhesusToString
+                    [ RhesusPositive, RhesusNegative ]
+                    setRhesusMsg
+            , taskCompleted form.bloodGroup + taskCompleted form.rhesus
+            , 2
+            )
+    in
+    ( div [ class "ui form laboratory blood-group-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskBloodGpRsTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+urineDipstickResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> UrineDipstickResultForm
+    -> ( Html msg, Int, Int )
+urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setGlucoseMsg setLeukocytesMsg setNitriteMsg setUrobilinogenMsg setHaemoglobinMsg setKetoneMsg setBilirubinMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            Maybe.map
+                (\testVariant ->
+                    let
+                        ( commonSection, commonTasksCompleted, commonTasksTotal ) =
+                            ( viewSelectInput language
+                                Translate.PrenatalLaboratoryProteinTestResult
+                                form.protein
+                                Translate.PrenatalLaboratoryProteinValue
+                                proteinValueToString
+                                [ Protein0
+                                , ProteinPlus1
+                                , ProteinPlus2
+                                , ProteinPlus3
+                                , ProteinPlus4
+                                ]
+                                setProteinMsg
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryPHTestResult
+                                    form.ph
+                                    Translate.PrenatalLaboratoryPHValue
+                                    phValueToString
+                                    [ Ph40
+                                    , Ph45
+                                    , Ph50
+                                    , Ph60
+                                    , Ph65
+                                    , Ph70
+                                    , Ph75
+                                    , Ph80
+                                    , Ph85
+                                    ]
+                                    setPHMsg
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryGlucoseTestResult
+                                    form.glucose
+                                    Translate.PrenatalLaboratoryGlucoseValue
+                                    glucoseValueToString
+                                    [ Glucose0
+                                    , GlucosePlus1
+                                    , GlucosePlus2
+                                    , GlucosePlus3
+                                    , GlucosePlus4
+                                    ]
+                                    setGlucoseMsg
+                            , taskCompleted form.protein + taskCompleted form.ph + taskCompleted form.glucose
+                            , 3
+                            )
+                    in
+                    case testVariant of
+                        VariantShortTest ->
+                            ( commonSection, commonTasksCompleted, commonTasksTotal )
+
+                        VariantLongTest ->
+                            ( commonSection
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryLeukocytesTestResult
+                                    form.leukocytes
+                                    Translate.PrenatalLaboratoryLeukocytesValue
+                                    leukocytesValueToString
+                                    [ LeukocytesNegative
+                                    , LeukocytesSmall
+                                    , LeukocytesMedium
+                                    , LeukocytesLarge
+                                    ]
+                                    setLeukocytesMsg
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryNitriteTestResult
+                                    form.nitrite
+                                    Translate.PrenatalLaboratoryNitriteValue
+                                    nitriteValueToString
+                                    [ NitriteNegative
+                                    , NitritePlus
+                                    , NitritePlusPlus
+                                    ]
+                                    setNitriteMsg
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryUrobilinogenTestResult
+                                    form.urobilinogen
+                                    Translate.PrenatalLaboratoryUrobilinogenValue
+                                    urobilinogenValueToString
+                                    [ Urobilinogen002
+                                    , Urobilinogen10
+                                    , Urobilinogen20
+                                    , Urobilinogen40
+                                    , Urobilinogen80
+                                    ]
+                                    setUrobilinogenMsg
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryHaemoglobinTestResult
+                                    form.haemoglobin
+                                    Translate.PrenatalLaboratoryHaemoglobinValue
+                                    haemoglobinValueToString
+                                    [ HaemoglobinNegative
+                                    , HaemoglobinNonHemolyzedTrace
+                                    , HaemoglobinNonHemolyzedModerate
+                                    , HaemoglobinHemolyzedTrace
+                                    , HaemoglobinSmall
+                                    , HaemoglobinModerate
+                                    , HaemoglobinLarge
+                                    ]
+                                    setHaemoglobinMsg
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryKetoneTestResult
+                                    form.ketone
+                                    Translate.PrenatalLaboratoryKetoneValue
+                                    ketoneValueToString
+                                    [ KetoneNegative
+                                    , Ketone5
+                                    , Ketone10
+                                    , Ketone15
+                                    , Ketone40
+                                    , Ketone80
+                                    , Ketone100
+                                    ]
+                                    setKetoneMsg
+                                ++ viewSelectInput language
+                                    Translate.PrenatalLaboratoryBilirubinTestResult
+                                    form.bilirubin
+                                    Translate.PrenatalLaboratoryBilirubinValue
+                                    bilirubinValueToString
+                                    [ BilirubinNegative
+                                    , BilirubinSmall
+                                    , BilirubinMedium
+                                    , BilirubinLarge
+                                    ]
+                                    setBilirubinMsg
+                            , commonTasksCompleted
+                                + taskCompleted form.leukocytes
+                                + taskCompleted form.nitrite
+                                + taskCompleted form.urobilinogen
+                                + taskCompleted form.haemoglobin
+                                + taskCompleted form.ketone
+                                + taskCompleted form.bilirubin
+                            , commonTasksTotal + 6
+                            )
+                )
+                form.testVariant
+                |> Maybe.withDefault ( [], 0, 0 )
+    in
+    ( div [ class "ui form laboratory urine-dipstick-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskUrineDipstickTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+hemoglobinResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> HemoglobinResultForm
+    -> ( Html msg, Int, Int )
+hemoglobinResultFormAndTasks language currentDate setHemoglobinMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            ( [ viewLabel language Translate.PrenatalLaboratoryHemoglobinTestResult
+              , viewMeasurementInput language
+                    form.hemoglobinCount
+                    setHemoglobinMsg
+                    "hemoglobin-count"
+                    Translate.UnitGramsPerDeciliter
+              ]
+            , taskCompleted form.hemoglobinCount
+            , 1
+            )
+    in
+    ( div [ class "ui form laboratory hemoglobin-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskHemoglobinTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+randomBloodSugarResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> RandomBloodSugarResultForm encounterId
+    -> ( Html msg, Int, Int )
+randomBloodSugarResultFormAndTasks language currentDate setRandomBloodSugarMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            ( [ viewLabel language Translate.PrenatalLaboratoryRandomBloodSugarTestResult
+              , viewMeasurementInput language
+                    form.sugarCount
+                    setRandomBloodSugarMsg
+                    "sugar-count"
+                    Translate.UnitMilliGramsPerDeciliter
+              ]
+            , taskCompleted form.sugarCount
+            , 1
+            )
+    in
+    ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+hivPCRResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (Bool -> msg)
+    -> HIVPCRResultForm
+    -> ( Html msg, Int, Int )
+hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoadUndetectableMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            let
+                ( derrivedSection, derrivedTasksCompleted, derrivedTasksTotal ) =
+                    if form.hivViralLoadStatus == Just ViralLoadDetectable then
+                        ( [ viewLabel language Translate.PrenatalLaboratoryHIVPCRTestResult
+                          , viewMeasurementInput language
+                                form.hivViralLoad
+                                setHIVViralLoadMsg
+                                "hiv-viral-load"
+                                Translate.UnitCopiesPerMM3
+                          ]
+                        , taskCompleted form.hivViralLoad
+                        , 1
+                        )
+
+                    else
+                        ( [], 0, 0 )
+            in
+            ( [ viewQuestionLabel language Translate.PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
+              , viewBoolInput language
+                    (Maybe.map ((==) ViralLoadUndetectable) form.hivViralLoadStatus)
+                    setHIVViralLoadUndetectableMsg
+                    "hiv-level-undetectable"
+                    Nothing
+              ]
+                ++ derrivedSection
+            , taskCompleted form.hivViralLoadStatus + derrivedTasksCompleted
+            , 1 + derrivedTasksTotal
+            )
+    in
+    ( div [ class "ui form laboratory hiv-prc-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskHIVPCRTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+resultFormHeaderSection : Language -> NominalDate -> Maybe NominalDate -> LaboratoryTask -> List (Html msg)
+resultFormHeaderSection language currentDate executionDate task =
+    let
+        executionDateSection =
+            Maybe.map
+                (\date ->
+                    [ viewLabel language <| Translate.LaboratoryTaskDate task
+                    , p [ class "test-date" ] [ text <| formatDDMMYYYY date ]
+                    ]
+                )
+                executionDate
+                |> Maybe.withDefault []
+    in
+    viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
+        :: executionDateSection
+
+
+viewSelectInput :
+    Language
+    -> TranslationId
+    -> Maybe a
+    -> (a -> TranslationId)
+    -> (a -> String)
+    -> List a
+    -> (String -> msg)
+    -> List (Html msg)
+viewSelectInput language labelTransId formValue valueTransId valueToStringFunc valuesList setMsg =
+    [ viewLabel language labelTransId
+    , emptyOptionForSelect formValue
+        :: List.map
+            (\item ->
+                option
+                    [ value (valueToStringFunc item)
+                    , selected (formValue == Just item)
+                    ]
+                    [ text <| translate language <| valueTransId item ]
+            )
+            valuesList
+        |> select
+            [ onInput setMsg
+            , class "form-input select"
+            ]
+    ]
+
+
+emptyOptionForSelect : Maybe a -> Html any
+emptyOptionForSelect value =
+    if isNothing value then
+        emptySelectOption True
+
+    else
+        emptyNode

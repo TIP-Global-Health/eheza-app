@@ -93,7 +93,7 @@ type Msg
     | HandleSavedHIVTest (WebData ())
     | SaveUrineDipstickTest PersonId (Maybe NCDUrineDipstickTestId) UrineDipstickTestValue
     | HandleSavedUrineDipstickTest (WebData ())
-    | SaveRandomBloodSugarTest PersonId (Maybe NCDRandomBloodSugarTestId) RandomBloodSugarTestValue
+    | SaveRandomBloodSugarTest PersonId (Maybe NCDRandomBloodSugarTestId) (RandomBloodSugarTestValue NCDEncounterId)
     | HandleSavedRandomBloodSugarTest (WebData ())
     | SaveLabsResults PersonId (Maybe NCDLabsResultsId) LabsResultsValue
     | HandleSavedLabsResults (WebData ())

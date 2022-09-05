@@ -986,7 +986,7 @@ type HIVPCRResult
 
 
 type alias PrenatalHepatitisBTest =
-    PrenatalMeasurement HepatitisBTestValue
+    PrenatalMeasurement (HepatitisBTestValue PrenatalEncounterId)
 
 
 type alias HIVPCRTestValue =
@@ -1002,24 +1002,24 @@ type ViralLoadStatus
     | ViralLoadUndetectable
 
 
-type alias HepatitisBTestValue =
+type alias HepatitisBTestValue encounterId =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe TestResult
-    , originatingEncounter : Maybe PrenatalEncounterId
+    , originatingEncounter : Maybe encounterId
     }
 
 
 type alias PrenatalSyphilisTest =
-    PrenatalMeasurement SyphilisTestValue
+    PrenatalMeasurement (SyphilisTestValue PrenatalEncounterId)
 
 
-type alias SyphilisTestValue =
+type alias SyphilisTestValue encounterId =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe TestResult
     , symptoms : Maybe (EverySet IllnessSymptom)
-    , originatingEncounter : Maybe PrenatalEncounterId
+    , originatingEncounter : Maybe encounterId
     }
 
 
@@ -1044,15 +1044,15 @@ type alias HemoglobinTestValue =
 
 
 type alias PrenatalRandomBloodSugarTest =
-    PrenatalMeasurement RandomBloodSugarTestValue
+    PrenatalMeasurement (RandomBloodSugarTestValue PrenatalEncounterId)
 
 
-type alias RandomBloodSugarTestValue =
+type alias RandomBloodSugarTestValue encounterId =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
-    , originatingEncounter : Maybe PrenatalEncounterId
+    , originatingEncounter : Maybe encounterId
     }
 
 
@@ -1062,15 +1062,15 @@ type TestPrerequisite
 
 
 type alias PrenatalBloodGpRsTest =
-    PrenatalMeasurement BloodGpRsTestValue
+    PrenatalMeasurement (BloodGpRsTestValue PrenatalEncounterId)
 
 
-type alias BloodGpRsTestValue =
+type alias BloodGpRsTestValue encounterId =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
-    , originatingEncounter : Maybe PrenatalEncounterId
+    , originatingEncounter : Maybe encounterId
     }
 
 
@@ -2437,7 +2437,7 @@ type alias NCDPregnancyTestValue =
 
 
 type alias NCDRandomBloodSugarTest =
-    NCDMeasurement RandomBloodSugarTestValue
+    NCDMeasurement (RandomBloodSugarTestValue NCDEncounterId)
 
 
 type alias NCDReferral =

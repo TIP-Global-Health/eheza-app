@@ -5,7 +5,28 @@ import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (LaboratoryTask, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
+import Measurement.Model
+    exposing
+        ( BloodGpRsResultForm
+        , HIVPCRResultForm
+        , HemoglobinResultForm
+        , HepatitisBResultForm
+        , LaboratoryTask
+        , RandomBloodSugarResultForm
+        , SendToHCForm
+        , SyphilisResultForm
+        , UrineDipstickResultForm
+        , VitalsForm
+        , emptyBloodGpRsResultForm
+        , emptyHIVPCRResultForm
+        , emptyHemoglobinResultForm
+        , emptyHepatitisBResultForm
+        , emptyRandomBloodSugarResultForm
+        , emptySendToHCForm
+        , emptySyphilisResultForm
+        , emptyUrineDipstickResultForm
+        , emptyVitalsForm
+        )
 import Pages.Page exposing (Page)
 import Pages.Prenatal.Activity.Types exposing (WarningPopupType)
 import Pages.Prenatal.Model exposing (..)
@@ -94,11 +115,11 @@ emptyExaminationData =
 
 
 type alias LabResultsData =
-    { bloodGpRsTestForm : BloodGpRsResultForm
+    { bloodGpRsTestForm : BloodGpRsResultForm PrenatalEncounterId
     , hemoglobinTestForm : HemoglobinResultForm
-    , hepatitisBTestForm : HepatitisBResultForm
-    , randomBloodSugarTestForm : RandomBloodSugarResultForm
-    , syphilisTestForm : SyphilisResultForm
+    , hepatitisBTestForm : HepatitisBResultForm PrenatalEncounterId
+    , randomBloodSugarTestForm : RandomBloodSugarResultForm PrenatalEncounterId
+    , syphilisTestForm : SyphilisResultForm PrenatalEncounterId
     , urineDipstickTestForm : UrineDipstickResultForm
     , hivPCRTestForm : HIVPCRResultForm
     , activeTask : Maybe LaboratoryTask
@@ -133,117 +154,3 @@ emptyNextStepsData =
     , healthEducationForm = emptyHealthEducationForm
     , activeTask = Nothing
     }
-
-
-type alias SyphilisResultForm =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testResult : Maybe TestResult
-    , symptoms : Maybe (List IllnessSymptom)
-    , symptomsDirty : Bool
-    , originatingEncounter : Maybe PrenatalEncounterId
-    }
-
-
-emptySyphilisResultForm : SyphilisResultForm
-emptySyphilisResultForm =
-    SyphilisResultForm Nothing Nothing Nothing Nothing False Nothing
-
-
-type alias HepatitisBResultForm =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testResult : Maybe TestResult
-    , originatingEncounter : Maybe PrenatalEncounterId
-    }
-
-
-emptyHepatitisBResultForm : HepatitisBResultForm
-emptyHepatitisBResultForm =
-    HepatitisBResultForm Nothing Nothing Nothing Nothing
-
-
-type alias BloodGpRsResultForm =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , bloodGroup : Maybe BloodGroup
-    , rhesus : Maybe Rhesus
-    , originatingEncounter : Maybe PrenatalEncounterId
-    }
-
-
-emptyBloodGpRsResultForm : BloodGpRsResultForm
-emptyBloodGpRsResultForm =
-    BloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing
-
-
-type alias UrineDipstickResultForm =
-    { testVariant : Maybe TestVariant
-    , executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , protein : Maybe ProteinValue
-    , ph : Maybe PHValue
-    , glucose : Maybe GlucoseValue
-    , leukocytes : Maybe LeukocytesValue
-    , nitrite : Maybe NitriteValue
-    , urobilinogen : Maybe UrobilinogenValue
-    , haemoglobin : Maybe HaemoglobinValue
-    , ketone : Maybe KetoneValue
-    , bilirubin : Maybe BilirubinValue
-    }
-
-
-emptyUrineDipstickResultForm : UrineDipstickResultForm
-emptyUrineDipstickResultForm =
-    { testVariant = Nothing
-    , executionNote = Nothing
-    , executionDate = Nothing
-    , protein = Nothing
-    , ph = Nothing
-    , glucose = Nothing
-    , leukocytes = Nothing
-    , nitrite = Nothing
-    , urobilinogen = Nothing
-    , haemoglobin = Nothing
-    , ketone = Nothing
-    , bilirubin = Nothing
-    }
-
-
-type alias HemoglobinResultForm =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , hemoglobinCount : Maybe Float
-    }
-
-
-emptyHemoglobinResultForm : HemoglobinResultForm
-emptyHemoglobinResultForm =
-    HemoglobinResultForm Nothing Nothing Nothing
-
-
-type alias RandomBloodSugarResultForm =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testPrerequisites : Maybe (EverySet TestPrerequisite)
-    , sugarCount : Maybe Float
-    , originatingEncounter : Maybe PrenatalEncounterId
-    }
-
-
-emptyRandomBloodSugarResultForm : RandomBloodSugarResultForm
-emptyRandomBloodSugarResultForm =
-    RandomBloodSugarResultForm Nothing Nothing Nothing Nothing Nothing
-
-
-type alias HIVPCRResultForm =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , hivViralLoadStatus : Maybe ViralLoadStatus
-    , hivViralLoad : Maybe Float
-    }
-
-
-emptyHIVPCRResultForm : HIVPCRResultForm
-emptyHIVPCRResultForm =
-    HIVPCRResultForm Nothing Nothing Nothing Nothing

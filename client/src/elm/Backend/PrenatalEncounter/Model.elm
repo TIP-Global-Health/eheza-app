@@ -208,19 +208,19 @@ type Msg
     | HandleSavedAppointmentConfirmation (WebData ())
     | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) HIVTestValue
     | HandleSavedHIVTest (WebData ())
-    | SaveSyphilisTest PersonId (Maybe PrenatalSyphilisTestId) SyphilisTestValue
+    | SaveSyphilisTest PersonId (Maybe PrenatalSyphilisTestId) (SyphilisTestValue PrenatalEncounterId)
     | HandleSavedSyphilisTest (WebData ())
-    | SaveHepatitisBTest PersonId (Maybe PrenatalHepatitisBTestId) HepatitisBTestValue
+    | SaveHepatitisBTest PersonId (Maybe PrenatalHepatitisBTestId) (HepatitisBTestValue PrenatalEncounterId)
     | HandleSavedHepatitisBTest (WebData ())
     | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) MalariaTestValue
     | HandleSavedMalariaTest (WebData ())
-    | SaveBloodGpRsTest PersonId (Maybe PrenatalBloodGpRsTestId) BloodGpRsTestValue
+    | SaveBloodGpRsTest PersonId (Maybe PrenatalBloodGpRsTestId) (BloodGpRsTestValue PrenatalEncounterId)
     | HandleSavedBloodGpRsTest (WebData ())
     | SaveUrineDipstickTest PersonId (Maybe PrenatalUrineDipstickTestId) UrineDipstickTestValue
     | HandleSavedUrineDipstickTest (WebData ())
     | SaveHemoglobinTest PersonId (Maybe PrenatalHemoglobinTestId) HemoglobinTestValue
     | HandleSavedHemoglobinTest (WebData ())
-    | SaveRandomBloodSugarTest PersonId (Maybe PrenatalRandomBloodSugarTestId) RandomBloodSugarTestValue
+    | SaveRandomBloodSugarTest PersonId (Maybe PrenatalRandomBloodSugarTestId) (RandomBloodSugarTestValue PrenatalEncounterId)
     | HandleSavedRandomBloodSugarTest (WebData ())
     | SaveLabsResults PersonId (Maybe PrenatalLabsResultsId) LabsResultsValue
     | HandleSavedLabsResults (WebData ())

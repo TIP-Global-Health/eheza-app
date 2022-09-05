@@ -12,7 +12,25 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
+import Measurement.Utils
+    exposing
+        ( bloodGpRsResultFormWithDefault
+        , hemoglobinResultFormWithDefault
+        , hepatitisBResultFormWithDefault
+        , hivPCRResultFormWithDefault
+        , randomBloodSugarResultFormWithDefault
+        , syphilisResultFormWithDefault
+        , toBloodGpRsResultsValueWithDefault
+        , toHIVPCRRResultsValueWithDefault
+        , toHemoglobinResultsValueWithDefault
+        , toHepatitisBResultsValueWithDefault
+        , toRandomBloodSugarResultsValueWithDefault
+        , toSendToHCValueWithDefault
+        , toSyphilisResultValueWithDefault
+        , toUrineDipstickResultsValueWithDefault
+        , toVitalsValueWithDefault
+        , urineDipstickResultFormWithDefault
+        )
 import Pages.GlobalCaseManagement.Utils exposing (prenatalLabsResultsTestData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
@@ -134,7 +152,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     data.hepatitisBTestForm
 
                 appMsgs =
-                    toHepatitisBValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
+                    toHepatitisBResultsValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -708,7 +726,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toHepatitisBValueWithDefault measurement model.labResultsData.hepatitisBTestForm
+                    toHepatitisBResultsValueWithDefault measurement model.labResultsData.hepatitisBTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
