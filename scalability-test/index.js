@@ -6,6 +6,7 @@ const pinCodeSelector = 'input[name=pincode]';
 const healthCenterSelector = "//button[contains(text(), 'Nyange Health Center')]";
 const baseUrl = 'http://localhost:3000';
 
+const inputDelay = 250;
 (async () => {
 
   function delay(time) {
@@ -26,17 +27,20 @@ const baseUrl = 'http://localhost:3000';
     await page.goto(baseUrl, {waitUntil: 'networkidle2'});
     // Wait until the element with "Enter pairing code" text becomes visible.
     await page.waitForSelector(pairingCodeSelector);
+    await page.screenshot({path: '00.png', fullPage: true, captureBeyondViewport: true});
     // Fills the pairing code element and then, submit the form.
     await page.type(pairingCodeSelector, pairingCode);
     await page.click(buttonSelector);
     await page.waitForSelector(pinCodeSelector);
+    await page.screenshot({path: '01.png', fullPage: true, captureBeyondViewport: true});
     await page.type(pinCodeSelector, pinCode);
-    await delay(500);
+    await page.screenshot({path: '02.png', fullPage: true, captureBeyondViewport: true});
+    await delay(inputDelay);
     await page.screenshot({path: 'beforepin.png', fullPage: true, captureBeyondViewport: true});
     await page.waitForSelector('.primary.button:not([disabled])')
-    await delay(500);
+    await delay(inputDelay);
     await page.click(buttonSelector);
-    await delay(500);
+    await delay(inputDelay);
     await page.screenshot({path: 'after.png', fullPage: true, captureBeyondViewport: true});
   }
 
@@ -45,14 +49,14 @@ const baseUrl = 'http://localhost:3000';
     await page.waitForSelector('.sync-icon');
     await page.click('.sync-icon');
 
-    await delay(500);
+    await delay(inputDelay);
     const elHandleArray = await page.$$('.health-centers button')
 
     elHandleArray.forEach(async el => {
       await el.click();
     });
 
-    await delay(500);
+    await delay(inputDelay);
   }
 
   async function selectHealthCenter(page) {
@@ -70,13 +74,23 @@ const baseUrl = 'http://localhost:3000';
     await page.goto(baseUrl + '/#person/directory/new', {waitUntil: 'networkidle2'});
 
     // Fill textfields with random value.
-    const inputs = await page.$$('.registration-form input')
-    inputs.forEach(async el => {
-      await el.type((Math.random() + 1).toString(36).substring(7));
-    });
+    for (let i = 0; i < 20; i++) {
+      const inputs = await page.$$('.registration-form input')
+      inputs.forEach(async elInput => {
+        const type = await page.evaluate(el => el.getAttribute("type"), elInput);
+        if (type === 'number') {
+          // National ID is not required.
+          return;
+        }
+        else {
+          await elInput.type((Math.random() + 1).toString(36).substring(7), {delay: inputDelay});
+        }
+        delay(inputDelay);
+      });
+    }
 
     // Choose select items randomly.
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       await page.evaluate(() => {
         let selects = document.getElementsByTagName('select');
         for (let i = 0; i < selects.length; i++) {
@@ -85,28 +99,46 @@ const baseUrl = 'http://localhost:3000';
           }
           let items = selects[i].getElementsByTagName('option');
           selects[i].selectedIndex = Math.min(Math.floor((Math.random() * items.length)) + 1, items.length - 1);
+          if (selects[i].options[selects[i].selectedIndex].value === '') {
+            selects[i].selectedIndex = Math.min(Math.floor((Math.random() * items.length)) + 1, items.length - 1);
+          }
           selects[i].dispatchEvent(new Event('change'));
         }
       });
-      await delay(100);
+      await delay(inputDelay);
     }
 
-    // Set birthdate to a random date in the format of DD-MM-YYYY.
-    await page.$x('//div/fieldset[1]/div[5]/div[2]/div/div/input')[0].click();
-    await delay(100);
-    await page.click('.date-selector--scrollable-year div:nth-child(1) li');
-    await delay(100);
-    await page.click('.date-selector--scrollable-year div:nth-child(2) li');
-    await delay(100);
-    await page.click('.date-selector--scrollable-year tbody td');
-    await delay(100);
-    await page.screenshot({path: 'date.png', fullPage: true, captureBeyondViewport: true});
+    // Handle exceptions.
+    await page.evaluate(() => {
+      let radio = document.evaluate('//div[1]/div[2]/div/div[2]/div/div/div/fieldset[1]/div[7]/input[1]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change'));
+    });
+    await delay(inputDelay);
 
-    await page.click('input[value="male"]');
+    await page.evaluate(() => {
+      let phoneNumber = document.evaluate('//div/div[2]/div/div/div/fieldset[4]/div/div[2]/input', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+      phoneNumber.value = "";
+      phoneNumber.dispatchEvent(new Event('change'));
+    });
+
+    // Set birthdate to a random date in the format of DD-MM-YYYY.
+    let dateInput = await page.$x('//div/fieldset[1]/div[5]/div[2]/div/div/input');
+    console.log(dateInput.length);
+    await dateInput[0].click();
+    await delay(inputDelay);
+    await page.click('.date-selector--scrollable-year div:nth-child(1) li');
+    await delay(inputDelay);
+    await page.click('.date-selector--scrollable-year div:nth-child(2) li');
+    await delay(inputDelay);
+    await page.click('.date-selector--scrollable-year tbody td');
+    await delay(inputDelay);
+    await page.screenshot({path: 'date.png', fullPage: true, captureBeyondViewport: true});
 
     await page.screenshot({path: 'reg.png', fullPage: true, captureBeyondViewport: true});
 
     await page.click(buttonSelector);
+    await delay(inputDelay);
     await page.screenshot({path: 'regwitherrors.png', fullPage: true, captureBeyondViewport: true});
     const errors = await page.$eval('.error.message', e => e.innerHTML);
     console.log(errors);
@@ -121,7 +153,10 @@ const baseUrl = 'http://localhost:3000';
   await login(page);
   await selectHealthCenter(page);
   await syncDevice(page);
-  await recordPatient(page);
+  for (let i = 0; i < 50; i++) {
+    await recordPatient(page);
+  }
+  await syncDevice(page);
 
   await browser.close();
 })();
