@@ -58,9 +58,37 @@ activityFromString s =
             Nothing
 
 
+recurrentActivityToString : NCDRecurrentActivity -> String
+recurrentActivityToString activity =
+    case activity of
+        LabResults ->
+            "laboratory"
+
+        RecurrentNextSteps ->
+            "next-steps"
+
+
+recurrentActivityFromString : String -> Maybe NCDRecurrentActivity
+recurrentActivityFromString s =
+    case s of
+        "laboratory" ->
+            Just LabResults
+
+        "next-steps" ->
+            Just RecurrentNextSteps
+
+        _ ->
+            Nothing
+
+
 getActivityIcon : NCDActivity -> String
 getActivityIcon activity =
     activityToString activity
+
+
+getRecurrentActivityIcon : NCDRecurrentActivity -> String
+getRecurrentActivityIcon activity =
+    recurrentActivityToString activity
 
 
 getAllActivities : List NCDActivity

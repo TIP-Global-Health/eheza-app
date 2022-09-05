@@ -1057,8 +1057,4 @@ viewNCDLabsEntry language data =
         data.personName
         data.state
         data.label
-        (NCDEncounterPage
-            -- @todo
-            -- NCDRecurrentEncounterPage
-            data.encounterId
-        )
+        (NCDRecurrentEncounterPage data.encounterId)

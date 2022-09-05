@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.Measurement.Model exposing (LaboratoryTest)
 import Backend.Model
-import Backend.NCDActivity.Model exposing (NCDActivity)
+import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionActivity.Model exposing (NutritionActivity)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
@@ -34,6 +34,8 @@ import Pages.IndividualEncounterParticipants.Model
 import Pages.NCD.Activity.Model
 import Pages.NCD.Encounter.Model
 import Pages.NCD.ProgressReport.Model
+import Pages.NCD.RecurrentActivity.Model
+import Pages.NCD.RecurrentEncounter.Model
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Encounter.Model
 import Pages.Nutrition.ProgressReport.Model
@@ -275,7 +277,9 @@ type alias LoggedInModel =
     , wellChildActivityPages : Dict ( WellChildEncounterId, WellChildActivity ) Pages.WellChild.Activity.Model.Model
     , wellChildProgressReportPages : Dict WellChildEncounterId Pages.WellChild.ProgressReport.Model.Model
     , ncdEncounterPages : Dict NCDEncounterId Pages.NCD.Encounter.Model.Model
+    , ncdRecurrentEncounterPages : Dict NCDEncounterId Pages.NCD.RecurrentEncounter.Model.Model
     , ncdActivityPages : Dict ( NCDEncounterId, NCDActivity ) Pages.NCD.Activity.Model.Model
+    , ncdRecurrentActivityPages : Dict ( NCDEncounterId, NCDRecurrentActivity ) Pages.NCD.RecurrentActivity.Model.Model
     , ncdProgressReportPages : Dict NCDEncounterId Pages.NCD.ProgressReport.Model.Model
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
     , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Model
@@ -316,7 +320,9 @@ emptyLoggedInModel villageId nurse =
     , wellChildActivityPages = Dict.empty
     , wellChildProgressReportPages = Dict.empty
     , ncdEncounterPages = Dict.empty
+    , ncdRecurrentEncounterPages = Dict.empty
     , ncdActivityPages = Dict.empty
+    , ncdRecurrentActivityPages = Dict.empty
     , ncdProgressReportPages = Dict.empty
     , traceContactPages = Dict.empty
     , clinicalProgressReportPages = Dict.empty
@@ -377,6 +383,7 @@ type MsgLoggedIn
     | MsgPageHomeVisitEncounter HomeVisitEncounterId Pages.HomeVisit.Encounter.Model.Msg
     | MsgPageWellChildEncounter WellChildEncounterId Pages.WellChild.Encounter.Model.Msg
     | MsgPageNCDEncounter NCDEncounterId Pages.NCD.Encounter.Model.Msg
+    | MsgPageNCDRecurrentEncounter NCDEncounterId Pages.NCD.RecurrentEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.Prenatal.Activity.Model.Msg
     | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg
     | MsgPagePrenatalLabsHistory PrenatalEncounterId PrenatalEncounterId LaboratoryTest Pages.Prenatal.RecurrentActivity.Model.Msg
@@ -385,6 +392,7 @@ type MsgLoggedIn
     | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisit.Activity.Model.Msg
     | MsgPageWellChildActivity WellChildEncounterId WellChildActivity Pages.WellChild.Activity.Model.Msg
     | MsgPageNCDActivity NCDEncounterId NCDActivity Pages.NCD.Activity.Model.Msg
+    | MsgPageNCDRecurrentActivity NCDEncounterId NCDRecurrentActivity Pages.NCD.RecurrentActivity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.Prenatal.Outcome.Model.Msg
     | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllness.ProgressReport.Model.Msg
     | MsgPageNutritionProgressReport NutritionEncounterId Pages.Nutrition.ProgressReport.Model.Msg

@@ -33,7 +33,7 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.NCDActivity.Model exposing (NCDActivity(..))
+import Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model
     exposing
@@ -849,6 +849,7 @@ type TranslationId
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
+    | NCDRecurrentActivitiesTitle NCDRecurrentActivity
     | NCDSocialHistoryFoodQuestion
     | NCDSocialHistoryFoodQuestionInstructions
     | NCDSocialHistorySignQuestion NCDSocialHistorySign
@@ -7613,6 +7614,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        NCDRecurrentActivitiesTitle activity ->
+            case activity of
+                Backend.NCDActivity.Model.LabResults ->
+                    { english = "Lab Results"
+                    , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
+                    }
+
+                Backend.NCDActivity.Model.RecurrentNextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Just "Ibikurikiyeho"
+                    }
+
         NCDSocialHistoryFoodQuestion ->
             { english = "What foods do you eat most"
             , kinyarwanda = Nothing
@@ -9206,7 +9219,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
                     }
 
-                RecurrentNextSteps ->
+                Backend.PrenatalActivity.Model.RecurrentNextSteps ->
                     { english = "Next Steps"
                     , kinyarwanda = Just "Ibikurikiyeho"
                     }
@@ -15801,6 +15814,16 @@ translateActivePage page =
 
                 NCDActivityPage _ _ ->
                     { english = "NCD Activity"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDRecurrentEncounterPage _ ->
+                    { english = "NCD Recurrent Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDRecurrentActivityPage _ _ ->
+                    { english = "NCD Recurrent Activity"
                     , kinyarwanda = Nothing
                     }
 

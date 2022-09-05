@@ -1,30 +1,39 @@
-module Pages.NCD.Encounter.View exposing (view)
+module Pages.NCD.RecurrentEncounter.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Measurement.Model exposing (NCDMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NCDActivity.Model exposing (NCDActivity(..))
-import Backend.NCDActivity.Utils exposing (getActivityIcon, getAllActivities)
+import Backend.NCDActivity.Model exposing (..)
+import Backend.NCDActivity.Utils exposing (getRecurrentActivityIcon)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Person.Model exposing (Person)
-import Gizra.Html exposing (emptyNode)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Date exposing (Interval(..))
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
-import Pages.NCD.Activity.Utils exposing (activityCompleted, expectActivity)
-import Pages.NCD.Encounter.Model exposing (..)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Pages.NCD.Model exposing (..)
+import Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActivity)
+import Pages.NCD.RecurrentEncounter.Model exposing (..)
+import Pages.NCD.RecurrentEncounter.Utils exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
+
+
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 120
+    , height = 120
+    }
 
 
 view : Language -> NominalDate -> NCDEncounterId -> ModelIndexedDb -> Model -> Html Msg
@@ -33,17 +42,17 @@ view language currentDate id db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate id model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> NCDEncounterId -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id model assembled =
     let
         header =
-            viewHeader language assembled
+            viewHeader language
 
         content =
-            viewContent language currentDate db model assembled
+            viewContent language currentDate assembled model
 
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -51,7 +60,7 @@ viewHeaderAndContent language currentDate db model assembled =
                     viewEndEncounterDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
-                        (CloseEncounter assembled.id)
+                        CloseEncounter
                         (SetEndEncounterDialogState False)
 
             else
@@ -64,8 +73,8 @@ viewHeaderAndContent language currentDate db model assembled =
         ]
 
 
-viewHeader : Language -> AssembledData -> Html Msg
-viewHeader language assembled =
+viewHeader : Language -> Html Msg
+viewHeader language =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -78,28 +87,26 @@ viewHeader language assembled =
             ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| NCDParticipantPage InitiatorParticipantsPage assembled.participant.person
+            , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 
-viewContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate db model assembled =
+viewContent : Language -> NominalDate -> AssembledData -> Model -> Html Msg
+viewContent language currentDate assembled model =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate db assembled model
+        :: viewMainPageContent language currentDate assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate db assembled model =
+viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            List.filter (expectActivity currentDate assembled db) getAllActivities
-                |> List.partition (activityCompleted currentDate assembled db)
+            List.filter (expectActivity currentDate assembled) allActivities
+                |> List.partition (activityCompleted currentDate assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -108,30 +115,33 @@ viewMainPageContent language currentDate db assembled model =
             translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
 
         reportsTabTitle =
-            translate language Translate.ProgressReport
+            translate language Translate.Reports
 
         tabs =
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
-                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
+
+                -- @todo
+                -- , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
                 ]
 
         viewCard activity =
+            let
+                ( label, icon ) =
+                    ( Translate.NCDRecurrentActivitiesTitle activity, getRecurrentActivityIcon activity )
+            in
             div [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| NCDActivityPage assembled.id activity
+                    , onClick <|
+                        SetActivePage <|
+                            UserPage <|
+                                NCDRecurrentActivityPage assembled.id activity
                     ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
+                    [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
                 , div [ class "content" ]
-                    [ p []
-                        [ Translate.NCDActivityTitle activity
-                            |> translate language
-                            |> String.toUpper
-                            |> text
-                        ]
-                    ]
+                    [ p [] [ text <| String.toUpper <| translate language label ] ]
                 ]
 
         ( selectedActivities, emptySectionMessage ) =
@@ -160,7 +170,9 @@ viewMainPageContent language currentDate db assembled model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ProgressReport (UserPage <| NCDProgressReportPage assembled.id)
+                    [-- @todo
+                     -- viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.id)
+                     -- , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.participant.person)
                     ]
 
             else
@@ -175,21 +187,15 @@ viewMainPageContent language currentDate db assembled model =
                         ]
                     ]
 
-        allowEndEcounter =
-            allowEndingEcounter pendingActivities
+        endEncounterButtonEnabled =
+            List.isEmpty pendingActivities
 
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                , viewEndEncounterButton language endEncounterButtonEnabled SetEndEncounterDialogState
                 ]
     in
     [ tabs
     , content
     ]
-
-
-allowEndingEcounter : List NCDActivity -> Bool
-allowEndingEcounter pendingActivities =
-    -- @todo
-    True

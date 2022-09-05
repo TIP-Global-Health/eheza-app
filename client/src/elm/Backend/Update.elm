@@ -93,7 +93,7 @@ import Pages.AcuteIllness.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
 import Pages.GlobalCaseManagement.Utils
-import Pages.NCD.Encounter.Utils
+import Pages.NCD.Utils
 import Pages.NextSteps.Model
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.Utils
@@ -4873,7 +4873,7 @@ generateNCDLabsTestAddedMsgs :
     -> NCDEncounterId
     -> List App.Model.Msg
 generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
-    Pages.NCD.Encounter.Utils.generateAssembledData id after
+    Pages.NCD.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
@@ -4935,7 +4935,7 @@ generateNCDLabsResultsAddedMsgs :
     -> NCDEncounterId
     -> List App.Model.Msg
 generateNCDLabsResultsAddedMsgs currentDate after test id =
-    Pages.NCD.Encounter.Utils.generateAssembledData id after
+    Pages.NCD.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.andThen
             (\assembled ->

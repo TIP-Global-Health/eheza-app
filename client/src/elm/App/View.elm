@@ -44,6 +44,10 @@ import Pages.NCD.Encounter.View
 import Pages.NCD.Participant.View
 import Pages.NCD.ProgressReport.Model
 import Pages.NCD.ProgressReport.View
+import Pages.NCD.RecurrentActivity.Model
+import Pages.NCD.RecurrentActivity.View
+import Pages.NCD.RecurrentEncounter.Model
+import Pages.NCD.RecurrentEncounter.View
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.View
 import Pages.Nutrition.Encounter.Model
@@ -697,6 +701,26 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.NCD.Activity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDActivity id activity)
+                            |> flexPageWrapper model
+
+                    NCDRecurrentEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.ncdRecurrentEncounterPages
+                                    |> Maybe.withDefault Pages.NCD.RecurrentEncounter.Model.emptyModel
+                        in
+                        Pages.NCD.RecurrentEncounter.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNCDRecurrentEncounter id)
+                            |> flexPageWrapper model
+
+                    NCDRecurrentActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.ncdRecurrentActivityPages
+                                    |> Maybe.withDefault Pages.NCD.RecurrentActivity.Model.emptyModel
+                        in
+                        Pages.NCD.RecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNCDRecurrentActivity id activity)
                             |> flexPageWrapper model
 
                     NCDProgressReportPage encounterId ->
