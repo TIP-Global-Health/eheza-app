@@ -2371,10 +2371,6 @@ type alias NCDHIVTest =
     NCDMeasurement HIVTestValue
 
 
-type alias NCDLabsResults =
-    NCDMeasurement LabsResultsValue
-
-
 type alias NCDLiverFunctionTest =
     NCDMeasurement NCDLiverFunctionTestValue
 
@@ -2533,6 +2529,10 @@ type alias NCDUrineDipstickTest =
 
 type alias NCDVitals =
     NCDMeasurement VitalsValue
+
+
+type alias NCDLabsResults =
+    NCDMeasurement LabsResultsValue
 
 
 
@@ -2760,6 +2760,7 @@ type alias FollowUpMeasurements =
     , wellChild : Dict WellChildFollowUpId WellChildFollowUp
     , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
+    , ncdLabs : Dict NCDLabsResultsId NCDLabsResults
     }
 
 

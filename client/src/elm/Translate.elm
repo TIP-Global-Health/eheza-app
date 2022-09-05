@@ -95,7 +95,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
-import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
+import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
@@ -844,6 +844,7 @@ type TranslationId
     | NCDDangerSign NCDDangerSign
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
     | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
+    | NCDLabsCaseManagementEntryTypeResults
     | NCDMedicalHistoryTask Pages.NCD.Activity.Types.MedicalHistoryTask
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
@@ -1058,7 +1059,7 @@ type TranslationId
     | LaboratoryTest LaboratoryTest
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
-    | PrenatalLabsEntryState PrenatalLabsEntryState
+    | LabsEntryState LabsEntryState
     | PrenatalLabsHistoryCompletedQuestion
     | PrenatalLabsHistoryInstructions
     | PrenatalLabsHistoryLabel
@@ -2899,8 +2900,13 @@ translationSet trans =
                     }
 
                 FilterPrenatalLabs ->
-                    { english = "Lab Results"
-                    , kinyarwanda = Just "Ibisubizo ku bizamina byafashwe"
+                    { english = "ANC Labs"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterNCDLabs ->
+                    { english = "NCD Labs"
+                    , kinyarwanda = Nothing
                     }
 
         CaseManagementPaneHeader encounterType ->
@@ -2926,8 +2932,13 @@ translationSet trans =
                     }
 
                 FilterPrenatalLabs ->
-                    { english = "Lab Results"
-                    , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
+                    { english = "ANC Labs"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterNCDLabs ->
+                    { english = "NCD Labs"
+                    , kinyarwanda = Nothing
                     }
 
         CentimeterShorthand ->
@@ -7424,6 +7435,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        NCDLabsCaseManagementEntryTypeResults ->
+            { english = "NCD Lab Results"
+            , kinyarwanda = Nothing
+            }
+
         NCDMedicalHistoryTask task ->
             case task of
                 TaskCoMorbidities ->
@@ -11303,14 +11319,14 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PrenatalLabsEntryState state ->
+        LabsEntryState state ->
             case state of
-                PrenatalLabsEntryPending ->
+                LabsEntryPending ->
                     { english = "Pending"
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalLabsEntryClosingSoon ->
+                LabsEntryClosingSoon ->
                     { english = "Closing Soon"
                     , kinyarwanda = Nothing
                     }

@@ -123,6 +123,14 @@ fetch currentDate healthCenterId db =
                 |> Maybe.withDefault []
 
         --
+        --  NCD labs results calculations.
+        --
+        peopleForNCDLabsResults =
+            Maybe.map (.ncdLabs >> Dict.values >> List.map .participantId)
+                followUps
+                |> Maybe.withDefault []
+
+        --
         -- People for all types of follow ups.
         --
         people =
@@ -131,6 +139,7 @@ fetch currentDate healthCenterId db =
                 ++ peopleForPrenatal
                 ++ traceReporters
                 ++ peopleForPrenatalLabsResults
+                ++ peopleForNCDLabsResults
                 |> EverySet.fromList
                 |> EverySet.toList
     in
