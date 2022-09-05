@@ -33,17 +33,17 @@ view language currentDate id db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> NCDEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate db model assembled =
     let
         header =
             viewHeader language assembled
 
         content =
-            viewContent language currentDate id db model assembled
+            viewContent language currentDate db model assembled
 
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -51,7 +51,7 @@ viewHeaderAndContent language currentDate id db model assembled =
                     viewEndEncounterDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
-                        (CloseEncounter id)
+                        (CloseEncounter assembled.id)
                         (SetEndEncounterDialogState False)
 
             else
@@ -86,16 +86,16 @@ viewHeader language assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> NCDEncounterId -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id db model assembled =
+viewContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate db model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate id db assembled model
+        :: viewMainPageContent language currentDate db assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> NCDEncounterId -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id db assembled model =
+viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate db assembled model =
     let
         ( completedActivities, pendingActivities ) =
             List.filter (expectActivity currentDate assembled db) getAllActivities
@@ -121,7 +121,7 @@ viewMainPageContent language currentDate id db assembled model =
             div [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| NCDActivityPage id activity
+                    , onClick <| SetActivePage <| UserPage <| NCDActivityPage assembled.id activity
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div [ class "content" ]
