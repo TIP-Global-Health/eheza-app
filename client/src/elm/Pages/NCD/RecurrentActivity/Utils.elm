@@ -45,7 +45,7 @@ expectActivity currentDate assembled activity =
             -- resolveNextStepsTasks currentDate assembled
             --     |> List.isEmpty
             --     |> not
-            True
+            False
 
 
 activityCompleted : NominalDate -> AssembledData -> NCDRecurrentActivity -> Bool

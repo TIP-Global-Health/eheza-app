@@ -191,5 +191,4 @@ viewMainPageContent language currentDate db assembled model =
 
 allowEndingEcounter : List NCDActivity -> Bool
 allowEndingEcounter pendingActivities =
-    -- @todo
-    True
+    List.isEmpty pendingActivities

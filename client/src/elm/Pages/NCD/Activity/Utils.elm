@@ -57,9 +57,12 @@ expectActivity currentDate assembled db activity =
         MedicalHistory ->
             True
 
-        -- @todo
-        _ ->
+        Laboratory ->
             True
+
+        NextSteps ->
+            -- @todo
+            False
 
 
 activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> NCDActivity -> Bool
@@ -86,8 +89,11 @@ activityCompleted currentDate assembled db activity =
                 && isJust assembled.measurements.familyHistory
                 && isJust assembled.measurements.outsideCare
 
+        Laboratory ->
+            List.all (laboratoryTaskCompleted currentDate assembled) laboratoryTasks
+
         -- @todo
-        _ ->
+        NextSteps ->
             False
 
 
@@ -735,7 +741,7 @@ laboratoryTaskCompleted currentDate assembled task =
 
         _ ->
             -- @todo
-            True
+            False
 
 
 laboratoryTasks : List LaboratoryTask
