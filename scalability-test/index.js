@@ -73,16 +73,23 @@ const inputDelay = 250;
     await page.reload();
     await page.goto(baseUrl + '/#person/directory/new', {waitUntil: 'networkidle2'});
 
+    // Phone number special case.
+    let phoneNumber = await page.$x('//div/div[2]/div/div/div/fieldset[4]/div/div[2]/input');
+    await phoneNumber[0].type('1234567890');
+    await phoneNumber[0].tap();
+    await page.screenshot({path: 'phonenum' + Date.now() + '.png', fullPage: true, captureBeyondViewport: true});
+
     // Fill textfields with random value.
     for (let i = 0; i < 20; i++) {
       const inputs = await page.$$('.registration-form input')
       inputs.forEach(async elInput => {
         const type = await page.evaluate(el => el.getAttribute("type"), elInput);
+        const currentValue = await page.evaluate(el => el.value, elInput);
         if (type === 'number') {
           // National ID is not required.
           return;
         }
-        else {
+        else if (currentValue == null || currentValue.length < 1) {
           await elInput.type((Math.random() + 1).toString(36).substring(7), {delay: inputDelay});
         }
         delay(inputDelay);
@@ -110,21 +117,15 @@ const inputDelay = 250;
 
     // Handle exceptions.
     await page.evaluate(() => {
+      // Male checkbox.
       let radio = document.evaluate('//div[1]/div[2]/div/div[2]/div/div/div/fieldset[1]/div[7]/input[1]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
       radio.checked = true;
       radio.dispatchEvent(new Event('change'));
     });
     await delay(inputDelay);
 
-    await page.evaluate(() => {
-      let phoneNumber = document.evaluate('//div/div[2]/div/div/div/fieldset[4]/div/div[2]/input', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-      phoneNumber.value = "";
-      phoneNumber.dispatchEvent(new Event('change'));
-    });
-
     // Set birthdate to a random date in the format of DD-MM-YYYY.
     let dateInput = await page.$x('//div/fieldset[1]/div[5]/div[2]/div/div/input');
-    console.log(dateInput.length);
     await dateInput[0].click();
     await delay(inputDelay);
     await page.click('.date-selector--scrollable-year div:nth-child(1) li');
@@ -133,15 +134,16 @@ const inputDelay = 250;
     await delay(inputDelay);
     await page.click('.date-selector--scrollable-year tbody td');
     await delay(inputDelay);
-    await page.screenshot({path: 'date.png', fullPage: true, captureBeyondViewport: true});
+    await page.screenshot({path: 'date' + Date.now() + '.png', fullPage: true, captureBeyondViewport: true});
 
-    await page.screenshot({path: 'reg.png', fullPage: true, captureBeyondViewport: true});
+    await page.screenshot({path: 'reg' + Date.now() + '.png', fullPage: true, captureBeyondViewport: true});
 
+    await delay(3000);
     await page.click(buttonSelector);
-    await delay(inputDelay);
-    await page.screenshot({path: 'regwitherrors.png', fullPage: true, captureBeyondViewport: true});
-    const errors = await page.$eval('.error.message', e => e.innerHTML);
-    console.log(errors);
+    await page.screenshot({path: 'regwitherrors' + Date.now() + '.png', fullPage: true, captureBeyondViewport: true});
+    await delay(3000);
+    await page.click(buttonSelector);
+    await page.screenshot({path: 'regwitherrors' + Date.now() + '.png', fullPage: true, captureBeyondViewport: true});
   }
 
   const browser = await puppeteer.launch();
@@ -153,7 +155,7 @@ const inputDelay = 250;
   await login(page);
   await selectHealthCenter(page);
   await syncDevice(page);
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 15; i++) {
     await recordPatient(page);
   }
   await syncDevice(page);
