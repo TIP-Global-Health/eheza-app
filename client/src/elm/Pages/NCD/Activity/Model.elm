@@ -15,13 +15,16 @@ import Measurement.Model
         , NonRDTForm
         , OutsideCareForm
         , OutsideCareStep(..)
+        , PregnancyTestForm
         , RandomBloodSugarForm
         , UrineDipstickForm
         , VitalsForm
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
         , emptyHIVTestForm
+        , emptyNonRDTForm
         , emptyOutsideCareForm
+        , emptyPregnancyTestForm
         , emptyRandomBloodSugarForm
         , emptyUrineDipstickForm
         , emptyVitalsForm
@@ -302,6 +305,9 @@ type alias LaboratoryData =
     { hivTestForm : HIVTestForm Msg
     , urineDipstickTestForm : UrineDipstickForm Msg
     , randomBloodSugarTestForm : RandomBloodSugarForm Msg
+    , pregnancyTestForm : PregnancyTestForm Msg
+    , creatineTestForm : NonRDTForm Msg
+    , liverFunctionTestForm : NonRDTForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -311,5 +317,8 @@ emptyLaboratoryData =
     { hivTestForm = emptyHIVTestForm
     , urineDipstickTestForm = emptyUrineDipstickForm
     , randomBloodSugarTestForm = emptyRandomBloodSugarForm
+    , pregnancyTestForm = emptyPregnancyTestForm
+    , creatineTestForm = emptyNonRDTForm
+    , liverFunctionTestForm = emptyNonRDTForm
     , activeTask = Nothing
     }
