@@ -924,6 +924,53 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-ncd_creatinine_test-field_creatinine_result'.
+  $field_instances['node-ncd_creatinine_test-field_creatinine_result'] = array(
+    'bundle' => 'ncd_creatinine_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_creatinine_result',
+    'label' => 'Creatinine Result',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 13,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_creatinine_test-field_date_measured'.
   $field_instances['node-ncd_creatinine_test-field_date_measured'] = array(
     'bundle' => 'ncd_creatinine_test',
@@ -980,6 +1027,62 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_creatinine_test-field_execution_date'.
+  $field_instances['node-ncd_creatinine_test-field_execution_date'] = array(
+    'bundle' => 'ncd_creatinine_test',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_execution_date',
+    'label' => 'Execution Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 12,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_creatinine_test-field_ncd_encounter'.
   $field_instances['node-ncd_creatinine_test-field_ncd_encounter'] = array(
     'bundle' => 'ncd_creatinine_test',
@@ -1021,6 +1124,52 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_creatinine_test-field_nitorogen_result'.
+  $field_instances['node-ncd_creatinine_test-field_nitorogen_result'] = array(
+    'bundle' => 'ncd_creatinine_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nitorogen_result',
+    'label' => 'Nitorogen Result',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 15,
     ),
   );
 
@@ -1153,6 +1302,90 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_creatinine_test-field_test_execution_note'.
+  $field_instances['node-ncd_creatinine_test-field_test_execution_note'] = array(
+    'bundle' => 'ncd_creatinine_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_execution_note',
+    'label' => 'Test Execution Note',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_creatinine_test-field_urea_result'.
+  $field_instances['node-ncd_creatinine_test-field_urea_result'] = array(
+    'bundle' => 'ncd_creatinine_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_urea_result',
+    'label' => 'Urea Result',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 14,
     ),
   );
 
@@ -3352,6 +3585,98 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_liver_function_test-field_alt_result'.
+  $field_instances['node-ncd_liver_function_test-field_alt_result'] = array(
+    'bundle' => 'ncd_liver_function_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_alt_result',
+    'label' => 'ALT Result',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 13,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_liver_function_test-field_ast_result'.
+  $field_instances['node-ncd_liver_function_test-field_ast_result'] = array(
+    'bundle' => 'ncd_liver_function_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ast_result',
+    'label' => 'AST Result',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 14,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-ncd_liver_function_test-field_date_measured'.
   $field_instances['node-ncd_liver_function_test-field_date_measured'] = array(
@@ -3406,6 +3731,63 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_liver_function_test-field_execution_date'.
+  $field_instances['node-ncd_liver_function_test-field_execution_date'] = array(
+    'bundle' => 'ncd_liver_function_test',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_execution_date',
+    'label' => 'Execution Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 12,
     ),
   );
 
@@ -3583,6 +3965,44 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_liver_function_test-field_test_execution_note'.
+  $field_instances['node-ncd_liver_function_test-field_test_execution_note'] = array(
+    'bundle' => 'ncd_liver_function_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_execution_note',
+    'label' => 'Test Execution Note',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
     ),
   );
 
@@ -4726,6 +5146,62 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_pregnancy_test-field_execution_date'.
+  $field_instances['node-ncd_pregnancy_test-field_execution_date'] = array(
+    'bundle' => 'ncd_pregnancy_test',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_execution_date',
+    'label' => 'Execution Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 12,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_pregnancy_test-field_ncd_encounter'.
   $field_instances['node-ncd_pregnancy_test-field_ncd_encounter'] = array(
     'bundle' => 'ncd_pregnancy_test',
@@ -4899,6 +5375,81 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_pregnancy_test-field_test_execution_note'.
+  $field_instances['node-ncd_pregnancy_test-field_test_execution_note'] = array(
+    'bundle' => 'ncd_pregnancy_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_execution_note',
+    'label' => 'Test Execution Note',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_pregnancy_test-field_test_result'.
+  $field_instances['node-ncd_pregnancy_test-field_test_result'] = array(
+    'bundle' => 'ncd_pregnancy_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_result',
+    'label' => 'Test Result',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 14,
     ),
   );
 
@@ -7736,6 +8287,8 @@ function hedley_ncd_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('ALT Result');
+  t('AST Result');
   t('Abdomen');
   t('Beverages Per Week');
   t('Bilirubin');
@@ -7743,6 +8296,7 @@ function hedley_ncd_field_default_field_instances() {
   t('Cigarettes Per Week');
   t('CoMorbidities');
   t('Completed Tests');
+  t('Creatinine Result');
   t('Date Measured');
   t('Date concluded');
   t('Dia');
@@ -7777,6 +8331,7 @@ function hedley_ncd_field_default_field_instances() {
   t('NCD Pain Symptoms');
   t('NCD Social History Signs');
   t('Neck');
+  t('Nitorogen Result');
   t('Nitrite');
   t('Nurse');
   t('Outside Care Medications');
@@ -7794,6 +8349,7 @@ function hedley_ncd_field_default_field_instances() {
   t('Test Result');
   t('Test variant');
   t('UUID');
+  t('Urea Result');
   t('Urobilinogen');
 
   return $field_instances;
