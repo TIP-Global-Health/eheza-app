@@ -3710,7 +3710,7 @@ creatinineResultFormAndTasks language currentDate setCreatinineResultMsg setUrea
                     Translate.UnitMilliGramsPerDeciliter
               , viewLabel language Translate.LaboratoryCreatinineNitorogenResult
               , viewMeasurementInput language
-                    form.ureaResult
+                    form.nitorogenResult
                     setNitorogenResultMsg
                     "nitorogen-result"
                     Translate.UnitMilliGramsPerDeciliter

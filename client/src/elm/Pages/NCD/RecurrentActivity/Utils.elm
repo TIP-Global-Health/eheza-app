@@ -69,7 +69,9 @@ activityCompleted currentDate assembled activity =
 laboratoryResultTasks : List LaboratoryTask
 laboratoryResultTasks =
     [ TaskRandomBloodSugarTest
+    , TaskLiverFunctionTest
     , TaskUrineDipstickTest
+    , TaskCreatinineTest
     ]
 
 
