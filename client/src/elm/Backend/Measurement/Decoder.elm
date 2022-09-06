@@ -4606,12 +4606,17 @@ decodeNCDCoreExam =
 
 decodeNCDCreatinineTest : Decoder NCDCreatinineTest
 decodeNCDCreatinineTest =
-    decodeNCDMeasurement decodeNCDCreatinineTestValue
+    decodeNCDMeasurement decodeCreatinineTestValue
 
 
-decodeNCDCreatinineTestValue : Decoder NCDCreatinineTestValue
-decodeNCDCreatinineTestValue =
-    succeed NCDCreatinineTestValue
+decodeCreatinineTestValue : Decoder CreatinineTestValue
+decodeCreatinineTestValue =
+    succeed CreatinineTestValue
+        |> required "test_execution_note" decodeTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "creatinine_result" (nullable decodeFloat) Nothing
+        |> optional "urea_result" (nullable decodeFloat) Nothing
+        |> optional "nitorogen_result" (nullable decodeFloat) Nothing
 
 
 decodeNCDDangerSigns : Decoder NCDDangerSigns
@@ -4700,12 +4705,16 @@ decodeNCDLabsResults =
 
 decodeNCDLiverFunctionTest : Decoder NCDLiverFunctionTest
 decodeNCDLiverFunctionTest =
-    decodeNCDMeasurement decodeNCDLiverFunctionTestValue
+    decodeNCDMeasurement decodeLiverFunctionTestValue
 
 
-decodeNCDLiverFunctionTestValue : Decoder NCDLiverFunctionTestValue
-decodeNCDLiverFunctionTestValue =
-    succeed NCDLiverFunctionTestValue
+decodeLiverFunctionTestValue : Decoder LiverFunctionTestValue
+decodeLiverFunctionTestValue =
+    succeed LiverFunctionTestValue
+        |> required "test_execution_note" decodeTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "alt_result" (nullable decodeFloat) Nothing
+        |> optional "ast_result" (nullable decodeFloat) Nothing
 
 
 decodeNCDMedicationDistribution : Decoder NCDMedicationDistribution
@@ -4771,12 +4780,15 @@ decodeNCDOutsideCare =
 
 decodeNCDPregnancyTest : Decoder NCDPregnancyTest
 decodeNCDPregnancyTest =
-    decodeNCDMeasurement decodeNCDPregnancyTestValue
+    decodeNCDMeasurement decodePregnancyTestValue
 
 
-decodeNCDPregnancyTestValue : Decoder NCDPregnancyTestValue
-decodeNCDPregnancyTestValue =
-    succeed NCDPregnancyTestValue
+decodePregnancyTestValue : Decoder PregnancyTestValue
+decodePregnancyTestValue =
+    succeed PregnancyTestValue
+        |> required "test_execution_note" decodeTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodeTestResult) Nothing
 
 
 decodeNCDRandomBloodSugarTest : Decoder NCDRandomBloodSugarTest

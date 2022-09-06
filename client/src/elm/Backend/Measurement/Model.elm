@@ -985,10 +985,6 @@ type HIVPCRResult
     | ResultDetectibleViralLoad Float
 
 
-type alias PrenatalHepatitisBTest =
-    PrenatalMeasurement (HepatitisBTestValue PrenatalEncounterId)
-
-
 type alias HIVPCRTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
@@ -1000,6 +996,10 @@ type alias HIVPCRTestValue =
 type ViralLoadStatus
     = ViralLoadDetectable
     | ViralLoadUndetectable
+
+
+type alias PrenatalHepatitisBTest =
+    PrenatalMeasurement (HepatitisBTestValue PrenatalEncounterId)
 
 
 type alias HepatitisBTestValue encounterId =
@@ -2298,11 +2298,16 @@ type alias NCDCoreExam =
 
 
 type alias NCDCreatinineTest =
-    NCDMeasurement NCDCreatinineTestValue
+    NCDMeasurement CreatinineTestValue
 
 
-type alias NCDCreatinineTestValue =
-    {}
+type alias CreatinineTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , creatinineResult : Maybe Float
+    , ureaResult : Maybe Float
+    , nitorogenResult : Maybe Float
+    }
 
 
 type alias NCDDangerSigns =
@@ -2372,11 +2377,15 @@ type alias NCDHIVTest =
 
 
 type alias NCDLiverFunctionTest =
-    NCDMeasurement NCDLiverFunctionTestValue
+    NCDMeasurement LiverFunctionTestValue
 
 
-type alias NCDLiverFunctionTestValue =
-    {}
+type alias LiverFunctionTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , altResult : Maybe Float
+    , astResult : Maybe Float
+    }
 
 
 type alias NCDMedicationDistribution =
@@ -2429,11 +2438,14 @@ type alias NCDOutsideCare =
 
 
 type alias NCDPregnancyTest =
-    NCDMeasurement NCDPregnancyTestValue
+    NCDMeasurement PregnancyTestValue
 
 
-type alias NCDPregnancyTestValue =
-    {}
+type alias PregnancyTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe TestResult
+    }
 
 
 type alias NCDRandomBloodSugarTest =
