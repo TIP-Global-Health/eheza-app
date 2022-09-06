@@ -748,14 +748,14 @@ laboratoryTaskCompleted currentDate assembled task =
         TaskHIVTest ->
             (not <| taskExpected TaskHIVTest) || isJust measurements.hivTest
 
+        TaskPregnancyTest ->
+            (not <| taskExpected TaskPregnancyTest) || isJust measurements.pregnancyTest
+
         TaskCreatinineTest ->
             (not <| taskExpected TaskCreatinineTest) || isJust measurements.creatinineTest
 
         TaskLiverFunctionTest ->
             (not <| taskExpected TaskLiverFunctionTest) || isJust measurements.liverFunctionTest
-
-        TaskCompletePreviousTests ->
-            not <| taskExpected TaskCompletePreviousTests
 
         -- Others are not in use at NCD.
         _ ->

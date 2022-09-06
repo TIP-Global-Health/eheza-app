@@ -594,6 +594,13 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPregnancyTestFormBoolInputMsg : (Bool -> PregnancyTestForm msg -> PregnancyTestForm msg) -> Bool -> msg
+    , setPregnancyTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPregnancyTestResultMsg : String -> msg
+    , setCreatinineTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setCreatinineTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLiverFunctionTestExecutionNoteMsg : TestExecutionNote -> msg
     , noOpMsg : msg
     }
 
@@ -626,6 +633,15 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setHIVPCRTestExecutionDateMsg : NominalDate -> msg
     , setHIVPCRTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setPregnancyTestFormBoolInputMsg : (Bool -> PregnancyTestForm msg -> PregnancyTestForm msg) -> Bool -> msg
+    , setPregnancyTestExecutionDateMsg : NominalDate -> msg
+    , setPregnancyTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setCreatinineTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setCreatinineTestExecutionDateMsg : NominalDate -> msg
+    , setCreatinineTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLiverFunctionTestExecutionDateMsg : NominalDate -> msg
+    , setLiverFunctionTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , noOpMsg : msg
     }
 

@@ -35,11 +35,15 @@ import Measurement.Utils
         , familyPlanningFormWithDefault
         , hivTestFormWithDefault
         , laboratoryTaskIconClass
+        , nonRDTFormWithDefault
         , outsideCareFormInputsAndTasks
         , outsideCareFormWithDefault
+        , pregnancyTestFormWithDefault
         , randomBloodSugarFormWithDefault
         , urineDipstickFormWithDefault
         , viewHIVTestForm
+        , viewNonRDTForm
+        , viewPregnancyTestForm
         , viewRandomBloodSugarForm
         , viewUrineDipstickForm
         , vitalsFormWithDefault
@@ -872,6 +876,35 @@ viewLaboratoryContent language currentDate assembled data =
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
 
+                        TaskPregnancyTest ->
+                            measurements.pregnancyTest
+                                |> getMeasurementValueFunc
+                                |> pregnancyTestFormWithDefault data.pregnancyTestForm
+                                |> viewPregnancyTestForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+
+                        TaskCreatinineTest ->
+                            measurements.creatinineTest
+                                |> getMeasurementValueFunc
+                                |> nonRDTFormWithDefault data.creatinineTestForm
+                                |> viewNonRDTForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    TaskCreatinineTest
+
+                        TaskLiverFunctionTest ->
+                            measurements.liverFunctionTest
+                                |> getMeasurementValueFunc
+                                |> nonRDTFormWithDefault data.liverFunctionTestForm
+                                |> viewNonRDTForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    TaskLiverFunctionTest
+
                         -- @todo:
                         _ ->
                             ( emptyNode, 0, 0 )
@@ -914,8 +947,17 @@ viewLaboratoryContent language currentDate assembled data =
                                 TaskRandomBloodSugarTest ->
                                     SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
 
+                                TaskPregnancyTest ->
+                                    SavePregnancyTest personId measurements.pregnancyTest nextTask
+
+                                TaskCreatinineTest ->
+                                    SaveCreatinineTest personId measurements.creatinineTest nextTask
+
+                                TaskLiverFunctionTest ->
+                                    SaveLiverFunctionTest personId measurements.liverFunctionTest nextTask
+
+                                -- Otherse are not part of NCD.
                                 _ ->
-                                    --@todo
                                     NoOp
                     in
                     viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
@@ -948,6 +990,13 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
                     , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
                     , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
+                    , setPregnancyTestFormBoolInputMsg = SetPregnancyTestFormBoolInput
+                    , setPregnancyTestExecutionNoteMsg = SetPregnancyTestExecutionNote
+                    , setPregnancyTestResultMsg = SetPregnancyTestResult
+                    , setCreatinineTestFormBoolInputMsg = SetCreatinineTestFormBoolInput
+                    , setCreatinineTestExecutionNoteMsg = SetCreatinineTestExecutionNote
+                    , setLiverFunctionTestFormBoolInputMsg = SetLiverFunctionTestFormBoolInput
+                    , setLiverFunctionTestExecutionNoteMsg = SetLiverFunctionTestExecutionNote
                 }
            )
 
@@ -966,5 +1015,14 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
                     , setRandomBloodSugarTestExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
                     , setRandomBloodSugarTestDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                    , setPregnancyTestFormBoolInputMsg = SetPregnancyTestFormBoolInput
+                    , setPregnancyTestExecutionDateMsg = SetPregnancyTestExecutionDate
+                    , setPregnancyTestDateSelectorStateMsg = SetPregnancyTestDateSelectorState
+                    , setCreatinineTestFormBoolInputMsg = SetCreatinineTestFormBoolInput
+                    , setCreatinineTestExecutionDateMsg = SetCreatinineTestExecutionDate
+                    , setCreatinineTestDateSelectorStateMsg = SetCreatinineTestDateSelectorState
+                    , setLiverFunctionTestFormBoolInputMsg = SetLiverFunctionTestFormBoolInput
+                    , setLiverFunctionTestExecutionDateMsg = SetLiverFunctionTestExecutionDate
+                    , setLiverFunctionTestDateSelectorStateMsg = SetLiverFunctionTestDateSelectorState
                 }
            )

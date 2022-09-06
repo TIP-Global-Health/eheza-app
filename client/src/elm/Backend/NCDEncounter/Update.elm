@@ -171,3 +171,33 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveLabsResults = data }
             , Cmd.none
             )
+
+        SavePregnancyTest personId valueId value ->
+            ( { model | savePregnancyTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdPregnancyTestEndpoint HandleSavedPregnancyTest
+            )
+
+        HandleSavedPregnancyTest data ->
+            ( { model | savePregnancyTest = data }
+            , Cmd.none
+            )
+
+        SaveCreatinineTest personId valueId value ->
+            ( { model | saveCreatinineTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdCreatinineTestEndpoint HandleSavedCreatinineTest
+            )
+
+        HandleSavedCreatinineTest data ->
+            ( { model | saveCreatinineTest = data }
+            , Cmd.none
+            )
+
+        SaveLiverFunctionTest personId valueId value ->
+            ( { model | saveLiverFunctionTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdLiverFunctionTestEndpoint HandleSavedLiverFunctionTest
+            )
+
+        HandleSavedLiverFunctionTest data ->
+            ( { model | saveLiverFunctionTest = data }
+            , Cmd.none
+            )
