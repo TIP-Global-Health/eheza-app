@@ -3239,16 +3239,16 @@ laboratoryTestToString : LaboratoryTest -> String
 laboratoryTestToString value =
     case value of
         TestBloodGpRs ->
-            "blood-gp-rs"
+            "blood-group"
 
         TestHemoglobin ->
-            "hemopglobin"
+            "hemoglobin"
 
         TestHepatitisB ->
             "hepatitis-b"
 
         TestRandomBloodSugar ->
-            "blood-sugar"
+            "random-blood-sugar"
 
         TestSyphilis ->
             "syphilis"
@@ -3257,7 +3257,7 @@ laboratoryTestToString value =
             "urine-dipstick"
 
         TestVitalsRecheck ->
-            "vitals"
+            "vitals-recheck"
 
         TestHIVPCR ->
             "hiv-pcr"
@@ -3272,16 +3272,16 @@ laboratoryTestToString value =
 laboratoryTestFromString : String -> Maybe LaboratoryTest
 laboratoryTestFromString value =
     case value of
-        "blood-gp-rs" ->
+        "blood-group" ->
             Just TestBloodGpRs
 
-        "hemopglobin" ->
+        "hemoglobin" ->
             Just TestHemoglobin
 
         "hepatitis-b" ->
             Just TestHepatitisB
 
-        "blood-sugar" ->
+        "random-blood-sugar" ->
             Just TestRandomBloodSugar
 
         "syphilis" ->
@@ -3290,7 +3290,7 @@ laboratoryTestFromString value =
         "urine-dipstick" ->
             Just TestUrineDipstick
 
-        "vitals" ->
+        "vitals-recheck" ->
             Just TestVitalsRecheck
 
         "hiv-pcr" ->
