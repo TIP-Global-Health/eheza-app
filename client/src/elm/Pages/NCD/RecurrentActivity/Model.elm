@@ -38,6 +38,13 @@ type Msg
     | SaveUrineDipstickResult PersonId (Maybe ( NCDUrineDipstickTestId, NCDUrineDipstickTest )) (Maybe LaboratoryTask)
     | SetRandomBloodSugar String
     | SaveRandomBloodSugarResult PersonId (Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )) (Maybe LaboratoryTask)
+    | SetCreatinineResult String
+    | SetUreaResult String
+    | SetNitorogenResult String
+    | SaveCreatinineResult PersonId (Maybe ( NCDCreatinineTestId, NCDCreatinineTest )) (Maybe LaboratoryTask)
+    | SetAltResult String
+    | SetAstResult String
+    | SaveLiverFunctionResult PersonId (Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
       -- | SetActiveNextStepsTask NextStepsTask
       -- | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
@@ -70,8 +77,8 @@ emptyModel =
 type alias LabResultsData =
     { randomBloodSugarTestForm : RandomBloodSugarResultForm NCDEncounterId
     , urineDipstickTestForm : UrineDipstickResultForm
-    , creatinineResultForm : CreatinineResultForm
-    , liverFunctionResultForm : LiverFunctionResultForm
+    , creatinineTestForm : CreatinineResultForm
+    , liverFunctionTestForm : LiverFunctionResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -80,8 +87,8 @@ emptyLabResultsData : LabResultsData
 emptyLabResultsData =
     { randomBloodSugarTestForm = emptyRandomBloodSugarResultForm
     , urineDipstickTestForm = emptyUrineDipstickResultForm
-    , creatinineResultForm = emptyCreatinineResultForm
-    , liverFunctionResultForm = emptyLiverFunctionResultForm
+    , creatinineTestForm = emptyCreatinineResultForm
+    , liverFunctionTestForm = emptyLiverFunctionResultForm
     , activeTask = Nothing
     }
 

@@ -187,6 +187,10 @@ viewLab language currentDate lab assembled data =
                 TestVitalsRecheck ->
                     ( emptyNode, 0, 0 )
 
+                -- Others do no participate at Prenatal.
+                _ ->
+                    ( emptyNode, 0, 0 )
+
         actions =
             let
                 saveMsg =
@@ -213,6 +217,10 @@ viewLab language currentDate lab assembled data =
                             SaveHIVPCRResult personId measurements.hivPCRTest Nothing
 
                         TestVitalsRecheck ->
+                            NoOp
+
+                        -- Others do no participate at Prenatal.
+                        _ ->
                             NoOp
             in
             viewSaveAction language saveMsg (tasksCompleted /= totalTasks)

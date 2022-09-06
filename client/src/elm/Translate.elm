@@ -720,6 +720,11 @@ type TranslationId
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
     | LabHistory
+    | LaboratoryCreatinineCreatinineResult
+    | LaboratoryCreatinineUreaResult
+    | LaboratoryCreatinineNitorogenResult
+    | LaboratoryLiverFunctionAltResult
+    | LaboratoryLiverFunctionAstResult
     | LaboratoryTask LaboratoryTask
     | LaboratoryTaskLabel LaboratoryTask
     | LaboratoryTaskDate LaboratoryTask
@@ -1352,6 +1357,7 @@ type TranslationId
     | UndeterminedDiagnosisMessage
     | UnitCopiesPerMM3
     | UnitGramsPerDeciliter
+    | UnitInternationalUnitsPerLiter
     | UnitMilliGramsPerDeciliter
     | Unknown
     | Update
@@ -5793,6 +5799,31 @@ translationSet trans =
         LabHistory ->
             { english = "Lab History"
             , kinyarwanda = Just "Amakuru ku bizamini byakozwe"
+            }
+
+        LaboratoryCreatinineCreatinineResult ->
+            { english = "Creatinine Result"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryCreatinineUreaResult ->
+            { english = "Urea Result"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryCreatinineNitorogenResult ->
+            { english = "Nitorogen Result"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLiverFunctionAltResult ->
+            { english = "ALT Result"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLiverFunctionAstResult ->
+            { english = "AST Result"
+            , kinyarwanda = Nothing
             }
 
         LaboratoryTask task ->
@@ -11401,6 +11432,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TestCreatinine ->
+                    { english = "Creatinine"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestLiverFunction ->
+                    { english = "Liver Function"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
             , kinyarwanda = Nothing
@@ -14691,6 +14732,11 @@ translationSet trans =
 
         UnitGramsPerDeciliter ->
             { english = "g/dL"
+            , kinyarwanda = Nothing
+            }
+
+        UnitInternationalUnitsPerLiter ->
+            { english = "IU/L"
             , kinyarwanda = Nothing
             }
 

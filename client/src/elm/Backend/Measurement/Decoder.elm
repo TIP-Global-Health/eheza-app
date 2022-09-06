@@ -827,36 +827,10 @@ decodeLaboratoryTest : Decoder LaboratoryTest
 decodeLaboratoryTest =
     string
         |> andThen
-            (\value ->
-                case value of
-                    "syphilis" ->
-                        succeed TestSyphilis
-
-                    "hepatitis-b" ->
-                        succeed TestHepatitisB
-
-                    "blood-group" ->
-                        succeed TestBloodGpRs
-
-                    "urine-dipstick" ->
-                        succeed TestUrineDipstick
-
-                    "hemoglobin" ->
-                        succeed TestHemoglobin
-
-                    "random-blood-sugar" ->
-                        succeed TestRandomBloodSugar
-
-                    "vitals-recheck" ->
-                        succeed TestVitalsRecheck
-
-                    "hiv-pcr" ->
-                        succeed TestHIVPCR
-
-                    _ ->
-                        fail <|
-                            value
-                                ++ " is not a recognized LaboratoryTest"
+            (\s ->
+                laboratoryTestFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized LaboratoryTest")
             )
 
 

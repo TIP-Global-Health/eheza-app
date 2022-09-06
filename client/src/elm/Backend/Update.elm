@@ -2189,6 +2189,36 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults
                     )
 
+                [ NCDCreatinineTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestCreatinine
+                                data.value.executionNote
+                                (isJust data.value.creatinineResult)
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults
+                    )
+
+                [ NCDLiverFunctionTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestLiverFunction
+                                data.value.executionNote
+                                (isJust data.value.altResult)
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults
+                    )
+
                 _ ->
                     let
                         ( newModel, recalculateEditableSessions ) =

@@ -11,6 +11,7 @@ import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator)
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString, individualEncounterTypeToString)
 import Backend.Measurement.Model exposing (LaboratoryTest)
+import Backend.Measurement.Utils
 import Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
 import Backend.NCDActivity.Utils
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
@@ -241,7 +242,7 @@ pageToFragment current =
                             ++ "/"
                             ++ fromEntityUuid labEncounterId
                             ++ "/"
-                            ++ Backend.PrenatalActivity.Utils.laboratoryTestToString lab
+                            ++ Backend.Measurement.Utils.laboratoryTestToString lab
 
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
@@ -426,7 +427,7 @@ parsePrenatalRecurrentActivity =
 
 parseLaboratoryTest : Parser (LaboratoryTest -> c) c
 parseLaboratoryTest =
-    custom "LaboratoryTest" Backend.PrenatalActivity.Utils.laboratoryTestFromString
+    custom "LaboratoryTest" Backend.Measurement.Utils.laboratoryTestFromString
 
 
 parseNutritionActivity : Parser (NutritionActivity -> c) c

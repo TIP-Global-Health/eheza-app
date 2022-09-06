@@ -1208,6 +1208,8 @@ type LaboratoryTest
     | TestUrineDipstick
     | TestVitalsRecheck
     | TestHIVPCR
+    | TestCreatinine
+    | TestLiverFunction
 
 
 type alias PrenatalMedicationDistribution =

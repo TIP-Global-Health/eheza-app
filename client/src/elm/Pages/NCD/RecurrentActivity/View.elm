@@ -21,7 +21,11 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..))
 import Measurement.Utils
     exposing
-        ( laboratoryTaskIconClass
+        ( creatinineResultFormAndTasks
+        , creatinineResultFormWithDefault
+        , laboratoryTaskIconClass
+        , liverFunctionResultFormAndTasks
+        , liverFunctionResultFormWithDefault
         , randomBloodSugarResultFormAndTasks
         , randomBloodSugarResultFormWithDefault
         , urineDipstickResultFormAndTasks
@@ -181,6 +185,22 @@ viewLabResultsContent language currentDate assembled model =
                                     SetHaemoglobin
                                     SetKetone
                                     SetBilirubin
+
+                        TaskCreatinineTest ->
+                            measurements.creatinineTest
+                                |> getMeasurementValueFunc
+                                |> creatinineResultFormWithDefault model.labResultsData.creatinineTestForm
+                                |> creatinineResultFormAndTasks language
+                                    currentDate
+                                    SetCreatinineResult
+                                    SetUreaResult
+                                    SetNitorogenResult
+
+                        TaskLiverFunctionTest ->
+                            measurements.liverFunctionTest
+                                |> getMeasurementValueFunc
+                                |> liverFunctionResultFormWithDefault model.labResultsData.liverFunctionTestForm
+                                |> liverFunctionResultFormAndTasks language currentDate SetAltResult SetAstResult
 
                         -- Others are not in use for NCD.
                         _ ->

@@ -3224,38 +3224,72 @@ toHIVPCRRResultsValue form =
         form.executionNote
 
 
+creatinineResultFormWithDefault : CreatinineResultForm -> Maybe CreatinineTestValue -> CreatinineResultForm
+creatinineResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , creatinineResult = or form.creatinineResult value.creatinineResult
+                , ureaResult = or form.ureaResult value.ureaResult
+                , nitorogenResult = or form.nitorogenResult value.nitorogenResult
+                }
+            )
 
--- randomBloodSugarResultFormWithDefault : RandomBloodSugarResultForm  -> Maybe (RandomBloodSugarTestValue ) -> RandomBloodSugarResultForm
--- randomBloodSugarResultFormWithDefault form saved =
---     saved
---         |> unwrap
---             form
---             (\value ->
---                 { executionNote = or form.executionNote (Just value.executionNote)
---                 , executionDate = or form.executionDate value.executionDate
---                 , sugarCount = or form.sugarCount value.sugarCount
---                 }
---             )
---
---
--- toRandomBloodSugarResultsValueWithDefault : Maybe (RandomBloodSugarTestValue ) -> RandomBloodSugarResultForm  -> Maybe (RandomBloodSugarTestValue )
--- toRandomBloodSugarResultsValueWithDefault saved form =
---     randomBloodSugarResultFormWithDefault form saved
---         |> toRandomBloodSugarResultsValue
---
---
--- toRandomBloodSugarResultsValue : RandomBloodSugarResultForm  -> Maybe (RandomBloodSugarTestValue )
--- toRandomBloodSugarResultsValue form =
---     Maybe.map
---         (\executionNote ->
---             { executionNote = executionNote
---             , executionDate = form.executionDate
---             , testPrerequisites = form.testPrerequisites
---             , sugarCount = form.sugarCount
---             , originatingEncounter = form.originatingEncounter
---             }
---         )
---         form.executionNote
+
+toCreatinineResultsValueWithDefault : Maybe CreatinineTestValue -> CreatinineResultForm -> Maybe CreatinineTestValue
+toCreatinineResultsValueWithDefault saved form =
+    creatinineResultFormWithDefault form saved
+        |> toCreatinineResultsValue
+
+
+toCreatinineResultsValue : CreatinineResultForm -> Maybe CreatinineTestValue
+toCreatinineResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , creatinineResult = form.creatinineResult
+            , ureaResult = form.ureaResult
+            , nitorogenResult = form.nitorogenResult
+            }
+        )
+        form.executionNote
+
+
+liverFunctionResultFormWithDefault : LiverFunctionResultForm -> Maybe LiverFunctionTestValue -> LiverFunctionResultForm
+liverFunctionResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , altResult = or form.altResult value.altResult
+                , astResult = or form.astResult value.astResult
+                }
+            )
+
+
+toLiverFunctionResultsValueWithDefault : Maybe LiverFunctionTestValue -> LiverFunctionResultForm -> Maybe LiverFunctionTestValue
+toLiverFunctionResultsValueWithDefault saved form =
+    liverFunctionResultFormWithDefault form saved
+        |> toLiverFunctionResultsValue
+
+
+toLiverFunctionResultsValue : LiverFunctionResultForm -> Maybe LiverFunctionTestValue
+toLiverFunctionResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , altResult = form.altResult
+            , astResult = form.astResult
+            }
+        )
+        form.executionNote
 
 
 syphilisResultFormAndTasks :
@@ -3645,6 +3679,83 @@ hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoad
     in
     ( div [ class "ui form laboratory hiv-prc-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskHIVPCRTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+creatinineResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> CreatinineResultForm
+    -> ( Html msg, Int, Int )
+creatinineResultFormAndTasks language currentDate setCreatinineResultMsg setUreaResultMsg setNitorogenResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            ( [ viewLabel language Translate.LaboratoryCreatinineCreatinineResult
+              , viewMeasurementInput language
+                    form.creatinineResult
+                    setCreatinineResultMsg
+                    "creatinine-result"
+                    Translate.UnitMilliGramsPerDeciliter
+              , viewLabel language Translate.LaboratoryCreatinineUreaResult
+              , viewMeasurementInput language
+                    form.ureaResult
+                    setUreaResultMsg
+                    "urea-result"
+                    Translate.UnitMilliGramsPerDeciliter
+              , viewLabel language Translate.LaboratoryCreatinineNitorogenResult
+              , viewMeasurementInput language
+                    form.ureaResult
+                    setNitorogenResultMsg
+                    "nitorogen-result"
+                    Translate.UnitMilliGramsPerDeciliter
+              ]
+            , taskCompleted form.creatinineResult + taskCompleted form.ureaResult + taskCompleted form.nitorogenResult
+            , 3
+            )
+    in
+    ( div [ class "ui form laboratory creatinine-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskCreatinineTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+liverFunctionResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> LiverFunctionResultForm
+    -> ( Html msg, Int, Int )
+liverFunctionResultFormAndTasks language currentDate setAltResultMsg setAstResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            ( [ viewLabel language Translate.LaboratoryLiverFunctionAltResult
+              , viewMeasurementInput language
+                    form.altResult
+                    setAltResultMsg
+                    "alt-result"
+                    Translate.UnitInternationalUnitsPerLiter
+              , viewLabel language Translate.LaboratoryLiverFunctionAstResult
+              , viewMeasurementInput language
+                    form.astResult
+                    setAstResultMsg
+                    "ast-result"
+                    Translate.UnitInternationalUnitsPerLiter
+              ]
+            , taskCompleted form.altResult + taskCompleted form.astResult
+            , 2
+            )
+    in
+    ( div [ class "ui form laboratory liver-function-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskLiverFunctionTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal

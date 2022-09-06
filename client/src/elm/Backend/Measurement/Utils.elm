@@ -3233,3 +3233,74 @@ foodGroupToString value =
 
         FoodGroupProtein ->
             "protein"
+
+
+laboratoryTestToString : LaboratoryTest -> String
+laboratoryTestToString value =
+    case value of
+        TestBloodGpRs ->
+            "blood-gp-rs"
+
+        TestHemoglobin ->
+            "hemopglobin"
+
+        TestHepatitisB ->
+            "hepatitis-b"
+
+        TestRandomBloodSugar ->
+            "blood-sugar"
+
+        TestSyphilis ->
+            "syphilis"
+
+        TestUrineDipstick ->
+            "urine-dipstick"
+
+        TestVitalsRecheck ->
+            "vitals"
+
+        TestHIVPCR ->
+            "hiv-pcr"
+
+        TestCreatinine ->
+            "creatinine"
+
+        TestLiverFunction ->
+            "liver-function"
+
+
+laboratoryTestFromString : String -> Maybe LaboratoryTest
+laboratoryTestFromString value =
+    case value of
+        "blood-gp-rs" ->
+            Just TestBloodGpRs
+
+        "hemopglobin" ->
+            Just TestHemoglobin
+
+        "hepatitis-b" ->
+            Just TestHepatitisB
+
+        "blood-sugar" ->
+            Just TestRandomBloodSugar
+
+        "syphilis" ->
+            Just TestSyphilis
+
+        "urine-dipstick" ->
+            Just TestUrineDipstick
+
+        "vitals" ->
+            Just TestVitalsRecheck
+
+        "hiv-pcr" ->
+            Just TestHIVPCR
+
+        "creatinine" ->
+            Just TestCreatinine
+
+        "liver-function" ->
+            Just TestLiverFunction
+
+        _ ->
+            Nothing

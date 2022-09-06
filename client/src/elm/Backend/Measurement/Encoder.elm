@@ -821,32 +821,8 @@ encodeLabsResultsValue type_ value =
 
 
 encodeLaboratoryTest : LaboratoryTest -> Value
-encodeLaboratoryTest value =
-    string <|
-        case value of
-            TestSyphilis ->
-                "syphilis"
-
-            TestHepatitisB ->
-                "hepatitis-b"
-
-            TestBloodGpRs ->
-                "blood-group"
-
-            TestUrineDipstick ->
-                "urine-dipstick"
-
-            TestHemoglobin ->
-                "hemoglobin"
-
-            TestRandomBloodSugar ->
-                "random-blood-sugar"
-
-            TestVitalsRecheck ->
-                "vitals-recheck"
-
-            TestHIVPCR ->
-                "hiv-pcr"
+encodeLaboratoryTest =
+    laboratoryTestToString >> string
 
 
 encodePrenatalMentalHealth : PrenatalMentalHealth -> List ( String, Value )

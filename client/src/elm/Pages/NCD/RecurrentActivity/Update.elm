@@ -14,7 +14,9 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
     exposing
-        ( toRandomBloodSugarResultsValueWithDefault
+        ( toCreatinineResultsValueWithDefault
+        , toLiverFunctionResultsValueWithDefault
+        , toRandomBloodSugarResultsValueWithDefault
         , toSendToHCValueWithDefault
         , toUrineDipstickResultsValueWithDefault
         )
@@ -309,6 +311,145 @@ update language currentDate id db msg model =
                     toRandomBloodSugarResultsValueWithDefault measurement model.labResultsData.randomBloodSugarTestForm
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveRandomBloodSugarTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetCreatinineResult value ->
+            let
+                form =
+                    model.labResultsData.creatinineTestForm
+
+                updatedForm =
+                    { form | creatinineResult = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | creatinineTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetUreaResult value ->
+            let
+                form =
+                    model.labResultsData.creatinineTestForm
+
+                updatedForm =
+                    { form | ureaResult = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | creatinineTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNitorogenResult value ->
+            let
+                form =
+                    model.labResultsData.creatinineTestForm
+
+                updatedForm =
+                    { form | nitorogenResult = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | creatinineTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveCreatinineResult personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLabResultsMsgs nextTask
+
+                appMsgs =
+                    toCreatinineResultsValueWithDefault measurement model.labResultsData.creatinineTestForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveCreatinineTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetAltResult value ->
+            let
+                form =
+                    model.labResultsData.liverFunctionTestForm
+
+                updatedForm =
+                    { form | altResult = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | liverFunctionTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAstResult value ->
+            let
+                form =
+                    model.labResultsData.liverFunctionTestForm
+
+                updatedForm =
+                    { form | astResult = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | liverFunctionTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveLiverFunctionResult personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLabResultsMsgs nextTask
+
+                appMsgs =
+                    toLiverFunctionResultsValueWithDefault measurement model.labResultsData.liverFunctionTestForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveLiverFunctionTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
