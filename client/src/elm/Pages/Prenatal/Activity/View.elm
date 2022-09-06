@@ -1511,6 +1511,18 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     TaskHIVPCRTest
 
+                        TaskPregnancyTest ->
+                            -- @todo
+                            ( emptyNode, 0, 0 )
+
+                        TaskCreatinineTest ->
+                            -- @todo
+                            ( emptyNode, 0, 0 )
+
+                        TaskLiverFunctionTest ->
+                            -- @todo
+                            ( emptyNode, 0, 0 )
+
                         TaskCompletePreviousTests ->
                             viewLabsHistoryForm language currentDate assembled data.labsHistoryForm
                     )
@@ -1572,6 +1584,18 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
                                 TaskCompletePreviousTests ->
                                     SaveLabsHistory
+
+                                TaskPregnancyTest ->
+                                    -- @todo
+                                    NoOp
+
+                                TaskCreatinineTest ->
+                                    -- @todo
+                                    NoOp
+
+                                TaskLiverFunctionTest ->
+                                    -- @todo
+                                    NoOp
 
                         disableSave =
                             if task == TaskCompletePreviousTests then

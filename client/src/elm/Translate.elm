@@ -5699,6 +5699,11 @@ translationSet trans =
                     , kinyarwanda = Just "Uyu murwayi yaba asanzwe azwi ko afite indwara ya Malariya"
                     }
 
+                TaskPregnancyTest ->
+                    { english = "Is this patient known to be pregnant"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskBloodGpRsTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
@@ -5730,6 +5735,20 @@ translationSet trans =
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskHIVPCRTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                TaskCreatinineTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                TaskLiverFunctionTest ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
@@ -5823,6 +5842,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskPregnancyTest ->
+                    { english = "Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskCreatinineTest ->
+                    { english = "Creatinine"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLiverFunctionTest ->
+                    { english = "Liver Function"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskCompletePreviousTests ->
                     { english = "History"
                     , kinyarwanda = Nothing
@@ -5872,6 +5906,21 @@ translationSet trans =
 
                 TaskHIVPCRTest ->
                     { english = "HIV PCR"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskPregnancyTest ->
+                    { english = "Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskCreatinineTest ->
+                    { english = "Creatinine"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLiverFunctionTest ->
+                    { english = "Liver Function"
                     , kinyarwanda = Nothing
                     }
 
@@ -5928,6 +5977,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskPregnancyTest ->
+                    { english = "Pregnancy Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskCreatinineTest ->
+                    { english = "Creatinine Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLiverFunctionTest ->
+                    { english = "Liver Function Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -5978,6 +6042,21 @@ translationSet trans =
 
                 TaskHIVPCRTest ->
                     { english = "HIV PCR Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskPregnancyTest ->
+                    { english = "Pregnancy Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskCreatinineTest ->
+                    { english = "Creatinine Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLiverFunctionTest ->
+                    { english = "Liver Function Test Result"
                     , kinyarwanda = Nothing
                     }
 

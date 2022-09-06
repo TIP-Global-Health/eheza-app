@@ -135,6 +135,10 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
 
+        -- Others are not in use for Prenatal.
+        _ ->
+            False
+
 
 expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
 expectLaboratoryResultTask currentDate assembled task =
@@ -177,6 +181,10 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .hivPCRTest
 
         TaskCompletePreviousTests ->
+            False
+
+        -- Others are not in use for Prenatal.
+        _ ->
             False
 
 

@@ -2456,6 +2456,24 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     , setExecutionNoteMsg = config.setHIVPCRTestExecutionNoteMsg
                     }
 
+                TaskPregnancyTest ->
+                    -- @todo
+                    { setBoolInputMsg = always config.noOpMsg
+                    , setExecutionNoteMsg = always config.noOpMsg
+                    }
+
+                TaskCreatinineTest ->
+                    -- @todo
+                    { setBoolInputMsg = always config.noOpMsg
+                    , setExecutionNoteMsg = always config.noOpMsg
+                    }
+
+                TaskLiverFunctionTest ->
+                    -- @todo
+                    { setBoolInputMsg = always config.noOpMsg
+                    , setExecutionNoteMsg = always config.noOpMsg
+                    }
+
                 TaskCompletePreviousTests ->
                     -- Not in use, as this task got a proprietary form.
                     { setBoolInputMsg = always config.noOpMsg
@@ -2598,6 +2616,27 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                         { setBoolInputMsg = config.setHIVPCRTestFormBoolInputMsg boolInputUpdateFunc
                         , setExecutionDateMsg = config.setHIVPCRTestExecutionDateMsg
                         , setDateSelectorStateMsg = config.setHIVPCRTestDateSelectorStateMsg
+                        }
+
+                    TaskPregnancyTest ->
+                        -- @todo
+                        { setBoolInputMsg = always config.noOpMsg
+                        , setExecutionDateMsg = always config.noOpMsg
+                        , setDateSelectorStateMsg = always config.noOpMsg
+                        }
+
+                    TaskCreatinineTest ->
+                        -- @todo
+                        { setBoolInputMsg = always config.noOpMsg
+                        , setExecutionDateMsg = always config.noOpMsg
+                        , setDateSelectorStateMsg = always config.noOpMsg
+                        }
+
+                    TaskLiverFunctionTest ->
+                        -- @todo
+                        { setBoolInputMsg = always config.noOpMsg
+                        , setExecutionDateMsg = always config.noOpMsg
+                        , setDateSelectorStateMsg = always config.noOpMsg
                         }
 
                     TaskCompletePreviousTests ->
@@ -2819,6 +2858,15 @@ laboratoryTaskIconClass task =
 
         TaskCompletePreviousTests ->
             "laboratory-history"
+
+        TaskPregnancyTest ->
+            "pregnancy"
+
+        TaskCreatinineTest ->
+            "creatinine"
+
+        TaskLiverFunctionTest ->
+            "liver-function"
 
 
 hepatitisBResultFormWithDefault : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId

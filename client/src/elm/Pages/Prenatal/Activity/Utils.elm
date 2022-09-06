@@ -4908,8 +4908,12 @@ laboratoryTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || isJust measurements.hivPCRTest
 
-        TaskCompletePreviousTests ->
-            not <| taskExpected TaskCompletePreviousTests
+        TaskPregnancyTest ->
+            (not <| taskExpected TaskPregnancyTest) || isJust measurements.pregnancyTest
+
+        -- Others are not in use at Prenatal.
+        _ ->
+            False
 
 
 expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
@@ -5011,6 +5015,10 @@ expectLaboratoryTask currentDate assembled task =
 
                 TaskCompletePreviousTests ->
                     -- If we got this far, history task was completed.
+                    False
+
+                -- Others are not in use at Prenatal.
+                _ ->
                     False
 
         else
