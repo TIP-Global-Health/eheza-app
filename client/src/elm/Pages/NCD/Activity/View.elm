@@ -905,7 +905,7 @@ viewLaboratoryContent language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     TaskLiverFunctionTest
 
-                        -- @todo:
+                        -- Others fo not participate at NCD.
                         _ ->
                             ( emptyNode, 0, 0 )
                     )

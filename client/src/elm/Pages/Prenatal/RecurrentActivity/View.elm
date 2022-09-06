@@ -396,18 +396,11 @@ viewLabResultsContent language currentDate assembled model =
                                 |> hivPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
                                 |> hivPCRResultFormAndTasks language currentDate SetHIVViralLoad SetHIVViralLoadUndetectable
 
-                        TaskPregnancyTest ->
-                            ( emptyNode, 0, 0 )
-
-                        TaskCreatinineTest ->
-                            --@todo
-                            ( emptyNode, 0, 0 )
-
-                        TaskLiverFunctionTest ->
-                            --@todo
-                            ( emptyNode, 0, 0 )
-
                         TaskCompletePreviousTests ->
+                            ( emptyNode, 0, 0 )
+
+                        -- Others do not participate at Prenatal.
+                        _ ->
                             ( emptyNode, 0, 0 )
                     )
                 )
@@ -466,18 +459,11 @@ viewLabResultsContent language currentDate assembled model =
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRResult personId measurements.hivPCRTest nextTask |> Just
 
-                                TaskPregnancyTest ->
-                                    Nothing
-
-                                TaskCreatinineTest ->
-                                    --@todo
-                                    Nothing
-
-                                TaskLiverFunctionTest ->
-                                    --@todo
-                                    Nothing
-
                                 TaskCompletePreviousTests ->
+                                    Nothing
+
+                                -- Others do not participate at Prenatal.
+                                _ ->
                                     Nothing
                     in
                     Maybe.map

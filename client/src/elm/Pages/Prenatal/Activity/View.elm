@@ -1511,20 +1511,12 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     TaskHIVPCRTest
 
-                        TaskPregnancyTest ->
-                            -- @todo
-                            ( emptyNode, 0, 0 )
-
-                        TaskCreatinineTest ->
-                            -- @todo
-                            ( emptyNode, 0, 0 )
-
-                        TaskLiverFunctionTest ->
-                            -- @todo
-                            ( emptyNode, 0, 0 )
-
                         TaskCompletePreviousTests ->
                             viewLabsHistoryForm language currentDate assembled data.labsHistoryForm
+
+                        -- Others do not participate at Prenatal.
+                        _ ->
+                            ( emptyNode, 0, 0 )
                     )
                 )
                 tasks
@@ -1585,16 +1577,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 TaskCompletePreviousTests ->
                                     SaveLabsHistory
 
-                                TaskPregnancyTest ->
-                                    -- @todo
-                                    NoOp
-
-                                TaskCreatinineTest ->
-                                    -- @todo
-                                    NoOp
-
-                                TaskLiverFunctionTest ->
-                                    -- @todo
+                                -- Others do not participate at Prenatal.
+                                _ ->
                                     NoOp
 
                         disableSave =
