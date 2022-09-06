@@ -13,12 +13,15 @@ import Measurement.Model
         ( CorePhysicalExamForm
         , DropZoneFile
         , FamilyPlanningForm
+        , OutsideCareForm
+        , OutsideCareStep(..)
         , SendToHCForm
         , VaccinationForm
         , VaccinationFormViewMode
         , VitalsForm
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
+        , emptyOutsideCareForm
         , emptySendToHCForm
         , emptyVaccinationForm
         , emptyVitalsForm
@@ -63,13 +66,13 @@ type Msg
     | SaveSocialHistory PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Outside Care
     | SetOutsideCareStep OutsideCareStep
-    | SetOutsideCareSignBoolInput (Bool -> OutsideCareForm -> OutsideCareForm) Bool
+    | SetOutsideCareSignBoolInput (Bool -> OutsideCareForm PrenatalDiagnosis -> OutsideCareForm PrenatalDiagnosis) Bool
     | SetOutsideCareDiagnosis PrenatalDiagnosis
-    | SetOutsideCareMalariaMedication PrenatalOutsideCareMedication
-    | SetOutsideCareHypertensionMedication PrenatalOutsideCareMedication
-    | SetOutsideCareSyphilisMedication PrenatalOutsideCareMedication
-    | SetOutsideCareAnemiaMedication PrenatalOutsideCareMedication
-    | SetOutsideCareHIVMedication PrenatalOutsideCareMedication
+    | SetOutsideCareMalariaMedication OutsideCareMedication
+    | SetOutsideCareHypertensionMedication OutsideCareMedication
+    | SetOutsideCareSyphilisMedication OutsideCareMedication
+    | SetOutsideCareAnemiaMedication OutsideCareMedication
+    | SetOutsideCareHIVMedication OutsideCareMedication
     | SaveOutsideCare PersonId (Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )) (Maybe HistoryTask)
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
@@ -313,7 +316,7 @@ type alias HistoryData =
     , obstetricHistoryStep : ObstetricHistoryStep
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
-    , outsideCareForm : OutsideCareForm
+    , outsideCareForm : OutsideCareForm PrenatalDiagnosis
     , outsideCareStep : OutsideCareStep
     , activeTask : Maybe HistoryTask
     }
@@ -837,37 +840,6 @@ type alias SocialHistoryForm =
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing Nothing
-
-
-type alias OutsideCareForm =
-    { seenAtAnotherFacility : Maybe Bool
-    , givenNewDiagnosis : Maybe Bool
-    , givenMedicine : Maybe Bool
-    , plannedFollowUp : Maybe Bool
-    , diagnoses : Maybe (List PrenatalDiagnosis)
-    , diagnosesDirty : Bool
-    , malariaMedications : Maybe (List PrenatalOutsideCareMedication)
-    , hypertensionMedications : Maybe (List PrenatalOutsideCareMedication)
-    , syphilisMedications : Maybe (List PrenatalOutsideCareMedication)
-    , hivMedications : Maybe (List PrenatalOutsideCareMedication)
-    , anemiaMedications : Maybe (List PrenatalOutsideCareMedication)
-    }
-
-
-emptyOutsideCareForm : OutsideCareForm
-emptyOutsideCareForm =
-    { seenAtAnotherFacility = Nothing
-    , givenNewDiagnosis = Nothing
-    , givenMedicine = Nothing
-    , plannedFollowUp = Nothing
-    , diagnoses = Nothing
-    , diagnosesDirty = False
-    , malariaMedications = Nothing
-    , hypertensionMedications = Nothing
-    , syphilisMedications = Nothing
-    , hivMedications = Nothing
-    , anemiaMedications = Nothing
-    }
 
 
 encodeLmpRange : LmpRange -> String

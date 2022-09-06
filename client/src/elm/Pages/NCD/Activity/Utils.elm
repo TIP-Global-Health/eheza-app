@@ -447,7 +447,9 @@ medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
             )
 
         TaskOutsideCare ->
-            ( 0, 1 )
+            -- This is not in use, because OutsideCare task got
+            -- special treatment at viewMedicalHistoryContent().
+            ( 0, 0 )
 
 
 socialHistoryFormInputsAndTasks : Language -> NominalDate -> SocialHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -671,3 +673,25 @@ familyHistoryFormInputsAndTasks language currentDate form =
     ( hypertensionInputs ++ heartProblemInputs ++ diabetesInputs
     , hypertensionTasks ++ heartProblemTasks ++ diabetesTasks
     )
+
+
+outsideCareDiagnosesLeftColumn : List MedicalCondition
+outsideCareDiagnosesLeftColumn =
+    [ MedicalConditionNeuropathy
+    , MedicalConditionHIV
+    , MedicalConditionRentalComplications
+    , MedicalConditionMalaria
+    , MedicalConditionTuberculosis
+    , MedicalConditionHypertension
+    ]
+
+
+outsideCareDiagnosesRightColumn : List MedicalCondition
+outsideCareDiagnosesRightColumn =
+    [ MedicalConditionHepatitisB
+    , MedicalConditionSyphilis
+    , MedicalConditionEyeComplications
+    , MedicalConditionAnemia
+    , MedicalConditionPregnancy
+    , MedicalConditionDiabetes
+    ]

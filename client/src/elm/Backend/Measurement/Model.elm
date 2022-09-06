@@ -1332,25 +1332,25 @@ type PrenatalFlankPainSign
 
 
 type alias PrenatalOutsideCare =
-    PrenatalMeasurement PrenatalOutsideCareValue
+    PrenatalMeasurement (OutsideCareValue PrenatalDiagnosis)
 
 
-type alias PrenatalOutsideCareValue =
-    { signs : EverySet PrenatalOutsideCareSign
-    , diagnoses : Maybe (EverySet PrenatalDiagnosis)
-    , medications : Maybe (EverySet PrenatalOutsideCareMedication)
+type alias OutsideCareValue diagnosis =
+    { signs : EverySet OutsideCareSign
+    , diagnoses : Maybe (EverySet diagnosis)
+    , medications : Maybe (EverySet OutsideCareMedication)
     }
 
 
-type PrenatalOutsideCareSign
+type OutsideCareSign
     = SeenAtAnotherFacility
     | GivenNewDiagnoses
     | GivenMedicine
     | PlannedFollowUpCareWithSpecialist
-    | NoPrenatalOutsideCareSigns
+    | NoOutsideCareSigns
 
 
-type PrenatalOutsideCareMedication
+type OutsideCareMedication
     = -- For Malaria:
       OutsideCareMedicationQuinineSulphate
     | OutsideCareMedicationCoartem
@@ -1378,7 +1378,7 @@ type PrenatalOutsideCareMedication
     | OutsideCareMedicationIron2
     | OutsideCareMedicationFolicAcid
     | NoOutsideCareMedicationForAnemia
-    | NoPrenatalOutsideCareMedications
+    | NoOutsideCareMedications
 
 
 type alias PrenatalMentalHealth =
@@ -2269,6 +2269,15 @@ type MedicalCondition
     | MedicalConditionHypertension
     | MedicalConditionGestationalDiabetes
     | MedicalConditionPregnancyRelatedHypertension
+    | MedicalConditionNeuropathy
+    | MedicalConditionRentalComplications
+    | MedicalConditionMalaria
+    | MedicalConditionTuberculosis
+    | MedicalConditionHepatitisB
+    | MedicalConditionSyphilis
+    | MedicalConditionEyeComplications
+    | MedicalConditionAnemia
+    | MedicalConditionOther
     | NoMedicalConditions
 
 
@@ -2416,11 +2425,7 @@ type MedicationTreatingDiabetes
 
 
 type alias NCDOutsideCare =
-    NCDMeasurement NCDOutsideCareValue
-
-
-type alias NCDOutsideCareValue =
-    {}
+    NCDMeasurement (OutsideCareValue MedicalCondition)
 
 
 type alias NCDPregnancyTest =

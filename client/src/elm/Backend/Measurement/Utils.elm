@@ -1962,8 +1962,8 @@ prenatalFlankPainSignFromString value =
             Nothing
 
 
-prenatalOutsideCareSignToString : PrenatalOutsideCareSign -> String
-prenatalOutsideCareSignToString value =
+outsideCareSignToString : OutsideCareSign -> String
+outsideCareSignToString value =
     case value of
         SeenAtAnotherFacility ->
             "seen-at-another-facility"
@@ -1977,12 +1977,12 @@ prenatalOutsideCareSignToString value =
         PlannedFollowUpCareWithSpecialist ->
             "follow-up-with-specialist"
 
-        NoPrenatalOutsideCareSigns ->
+        NoOutsideCareSigns ->
             "none"
 
 
-prenatalOutsideCareSignFromString : String -> Maybe PrenatalOutsideCareSign
-prenatalOutsideCareSignFromString value =
+outsideCareSignFromString : String -> Maybe OutsideCareSign
+outsideCareSignFromString value =
     case value of
         "seen-at-another-facility" ->
             Just SeenAtAnotherFacility
@@ -1997,14 +1997,14 @@ prenatalOutsideCareSignFromString value =
             Just PlannedFollowUpCareWithSpecialist
 
         "none" ->
-            Just NoPrenatalOutsideCareSigns
+            Just NoOutsideCareSigns
 
         _ ->
             Nothing
 
 
-prenatalOutsideCareMedicationToString : PrenatalOutsideCareMedication -> String
-prenatalOutsideCareMedicationToString value =
+outsideCareMedicationToString : OutsideCareMedication -> String
+outsideCareMedicationToString value =
     case value of
         OutsideCareMedicationQuinineSulphate ->
             "quinine-sulphate"
@@ -2072,12 +2072,12 @@ prenatalOutsideCareMedicationToString value =
         NoOutsideCareMedicationForAnemia ->
             "no-treatment-anemia"
 
-        NoPrenatalOutsideCareMedications ->
+        NoOutsideCareMedications ->
             "none"
 
 
-prenatalOutsideCareMedicationFromString : String -> Maybe PrenatalOutsideCareMedication
-prenatalOutsideCareMedicationFromString value =
+outsideCareMedicationFromString : String -> Maybe OutsideCareMedication
+outsideCareMedicationFromString value =
     case value of
         "quinine-sulphate" ->
             Just OutsideCareMedicationQuinineSulphate
@@ -2146,7 +2146,7 @@ prenatalOutsideCareMedicationFromString value =
             Just NoOutsideCareMedicationForAnemia
 
         "none" ->
-            Just NoPrenatalOutsideCareMedications
+            Just NoOutsideCareMedications
 
         _ ->
             Nothing
@@ -2862,6 +2862,33 @@ medicalConditionFromString value =
         "none" ->
             Just NoMedicalConditions
 
+        "neuropathy" ->
+            Just MedicalConditionNeuropathy
+
+        "rental-complications" ->
+            Just MedicalConditionRentalComplications
+
+        "malaria" ->
+            Just MedicalConditionMalaria
+
+        "tuberculosis" ->
+            Just MedicalConditionTuberculosis
+
+        "hepatitis-b" ->
+            Just MedicalConditionHepatitisB
+
+        "syphilis" ->
+            Just MedicalConditionSyphilis
+
+        "eye-complications" ->
+            Just MedicalConditionEyeComplications
+
+        "anemia" ->
+            Just MedicalConditionAnemia
+
+        "other" ->
+            Just MedicalConditionOther
+
         _ ->
             Nothing
 
@@ -2889,6 +2916,33 @@ medicalConditionToString value =
 
         MedicalConditionPregnancyRelatedHypertension ->
             "pregnancy-related-hypertension"
+
+        MedicalConditionNeuropathy ->
+            "neuropathy"
+
+        MedicalConditionRentalComplications ->
+            "rental-complications"
+
+        MedicalConditionMalaria ->
+            "malaria"
+
+        MedicalConditionTuberculosis ->
+            "tuberculosis"
+
+        MedicalConditionHepatitisB ->
+            "hepatitis-b"
+
+        MedicalConditionSyphilis ->
+            "syphilis"
+
+        MedicalConditionEyeComplications ->
+            "eye-complications"
+
+        MedicalConditionAnemia ->
+            "anemia"
+
+        MedicalConditionOther ->
+            "other"
 
         NoMedicalConditions ->
             "none"

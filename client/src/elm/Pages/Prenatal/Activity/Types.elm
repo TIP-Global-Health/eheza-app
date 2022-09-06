@@ -87,11 +87,6 @@ type TreatmentReviewTask
     | TreatmentReviewSyphilis
 
 
-type OutsideCareStep
-    = OutsideCareStepDiagnoses
-    | OutsideCareStepMedications
-
-
 type ImmunisationTask
     = TaskTetanus
 

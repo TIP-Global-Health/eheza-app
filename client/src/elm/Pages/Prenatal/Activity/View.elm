@@ -36,6 +36,7 @@ import Measurement.Model
     exposing
         ( CorePhysicalExamForm
         , InvokationModule(..)
+        , OutsideCareStep(..)
         , SendToHCForm
         , VaccinationFormViewMode(..)
         , VitalsForm
@@ -45,6 +46,8 @@ import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
         , familyPlanningFormWithDefault
+        , outsideCareFormInputsAndTasks
+        , outsideCareFormWithDefault
         , vaccinationFormWithDefault
         , vitalsFormWithDefault
         )
@@ -575,11 +578,45 @@ viewHistoryContent language currentDate assembled data =
                 OutsideCareStepMedications ->
                     ( outsideCareInputsStep2, outsideCareTasksStep2 )
 
+        outsideCareConfig =
+            { setBoolInputMsg = SetOutsideCareSignBoolInput
+            , setDiagnosisMsg = SetOutsideCareDiagnosis
+            , setMalariaMedicationMsg = SetOutsideCareMalariaMedication
+            , setHypertensionMedicationMsg = SetOutsideCareHypertensionMedication
+            , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
+            , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
+            , setHIVMedicationMsg = SetOutsideCareHIVMedication
+            , malariaDiagnoses = [ DiagnosisMalaria ]
+            , hypertensionDiagnoses =
+                [ DiagnosisGestationalHypertensionImmediate
+                , DiagnosisChronicHypertensionImmediate
+                , DiagnosisModeratePreeclampsiaInitialPhase
+                ]
+            , syphilisDiagnoses = [ DiagnosisSyphilis ]
+            , anemiaDiagnoses = [ DiagnosisModerateAnemia ]
+            , hivDiagnoses = [ DiagnosisHIV ]
+            , malariaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisMalaria
+            , resolveHypertensionHeaderTransId =
+                \diagnoses ->
+                    if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
+                        Translate.ModeratePreeclampsia
+
+                    else
+                        Translate.Hypertension
+            , syphilisHeaderTransId = Translate.PrenatalDiagnosis DiagnosisSyphilis
+            , anemiaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisModerateAnemia
+            , hivHeaderTransId = Translate.PrenatalDiagnosis DiagnosisHIV
+            , diagnosesLeftColumn = outsideCareDiagnosesLeftColumn
+            , diagnosesRightColumn = outsideCareDiagnosesRightColumn
+            , otherDiagnosis = DiagnosisOther
+            , diagnosisTransId = Translate.PrenatalDiagnosis
+            }
+
         ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
-            outsideCareFormInputsAndTasks language OutsideCareStepDiagnoses outsideCareForm
+            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
 
         ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
-            outsideCareFormInputsAndTasks language OutsideCareStepMedications outsideCareForm
+            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepMedications outsideCareForm
 
         viewForm =
             case activeTask of

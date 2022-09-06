@@ -518,3 +518,39 @@ type alias FamilyPlanningForm =
 emptyFamilyPlanningForm : FamilyPlanningForm
 emptyFamilyPlanningForm =
     FamilyPlanningForm Nothing
+
+
+type alias OutsideCareForm diagnosis =
+    { seenAtAnotherFacility : Maybe Bool
+    , givenNewDiagnosis : Maybe Bool
+    , givenMedicine : Maybe Bool
+    , plannedFollowUp : Maybe Bool
+    , diagnoses : Maybe (List diagnosis)
+    , diagnosesDirty : Bool
+    , malariaMedications : Maybe (List OutsideCareMedication)
+    , hypertensionMedications : Maybe (List OutsideCareMedication)
+    , syphilisMedications : Maybe (List OutsideCareMedication)
+    , hivMedications : Maybe (List OutsideCareMedication)
+    , anemiaMedications : Maybe (List OutsideCareMedication)
+    }
+
+
+emptyOutsideCareForm : OutsideCareForm diagnosis
+emptyOutsideCareForm =
+    { seenAtAnotherFacility = Nothing
+    , givenNewDiagnosis = Nothing
+    , givenMedicine = Nothing
+    , plannedFollowUp = Nothing
+    , diagnoses = Nothing
+    , diagnosesDirty = False
+    , malariaMedications = Nothing
+    , hypertensionMedications = Nothing
+    , syphilisMedications = Nothing
+    , hivMedications = Nothing
+    , anemiaMedications = Nothing
+    }
+
+
+type OutsideCareStep
+    = OutsideCareStepDiagnoses
+    | OutsideCareStepMedications

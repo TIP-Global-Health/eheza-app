@@ -4544,36 +4544,36 @@ decodePrenatalFlankPainSign =
 
 decodePrenatalOutsideCare : Decoder PrenatalOutsideCare
 decodePrenatalOutsideCare =
-    decodePrenatalMeasurement decodePrenatalOutsideCareValue
+    decodePrenatalMeasurement (decodeOutsideCareValue "prenatal_diagnoses" decodePrenatalDiagnosis)
 
 
-decodePrenatalOutsideCareValue : Decoder PrenatalOutsideCareValue
-decodePrenatalOutsideCareValue =
-    succeed PrenatalOutsideCareValue
-        |> required "outside_care_signs" (decodeEverySet decodePrenatalOutsideCareSign)
-        |> optional "prenatal_diagnoses" (nullable (decodeEverySet decodePrenatalDiagnosis)) Nothing
-        |> optional "outside_care_medications" (nullable (decodeEverySet decodePrenatalOutsideCareMedication)) Nothing
+decodeOutsideCareValue : String -> Decoder diagnosis -> Decoder (OutsideCareValue diagnosis)
+decodeOutsideCareValue fieldName diagnosisDecoder =
+    succeed OutsideCareValue
+        |> required "outside_care_signs" (decodeEverySet decodeOutsideCareSign)
+        |> optional fieldName (nullable (decodeEverySet diagnosisDecoder)) Nothing
+        |> optional "outside_care_medications" (nullable (decodeEverySet decodeOutsideCareMedication)) Nothing
 
 
-decodePrenatalOutsideCareSign : Decoder PrenatalOutsideCareSign
-decodePrenatalOutsideCareSign =
+decodeOutsideCareSign : Decoder OutsideCareSign
+decodeOutsideCareSign =
     string
         |> andThen
             (\s ->
-                prenatalOutsideCareSignFromString s
+                outsideCareSignFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalOutsideCareSign")
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized OutsideCareSign")
             )
 
 
-decodePrenatalOutsideCareMedication : Decoder PrenatalOutsideCareMedication
-decodePrenatalOutsideCareMedication =
+decodeOutsideCareMedication : Decoder OutsideCareMedication
+decodeOutsideCareMedication =
     string
         |> andThen
             (\s ->
-                prenatalOutsideCareMedicationFromString s
+                outsideCareMedicationFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalOutsideCareMedication")
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized OutsideCareMedication")
             )
 
 
@@ -4773,18 +4773,9 @@ decodeMedicationTreatingDiabetes =
             )
 
 
-
---
-
-
 decodeNCDOutsideCare : Decoder NCDOutsideCare
 decodeNCDOutsideCare =
-    decodeNCDMeasurement decodeNCDOutsideCareValue
-
-
-decodeNCDOutsideCareValue : Decoder NCDOutsideCareValue
-decodeNCDOutsideCareValue =
-    succeed NCDOutsideCareValue
+    decodeNCDMeasurement (decodeOutsideCareValue "medical_conditions" decodeMedicalCondition)
 
 
 decodeNCDPregnancyTest : Decoder NCDPregnancyTest

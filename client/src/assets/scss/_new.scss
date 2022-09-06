@@ -3950,3 +3950,38 @@ div.page-activity.patient-record {
     margin: auto 0;
   }
 }
+
+
+div.page-activity.ncd {
+
+  .ui.full.segment {
+
+    .form.history.outside-care {
+
+      label .treatment {
+          color: $color-primary;
+          font-size: 23px;
+          font-weight: 500;
+          margin-right: 0;
+        }
+
+      .label .diagnosis {
+        color: $color-primary;
+      }
+
+      .checkbox-select-input {
+        margin-bottom: 40px;
+      }
+    }
+
+    .actions.two button {
+      width: 50%;
+      float: left;
+      margin: 0;
+
+      &.active {
+        border-left: 1px solid $color-white;
+      }
+    }
+  }
+}

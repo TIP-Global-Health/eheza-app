@@ -21,6 +21,7 @@ import Backend.Measurement.Model
         , NCDGroup2Symptom(..)
         , NCDPainSymptom(..)
         , NeckCPESign(..)
+        , OutsideCareMedication(..)
         , Predecessor(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
@@ -33,8 +34,10 @@ import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
         , familyPlanningFormWithDefault
+        , outsideCareFormWithDefault
         , toCorePhysicalExamValueWithDefault
         , toFamilyPlanningValueWithDefault
+        , toOutsideCareValueWithDefault
         , toVitalsValueWithDefault
         )
 import Pages.NCD.Activity.Model exposing (..)
@@ -87,6 +90,16 @@ update currentDate id db msg model =
                         >> familyHistoryFormWithDefault model.medicalHistoryData.familyHistoryForm
                     )
                 |> Maybe.withDefault model.medicalHistoryData.familyHistoryForm
+
+        outsideCareForm =
+            Dict.get id db.ncdMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.outsideCare
+                        >> getMeasurementValueFunc
+                        >> outsideCareFormWithDefault model.medicalHistoryData.outsideCareForm
+                    )
+                |> Maybe.withDefault model.medicalHistoryData.outsideCareForm
 
         generateExaminationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveExaminationTask task ]) nextTask
@@ -845,6 +858,139 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetOutsideCareStep step ->
+            let
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | outsideCareStep = step })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareSignBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.medicalHistoryData.outsideCareForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareDiagnosis diagnosis ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .diagnoses
+                        (\value -> { outsideCareForm | diagnoses = value })
+                        MedicalConditionOther
+                        diagnosis
+                        outsideCareForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareMalariaMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .malariaMedications
+                        (\medication -> { outsideCareForm | malariaMedications = medication })
+                        NoOutsideCareMedicationForMalaria
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareHypertensionMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .hypertensionMedications
+                        (\medication -> { outsideCareForm | hypertensionMedications = medication })
+                        NoOutsideCareMedicationForHypertension
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareSyphilisMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .syphilisMedications
+                        (\medication -> { outsideCareForm | syphilisMedications = medication })
+                        NoOutsideCareMedicationForSyphilis
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareAnemiaMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .anemiaMedications
+                        (\medication -> { outsideCareForm | anemiaMedications = medication })
+                        NoOutsideCareMedicationForAnemia
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOutsideCareHIVMedication value ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .hivMedications
+                        (\medication -> { outsideCareForm | hivMedications = medication })
+                        NoOutsideCareMedicationForHIV
+                        value
+                        outsideCareForm
+
+                updatedData =
+                    model.medicalHistoryData
+                        |> (\data -> { data | outsideCareForm = updatedForm })
+            in
+            ( { model | medicalHistoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveOutsideCare personId saved nextTask ->
             let
                 measurementId =
@@ -857,16 +1003,14 @@ update currentDate id db msg model =
                     generateMedicalHistoryMsgs nextTask
 
                 appMsgs =
-                    -- @todo
-                    -- toOutsideCareValueWithDefault measurement model.medicalHistoryData.outsideCareForm
-                    --     |> Maybe.map
-                    --         (Backend.NCDEncounter.Model.SaveOutsideCare personId measurementId
-                    --             >> Backend.Model.MsgNCDEncounter id
-                    --             >> App.Model.MsgIndexedDb
-                    --             >> List.singleton
-                    --         )
-                    --     |> Maybe.withDefault []
-                    []
+                    toOutsideCareValueWithDefault NoMedicalConditions measurement model.medicalHistoryData.outsideCareForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveOutsideCare personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
