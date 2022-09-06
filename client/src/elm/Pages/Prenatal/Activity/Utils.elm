@@ -4908,8 +4908,8 @@ laboratoryTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || isJust measurements.hivPCRTest
 
-        TaskPregnancyTest ->
-            (not <| taskExpected TaskPregnancyTest) || isJust measurements.pregnancyTest
+        TaskCompletePreviousTests ->
+            not <| taskExpected TaskCompletePreviousTests
 
         -- Others are not in use at Prenatal.
         _ ->
