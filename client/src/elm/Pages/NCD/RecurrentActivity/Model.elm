@@ -7,9 +7,13 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
-        ( LaboratoryTask
+        ( CreatinineResultForm
+        , LaboratoryTask
+        , LiverFunctionResultForm
         , RandomBloodSugarResultForm
         , UrineDipstickResultForm
+        , emptyCreatinineResultForm
+        , emptyLiverFunctionResultForm
         , emptyRandomBloodSugarResultForm
         , emptyUrineDipstickResultForm
         )
@@ -66,6 +70,8 @@ emptyModel =
 type alias LabResultsData =
     { randomBloodSugarTestForm : RandomBloodSugarResultForm NCDEncounterId
     , urineDipstickTestForm : UrineDipstickResultForm
+    , creatinineResultForm : CreatinineResultForm
+    , liverFunctionResultForm : LiverFunctionResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -74,6 +80,8 @@ emptyLabResultsData : LabResultsData
 emptyLabResultsData =
     { randomBloodSugarTestForm = emptyRandomBloodSugarResultForm
     , urineDipstickTestForm = emptyUrineDipstickResultForm
+    , creatinineResultForm = emptyCreatinineResultForm
+    , liverFunctionResultForm = emptyLiverFunctionResultForm
     , activeTask = Nothing
     }
 
