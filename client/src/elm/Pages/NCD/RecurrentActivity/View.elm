@@ -241,6 +241,12 @@ viewLabResultsContent language currentDate assembled model =
                                 TaskUrineDipstickTest ->
                                     SaveUrineDipstickResult personId measurements.urineDipstickTest nextTask |> Just
 
+                                TaskCreatinineTest ->
+                                    SaveCreatinineResult personId measurements.creatinineTest nextTask |> Just
+
+                                TaskLiverFunctionTest ->
+                                    SaveLiverFunctionResult personId measurements.liverFunctionTest nextTask |> Just
+
                                 -- Others are not in use for NCD.
                                 _ ->
                                     Nothing

@@ -905,7 +905,7 @@ viewLaboratoryContent language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     TaskLiverFunctionTest
 
-                        -- Others fo not participate at NCD.
+                        -- Others do not participate at NCD.
                         _ ->
                             ( emptyNode, 0, 0 )
                     )
@@ -956,7 +956,7 @@ viewLaboratoryContent language currentDate assembled data =
                                 TaskLiverFunctionTest ->
                                     SaveLiverFunctionTest personId measurements.liverFunctionTest nextTask
 
-                                -- Otherse are not part of NCD.
+                                -- Others do not participate at NCD.
                                 _ ->
                                     NoOp
                     in
