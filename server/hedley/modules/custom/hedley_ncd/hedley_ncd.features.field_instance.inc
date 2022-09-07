@@ -2572,6 +2572,44 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-ncd_health_education-field_ncd_health_education_signs'.
+  $field_instances['node-ncd_health_education-field_ncd_health_education_signs'] = array(
+    'bundle' => 'ncd_health_education',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncd_health_education_signs',
+    'label' => 'NCD Health Education Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_health_education-field_nurse'.
   $field_instances['node-ncd_health_education-field_nurse'] = array(
     'bundle' => 'ncd_health_education',
@@ -4233,6 +4271,44 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_medication_distribution-field_recommended_treatment'.
+  $field_instances['node-ncd_medication_distribution-field_recommended_treatment'] = array(
+    'bundle' => 'ncd_medication_distribution',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_recommended_treatment',
+    'label' => 'Recommended Treatment',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
     ),
   );
 
@@ -6131,6 +6207,81 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_referral-field_reasons_for_non_referrals'.
+  $field_instances['node-ncd_referral-field_reasons_for_non_referrals'] = array(
+    'bundle' => 'ncd_referral',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reasons_for_non_referrals',
+    'label' => 'Reasons for non referrals',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 12,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_referral-field_referrals'.
+  $field_instances['node-ncd_referral-field_referrals'] = array(
+    'bundle' => 'ncd_referral',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_referrals',
+    'label' => 'Referrals',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
     ),
   );
 
@@ -8328,6 +8479,7 @@ function hedley_ncd_field_default_field_instances() {
   t('NCD Family History Signs');
   t('NCD Group1 Symptoms');
   t('NCD Group2 Symptoms');
+  t('NCD Health Education Signs');
   t('NCD Pain Symptoms');
   t('NCD Social History Signs');
   t('Neck');
@@ -8340,6 +8492,9 @@ function hedley_ncd_field_default_field_instances() {
   t('Performed tests');
   t('Person');
   t('Protein');
+  t('Reasons for non referrals');
+  t('Recommended Treatment');
+  t('Referrals');
   t('Respiratory rate');
   t('Shards');
   t('Sugar Count');
