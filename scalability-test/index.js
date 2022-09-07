@@ -164,13 +164,10 @@ const inputDelay = 250;
   await login(page);
   await selectHealthCenter(page);
   await syncDevice(page);
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 50; i++) {
     await recordPatient(page);
+    await syncDevice(page);
   }
-  await syncDevice(page);
 
-  if (browser && browser.process() != null) browser.process().kill('SIGINT');
-  const ac = new AbortController();
-  update({ signal: ac.signal });
-  ac.abort();
+  browser.close();
 })();
