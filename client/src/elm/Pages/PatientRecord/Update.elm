@@ -12,7 +12,7 @@ update : NominalDate -> PersonId -> Msg -> Model -> ( Model, Cmd Msg, List App.M
 update currentDate id msg model =
     case msg of
         SetActivePage page ->
-            ( model
+            ( { model | viewMode = ViewPatientRecord }
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )

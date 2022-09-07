@@ -332,11 +332,15 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       // indicates that we need to send updated statistics to client.
       // So, we return what we have stored in cache, with updated hash
       // for health center statistics.
-      $return['batch'][] = hedley_stats_pull_stats_for_health_center($health_center_id, $cached_hash);
+      $stats = hedley_stats_pull_stats_for_health_center($health_center_id, $cached_hash);
+
+      // If statistics were successfully pulled, we return them.
+      // Otherwise, returning an empty result.
+      if (!empty($stats)) {
+        $return['batch'][] = $stats;
+      }
     }
 
-    // If we got this far, we know that statistics on client are
-    // up-to-date - return empty response.
     return $return;
   }
 
