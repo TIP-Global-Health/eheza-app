@@ -108,7 +108,7 @@ function hedley_case_management_resolve_nutrition_follow_ups($person_id, $to_nid
     return;
   }
 
-  foreach ($result['node'] as $follow_up) {
+  foreach (array_keys($result['node']) as $follow_up) {
     hedley_case_management_resolve_follow_up($follow_up);
   }
 }
@@ -184,7 +184,7 @@ function hedley_case_management_resolve_acute_illness_follow_ups($person_id, arr
     return;
   }
 
-  foreach ($result['node'] as $follow_up) {
+  foreach (array_keys($result['node']) as $follow_up) {
     hedley_case_management_resolve_follow_up($follow_up);
   }
 }
@@ -240,8 +240,7 @@ function hedley_case_management_resolve_prenatal_follow_ups($person_id, $to_nid 
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_person', 'target_id', $person_id)
     ->addTag('exclude_resolved')
-    ->range(0, $limit)
-    ->execute();
+    ->range(0, $limit);
 
   if (!empty($to_nid)) {
     $query->propertyCondition('nid', $to_nid, '<');
@@ -252,7 +251,7 @@ function hedley_case_management_resolve_prenatal_follow_ups($person_id, $to_nid 
     return;
   }
 
-  foreach ($result['node'] as $follow_up) {
+  foreach (array_keys($result['node']) as $follow_up) {
     hedley_case_management_resolve_follow_up($follow_up);
   }
 }
