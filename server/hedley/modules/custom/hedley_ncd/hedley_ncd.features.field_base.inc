@@ -472,6 +472,32 @@ function hedley_ncd_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_ncd_guidance'.
+  $field_bases['field_ncd_guidance'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_ncd_guidance',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'return-1m' => 'Return in one month',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_ncd_health_education_signs'.
   $field_bases['field_ncd_health_education_signs'] = array(
     'active' => 1,

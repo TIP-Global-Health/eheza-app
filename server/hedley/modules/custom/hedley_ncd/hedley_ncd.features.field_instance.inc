@@ -4186,6 +4186,43 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-ncd_medication_distribution-field_ncd_guidance'.
+  $field_instances['node-ncd_medication_distribution-field_ncd_guidance'] = array(
+    'bundle' => 'ncd_medication_distribution',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncd_guidance',
+    'label' => 'NCD Guidance',
+    'required' => FALSE,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_medication_distribution-field_nurse'.
   $field_instances['node-ncd_medication_distribution-field_nurse'] = array(
     'bundle' => 'ncd_medication_distribution',
@@ -8479,6 +8516,7 @@ function hedley_ncd_field_default_field_instances() {
   t('NCD Family History Signs');
   t('NCD Group1 Symptoms');
   t('NCD Group2 Symptoms');
+  t('NCD Guidance');
   t('NCD Health Education Signs');
   t('NCD Pain Symptoms');
   t('NCD Social History Signs');

@@ -15,6 +15,7 @@ class HedleyRestfulNCDMedicationDistribution extends HedleyRestfulNCDActivityBas
    */
   protected $multiFields = [
     'field_recommended_treatment',
+    'field_ncd_guidance',
   ];
 
 }
