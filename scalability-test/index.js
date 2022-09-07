@@ -79,6 +79,12 @@ const inputDelay = 250;
     await phoneNumber[0].tap();
     await page.screenshot({path: 'phonenum' + Date.now() + '.png', fullPage: true, captureBeyondViewport: true});
 
+    // Person photo upload.
+    let futureFileChooser = page.waitForFileChooser();
+    await page.click('.dz-clickable');
+    let fileChooser = await futureFileChooser;
+    await fileChooser.accept([File('person.jpg')]);
+
     // Fill textfields with random value.
     for (let i = 0; i < 20; i++) {
       const inputs = await page.$$('.registration-form input')
