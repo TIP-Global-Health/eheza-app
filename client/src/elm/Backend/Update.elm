@@ -90,6 +90,7 @@ import Pages.AcuteIllness.Encounter.Model
 import Pages.AcuteIllness.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
+import Pages.GlobalCaseManagement.Utils
 import Pages.NextSteps.Model
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.Utils
@@ -4488,35 +4489,44 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test id =
         |> Maybe.andThen
             (\assembled ->
                 Maybe.map
-                    (\( resultsId, measurement ) ->
-                        let
-                            updatedValue =
-                                measurement.value
-                                    |> (\value ->
-                                            let
-                                                completedTests =
-                                                    EverySet.insert test value.completedTests
-
-                                                resolutionDate =
-                                                    -- When all performed tests are completed, setting today
-                                                    -- as resolution date.
-                                                    if EverySet.size completedTests == EverySet.size value.performedTests then
-                                                        currentDate
-
-                                                    else
-                                                        value.resolutionDate
-                                            in
-                                            { value
-                                                | completedTests = completedTests
-                                                , resolutionDate = resolutionDate
-                                            }
-                                       )
-                        in
-                        if EverySet.member test measurement.value.completedTests then
+                    (\( resultsId, results ) ->
+                        if EverySet.member test results.value.completedTests then
                             -- Do not update value if we have it set up properly already.
                             []
 
                         else
+                            let
+                                ( performedTests, completedTests ) =
+                                    Pages.GlobalCaseManagement.Utils.prenatalLabsResultsTestData currentDate results
+
+                                updatedValue =
+                                    results.value
+                                        |> (\value ->
+                                                let
+                                                    updatedCompletedTests =
+                                                        test :: completedTests
+
+                                                    resolutionDate =
+                                                        -- When all performed tests are completed, and Next Steps are either
+                                                        -- completed, or not required, setting today as resolution date.
+                                                        if
+                                                            (List.length updatedCompletedTests == List.length performedTests)
+                                                                && Pages.Prenatal.RecurrentActivity.Utils.activityCompleted
+                                                                    currentDate
+                                                                    assembled
+                                                                    Backend.PrenatalActivity.Model.RecurrentNextSteps
+                                                        then
+                                                            currentDate
+
+                                                        else
+                                                            value.resolutionDate
+                                                in
+                                                { value
+                                                    | completedTests = EverySet.fromList updatedCompletedTests
+                                                    , resolutionDate = resolutionDate
+                                                }
+                                           )
+                            in
                             [ saveLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                     )
                     assembled.measurements.labsResults

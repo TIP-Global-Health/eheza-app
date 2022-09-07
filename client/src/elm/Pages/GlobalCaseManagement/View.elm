@@ -852,24 +852,11 @@ viewPrenatalLabsPane language currentDate itemsDict db model =
                             -- date is a future date.
                             Date.compare currentDate item.value.resolutionDate == LT
 
-                        pendingCompletedDiff =
-                            EverySet.diff item.value.performedTests item.value.completedTests
-                                |> EverySet.toList
+                        ( performedTests, completedTests ) =
+                            prenatalLabsResultsTestData currentDate item
 
                         labsResultsPending =
-                            case pendingCompletedDiff of
-                                [] ->
-                                    False
-
-                                [ TestVitalsRecheck ] ->
-                                    -- Vitals recheck is supposed to be performed on
-                                    -- same day first vitals were taken.
-                                    -- Otherwise, running vitals recheck is not necessary,
-                                    -- and we consider this task as completed.
-                                    currentDate == item.dateMeasured
-
-                                _ ->
-                                    True
+                            List.length completedTests < List.length performedTests
                     in
                     itemNotResolved && labsResultsPending
                 )
@@ -927,10 +914,13 @@ generatePrenatalLabsEntryData language currentDate db item =
                     else
                         PrenatalLabsEntryPending
 
+                ( performedTests, completedTests ) =
+                    prenatalLabsResultsTestData currentDate item
+
                 label =
                     if
-                        EverySet.member TestVitalsRecheck item.value.performedTests
-                            && (not <| EverySet.member TestVitalsRecheck item.value.completedTests)
+                        List.member TestVitalsRecheck performedTests
+                            && (not <| List.member TestVitalsRecheck completedTests)
                     then
                         -- Vitals recheck was scheduled, but not completed yet.
                         Translate.PrenatalLabsCaseManagementEntryTypeVitals
