@@ -3231,6 +3231,10 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                         , reasonToSignFunc = NonReferralReasonNCDProgram
                         }
 
+                FacilityANCServices ->
+                    -- @todo
+                    Nothing
+
                 FacilityHealthCenter ->
                     -- We should never get here.
                     Nothing
@@ -3399,6 +3403,9 @@ nonReferralReasonToSign facility reason =
         FacilityNCDProgram ->
             NonReferralReasonNCDProgram reason
 
+        FacilityANCServices ->
+            NonReferralReasonANCServices reason
+
         FacilityHealthCenter ->
             -- We should never get here.
             NoNonReferralSigns
@@ -3427,6 +3434,9 @@ referralToFacilityCompleted assembled facility =
 
                             FacilityNCDProgram ->
                                 Just ( ReferToNCDProgram, NonReferralReasonNCDProgram )
+
+                            FacilityANCServices ->
+                                Just ( ReferToANCServices, NonReferralReasonANCServices )
 
                             FacilityHealthCenter ->
                                 -- We should never get here.

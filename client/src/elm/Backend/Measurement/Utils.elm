@@ -1461,6 +1461,24 @@ recommendedTreatmentSignToString sign =
         TreatmentHypertensionAddAmlodipine ->
             "add-amlodipine"
 
+        TreatmentHydrochlorothiazide ->
+            "hydrochlorothiazide"
+
+        TreatmentAmlodipine ->
+            "amlodipine"
+
+        TreatmentNifedipine ->
+            "nifedipine"
+
+        TreatmentCaptopril ->
+            "captopril"
+
+        TreatmentLisinopril ->
+            "lisinopril"
+
+        TreatmentAtenlol ->
+            "atenlol"
+
         NoTreatmentForHypertension ->
             "no-treatment-hypertension"
 
@@ -1499,6 +1517,33 @@ recommendedTreatmentSignToString sign =
 
         NoTreatmentForMastitis ->
             "no-treatment-mastitis"
+
+        TreatmentMetformin1m1e ->
+            "metformin-1m1e"
+
+        TreatmentGlipenclamide1m1e ->
+            "glipenclamide-1m1e"
+
+        TreatmentMetformin2m1e ->
+            "metformin-2m1e"
+
+        TreatmentGlipenclamide2m1e ->
+            "glipenclamide-2m1e"
+
+        TreatmentMetformin2m2e ->
+            "metformin-2m2e"
+
+        TreatmentGlipenclamide2m2e ->
+            "glipenclamide-2m2e"
+
+        TreatmentMetformin2m2eGlipenclamide1m1e ->
+            "metformin-2m2e-glipenclamide-1m1e"
+
+        TreatmentGlipenclamide2m2eMetformin1m1e ->
+            "glipenclamide-2m2e-metformin-1m1e"
+
+        NoTreatmentForDiabetes ->
+            "no-treatment-diabetes"
 
 
 recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
@@ -1552,6 +1597,24 @@ recommendedTreatmentSignFromString sign =
         "add-amlodipine" ->
             Just TreatmentHypertensionAddAmlodipine
 
+        "hydrochlorothiazide" ->
+            Just TreatmentHydrochlorothiazide
+
+        "amlodipine" ->
+            Just TreatmentAmlodipine
+
+        "nifedipine" ->
+            Just TreatmentNifedipine
+
+        "captopril" ->
+            Just TreatmentCaptopril
+
+        "lisinopril" ->
+            Just TreatmentLisinopril
+
+        "atenlol" ->
+            Just TreatmentAtenlol
+
         "no-treatment-hypertension" ->
             Just NoTreatmentForHypertension
 
@@ -1590,6 +1653,33 @@ recommendedTreatmentSignFromString sign =
 
         "no-treatment-mastitis" ->
             Just NoTreatmentForMastitis
+
+        "metformin-1m1e" ->
+            Just TreatmentMetformin1m1e
+
+        "glipenclamide-1m1e" ->
+            Just TreatmentGlipenclamide1m1e
+
+        "metformin-2m1e" ->
+            Just TreatmentMetformin2m1e
+
+        "glipenclamide-2m1e" ->
+            Just TreatmentGlipenclamide2m1e
+
+        "metformin-2m2e" ->
+            Just TreatmentMetformin2m2e
+
+        "glipenclamide-2m2e" ->
+            Just TreatmentGlipenclamide2m2e
+
+        "metformin-2m2e-glipenclamide-1m1e" ->
+            Just TreatmentMetformin2m2eGlipenclamide1m1e
+
+        "glipenclamide-2m2e-metformin-1m1e" ->
+            Just TreatmentGlipenclamide2m2eMetformin1m1e
+
+        "no-treatment-diabetes" ->
+            Just NoTreatmentForDiabetes
 
         _ ->
             Nothing

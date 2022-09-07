@@ -1516,6 +1516,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityANCServices ->
+                    { english = "Will you accompany the patient to ANC services"
+                    , kinyarwanda = Nothing
+                    }
+
         AccessDenied ->
             { english = "Access denied"
             , kinyarwanda = Just "Kwinjira ntibyemera"
@@ -3226,6 +3231,11 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Complete a NCD services referral form"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityANCServices ->
+                    { english = "Complete a ANC services referral form"
                     , kinyarwanda = Nothing
                     }
 
@@ -12848,6 +12858,36 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentHydrochlorothiazide ->
+                    { english = "1 tablet by mouth daily"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAmlodipine ->
+                    { english = "1 tablet by mouth daily"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentNifedipine ->
+                    { english = "1 tablet by mouth twice a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentCaptopril ->
+                    { english = "1 tablet by mouth 3 times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentLisinopril ->
+                    { english = "1 tablet by mouth daily"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAtenlol ->
+                    { english = "1 tablet by mouth daily"
+                    , kinyarwanda = Nothing
+                    }
+
                 TreatmentCloxacillin ->
                     { english = "2 capsules by mouth 3 times a day for 7 days"
                     , kinyarwanda = Nothing
@@ -12870,6 +12910,36 @@ translationSet trans =
 
                 TreatmentIbuprofen ->
                     { english = "1 tablet by mouth 3 times a day for 5 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin1m1e ->
+                    { english = "1 tablet by mouth twice a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide1m1e ->
+                    { english = "1 tablet by mouth twice a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin2m1e ->
+                    { english = "2 tablets by mouth in the morning and 1 tablet by mouth in the evening"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide2m1e ->
+                    { english = "2 tablets by mouth in the morning and 1 tablet by mouth in the evening"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin2m2e ->
+                    { english = "2 tablets by mouth twice a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide2m2e ->
+                    { english = "2 tablets by mouth twice a day"
                     , kinyarwanda = Nothing
                     }
 
@@ -12967,6 +13037,36 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentHydrochlorothiazide ->
+                    { english = "Hydrochlorothiazide (12.5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAmlodipine ->
+                    { english = "Amlodipine (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentNifedipine ->
+                    { english = "Nifedipine (20mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentCaptopril ->
+                    { english = "Captopril (25mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentLisinopril ->
+                    { english = "Lisinopril (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAtenlol ->
+                    { english = "Atenlol (12ץ5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoTreatmentForHypertension ->
                     { english = "No Treatment Administered"
                     , kinyarwanda = Just "Nta muti watanzwe"
@@ -13032,6 +13132,51 @@ translationSet trans =
                     , kinyarwanda = Just "Nta muti watanzwe"
                     }
 
+                TreatmentMetformin1m1e ->
+                    { english = "Metformin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide1m1e ->
+                    { english = "Glipenclamide (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin2m1e ->
+                    { english = "Metformin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide2m1e ->
+                    { english = "Glipenclamide (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin2m2e ->
+                    { english = "Metformin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide2m2e ->
+                    { english = "Glipenclamide (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin2m2eGlipenclamide1m1e ->
+                    { english = "Metformin (500mg), Glipenclamide (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide2m2eMetformin1m1e ->
+                    { english = "Glipenclamide (5mg), Metformin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoTreatmentForDiabetes ->
+                    { english = "No Treatment Administered"
+                    , kinyarwanda = Just "Nta muti watanzwe"
+                    }
+
         RecordAcuteIllnessOutcome ->
             { english = "Record Acute Illness Outcome"
             , kinyarwanda = Just "Andika iherezo ry'indwara ifatiyeho"
@@ -13081,6 +13226,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityANCServices ->
+                    { english = "Have you referred the patient to ANC services"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacility facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -13108,6 +13258,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityANCServices ->
+                    { english = "Referred to ANC services"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacilityNot facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -13132,6 +13287,11 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Not referred to NCD services"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityANCServices ->
+                    { english = "Not referred to ANC services"
                     , kinyarwanda = Nothing
                     }
 
@@ -14286,6 +14446,11 @@ translationSet trans =
                 FacilityNCDProgram ->
                     { english = "Direct patient to the appropriate location"
                     , kinyarwanda = Just "Yobora umurwayi ahantu habugenewe"
+                    }
+
+                FacilityANCServices ->
+                    { english = "Refer patient to ANC services for further management of hypertension during pregnancy"
+                    , kinyarwanda = Nothing
                     }
 
         ShowAll ->

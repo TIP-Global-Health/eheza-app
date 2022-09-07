@@ -2326,6 +2326,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         FacilityNCDProgram ->
                                             EverySet.member ReferToNCDProgram referToFacilitySigns
 
+                                        FacilityANCServices ->
+                                            -- Explicit NCD facility.
+                                            False
+
                                         FacilityHealthCenter ->
                                             -- We should never get here.
                                             False
@@ -2361,6 +2365,9 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
 
                                             FacilityNCDProgram ->
                                                 getCurrentReasonForNonReferral NonReferralReasonNCDProgram value.facilityNonReferralReasons
+
+                                            FacilityANCServices ->
+                                                getCurrentReasonForNonReferral NonReferralReasonANCServices value.facilityNonReferralReasons
 
                                             FacilityHealthCenter ->
                                                 -- We should never get here.

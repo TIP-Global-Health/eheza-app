@@ -2372,6 +2372,15 @@ encodeReferToFacilitySign sign =
             AccompanyToNCDProgram ->
                 "ncd-accompany"
 
+            ReferToANCServices ->
+                "anc"
+
+            ReferralFormANCServices ->
+                "anc-referral-form"
+
+            AccompanyToANCServices ->
+                "anc-accompany"
+
             NoReferToFacilitySigns ->
                 "none"
 
@@ -2391,6 +2400,9 @@ encodeNonReferralSign sign =
 
             NonReferralReasonNCDProgram reason ->
                 "ncd-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonANCServices reason ->
+                "anc-" ++ reasonForNonReferralToString reason
 
             NoNonReferralSigns ->
                 "none"
@@ -2414,6 +2426,9 @@ encodeReferralFacility facility =
 
             FacilityNCDProgram ->
                 "ncd"
+
+            FacilityANCServices ->
+                "anc"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )

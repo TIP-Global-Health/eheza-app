@@ -900,6 +900,9 @@ type ReferToFacilitySign
     | ReferToNCDProgram
     | ReferralFormNCDProgram
     | AccompanyToNCDProgram
+    | ReferToANCServices
+    | ReferralFormANCServices
+    | AccompanyToANCServices
     | NoReferToFacilitySigns
 
 
@@ -908,6 +911,7 @@ type NonReferralSign
     | NonReferralReasonMentalHealthSpecialist ReasonForNonReferral
     | NonReferralReasonARVProgram ReasonForNonReferral
     | NonReferralReasonNCDProgram ReasonForNonReferral
+    | NonReferralReasonANCServices ReasonForNonReferral
     | NoNonReferralSigns
 
 
@@ -917,6 +921,7 @@ type ReferralFacility
     | FacilityMentalHealthSpecialist
     | FacilityARVProgram
     | FacilityNCDProgram
+    | FacilityANCServices
 
 
 type alias PrenatalAppointmentConfirmationValue =
@@ -1238,12 +1243,20 @@ type RecommendedTreatmentSign
     | TreatmentAzithromycin
     | TreatmentCeftriaxon
     | NoTreatmentForSyphilis
-      -- For Hypertension:
+      -- For Hypertension, NCD + Prenatal:
     | TreatmentMethyldopa2
+      -- For Hypertension, only Prenatal:
     | TreatmentMethyldopa3
     | TreatmentMethyldopa4
     | TreatmentHypertensionAddCarvedilol
     | TreatmentHypertensionAddAmlodipine
+      -- For Hypertension, only NCD:
+    | TreatmentHydrochlorothiazide
+    | TreatmentAmlodipine
+    | TreatmentNifedipine
+    | TreatmentCaptopril
+    | TreatmentLisinopril
+    | TreatmentAtenlol
     | NoTreatmentForHypertension
       -- For Heartburn:
     | TreatmentAluminiumHydroxide
@@ -1261,6 +1274,16 @@ type RecommendedTreatmentSign
     | TreatmentParacetamol
     | TreatmentIbuprofen
     | NoTreatmentForMastitis
+      -- For Diabetes (NCD):
+    | TreatmentMetformin1m1e
+    | TreatmentGlipenclamide1m1e
+    | TreatmentMetformin2m1e
+    | TreatmentGlipenclamide2m1e
+    | TreatmentMetformin2m2e
+    | TreatmentGlipenclamide2m2e
+    | TreatmentMetformin2m2eGlipenclamide1m1e
+    | TreatmentGlipenclamide2m2eMetformin1m1e
+    | NoTreatmentForDiabetes
 
 
 type AvoidingGuidanceReason
@@ -2359,7 +2382,12 @@ type alias NCDHealthEducation =
 
 
 type alias NCDHealthEducationValue =
-    {}
+    EverySet NCDHealthEducationSign
+
+
+type NCDHealthEducationSign
+    = EducationHypertension
+    | NoNCDHealthEducationSigns
 
 
 type alias NCDHIVTest =
@@ -2383,7 +2411,14 @@ type alias NCDMedicationDistribution =
 
 
 type alias NCDMedicationDistributionValue =
-    {}
+    { recommendedTreatmentSigns : EverySet RecommendedTreatmentSign
+    , guidanceSigns : EverySet NCDGuidanceSign
+    }
+
+
+type NCDGuidanceSign
+    = ReturnInOneMonth
+    | NoNCDGuidanceSigns
 
 
 type alias NCDMedicationHistory =
@@ -2447,7 +2482,9 @@ type alias NCDReferral =
 
 
 type alias NCDReferralValue =
-    {}
+    { referToFacilitySigns : EverySet ReferToFacilitySign
+    , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
+    }
 
 
 type alias NCDSocialHistory =

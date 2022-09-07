@@ -6332,6 +6332,10 @@ matchRequiredReferralFacility assembled facility =
             referredToSpecialityCareProgram EnrolledToNCDProgram assembled
                 || diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
 
+        FacilityANCServices ->
+            -- Explicit NCD facility.
+            False
+
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved
             -- with resolveReferralInputsAndTasksForCHW.
