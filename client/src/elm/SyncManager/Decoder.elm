@@ -531,10 +531,110 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeMuac
                             BackendAuthorityMuac
 
+                    "ncd_co_morbidities" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDCoMorbidities
+                            BackendAuthorityNCDCoMorbidities
+
+                    "ncd_core_exam" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDCoreExam
+                            BackendAuthorityNCDCoreExam
+
+                    "ncd_creatinine_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDCreatinineTest
+                            BackendAuthorityNCDCreatinineTest
+
+                    "ncd_danger_signs" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDDangerSigns
+                            BackendAuthorityNCDDangerSigns
+
                     "ncd_encounter" ->
                         doDecode
                             Backend.NCDEncounter.Decoder.decodeNCDEncounter
                             BackendAuthorityNCDEncounter
+
+                    "ncd_family_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDFamilyHistory
+                            BackendAuthorityNCDFamilyHistory
+
+                    "ncd_family_planning" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDFamilyPlanning
+                            BackendAuthorityNCDFamilyPlanning
+
+                    "ncd_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDHealthEducation
+                            BackendAuthorityNCDHealthEducation
+
+                    "ncd_hiv_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDHivTest
+                            BackendAuthorityNCDHivTest
+
+                    "ncd_labs_results" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDLabsResults
+                            BackendAuthorityNCDLabsResults
+
+                    "ncd_liver_function_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDLiverFunctionTest
+                            BackendAuthorityNCDLiverFunctionTest
+
+                    "ncd_medication_distribution" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDMedicationDistribution
+                            BackendAuthorityNCDMedicationDistribution
+
+                    "ncd_medication_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDMedicationHistory
+                            BackendAuthorityNCDMedicationHistory
+
+                    "ncd_outside_care" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDOutsideCare
+                            BackendAuthorityNCDOutsideCare
+
+                    "ncd_pregnancy_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDPregnancyTest
+                            BackendAuthorityNCDPregnancyTest
+
+                    "ncd_random_blood_sugar_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDRandomBloodSugarTest
+                            BackendAuthorityNCDRandomBloodSugarTest
+
+                    "ncd_referral" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDReferral
+                            BackendAuthorityNCDReferral
+
+                    "ncd_social_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDSocialHistory
+                            BackendAuthorityNCDSocialHistory
+
+                    "ncd_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDSymptomReview
+                            BackendAuthorityNCDSymptomReview
+
+                    "ncd_urine_dipstick_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDUrineDipstickTest
+                            BackendAuthorityNCDUrineDipstickTest
+
+                    "ncd_vitals" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDVitals
+                            BackendAuthorityNCDVitals
 
                     "nutrition" ->
                         doDecode

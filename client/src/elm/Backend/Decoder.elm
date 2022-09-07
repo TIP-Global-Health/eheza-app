@@ -167,8 +167,68 @@ decodeRevision =
                     "muac" ->
                         decodeWithUuid MuacRevision decodeMuac
 
+                    "ncd_co_morbidities" ->
+                        decodeWithUuid NCDCoMorbiditiesRevision decodeNCDCoMorbidities
+
+                    "ncd_core_exam" ->
+                        decodeWithUuid NCDCoreExamRevision decodeNCDCoreExam
+
+                    "ncd_creatinine_test" ->
+                        decodeWithUuid NCDCreatinineTestRevision decodeNCDCreatinineTest
+
+                    "ncd_danger_signs" ->
+                        decodeWithUuid NCDDangerSignsRevision decodeNCDDangerSigns
+
                     "ncd_encounter" ->
                         decodeWithUuid NCDEncounterRevision decodeNCDEncounter
+
+                    "ncd_family_history" ->
+                        decodeWithUuid NCDFamilyHistoryRevision decodeNCDFamilyHistory
+
+                    "ncd_family_planning" ->
+                        decodeWithUuid NCDFamilyPlanningRevision decodeNCDFamilyPlanning
+
+                    "ncd_health_education" ->
+                        decodeWithUuid NCDHealthEducationRevision decodeNCDHealthEducation
+
+                    "ncd_hiv_test" ->
+                        decodeWithUuid NCDHivTestRevision decodeNCDHivTest
+
+                    "ncd_labs_results" ->
+                        decodeWithUuid NCDLabsResultsRevision decodeNCDLabsResults
+
+                    "ncd_liver_function_test" ->
+                        decodeWithUuid NCDLiverFunctionTestRevision decodeNCDLiverFunctionTest
+
+                    "ncd_medication_distribution" ->
+                        decodeWithUuid NCDMedicationDistributionRevision decodeNCDMedicationDistribution
+
+                    "ncd_medication_history" ->
+                        decodeWithUuid NCDMedicationHistoryRevision decodeNCDMedicationHistory
+
+                    "ncd_outside_care" ->
+                        decodeWithUuid NCDOutsideCareRevision decodeNCDOutsideCare
+
+                    "ncd_pregnancy_test" ->
+                        decodeWithUuid NCDPregnancyTestRevision decodeNCDPregnancyTest
+
+                    "ncd_random_blood_sugar_test" ->
+                        decodeWithUuid NCDRandomBloodSugarTestRevision decodeNCDRandomBloodSugarTest
+
+                    "ncd_referral" ->
+                        decodeWithUuid NCDReferralRevision decodeNCDReferral
+
+                    "ncd_social_history" ->
+                        decodeWithUuid NCDSocialHistoryRevision decodeNCDSocialHistory
+
+                    "ncd_symptom_review" ->
+                        decodeWithUuid NCDSymptomReviewRevision decodeNCDSymptomReview
+
+                    "ncd_urine_dipstick_test" ->
+                        decodeWithUuid NCDUrineDipstickTestRevision decodeNCDUrineDipstickTest
+
+                    "ncd_vitals" ->
+                        decodeWithUuid NCDVitalsRevision decodeNCDVitals
 
                     "nurse" ->
                         decodeWithUuid NurseRevision decodeNurse

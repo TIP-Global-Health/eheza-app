@@ -1020,11 +1020,6 @@ encodeAttendance =
     encodeGroupMeasurement encodeAttendanceValue
 
 
-encodeFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
-encodeFamilyPlanningValue signs =
-    encodeFamilyPlanningValueWithType "family_planning" signs
-
-
 encodeFamilyPlanningValueWithType : String -> EverySet FamilyPlanningSign -> List ( String, Value )
 encodeFamilyPlanningValueWithType type_ signs =
     [ ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign signs )
@@ -1035,7 +1030,7 @@ encodeFamilyPlanningValueWithType type_ signs =
 
 encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
 encodeFamilyPlanning =
-    encodeGroupMeasurement encodeFamilyPlanningValue
+    encodeGroupMeasurement (encodeFamilyPlanningValueWithType "family_planning")
 
 
 encodeLactationValue : EverySet LactationSign -> List ( String, Value )
@@ -1082,6 +1077,11 @@ encodeHomeVisitMeasurement =
 encodeWellChildMeasurement : (value -> List ( String, Value )) -> WellChildMeasurement value -> List ( String, Value )
 encodeWellChildMeasurement =
     encodeMeasurement "well_child_encounter"
+
+
+encodeNCDMeasurement : (value -> List ( String, Value )) -> NCDMeasurement value -> List ( String, Value )
+encodeNCDMeasurement =
+    encodeMeasurement "ncd_encounter"
 
 
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
@@ -1318,8 +1318,8 @@ encodeLegsCPESign sign =
                 "normal"
 
 
-encodeCorePhysicalExamValue : CorePhysicalExamValue -> List ( String, Value )
-encodeCorePhysicalExamValue value =
+encodeCorePhysicalExamValueWithType : String -> CorePhysicalExamValue -> List ( String, Value )
+encodeCorePhysicalExamValueWithType type_ value =
     [ ( "head_hair", encodeEverySet encodeHairHeadCPESign value.hairHead )
     , ( "eyes", encodeEverySet encodeEyesCPESign value.eyes )
     , ( "heart", encodeEverySet encodeHeartCPESign value.heart )
@@ -1330,13 +1330,13 @@ encodeCorePhysicalExamValue value =
     , ( "hands", encodeEverySet encodeHandsCPESign value.hands )
     , ( "legs", encodeEverySet encodeLegsCPESign value.legs )
     , ( "deleted", bool False )
-    , ( "type", string "core_physical_exam" )
+    , ( "type", string type_ )
     ]
 
 
 encodeCorePhysicalExam : CorePhysicalExam -> List ( String, Value )
 encodeCorePhysicalExam =
-    encodePrenatalMeasurement encodeCorePhysicalExamValue
+    encodePrenatalMeasurement (encodeCorePhysicalExamValueWithType "core_physical_exam")
 
 
 encodeDangerSign : DangerSign -> Value
@@ -1854,12 +1854,7 @@ encodeBirthPlanSign sign =
 
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
 encodePrenatalFamilyPlanning =
-    encodePrenatalMeasurement encodePrenatalFamilyPlanningValue
-
-
-encodePrenatalFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
-encodePrenatalFamilyPlanningValue signs =
-    encodeFamilyPlanningValueWithType "prenatal_family_planning" signs
+    encodePrenatalMeasurement (encodeFamilyPlanningValueWithType "prenatal_family_planning")
 
 
 encodePrenatalNutrition : PrenatalNutrition -> List ( String, Value )
@@ -4083,16 +4078,16 @@ encodePrenatalFlankPainSign =
 
 encodePrenatalOutsideCare : PrenatalOutsideCare -> List ( String, Value )
 encodePrenatalOutsideCare =
-    encodePrenatalMeasurement encodePrenatalOutsideCareValue
+    encodePrenatalMeasurement (encodeOutsideCareValue "prenatal_diagnoses" encodePrenatalDiagnosis "prenatal_outside_care")
 
 
-encodePrenatalOutsideCareValue : PrenatalOutsideCareValue -> List ( String, Value )
-encodePrenatalOutsideCareValue value =
+encodeOutsideCareValue : String -> (diagnosis -> Value) -> String -> OutsideCareValue diagnosis -> List ( String, Value )
+encodeOutsideCareValue fieldName diagnosisEncouder type_ value =
     let
         diagnoses =
             Maybe.map
                 (\diagnoses_ ->
-                    [ ( "prenatal_diagnoses", encodeEverySet encodePrenatalDiagnosis diagnoses_ ) ]
+                    [ ( fieldName, encodeEverySet diagnosisEncouder diagnoses_ ) ]
                 )
                 value.diagnoses
                 |> Maybe.withDefault []
@@ -4100,24 +4095,354 @@ encodePrenatalOutsideCareValue value =
         medications =
             Maybe.map
                 (\medications_ ->
-                    [ ( "outside_care_medications", encodeEverySet encodePrenatalOutsideCareMedication medications_ ) ]
+                    [ ( "outside_care_medications", encodeEverySet encodeOutsideCareMedication medications_ ) ]
                 )
                 value.medications
                 |> Maybe.withDefault []
     in
-    [ ( "outside_care_signs", encodeEverySet encodePrenatalOutsideCareSign value.signs )
+    [ ( "outside_care_signs", encodeEverySet encodeOutsideCareSign value.signs )
     , ( "deleted", bool False )
-    , ( "type", string "prenatal_outside_care" )
+    , ( "type", string type_ )
     ]
         ++ diagnoses
         ++ medications
 
 
-encodePrenatalOutsideCareSign : PrenatalOutsideCareSign -> Value
-encodePrenatalOutsideCareSign =
-    prenatalOutsideCareSignToString >> string
+encodeOutsideCareSign : OutsideCareSign -> Value
+encodeOutsideCareSign =
+    outsideCareSignToString >> string
 
 
-encodePrenatalOutsideCareMedication : PrenatalOutsideCareMedication -> Value
-encodePrenatalOutsideCareMedication =
-    prenatalOutsideCareMedicationToString >> string
+encodeOutsideCareMedication : OutsideCareMedication -> Value
+encodeOutsideCareMedication =
+    outsideCareMedicationToString >> string
+
+
+encodeNCDCoMorbidities : NCDCoMorbidities -> List ( String, Value )
+encodeNCDCoMorbidities =
+    encodeNCDMeasurement encodeNCDCoMorbiditiesValue
+
+
+encodeNCDCoMorbiditiesValue : NCDCoMorbiditiesValue -> List ( String, Value )
+encodeNCDCoMorbiditiesValue value =
+    [ ( "comorbidities", encodeEverySet encodeMedicalCondition value )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_co_morbidities" )
+    ]
+
+
+encodeMedicalCondition : MedicalCondition -> Value
+encodeMedicalCondition =
+    medicalConditionToString >> string
+
+
+encodeNCDCoreExam : NCDCoreExam -> List ( String, Value )
+encodeNCDCoreExam =
+    encodeNCDMeasurement (encodeCorePhysicalExamValueWithType "ncd_core_exam")
+
+
+encodeNCDCreatinineTest : NCDCreatinineTest -> List ( String, Value )
+encodeNCDCreatinineTest =
+    encodeNCDMeasurement encodeNCDCreatinineTestValue
+
+
+encodeNCDCreatinineTestValue : NCDCreatinineTestValue -> List ( String, Value )
+encodeNCDCreatinineTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_creatinine_test" )
+    ]
+
+
+encodeNCDDangerSigns : NCDDangerSigns -> List ( String, Value )
+encodeNCDDangerSigns =
+    encodeNCDMeasurement encodeNCDDangerSignsValue
+
+
+encodeNCDDangerSignsValue : NCDDangerSignsValue -> List ( String, Value )
+encodeNCDDangerSignsValue value =
+    [ ( "ncd_danger_signs", encodeEverySet encodeNCDDangerSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_danger_signs" )
+    ]
+
+
+encodeNCDDangerSign : NCDDangerSign -> Value
+encodeNCDDangerSign =
+    ncdDangerSignToString >> string
+
+
+encodeNCDFamilyHistory : NCDFamilyHistory -> List ( String, Value )
+encodeNCDFamilyHistory =
+    encodeNCDMeasurement encodeNCDFamilyHistoryValue
+
+
+encodeNCDFamilyHistoryValue : NCDFamilyHistoryValue -> List ( String, Value )
+encodeNCDFamilyHistoryValue value =
+    let
+        hypertensionPredecessors =
+            Maybe.map
+                (\predecessors ->
+                    [ ( "hypertension_predecessors", encodeEverySet encodePredecessor predecessors ) ]
+                )
+                value.hypertensionPredecessors
+                |> Maybe.withDefault []
+
+        heartProblemPredecessors =
+            Maybe.map
+                (\predecessors ->
+                    [ ( "heart_problem_predecessors", encodeEverySet encodePredecessor predecessors ) ]
+                )
+                value.heartProblemPredecessors
+                |> Maybe.withDefault []
+
+        diabetesPredecessors =
+            Maybe.map
+                (\predecessors ->
+                    [ ( "diabetes_predecessors", encodeEverySet encodePredecessor predecessors ) ]
+                )
+                value.diabetesPredecessors
+                |> Maybe.withDefault []
+    in
+    [ ( "ncd_family_history_signs", encodeEverySet encodeNCDFamilyHistorySign value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_family_history" )
+    ]
+        ++ hypertensionPredecessors
+        ++ heartProblemPredecessors
+        ++ diabetesPredecessors
+
+
+encodeNCDFamilyHistorySign : NCDFamilyHistorySign -> Value
+encodeNCDFamilyHistorySign =
+    ncdFamilyHistorySignToString >> string
+
+
+encodePredecessor : Predecessor -> Value
+encodePredecessor =
+    predecessorToString >> string
+
+
+encodeNCDFamilyPlanning : NCDFamilyPlanning -> List ( String, Value )
+encodeNCDFamilyPlanning =
+    encodeNCDMeasurement (encodeFamilyPlanningValueWithType "ncd_family_planning")
+
+
+encodeNCDHealthEducation : NCDHealthEducation -> List ( String, Value )
+encodeNCDHealthEducation =
+    encodeNCDMeasurement encodeNCDHealthEducationValue
+
+
+encodeNCDHealthEducationValue : NCDHealthEducationValue -> List ( String, Value )
+encodeNCDHealthEducationValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_health_education" )
+    ]
+
+
+encodeNCDHivTest : NCDHivTest -> List ( String, Value )
+encodeNCDHivTest =
+    encodeNCDMeasurement encodeNCDHivTestValue
+
+
+encodeNCDHivTestValue : NCDHivTestValue -> List ( String, Value )
+encodeNCDHivTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_hiv_test" )
+    ]
+
+
+encodeNCDLabsResults : NCDLabsResults -> List ( String, Value )
+encodeNCDLabsResults =
+    encodeNCDMeasurement encodeNCDLabsResultsValue
+
+
+encodeNCDLabsResultsValue : NCDLabsResultsValue -> List ( String, Value )
+encodeNCDLabsResultsValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_labs_results" )
+    ]
+
+
+encodeNCDLiverFunctionTest : NCDLiverFunctionTest -> List ( String, Value )
+encodeNCDLiverFunctionTest =
+    encodeNCDMeasurement encodeNCDLiverFunctionTestValue
+
+
+encodeNCDLiverFunctionTestValue : NCDLiverFunctionTestValue -> List ( String, Value )
+encodeNCDLiverFunctionTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_liver_function_test" )
+    ]
+
+
+encodeNCDMedicationDistribution : NCDMedicationDistribution -> List ( String, Value )
+encodeNCDMedicationDistribution =
+    encodeNCDMeasurement encodeNCDMedicationDistributionValue
+
+
+encodeNCDMedicationDistributionValue : NCDMedicationDistributionValue -> List ( String, Value )
+encodeNCDMedicationDistributionValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_medication_distribution" )
+    ]
+
+
+encodeNCDMedicationHistory : NCDMedicationHistory -> List ( String, Value )
+encodeNCDMedicationHistory =
+    encodeNCDMeasurement encodeNCDMedicationHistoryValue
+
+
+encodeNCDMedicationHistoryValue : NCDMedicationHistoryValue -> List ( String, Value )
+encodeNCDMedicationHistoryValue value =
+    [ ( "causing_hypertension", encodeEverySet encodeMedicationCausingHypertension value.medicationsCausingHypertension )
+    , ( "treating_hypertension", encodeEverySet encodeMedicationTreatingHypertension value.medicationsTreatingHypertension )
+    , ( "treating_diabetes", encodeEverySet encodeMedicationTreatingDiabetes value.medicationsTreatingDiabetes )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_medication_history" )
+    ]
+
+
+encodeMedicationCausingHypertension : MedicationCausingHypertension -> Value
+encodeMedicationCausingHypertension =
+    medicationCausingHypertensionToString >> string
+
+
+encodeMedicationTreatingHypertension : MedicationTreatingHypertension -> Value
+encodeMedicationTreatingHypertension =
+    medicationTreatingHypertensionToString >> string
+
+
+encodeMedicationTreatingDiabetes : MedicationTreatingDiabetes -> Value
+encodeMedicationTreatingDiabetes =
+    medicationTreatingDiabetesToString >> string
+
+
+encodeNCDOutsideCare : NCDOutsideCare -> List ( String, Value )
+encodeNCDOutsideCare =
+    encodeNCDMeasurement (encodeOutsideCareValue "medical_conditions" encodeMedicalCondition "ncd_outside_care")
+
+
+encodeNCDPregnancyTest : NCDPregnancyTest -> List ( String, Value )
+encodeNCDPregnancyTest =
+    encodeNCDMeasurement encodeNCDPregnancyTestValue
+
+
+encodeNCDPregnancyTestValue : NCDPregnancyTestValue -> List ( String, Value )
+encodeNCDPregnancyTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_pregnancy_test" )
+    ]
+
+
+encodeNCDRandomBloodSugarTest : NCDRandomBloodSugarTest -> List ( String, Value )
+encodeNCDRandomBloodSugarTest =
+    encodeNCDMeasurement encodeNCDRandomBloodSugarTestValue
+
+
+encodeNCDRandomBloodSugarTestValue : NCDRandomBloodSugarTestValue -> List ( String, Value )
+encodeNCDRandomBloodSugarTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_random_blood_sugar_test" )
+    ]
+
+
+encodeNCDReferral : NCDReferral -> List ( String, Value )
+encodeNCDReferral =
+    encodeNCDMeasurement encodeNCDReferralValue
+
+
+encodeNCDReferralValue : NCDReferralValue -> List ( String, Value )
+encodeNCDReferralValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_referral" )
+    ]
+
+
+encodeNCDSocialHistory : NCDSocialHistory -> List ( String, Value )
+encodeNCDSocialHistory =
+    encodeNCDMeasurement encodeNCDSocialHistoryValue
+
+
+encodeNCDSocialHistoryValue : NCDSocialHistoryValue -> List ( String, Value )
+encodeNCDSocialHistoryValue value =
+    let
+        beveragesPerWeek =
+            Maybe.map
+                (\perWeek ->
+                    [ ( "beverages_per_week", int perWeek ) ]
+                )
+                value.beveragesPerWeek
+                |> Maybe.withDefault []
+
+        cigarettesPerWeek =
+            Maybe.map
+                (\perWeek ->
+                    [ ( "cigarettes_per_week", int perWeek ) ]
+                )
+                value.cigarettesPerWeek
+                |> Maybe.withDefault []
+    in
+    [ ( "ncd_social_history_signs", encodeEverySet encodeNCDSocialHistorySign value.signs )
+    , ( "food_group", encodeFoodGroup value.foodGroup )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_social_history" )
+    ]
+        ++ beveragesPerWeek
+        ++ cigarettesPerWeek
+
+
+encodeNCDSocialHistorySign : NCDSocialHistorySign -> Value
+encodeNCDSocialHistorySign =
+    ncdSocialHistorySignToString >> string
+
+
+encodeFoodGroup : FoodGroup -> Value
+encodeFoodGroup =
+    foodGroupToString >> string
+
+
+encodeNCDSymptomReview : NCDSymptomReview -> List ( String, Value )
+encodeNCDSymptomReview =
+    encodeNCDMeasurement encodeNCDSymptomReviewValue
+
+
+encodeNCDSymptomReviewValue : NCDSymptomReviewValue -> List ( String, Value )
+encodeNCDSymptomReviewValue value =
+    [ ( "ncd_group1_symptoms", encodeEverySet encodeNCDGroup1Symptom value.group1Symptoms )
+    , ( "ncd_group2_symptoms", encodeEverySet encodeNCDGroup2Symptom value.group2Symptoms )
+    , ( "ncd_pain_symptoms", encodeEverySet encodeNCDPainSymptom value.painSymptoms )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_symptom_review" )
+    ]
+
+
+encodeNCDGroup1Symptom : NCDGroup1Symptom -> Value
+encodeNCDGroup1Symptom =
+    ncdGroup1SymptomToString >> string
+
+
+encodeNCDGroup2Symptom : NCDGroup2Symptom -> Value
+encodeNCDGroup2Symptom =
+    ncdGroup2SymptomToString >> string
+
+
+encodeNCDPainSymptom : NCDPainSymptom -> Value
+encodeNCDPainSymptom =
+    ncdPainSymptomToString >> string
+
+
+encodeNCDUrineDipstickTest : NCDUrineDipstickTest -> List ( String, Value )
+encodeNCDUrineDipstickTest =
+    encodeNCDMeasurement encodeNCDUrineDipstickTestValue
+
+
+encodeNCDUrineDipstickTestValue : NCDUrineDipstickTestValue -> List ( String, Value )
+encodeNCDUrineDipstickTestValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "ncd_urine_dipstick_test" )
+    ]
+
+
+encodeNCDVitals : NCDVitals -> List ( String, Value )
+encodeNCDVitals =
+    encodeNCDMeasurement (encodeVitalsValueWithType "ncd_vitals")

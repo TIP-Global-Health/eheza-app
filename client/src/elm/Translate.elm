@@ -91,6 +91,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
+import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
@@ -592,6 +593,7 @@ type TranslationId
     | Failure
     | FamilyInformation
     | FamilyMembers
+    | FamilyPlanningCurentlyQuestion
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
@@ -609,6 +611,7 @@ type TranslationId
     | FirstAntenatalVisit
     | FirstName
     | FiveVisits
+    | FoodGroup FoodGroup
     | FollowPostpartumProtocols
     | FollowUpWithPatientIn
     | FollowUpWithPatientOn
@@ -672,6 +675,7 @@ type TranslationId
     | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
+    | HowManyPerWeek
     | Hypertension
     | HypertensionBeforePregnancy
     | HypertensionRecommendedTreatmentHeader
@@ -761,6 +765,14 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MedicationCausingHypertension MedicationCausingHypertension
+    | MedicationCausingHypertensionQuestion
+    | MedicalCondition MedicalCondition
+    | MedicalConditionQuestion
+    | MedicationTreatingDiabetes MedicationTreatingDiabetes
+    | MedicationTreatingDiabetesQuestion
+    | MedicationTreatingHypertension MedicationTreatingHypertension
+    | MedicationTreatingHypertensionQuestion
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicationCausesSideEffectsQuestion
@@ -819,6 +831,16 @@ type TranslationId
     | Name
     | NationalIdNumber
     | NCDActivityTitle NCDActivity
+    | NCDDangerSign NCDDangerSign
+    | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
+    | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
+    | NCDMedicalHistoryTask Pages.NCD.Activity.Types.MedicalHistoryTask
+    | NCDGroup1Symptom NCDGroup1Symptom
+    | NCDGroup2Symptom NCDGroup2Symptom
+    | NCDPainSymptom NCDPainSymptom
+    | NCDSocialHistoryFoodQuestion
+    | NCDSocialHistoryFoodQuestionInstructions
+    | NCDSocialHistorySignQuestion NCDSocialHistorySign
     | Neck
     | NeckCPESign NeckCPESign
     | NegativeLabel
@@ -910,7 +932,9 @@ type TranslationId
     | PatientDiagnosedWithLabel
     | PatientExhibitAnyFindings
     | PatientExhibitAnyRespiratoryFindings
+    | PatientGotAnyDangerSigns
     | PatientGotAnySymptoms
+    | PatientGotPainAnywhewre
     | PatientProgress
     | PatientRecord
     | PatientInformation
@@ -944,6 +968,7 @@ type TranslationId
     | PostpartumHealingProblemQuestion
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
+    | Predecessor Predecessor
     | PreeclampsiaPreviousPregnancy
     | PregnancyConclusion
     | PregnancyStart
@@ -1042,9 +1067,9 @@ type TranslationId
     | PrenatalNCDProgramHeaderSuffix
     | PrenatalNCDProgramInstructions
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
-    | PrenatalOutsideCareSignQuestion PrenatalOutsideCareSign
-    | PrenatalOutsideCareMedicationLabel PrenatalOutsideCareMedication
-    | PrenatalOutsideCareMedicationDosage PrenatalOutsideCareMedication
+    | OutsideCareSignQuestion OutsideCareSign
+    | OutsideCareMedicationLabel OutsideCareMedication
+    | OutsideCareMedicationDosage OutsideCareMedication
     | PrenatalPhotoHelper
     | PrenatalRecurrentNextStepsTask Pages.Prenatal.RecurrentActivity.Types.NextStepsTask
     | PrenatalSymptom PrenatalSymptom
@@ -1372,6 +1397,7 @@ type TranslationId
     | WhatType
     | WhatWasTheirResponse
     | WhoCaresForTheChildDuringTheDay
+    | WhoInFamilyHasCondition
     | WhyNot
     | WhyDifferentFbfAmount Activity
     | WrittenProtocolsFollowed
@@ -4474,6 +4500,11 @@ translationSet trans =
             , kinyarwanda = Just "Abagize umuryango"
             }
 
+        FamilyPlanningCurentlyQuestion ->
+            { english = "Which, if any, of the following methods do you use"
+            , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha"
+            }
+
         FamilyPlanningInFutureQuestion ->
             { english = "Which, if any, of these methods will you use after your pregnancy"
             , kinyarwanda = Just "Niba buhari, ni ubuhe buryo uzakoresha nyuma yo kubyara?"
@@ -4661,6 +4692,23 @@ translationSet trans =
             { english = "Five visits"
             , kinyarwanda = Just "Inshuro eshanu"
             }
+
+        FoodGroup group ->
+            case group of
+                FoodGroupVegetables ->
+                    { english = "Vegetables"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodGroupCarbohydrates ->
+                    { english = "Carbohydrates"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodGroupProtein ->
+                    { english = "Protein"
+                    , kinyarwanda = Nothing
+                    }
 
         FollowPostpartumProtocols ->
             { english = "Follow Postpartum Protocols"
@@ -5203,6 +5251,11 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        HowManyPerWeek ->
+            { english = "How many per week"
+            , kinyarwanda = Nothing
+            }
 
         Hypertension ->
             { english = "Hypertension"
@@ -6338,6 +6391,204 @@ translationSet trans =
             , kinyarwanda = Just <| "Kwiyongera " ++ String.fromFloat amount
             }
 
+        MedicationCausingHypertension medication ->
+            case medication of
+                MedicationOestrogens ->
+                    { english = "Oestrogens (Family Planning)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationSteroids ->
+                    { english = "Steroids (Prednisolone)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationAmitriptyline ->
+                    { english = "Amitriptyline"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationIbuprofen ->
+                    { english = "Ibuprofen (Diclofenac)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationCausingHypertension ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicationCausingHypertensionQuestion ->
+            { english = "Has the patient taken or currently take any of the following hypertension causing medications"
+            , kinyarwanda = Nothing
+            }
+
+        MedicalCondition condition ->
+            case condition of
+                MedicalConditionHIV ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionDiabetes ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionKidneyDisease ->
+                    { english = "Kidney Disease"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionPregnancy ->
+                    { english = "Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionHypertension ->
+                    { english = "Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionGestationalDiabetes ->
+                    { english = "Gestational Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionPregnancyRelatedHypertension ->
+                    { english = "Pregnancy Related Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionNeuropathy ->
+                    { english = "Neuropathy"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionRentalComplications ->
+                    { english = "Rental Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionMalaria ->
+                    { english = "Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionTuberculosis ->
+                    { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionHepatitisB ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionSyphilis ->
+                    { english = "Syphilis"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionEyeComplications ->
+                    { english = "Eye Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionAnemia ->
+                    { english = "Anemia"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicalConditionOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicalConditions ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicalConditionQuestion ->
+            { english = "Have you ever been diagnosed with any of these conditions"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationTreatingDiabetes medication ->
+            case medication of
+                MedicationMetformin ->
+                    { english = "Metformin"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationGlibenclamide ->
+                    { english = "Glibenclamide"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationInsulin ->
+                    { english = "Insulin"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationTreatingDiabetes ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicationTreatingDiabetesQuestion ->
+            { english = "Have you ever been diagnosed with any of these conditions"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationTreatingHypertension medication ->
+            case medication of
+                MedicationAceInhibitors ->
+                    { english = "Ace-Inhibitors (Example: Captopril)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationARBs ->
+                    { english = "Angiotensine Receptor Blockers (ARBs)"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationHCTZ ->
+                    { english = "HCTZ"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationCalciumChannelBlockers ->
+                    { english = "Calcium Channel Blockers"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationMethyldopa ->
+                    { english = "Methyldopa"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationBetaBlockers ->
+                    { english = "Beta-Blockers"
+                    , kinyarwanda = Nothing
+                    }
+
+                MedicationHydralazine ->
+                    { english = "Hydralazine"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationTreatingHypertension ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        MedicationTreatingHypertensionQuestion ->
+            { english = "Have you ever been diagnosed with any of these conditions"
+            , kinyarwanda = Nothing
+            }
+
         MedicalDiagnosis ->
             { english = "Medical Diagnosis"
             , kinyarwanda = Just "Uburwayi bwemejwe na Muganga"
@@ -6875,6 +7126,297 @@ translationSet trans =
                 Backend.NCDActivity.Model.SymptomReview ->
                     { english = "Symptom Review"
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
+                    }
+
+        NCDDangerSign sign ->
+            case sign of
+                Dyspnea ->
+                    { english = "Acute Shortness of Breath (Dyspnea)"
+                    , kinyarwanda = Nothing
+                    }
+
+                VisionChanges ->
+                    { english = "Vision Changes"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChestPain ->
+                    { english = "Chest Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                FlankPain ->
+                    { english = "Flank Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                Hematuria ->
+                    { english = "Blood in Urine (Hematuria)"
+                    , kinyarwanda = Nothing
+                    }
+
+                SevereHeadaches ->
+                    { english = "Severe Headaches"
+                    , kinyarwanda = Nothing
+                    }
+
+                LossOfConciousness ->
+                    { english = "Loss of Conciousness Since Last Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDDangerSigns ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDExaminationTask task ->
+            case task of
+                TaskCoreExam ->
+                    { english = "Core Physical Exam"
+                    , kinyarwanda = Just "Isuzuma ryimbitse"
+                    }
+
+                TaskVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Just "Ibimenyetso by'ubuzima"
+                    }
+
+        NCDFamilyHistorySignQuestion sign ->
+            case sign of
+                SignHypertensionHistory ->
+                    { english = "Has anyone in your family been told they have hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignHeartProblemHistory ->
+                    { english = "Has anyone in your family been told they have a problem with their heart"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignDiabetesHistory ->
+                    { english = "Has anyone in your family been told they have a problem with diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDFamilyHistorySigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDMedicalHistoryTask task ->
+            case task of
+                TaskCoMorbidities ->
+                    { english = "Co-Morbidities"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskMedicationHistory ->
+                    { english = "Medication History"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskSocialHistory ->
+                    { english = "Social History"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskFamilyHistory ->
+                    { english = "Family History"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskOutsideCare ->
+                    { english = "Outside Care"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDGroup1Symptom symptom ->
+            case symptom of
+                SwellingInLegs ->
+                    { english = "Swelling in Legs"
+                    , kinyarwanda = Nothing
+                    }
+
+                UrinaryFrequency ->
+                    { english = "Urinary Frequency"
+                    , kinyarwanda = Nothing
+                    }
+
+                Anxiety ->
+                    { english = "Anxiety"
+                    , kinyarwanda = Nothing
+                    }
+
+                WeightLoss ->
+                    { english = "Weight Loss"
+                    , kinyarwanda = Nothing
+                    }
+
+                Palpitations ->
+                    { english = "Palpitations"
+                    , kinyarwanda = Nothing
+                    }
+
+                Tremor ->
+                    { english = "Tremor"
+                    , kinyarwanda = Nothing
+                    }
+
+                SwellingInFace ->
+                    { english = "Swelling in Face"
+                    , kinyarwanda = Nothing
+                    }
+
+                SwellingInAbdomen ->
+                    { english = "Swelling in Abdomen"
+                    , kinyarwanda = Nothing
+                    }
+
+                DizzinessWithChangingPosition ->
+                    { english = "Dizziness with Changing Position"
+                    , kinyarwanda = Nothing
+                    }
+
+                MildHeadache ->
+                    { english = "Mild Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDGroup1Symptoms ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDGroup2Symptom symptom ->
+            case symptom of
+                WeaknessOfOneSideOfTheBody ->
+                    { english = "Weakness of One Side of the Body"
+                    , kinyarwanda = Nothing
+                    }
+
+                ProblemsWithWalking ->
+                    { english = "Problems with Walking"
+                    , kinyarwanda = Nothing
+                    }
+
+                ProblemsWithTalking ->
+                    { english = "Problems with Talking"
+                    , kinyarwanda = Nothing
+                    }
+
+                DecreasedVision ->
+                    { english = "Decreased Vision"
+                    , kinyarwanda = Nothing
+                    }
+
+                BlurryVision ->
+                    { english = "Blurry Vision"
+                    , kinyarwanda = Nothing
+                    }
+
+                IncreasedFatigueWithDailyActivities ->
+                    { english = "Increased Fatigue with Daily Activities"
+                    , kinyarwanda = Nothing
+                    }
+
+                ShortOfBreathWhenLayingDown ->
+                    { english = "Short of Breath When Laying Down"
+                    , kinyarwanda = Nothing
+                    }
+
+                ShortOfBreathAtNight ->
+                    { english = "Short of Breath at Night"
+                    , kinyarwanda = Nothing
+                    }
+
+                KidneyProblems ->
+                    { english = "Kidney Problems"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDIncreasedThirst ->
+                    { english = "Increased Thirst"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDGroup2Symptoms ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDPainSymptom symptom ->
+            case symptom of
+                PainFlank ->
+                    { english = "Flank"
+                    , kinyarwanda = Nothing
+                    }
+
+                PainLowerBack ->
+                    { english = "Lower Back"
+                    , kinyarwanda = Nothing
+                    }
+
+                PainFeet ->
+                    { english = "Feet"
+                    , kinyarwanda = Nothing
+                    }
+
+                PainNeck ->
+                    { english = "Neck"
+                    , kinyarwanda = Nothing
+                    }
+
+                PainAbdomen ->
+                    { english = "Abdomen"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDPainSymptoms ->
+                    { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDSocialHistoryFoodQuestion ->
+            { english = "What foods do you eat most"
+            , kinyarwanda = Nothing
+            }
+
+        NCDSocialHistoryFoodQuestionInstructions ->
+            { english = "Please check the most fitting group"
+            , kinyarwanda = Nothing
+            }
+
+        NCDSocialHistorySignQuestion sign ->
+            case sign of
+                SignDrinkAlcohol ->
+                    { english = "Do you drink any alcoholic beverages"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignSmokeCigarettes ->
+                    { english = "Do you smoke cigarettes"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignConsumeSalt ->
+                    { english = "Do you add salt to your food"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignDifficult4TimesAYear ->
+                    { english = "Would it be difficult for you to come to the health center 4 times a year"
+                    , kinyarwanda = Nothing
+                    }
+
+                SignHelpWithTreatmentAtHome ->
+                    { english = "Are there people at home who can help you with treatment"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDSocialHistorySigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         Neck ->
@@ -7864,9 +8406,19 @@ translationSet trans =
             , kinyarwanda = Just "Umurwayi agaragaza bimwe muri ibi bimenyetso by'ubuhumekero"
             }
 
+        PatientGotAnyDangerSigns ->
+            { english = "Does the patient have any of these danger signs"
+            , kinyarwanda = Nothing
+            }
+
         PatientGotAnySymptoms ->
             { english = "Does the patient have any of these symptoms"
             , kinyarwanda = Just "Umurwayi yaba afite bimwe muri ibi bimenyetso"
+            }
+
+        PatientGotPainAnywhewre ->
+            { english = "Does the patient have pain anywhere"
+            , kinyarwanda = Nothing
             }
 
         PatientProgress ->
@@ -8221,6 +8773,33 @@ translationSet trans =
                 NoPostpartumMotherDangerSigns ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta kimenyetso na kimwe"
+                    }
+
+        Predecessor predecessor ->
+            case predecessor of
+                PredecessorFather ->
+                    { english = "Father"
+                    , kinyarwanda = Nothing
+                    }
+
+                PredecessorMother ->
+                    { english = "Mother"
+                    , kinyarwanda = Nothing
+                    }
+
+                PredecessorGrandFather ->
+                    { english = "Grand-Father"
+                    , kinyarwanda = Nothing
+                    }
+
+                PredecessorGrandMother ->
+                    { english = "Grand-Mother"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPredecessors ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         PreeclampsiaPreviousPregnancy ->
@@ -11041,7 +11620,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PrenatalOutsideCareSignQuestion sign ->
+        OutsideCareSignQuestion sign ->
             case sign of
                 SeenAtAnotherFacility ->
                     { english = "Have you been seen at another facility since your last visit"
@@ -11064,12 +11643,12 @@ translationSet trans =
                     }
 
                 -- There's not question for this sign.
-                NoPrenatalOutsideCareSigns ->
+                NoOutsideCareSigns ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
 
-        PrenatalOutsideCareMedicationDosage medication ->
+        OutsideCareMedicationDosage medication ->
             case medication of
                 OutsideCareMedicationQuinineSulphate ->
                     { english = "3 x a day for 7 days"
@@ -11162,7 +11741,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        PrenatalOutsideCareMedicationLabel medication ->
+        OutsideCareMedicationLabel medication ->
             case medication of
                 OutsideCareMedicationQuinineSulphate ->
                     { english = "Quinine Sulphate per os (10 mg/kg/dose)"
@@ -14789,6 +15368,11 @@ translationSet trans =
         WhoCaresForTheChildDuringTheDay ->
             { english = "Who cares for the child during the day"
             , kinyarwanda = Just "Ni inde wita ku mwana ku manywa"
+            }
+
+        WhoInFamilyHasCondition ->
+            { english = "Who in the family has this condition"
+            , kinyarwanda = Nothing
             }
 
         WhyNot ->

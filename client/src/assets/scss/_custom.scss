@@ -2428,7 +2428,6 @@ input::placeholder {
 .icon-danger-signs {
   .active &:after {
     background-image: url(#{$img-path}icon-danger-signs-white.svg);
-    background-size: 83px 83px;
   }
 
   .completed &:after {
@@ -2437,7 +2436,6 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-danger-signs-gray.svg);
-    background-size: 83px 83px;
   }
 }
 
@@ -2719,6 +2717,20 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-tetanus-gray.svg);
+  }
+}
+
+.icon-family {
+  .active &:after {
+    background-image: url(#{$img-path}icon-family-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-family-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-family-gray.svg);
   }
 }
 

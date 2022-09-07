@@ -3437,6 +3437,38 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
+        NCDCoMorbiditiesRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | coMorbidities = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDCoreExamRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | coreExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDCreatinineTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | creatinineTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDDangerSignsRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NCDEncounterRevision uuid data ->
             let
                 ncdEncounters =
@@ -3449,6 +3481,134 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 | ncdEncounters = ncdEncounters
                 , ncdEncountersByParticipant = ncdEncountersByParticipant
               }
+            , recalc
+            )
+
+        NCDFamilyHistoryRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | familyHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDFamilyPlanningRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDHealthEducationRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDHivTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hivTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDLabsResultsRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | labsResults = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDLiverFunctionTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | liverFunctionTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDMedicationDistributionRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDMedicationHistoryRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicationHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDOutsideCareRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | outsideCare = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDPregnancyTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDRandomBloodSugarTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | randomBloodSugarTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDReferralRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDSocialHistoryRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDSymptomReviewRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDUrineDipstickTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | urineDipstickTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDVitalsRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                model
             , recalc
             )
 

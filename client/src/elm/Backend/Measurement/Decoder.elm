@@ -49,6 +49,11 @@ decodeWellChildMeasurement =
     decodeMeasurement "well_child_encounter"
 
 
+decodeNCDMeasurement : Decoder value -> Decoder (Measurement NCDEncounterId value)
+decodeNCDMeasurement =
+    decodeMeasurement "ncd_encounter"
+
+
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
 decodeMeasurement encounterTag valueDecoder =
     succeed Measurement
@@ -234,6 +239,26 @@ decodeWellChildMeasurements =
 decodeNCDMeasurements : Decoder NCDMeasurements
 decodeNCDMeasurements =
     succeed NCDMeasurements
+        |> optional "ncd_co_morbidities" (decodeHead decodeNCDCoMorbidities) Nothing
+        |> optional "ncd_core_exam" (decodeHead decodeNCDCoreExam) Nothing
+        |> optional "ncd_creatinine_test" (decodeHead decodeNCDCreatinineTest) Nothing
+        |> optional "ncd_danger_signs" (decodeHead decodeNCDDangerSigns) Nothing
+        |> optional "ncd_family_history" (decodeHead decodeNCDFamilyHistory) Nothing
+        |> optional "ncd_family_planning" (decodeHead decodeNCDFamilyPlanning) Nothing
+        |> optional "ncd_health_education" (decodeHead decodeNCDHealthEducation) Nothing
+        |> optional "ncd_hiv_test" (decodeHead decodeNCDHivTest) Nothing
+        |> optional "ncd_labs_results" (decodeHead decodeNCDLabsResults) Nothing
+        |> optional "ncd_liver_function_test" (decodeHead decodeNCDLiverFunctionTest) Nothing
+        |> optional "ncd_medication_distribution" (decodeHead decodeNCDMedicationDistribution) Nothing
+        |> optional "ncd_medication_history" (decodeHead decodeNCDMedicationHistory) Nothing
+        |> optional "ncd_outside_care" (decodeHead decodeNCDOutsideCare) Nothing
+        |> optional "ncd_pregnancy_test" (decodeHead decodeNCDPregnancyTest) Nothing
+        |> optional "ncd_random_blood_sugar_test" (decodeHead decodeNCDRandomBloodSugarTest) Nothing
+        |> optional "ncd_referral" (decodeHead decodeNCDReferral) Nothing
+        |> optional "ncd_social_history" (decodeHead decodeNCDSocialHistory) Nothing
+        |> optional "ncd_symptom_review" (decodeHead decodeNCDSymptomReview) Nothing
+        |> optional "ncd_urine_dipstick_test" (decodeHead decodeNCDUrineDipstickTest) Nothing
+        |> optional "ncd_vitals" (decodeHead decodeNCDVitals) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1583,6 +1608,11 @@ decodeLegsCPESign =
 
 decodeCorePhysicalExam : Decoder CorePhysicalExam
 decodeCorePhysicalExam =
+    decodePrenatalMeasurement decodeCorePhysicalExamValue
+
+
+decodeCorePhysicalExamValue : Decoder CorePhysicalExamValue
+decodeCorePhysicalExamValue =
     succeed CorePhysicalExamValue
         |> required "head_hair" (decodeEverySet decodeHairHeadCPESign)
         |> required "eyes" (decodeEverySet decodeEyesCPESign)
@@ -1593,7 +1623,6 @@ decodeCorePhysicalExam =
         |> required "abdomen" (decodeEverySet decodeAbdomenCPESign)
         |> required "hands" (decodeEverySet decodeHandsCPESign)
         |> required "legs" (decodeEverySet decodeLegsCPESign)
-        |> decodePrenatalMeasurement
 
 
 decodeDangerSign : Decoder DangerSign
@@ -4515,34 +4544,362 @@ decodePrenatalFlankPainSign =
 
 decodePrenatalOutsideCare : Decoder PrenatalOutsideCare
 decodePrenatalOutsideCare =
-    decodePrenatalMeasurement decodePrenatalOutsideCareValue
+    decodePrenatalMeasurement (decodeOutsideCareValue "prenatal_diagnoses" decodePrenatalDiagnosis)
 
 
-decodePrenatalOutsideCareValue : Decoder PrenatalOutsideCareValue
-decodePrenatalOutsideCareValue =
-    succeed PrenatalOutsideCareValue
-        |> required "outside_care_signs" (decodeEverySet decodePrenatalOutsideCareSign)
-        |> optional "prenatal_diagnoses" (nullable (decodeEverySet decodePrenatalDiagnosis)) Nothing
-        |> optional "outside_care_medications" (nullable (decodeEverySet decodePrenatalOutsideCareMedication)) Nothing
+decodeOutsideCareValue : String -> Decoder diagnosis -> Decoder (OutsideCareValue diagnosis)
+decodeOutsideCareValue fieldName diagnosisDecoder =
+    succeed OutsideCareValue
+        |> required "outside_care_signs" (decodeEverySet decodeOutsideCareSign)
+        |> optional fieldName (nullable (decodeEverySet diagnosisDecoder)) Nothing
+        |> optional "outside_care_medications" (nullable (decodeEverySet decodeOutsideCareMedication)) Nothing
 
 
-decodePrenatalOutsideCareSign : Decoder PrenatalOutsideCareSign
-decodePrenatalOutsideCareSign =
+decodeOutsideCareSign : Decoder OutsideCareSign
+decodeOutsideCareSign =
     string
         |> andThen
             (\s ->
-                prenatalOutsideCareSignFromString s
+                outsideCareSignFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalOutsideCareSign")
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized OutsideCareSign")
             )
 
 
-decodePrenatalOutsideCareMedication : Decoder PrenatalOutsideCareMedication
-decodePrenatalOutsideCareMedication =
+decodeOutsideCareMedication : Decoder OutsideCareMedication
+decodeOutsideCareMedication =
     string
         |> andThen
             (\s ->
-                prenatalOutsideCareMedicationFromString s
+                outsideCareMedicationFromString s
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| s ++ " is not a recognized PrenatalOutsideCareMedication")
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized OutsideCareMedication")
             )
+
+
+decodeNCDCoMorbidities : Decoder NCDCoMorbidities
+decodeNCDCoMorbidities =
+    decodeNCDMeasurement decodeNCDCoMorbiditiesValue
+
+
+decodeNCDCoMorbiditiesValue : Decoder NCDCoMorbiditiesValue
+decodeNCDCoMorbiditiesValue =
+    field "comorbidities" (decodeEverySet decodeMedicalCondition)
+
+
+decodeMedicalCondition : Decoder MedicalCondition
+decodeMedicalCondition =
+    string
+        |> andThen
+            (\s ->
+                medicalConditionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized MedicalCondition")
+            )
+
+
+decodeNCDCoreExam : Decoder NCDCoreExam
+decodeNCDCoreExam =
+    decodeNCDMeasurement decodeCorePhysicalExamValue
+
+
+decodeNCDCreatinineTest : Decoder NCDCreatinineTest
+decodeNCDCreatinineTest =
+    decodeNCDMeasurement decodeNCDCreatinineTestValue
+
+
+decodeNCDCreatinineTestValue : Decoder NCDCreatinineTestValue
+decodeNCDCreatinineTestValue =
+    succeed NCDCreatinineTestValue
+
+
+decodeNCDDangerSigns : Decoder NCDDangerSigns
+decodeNCDDangerSigns =
+    decodeNCDMeasurement decodeNCDDangerSignsValue
+
+
+decodeNCDDangerSignsValue : Decoder NCDDangerSignsValue
+decodeNCDDangerSignsValue =
+    field "ncd_danger_signs" (decodeEverySet decodeNCDDangerSign)
+
+
+decodeNCDDangerSign : Decoder NCDDangerSign
+decodeNCDDangerSign =
+    string
+        |> andThen
+            (\s ->
+                ncdDangerSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDDangerSign")
+            )
+
+
+decodeNCDFamilyHistory : Decoder NCDFamilyHistory
+decodeNCDFamilyHistory =
+    decodeNCDMeasurement decodeNCDFamilyHistoryValue
+
+
+decodeNCDFamilyHistoryValue : Decoder NCDFamilyHistoryValue
+decodeNCDFamilyHistoryValue =
+    succeed NCDFamilyHistoryValue
+        |> required "ncd_family_history_signs" (decodeEverySet decodeNCDFamilyHistorySign)
+        |> optional "hypertension_predecessors" (nullable (decodeEverySet decodePredecessor)) Nothing
+        |> optional "heart_problem_predecessors" (nullable (decodeEverySet decodePredecessor)) Nothing
+        |> optional "diabetes_predecessors" (nullable (decodeEverySet decodePredecessor)) Nothing
+
+
+decodeNCDFamilyHistorySign : Decoder NCDFamilyHistorySign
+decodeNCDFamilyHistorySign =
+    string
+        |> andThen
+            (\s ->
+                ncdFamilyHistorySignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDFamilyHistorySign")
+            )
+
+
+decodePredecessor : Decoder Predecessor
+decodePredecessor =
+    string
+        |> andThen
+            (\s ->
+                predecessorFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized Predecessor")
+            )
+
+
+decodeNCDFamilyPlanning : Decoder NCDFamilyPlanning
+decodeNCDFamilyPlanning =
+    decodeEverySet decodeFamilyPlanningSign
+        |> field "family_planning_signs"
+        |> decodeNCDMeasurement
+
+
+decodeNCDHealthEducation : Decoder NCDHealthEducation
+decodeNCDHealthEducation =
+    decodeNCDMeasurement decodeNCDHealthEducationValue
+
+
+decodeNCDHealthEducationValue : Decoder NCDHealthEducationValue
+decodeNCDHealthEducationValue =
+    succeed NCDHealthEducationValue
+
+
+decodeNCDHivTest : Decoder NCDHivTest
+decodeNCDHivTest =
+    decodeNCDMeasurement decodeNCDHivTestValue
+
+
+decodeNCDHivTestValue : Decoder NCDHivTestValue
+decodeNCDHivTestValue =
+    succeed NCDHivTestValue
+
+
+decodeNCDLabsResults : Decoder NCDLabsResults
+decodeNCDLabsResults =
+    decodeNCDMeasurement decodeNCDLabsResultsValue
+
+
+decodeNCDLabsResultsValue : Decoder NCDLabsResultsValue
+decodeNCDLabsResultsValue =
+    succeed NCDLabsResultsValue
+
+
+decodeNCDLiverFunctionTest : Decoder NCDLiverFunctionTest
+decodeNCDLiverFunctionTest =
+    decodeNCDMeasurement decodeNCDLiverFunctionTestValue
+
+
+decodeNCDLiverFunctionTestValue : Decoder NCDLiverFunctionTestValue
+decodeNCDLiverFunctionTestValue =
+    succeed NCDLiverFunctionTestValue
+
+
+decodeNCDMedicationDistribution : Decoder NCDMedicationDistribution
+decodeNCDMedicationDistribution =
+    decodeNCDMeasurement decodeNCDMedicationDistributionValue
+
+
+decodeNCDMedicationDistributionValue : Decoder NCDMedicationDistributionValue
+decodeNCDMedicationDistributionValue =
+    succeed NCDMedicationDistributionValue
+
+
+decodeNCDMedicationHistory : Decoder NCDMedicationHistory
+decodeNCDMedicationHistory =
+    decodeNCDMeasurement decodeNCDMedicationHistoryValue
+
+
+decodeNCDMedicationHistoryValue : Decoder NCDMedicationHistoryValue
+decodeNCDMedicationHistoryValue =
+    succeed NCDMedicationHistoryValue
+        |> required "causing_hypertension" (decodeEverySet decodeMedicationCausingHypertension)
+        |> required "treating_hypertension" (decodeEverySet decodeMedicationTreatingHypertension)
+        |> required "treating_diabetes" (decodeEverySet decodeMedicationTreatingDiabetes)
+
+
+decodeMedicationCausingHypertension : Decoder MedicationCausingHypertension
+decodeMedicationCausingHypertension =
+    string
+        |> andThen
+            (\s ->
+                medicationCausingHypertensionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized MedicationCausingHypertension")
+            )
+
+
+decodeMedicationTreatingHypertension : Decoder MedicationTreatingHypertension
+decodeMedicationTreatingHypertension =
+    string
+        |> andThen
+            (\s ->
+                medicationTreatingHypertensionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized MedicationTreatingHypertension")
+            )
+
+
+decodeMedicationTreatingDiabetes : Decoder MedicationTreatingDiabetes
+decodeMedicationTreatingDiabetes =
+    string
+        |> andThen
+            (\s ->
+                medicationTreatingDiabetesFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized MedicationTreatingDiabetes")
+            )
+
+
+decodeNCDOutsideCare : Decoder NCDOutsideCare
+decodeNCDOutsideCare =
+    decodeNCDMeasurement (decodeOutsideCareValue "medical_conditions" decodeMedicalCondition)
+
+
+decodeNCDPregnancyTest : Decoder NCDPregnancyTest
+decodeNCDPregnancyTest =
+    decodeNCDMeasurement decodeNCDPregnancyTestValue
+
+
+decodeNCDPregnancyTestValue : Decoder NCDPregnancyTestValue
+decodeNCDPregnancyTestValue =
+    succeed NCDPregnancyTestValue
+
+
+decodeNCDRandomBloodSugarTest : Decoder NCDRandomBloodSugarTest
+decodeNCDRandomBloodSugarTest =
+    decodeNCDMeasurement decodeNCDRandomBloodSugarTestValue
+
+
+decodeNCDRandomBloodSugarTestValue : Decoder NCDRandomBloodSugarTestValue
+decodeNCDRandomBloodSugarTestValue =
+    succeed NCDRandomBloodSugarTestValue
+
+
+decodeNCDReferral : Decoder NCDReferral
+decodeNCDReferral =
+    decodeNCDMeasurement decodeNCDReferralValue
+
+
+decodeNCDReferralValue : Decoder NCDReferralValue
+decodeNCDReferralValue =
+    succeed NCDReferralValue
+
+
+decodeNCDSocialHistory : Decoder NCDSocialHistory
+decodeNCDSocialHistory =
+    decodeNCDMeasurement decodeNCDSocialHistoryValue
+
+
+decodeNCDSocialHistoryValue : Decoder NCDSocialHistoryValue
+decodeNCDSocialHistoryValue =
+    succeed NCDSocialHistoryValue
+        |> required "ncd_social_history_signs" (decodeEverySet decodeNCDSocialHistorySign)
+        |> required "food_group" decodeFoodGroup
+        |> optional "beverages_per_week" (nullable decodeInt) Nothing
+        |> optional "cigarettes_per_week" (nullable decodeInt) Nothing
+
+
+decodeNCDSocialHistorySign : Decoder NCDSocialHistorySign
+decodeNCDSocialHistorySign =
+    string
+        |> andThen
+            (\s ->
+                ncdSocialHistorySignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDSocialHistorySign")
+            )
+
+
+decodeFoodGroup : Decoder FoodGroup
+decodeFoodGroup =
+    string
+        |> andThen
+            (\s ->
+                foodGroupFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized FoodGroup")
+            )
+
+
+decodeNCDSymptomReview : Decoder NCDSymptomReview
+decodeNCDSymptomReview =
+    decodeNCDMeasurement decodeNCDSymptomReviewValue
+
+
+decodeNCDSymptomReviewValue : Decoder NCDSymptomReviewValue
+decodeNCDSymptomReviewValue =
+    succeed NCDSymptomReviewValue
+        |> required "ncd_group1_symptoms" (decodeEverySet decodeNCDGroup1Symptom)
+        |> required "ncd_group2_symptoms" (decodeEverySet decodeNCDGroup2Symptom)
+        |> required "ncd_pain_symptoms" (decodeEverySet decodeNCDPainSymptom)
+
+
+decodeNCDGroup1Symptom : Decoder NCDGroup1Symptom
+decodeNCDGroup1Symptom =
+    string
+        |> andThen
+            (\s ->
+                ncdGroup1SymptomFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDGroup1Symptom")
+            )
+
+
+decodeNCDGroup2Symptom : Decoder NCDGroup2Symptom
+decodeNCDGroup2Symptom =
+    string
+        |> andThen
+            (\s ->
+                ncdGroup2SymptomFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDGroup2Symptom")
+            )
+
+
+decodeNCDPainSymptom : Decoder NCDPainSymptom
+decodeNCDPainSymptom =
+    string
+        |> andThen
+            (\s ->
+                ncdPainSymptomFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDPainSymptom")
+            )
+
+
+decodeNCDUrineDipstickTest : Decoder NCDUrineDipstickTest
+decodeNCDUrineDipstickTest =
+    decodeNCDMeasurement decodeNCDUrineDipstickTestValue
+
+
+decodeNCDUrineDipstickTestValue : Decoder NCDUrineDipstickTestValue
+decodeNCDUrineDipstickTestValue =
+    succeed NCDUrineDipstickTestValue
+
+
+decodeNCDVitals : Decoder NCDVitals
+decodeNCDVitals =
+    decodeNCDMeasurement decodeVitalsValue

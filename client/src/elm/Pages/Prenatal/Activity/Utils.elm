@@ -21,10 +21,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (VaccinationFormViewMode(..), VitalsForm)
+import Measurement.Model exposing (FamilyPlanningForm, OutsideCareForm, VaccinationFormViewMode(..), VitalsForm)
 import Measurement.Utils
     exposing
-        ( getNextVaccineDose
+        ( corePhysicalExamFormWithDefault
+        , getNextVaccineDose
+        , toEverySet
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         , vitalsFormWithDefault
@@ -41,6 +43,7 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , taskAllCompleted
         , taskCompleted
@@ -3313,18 +3316,6 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             )
 
 
-{-| This is a convenience for cases where the form values ought to be redefined
-to allow multiple values. So, it should go away eventually.
--}
-toEverySet : a -> a -> Bool -> EverySet a
-toEverySet presentValue absentValue present =
-    if present then
-        EverySet.singleton presentValue
-
-    else
-        EverySet.singleton absentValue
-
-
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
     assembled.nursePreviousMeasurementsWithDates
@@ -3380,58 +3371,6 @@ toBreastExamValue form =
     -- redefined to allow more than one.
     Maybe.map BreastExamValue (Maybe.map EverySet.fromList form.breast)
         |> andMap form.selfGuidance
-
-
-fromCorePhysicalExamValue : Maybe CorePhysicalExamValue -> CorePhysicalExamForm
-fromCorePhysicalExamValue saved =
-    { brittleHair = Maybe.map (.hairHead >> EverySet.member BrittleHairCPE) saved
-    , paleConjuctiva = Maybe.map (.eyes >> EverySet.member PaleConjuctiva) saved
-    , neck = Maybe.map (.neck >> EverySet.toList) saved
-    , heart = Maybe.andThen (.heart >> EverySet.toList >> List.head) saved
-    , heartMurmur = Maybe.map .heartMurmur saved
-    , lungs = Maybe.map (.lungs >> EverySet.toList) saved
-    , abdomen = Maybe.map (.abdomen >> EverySet.toList) saved
-    , hands = Maybe.map (.hands >> EverySet.toList) saved
-    , legs = Maybe.map (.legs >> EverySet.toList) saved
-    }
-
-
-corePhysicalExamFormWithDefault : CorePhysicalExamForm -> Maybe CorePhysicalExamValue -> CorePhysicalExamForm
-corePhysicalExamFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { brittleHair = or form.brittleHair (value.hairHead |> EverySet.member BrittleHairCPE |> Just)
-                , paleConjuctiva = or form.paleConjuctiva (value.eyes |> EverySet.member PaleConjuctiva |> Just)
-                , neck = or form.neck (value.neck |> EverySet.toList |> Just)
-                , heart = or form.heart (value.heart |> EverySet.toList |> List.head)
-                , heartMurmur = or form.heartMurmur (Just value.heartMurmur)
-                , lungs = or form.lungs (value.lungs |> EverySet.toList |> Just)
-                , abdomen = or form.abdomen (value.abdomen |> EverySet.toList |> Just)
-                , hands = or form.hands (value.hands |> EverySet.toList |> Just)
-                , legs = or form.legs (value.legs |> EverySet.toList |> Just)
-                }
-            )
-
-
-toCorePhysicalExamValueWithDefault : Maybe CorePhysicalExamValue -> CorePhysicalExamForm -> Maybe CorePhysicalExamValue
-toCorePhysicalExamValueWithDefault saved form =
-    corePhysicalExamFormWithDefault form saved
-        |> toCorePhysicalExamValue
-
-
-toCorePhysicalExamValue : CorePhysicalExamForm -> Maybe CorePhysicalExamValue
-toCorePhysicalExamValue form =
-    Maybe.map CorePhysicalExamValue (Maybe.map (toEverySet BrittleHairCPE NormalHairHead) form.brittleHair)
-        |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
-        |> andMap (Maybe.map EverySet.singleton form.heart)
-        |> andMap form.heartMurmur
-        |> andMap (Maybe.map EverySet.fromList form.neck)
-        |> andMap (Maybe.map EverySet.fromList form.lungs)
-        |> andMap (Maybe.map EverySet.fromList form.abdomen)
-        |> andMap (Maybe.map EverySet.fromList form.hands)
-        |> andMap (Maybe.map EverySet.fromList form.legs)
 
 
 fromDangerSignsValue : Maybe DangerSignsValue -> DangerSignsForm
@@ -3963,12 +3902,7 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
                                                 Translate.HIVTreatmentSign
                                             ]
                                       ]
-                                    , [ if isJust form.hivMedicationNotGivenReason then
-                                            Just True
-
-                                        else
-                                            Nothing
-                                      ]
+                                    , [ maybeToBoolTask form.hivMedicationNotGivenReason ]
                                     )
                             )
                             form.hivMedicationByPMTCT
@@ -4373,32 +4307,6 @@ toObstetricHistoryStep2Value form =
         |> andMap previousDeliverySet
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
         |> andMap obstetricHistorySet
-
-
-fromFamilyPlanningValue : Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm
-fromFamilyPlanningValue saved =
-    { signs = Maybe.map EverySet.toList saved }
-
-
-familyPlanningFormWithDefault : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm
-familyPlanningFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
-            )
-
-
-toFamilyPlanningValueWithDefault : Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
-toFamilyPlanningValueWithDefault saved form =
-    familyPlanningFormWithDefault form saved
-        |> toFamilyPlanningValue
-
-
-toFamilyPlanningValue : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
-toFamilyPlanningValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoFamilyPlanning) form.signs
 
 
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
@@ -5959,455 +5867,6 @@ prenatalSymptomQuestionInputAndState language form question =
             ( [], 0 )
 
 
-outsideCareFormWithDefault : OutsideCareForm -> Maybe PrenatalOutsideCareValue -> OutsideCareForm
-outsideCareFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                let
-                    malariaMedications =
-                        filterIllnessOptions outsideCareMedicationOptionsMalaria
-
-                    hypertensionMedications =
-                        filterIllnessOptions outsideCareMedicationOptionsHypertension
-
-                    syphilisMedications =
-                        filterIllnessOptions outsideCareMedicationOptionsSyphilis
-
-                    anemiaMedications =
-                        filterIllnessOptions outsideCareMedicationOptionsAnemia
-
-                    hivMedications =
-                        filterIllnessOptions outsideCareMedicationOptionsHIV
-
-                    filterIllnessOptions options =
-                        Maybe.map
-                            (EverySet.toList
-                                >> List.filter
-                                    (\medication ->
-                                        List.member medication options
-                                    )
-                            )
-                            value.medications
-                in
-                { seenAtAnotherFacility = or form.seenAtAnotherFacility (EverySet.member SeenAtAnotherFacility value.signs |> Just)
-                , givenNewDiagnosis = or form.givenNewDiagnosis (EverySet.member GivenNewDiagnoses value.signs |> Just)
-                , givenMedicine = or form.givenMedicine (EverySet.member GivenMedicine value.signs |> Just)
-                , plannedFollowUp = or form.plannedFollowUp (EverySet.member PlannedFollowUpCareWithSpecialist value.signs |> Just)
-                , diagnoses = maybeValueConsideringIsDirtyField form.diagnosesDirty form.diagnoses (value.diagnoses |> Maybe.map EverySet.toList)
-                , diagnosesDirty = form.diagnosesDirty
-                , malariaMedications = or form.malariaMedications malariaMedications
-                , hypertensionMedications = or form.hypertensionMedications hypertensionMedications
-                , syphilisMedications = or form.syphilisMedications syphilisMedications
-                , hivMedications = or form.hivMedications hivMedications
-                , anemiaMedications = or form.anemiaMedications anemiaMedications
-                }
-            )
-
-
-toPrenatalOutsideCareValueWithDefault : Maybe PrenatalOutsideCareValue -> OutsideCareForm -> Maybe PrenatalOutsideCareValue
-toPrenatalOutsideCareValueWithDefault saved form =
-    outsideCareFormWithDefault form saved
-        |> toPrenatalOutsideCareValue
-
-
-toPrenatalOutsideCareValue : OutsideCareForm -> Maybe PrenatalOutsideCareValue
-toPrenatalOutsideCareValue form =
-    let
-        maybeSigns =
-            [ Maybe.map (ifTrue SeenAtAnotherFacility) form.seenAtAnotherFacility
-            , ifNullableTrue GivenNewDiagnoses form.givenNewDiagnosis
-            , ifNullableTrue GivenMedicine form.givenMedicine
-            , ifNullableTrue PlannedFollowUpCareWithSpecialist form.plannedFollowUp
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalOutsideCareSigns)
-    in
-    Maybe.map
-        (\signs ->
-            let
-                diagnoses =
-                    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoPrenatalDiagnosis) form.diagnoses
-
-                mapMedications illnessMedications =
-                    [ Maybe.map (EverySet.fromList >> Just) illnessMedications
-                        |> Maybe.withDefault (Just EverySet.empty)
-                    ]
-
-                medications =
-                    mapMedications form.malariaMedications
-                        ++ mapMedications form.hypertensionMedications
-                        ++ mapMedications form.syphilisMedications
-                        ++ mapMedications form.anemiaMedications
-                        ++ mapMedications form.hivMedications
-                        |> Maybe.Extra.combine
-                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalOutsideCareMedications)
-            in
-            { signs = signs
-            , diagnoses = diagnoses
-            , medications = medications
-            }
-        )
-        maybeSigns
-
-
-outsideCareFormInputsAndTasks : Language -> OutsideCareStep -> OutsideCareForm -> ( List (Html Msg), List (Maybe Bool) )
-outsideCareFormInputsAndTasks language step form =
-    case step of
-        OutsideCareStepDiagnoses ->
-            outsideCareFormInputsAndTasksDiagnoses language form
-
-        OutsideCareStepMedications ->
-            outsideCareFormInputsAndTasksMedications language form
-
-
-outsideCareFormInputsAndTasksDiagnoses : Language -> OutsideCareForm -> ( List (Html Msg), List (Maybe Bool) )
-outsideCareFormInputsAndTasksDiagnoses language form =
-    let
-        ( givenNewDiagnosisSection, givenNewDiagnosisTasks ) =
-            if form.seenAtAnotherFacility == Just True then
-                let
-                    ( newDiagnosisSection, newDiagnosisTasks ) =
-                        if form.givenNewDiagnosis == Just True then
-                            let
-                                ( givenMedicineSection, givenMedicineTasks ) =
-                                    Maybe.map
-                                        (\diagnoses ->
-                                            if
-                                                List.any (\diagnosis -> List.member diagnosis diagnoses)
-                                                    outsideCareDiagnosesWithPossibleMedication
-                                            then
-                                                ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion GivenMedicine
-                                                  , viewBoolInput
-                                                        language
-                                                        form.givenMedicine
-                                                        (SetOutsideCareSignBoolInput
-                                                            (\value form_ ->
-                                                                { form_
-                                                                    | givenMedicine = Just value
-                                                                    , malariaMedications = Nothing
-                                                                    , hypertensionMedications = Nothing
-                                                                    , syphilisMedications = Nothing
-                                                                    , hivMedications = Nothing
-                                                                    , anemiaMedications = Nothing
-                                                                }
-                                                            )
-                                                        )
-                                                        "given-medicine"
-                                                        Nothing
-                                                  ]
-                                                , [ form.givenMedicine ]
-                                                )
-
-                                            else
-                                                ( [], [] )
-                                        )
-                                        form.diagnoses
-                                        |> Maybe.withDefault ( [], [] )
-                            in
-                            ( [ viewLabel language Translate.SelectAllDiagnoses
-                              , viewCheckBoxMultipleSelectInput language
-                                    outsideCareDiagnosesLeftColumn
-                                    outsideCareDiagnosesRightColumn
-                                    (form.diagnoses |> Maybe.withDefault [])
-                                    (Just DiagnosisOther)
-                                    SetOutsideCareDiagnosis
-                                    Translate.PrenatalDiagnosis
-                              , viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion PlannedFollowUpCareWithSpecialist
-                              , viewBoolInput
-                                    language
-                                    form.plannedFollowUp
-                                    (SetOutsideCareSignBoolInput
-                                        (\value form_ -> { form_ | plannedFollowUp = Just value })
-                                    )
-                                    "planned-follow-up"
-                                    Nothing
-                              ]
-                                ++ givenMedicineSection
-                            , [ if isJust form.diagnoses then
-                                    Just True
-
-                                else
-                                    Nothing
-                              , form.plannedFollowUp
-                              ]
-                                ++ givenMedicineTasks
-                            )
-
-                        else
-                            ( [], [] )
-                in
-                ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion GivenNewDiagnoses
-                  , viewBoolInput
-                        language
-                        form.givenNewDiagnosis
-                        (SetOutsideCareSignBoolInput
-                            (\value form_ ->
-                                { form_
-                                    | givenNewDiagnosis = Just value
-                                    , givenMedicine = Nothing
-                                    , diagnoses = Nothing
-                                    , diagnosesDirty = True
-                                }
-                            )
-                        )
-                        "given-new-diagnosis"
-                        Nothing
-                  ]
-                    ++ newDiagnosisSection
-                , [ form.givenNewDiagnosis ] ++ newDiagnosisTasks
-                )
-
-            else
-                ( [], [] )
-    in
-    ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion SeenAtAnotherFacility
-      , viewBoolInput
-            language
-            form.seenAtAnotherFacility
-            (SetOutsideCareSignBoolInput
-                (\value form_ ->
-                    { form_
-                        | seenAtAnotherFacility = Just value
-                        , givenNewDiagnosis = Nothing
-                        , givenMedicine = Nothing
-                        , diagnoses = Nothing
-                        , diagnosesDirty = True
-                    }
-                )
-            )
-            "seen-at-another-facility"
-            Nothing
-      ]
-        ++ givenNewDiagnosisSection
-    , [ form.seenAtAnotherFacility ] ++ givenNewDiagnosisTasks
-    )
-
-
-outsideCareFormInputsAndTasksMedications : Language -> OutsideCareForm -> ( List (Html Msg), List (Maybe Bool) )
-outsideCareFormInputsAndTasksMedications language form =
-    if form.givenMedicine == Just True then
-        Maybe.map
-            (\diagnoses ->
-                let
-                    ( malariaInputs, malariaTasks ) =
-                        if List.member DiagnosisMalaria diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisMalaria
-                              , selectTreatmentOptionsInput outsideCareMedicationOptionsMalaria
-                                    NoOutsideCareMedicationForMalaria
-                                    form.malariaMedications
-                                    SetOutsideCareMalariaMedication
-                              ]
-                            , [ if isJust form.malariaMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    ( hypertensionInputs, hypertensionTasks ) =
-                        if
-                            List.any (\diagnosis -> List.member diagnosis diagnoses)
-                                [ DiagnosisGestationalHypertensionImmediate
-                                , DiagnosisChronicHypertensionImmediate
-                                , DiagnosisModeratePreeclampsiaInitialPhase
-                                ]
-                        then
-                            let
-                                headerTransId =
-                                    if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
-                                        Translate.ModeratePreeclampsia
-
-                                    else
-                                        Translate.Hypertension
-                            in
-                            ( [ viewHeader headerTransId
-                              , selectTreatmentOptionsInput outsideCareMedicationOptionsHypertension
-                                    NoOutsideCareMedicationForHypertension
-                                    form.hypertensionMedications
-                                    SetOutsideCareHypertensionMedication
-                              ]
-                            , [ if isJust form.hypertensionMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    ( syphilisInputs, syphilisTasks ) =
-                        if List.member DiagnosisSyphilis diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisSyphilis
-                              , selectTreatmentOptionsInput outsideCareMedicationOptionsSyphilis
-                                    NoOutsideCareMedicationForSyphilis
-                                    form.syphilisMedications
-                                    SetOutsideCareSyphilisMedication
-                              ]
-                            , [ if isJust form.syphilisMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    ( anemiaInputs, anemiaTasks ) =
-                        if List.member DiagnosisModerateAnemia diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisModerateAnemia
-                              , selectTreatmentOptionsInput outsideCareMedicationOptionsAnemia
-                                    NoOutsideCareMedicationForAnemia
-                                    form.anemiaMedications
-                                    SetOutsideCareAnemiaMedication
-                              ]
-                            , [ if isJust form.anemiaMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    ( hivInputs, hivTasks ) =
-                        if List.member DiagnosisHIV diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisHIV
-                              , selectTreatmentOptionsInput outsideCareMedicationOptionsHIV
-                                    NoOutsideCareMedicationForHIV
-                                    form.hivMedications
-                                    SetOutsideCareHIVMedication
-                              ]
-                            , [ if isJust form.hivMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    selectTreatmentOptionsInput allOptions noneOption currentValue setMsg =
-                        let
-                            options =
-                                List.filter ((/=) noneOption) allOptions
-                        in
-                        viewCheckBoxMultipleSelectCustomInput language
-                            options
-                            []
-                            (Maybe.withDefault [] currentValue)
-                            (Just noneOption)
-                            setMsg
-                            (viewOutsideCareMedicationOption language)
-
-                    viewHeader diagnosisTransId =
-                        div [ class "label" ]
-                            [ span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilityPrefix ]
-                            , text " "
-                            , span [ class "diagnosis" ] [ text <| translate language diagnosisTransId ]
-                            , text " "
-                            , span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilitySuffix ]
-                            ]
-                in
-                ( malariaInputs ++ hypertensionInputs ++ syphilisInputs ++ anemiaInputs ++ hivInputs
-                , malariaTasks ++ hypertensionTasks ++ syphilisTasks ++ anemiaTasks ++ hivTasks
-                )
-            )
-            form.diagnoses
-            |> Maybe.withDefault ( [], [] )
-
-    else
-        ( [], [] )
-
-
-viewOutsideCareMedicationOption : Language -> PrenatalOutsideCareMedication -> Html any
-viewOutsideCareMedicationOption language medication =
-    if List.member medication noOutsideCareMedicationOptions then
-        label [] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
-
-    else
-        viewOutsideCareMedicationOptionWithDosage language medication
-
-
-outsideCareMedicationOptionsMalaria : List PrenatalOutsideCareMedication
-outsideCareMedicationOptionsMalaria =
-    [ OutsideCareMedicationQuinineSulphate
-    , OutsideCareMedicationCoartem
-    , NoOutsideCareMedicationForMalaria
-    ]
-
-
-outsideCareMedicationOptionsHypertension : List PrenatalOutsideCareMedication
-outsideCareMedicationOptionsHypertension =
-    [ OutsideCareMedicationMethyldopa2
-    , OutsideCareMedicationMethyldopa3
-    , OutsideCareMedicationMethyldopa4
-    , OutsideCareMedicationCarvedilol
-    , OutsideCareMedicationAmlodipine
-    , NoOutsideCareMedicationForHypertension
-    ]
-
-
-outsideCareMedicationOptionsSyphilis : List PrenatalOutsideCareMedication
-outsideCareMedicationOptionsSyphilis =
-    [ OutsideCareMedicationPenecilin1
-    , OutsideCareMedicationPenecilin3
-    , OutsideCareMedicationErythromycin
-    , OutsideCareMedicationAzithromycin
-    , OutsideCareMedicationCeftriaxon
-    , NoOutsideCareMedicationForSyphilis
-    ]
-
-
-outsideCareMedicationOptionsAnemia : List PrenatalOutsideCareMedication
-outsideCareMedicationOptionsAnemia =
-    [ OutsideCareMedicationIron1
-    , OutsideCareMedicationIron2
-    , OutsideCareMedicationFolicAcid
-    , NoOutsideCareMedicationForAnemia
-    ]
-
-
-outsideCareMedicationOptionsHIV : List PrenatalOutsideCareMedication
-outsideCareMedicationOptionsHIV =
-    [ OutsideCareMedicationTDF3TC
-    , OutsideCareMedicationDolutegravir
-    , NoOutsideCareMedicationForHIV
-    ]
-
-
-noOutsideCareMedicationOptions : List PrenatalOutsideCareMedication
-noOutsideCareMedicationOptions =
-    [ NoOutsideCareMedicationForMalaria
-    , NoOutsideCareMedicationForHypertension
-    , NoOutsideCareMedicationForSyphilis
-    , NoOutsideCareMedicationForAnemia
-    , NoOutsideCareMedicationForHIV
-    ]
-
-
-viewOutsideCareMedicationOptionWithDosage : Language -> PrenatalOutsideCareMedication -> Html any
-viewOutsideCareMedicationOptionWithDosage language medication =
-    label []
-        [ span [ class "treatment" ] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
-        , text ": "
-        , span [ class "dosage" ] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationDosage medication ]
-        ]
-
-
 mentalHealthFormWithDefault : MentalHealthForm -> Maybe PrenatalMentalHealthValue -> MentalHealthForm
 mentalHealthFormWithDefault form saved =
     saved
@@ -7024,11 +6483,7 @@ guExamFormInputsAndTasks language assembled form =
                     "episiotomy"
                     Nothing
               ]
-            , [ if isJust form.vaginalExamSigns then
-                    Just True
-
-                else
-                    Nothing
+            , [ maybeToBoolTask form.vaginalExamSigns
               , form.episiotomyOrPerinealTear
               ]
             )
@@ -7051,12 +6506,7 @@ guExamFormInputsAndTasks language assembled form =
                                     Translate.PostpartumHealingProblem
                               , div [ class "separator double" ] []
                               ]
-                            , [ if isJust form.postpartumHealingProblems then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
+                            , [ maybeToBoolTask form.postpartumHealingProblems ]
                             )
 
                         else
@@ -7159,12 +6609,7 @@ resolveReferralInputsAndTasksForCHW language currentDate assembled form =
                                     Translate.ReasonForNonReferral
                                 ]
                           ]
-                        , [ if isJust form.reasonForNotSendingToHC then
-                                Just True
-
-                            else
-                                Nothing
-                          ]
+                        , [ maybeToBoolTask form.reasonForNotSendingToHC ]
                         )
                 )
                 form.referToHealthCenter

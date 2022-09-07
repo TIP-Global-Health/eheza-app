@@ -60,6 +60,10 @@ type alias WellChildMeasurement value =
     Measurement WellChildEncounterId value
 
 
+type alias NCDMeasurement value =
+    Measurement NCDEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -1328,25 +1332,25 @@ type PrenatalFlankPainSign
 
 
 type alias PrenatalOutsideCare =
-    PrenatalMeasurement PrenatalOutsideCareValue
+    PrenatalMeasurement (OutsideCareValue PrenatalDiagnosis)
 
 
-type alias PrenatalOutsideCareValue =
-    { signs : EverySet PrenatalOutsideCareSign
-    , diagnoses : Maybe (EverySet PrenatalDiagnosis)
-    , medications : Maybe (EverySet PrenatalOutsideCareMedication)
+type alias OutsideCareValue diagnosis =
+    { signs : EverySet OutsideCareSign
+    , diagnoses : Maybe (EverySet diagnosis)
+    , medications : Maybe (EverySet OutsideCareMedication)
     }
 
 
-type PrenatalOutsideCareSign
+type OutsideCareSign
     = SeenAtAnotherFacility
     | GivenNewDiagnoses
     | GivenMedicine
     | PlannedFollowUpCareWithSpecialist
-    | NoPrenatalOutsideCareSigns
+    | NoOutsideCareSigns
 
 
-type PrenatalOutsideCareMedication
+type OutsideCareMedication
     = -- For Malaria:
       OutsideCareMedicationQuinineSulphate
     | OutsideCareMedicationCoartem
@@ -1374,7 +1378,7 @@ type PrenatalOutsideCareMedication
     | OutsideCareMedicationIron2
     | OutsideCareMedicationFolicAcid
     | NoOutsideCareMedicationForAnemia
-    | NoPrenatalOutsideCareMedications
+    | NoOutsideCareMedications
 
 
 type alias PrenatalMentalHealth =
@@ -2246,6 +2250,296 @@ type alias VaccinationValue =
 
 
 
+-- NCD MEASUREMENTS
+
+
+type alias NCDCoMorbidities =
+    NCDMeasurement NCDCoMorbiditiesValue
+
+
+type alias NCDCoMorbiditiesValue =
+    EverySet MedicalCondition
+
+
+type MedicalCondition
+    = MedicalConditionHIV
+    | MedicalConditionDiabetes
+    | MedicalConditionKidneyDisease
+    | MedicalConditionPregnancy
+    | MedicalConditionHypertension
+    | MedicalConditionGestationalDiabetes
+    | MedicalConditionPregnancyRelatedHypertension
+    | MedicalConditionNeuropathy
+    | MedicalConditionRentalComplications
+    | MedicalConditionMalaria
+    | MedicalConditionTuberculosis
+    | MedicalConditionHepatitisB
+    | MedicalConditionSyphilis
+    | MedicalConditionEyeComplications
+    | MedicalConditionAnemia
+    | MedicalConditionOther
+    | NoMedicalConditions
+
+
+type alias NCDCoreExam =
+    NCDMeasurement CorePhysicalExamValue
+
+
+type alias NCDCreatinineTest =
+    NCDMeasurement NCDCreatinineTestValue
+
+
+type alias NCDCreatinineTestValue =
+    {}
+
+
+type alias NCDDangerSigns =
+    NCDMeasurement NCDDangerSignsValue
+
+
+type alias NCDDangerSignsValue =
+    EverySet NCDDangerSign
+
+
+type NCDDangerSign
+    = Dyspnea
+    | VisionChanges
+    | ChestPain
+    | FlankPain
+    | Hematuria
+    | SevereHeadaches
+    | LossOfConciousness
+    | NoNCDDangerSigns
+
+
+type alias NCDFamilyHistory =
+    NCDMeasurement NCDFamilyHistoryValue
+
+
+type alias NCDFamilyHistoryValue =
+    { signs : EverySet NCDFamilyHistorySign
+    , hypertensionPredecessors : Maybe (EverySet Predecessor)
+    , heartProblemPredecessors : Maybe (EverySet Predecessor)
+    , diabetesPredecessors : Maybe (EverySet Predecessor)
+    }
+
+
+type NCDFamilyHistorySign
+    = SignHypertensionHistory
+    | SignHeartProblemHistory
+    | SignDiabetesHistory
+    | NoNCDFamilyHistorySigns
+
+
+type Predecessor
+    = PredecessorFather
+    | PredecessorMother
+    | PredecessorGrandFather
+    | PredecessorGrandMother
+    | NoPredecessors
+
+
+type alias NCDFamilyPlanning =
+    NCDMeasurement NCDFamilyPlanningValue
+
+
+type alias NCDFamilyPlanningValue =
+    EverySet FamilyPlanningSign
+
+
+type alias NCDHealthEducation =
+    NCDMeasurement NCDHealthEducationValue
+
+
+type alias NCDHealthEducationValue =
+    {}
+
+
+type alias NCDHivTest =
+    NCDMeasurement NCDHivTestValue
+
+
+type alias NCDHivTestValue =
+    {}
+
+
+type alias NCDLabsResults =
+    NCDMeasurement NCDLabsResultsValue
+
+
+type alias NCDLabsResultsValue =
+    {}
+
+
+type alias NCDLiverFunctionTest =
+    NCDMeasurement NCDLiverFunctionTestValue
+
+
+type alias NCDLiverFunctionTestValue =
+    {}
+
+
+type alias NCDMedicationDistribution =
+    NCDMeasurement NCDMedicationDistributionValue
+
+
+type alias NCDMedicationDistributionValue =
+    {}
+
+
+type alias NCDMedicationHistory =
+    NCDMeasurement NCDMedicationHistoryValue
+
+
+type alias NCDMedicationHistoryValue =
+    { medicationsCausingHypertension : EverySet MedicationCausingHypertension
+    , medicationsTreatingHypertension : EverySet MedicationTreatingHypertension
+    , medicationsTreatingDiabetes : EverySet MedicationTreatingDiabetes
+    }
+
+
+type MedicationCausingHypertension
+    = MedicationOestrogens
+    | MedicationSteroids
+    | MedicationAmitriptyline
+    | MedicationIbuprofen
+    | NoMedicationCausingHypertension
+
+
+type MedicationTreatingHypertension
+    = MedicationAceInhibitors
+    | MedicationARBs
+    | MedicationHCTZ
+    | MedicationCalciumChannelBlockers
+    | MedicationMethyldopa
+    | MedicationBetaBlockers
+    | MedicationHydralazine
+    | NoMedicationTreatingHypertension
+
+
+type MedicationTreatingDiabetes
+    = MedicationMetformin
+    | MedicationGlibenclamide
+    | MedicationInsulin
+    | NoMedicationTreatingDiabetes
+
+
+type alias NCDOutsideCare =
+    NCDMeasurement (OutsideCareValue MedicalCondition)
+
+
+type alias NCDPregnancyTest =
+    NCDMeasurement NCDPregnancyTestValue
+
+
+type alias NCDPregnancyTestValue =
+    {}
+
+
+type alias NCDRandomBloodSugarTest =
+    NCDMeasurement NCDRandomBloodSugarTestValue
+
+
+type alias NCDRandomBloodSugarTestValue =
+    {}
+
+
+type alias NCDReferral =
+    NCDMeasurement NCDReferralValue
+
+
+type alias NCDReferralValue =
+    {}
+
+
+type alias NCDSocialHistory =
+    NCDMeasurement NCDSocialHistoryValue
+
+
+type alias NCDSocialHistoryValue =
+    { signs : EverySet NCDSocialHistorySign
+    , foodGroup : FoodGroup
+    , beveragesPerWeek : Maybe Int
+    , cigarettesPerWeek : Maybe Int
+    }
+
+
+type NCDSocialHistorySign
+    = SignDrinkAlcohol
+    | SignSmokeCigarettes
+    | SignConsumeSalt
+    | SignDifficult4TimesAYear
+    | SignHelpWithTreatmentAtHome
+    | NoNCDSocialHistorySigns
+
+
+type FoodGroup
+    = FoodGroupVegetables
+    | FoodGroupCarbohydrates
+    | FoodGroupProtein
+
+
+type alias NCDSymptomReview =
+    NCDMeasurement NCDSymptomReviewValue
+
+
+type alias NCDSymptomReviewValue =
+    { group1Symptoms : EverySet NCDGroup1Symptom
+    , group2Symptoms : EverySet NCDGroup2Symptom
+    , painSymptoms : EverySet NCDPainSymptom
+    }
+
+
+type NCDGroup1Symptom
+    = SwellingInLegs
+    | UrinaryFrequency
+    | Anxiety
+    | WeightLoss
+    | Palpitations
+    | Tremor
+    | SwellingInFace
+    | SwellingInAbdomen
+    | DizzinessWithChangingPosition
+    | MildHeadache
+    | NoNCDGroup1Symptoms
+
+
+type NCDPainSymptom
+    = PainFlank
+    | PainLowerBack
+    | PainFeet
+    | PainNeck
+    | PainAbdomen
+    | NoNCDPainSymptoms
+
+
+type NCDGroup2Symptom
+    = WeaknessOfOneSideOfTheBody
+    | ProblemsWithWalking
+    | ProblemsWithTalking
+    | DecreasedVision
+    | BlurryVision
+    | IncreasedFatigueWithDailyActivities
+    | ShortOfBreathWhenLayingDown
+    | ShortOfBreathAtNight
+    | KidneyProblems
+    | NCDIncreasedThirst
+    | NoNCDGroup2Symptoms
+
+
+type alias NCDUrineDipstickTest =
+    NCDMeasurement NCDUrineDipstickTestValue
+
+
+type alias NCDUrineDipstickTestValue =
+    {}
+
+
+type alias NCDVitals =
+    NCDMeasurement VitalsValue
+
+
+
 -- LISTS OF MEASUREMENTS
 
 
@@ -2518,7 +2812,27 @@ type alias WellChildMeasurements =
 {-| A set of NCD measurements that correspond to the same NCD encounter.
 -}
 type alias NCDMeasurements =
-    {}
+    { coMorbidities : Maybe ( NCDCoMorbiditiesId, NCDCoMorbidities )
+    , coreExam : Maybe ( NCDCoreExamId, NCDCoreExam )
+    , creatinineTest : Maybe ( NCDCreatinineTestId, NCDCreatinineTest )
+    , dangerSigns : Maybe ( NCDDangerSignsId, NCDDangerSigns )
+    , familyHistory : Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )
+    , familyPlanning : Maybe ( NCDFamilyPlanningId, NCDFamilyPlanning )
+    , healthEducation : Maybe ( NCDHealthEducationId, NCDHealthEducation )
+    , hivTest : Maybe ( NCDHivTestId, NCDHivTest )
+    , labsResults : Maybe ( NCDLabsResultsId, NCDLabsResults )
+    , liverFunctionTest : Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )
+    , medicationDistribution : Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )
+    , medicationHistory : Maybe ( NCDMedicationHistoryId, NCDMedicationHistory )
+    , outsideCare : Maybe ( NCDOutsideCareId, NCDOutsideCare )
+    , pregnancyTest : Maybe ( NCDPregnancyTestId, NCDPregnancyTest )
+    , randomBloodSugarTest : Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )
+    , referral : Maybe ( NCDReferralId, NCDReferral )
+    , socialHistory : Maybe ( NCDSocialHistoryId, NCDSocialHistory )
+    , symptomReview : Maybe ( NCDSymptomReviewId, NCDSymptomReview )
+    , urineDipstickTest : Maybe ( NCDUrineDipstickTestId, NCDUrineDipstickTest )
+    , vitals : Maybe ( NCDVitalsId, NCDVitals )
+    }
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one

@@ -1962,8 +1962,8 @@ prenatalFlankPainSignFromString value =
             Nothing
 
 
-prenatalOutsideCareSignToString : PrenatalOutsideCareSign -> String
-prenatalOutsideCareSignToString value =
+outsideCareSignToString : OutsideCareSign -> String
+outsideCareSignToString value =
     case value of
         SeenAtAnotherFacility ->
             "seen-at-another-facility"
@@ -1977,12 +1977,12 @@ prenatalOutsideCareSignToString value =
         PlannedFollowUpCareWithSpecialist ->
             "follow-up-with-specialist"
 
-        NoPrenatalOutsideCareSigns ->
+        NoOutsideCareSigns ->
             "none"
 
 
-prenatalOutsideCareSignFromString : String -> Maybe PrenatalOutsideCareSign
-prenatalOutsideCareSignFromString value =
+outsideCareSignFromString : String -> Maybe OutsideCareSign
+outsideCareSignFromString value =
     case value of
         "seen-at-another-facility" ->
             Just SeenAtAnotherFacility
@@ -1997,14 +1997,14 @@ prenatalOutsideCareSignFromString value =
             Just PlannedFollowUpCareWithSpecialist
 
         "none" ->
-            Just NoPrenatalOutsideCareSigns
+            Just NoOutsideCareSigns
 
         _ ->
             Nothing
 
 
-prenatalOutsideCareMedicationToString : PrenatalOutsideCareMedication -> String
-prenatalOutsideCareMedicationToString value =
+outsideCareMedicationToString : OutsideCareMedication -> String
+outsideCareMedicationToString value =
     case value of
         OutsideCareMedicationQuinineSulphate ->
             "quinine-sulphate"
@@ -2072,12 +2072,12 @@ prenatalOutsideCareMedicationToString value =
         NoOutsideCareMedicationForAnemia ->
             "no-treatment-anemia"
 
-        NoPrenatalOutsideCareMedications ->
+        NoOutsideCareMedications ->
             "none"
 
 
-prenatalOutsideCareMedicationFromString : String -> Maybe PrenatalOutsideCareMedication
-prenatalOutsideCareMedicationFromString value =
+outsideCareMedicationFromString : String -> Maybe OutsideCareMedication
+outsideCareMedicationFromString value =
     case value of
         "quinine-sulphate" ->
             Just OutsideCareMedicationQuinineSulphate
@@ -2146,7 +2146,7 @@ prenatalOutsideCareMedicationFromString value =
             Just NoOutsideCareMedicationForAnemia
 
         "none" ->
-            Just NoPrenatalOutsideCareMedications
+            Just NoOutsideCareMedications
 
         _ ->
             Nothing
@@ -2573,3 +2573,663 @@ pregnancyTestResultToString sign =
 
         PregnancyTestUnableToConduct ->
             "unable-to-conduct"
+
+
+ncdDangerSignFromString : String -> Maybe NCDDangerSign
+ncdDangerSignFromString sign =
+    case sign of
+        "dyspnea" ->
+            Just Dyspnea
+
+        "vision-changes" ->
+            Just VisionChanges
+
+        "chest-pain" ->
+            Just ChestPain
+
+        "flank-pain" ->
+            Just FlankPain
+
+        "hematuria" ->
+            Just Hematuria
+
+        "severe-headaches" ->
+            Just SevereHeadaches
+
+        "loss-of-conciousness" ->
+            Just LossOfConciousness
+
+        "none" ->
+            Just NoNCDDangerSigns
+
+        _ ->
+            Nothing
+
+
+ncdDangerSignToString : NCDDangerSign -> String
+ncdDangerSignToString sign =
+    case sign of
+        Dyspnea ->
+            "dyspnea"
+
+        VisionChanges ->
+            "vision-changes"
+
+        ChestPain ->
+            "chest-pain"
+
+        FlankPain ->
+            "flank-pain"
+
+        Hematuria ->
+            "hematuria"
+
+        SevereHeadaches ->
+            "severe-headaches"
+
+        LossOfConciousness ->
+            "loss-of-conciousness"
+
+        NoNCDDangerSigns ->
+            "none"
+
+
+ncdGroup1SymptomFromString : String -> Maybe NCDGroup1Symptom
+ncdGroup1SymptomFromString sign =
+    case sign of
+        "swelling-in-legs" ->
+            Just SwellingInLegs
+
+        "urinary-frequency" ->
+            Just UrinaryFrequency
+
+        "anxiety" ->
+            Just Anxiety
+
+        "weight-loss" ->
+            Just WeightLoss
+
+        "palpitations" ->
+            Just Palpitations
+
+        "tremor" ->
+            Just Tremor
+
+        "swelling-in-face" ->
+            Just SwellingInFace
+
+        "swelling-in-abdomen" ->
+            Just SwellingInAbdomen
+
+        "dizziness-with-changing-position" ->
+            Just DizzinessWithChangingPosition
+
+        "mild-headache" ->
+            Just MildHeadache
+
+        "none" ->
+            Just NoNCDGroup1Symptoms
+
+        _ ->
+            Nothing
+
+
+ncdGroup1SymptomToString : NCDGroup1Symptom -> String
+ncdGroup1SymptomToString sign =
+    case sign of
+        SwellingInLegs ->
+            "swelling-in-legs"
+
+        UrinaryFrequency ->
+            "urinary-frequency"
+
+        Anxiety ->
+            "anxiety"
+
+        WeightLoss ->
+            "weight-loss"
+
+        Palpitations ->
+            "palpitations"
+
+        Tremor ->
+            "tremor"
+
+        SwellingInFace ->
+            "swelling-in-face"
+
+        SwellingInAbdomen ->
+            "swelling-in-abdomen"
+
+        DizzinessWithChangingPosition ->
+            "dizziness-with-changing-position"
+
+        MildHeadache ->
+            "mild-headache"
+
+        NoNCDGroup1Symptoms ->
+            "none"
+
+
+ncdGroup2SymptomFromString : String -> Maybe NCDGroup2Symptom
+ncdGroup2SymptomFromString sign =
+    case sign of
+        "weakness-of-one-side-of-the-body" ->
+            Just WeaknessOfOneSideOfTheBody
+
+        "problems-with-walking" ->
+            Just ProblemsWithWalking
+
+        "problems-with-talking" ->
+            Just ProblemsWithTalking
+
+        "decreased-vision" ->
+            Just DecreasedVision
+
+        "blurry-vision" ->
+            Just BlurryVision
+
+        "increased-fatigue-with-daily-activities" ->
+            Just IncreasedFatigueWithDailyActivities
+
+        "short-of-breath-when-laying-down" ->
+            Just ShortOfBreathWhenLayingDown
+
+        "short-of-breath-at-night" ->
+            Just ShortOfBreathAtNight
+
+        "kidney-problems" ->
+            Just KidneyProblems
+
+        "increased-thirst" ->
+            Just NCDIncreasedThirst
+
+        "none" ->
+            Just NoNCDGroup2Symptoms
+
+        _ ->
+            Nothing
+
+
+ncdGroup2SymptomToString : NCDGroup2Symptom -> String
+ncdGroup2SymptomToString sign =
+    case sign of
+        WeaknessOfOneSideOfTheBody ->
+            "weakness-of-one-side-of-the-body"
+
+        ProblemsWithWalking ->
+            "problems-with-walking"
+
+        ProblemsWithTalking ->
+            "problems-with-talking"
+
+        DecreasedVision ->
+            "decreased-vision"
+
+        BlurryVision ->
+            "blurry-vision"
+
+        IncreasedFatigueWithDailyActivities ->
+            "increased-fatigue-with-daily-activities"
+
+        ShortOfBreathWhenLayingDown ->
+            "short-of-breath-when-laying-down"
+
+        ShortOfBreathAtNight ->
+            "short-of-breath-at-night"
+
+        KidneyProblems ->
+            "kidney-problems"
+
+        NCDIncreasedThirst ->
+            "increased-thirst"
+
+        NoNCDGroup2Symptoms ->
+            "none"
+
+
+ncdPainSymptomFromString : String -> Maybe NCDPainSymptom
+ncdPainSymptomFromString sign =
+    case sign of
+        "flank" ->
+            Just PainFlank
+
+        "lower-back" ->
+            Just PainLowerBack
+
+        "feet" ->
+            Just PainFeet
+
+        "neck" ->
+            Just PainNeck
+
+        "abdomen" ->
+            Just PainAbdomen
+
+        "none" ->
+            Just NoNCDPainSymptoms
+
+        _ ->
+            Nothing
+
+
+ncdPainSymptomToString : NCDPainSymptom -> String
+ncdPainSymptomToString sign =
+    case sign of
+        PainFlank ->
+            "flank"
+
+        PainLowerBack ->
+            "lower-back"
+
+        PainFeet ->
+            "feet"
+
+        PainNeck ->
+            "neck"
+
+        PainAbdomen ->
+            "abdomen"
+
+        NoNCDPainSymptoms ->
+            "none"
+
+
+medicalConditionFromString : String -> Maybe MedicalCondition
+medicalConditionFromString value =
+    case value of
+        "hiv" ->
+            Just MedicalConditionHIV
+
+        "diabetes" ->
+            Just MedicalConditionDiabetes
+
+        "kidney-disease" ->
+            Just MedicalConditionKidneyDisease
+
+        "pregnancy" ->
+            Just MedicalConditionPregnancy
+
+        "hypertension" ->
+            Just MedicalConditionHypertension
+
+        "gestational-diabetes" ->
+            Just MedicalConditionGestationalDiabetes
+
+        "pregnancy-related-hypertension" ->
+            Just MedicalConditionPregnancyRelatedHypertension
+
+        "none" ->
+            Just NoMedicalConditions
+
+        "neuropathy" ->
+            Just MedicalConditionNeuropathy
+
+        "rental-complications" ->
+            Just MedicalConditionRentalComplications
+
+        "malaria" ->
+            Just MedicalConditionMalaria
+
+        "tuberculosis" ->
+            Just MedicalConditionTuberculosis
+
+        "hepatitis-b" ->
+            Just MedicalConditionHepatitisB
+
+        "syphilis" ->
+            Just MedicalConditionSyphilis
+
+        "eye-complications" ->
+            Just MedicalConditionEyeComplications
+
+        "anemia" ->
+            Just MedicalConditionAnemia
+
+        "other" ->
+            Just MedicalConditionOther
+
+        _ ->
+            Nothing
+
+
+medicalConditionToString : MedicalCondition -> String
+medicalConditionToString value =
+    case value of
+        MedicalConditionHIV ->
+            "hiv"
+
+        MedicalConditionDiabetes ->
+            "diabetes"
+
+        MedicalConditionKidneyDisease ->
+            "kidney-disease"
+
+        MedicalConditionPregnancy ->
+            "pregnancy"
+
+        MedicalConditionHypertension ->
+            "hypertension"
+
+        MedicalConditionGestationalDiabetes ->
+            "gestational-diabetes"
+
+        MedicalConditionPregnancyRelatedHypertension ->
+            "pregnancy-related-hypertension"
+
+        MedicalConditionNeuropathy ->
+            "neuropathy"
+
+        MedicalConditionRentalComplications ->
+            "rental-complications"
+
+        MedicalConditionMalaria ->
+            "malaria"
+
+        MedicalConditionTuberculosis ->
+            "tuberculosis"
+
+        MedicalConditionHepatitisB ->
+            "hepatitis-b"
+
+        MedicalConditionSyphilis ->
+            "syphilis"
+
+        MedicalConditionEyeComplications ->
+            "eye-complications"
+
+        MedicalConditionAnemia ->
+            "anemia"
+
+        MedicalConditionOther ->
+            "other"
+
+        NoMedicalConditions ->
+            "none"
+
+
+ncdFamilyHistorySignFromString : String -> Maybe NCDFamilyHistorySign
+ncdFamilyHistorySignFromString value =
+    case value of
+        "hypertension-history" ->
+            Just SignHypertensionHistory
+
+        "heart-problem-history" ->
+            Just SignHeartProblemHistory
+
+        "diabetes-history" ->
+            Just SignDiabetesHistory
+
+        "none" ->
+            Just NoNCDFamilyHistorySigns
+
+        _ ->
+            Nothing
+
+
+ncdFamilyHistorySignToString : NCDFamilyHistorySign -> String
+ncdFamilyHistorySignToString value =
+    case value of
+        SignHypertensionHistory ->
+            "hypertension-history"
+
+        SignHeartProblemHistory ->
+            "heart-problem-history"
+
+        SignDiabetesHistory ->
+            "diabetes-history"
+
+        NoNCDFamilyHistorySigns ->
+            "none"
+
+
+predecessorFromString : String -> Maybe Predecessor
+predecessorFromString value =
+    case value of
+        "father" ->
+            Just PredecessorFather
+
+        "mother" ->
+            Just PredecessorMother
+
+        "grand-father" ->
+            Just PredecessorGrandFather
+
+        "grand-mother" ->
+            Just PredecessorGrandMother
+
+        "none" ->
+            Just NoPredecessors
+
+        _ ->
+            Nothing
+
+
+predecessorToString : Predecessor -> String
+predecessorToString value =
+    case value of
+        PredecessorFather ->
+            "father"
+
+        PredecessorMother ->
+            "mother"
+
+        PredecessorGrandFather ->
+            "grand-father"
+
+        PredecessorGrandMother ->
+            "grand-mother"
+
+        NoPredecessors ->
+            "none"
+
+
+medicationCausingHypertensionFromString : String -> Maybe MedicationCausingHypertension
+medicationCausingHypertensionFromString value =
+    case value of
+        "oestrogens" ->
+            Just MedicationOestrogens
+
+        "steroids" ->
+            Just MedicationSteroids
+
+        "amitriptyline" ->
+            Just MedicationAmitriptyline
+
+        "ibuprofen" ->
+            Just MedicationIbuprofen
+
+        "none" ->
+            Just NoMedicationCausingHypertension
+
+        _ ->
+            Nothing
+
+
+medicationCausingHypertensionToString : MedicationCausingHypertension -> String
+medicationCausingHypertensionToString value =
+    case value of
+        MedicationOestrogens ->
+            "oestrogens"
+
+        MedicationSteroids ->
+            "steroids"
+
+        MedicationAmitriptyline ->
+            "amitriptyline"
+
+        MedicationIbuprofen ->
+            "ibuprofen"
+
+        NoMedicationCausingHypertension ->
+            "none"
+
+
+medicationTreatingHypertensionFromString : String -> Maybe MedicationTreatingHypertension
+medicationTreatingHypertensionFromString value =
+    case value of
+        "ace-inhibitors" ->
+            Just MedicationAceInhibitors
+
+        "arbs" ->
+            Just MedicationARBs
+
+        "hctz" ->
+            Just MedicationHCTZ
+
+        "calcium-channel-blockers" ->
+            Just MedicationCalciumChannelBlockers
+
+        "methyldopa" ->
+            Just MedicationMethyldopa
+
+        "beta-blockers" ->
+            Just MedicationBetaBlockers
+
+        "hydralazine" ->
+            Just MedicationHydralazine
+
+        "none" ->
+            Just NoMedicationTreatingHypertension
+
+        _ ->
+            Nothing
+
+
+medicationTreatingHypertensionToString : MedicationTreatingHypertension -> String
+medicationTreatingHypertensionToString value =
+    case value of
+        MedicationAceInhibitors ->
+            "ace-inhibitors"
+
+        MedicationARBs ->
+            "arbs"
+
+        MedicationHCTZ ->
+            "hctz"
+
+        MedicationCalciumChannelBlockers ->
+            "calcium-channel-blockers"
+
+        MedicationMethyldopa ->
+            "methyldopa"
+
+        MedicationBetaBlockers ->
+            "beta-blockers"
+
+        MedicationHydralazine ->
+            "hydralazine"
+
+        NoMedicationTreatingHypertension ->
+            "none"
+
+
+medicationTreatingDiabetesFromString : String -> Maybe MedicationTreatingDiabetes
+medicationTreatingDiabetesFromString value =
+    case value of
+        "metformin" ->
+            Just MedicationMetformin
+
+        "glibenclamide" ->
+            Just MedicationGlibenclamide
+
+        "insulin" ->
+            Just MedicationInsulin
+
+        "none" ->
+            Just NoMedicationTreatingDiabetes
+
+        _ ->
+            Nothing
+
+
+medicationTreatingDiabetesToString : MedicationTreatingDiabetes -> String
+medicationTreatingDiabetesToString value =
+    case value of
+        MedicationMetformin ->
+            "metformin"
+
+        MedicationGlibenclamide ->
+            "glibenclamide"
+
+        MedicationInsulin ->
+            "insulin"
+
+        NoMedicationTreatingDiabetes ->
+            "none"
+
+
+ncdSocialHistorySignFromString : String -> Maybe NCDSocialHistorySign
+ncdSocialHistorySignFromString value =
+    case value of
+        "drink-alcohol" ->
+            Just SignDrinkAlcohol
+
+        "smoke-cigarettes" ->
+            Just SignSmokeCigarettes
+
+        "consume-salt" ->
+            Just SignConsumeSalt
+
+        "difficult-4-times-a-year" ->
+            Just SignDifficult4TimesAYear
+
+        "help-with-treatment-at-home" ->
+            Just SignHelpWithTreatmentAtHome
+
+        "none" ->
+            Just NoNCDSocialHistorySigns
+
+        _ ->
+            Nothing
+
+
+ncdSocialHistorySignToString : NCDSocialHistorySign -> String
+ncdSocialHistorySignToString value =
+    case value of
+        SignDrinkAlcohol ->
+            "drink-alcohol"
+
+        SignSmokeCigarettes ->
+            "smoke-cigarettes"
+
+        SignConsumeSalt ->
+            "consume-salt"
+
+        SignDifficult4TimesAYear ->
+            "difficult-4-times-a-year"
+
+        SignHelpWithTreatmentAtHome ->
+            "help-with-treatment-at-home"
+
+        NoNCDSocialHistorySigns ->
+            "none"
+
+
+foodGroupFromString : String -> Maybe FoodGroup
+foodGroupFromString value =
+    case value of
+        "vegetables" ->
+            Just FoodGroupVegetables
+
+        "carbohydrates" ->
+            Just FoodGroupCarbohydrates
+
+        "protein" ->
+            Just FoodGroupProtein
+
+        _ ->
+            Nothing
+
+
+foodGroupToString : FoodGroup -> String
+foodGroupToString value =
+    case value of
+        FoodGroupVegetables ->
+            "vegetables"
+
+        FoodGroupCarbohydrates ->
+            "carbohydrates"
+
+        FoodGroupProtein ->
+            "protein"

@@ -568,16 +568,9 @@ div.page-activity {
       margin-bottom: 30px;
 
       // Number inputs
-      &.measurement {
+      &.measurement,
+      &.number {
         height: 50px;
-
-        .unit {
-          float: left;
-          font-weight: normal;
-          margin-left: 20px;
-          margin-top: 10px;
-          width: 35%;
-        }
 
         input,
         select {
@@ -586,6 +579,22 @@ div.page-activity {
           color: $color-text;
           float: left;
           width: 60%;
+        }
+      }
+
+      &.measurement .unit {
+        float: left;
+        font-weight: normal;
+        margin-left: 20px;
+        margin-top: 10px;
+        width: 35%;
+      }
+
+      &.number {
+
+        input,
+        select {
+          text-align: center;
         }
       }
 
@@ -1984,28 +1993,53 @@ div.page-activity.prenatal {
   }
 }
 
+div.page-activity.ncd,
+div.page-activity.well-child {
+
+  .ui.full.segment .full.content {
+
+    @include next-steps;
+
+    .helper {
+      font-style: italic;
+      margin-top: -10px;
+    }
+
+    .ui.form {
+      min-height: 140px;
+
+      .separator {
+        color: $color-light-gray;
+        margin: 30px 0;
+        width: 100%;
+        border: 1px solid;
+      }
+
+      .checkbox-select-input {
+        margin-bottom: 40px;
+      }
+
+      .checkbox-select-input .ui.checkbox.activity {
+        margin-top: 30px;
+
+        label {
+          padding-left: 40px;
+        }
+
+        label:before,
+        label:after {
+          left: 0;
+        }
+      }
+    }
+  }
+}
+
 div.page-activity.well-child {
 
   .ui.full.segment {
 
     .full.content {
-
-      @include next-steps;
-
-      .helper {
-        font-style: italic;
-      }
-
-      .ui.form {
-        min-height: 140px;
-
-        .separator {
-          color: $color-light-gray;
-          margin: 30px 0;
-          width: 100%;
-          border: 1px solid;
-        }
-      }
 
       .date {
         margin-bottom: 20px;
@@ -2110,19 +2144,6 @@ div.page-activity.well-child {
       .why-not {
         margin-bottom: 30px;
         margin-left: 20px;
-      }
-
-      .ui.checkbox.activity {
-        margin-top: 30px;
-
-        label {
-          padding-left: 40px;
-        }
-
-        label:before,
-        label:after {
-          left: 0;
-        }
       }
 
       .future-vaccinations {
@@ -3288,7 +3309,9 @@ div.page-encounter.well-child,
 div.page-activity.trace-contact,
 div.page-activity.well-child,
 div.page-report.well-child,
-div.page-activity.patient-record {
+div.page-activity.patient-record,
+div.page-encounter.ncd,
+div.page-activity.ncd {
 
   .details {
     padding-left: 25px;
@@ -3925,5 +3948,40 @@ div.page-activity.patient-record {
 
   .entry.family-planning .date {
     margin: auto 0;
+  }
+}
+
+
+div.page-activity.ncd {
+
+  .ui.full.segment {
+
+    .form.history.outside-care {
+
+      label .treatment {
+          color: $color-primary;
+          font-size: 23px;
+          font-weight: 500;
+          margin-right: 0;
+        }
+
+      .label .diagnosis {
+        color: $color-primary;
+      }
+
+      .checkbox-select-input {
+        margin-bottom: 40px;
+      }
+    }
+
+    .actions.two button {
+      width: 50%;
+      float: left;
+      margin: 0;
+
+      &.active {
+        border-left: 1px solid $color-white;
+      }
+    }
   }
 }

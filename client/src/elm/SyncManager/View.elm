@@ -489,8 +489,68 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityMuac identifier ->
                 viewMeasurement identifier "Muac"
 
+            BackendAuthorityNCDCoMorbidities identifier ->
+                viewMeasurement identifier "NCDCoMorbidities"
+
+            BackendAuthorityNCDCoreExam identifier ->
+                viewMeasurement identifier "NCDCoreExam"
+
+            BackendAuthorityNCDCreatinineTest identifier ->
+                viewMeasurement identifier "NCDCreatinineTest"
+
+            BackendAuthorityNCDDangerSigns identifier ->
+                viewMeasurement identifier "NCDDangerSigns"
+
             BackendAuthorityNCDEncounter identifier ->
                 text ("NCDEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityNCDFamilyHistory identifier ->
+                viewMeasurement identifier "NCDFamilyHistory"
+
+            BackendAuthorityNCDFamilyPlanning identifier ->
+                viewMeasurement identifier "NCDFamilyPlanning"
+
+            BackendAuthorityNCDHealthEducation identifier ->
+                viewMeasurement identifier "NCDHealthEducation"
+
+            BackendAuthorityNCDHivTest identifier ->
+                viewMeasurement identifier "NCDHivTest"
+
+            BackendAuthorityNCDLabsResults identifier ->
+                viewMeasurement identifier "NCDLabsResults"
+
+            BackendAuthorityNCDLiverFunctionTest identifier ->
+                viewMeasurement identifier "NCDLiverFunctionTest"
+
+            BackendAuthorityNCDMedicationDistribution identifier ->
+                viewMeasurement identifier "NCDMedicationDistribution"
+
+            BackendAuthorityNCDMedicationHistory identifier ->
+                viewMeasurement identifier "NCDMedicationHistory"
+
+            BackendAuthorityNCDOutsideCare identifier ->
+                viewMeasurement identifier "NCDOutsideCare"
+
+            BackendAuthorityNCDPregnancyTest identifier ->
+                viewMeasurement identifier "NCDPregnancyTest"
+
+            BackendAuthorityNCDRandomBloodSugarTest identifier ->
+                viewMeasurement identifier "NCDRandomBloodSugarTest"
+
+            BackendAuthorityNCDReferral identifier ->
+                viewMeasurement identifier "NCDReferral"
+
+            BackendAuthorityNCDSocialHistory identifier ->
+                viewMeasurement identifier "NCDSocialHistory"
+
+            BackendAuthorityNCDSymptomReview identifier ->
+                viewMeasurement identifier "NCDSymptomReview"
+
+            BackendAuthorityNCDUrineDipstickTest identifier ->
+                viewMeasurement identifier "NCDUrineDipstickTest"
+
+            BackendAuthorityNCDVitals identifier ->
+                viewMeasurement identifier "NCDVitals"
 
             BackendAuthorityNutrition identifier ->
                 viewMeasurement identifier "Nutrition"

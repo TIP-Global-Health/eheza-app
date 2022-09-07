@@ -26,6 +26,7 @@ import Pages.Utils
         , ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , nonAdministrationReasonToSign
         , taskAllCompleted
@@ -3283,12 +3284,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
 
                             else
                                 ( nonReferralReasonSection language facility config.reasonToSignFunc setNonReferralReasonMsg form
-                                , [ if isJust <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form then
-                                        Just True
-
-                                    else
-                                        Nothing
-                                  ]
+                                , [ maybeToBoolTask <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form ]
                                 )
                         )
                         config.referralField

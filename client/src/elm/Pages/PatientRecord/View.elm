@@ -38,7 +38,6 @@ import Pages.Utils
         , viewSaveAction
         , viewStartEncounterButton
         )
-import Pages.WellChild.Encounter.View exposing (thumbnailDimensions)
 import Pages.WellChild.ProgressReport.Model exposing (PaneEntryStatus(..), WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (diagnosisEntryStatusToString, viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
@@ -335,6 +334,13 @@ viewAdultDetails language currentDate personId person db =
             ++ childrenList
             ++ [ familyLinks ]
     ]
+
+
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 140
+    , height = 140
+    }
 
 
 viewFilters : Language -> Person -> PatientType -> Model -> Html Msg

@@ -1,4 +1,13 @@
-module Pages.WellChild.ProgressReport.View exposing (diagnosisEntryStatusToString, view, viewAcuteIllnessDiagnosisEntry, viewEntries, viewNutritionSigns, viewPaneHeading, viewPersonInfoPane, viewProgressReport)
+module Pages.WellChild.ProgressReport.View exposing
+    ( diagnosisEntryStatusToString
+    , view
+    , viewAcuteIllnessDiagnosisEntry
+    , viewEntries
+    , viewNutritionSigns
+    , viewPaneHeading
+    , viewPersonInfoPane
+    , viewProgressReport
+    )
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -53,7 +62,7 @@ import Pages.Nutrition.Activity.View exposing (translateNutritionAssement)
 import Pages.Nutrition.Encounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewStartEncounterButton)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewStartEncounterButton)
 import Pages.WellChild.Activity.Types exposing (VaccinationStatus(..))
 import Pages.WellChild.Activity.Utils exposing (expectedECDSignsOnMilestone, generateCompletedECDSigns, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChild.Activity.View exposing (viewVaccinationOverview)
@@ -65,7 +74,7 @@ import Pages.WellChild.Encounter.Utils
         , resolveDateForPediatricCareMilestone
         , resolvePediatricCareMilestoneOnDate
         )
-import Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionActivities, viewPersonDetails)
+import Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionActivities)
 import Pages.WellChild.ProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -393,7 +402,7 @@ viewPersonInfoPane language currentDate person =
     div [ class "pane person-details" ]
         [ viewPaneHeading language Translate.PatientInformation
         , div [ class "patient-info" ] <|
-            viewPersonDetails language currentDate person
+            viewPersonDetailsExtended language currentDate person
         ]
 
 
