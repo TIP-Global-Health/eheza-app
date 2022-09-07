@@ -82,8 +82,11 @@ const inputDelay = 250;
     // Person photo upload.
     let futureFileChooser = page.waitForFileChooser();
     await page.click('.dz-clickable');
+    await page.screenshot({path: 'filechooser0-' + Date.now() + '.png', fullPage: true, captureBeyondViewport: true});
     let fileChooser = await futureFileChooser;
-    await fileChooser.accept([File('person.jpg')]);
+    await page.screenshot({path: 'filechooser1-' + Date.now() + '.png', fullPage: true, captureBeyondViewport: true});
+    await fileChooser.accept(['person.jpg']);
+    await page.screenshot({path: 'filechooser2-' + Date.now() + '.png', fullPage: true, captureBeyondViewport: true});
 
     // Fill textfields with random value.
     for (let i = 0; i < 20; i++) {
@@ -166,5 +169,8 @@ const inputDelay = 250;
   }
   await syncDevice(page);
 
-  await browser.close();
+  if (browser && browser.process() != null) browser.process().kill('SIGINT');
+  const ac = new AbortController();
+  update({ signal: ac.signal });
+  ac.abort();
 })();
