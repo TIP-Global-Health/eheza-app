@@ -31,7 +31,7 @@
         var=ansible_date_time.iso8601
 
     - name: Execute
-      shell: 'cd /root && node index.js 12345678 1234'
+      shell: 'cd /root && node index.js {{ pairingCode }} {{ pin }}'
 
     - name: End date
       debug:
