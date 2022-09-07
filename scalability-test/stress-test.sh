@@ -3,6 +3,8 @@
 LINODE_GROUP="stress-test"
 NUMBER_OF_VISITORS="$1"
 LINODE_CLI="$HOME/.local/bin/linode-cli"
+(readarray -t PAIRING < ../server/www/pairing_codes.txt) || exit 2
+(readarray -t PIN < ../server/www/pins.txt) || exit 3
 
 NUM_RE='^[0-9]+$'
 if ! [[ $NUMBER_OF_VISITORS =~ $NUM_RE ]] ; then
@@ -29,13 +31,15 @@ do
 done
 
 ## Wait for the SSH port.
+i=0
 for IP in $($LINODE_CLI linodes list --group="$LINODE_GROUP" --text --delimiter ";" --format 'ipv4' --no-headers);
 do
-  while ! nc -z $IP 22 < /dev/null > /dev/null 2>&1; do
+  while ! nc -z "$IP" 22 < /dev/null > /dev/null 2>&1; do
     sleep 1
   done
   ### Collect the IP for the Ansible hosts file.
-  echo "$IP" >> hosts
+  echo "$IP pairingCode=${PAIRING[$i]} pin=${PIN[$i]}" >> hosts
+  ((i=i+1))
 done
 echo "The SSH servers became available"
 
