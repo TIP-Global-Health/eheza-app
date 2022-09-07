@@ -781,9 +781,6 @@ update currentDate id db msg model =
 
         SetHypertensionPredecessor predecessor ->
             let
-                _ =
-                    Debug.log "SetHypertensionPredecessor" predecessor
-
                 updatedForm =
                     setMultiSelectInputValue .hypertensionPredecessors
                         (\hypertensionPredecessors ->
@@ -807,9 +804,6 @@ update currentDate id db msg model =
 
         SetHeartProblemPredecessor predecessor ->
             let
-                _ =
-                    Debug.log "SetHeartProblemPredecessor" predecessor
-
                 updatedForm =
                     setMultiSelectInputValue .heartProblemPredecessors
                         (\heartProblemPredecessors ->
