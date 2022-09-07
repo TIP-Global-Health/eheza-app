@@ -3,8 +3,8 @@
 LINODE_GROUP="stress-test"
 NUMBER_OF_VISITORS="$1"
 LINODE_CLI="$HOME/.local/bin/linode-cli"
-(readarray -t PAIRING < ../server/www/pairing_codes.txt) || exit 2
-(readarray -t PIN < ../server/www/pins.txt) || exit 3
+readarray -t PAIRING < ../server/www/pairing_codes.txt
+readarray -t PIN < ../server/www/pins.txt
 
 NUM_RE='^[0-9]+$'
 if ! [[ $NUMBER_OF_VISITORS =~ $NUM_RE ]] ; then
