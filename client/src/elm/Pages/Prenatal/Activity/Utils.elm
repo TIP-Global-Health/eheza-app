@@ -4098,9 +4098,16 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
 
                     else
                         ( [], [] )
+
+                stillTakingTranslate =
+                    if task == TreatmentReviewHIV then
+                        Translate.TreatmentReviewQuestionStillTakingForHIV
+
+                    else
+                        Translate.TreatmentReviewQuestionStillTaking
             in
             ( [ header
-              , viewQuestionLabel language Translate.TreatmentReviewQuestionStillTaking
+              , viewQuestionLabel language stillTakingTranslate
               , viewBoolInput
                     language
                     config.stillTakingFormValue
