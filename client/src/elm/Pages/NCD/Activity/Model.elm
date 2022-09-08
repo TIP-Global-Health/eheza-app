@@ -124,6 +124,12 @@ type Msg
     | SetLiverFunctionTestExecutionDate NominalDate
     | SetLiverFunctionTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveLiverFunctionTest PersonId (Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )) (Maybe LaboratoryTask)
+      -- NextStepsMsgs
+    | SetActiveNextStepsTask NextStepsTask
+    | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducation PersonId (Maybe ( NCDHealthEducationId, NCDHealthEducation )) (Maybe NextStepsTask)
+    | SaveMedicationDistribution PersonId (Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )) (Maybe NextStepsTask)
+    | SaveReferral PersonId (Maybe ( NCDReferralId, NCDReferral )) (Maybe NextStepsTask)
 
 
 type alias Model =

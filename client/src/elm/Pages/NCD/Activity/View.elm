@@ -52,8 +52,8 @@ import Measurement.View exposing (viewCorePhysicalExamForm, viewFamilyPlanningFo
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
-import Pages.NCD.Encounter.Model exposing (AssembledData)
-import Pages.NCD.Utils exposing (generateAssembledData)
+import Pages.NCD.Model exposing (..)
+import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
@@ -141,9 +141,7 @@ viewActivity language currentDate activity assembled db model =
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
         NextSteps ->
-            -- @todo
-            -- viewNextStepsContent language currentDate isChw assembled model.nextStepsData
-            []
+            viewNextStepsContent language currentDate assembled model.nextStepsData
 
 
 viewDangerSignsContent : Language -> NominalDate -> AssembledData -> DangerSignsData -> List (Html Msg)
@@ -1026,3 +1024,203 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setLiverFunctionTestDateSelectorStateMsg = SetLiverFunctionTestDateSelectorState
                 }
            )
+
+
+viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            resolveNextStepsTasks currentDate assembled
+
+        activeTask =
+            Maybe.map
+                (\task ->
+                    if List.member task tasks then
+                        Just task
+
+                    else
+                        List.head tasks
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasks)
+
+        viewTask task =
+            let
+                iconClass =
+                    case task of
+                        TaskHealthEducation ->
+                            "next-steps-health-education"
+
+                        TaskMedicationDistribution ->
+                            "next-steps-treatment"
+
+                        TaskReferral ->
+                            "next-steps-referral"
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    nextStepsTaskCompleted assembled task
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveNextStepsTask task ]
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.NCDNextStepsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, nextStepsTasksCompletedFromTotal language currentDate assembled data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskHealthEducation ->
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewHealthEducationForm language currentDate assembled
+
+                Just TaskMedicationDistribution ->
+                    getMeasurementValueFunc measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language
+                            currentDate
+                            assembled
+
+                Just TaskReferral ->
+                    getMeasurementValueFunc measurements.referral
+                        |> referralFormWithDefault data.referralForm
+                        |> viewReferralForm language currentDate assembled
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    TaskHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
+
+                                    TaskMedicationDistribution ->
+                                        SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                    TaskReferral ->
+                                        SaveReferral personId measurements.referral nextTask
+                        in
+                        viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm, actions ]
+        ]
+    ]
+
+
+viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate assembled form =
+    div [ class "ui form health-education" ]
+        [ viewCustomLabel language Translate.NCDHealthEducationHeader "" "label header"
+        , viewCustomLabel language Translate.NCDHealthEducationInstructions "." "label paragraph"
+        , viewQuestionLabel language Translate.NCDHealthEducationQuestion
+        , viewBoolInput
+            language
+            form.hypertension
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | hypertension = Just value }))
+            "hypertension"
+            Nothing
+        ]
+
+
+viewMedicationDistributionForm :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> Html Msg
+viewMedicationDistributionForm language currentDate assembled form =
+    let
+        ( content, _, _ ) =
+            -- @todo
+            -- resolveMedicationDistributionInputsAndTasks language
+            --     currentDate
+            --
+            --     assembled
+            --
+            --     setRecommendedTreatmentSignMsg
+            --     setMedicationDistributionBoolInputMsg
+            --
+            --     form
+            ( [], 0, 1 )
+    in
+    div [ class "ui form medication-distribution" ]
+        content
+
+
+viewReferralForm : Language -> NominalDate -> AssembledData -> ReferralForm -> Html Msg
+viewReferralForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            -- @todo
+            -- resolveReferralInputsAndTasks language
+            --     currentDate
+            --     assembled
+            --     SetReferralBoolInput
+            --     SetFacilityNonReferralReason
+            --     form
+            ( [], [] )
+    in
+    div [ class "ui form referral" ]
+        inputs

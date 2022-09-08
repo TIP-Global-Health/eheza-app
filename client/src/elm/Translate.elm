@@ -849,8 +849,12 @@ type TranslationId
     | NCDDangerSign NCDDangerSign
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
     | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
+    | NCDHealthEducationHeader
+    | NCDHealthEducationInstructions
+    | NCDHealthEducationQuestion
     | NCDLabsCaseManagementEntryTypeResults
     | NCDMedicalHistoryTask Pages.NCD.Activity.Types.MedicalHistoryTask
+    | NCDNextStepsTask Pages.NCD.Activity.Types.NextStepsTask
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
@@ -7557,6 +7561,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        NCDHealthEducationHeader ->
+            { english = "Stage One Hypertension"
+            , kinyarwanda = Nothing
+            }
+
+        NCDHealthEducationInstructions ->
+            { english = "Council patient on lifestyle changes and the root causes of hypertension"
+            , kinyarwanda = Nothing
+            }
+
+        NCDHealthEducationQuestion ->
+            { english = "Have you provided the appropriate health education to the patient"
+            , kinyarwanda = Nothing
+            }
+
         NCDLabsCaseManagementEntryTypeResults ->
             { english = "NCD Lab Results"
             , kinyarwanda = Nothing
@@ -7587,6 +7606,23 @@ translationSet trans =
                 TaskOutsideCare ->
                     { english = "Outside Care"
                     , kinyarwanda = Nothing
+                    }
+
+        NCDNextStepsTask task ->
+            case task of
+                Pages.NCD.Activity.Types.TaskHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+                Pages.NCD.Activity.Types.TaskMedicationDistribution ->
+                    { english = "Medication Distribution"
+                    , kinyarwanda = Just "Gutanga Imiti"
+                    }
+
+                Pages.NCD.Activity.Types.TaskReferral ->
+                    { english = "Referral"
+                    , kinyarwanda = Just "Kohereza"
                     }
 
         NCDGroup1Symptom symptom ->
