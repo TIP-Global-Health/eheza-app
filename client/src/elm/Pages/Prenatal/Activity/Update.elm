@@ -29,6 +29,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
+        , nonReferralReasonToSign
         , pregnancyTestResultFromString
         , socialHistoryHivTestingResultFromString
         , testResultFromString

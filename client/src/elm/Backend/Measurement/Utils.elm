@@ -10,6 +10,7 @@ import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import LocalData
+import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
 
@@ -3394,3 +3395,97 @@ laboratoryTestFromString value =
 
         _ ->
             Nothing
+
+
+{-| Referal to facility is completed when we mark that facility was referred to,
+or, reason was set for not referring to that facility.
+-}
+referralToFacilityCompleted : EverySet ReferToFacilitySign -> Maybe (EverySet NonReferralSign) -> ReferralFacility -> Bool
+referralToFacilityCompleted referralSigns nonReferralReasons facility =
+    let
+        referralConfig =
+            case facility of
+                FacilityHospital ->
+                    Just ( ReferToHospital, NonReferralReasonHospital )
+
+                FacilityMentalHealthSpecialist ->
+                    Just ( ReferToMentalHealthSpecialist, NonReferralReasonMentalHealthSpecialist )
+
+                FacilityARVProgram ->
+                    Just ( ReferToARVProgram, NonReferralReasonARVProgram )
+
+                FacilityNCDProgram ->
+                    Just ( ReferToNCDProgram, NonReferralReasonNCDProgram )
+
+                FacilityANCServices ->
+                    Just ( ReferToANCServices, NonReferralReasonANCServices )
+
+                FacilityHealthCenter ->
+                    -- We should never get here, as referral to HC
+                    -- got special treatement, and not supported here.
+                    Nothing
+    in
+    Maybe.map
+        (\( referralSign, nonReferralSign ) ->
+            let
+                facilityWasReferred =
+                    EverySet.member referralSign referralSigns
+
+                facilityNonReferralReasonSet =
+                    isJust <| getCurrentReasonForNonReferral nonReferralSign nonReferralReasons
+            in
+            facilityWasReferred || facilityNonReferralReasonSet
+        )
+        referralConfig
+        |> Maybe.withDefault False
+
+
+getCurrentReasonForNonReferral :
+    (ReasonForNonReferral -> NonReferralSign)
+    -> Maybe (EverySet NonReferralSign)
+    -> Maybe ReasonForNonReferral
+getCurrentReasonForNonReferral reasonToSignFunc nonReferralReasons =
+    let
+        facilityNonReferralReasons =
+            Maybe.withDefault EverySet.empty nonReferralReasons
+    in
+    List.filterMap
+        (\reason ->
+            if EverySet.member (reasonToSignFunc reason) facilityNonReferralReasons then
+                Just reason
+
+            else
+                Nothing
+        )
+        [ ClientRefused
+        , NoAmbulance
+        , ClientUnableToAffordFees
+        , ClientAlreadyInCare
+        , ReasonForNonReferralNotIndicated
+        , ReasonForNonReferralOther
+        ]
+        |> List.head
+
+
+nonReferralReasonToSign : ReferralFacility -> ReasonForNonReferral -> NonReferralSign
+nonReferralReasonToSign facility reason =
+    case facility of
+        FacilityHospital ->
+            NonReferralReasonHospital reason
+
+        FacilityMentalHealthSpecialist ->
+            NonReferralReasonMentalHealthSpecialist reason
+
+        FacilityARVProgram ->
+            NonReferralReasonARVProgram reason
+
+        FacilityNCDProgram ->
+            NonReferralReasonNCDProgram reason
+
+        FacilityANCServices ->
+            NonReferralReasonANCServices reason
+
+        FacilityHealthCenter ->
+            -- We should never get here, as referral to HC
+            -- got special treatement, and not supported here.
+            NoNonReferralSigns

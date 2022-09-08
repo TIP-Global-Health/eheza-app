@@ -75,7 +75,6 @@ import Measurement.View
         , viewFamilyPlanningForm
         , viewFamilyPlanningInput
         , viewSendToHealthCenterForm
-        , viewSendToHospitalForm
         )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
