@@ -17,6 +17,7 @@ import Measurement.Model
         , emptyRandomBloodSugarResultForm
         , emptyUrineDipstickResultForm
         )
+import Pages.NCD.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
 import Pages.Page exposing (Page)
 
