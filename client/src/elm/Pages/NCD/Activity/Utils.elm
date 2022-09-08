@@ -23,6 +23,7 @@ import Pages.NCD.Encounter.Model exposing (AssembledData)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
+        , ifNullableTrue
         , ifTrue
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
@@ -771,3 +772,31 @@ laboratoryTasks =
     , TaskPregnancyTest
     , TaskLiverFunctionTest
     ]
+
+
+toHealthEducationValueWithDefault : Maybe NCDHealthEducationValue -> Pages.NCD.Activity.Model.HealthEducationForm -> Maybe NCDHealthEducationValue
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue saved
+
+
+healthEducationFormWithDefault :
+    Pages.NCD.Activity.Model.HealthEducationForm
+    -> Maybe NCDHealthEducationValue
+    -> Pages.NCD.Activity.Model.HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { hypertension = or form.hypertension (EverySet.member EducationHypertension value |> Just)
+                }
+            )
+
+
+toHealthEducationValue : Maybe NCDHealthEducationValue -> Pages.NCD.Activity.Model.HealthEducationForm -> Maybe NCDHealthEducationValue
+toHealthEducationValue saved form =
+    [ ifNullableTrue EducationHypertension form.hypertension
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDHealthEducationSigns)

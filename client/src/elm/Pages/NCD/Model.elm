@@ -26,7 +26,7 @@ type alias ReferralForm =
     , referToANCServices : Maybe Bool
     , referralFormANCServices : Maybe Bool
     , accompanyToANCServices : Maybe Bool
-    , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
+    , nonReferralReasons : Maybe (EverySet NonReferralSign)
     }
 
 
@@ -37,18 +37,18 @@ emptyReferralForm =
     , referToANCServices = Nothing
     , referralFormANCServices = Nothing
     , accompanyToANCServices = Nothing
-    , facilityNonReferralReasons = Nothing
+    , nonReferralReasons = Nothing
     }
 
 
 type alias MedicationDistributionForm =
     { recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
-    , guidanceSign : Maybe NCDGuidanceSign
+    , guidedToReturnInOneMonth : Maybe Bool
     }
 
 
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
     { recommendedTreatmentSigns = Nothing
-    , guidanceSign = Nothing
+    , guidedToReturnInOneMonth = Nothing
     }
