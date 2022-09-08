@@ -3,6 +3,7 @@ module Pages.NCD.Utils exposing (..)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (..)
 import Backend.NCDEncounter.Utils exposing (getNCDEncountersForParticipant)
@@ -78,6 +79,35 @@ generatePreviousMeasurements currentEncounterId participantId db =
             )
         -- Most recent date to least recent date.
         |> List.sortWith sortTuplesByDateDesc
+
+
+{-| Recommended Treatment activity appears on both initial and recurrent encounters.
+Each one of them got unique set of signs that can be used, and at least one of
+them must be set.
+In order to know if activity was completed or not, we check if at least one
+of those signs was set.
+-}
+recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> NCDMeasurements -> Bool
+recommendedTreatmentMeasurementTaken allowedSigns measurements =
+    getMeasurementValueFunc measurements.medicationDistribution
+        |> Maybe.map
+            (.recommendedTreatmentSigns
+                >> Backend.Measurement.Utils.recommendedTreatmentMeasurementTaken allowedSigns
+            )
+        |> Maybe.withDefault False
+
+
+recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
+recommendedTreatmentSignsForHypertension =
+    [ TreatmentHydrochlorothiazide
+    , TreatmentAmlodipine
+    , TreatmentNifedipine
+    , TreatmentCaptopril
+    , TreatmentLisinopril
+    , TreatmentAtenlol
+    , TreatmentMethyldopa2
+    , NoTreatmentForHypertension
+    ]
 
 
 referralFormWithDefault : ReferralForm -> Maybe ReferralValue -> ReferralForm

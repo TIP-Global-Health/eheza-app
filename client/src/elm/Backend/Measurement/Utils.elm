@@ -3489,3 +3489,14 @@ nonReferralReasonToSign facility reason =
             -- We should never get here, as referral to HC
             -- got special treatement, and not supported here.
             NoNonReferralSigns
+
+
+{-| Recommended Treatment activity appears on both initial and recurrent encounters.
+Each one of them got unique set of signs that can be used, and at least one of
+them must be set.
+In order to know if activity was completed or not, we check if at least one
+of those signs was set.
+-}
+recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> EverySet RecommendedTreatmentSign -> Bool
+recommendedTreatmentMeasurementTaken allowedSigns signs =
+    List.any (\sign -> EverySet.member sign signs) allowedSigns

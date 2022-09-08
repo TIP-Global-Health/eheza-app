@@ -15,6 +15,7 @@ import Measurement.Utils exposing (vitalsFormWithDefault)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
+import Pages.NCD.Utils exposing (recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -41,11 +42,12 @@ expectActivity currentDate assembled activity =
                 |> not
 
         RecurrentNextSteps ->
-            -- @todo
-            -- resolveNextStepsTasks currentDate assembled
-            --     |> List.isEmpty
-            --     |> not
-            False
+            mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                && (resolveNextStepsTasks currentDate assembled
+                        |> List.filter (expectNextStepsTask currentDate assembled)
+                        |> List.isEmpty
+                        |> not
+                   )
 
 
 activityCompleted : NominalDate -> AssembledData -> NCDRecurrentActivity -> Bool
@@ -58,20 +60,59 @@ activityCompleted currentDate assembled activity =
                    )
 
         RecurrentNextSteps ->
-            (not <| expectActivity currentDate assembled RecurrentNextSteps)
-                || -- @todo
-                   -- (resolveNextStepsTasks currentDate assembled
-                   --       |> List.all (nextStepsTaskCompleted assembled)
-                   --  )
-                   False
+            resolveNextStepsTasks currentDate assembled
+                |> List.all (nextStepsTaskCompleted assembled)
 
 
-laboratoryResultTasks : List LaboratoryTask
-laboratoryResultTasks =
-    [ TaskRandomBloodSugarTest
-    , TaskLiverFunctionTest
-    , TaskUrineDipstickTest
-    , TaskCreatinineTest
+resolveNextStepsTasks : NominalDate -> AssembledData -> List Pages.NCD.RecurrentActivity.Types.NextStepsTask
+resolveNextStepsTasks currentDate assembled =
+    List.filter (expectNextStepsTask currentDate assembled)
+        [ TaskMedicationDistribution, TaskReferral ]
+
+
+expectNextStepsTask : NominalDate -> AssembledData -> Pages.NCD.RecurrentActivity.Types.NextStepsTask -> Bool
+expectNextStepsTask currentDate assembled task =
+    case task of
+        TaskMedicationDistribution ->
+            --@todo
+            True
+
+        TaskReferral ->
+            --@todo
+            True
+
+
+nextStepsTaskCompleted : AssembledData -> Pages.NCD.RecurrentActivity.Types.NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
+    case task of
+        TaskMedicationDistribution ->
+            let
+                allowedSigns =
+                    recommendedTreatmentSignsForHypertension ++ recommendedTreatmentSignsForDiabetes
+            in
+            recommendedTreatmentMeasurementTaken allowedSigns assembled.measurements
+
+        TaskReferral ->
+            isJust assembled.measurements.referral
+
+
+mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForNextStepsCompleted currentDate assembled =
+    --@todo
+    True
+
+
+recommendedTreatmentSignsForDiabetes : List RecommendedTreatmentSign
+recommendedTreatmentSignsForDiabetes =
+    [ TreatmentMetformin1m1e
+    , TreatmentGlipenclamide1m1e
+    , TreatmentMetformin2m1e
+    , TreatmentGlipenclamide2m1e
+    , TreatmentMetformin2m2e
+    , TreatmentGlipenclamide2m2e
+    , TreatmentMetformin2m2eGlipenclamide1m1e
+    , TreatmentGlipenclamide2m2eMetformin1m1e
+    , NoTreatmentForDiabetes
     ]
 
 
@@ -150,3 +191,12 @@ expectLaboratoryResultTask currentDate assembled task =
         -- Others are not in use for NCD.
         _ ->
             False
+
+
+laboratoryResultTasks : List LaboratoryTask
+laboratoryResultTasks =
+    [ TaskRandomBloodSugarTest
+    , TaskLiverFunctionTest
+    , TaskUrineDipstickTest
+    , TaskCreatinineTest
+    ]

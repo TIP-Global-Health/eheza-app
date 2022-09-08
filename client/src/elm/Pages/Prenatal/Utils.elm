@@ -2714,11 +2714,7 @@ recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> Prenatal
 recommendedTreatmentMeasurementTaken allowedSigns measurements =
     getMeasurementValueFunc measurements.medicationDistribution
         |> Maybe.andThen .recommendedTreatmentSigns
-        |> Maybe.map
-            (\signs ->
-                List.any (\sign -> EverySet.member sign signs)
-                    allowedSigns
-            )
+        |> Maybe.map (Backend.Measurement.Utils.recommendedTreatmentMeasurementTaken allowedSigns)
         |> Maybe.withDefault False
 
 
