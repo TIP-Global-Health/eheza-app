@@ -61,16 +61,14 @@ type Msg
 
 type alias Model =
     { labResultsData : LabResultsData
-
-    -- , nextStepsData : NextStepsData
+    , nextStepsData : NextStepsData
     }
 
 
 emptyModel : Model
 emptyModel =
     { labResultsData = emptyLabResultsData
-
-    -- , nextStepsData = emptyNextStepsData
+    , nextStepsData = emptyNextStepsData
     }
 
 
@@ -93,19 +91,16 @@ emptyLabResultsData =
     }
 
 
+type alias NextStepsData =
+    { referralForm : ReferralForm
+    , medicationDistributionForm : MedicationDistributionForm
+    , activeTask : Maybe NextStepsTask
+    }
 
--- type alias NextStepsData =
---     { referralForm : ReferralForm
---     , medicationDistributionForm : MedicationDistributionForm
---     , healthEducationForm : HealthEducationForm
---     , activeTask : Maybe NextStepsTask
---     }
---
---
--- emptyNextStepsData : NextStepsData
--- emptyNextStepsData =
---     { referralForm = emptyReferralForm
---     , medicationDistributionForm = emptyMedicationDistributionForm
---     , healthEducationForm = emptyHealthEducationForm
---     , activeTask = Nothing
---     }
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { referralForm = emptyReferralForm
+    , medicationDistributionForm = emptyMedicationDistributionForm
+    , activeTask = Nothing
+    }
