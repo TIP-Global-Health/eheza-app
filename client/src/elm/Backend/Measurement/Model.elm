@@ -2478,12 +2478,12 @@ type alias NCDRandomBloodSugarTest =
 
 
 type alias NCDReferral =
-    NCDMeasurement NCDReferralValue
+    NCDMeasurement ReferralValue
 
 
-type alias NCDReferralValue =
-    { referToFacilitySigns : EverySet ReferToFacilitySign
-    , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
+type alias ReferralValue =
+    { referralSigns : EverySet ReferToFacilitySign
+    , nonReferralReasons : Maybe (EverySet NonReferralSign)
     }
 
 

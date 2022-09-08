@@ -541,7 +541,7 @@ update language currentDate id db msg model =
         --
         --         appMsgs =
         --             model.nextStepsData.referralForm
-        --                 |> toNCDReferralValueWithDefault measurement
+        --                 |> toReferralValueWithDefault measurement
         --                 |> Maybe.map
         --                     (Backend.NCDEncounter.Model.SaveSendToHC personId measurementId
         --                         >> Backend.Model.MsgNCDEncounter id

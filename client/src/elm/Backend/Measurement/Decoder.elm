@@ -4824,12 +4824,12 @@ decodeNCDRandomBloodSugarTest =
 
 decodeNCDReferral : Decoder NCDReferral
 decodeNCDReferral =
-    decodeNCDMeasurement decodeNCDReferralValue
+    decodeNCDMeasurement decodeReferralValue
 
 
-decodeNCDReferralValue : Decoder NCDReferralValue
-decodeNCDReferralValue =
-    succeed NCDReferralValue
+decodeReferralValue : Decoder ReferralValue
+decodeReferralValue =
+    succeed ReferralValue
         |> required "referrals" (decodeEverySet decodeReferToFacilitySign)
         |> optional "reasons_for_non_referrals" (nullable (decodeEverySet decodeNonReferralSign)) Nothing
 
