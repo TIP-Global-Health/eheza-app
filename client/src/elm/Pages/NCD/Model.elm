@@ -2,9 +2,10 @@ module Pages.NCD.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (NCDMeasurements)
+import Backend.Measurement.Model exposing (..)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Person.Model exposing (Person)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
@@ -16,4 +17,38 @@ type alias AssembledData =
     , person : Person
     , measurements : NCDMeasurements
     , previousMeasurementsWithDates : List ( NominalDate, ( NCDEncounterId, NCDMeasurements ) )
+    }
+
+
+type alias ReferralForm =
+    { referToHospital : Maybe Bool
+    , referralFormHospital : Maybe Bool
+    , referToANCServices : Maybe Bool
+    , referralFormANCServices : Maybe Bool
+    , accompanyToANCServices : Maybe Bool
+    , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
+    }
+
+
+emptyReferralForm : ReferralForm
+emptyReferralForm =
+    { referToHospital = Nothing
+    , referralFormHospital = Nothing
+    , referToANCServices = Nothing
+    , referralFormANCServices = Nothing
+    , accompanyToANCServices = Nothing
+    , facilityNonReferralReasons = Nothing
+    }
+
+
+type alias MedicationDistributionForm =
+    { recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
+    , guidanceSign : Maybe NCDGuidanceSign
+    }
+
+
+emptyMedicationDistributionForm : MedicationDistributionForm
+emptyMedicationDistributionForm =
+    { recommendedTreatmentSigns = Nothing
+    , guidanceSign = Nothing
     }

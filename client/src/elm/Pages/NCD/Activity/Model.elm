@@ -30,6 +30,7 @@ import Measurement.Model
         , emptyVitalsForm
         )
 import Pages.NCD.Activity.Types exposing (..)
+import Pages.NCD.Model exposing (..)
 import Pages.Page exposing (Page)
 
 
@@ -132,6 +133,7 @@ type alias Model =
     , familyPlanningData : FamilyPlanningData
     , medicalHistoryData : MedicalHistoryData
     , laboratoryData : LaboratoryData
+    , nextStepsData : NextStepsData
     }
 
 
@@ -143,6 +145,7 @@ emptyModel =
     , familyPlanningData = emptyFamilyPlanningData
     , medicalHistoryData = emptyMedicalHistoryData
     , laboratoryData = emptyLaboratoryData
+    , nextStepsData = emptyNextStepsData
     }
 
 
@@ -338,3 +341,29 @@ emptyLaboratoryData =
     , liverFunctionTestForm = emptyNonRDTForm
     , activeTask = Nothing
     }
+
+
+type alias NextStepsData =
+    { referralForm : ReferralForm
+    , healthEducationForm : HealthEducationForm
+    , medicationDistributionForm : MedicationDistributionForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { referralForm = emptyReferralForm
+    , healthEducationForm = emptyHealthEducationForm
+    , medicationDistributionForm = emptyMedicationDistributionForm
+    , activeTask = Nothing
+    }
+
+
+type alias HealthEducationForm =
+    { hypertension : Maybe Bool }
+
+
+emptyHealthEducationForm : HealthEducationForm
+emptyHealthEducationForm =
+    { hypertension = Nothing }
