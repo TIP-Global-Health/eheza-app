@@ -1798,6 +1798,10 @@ div.page-activity.prenatal {
       .form.medication-distribution,
       .form.speciality-care {
 
+        h2 {
+          text-transform: uppercase;
+        }
+
         .separator:last-of-type {
           display: none;
         }
@@ -3991,6 +3995,18 @@ div.page-activity.ncd {
         color: $color-text;
         padding: 5px;
         width: 50%;
+      }
+    }
+
+    .form.referral,
+    .form.medication-distribution {
+
+      h2 {
+        text-transform: uppercase;
+      }
+
+      .separator:last-of-type {
+        display: none;
       }
     }
 
