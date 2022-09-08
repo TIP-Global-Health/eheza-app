@@ -956,9 +956,9 @@ type TestExecutionNote
 
 
 type TestResult
-    = PrenatalTestPositive
-    | PrenatalTestNegative
-    | PrenatalTestIndeterminate
+    = TestPositive
+    | TestNegative
+    | TestIndeterminate
 
 
 type alias PrenatalHIVTest =

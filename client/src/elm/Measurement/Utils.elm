@@ -2013,7 +2013,7 @@ viewHIVTestForm language currentDate configInitial configPerformed form =
                         Maybe.map
                             (\testResult ->
                                 case testResult of
-                                    PrenatalTestPositive ->
+                                    TestPositive ->
                                         let
                                             updateFunc =
                                                 \value form_ ->
@@ -2031,7 +2031,7 @@ viewHIVTestForm language currentDate configInitial configPerformed form =
                                         , 1
                                         )
 
-                                    PrenatalTestNegative ->
+                                    TestNegative ->
                                         let
                                             partnerHIVPositiveUpdateFunc =
                                                 \value form_ ->
@@ -2107,7 +2107,7 @@ viewHIVTestForm language currentDate configInitial configPerformed form =
                                         , 1 + partnerHivStatusTasksTotal
                                         )
 
-                                    PrenatalTestIndeterminate ->
+                                    TestIndeterminate ->
                                         emptySection
                             )
                             form.testResult
@@ -2242,7 +2242,7 @@ prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed
                                                         ]
                                                         [ text <| translate language <| Translate.TestResult result ]
                                                 )
-                                                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                                                [ TestPositive, TestNegative, TestIndeterminate ]
                                             |> select
                                                 [ onInput setResultMsg
                                                 , class "form-input select"
@@ -3304,7 +3304,7 @@ syphilisResultFormAndTasks language currentDate setIllnessSymptomMsg setSyphilis
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             let
                 ( symptomsSection, symptomsTasksCompleted, symptomsTasksTotal ) =
-                    if form.testResult == Just PrenatalTestPositive then
+                    if form.testResult == Just TestPositive then
                         ( [ viewLabel language Translate.SelectIllnessSymptoms
                           , viewCheckBoxMultipleSelectInput language
                                 [ IllnessSymptomHeadache
@@ -3331,7 +3331,7 @@ syphilisResultFormAndTasks language currentDate setIllnessSymptomMsg setSyphilis
                 form.testResult
                 Translate.TestResult
                 testResultToString
-                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                [ TestPositive, TestNegative, TestIndeterminate ]
                 setSyphilisTestResultMsg
                 ++ symptomsSection
             , taskCompleted form.testResult + symptomsTasksCompleted
@@ -3368,7 +3368,7 @@ hepatitisBResultFormAndTasks language currentDate setHepatitisBTestResultMsg for
                 form.testResult
                 Translate.TestResult
                 testResultToString
-                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
+                [ TestPositive, TestNegative, TestIndeterminate ]
                 setHepatitisBTestResultMsg
             , taskCompleted form.testResult
             , 1

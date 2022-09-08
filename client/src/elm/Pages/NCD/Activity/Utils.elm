@@ -26,6 +26,7 @@ import Pages.NCD.Utils
         , recommendedTreatmentMeasurementTaken
         , recommendedTreatmentSignsForHypertension
         , referralFormWithDefault
+        , resolveReferralInputsAndTasks
         )
 import Pages.Utils
     exposing
@@ -898,15 +899,13 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         |> getMeasurementValueFunc
                         |> referralFormWithDefault data.referralForm
 
-                tasks =
-                    -- @todo
-                    -- resolveReferralInputsAndTasks language
-                    --     currentDate
-                    --     assembled
-                    --     SetReferralBoolInput
-                    --     SetFacilityNonReferralReason
-                    --     form
-                    []
+                ( _, tasks ) =
+                    resolveReferralInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
             in
             ( Maybe.Extra.values tasks
                 |> List.length

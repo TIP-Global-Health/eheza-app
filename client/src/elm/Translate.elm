@@ -846,6 +846,7 @@ type TranslationId
     | Name
     | NationalIdNumber
     | NCDActivityTitle NCDActivity
+    | NCDANCServicesInstructions
     | NCDDangerSign NCDDangerSign
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
     | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
@@ -1151,6 +1152,7 @@ type TranslationId
     | ReferredToFacility ReferralFacility
     | ReferredToFacilityNot ReferralFacility
     | ReferredToFacilityPostpartum ReferralFacility
+    | ReferToHospitalForFurtherEvaluation
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -4210,9 +4212,7 @@ translationSet trans =
             }
 
         EmergencyReferralHelperReferToHospitalForEvaluation ->
-            { english = "Refer patient to hospital for further evaluation"
-            , kinyarwanda = Nothing
-            }
+            translationSet ReferToHospitalForFurtherEvaluation
 
         EmergencyReferralHelperReferToHospitalForImmediateDelivery ->
             { english = "Refer patient to hospital for immediate delivery"
@@ -7484,6 +7484,11 @@ translationSet trans =
                     { english = "Symptom Review"
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
+
+        NCDANCServicesInstructions ->
+            { english = "Refer patient to ANC services for further management of hypertension during pregnancy"
+            , kinyarwanda = Nothing
+            }
 
         NCDDangerSign sign ->
             case sign of
@@ -12296,17 +12301,17 @@ translationSet trans =
 
         TestResult result ->
             case result of
-                PrenatalTestPositive ->
+                TestPositive ->
                     { english = "Positive"
                     , kinyarwanda = Just "Afite ubwandu"
                     }
 
-                PrenatalTestNegative ->
+                TestNegative ->
                     { english = "Negative"
                     , kinyarwanda = Just "Nta bwandu afite"
                     }
 
-                PrenatalTestIndeterminate ->
+                TestIndeterminate ->
                     { english = "Indeterminate"
                     , kinyarwanda = Just "Ntibisobanutse"
                     }
@@ -13347,6 +13352,11 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        ReferToHospitalForFurtherEvaluation ->
+            { english = "Refer patient to hospital for further evaluation"
+            , kinyarwanda = Nothing
+            }
 
         ReferToProgramAction ->
             { english = "Refer patient to appropriate nutrition program"
@@ -14480,14 +14490,10 @@ translationSet trans =
                     }
 
                 FacilityNCDProgram ->
-                    { english = "Direct patient to the appropriate location"
-                    , kinyarwanda = Just "Yobora umurwayi ahantu habugenewe"
-                    }
+                    translationSet (SendPatientToFacility FacilityARVProgram)
 
                 FacilityANCServices ->
-                    { english = "Refer patient to ANC services for further management of hypertension during pregnancy"
-                    , kinyarwanda = Nothing
-                    }
+                    translationSet (SendPatientToFacility FacilityARVProgram)
 
         ShowAll ->
             { english = "Show All"

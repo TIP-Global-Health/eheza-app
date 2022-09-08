@@ -1700,7 +1700,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         testedPositiveAt getMeasurementFunc =
             getMeasurementFunc measurements
                 |> getMeasurementValueFunc
-                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
+                |> Maybe.andThen (.testResult >> Maybe.map ((==) TestPositive))
                 |> Maybe.withDefault False
 
         hemoglobinCount =
@@ -5109,7 +5109,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
 
         isTestResultValid =
             .testResult
-                >> Maybe.map ((/=) PrenatalTestIndeterminate)
+                >> Maybe.map ((/=) TestIndeterminate)
                 >> -- In case test result was not set yet, we consider
                    -- it to be valid, because results for some test are
                    -- updated after few hours, or even days.

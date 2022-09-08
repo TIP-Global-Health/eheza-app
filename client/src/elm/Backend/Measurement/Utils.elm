@@ -884,13 +884,13 @@ covidIsolationPeriod =
 testResultToString : TestResult -> String
 testResultToString value =
     case value of
-        PrenatalTestPositive ->
+        TestPositive ->
             "positive"
 
-        PrenatalTestNegative ->
+        TestNegative ->
             "negative"
 
-        PrenatalTestIndeterminate ->
+        TestIndeterminate ->
             "indeterminate"
 
 
@@ -898,13 +898,13 @@ testResultFromString : String -> Maybe TestResult
 testResultFromString value =
     case value of
         "positive" ->
-            Just PrenatalTestPositive
+            Just TestPositive
 
         "negative" ->
-            Just PrenatalTestNegative
+            Just TestNegative
 
         "indeterminate" ->
-            Just PrenatalTestIndeterminate
+            Just TestIndeterminate
 
         _ ->
             Nothing

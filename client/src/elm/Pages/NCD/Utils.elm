@@ -3,7 +3,7 @@ module Pages.NCD.Utils exposing (..)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (..)
 import Backend.NCDEncounter.Utils exposing (getNCDEncountersForParticipant)
@@ -16,8 +16,18 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Measurement.View exposing (viewActionTakenLabel)
 import Pages.NCD.Model exposing (..)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue)
+import Pages.Utils
+    exposing
+        ( ifEverySetEmpty
+        , ifNullableTrue
+        , maybeToBoolTask
+        , viewBoolInput
+        , viewCheckBoxSelectInput
+        , viewCustomLabel
+        , viewQuestionLabel
+        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 
@@ -364,293 +374,189 @@ resolveReferralInputsAndTasks :
     -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
     -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
     -> ReferralForm
-    -> ReferralFacility
     -> ( List (Html msg), List (Maybe Bool) )
-resolveReferralInputsAndTasks language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form facility =
-    -- @todo
-    --     let
-    --         maybeConfig =
-    --             case facility of
-    --                 FacilityHospital ->
-    --                     let
-    --                         referralReasons =
-    --                             diagnosesCausingHospitalReferralByPhase phase assembled
-    --                                 |> EverySet.toList
-    --
-    --                         referralContext =
-    --                             if not <| List.isEmpty referralReasons then
-    --                                 let
-    --                                     diagnosisTransId diagnosis =
-    --                                         if diagnosis == DiagnosisChronicHypertensionImmediate then
-    --                                             Translate.Hypertension
-    --
-    --                                         else
-    --                                             Translate.PrenatalDiagnosis diagnosis
-    --
-    --                                     reasons =
-    --                                         List.map (diagnosisTransId >> translate language) referralReasons
-    --                                             |> String.join ", "
-    --                                 in
-    --                                 div [ class "label" ] [ text <| translate language Translate.PatientDiagnosedWithLabel ++ ": " ++ reasons ++ "." ]
-    --
-    --                             else
-    --                                 emptyNode
-    --                     in
-    --                     Just
-    --                         { header =
-    --                             [ referralContext
-    --                             , viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions"
-    --                             ]
-    --                         , referralField = form.referToHospital
-    --                         , referralUpdateFunc =
-    --                             \value form_ ->
-    --                                 { form_
-    --                                     | referToHospital = Just value
-    --                                     , referralFormHospital = Nothing
-    --                                 }
-    --                         , formField = form.referralFormHospital
-    --                         , formUpdateFunc = \value form_ -> { form_ | referralFormHospital = Just value }
-    --                         , accompanyConfig = Nothing
-    --                         , reasonToSignFunc = NonReferralReasonHospital
-    --                         }
-    --
-    --                 FacilityMentalHealthSpecialist ->
-    --                     Just
-    --                         { header = [ viewCustomLabel language Translate.PrenatalMentalHealthSpecialistHelper "." "instructions" ]
-    --                         , referralField = form.referToMentalHealthSpecialist
-    --                         , referralUpdateFunc =
-    --                             \value form_ ->
-    --                                 { form_
-    --                                     | referToMentalHealthSpecialist = Just value
-    --                                     , referralFormMentalHealthSpecialist = Nothing
-    --                                     , accompanyToMentalHealthSpecialist = Nothing
-    --                                 }
-    --                         , formField = form.referralFormMentalHealthSpecialist
-    --                         , formUpdateFunc = \value form_ -> { form_ | referralFormMentalHealthSpecialist = Just value }
-    --                         , accompanyConfig =
-    --                             Just
-    --                                 ( form.accompanyToMentalHealthSpecialist
-    --                                 , \value form_ -> { form_ | accompanyToMentalHealthSpecialist = Just value }
-    --                                 )
-    --                         , reasonToSignFunc = NonReferralReasonMentalHealthSpecialist
-    --                         }
-    --
-    --                 FacilityARVProgram ->
-    --                     Just
-    --                         { header =
-    --                             let
-    --                                 forPostpartum =
-    --                                     assembled.encounter.encounterType == NursePostpartumEncounter
-    --                             in
-    --                             if forPostpartum then
-    --                                 [ viewCustomLabel language Translate.PrenatalARVProgramPostpartumHeader "." "instructions"
-    --                                 , viewCustomLabel language (Translate.PrenatalARVProgramInstructions forPostpartum) "." "instructions"
-    --                                 ]
-    --
-    --                             else
-    --                                 [ viewCustomLabel language (Translate.PrenatalARVProgramInstructions forPostpartum) "." "instructions"
-    --                                 ]
-    --                         , referralField = form.referToARVProgram
-    --                         , referralUpdateFunc =
-    --                             \value form_ ->
-    --                                 { form_
-    --                                     | referToARVProgram = Just value
-    --                                     , referralFormARVProgram = Nothing
-    --                                     , accompanyToARVProgram = Nothing
-    --                                 }
-    --                         , formField = form.referralFormARVProgram
-    --                         , formUpdateFunc = \value form_ -> { form_ | referralFormARVProgram = Just value }
-    --                         , accompanyConfig =
-    --                             Just
-    --                                 ( form.accompanyToARVProgram
-    --                                 , \value form_ -> { form_ | accompanyToARVProgram = Just value }
-    --                                 )
-    --                         , reasonToSignFunc = NonReferralReasonARVProgram
-    --                         }
-    --
-    --                 FacilityNCDProgram ->
-    --                     Just
-    --                         { header =
-    --                             let
-    --                                 headerText =
-    --                                     translate language Translate.PrenatalNCDProgramHeaderPrefix
-    --                                         ++ " "
-    --                                         ++ diagnosesForView
-    --                                         ++ " "
-    --                                         ++ translate language Translate.PrenatalNCDProgramHeaderSuffix
-    --                                         ++ "."
-    --
-    --                                 diagnosesForView =
-    --                                     resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
-    --                                         |> List.map (Translate.PrenatalDiagnosis >> translate language)
-    --                                         |> String.join ", "
-    --                             in
-    --                             [ div [ class "label" ] [ text headerText ]
-    --                             , viewCustomLabel language Translate.PrenatalNCDProgramInstructions "." "instructions"
-    --                             ]
-    --                         , referralField = form.referToNCDProgram
-    --                         , referralUpdateFunc =
-    --                             \value form_ ->
-    --                                 { form_
-    --                                     | referToNCDProgram = Just value
-    --                                     , referralFormNCDProgram = Nothing
-    --                                     , accompanyToNCDProgram = Nothing
-    --                                 }
-    --                         , formField = form.referralFormNCDProgram
-    --                         , formUpdateFunc = \value form_ -> { form_ | referralFormNCDProgram = Just value }
-    --                         , accompanyConfig =
-    --                             Just
-    --                                 ( form.accompanyToNCDProgram
-    --                                 , \value form_ -> { form_ | accompanyToNCDProgram = Just value }
-    --                                 )
-    --                         , reasonToSignFunc = NonReferralReasonNCDProgram
-    --                         }
-    --
-    --                 FacilityANCServices ->
-    --                     -- Not in use at Prenatal
-    --                     Nothing
-    --
-    --                 FacilityHealthCenter ->
-    --                     -- Not in use at Prenatal
-    --                     Nothing
-    --     in
-    --     Maybe.map
-    --         (\config ->
-    --             let
-    --                 instructions =
-    --                     case facility of
-    --                         FacilityMentalHealthSpecialist ->
-    --                             [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing ]
-    --
-    --                         _ ->
-    --                             [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
-    --                             , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
-    --                             ]
-    --
-    --                 ( derivedSection, derivedTasks ) =
-    --                     Maybe.map
-    --                         (\referred ->
-    --                             if referred then
-    --                                 let
-    --                                     ( accompanySection, accompanyTasks ) =
-    --                                         Maybe.map
-    --                                             (\( field, updateFunc ) ->
-    --                                                 ( [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion facility
-    --                                                   , viewBoolInput
-    --                                                         language
-    --                                                         field
-    --                                                         (setReferralBoolInputMsg updateFunc)
-    --                                                         "accompany-to-hc"
-    --                                                         Nothing
-    --                                                   ]
-    --                                                 , [ field ]
-    --                                                 )
-    --                                             )
-    --                                             config.accompanyConfig
-    --                                             |> Maybe.withDefault ( [], [] )
-    --                                 in
-    --                                 ( [ viewQuestionLabel language Translate.HandedReferralFormQuestion
-    --                                   , viewBoolInput
-    --                                         language
-    --                                         config.formField
-    --                                         (setReferralBoolInputMsg config.formUpdateFunc)
-    --                                         "hand-referral-form"
-    --                                         Nothing
-    --                                   ]
-    --                                     ++ accompanySection
-    --                                 , [ config.formField ] ++ accompanyTasks
-    --                                 )
-    --
-    --                             else
-    --                                 ( nonReferralReasonSection language facility config.reasonToSignFunc setNonReferralReasonMsg form
-    --                                 , [ maybeToBoolTask <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form ]
-    --                                 )
-    --                         )
-    --                         config.referralField
-    --                         |> Maybe.withDefault ( [], [] )
-    --             in
-    --             ( config.header
-    --                 ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-    --                    , div [ class "instructions" ]
-    --                         instructions
-    --                    , viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion facility
-    --                    , viewBoolInput
-    --                         language
-    --                         config.referralField
-    --                         (setReferralBoolInputMsg config.referralUpdateFunc)
-    --                         "referral"
-    --                         Nothing
-    --                    ]
-    --                 ++ derivedSection
-    --                 ++ [ div [ class "separator" ] [] ]
-    --             , [ config.referralField ] ++ derivedTasks
-    --             )
-    --         )
-    --         maybeConfig
-    --         |> Maybe.withDefault ( [], [] )
-    ( [], [] )
+resolveReferralInputsAndTasks language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+    let
+        facility =
+            if isPregnant then
+                FacilityANCServices
+
+            else
+                FacilityHospital
+
+        isPregnant =
+            getMeasurementValueFunc assembled.measurements.pregnancyTest
+                |> Maybe.andThen .testResult
+                |> Maybe.map ((==) TestPositive)
+                |> Maybe.withDefault False
+
+        maybeConfig =
+            case facility of
+                FacilityHospital ->
+                    Just
+                        { header =
+                            [ viewCustomLabel language Translate.ReferToHospitalForFurtherEvaluation "." "instructions" ]
+                        , referralField = form.referToHospital
+                        , referralUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | referToHospital = Just value
+                                    , referralFormHospital = Nothing
+                                }
+                        , formField = form.referralFormHospital
+                        , formUpdateFunc = \value form_ -> { form_ | referralFormHospital = Just value }
+                        , accompanyConfig = Nothing
+                        , reasonToSignFunc = NonReferralReasonHospital
+                        }
+
+                FacilityANCServices ->
+                    Just
+                        { header =
+                            [ viewCustomLabel language Translate.NCDANCServicesInstructions "." "instructions" ]
+                        , referralField = form.referToANCServices
+                        , referralUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | referToANCServices = Just value
+                                    , referralFormANCServices = Nothing
+                                    , accompanyToANCServices = Nothing
+                                }
+                        , formField = form.referralFormANCServices
+                        , formUpdateFunc = \value form_ -> { form_ | referralFormANCServices = Just value }
+                        , accompanyConfig =
+                            Just
+                                ( form.accompanyToANCServices
+                                , \value form_ -> { form_ | accompanyToANCServices = Just value }
+                                )
+                        , reasonToSignFunc = NonReferralReasonANCServices
+                        }
+
+                -- Other facilities are not in use at NCD.
+                _ ->
+                    Nothing
+    in
+    Maybe.map
+        (\config ->
+            let
+                ( derivedSection, derivedTasks ) =
+                    Maybe.map
+                        (\referred ->
+                            if referred then
+                                let
+                                    ( accompanySection, accompanyTasks ) =
+                                        Maybe.map
+                                            (\( field, updateFunc ) ->
+                                                ( [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion facility
+                                                  , viewBoolInput
+                                                        language
+                                                        field
+                                                        (setReferralBoolInputMsg updateFunc)
+                                                        "accompany-to-hc"
+                                                        Nothing
+                                                  ]
+                                                , [ field ]
+                                                )
+                                            )
+                                            config.accompanyConfig
+                                            |> Maybe.withDefault ( [], [] )
+                                in
+                                ( [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+                                  , viewBoolInput
+                                        language
+                                        config.formField
+                                        (setReferralBoolInputMsg config.formUpdateFunc)
+                                        "hand-referral-form"
+                                        Nothing
+                                  ]
+                                    ++ accompanySection
+                                , [ config.formField ] ++ accompanyTasks
+                                )
+
+                            else
+                                ( nonReferralReasonSection language facility config.reasonToSignFunc setNonReferralReasonMsg form
+                                , [ maybeToBoolTask <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form ]
+                                )
+                        )
+                        config.referralField
+                        |> Maybe.withDefault ( [], [] )
+            in
+            ( config.header
+                ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                   , div [ class "instructions" ]
+                        [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+                        , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
+                        ]
+                   , viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion facility
+                   , viewBoolInput
+                        language
+                        config.referralField
+                        (setReferralBoolInputMsg config.referralUpdateFunc)
+                        "referral"
+                        Nothing
+                   ]
+                ++ derivedSection
+                ++ [ div [ class "separator" ] [] ]
+            , [ config.referralField ] ++ derivedTasks
+            )
+        )
+        maybeConfig
+        |> Maybe.withDefault ( [], [] )
 
 
+nonReferralReasonSection :
+    Language
+    -> ReferralFacility
+    -> (ReasonForNonReferral -> NonReferralSign)
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> ReferralForm
+    -> List (Html msg)
+nonReferralReasonSection language facility reasonToSignFunc setNonReferralReasonMsg form =
+    let
+        currentValue =
+            getCurrentReasonForNonReferralByForm reasonToSignFunc form
 
---
--- nonReferralReasonSection :
---     Language
---     -> ReferralFacility
---     -> (ReasonForNonReferral -> NonReferralSign)
---     -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
---     -> ReferralForm
---     -> List (Html msg)
--- nonReferralReasonSection language facility reasonToSignFunc setNonReferralReasonMsg form =
---     let
---         currentValue =
---             getCurrentReasonForNonReferralByForm reasonToSignFunc form
---
---         options =
---             if facility == FacilityHospital then
---                 [ ClientRefused
---                 , NoAmbulance
---                 , ClientUnableToAffordFees
---                 , ReasonForNonReferralNotIndicated
---                 , ReasonForNonReferralOther
---                 ]
---
---             else
---                 [ ClientRefused
---                 , ClientAlreadyInCare
---                 , ReasonForNonReferralNotIndicated
---                 , ReasonForNonReferralOther
---                 ]
---     in
---     [ viewQuestionLabel language Translate.WhyNot
---     , viewCheckBoxSelectInput language
---         options
---         []
---         currentValue
---         (setNonReferralReasonMsg currentValue facility)
---         Translate.ReasonForNonReferral
---     ]
---
---
--- getCurrentReasonForNonReferralByForm :
---     (ReasonForNonReferral -> NonReferralSign)
---     -> ReferralForm
---     -> Maybe ReasonForNonReferral
--- getCurrentReasonForNonReferralByForm reasonToSignFunc form =
---     getCurrentReasonForNonReferral reasonToSignFunc form.nonReferralReasons
---
---
--- {-| Referal to facility is completed when we mark that facility was referred to,
--- or, reason was set for not referring to that facility.
--- -}
--- referralToFacilityCompleted : AssembledData -> ReferralFacility -> Bool
--- referralToFacilityCompleted assembled facility =
---     getMeasurementValueFunc assembled.measurements.sendToHC
---         |> Maybe.andThen
---             (\value ->
---                 Maybe.map
---                     (\referralSigns ->
---                         Backend.Measurement.Utils.referralToFacilityCompleted referralSigns value.nonReferralReasons facility
---                     )
---                     value.referToFacilitySigns
---             )
---         |> Maybe.withDefault False
+        options =
+            if facility == FacilityHospital then
+                [ ClientRefused
+                , NoAmbulance
+                , ClientUnableToAffordFees
+                , ReasonForNonReferralNotIndicated
+                , ReasonForNonReferralOther
+                ]
+
+            else
+                [ ClientRefused
+                , ClientAlreadyInCare
+                , ReasonForNonReferralNotIndicated
+                , ReasonForNonReferralOther
+                ]
+    in
+    [ viewQuestionLabel language Translate.WhyNot
+    , viewCheckBoxSelectInput language
+        options
+        []
+        currentValue
+        (setNonReferralReasonMsg currentValue facility)
+        Translate.ReasonForNonReferral
+    ]
+
+
+getCurrentReasonForNonReferralByForm :
+    (ReasonForNonReferral -> NonReferralSign)
+    -> ReferralForm
+    -> Maybe ReasonForNonReferral
+getCurrentReasonForNonReferralByForm reasonToSignFunc form =
+    getCurrentReasonForNonReferral reasonToSignFunc form.nonReferralReasons
+
+
+{-| Referal to facility is completed when we mark that facility was referred to,
+or, reason was set for not referring to that facility.
+-}
+referralToFacilityCompleted : AssembledData -> ReferralFacility -> Bool
+referralToFacilityCompleted assembled facility =
+    getMeasurementValueFunc assembled.measurements.referral
+        |> Maybe.map
+            (\value ->
+                Backend.Measurement.Utils.referralToFacilityCompleted value.referralSigns value.nonReferralReasons facility
+            )
+        |> Maybe.withDefault False

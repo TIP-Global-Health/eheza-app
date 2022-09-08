@@ -203,7 +203,7 @@ prenatalTestReportNormal report =
 
 testResultNormal : TestResult -> Bool
 testResultNormal =
-    (==) PrenatalTestNegative
+    (==) TestNegative
 
 
 diagnosisForProgressReportToString : Language -> PrenatalDiagnosis -> String

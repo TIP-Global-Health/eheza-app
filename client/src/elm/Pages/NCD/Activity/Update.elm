@@ -24,9 +24,10 @@ import Backend.Measurement.Model
         , OutsideCareMedication(..)
         , Predecessor(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testResultFromString)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, nonReferralReasonToSign, testResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Model
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
@@ -49,7 +50,7 @@ import Measurement.Utils
         )
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
-import Pages.NCD.Utils exposing (toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
+import Pages.NCD.Utils exposing (referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
@@ -108,6 +109,16 @@ update currentDate id db msg model =
                         >> outsideCareFormWithDefault model.medicalHistoryData.outsideCareForm
                     )
                 |> Maybe.withDefault model.medicalHistoryData.outsideCareForm
+
+        referralForm =
+            Dict.get id db.ncdMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.referral
+                        >> getMeasurementValueFunc
+                        >> referralFormWithDefault model.nextStepsData.referralForm
+                    )
+                |> Maybe.withDefault model.nextStepsData.referralForm
 
         generateExaminationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveExaminationTask task ]) nextTask
@@ -1784,6 +1795,51 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetReferralBoolInput updateFunc value ->
+            let
+                updatedForm =
+                    updateFunc value model.nextStepsData.referralForm
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | referralForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetFacilityNonReferralReason currentValue facility reason ->
+            let
+                updatedValue =
+                    nonReferralReasonToSign facility reason
+
+                updatedNonReferralReasons =
+                    Maybe.map
+                        (\nonReferralReasons ->
+                            case currentValue of
+                                Just value ->
+                                    EverySet.remove (nonReferralReasonToSign facility value) nonReferralReasons
+                                        |> EverySet.insert updatedValue
+
+                                Nothing ->
+                                    EverySet.insert updatedValue nonReferralReasons
+                        )
+                        referralForm.nonReferralReasons
+                        |> Maybe.withDefault (EverySet.singleton updatedValue)
+
+                updatedForm =
+                    { referralForm | nonReferralReasons = Just updatedNonReferralReasons }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | referralForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveReferral personId saved nextTask ->
             let

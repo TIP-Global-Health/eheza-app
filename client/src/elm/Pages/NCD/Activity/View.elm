@@ -53,7 +53,7 @@ import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
 import Pages.NCD.Model exposing (..)
-import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault)
+import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault, resolveReferralInputsAndTasks)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
@@ -1213,14 +1213,12 @@ viewReferralForm : Language -> NominalDate -> AssembledData -> ReferralForm -> H
 viewReferralForm language currentDate assembled form =
     let
         ( inputs, _ ) =
-            -- @todo
-            -- resolveReferralInputsAndTasks language
-            --     currentDate
-            --     assembled
-            --     SetReferralBoolInput
-            --     SetFacilityNonReferralReason
-            --     form
-            ( [], [] )
+            resolveReferralInputsAndTasks language
+                currentDate
+                assembled
+                SetReferralBoolInput
+                SetFacilityNonReferralReason
+                form
     in
     div [ class "ui form referral" ]
         inputs
