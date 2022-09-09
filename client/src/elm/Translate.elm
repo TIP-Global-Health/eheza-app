@@ -3085,7 +3085,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Complete a NCD services referral form"
-                    , kinyarwanda = Just "Uzuza urupapuro rwo koherza umurwayi muri service y'indwara zitandura"
+                    , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi muri service y'indwara zitandura"
                     }
 
         Contacted114 ->
@@ -11518,7 +11518,7 @@ translationSet trans =
 
                 TreatmentErythromycin ->
                     { english = "by mouth 4x a day for 14 days"
-                    , kinyarwanda = Just "mu kanwa inshuro enye ku munsi mu minsi 14"
+                    , kinyarwanda = Just "Mu kanwa inshuro enye ku munsi mu minsi 14"
                     }
 
                 TreatmentAzithromycin ->
@@ -11736,12 +11736,12 @@ translationSet trans =
 
                 FacilityHospital ->
                     { english = "Have you referred the patient to the hospital"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba wohereje umubyeyi ku bitaro"
                     }
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Have you referred the patient to the specialist"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba wohereje umubyeyi ku muganaga w'inzobere"
                     }
 
                 FacilityARVProgram ->
@@ -11751,7 +11751,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Have you referred the patient to NCD services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba wohereje umubyeyi muri service y'indwara zitandura"
                     }
 
         ReferredToFacility facility ->
@@ -11778,7 +11778,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Referred to NCD services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yoherejwe muri service y'indwara zitandura"
                     }
 
         ReferredToFacilityNot facility ->
@@ -11795,7 +11795,7 @@ translationSet trans =
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Not referred to mental health specialist"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabwo yoherejwe kwa muganga w'inzobere w'ubuzima bwo mu mutwe"
                     }
 
                 FacilityARVProgram ->
@@ -11805,7 +11805,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Not referred to NCD services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabwo yoherejwe muri service y'indwara zitandura"
                     }
 
         ReferToProgramAction ->
@@ -12334,7 +12334,7 @@ translationSet trans =
 
         SelectedFamilyPlanningMethod ->
             { english = "Selected Family Planning Method"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uburyo bwo kuboneza urubyaro bwatoranijwe"
             }
 
         SelectIllnessSymptoms ->
@@ -12899,12 +12899,12 @@ translationSet trans =
 
                 FacilityHospital ->
                     { english = "Send patient to the hospital"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ohereza umurwayi kwa muganga"
                     }
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Refer patient to mental health specialist for further evaluation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ohereza umubyeyi ku muganga w'inzobere ku buzima bwo mu mutwe kugirango hakorwe isuzuma ryimbitse"
                     }
 
                 FacilityARVProgram ->
@@ -12914,7 +12914,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Refer patient to NCD services for further management"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ohereza umurwayi muri serivisi y'indwara zitandura bamwiteho byimbitse"
                     }
 
         ShowAll ->
@@ -13091,23 +13091,23 @@ translationSet trans =
 
         TreatmentDetailsAnemia ->
             { english = "At the previous visit you were given Iron (120mg), one 60mg tablet 2x a day for 3 months and Folic Acid (400 IU) take daily for 3 months."
-            , kinyarwanda = Just "Mu isura riheruka wahawe umuti (Ubutare or Feri) wongera amaraso(120mg),miligarama 60 inshuro ebyiri ku munsi mu mezi atatu na Acide folike(400 UI)inshuro imwe ku munsi mu miezi atatu"
+            , kinyarwanda = Just "Mu isura riheruka wahawe umuti (Ubutare or Feri) wongera amaraso(120mg), miligarama 60 inshuro ebyiri ku munsi mu mezi atatu na Acide folike(400 UI)inshuro imwe ku munsi mu miezi atatu."
             }
 
         TreatmentDetailsHIV dolutegravir arvs ->
             if dolutegravir && arvs then
                 { english = "At the previous visit you were given TDF + 3TC (1 tablet), by mouth 1x a day and Doltegravir (50mg) by mouth 1x a day."
-                , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine ikinini kimwe ku munsi na Dulutogaraviri (50mg), ikinini kimwe ku munsi"
+                , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine ikinini kimwe ku munsi na Dulutogaraviri (50mg), ikinini kimwe ku munsi."
                 }
 
             else if dolutegravir then
                 { english = "At the previous visit you were given Doltegravir (50mg), by mouth 1x a day."
-                , kinyarwanda = Just "Ubushize wahawe ikinini cya Dulutogaraviri(50mg), ikinini kimwe ku munsi"
+                , kinyarwanda = Just "Mu isura rishize wahawe ikinini cya Dulutogaraviri(50mg), ikinini kimwe ku munsi."
                 }
 
             else if arvs then
                 { english = "At the previous visit you were given TDF + 3TC (1 tablet), by mouth 1x a day."
-                , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine na Dulutogaraviri (50mg), ikinini kimwe ku munsi"
+                , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine na Dulutogaraviri (50mg), ikinini kimwe ku munsi."
                 }
 
             else
@@ -13127,27 +13127,27 @@ translationSet trans =
             case sign of
                 TreatmentMethyldopa2 ->
                     { english = "At the previous visit you were given Methyldopa (250mg), by mouth 2x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro ebyri ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentMethyldopa3 ->
                     { english = "At the previous visit you were given Methyldopa (250mg), by mouth 3x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro eshatu ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentMethyldopa4 ->
                     { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
                     { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day and Carvedilol (6.25mg), by mouth 2x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi na Karuvedilole (5.25mg), mu kanwa inshuro 2 ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
                     { english = "At the previous visit you were given Methyldopa (250mg,) by mouth 4x a day, Carvedilol (6.25mg), by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi na Karuvedilole (5.25mg), mu kanwa inshuro 2 ku munsi na Amlodipine (5mg), mu kanwa inshuro imwe ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 -- All others are not Hypertension treatments.
@@ -13160,12 +13160,12 @@ translationSet trans =
             case sign of
                 TreatmentQuinineSulphate ->
                     { english = "At the previous visit you were given Quinine Sulphate per os 10 mg/kg/dose, 3 times a day for 7 days."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe umuti wa Kinini 10mg ku kilo, gatatu ku munsi mu minsi irindwi."
                     }
 
                 TreatmentCoartem ->
                     { english = "At the previous visit you were given Coartem, 4 tablets by mouth twice per day x 3 days."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe AL (Kowaritemu), ibibini bine (4) byo kunywa mu kanwa inshuri ebyiri ku munsi mu minsi itatu"
                     }
 
                 _ ->
@@ -13177,27 +13177,27 @@ translationSet trans =
             case sign of
                 TreatmentPenecilin1 ->
                     { english = "At the previous visit you were given Penicillin (2.4 million units), IM x 1."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe Penisilini (inite Miliyoni 2.4 ), IM inshuro 1."
                     }
 
                 TreatmentPenecilin3 ->
                     { english = "At the previous visit you were given Penicillin (2.4 million units), IM 1x a week for 3 weeks."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe Penisilini (inite Miliyoni 2.4 ), IM inshuro 1, IM inshuro 1 buri cyumweru mu byumweru 3."
                     }
 
                 TreatmentErythromycin ->
                     { english = "At the previous visit you were given Erythromycin (500mg), by mouth 4x a day for 14 days."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe Erythromicine (500mg), mu kanwa inshuro enye ku munsi mu minsi 14."
                     }
 
                 TreatmentAzithromycin ->
                     { english = "At the previous visit you were given Azithromycin (2g), 4 tabs by mouth x one day."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe Azithromycine (2g), Ibinini 4 abinywe mu kanwa umunsi umwe."
                     }
 
                 TreatmentCeftriaxon ->
                     { english = "At the previous visit you were given Ceftriaxone (1g), IM daily x 10 days."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe Ceftriaxone (1g), IM buri munsi mu minsi 10."
                     }
 
                 _ ->
@@ -13207,32 +13207,32 @@ translationSet trans =
 
         TreatmentReviewQuestionAdverseEvents ->
             { english = "Have you experienced any adverse events"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba hari ibintu wabonye bidasanzwe(bitewe n'imiti wafashe)"
             }
 
         TreatmentReviewQuestionAdverseEventsHospitalization ->
             { english = "The patient had an adverse reaction to the medication. Would you like to refer them to the hospital as next step"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yabonye ibintu bidasanzwe byatewe n'imiti yahawe. Waba ushaka kumwhoreza ku bitaro nk'igikorwa gikurikiyeho"
             }
 
         TreatmentReviewQuestionMedicationByPMTCT ->
             { english = "Did you receive medicine from PMTCT"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wahawe imiti muri PMTCT"
             }
 
         TreatmentReviewQuestionMissedDoses ->
             { english = "Have you missed any doses"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Haba hari imiti wasimbutse gufata"
             }
 
         TreatmentReviewQuestionStillTaking ->
             { english = "Are you still taking this medication"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uracyari gufata imiti"
             }
 
         TreatmentReviewQuestionStillTakingForHIV ->
             { english = "Are you still taking ARVs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uracyari gufata imiti igabanya ubukana bwa virusi itera SIDA"
             }
 
         TreatmentReviewTask forModeratePreeclamsia task ->
@@ -13280,7 +13280,7 @@ translationSet trans =
 
         TreatmentReviewWarningPopupInstructions ->
             { english = "Further evaluation necessary"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gusuma byimbitse"
             }
 
         TrySyncing ->
@@ -13352,7 +13352,7 @@ translationSet trans =
 
         UnitCopiesPerMM3 ->
             { english = "copies/mm3"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kopi/mm3"
             }
 
         UnitGramsPerDeciliter ->
@@ -13387,17 +13387,17 @@ translationSet trans =
 
         UrinaryTractInfectionRecommendedTreatmentHeader ->
             { english = "This patient shows signs of Urinary Tract Infection"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi agaragaza ibimenyetso by'indwara y'ubwandu bw'umuyoboro w'inkari buhoraho"
             }
 
         UrinaryTractInfectionRecommendedTreatmentHelper ->
             { english = "Select the medication and dosage you will administer to the patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
             }
 
         UrinaryTractInfectionRecommendedTreatmentInstructions ->
             { english = "Ensure the patient is not allergic to the medication before prescribing"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Menya neza ko umurwayi adafite aleriji ku miti mbere yo kuyimwandikira"
             }
 
         UterineMyoma ->
@@ -13434,7 +13434,7 @@ translationSet trans =
 
         VaccineDoseAdministeredPreviouslyPrenatalQuestion vaccineType ->
             { english = "Did the patient receive any " ++ vaccineType ++ " immunizations prior to today that are not recorded above"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Uyu mubyeyi yaba yarabonye urukingo rw'" ++ vaccineType ++ "bakaba batarabyanditse"
             }
 
         VaccineDoseAdministeredPreviouslyWellChildQuestion vaccineType ->
@@ -13444,7 +13444,7 @@ translationSet trans =
 
         VaccineDoseAdministeredTodayPrenatalQuestion vaccineType ->
             { english = "Will the patient receive the " ++ vaccineType ++ " immunization today"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Umubyeyi arahabwa urukingo rw'" ++ vaccineType ++ " uyu munsi"
             }
 
         VaccineDoseAdministeredTodayWellChildQuestion vaccineType ->
@@ -14527,7 +14527,7 @@ translateActivePage page =
 
                 PrenatalLabsHistoryPage _ _ _ ->
                     { english = "Labs History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku Bizamini byafashwe"
                     }
 
 
