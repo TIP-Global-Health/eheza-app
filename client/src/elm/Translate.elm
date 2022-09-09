@@ -97,6 +97,7 @@ import Pages.Dashboard.Model as Dashboard
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
+import Pages.NCD.RecurrentActivity.Types
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
@@ -784,6 +785,7 @@ type TranslationId
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
     | MedicalConditionQuestion
+    | MedicationDistribution
     | MedicationTreatingDiabetes MedicationTreatingDiabetes
     | MedicationTreatingDiabetesQuestion
     | MedicationTreatingHypertension MedicationTreatingHypertension
@@ -860,6 +862,7 @@ type TranslationId
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
     | NCDRecurrentActivitiesTitle NCDRecurrentActivity
+    | NCDRecurrentNextStepsTask Pages.NCD.RecurrentActivity.Types.NextStepsTask
     | NCDSocialHistoryFoodQuestion
     | NCDSocialHistoryFoodQuestionInstructions
     | NCDSocialHistorySignQuestion NCDSocialHistorySign
@@ -6872,6 +6875,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        MedicationDistribution ->
+            { english = "Medication Distribution"
+            , kinyarwanda = Just "Gutanga Imiti"
+            }
+
         MedicationTreatingDiabetes medication ->
             case medication of
                 MedicationMetformin ->
@@ -7621,9 +7629,7 @@ translationSet trans =
                     }
 
                 Pages.NCD.Activity.Types.TaskMedicationDistribution ->
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Just "Gutanga Imiti"
-                    }
+                    translationSet MedicationDistribution
 
                 Pages.NCD.Activity.Types.TaskReferral ->
                     { english = "Referral"
@@ -7788,6 +7794,16 @@ translationSet trans =
                     , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
+        NCDRecurrentNextStepsTask task ->
+            case task of
+                Pages.NCD.RecurrentActivity.Types.TaskMedicationDistribution ->
+                    translationSet MedicationDistribution
+
+                Pages.NCD.RecurrentActivity.Types.TaskReferral ->
+                    { english = "Referral"
+                    , kinyarwanda = Just "Kohereza"
+                    }
+
         NCDSocialHistoryFoodQuestion ->
             { english = "What foods do you eat most"
             , kinyarwanda = Nothing
@@ -7919,9 +7935,7 @@ translationSet trans =
                     }
 
                 NextStepsMedicationDistribution ->
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Just "Gutanga Imiti"
-                    }
+                    translationSet MedicationDistribution
 
                 Pages.AcuteIllness.Activity.Types.NextStepsSendToHC ->
                     if isChw then
@@ -7952,9 +7966,7 @@ translationSet trans =
                 NextStepsSymptomsReliefGuidance ->
                     -- We qualify it as Medication distribution, to keep
                     -- consistant with other types of Covid steps.
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Just "Gutanga Imiti"
-                    }
+                    translationSet MedicationDistribution
 
         No ->
             { english = "No"
@@ -10918,9 +10930,7 @@ translationSet trans =
                     }
 
                 Pages.Prenatal.Activity.Types.NextStepsMedicationDistribution ->
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Just "Gutanga Imiti"
-                    }
+                    translationSet MedicationDistribution
 
                 Pages.Prenatal.Activity.Types.NextStepsWait ->
                     { english = "Wait"
@@ -10935,9 +10945,7 @@ translationSet trans =
                     }
 
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution ->
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Just "Gutanga Imiti"
-                    }
+                    translationSet MedicationDistribution
 
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"

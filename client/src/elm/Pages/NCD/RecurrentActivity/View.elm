@@ -37,6 +37,7 @@ import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
 import Pages.NCD.RecurrentActivity.Utils exposing (..)
 import Pages.NCD.Utils exposing (..)
+import Pages.NCD.View exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
@@ -109,9 +110,7 @@ viewActivity language currentDate activity assembled db model =
             viewLabResultsContent language currentDate assembled model
 
         RecurrentNextSteps ->
-            -- @todo:
-            -- viewNextStepsContent language currentDate assembled model.nextStepsData
-            []
+            viewNextStepsContent language currentDate assembled model.nextStepsData
 
 
 viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
@@ -270,5 +269,141 @@ viewLabResultsContent language currentDate assembled model =
             [ viewForm
             , actions
             ]
+        ]
+    ]
+
+
+viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            resolveNextStepsTasks currentDate assembled
+
+        activeTask =
+            Maybe.map
+                (\task ->
+                    if List.member task tasks then
+                        Just task
+
+                    else
+                        List.head tasks
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasks)
+
+        viewTask task =
+            let
+                iconClass =
+                    case task of
+                        TaskMedicationDistribution ->
+                            "next-steps-treatment"
+
+                        TaskReferral ->
+                            "next-steps-referral"
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    nextStepsTaskCompleted assembled task
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveNextStepsTask task ]
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.NCDRecurrentNextStepsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, nextStepsTasksCompletedFromTotal language currentDate assembled data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskMedicationDistribution ->
+                    getMeasurementValueFunc measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language
+                            currentDate
+                            assembled
+
+                Just TaskReferral ->
+                    getMeasurementValueFunc measurements.referral
+                        |> referralFormWithDefault data.referralForm
+                        |> viewReferralForm language
+                            currentDate
+                            SetReferralBoolInput
+                            SetFacilityNonReferralReason
+                            assembled
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                case task of
+                                    TaskMedicationDistribution ->
+                                        SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                    TaskReferral ->
+                                        SaveReferral personId measurements.referral nextTask
+                        in
+                        viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm, actions ]
         ]
     ]

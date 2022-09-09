@@ -132,7 +132,7 @@ update currentDate id db msg model =
             Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| NCDEncounterPage id ]
 
-        generatNextStepsMsgs nextTask =
+        generateNextStepsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| NCDEncounterPage id ]
     in
@@ -1751,7 +1751,7 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generatNextStepsMsgs nextTask
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     toHealthEducationValueWithDefault measurement model.nextStepsData.healthEducationForm
@@ -1778,7 +1778,7 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generatNextStepsMsgs nextTask
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     toMedicationDistributionValueWithDefault measurement model.nextStepsData.medicationDistributionForm
@@ -1850,7 +1850,7 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generatNextStepsMsgs nextTask
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     toReferralValueWithDefault measurement model.nextStepsData.referralForm

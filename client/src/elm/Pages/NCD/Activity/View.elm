@@ -54,6 +54,7 @@ import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
 import Pages.NCD.Model exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault, resolveReferralInputsAndTasks)
+import Pages.NCD.View exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
@@ -1123,7 +1124,11 @@ viewNextStepsContent language currentDate assembled data =
                 Just TaskReferral ->
                     getMeasurementValueFunc measurements.referral
                         |> referralFormWithDefault data.referralForm
-                        |> viewReferralForm language currentDate assembled
+                        |> viewReferralForm language
+                            currentDate
+                            SetReferralBoolInput
+                            SetFacilityNonReferralReason
+                            assembled
 
                 Nothing ->
                     emptyNode
@@ -1182,43 +1187,3 @@ viewHealthEducationForm language currentDate assembled form =
             "hypertension"
             Nothing
         ]
-
-
-viewMedicationDistributionForm :
-    Language
-    -> NominalDate
-    -> AssembledData
-    -> MedicationDistributionForm
-    -> Html Msg
-viewMedicationDistributionForm language currentDate assembled form =
-    let
-        ( content, _, _ ) =
-            -- @todo
-            -- resolveMedicationDistributionInputsAndTasks language
-            --     currentDate
-            --
-            --     assembled
-            --
-            --     setRecommendedTreatmentSignMsg
-            --     setMedicationDistributionBoolInputMsg
-            --
-            --     form
-            ( [], 0, 1 )
-    in
-    div [ class "ui form medication-distribution" ]
-        content
-
-
-viewReferralForm : Language -> NominalDate -> AssembledData -> ReferralForm -> Html Msg
-viewReferralForm language currentDate assembled form =
-    let
-        ( inputs, _ ) =
-            resolveReferralInputsAndTasks language
-                currentDate
-                assembled
-                SetReferralBoolInput
-                SetFacilityNonReferralReason
-                form
-    in
-    div [ class "ui form referral" ]
-        inputs

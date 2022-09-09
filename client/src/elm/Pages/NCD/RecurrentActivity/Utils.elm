@@ -15,7 +15,14 @@ import Measurement.Utils exposing (vitalsFormWithDefault)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
-import Pages.NCD.Utils exposing (recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension)
+import Pages.NCD.Utils
+    exposing
+        ( medicationDistributionFormWithDefault
+        , recommendedTreatmentMeasurementTaken
+        , recommendedTreatmentSignsForHypertension
+        , referralFormWithDefault
+        , resolveReferralInputsAndTasks
+        )
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -86,20 +93,73 @@ nextStepsTaskCompleted : AssembledData -> Pages.NCD.RecurrentActivity.Types.Next
 nextStepsTaskCompleted assembled task =
     case task of
         TaskMedicationDistribution ->
-            let
-                allowedSigns =
-                    recommendedTreatmentSignsForHypertension ++ recommendedTreatmentSignsForDiabetes
-            in
-            recommendedTreatmentMeasurementTaken allowedSigns assembled.measurements
+            --@todo
+            -- let
+            --     allowedSigns =
+            --         recommendedTreatmentSignsForHypertension ++ recommendedTreatmentSignsForDiabetes
+            -- in
+            -- recommendedTreatmentMeasurementTaken allowedSigns assembled.measurements
+            False
 
         TaskReferral ->
-            isJust assembled.measurements.referral
+            --@todo
+            False
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     --@todo
     True
+
+
+nextStepsTasksCompletedFromTotal :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> NextStepsData
+    -> Pages.NCD.RecurrentActivity.Types.NextStepsTask
+    -> ( Int, Int )
+nextStepsTasksCompletedFromTotal language currentDate assembled data task =
+    case task of
+        TaskMedicationDistribution ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
+                ( _, completed, total ) =
+                    -- @todo
+                    -- resolveMedicationDistributionInputsAndTasks language
+                    --     currentDate
+                    --     assembled
+                    --     SetMedicationDistributionBoolInput
+                    --     SetMedicationDistributionAdministrationNote
+                    --     SetRecommendedTreatmentSign
+                    --     SetAvoidingGuidanceReason
+                    --     form
+                    ( [], 0, 1 )
+            in
+            ( completed, total )
+
+        TaskReferral ->
+            let
+                form =
+                    assembled.measurements.referral
+                        |> getMeasurementValueFunc
+                        |> referralFormWithDefault data.referralForm
+
+                ( _, tasks ) =
+                    resolveReferralInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
 
 
 recommendedTreatmentSignsForDiabetes : List RecommendedTreatmentSign

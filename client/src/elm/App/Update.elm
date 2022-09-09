@@ -610,7 +610,7 @@ update msg model =
                                     data.ncdRecurrentActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.NCD.RecurrentActivity.Model.emptyModel
-                                        |> Pages.NCD.RecurrentActivity.Update.update model.language currentDate id model.indexedDb subMsg
+                                        |> Pages.NCD.RecurrentActivity.Update.update currentDate id model.indexedDb subMsg
                             in
                             ( { data | ncdRecurrentActivityPages = Dict.insert ( id, activity ) subModel data.ncdRecurrentActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNCDRecurrentActivity id activity) subCmd

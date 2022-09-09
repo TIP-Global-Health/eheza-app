@@ -47,16 +47,11 @@ type Msg
     | SetAstResult String
     | SaveLiverFunctionResult PersonId (Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
-      -- | SetActiveNextStepsTask NextStepsTask
-      -- | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
-      -- | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
-      -- | SaveSendToHC PersonId (Maybe ( NCDSendToHCId, NCDSendToHC )) (Maybe NextStepsTask)
-      -- | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
-      -- | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
-      -- | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
-      -- | SaveMedicationDistribution PersonId (Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )) (Maybe NextStepsTask)
-      -- | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
-      -- | SaveHealthEducation PersonId (Maybe ( NCDHealthEducationId, NCDHealthEducation )) (Maybe NextStepsTask)
+    | SetActiveNextStepsTask NextStepsTask
+    | SaveMedicationDistribution PersonId (Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )) (Maybe NextStepsTask)
+    | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
+    | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
+    | SaveReferral PersonId (Maybe ( NCDReferralId, NCDReferral )) (Maybe NextStepsTask)
     | CloseLabsResultsEntry PersonId NCDLabsResultsId LabsResultsValue
 
 
