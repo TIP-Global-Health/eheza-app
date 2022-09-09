@@ -12062,7 +12062,7 @@ translationSet trans =
                     }
 
                 TreatmentParacetamol ->
-                    { english = "1 tablet by mouth 3 times a day for 5 days or"
+                    { english = "1 tablet by mouth 3 times a day for 5 days"
                     , kinyarwanda = Nothing
                     }
 
@@ -12211,7 +12211,7 @@ translationSet trans =
                     }
 
                 TreatmentPenecilinV ->
-                    { english = "Penecilin V (250mg)"
+                    { english = "Penicillin V (250mg)"
                     , kinyarwanda = Nothing
                     }
 
