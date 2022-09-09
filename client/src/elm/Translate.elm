@@ -5131,12 +5131,12 @@ translationSet trans =
                     }
 
                 TreatementUpdateIncreaseOneDose ->
-                    { english = "It is recommended that the medication increase one dosage level to"
+                    { english = "It is recommended that the medication is increased one dosage level to"
                     , kinyarwanda = Nothing
                     }
 
                 TreatementUpdateIncreaseTwoDoses ->
-                    { english = "It is recommended that the medication increase two dosage levels to"
+                    { english = "It is recommended that the medication is increased two dosage levels to"
                     , kinyarwanda = Nothing
                     }
 
