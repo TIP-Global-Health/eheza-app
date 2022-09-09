@@ -8737,7 +8737,7 @@ translationSet trans =
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-                    { english = "Early Mastitis or Engorgment"
+                    { english = "Early Mastitis or Engorgement"
                     , kinyarwanda = Nothing
                     }
 
@@ -9144,7 +9144,7 @@ translationSet trans =
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-                    { english = "Early Mastitis or Engorgment"
+                    { english = "Early Mastitis or Engorgemen"
                     , kinyarwanda = Nothing
                     }
 
@@ -9441,7 +9441,7 @@ translationSet trans =
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-                    { english = "Patient shows signs of Early Mastitis or Engorgment"
+                    { english = "Patient shows signs of Early Mastitis or Engorgement"
                     , kinyarwanda = Nothing
                     }
 
@@ -9653,7 +9653,7 @@ translationSet trans =
                     }
 
                 EducationEarlyMastitisOrEngorgment ->
-                    { english = "Early Mastitis or Engorgment"
+                    { english = "Early Mastitis or Engorgement"
                     , kinyarwanda = Nothing
                     }
 
