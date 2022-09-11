@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'ncd_encounter',
   'description' => t('Exports the NCD Encounter bundle.'),
-  'class' => 'HedleyRestfulIndividualEncounter',
+  'class' => 'HedleyRestfulNCDEncounter',
   'authentication_types' => TRUE,
 );
