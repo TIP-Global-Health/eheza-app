@@ -357,6 +357,8 @@ viewNextStepsContent language currentDate assembled data =
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
                             currentDate
+                            SetRecommendedTreatmentSign
+                            SetMedicationDistributionBoolInput
                             assembled
 
                 Just TaskReferral ->

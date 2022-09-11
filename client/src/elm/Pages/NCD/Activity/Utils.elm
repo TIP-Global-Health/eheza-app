@@ -26,6 +26,7 @@ import Pages.NCD.Utils
         , recommendedTreatmentMeasurementTaken
         , recommendedTreatmentSignsForHypertension
         , referralFormWithDefault
+        , resolveMedicationDistributionInputsAndTasks
         , resolveReferralInputsAndTasks
         )
 import Pages.Utils
@@ -879,16 +880,12 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
 
                 ( _, completed, total ) =
-                    -- @todo
-                    -- resolveMedicationDistributionInputsAndTasks language
-                    --     currentDate
-                    --     assembled
-                    --     SetMedicationDistributionBoolInput
-                    --     SetMedicationDistributionAdministrationNote
-                    --     SetRecommendedTreatmentSign
-                    --     SetAvoidingGuidanceReason
-                    --     form
-                    ( [], 0, 1 )
+                    resolveMedicationDistributionInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetRecommendedTreatmentSign
+                        SetMedicationDistributionBoolInput
+                        form
             in
             ( completed, total )
 

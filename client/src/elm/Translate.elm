@@ -852,6 +852,7 @@ type TranslationId
     | NCDDangerSign NCDDangerSign
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
     | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
+    | NCDGuidanceSignQuestion NCDGuidanceSign
     | NCDHealthEducationHeader
     | NCDHealthEducationInstructions
     | NCDHealthEducationQuestion
@@ -7570,6 +7571,18 @@ translationSet trans =
                     }
 
                 NoNCDFamilyHistorySigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDGuidanceSignQuestion sign ->
+            case sign of
+                ReturnInOneMonth ->
+                    { english = "Have you advised the patient to return in one month for a check-up"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDGuidanceSigns ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }

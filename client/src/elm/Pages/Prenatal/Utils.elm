@@ -17,7 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (SendToHCForm)
 import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel)
+import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage, viewTreatmentWithDosage)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Utils
@@ -960,22 +960,15 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate options set
 -}
 viewTreatmentOptionForHypertension : Language -> RecommendedTreatmentSign -> Html any
 viewTreatmentOptionForHypertension language sign =
-    let
-        multipleTreatmentWithDosage =
-            List.map (viewtreatmentWithDosage language)
-                >> List.intersperse [ b [] [ text <| " " ++ (String.toUpper <| translate language Translate.And) ++ " " ] ]
-                >> List.concat
-                >> label []
-    in
     case sign of
         TreatmentHypertensionAddCarvedilol ->
-            multipleTreatmentWithDosage
+            viewMultipleTreatmentWithDosage language
                 [ TreatmentMethyldopa4
                 , TreatmentHypertensionAddCarvedilol
                 ]
 
         TreatmentHypertensionAddAmlodipine ->
-            multipleTreatmentWithDosage
+            viewMultipleTreatmentWithDosage language
                 [ TreatmentMethyldopa4
                 , TreatmentHypertensionAddCarvedilol
                 , TreatmentHypertensionAddAmlodipine
@@ -1359,30 +1352,6 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
     , taskCompleted currentValue
     , 1
     )
-
-
-viewTreatmentOptionWithDosage : Language -> RecommendedTreatmentSign -> Html any
-viewTreatmentOptionWithDosage language sign =
-    if
-        List.member sign
-            [ NoTreatmentForHypertension
-            , NoTreatmentForMalaria
-            , NoTreatmentForSyphilis
-            , NoTreatmentForMastitis
-            ]
-    then
-        label [] [ text <| translate language <| Translate.RecommendedTreatmentSignLabel sign ]
-
-    else
-        viewtreatmentWithDosage language sign
-            |> label []
-
-
-viewtreatmentWithDosage : Language -> RecommendedTreatmentSign -> List (Html any)
-viewtreatmentWithDosage language sign =
-    [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
-    , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
-    ]
 
 
 recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign

@@ -4004,6 +4004,30 @@ div.page-activity.ncd {
       h2 {
         text-transform: uppercase;
       }
+    }
+
+    .form.medication-distribution {
+
+      label {
+
+        .treatment {
+          color: $color-primary;
+          font-size: 23px;
+          font-weight: 500;
+          margin-right: 10px;
+        }
+
+        .dosage {
+          font-size: 22px;
+        }
+      }
+
+      .instructions {
+        margin-bottom: 0;
+      }
+    }
+
+    .form.referral {
 
       .separator:last-of-type {
         display: none;

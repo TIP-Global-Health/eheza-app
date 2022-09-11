@@ -16,16 +16,19 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.View exposing (viewActionTakenLabel)
+import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
 import Pages.NCD.Model exposing (..)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
         , ifNullableTrue
         , maybeToBoolTask
+        , taskCompleted
         , viewBoolInput
+        , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
+        , viewInstructionsLabel
         , viewQuestionLabel
         )
 import RemoteData exposing (RemoteData(..), WebData)
@@ -123,6 +126,20 @@ recommendedTreatmentSignsForHypertension =
     ]
 
 
+recommendedTreatmentSignsForDiabetes : List RecommendedTreatmentSign
+recommendedTreatmentSignsForDiabetes =
+    [ TreatmentMetformin1m1e
+    , TreatmentGlipenclamide1m1e
+    , TreatmentMetformin2m1e
+    , TreatmentGlipenclamide2m1e
+    , TreatmentMetformin2m2e
+    , TreatmentGlipenclamide2m2e
+    , TreatmentMetformin2m2eGlipenclamide1m1e
+    , TreatmentGlipenclamide2m2eMetformin1m1e
+    , NoTreatmentForDiabetes
+    ]
+
+
 referralFormWithDefault : ReferralForm -> Maybe ReferralValue -> ReferralForm
 referralFormWithDefault form saved =
     saved
@@ -216,155 +233,136 @@ resolveMedicationDistributionInputsAndTasks :
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
 resolveMedicationDistributionInputsAndTasks language currentDate assembled setRecommendedTreatmentSignMsg setMedicationDistributionBoolInputMsg form =
-    -- let
-    --
-    --     ( inputsByDiagnoses, completedByDiagnoses, activeByDiagnoses ) =
-    --         let
-    --             ( hypertensionInputs, hypertensionCompleted, hypertensionActive ) =
-    --                 if diagnosedHypertension phase assembled then
-    --                     resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks language
-    --                         currentDate
-    --                         (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
-    --                         assembled
-    --                         form
-    --
-    --                 else if diagnosedHypertensionPrevoiusly assembled || diagnosedModeratePreeclampsiaPrevoiusly assembled then
-    --                     resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language
-    --                         currentDate
-    --                         (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
-    --                         avoidingGuidanceReasonMsg
-    --                         assembled
-    --                         form
-    --
-    --                 else
-    --                     ( [], 0, 0 )
-    --         in
-    --         case phase of
-    --             PrenatalEncounterPhaseInitial ->
-    --                 let
-    --                     ( malariaInputs, malariaCompleted, malariaActive ) =
-    --                         if diagnosedMalaria assembled then
-    --                             resolveRecommendedTreatmentForMalariaInputsAndTasks language
-    --                                 currentDate
-    --                                 setRecommendedTreatmentSignMsg
-    --                                 assembled
-    --                                 form
-    --
-    --                         else
-    --                             ( [], 0, 0 )
-    --
-    --                     ( heartburnInputs, heartburnCompleted, heartburnActive ) =
-    --                         if diagnosed DiagnosisHeartburn assembled then
-    --                             resolveRecommendedTreatmentForHeartburnInputsAndTasks language
-    --                                 currentDate
-    --                                 setRecommendedTreatmentSignMsg
-    --                                 assembled
-    --                                 form
-    --
-    --                         else
-    --                             ( [], 0, 0 )
-    --
-    --                     ( urinaryTractInfectionInputs, urinaryTractInfectionCompleted, urinaryTractInfectionActive ) =
-    --                         if diagnosed DiagnosisUrinaryTractInfection assembled then
-    --                             resolveRecommendedTreatmentForUrinaryTractInfectionInputsAndTasks language
-    --                                 currentDate
-    --                                 setRecommendedTreatmentSignMsg
-    --                                 assembled
-    --                                 form
-    --
-    --                         else
-    --                             ( [], 0, 0 )
-    --
-    --                     ( candidiasisInputs, candidiasisCompleted, candidiasisActive ) =
-    --                         if diagnosed DiagnosisCandidiasis assembled then
-    --                             resolveRecommendedTreatmentForCandidiasisInputsAndTasks language
-    --                                 currentDate
-    --                                 setRecommendedTreatmentSignMsg
-    --                                 assembled
-    --                                 form
-    --
-    --                         else
-    --                             ( [], 0, 0 )
-    --
-    --                     ( mastitisInputs, mastitisCompleted, mastitisActive ) =
-    --                         if diagnosed DiagnosisPostpartumMastitis assembled then
-    --                             resolveRecommendedTreatmentForMastitisInputsAndTasks language
-    --                                 currentDate
-    --                                 setRecommendedTreatmentSignMsg
-    --                                 assembled
-    --                                 form
-    --
-    --                         else
-    --                             ( [], 0, 0 )
-    --                 in
-    --                 ( malariaInputs
-    --                     ++ heartburnInputs
-    --                     ++ hypertensionInputs
-    --                     ++ urinaryTractInfectionInputs
-    --                     ++ candidiasisInputs
-    --                     ++ mastitisInputs
-    --                 , malariaCompleted
-    --                     + heartburnCompleted
-    --                     + hypertensionCompleted
-    --                     + urinaryTractInfectionCompleted
-    --                     + candidiasisCompleted
-    --                     + mastitisCompleted
-    --                 , malariaActive
-    --                     + heartburnActive
-    --                     + hypertensionActive
-    --                     + urinaryTractInfectionActive
-    --                     + candidiasisActive
-    --                     + mastitisActive
-    --                 )
-    --
-    --             PrenatalEncounterPhaseRecurrent ->
-    --                 let
-    --                     ( syphilisInputs, syphilisCompleted, syphilisActive ) =
-    --                         if diagnosedSyphilis assembled then
-    --                             resolveRecommendedTreatmentForSyphilisInputsAndTasks language
-    --                                 currentDate
-    --                                 setRecommendedTreatmentSignMsg
-    --                                 recommendedTreatmentSignsForSyphilis
-    --                                 assembled
-    --                                 form
-    --
-    --                         else
-    --                             ( [], 0, 0 )
-    --                 in
-    --                 ( syphilisInputs ++ hypertensionInputs
-    --                 , syphilisCompleted + hypertensionCompleted
-    --                 , syphilisActive + hypertensionActive
-    --                 )
-    -- in
-    -- ( inputsByMedications ++ inputsByDiagnoses
-    -- , completedByMedications + completedByDiagnoses
-    -- , activeByMedications + activeByDiagnoses
-    -- )
-    -- @todo
-    -- resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks :
-    --     Language
-    --     -> NominalDate
-    --     -> (RecommendedTreatmentSign -> msg)
-    --     -> AssembledData
-    --     -> MedicationDistributionForm
-    --     -> ( List (Html msg), Int, Int )
-    -- resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg assembled form =
-    --     let
-    --         ( input, completed, active ) =
-    --             recommendedTreatmentForHypertensionInputAndTask language
-    --                 currentDate
-    --                 recommendedTreatmentSignsForHypertensionInitial
-    --                 setRecommendedTreatmentSignMsg
-    --                 assembled
-    --                 form
-    --     in
-    --     ( viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
-    --         :: input
-    --         ++ [ div [ class "separator" ] [] ]
-    --     , completed
-    --     , active
-    --     )
-    ( [], 0, 1 )
+    let
+        ( hypertensionInputs, hypertensionCompleted, hypertensionActive ) =
+            recommendedTreatmentForHypertensionInputAndTask language
+                currentDate
+                recommendedTreatmentSignsForHypertension
+                (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
+                assembled
+                form
+
+        ( diabetesInputs, diabetesCompleted, diabetesActive ) =
+            recommendedTreatmentForDiabetesInputAndTask language
+                currentDate
+                recommendedTreatmentSignsForDiabetes
+                (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForDiabetes)
+                assembled
+                form
+
+        returnInOneMonthInput =
+            [ viewQuestionLabel language <| Translate.NCDGuidanceSignQuestion ReturnInOneMonth
+            , viewBoolInput
+                language
+                form.guidedToReturnInOneMonth
+                (setMedicationDistributionBoolInputMsg (\value form_ -> { form_ | guidedToReturnInOneMonth = Just value }))
+                "return-in-one-month"
+                Nothing
+            ]
+    in
+    ( hypertensionInputs ++ diabetesInputs ++ returnInOneMonthInput
+    , hypertensionCompleted + diabetesCompleted + taskCompleted form.guidedToReturnInOneMonth
+    , hypertensionActive + diabetesActive + 1
+    )
+
+
+recommendedTreatmentForHypertensionInputAndTask :
+    Language
+    -> NominalDate
+    -> List RecommendedTreatmentSign
+    -> (RecommendedTreatmentSign -> msg)
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+recommendedTreatmentForHypertensionInputAndTask language currentDate options setRecommendedTreatmentSignMsg assembled form =
+    let
+        -- Since we may have values set for another diagnosis, or from
+        -- the other phase of encounter, we need to filter them out,
+        -- to be able to determine the current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+    in
+    ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
+      , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel
+                "icon-pills"
+                (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":")
+            ]
+      , viewCheckBoxSelectCustomInput language
+            options
+            []
+            currentValue
+            setRecommendedTreatmentSignMsg
+            (viewTreatmentOptionWithDosage language)
+      , div [ class "separator" ] []
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+recommendedTreatmentForDiabetesInputAndTask :
+    Language
+    -> NominalDate
+    -> List RecommendedTreatmentSign
+    -> (RecommendedTreatmentSign -> msg)
+    -> AssembledData
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+recommendedTreatmentForDiabetesInputAndTask language currentDate options setRecommendedTreatmentSignMsg assembled form =
+    let
+        -- Since we may have values set for another diagnosis, or from
+        -- the other phase of encounter, we need to filter them out,
+        -- to be able to determine the current value.
+        currentValue =
+            Maybe.andThen
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForDiabetes)
+                    >> List.head
+                )
+                form.recommendedTreatmentSigns
+    in
+    ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
+      , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
+            [ viewInstructionsLabel
+                "icon-pills"
+                (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":")
+            ]
+      , viewCheckBoxSelectCustomInput language
+            options
+            []
+            currentValue
+            setRecommendedTreatmentSignMsg
+            (viewTreatmentOptionForDiabetes language)
+      , div [ class "separator" ] []
+      ]
+    , taskCompleted currentValue
+    , 1
+    )
+
+
+viewTreatmentOptionForDiabetes : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptionForDiabetes language sign =
+    case sign of
+        TreatmentMetformin2m2eGlipenclamide1m1e ->
+            viewMultipleTreatmentWithDosage language
+                [ TreatmentMetformin2m2e
+                , TreatmentGlipenclamide1m1e
+                ]
+
+        TreatmentGlipenclamide2m2eMetformin1m1e ->
+            viewMultipleTreatmentWithDosage language
+                [ TreatmentGlipenclamide2m2e
+                , TreatmentMetformin1m1e
+                ]
+
+        _ ->
+            viewTreatmentOptionWithDosage language sign
 
 
 resolveReferralInputsAndTasks :

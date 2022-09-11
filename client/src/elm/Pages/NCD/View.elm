@@ -44,7 +44,13 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Pages.NCD.Model exposing (..)
-import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefault, resolveReferralInputsAndTasks)
+import Pages.NCD.Utils
+    exposing
+        ( medicationDistributionFormWithDefault
+        , referralFormWithDefault
+        , resolveMedicationDistributionInputsAndTasks
+        , resolveReferralInputsAndTasks
+        )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
@@ -68,23 +74,20 @@ import Translate exposing (Language, TranslationId, translate)
 viewMedicationDistributionForm :
     Language
     -> NominalDate
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> AssembledData
     -> MedicationDistributionForm
     -> Html msg
-viewMedicationDistributionForm language currentDate assembled form =
+viewMedicationDistributionForm language currentDate setRecommendedTreatmentSignMsg setMedicationDistributionBoolInputMsg assembled form =
     let
         ( content, _, _ ) =
-            -- @todo
-            -- resolveMedicationDistributionInputsAndTasks language
-            --     currentDate
-            --
-            --     assembled
-            --
-            --     setRecommendedTreatmentSignMsg
-            --     setMedicationDistributionBoolInputMsg
-            --
-            --     form
-            ( [], 0, 1 )
+            resolveMedicationDistributionInputsAndTasks language
+                currentDate
+                assembled
+                setRecommendedTreatmentSignMsg
+                setMedicationDistributionBoolInputMsg
+                form
     in
     div [ class "ui form medication-distribution" ]
         content

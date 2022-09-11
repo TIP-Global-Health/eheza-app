@@ -50,7 +50,7 @@ import Measurement.Utils
         )
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
-import Pages.NCD.Utils exposing (referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
+import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
@@ -109,6 +109,16 @@ update currentDate id db msg model =
                         >> outsideCareFormWithDefault model.medicalHistoryData.outsideCareForm
                     )
                 |> Maybe.withDefault model.medicalHistoryData.outsideCareForm
+
+        medicationDistributionForm =
+            Dict.get id db.ncdMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.medicationDistribution
+                        >> getMeasurementValueFunc
+                        >> medicationDistributionFormWithDefault model.nextStepsData.medicationDistributionForm
+                    )
+                |> Maybe.withDefault model.nextStepsData.medicationDistributionForm
 
         referralForm =
             Dict.get id db.ncdMeasurements
@@ -1768,6 +1778,45 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetRecommendedTreatmentSign allowedSigns sign ->
+            let
+                updatedSigns =
+                    -- Since we may have values from recurrent phase of encounter, we make
+                    -- sure to preserve them, before setting new value at inital phase.
+                    Maybe.map
+                        (\signs ->
+                            List.filter (\sign_ -> not <| List.member sign_ allowedSigns) signs
+                                |> List.append [ sign ]
+                        )
+                        medicationDistributionForm.recommendedTreatmentSigns
+                        |> Maybe.withDefault [ sign ]
+
+                updatedForm =
+                    { medicationDistributionForm | recommendedTreatmentSigns = Just updatedSigns }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationDistributionBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.nextStepsData.medicationDistributionForm
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveMedicationDistribution personId saved nextTask ->
             let

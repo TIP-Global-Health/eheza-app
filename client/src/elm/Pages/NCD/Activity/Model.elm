@@ -128,6 +128,8 @@ type Msg
     | SetActiveNextStepsTask NextStepsTask
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( NCDHealthEducationId, NCDHealthEducation )) (Maybe NextStepsTask)
+    | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
+    | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SaveMedicationDistribution PersonId (Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )) (Maybe NextStepsTask)
     | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
     | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral

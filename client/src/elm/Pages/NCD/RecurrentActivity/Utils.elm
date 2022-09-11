@@ -21,6 +21,7 @@ import Pages.NCD.Utils
         , recommendedTreatmentMeasurementTaken
         , recommendedTreatmentSignsForHypertension
         , referralFormWithDefault
+        , resolveMedicationDistributionInputsAndTasks
         , resolveReferralInputsAndTasks
         )
 import Pages.Utils
@@ -128,16 +129,12 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
 
                 ( _, completed, total ) =
-                    -- @todo
-                    -- resolveMedicationDistributionInputsAndTasks language
-                    --     currentDate
-                    --     assembled
-                    --     SetMedicationDistributionBoolInput
-                    --     SetMedicationDistributionAdministrationNote
-                    --     SetRecommendedTreatmentSign
-                    --     SetAvoidingGuidanceReason
-                    --     form
-                    ( [], 0, 1 )
+                    resolveMedicationDistributionInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetRecommendedTreatmentSign
+                        SetMedicationDistributionBoolInput
+                        form
             in
             ( completed, total )
 
@@ -160,20 +157,6 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 |> List.length
             , List.length tasks
             )
-
-
-recommendedTreatmentSignsForDiabetes : List RecommendedTreatmentSign
-recommendedTreatmentSignsForDiabetes =
-    [ TreatmentMetformin1m1e
-    , TreatmentGlipenclamide1m1e
-    , TreatmentMetformin2m1e
-    , TreatmentGlipenclamide2m1e
-    , TreatmentMetformin2m2e
-    , TreatmentGlipenclamide2m2e
-    , TreatmentMetformin2m2eGlipenclamide1m1e
-    , TreatmentGlipenclamide2m2eMetformin1m1e
-    , NoTreatmentForDiabetes
-    ]
 
 
 resolveLaboratoryResultTask : NominalDate -> AssembledData -> List LaboratoryTask
