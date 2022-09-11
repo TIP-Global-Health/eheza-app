@@ -1148,6 +1148,22 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         in
                         ( newModel, extraMsgs )
 
+                processRevisionAndAssessNCD participantId encounterId =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateNCDAssessmentMsgs currentDate language activePage newModel)
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
                 processRevisionAndUpdatePrenatalLabsResults participantId encounterId test executionNote resultsAdded =
                     if downloadingContent then
                         ( model, [] )
@@ -4895,6 +4911,46 @@ savePrenatalLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
     Backend.PrenatalEncounter.Model.SaveLabsResults personId labsResultsId labsResultsValue
         |> Backend.Model.MsgPrenatalEncounter encounterId
         |> App.Model.MsgIndexedDb
+
+
+generateNCDAssessmentMsgs :
+    NominalDate
+    -> Language
+    -> Page
+    -> ModelIndexedDb
+    -> NCDEncounterId
+    -> List App.Model.Msg
+generateNCDAssessmentMsgs currentDate language activePage after id =
+    Maybe.map
+        (\assembledAfter ->
+            if
+                Pages.NCD.Activity.Utils.mandatoryActivitiesForAssessmentCompleted
+                    currentDate
+                    assembledAfter
+            then
+                let
+                    diagnosesBefore =
+                        -- At this stage new diagnoses were not updated yet, therefore,
+                        -- we can use the dignoses set for the encounter.
+                        assembledAfter.encounter.diagnoses
+
+                    diagnosesAfter =
+                        Pages.NCD.Activity.Utils.generateNCDDiagnoses currentDate assembledAfter
+                in
+                if everySetsEqual diagnosesBefore diagnosesAfter then
+                    []
+
+                else
+                    [ Backend.NCDEncounter.Model.SetNCDDiagnoses diagnosesAfter
+                        |> Backend.Model.MsgNCDEncounter id
+                        |> App.Model.MsgIndexedDb
+                    ]
+
+            else
+                []
+        )
+        (RemoteData.toMaybe <| Pages.NCD.Utils.generateAssembledData id after)
+        |> Maybe.withDefault []
 
 
 generateNCDLabsTestAddedMsgs :

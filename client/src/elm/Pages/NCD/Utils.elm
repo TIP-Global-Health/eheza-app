@@ -6,6 +6,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (..)
+import Backend.NCDEncounter.Types exposing (..)
 import Backend.NCDEncounter.Utils exposing (getNCDEncountersForParticipant)
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Utils exposing (ageInMonths)
@@ -95,6 +96,49 @@ generatePreviousMeasurements currentEncounterId participantId db =
             )
         -- Most recent date to least recent date.
         |> List.sortWith sortTuplesByDateDesc
+
+
+generateNCDDiagnoses : NominalDate -> AssembledData -> List NCDDiagnosis
+generateNCDDiagnoses currentDate assembled =
+    List.filter (matchNCDDiagnosis currentDate assembled) allNCDDiagnoses
+
+
+matchNCDDiagnosis : NominalDate -> AssembledData -> NCDDiagnosis -> Bool
+matchNCDDiagnosis currentDate assembled diagnosis =
+    -- @todo
+    case diagnosis of
+        DiagnosisHypertensionStage1 ->
+            False
+
+        DiagnosisHypertensionStage2 ->
+            False
+
+        DiagnosisHypertensionStage3 ->
+            False
+
+        DiagnosisDiabetesInitial ->
+            False
+
+        DiagnosisDiabetesRecurrent ->
+            False
+
+        DiagnosisRenalComplications ->
+            False
+
+        NoNCDDiagnosis ->
+            False
+
+
+allNCDDiagnoses : List NCDDiagnosis
+allNCDDiagnoses =
+    [ DiagnosisHypertensionStage1
+    , DiagnosisHypertensionStage2
+    , DiagnosisHypertensionStage3
+    , DiagnosisDiabetesInitial
+    , DiagnosisDiabetesRecurrent
+    , DiagnosisRenalComplications
+    , NoNCDDiagnosis
+    ]
 
 
 {-| Recommended Treatment activity appears on both initial and recurrent encounters.

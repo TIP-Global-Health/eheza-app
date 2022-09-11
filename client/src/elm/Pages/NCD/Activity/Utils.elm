@@ -152,6 +152,12 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     True
 
 
+mandatoryActivitiesForAssessmentCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForAssessmentCompleted currentDate assembled =
+    --@todo
+    True
+
+
 resolvePreviousValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
     assembled.previousMeasurementsWithDates
