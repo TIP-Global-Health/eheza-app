@@ -3,7 +3,17 @@ module Pages.Prenatal.Activity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PrenatalEncounterId)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getHeightValue, getMeasurementValueFunc, muacIndication, muacValueFunc, prenatalLabExpirationPeriod, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( diabetesBySugarCount
+        , diabetesByUrineGlucose
+        , getHeightValue
+        , getMeasurementValueFunc
+        , muacIndication
+        , muacValueFunc
+        , prenatalLabExpirationPeriod
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
@@ -1734,17 +1744,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (\value ->
                         let
                             bySugarCount =
-                                Maybe.map2
-                                    (\testPrerequisites sugarCount ->
-                                        if EverySet.member PrerequisiteFastFor12h testPrerequisites then
-                                            sugarCount > 126
-
-                                        else
-                                            sugarCount >= 200
-                                    )
-                                    value.testPrerequisites
-                                    value.sugarCount
-                                    |> Maybe.withDefault False
+                                diabetesBySugarCount value
 
                             byUrineGlucose =
                                 if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
@@ -1755,8 +1755,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                     -- If random blood sugar test was not perfomed, we determine by
                                     -- glucose level at urine dipstick test.
                                     getMeasurementValueFunc measurements.urineDipstickTest
-                                        |> Maybe.andThen .glucose
-                                        |> Maybe.map (\glucose -> List.member glucose [ GlucosePlus2, GlucosePlus3, GlucosePlus4 ])
+                                        |> Maybe.map diabetesByUrineGlucose
                                         |> Maybe.withDefault False
                         in
                         bySugarCount || byUrineGlucose

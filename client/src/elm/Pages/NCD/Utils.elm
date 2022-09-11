@@ -3,7 +3,7 @@ module Pages.NCD.Utils exposing (..)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (..)
 import Backend.NCDEncounter.Types exposing (..)
@@ -98,35 +98,105 @@ generatePreviousMeasurements currentEncounterId participantId db =
         |> List.sortWith sortTuplesByDateDesc
 
 
-generateNCDDiagnoses : NominalDate -> AssembledData -> List NCDDiagnosis
+generateNCDDiagnoses : NominalDate -> AssembledData -> EverySet NCDDiagnosis
 generateNCDDiagnoses currentDate assembled =
     List.filter (matchNCDDiagnosis currentDate assembled) allNCDDiagnoses
+        |> EverySet.fromList
 
 
 matchNCDDiagnosis : NominalDate -> AssembledData -> NCDDiagnosis -> Bool
 matchNCDDiagnosis currentDate assembled diagnosis =
-    -- @todo
     case diagnosis of
         DiagnosisHypertensionStage1 ->
-            False
+            (not <| matchNCDDiagnosis currentDate assembled DiagnosisHypertensionStage2)
+                && (not <| matchNCDDiagnosis currentDate assembled DiagnosisHypertensionStage3)
+                && (reportedAnyOfCoMorbidities assembled [ MedicalConditionHypertension, MedicalConditionPregnancyRelatedHypertension ]
+                        || bloodPressureSatisfiesCondition stage1BloodPressureCondition assembled
+                   )
 
         DiagnosisHypertensionStage2 ->
-            False
+            (not <| matchNCDDiagnosis currentDate assembled DiagnosisHypertensionStage3)
+                && bloodPressureSatisfiesCondition stage2BloodPressureCondition assembled
 
         DiagnosisHypertensionStage3 ->
-            False
+            bloodPressureSatisfiesCondition stage3BloodPressureCondition assembled
 
         DiagnosisDiabetesInitial ->
-            False
+            reportedAnyOfCoMorbidities assembled [ MedicalConditionDiabetes, MedicalConditionGestationalDiabetes ]
 
         DiagnosisDiabetesRecurrent ->
-            False
+            (not <| matchNCDDiagnosis currentDate assembled DiagnosisDiabetesInitial)
+                && (getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
+                        |> Maybe.map
+                            (\value ->
+                                let
+                                    bySugarCount =
+                                        diabetesBySugarCount value
+
+                                    byUrineGlucose =
+                                        getMeasurementValueFunc assembled.measurements.urineDipstickTest
+                                            |> Maybe.map diabetesByUrineGlucose
+                                            |> Maybe.withDefault False
+                                in
+                                bySugarCount || byUrineGlucose
+                            )
+                        |> Maybe.withDefault False
+                   )
 
         DiagnosisRenalComplications ->
-            False
+            renalComplicationsByCreatine assembled
+                || renalComplicationsByUrineProtein assembled
 
         NoNCDDiagnosis ->
             False
+
+
+reportedAnyOfCoMorbidities : AssembledData -> List MedicalCondition -> Bool
+reportedAnyOfCoMorbidities assembled medicalConditions =
+    getMeasurementValueFunc assembled.measurements.coMorbidities
+        |> Maybe.map
+            (\value ->
+                List.any (\medicalCondition -> EverySet.member medicalCondition value) medicalConditions
+            )
+        |> Maybe.withDefault False
+
+
+bloodPressureSatisfiesCondition : (Float -> Float -> Bool) -> AssembledData -> Bool
+bloodPressureSatisfiesCondition condition assembled =
+    getMeasurementValueFunc assembled.measurements.vitals
+        |> Maybe.andThen (\value -> Maybe.map2 condition value.sys value.dia)
+        |> Maybe.withDefault False
+
+
+stage1BloodPressureCondition : Float -> Float -> Bool
+stage1BloodPressureCondition dia sys =
+    (sys >= 140 && sys < 160) || (dia >= 90 && dia < 100)
+
+
+stage2BloodPressureCondition : Float -> Float -> Bool
+stage2BloodPressureCondition dia sys =
+    (sys >= 160 && sys < 180) || (dia >= 100 && dia < 110)
+
+
+stage3BloodPressureCondition : Float -> Float -> Bool
+stage3BloodPressureCondition dia sys =
+    (sys >= 180) || (dia >= 110)
+
+
+renalComplicationsByCreatine : AssembledData -> Bool
+renalComplicationsByCreatine assembled =
+    getMeasurementValueFunc assembled.measurements.creatinineTest
+        |> Maybe.andThen .creatinineResult
+        |> Maybe.map (\creatinineResult -> creatinineResult > 1.3)
+        |> Maybe.withDefault False
+
+
+renalComplicationsByUrineProtein : AssembledData -> Bool
+renalComplicationsByUrineProtein assembled =
+    getMeasurementValueFunc assembled.measurements.urineDipstickTest
+        |> Maybe.andThen .protein
+        |> Maybe.map ((/=) Protein0)
+        |> Maybe.withDefault False
 
 
 allNCDDiagnoses : List NCDDiagnosis

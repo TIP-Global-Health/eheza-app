@@ -3500,3 +3500,24 @@ of those signs was set.
 recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> EverySet RecommendedTreatmentSign -> Bool
 recommendedTreatmentMeasurementTaken allowedSigns signs =
     List.any (\sign -> EverySet.member sign signs) allowedSigns
+
+
+diabetesBySugarCount : RandomBloodSugarTestValue encounterId -> Bool
+diabetesBySugarCount value =
+    Maybe.map2
+        (\testPrerequisites sugarCount ->
+            if EverySet.member PrerequisiteFastFor12h testPrerequisites then
+                sugarCount > 126
+
+            else
+                sugarCount >= 200
+        )
+        value.testPrerequisites
+        value.sugarCount
+        |> Maybe.withDefault False
+
+
+diabetesByUrineGlucose : UrineDipstickTestValue -> Bool
+diabetesByUrineGlucose value =
+    Maybe.map (\glucose -> List.member glucose [ GlucosePlus2, GlucosePlus3, GlucosePlus4 ]) value.glucose
+        |> Maybe.withDefault False

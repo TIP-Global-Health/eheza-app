@@ -154,7 +154,7 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
 
 mandatoryActivitiesForAssessmentCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForAssessmentCompleted currentDate assembled =
-    --@todo
+    -- At current stage, we do not have any preconditions for running assessment.
     True
 
 

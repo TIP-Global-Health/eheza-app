@@ -2177,47 +2177,65 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                 [ NCDRandomBloodSugarTestRevision uid data ] ->
                     let
-                        ( newModel, extraMsgsForLabsResults ) =
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessNCD`
+                        -- activation that comes below.
+                        ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestRandomBloodSugar
                                 data.value.executionNote
                                 (isJust data.value.sugarCount)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
-                    , extraMsgsForLabsResults
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
                 [ NCDUrineDipstickTestRevision uid data ] ->
                     let
-                        ( newModel, extraMsgsForLabsResults ) =
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessNCD`
+                        -- activation that comes below.
+                        ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestUrineDipstick
                                 data.value.executionNote
                                 (isJust data.value.protein)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
-                    , extraMsgsForLabsResults
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
                 [ NCDCreatinineTestRevision uid data ] ->
                     let
-                        ( newModel, extraMsgsForLabsResults ) =
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessNCD`
+                        -- activation that comes below.
+                        ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestCreatinine
                                 data.value.executionNote
                                 (isJust data.value.creatinineResult)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
-                    , extraMsgsForLabsResults
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
                 [ NCDLiverFunctionTestRevision uid data ] ->
@@ -4923,31 +4941,23 @@ generateNCDAssessmentMsgs :
 generateNCDAssessmentMsgs currentDate language activePage after id =
     Maybe.map
         (\assembledAfter ->
-            if
-                Pages.NCD.Activity.Utils.mandatoryActivitiesForAssessmentCompleted
-                    currentDate
-                    assembledAfter
-            then
-                let
-                    diagnosesBefore =
-                        -- At this stage new diagnoses were not updated yet, therefore,
-                        -- we can use the dignoses set for the encounter.
-                        assembledAfter.encounter.diagnoses
+            let
+                diagnosesBefore =
+                    -- At this stage new diagnoses were not updated yet, therefore,
+                    -- we can use the dignoses set for the encounter.
+                    assembledAfter.encounter.diagnoses
 
-                    diagnosesAfter =
-                        Pages.NCD.Activity.Utils.generateNCDDiagnoses currentDate assembledAfter
-                in
-                if everySetsEqual diagnosesBefore diagnosesAfter then
-                    []
-
-                else
-                    [ Backend.NCDEncounter.Model.SetNCDDiagnoses diagnosesAfter
-                        |> Backend.Model.MsgNCDEncounter id
-                        |> App.Model.MsgIndexedDb
-                    ]
+                diagnosesAfter =
+                    Pages.NCD.Utils.generateNCDDiagnoses currentDate assembledAfter
+            in
+            if everySetsEqual diagnosesBefore diagnosesAfter then
+                []
 
             else
-                []
+                [ Backend.NCDEncounter.Model.SetNCDDiagnoses diagnosesAfter
+                    |> Backend.Model.MsgNCDEncounter id
+                    |> App.Model.MsgIndexedDb
+                ]
         )
         (RemoteData.toMaybe <| Pages.NCD.Utils.generateAssembledData id after)
         |> Maybe.withDefault []
