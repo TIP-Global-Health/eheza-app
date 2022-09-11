@@ -1,6 +1,8 @@
 module Backend.NCDEncounter.Encoder exposing (encodeNCDEncounter)
 
 import Backend.NCDEncounter.Model exposing (..)
+import Backend.NCDEncounter.Types exposing (..)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
@@ -10,6 +12,14 @@ import Utils.Json exposing (encodeIfExists)
 
 encodeNCDEncounter : NCDEncounter -> List ( String, Value )
 encodeNCDEncounter encounter =
+    let
+        diagnosesWithDefault diagnoses =
+            if EverySet.isEmpty diagnoses then
+                List.singleton NoNCDDiagnosis
+
+            else
+                EverySet.toList diagnoses
+    in
     [ ( "scheduled_date"
       , object
             [ ( "value", encodeYYYYMMDD encounter.startDate )
@@ -17,7 +27,34 @@ encodeNCDEncounter encounter =
             ]
       )
     , ( "individual_participant", encodeEntityUuid encounter.participant )
+    , ( "ncd_diagnoses", list encodeNCDDiagnosis (diagnosesWithDefault encounter.diagnoses) )
     , ( "deleted", bool False )
     , ( "type", string "ncd_encounter" )
     ]
         ++ encodeIfExists "shard" encounter.shard encodeEntityUuid
+
+
+encodeNCDDiagnosis : NCDDiagnosis -> Value
+encodeNCDDiagnosis diagnosis =
+    string <|
+        case diagnosis of
+            DiagnosisHypertensionStage1 ->
+                "hypertension-stage1"
+
+            DiagnosisHypertensionStage2 ->
+                "hypertension-stage2"
+
+            DiagnosisHypertensionStage3 ->
+                "hypertension-stage3"
+
+            DiagnosisDiabetesInitial ->
+                "diabetes-initial"
+
+            DiagnosisDiabetesRecurrent ->
+                "diabetes-recurrent"
+
+            DiagnosisRenalComplications ->
+                "renal-complications"
+
+            NoNCDDiagnosis ->
+                "none"

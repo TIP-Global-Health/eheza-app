@@ -2,6 +2,7 @@ module Backend.NCDEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDEncounter.Types exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -11,6 +12,7 @@ type alias NCDEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , diagnoses : EverySet NCDDiagnosis
     , shard : Maybe HealthCenterId
     }
 
@@ -20,6 +22,7 @@ emptyNCDEncounter participant startDate shard =
     { participant = participant
     , startDate = startDate
     , endDate = Nothing
+    , diagnoses = EverySet.empty
     , shard = shard
     }
 
