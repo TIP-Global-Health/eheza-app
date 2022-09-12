@@ -8,7 +8,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (..)
 import Backend.NCDEncounter.Types exposing (..)
 import Backend.NCDEncounter.Utils exposing (getNCDEncountersForParticipant)
-import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
+import Backend.NutritionEncounter.Utils exposing (sortByStartDateDesc)
 import Backend.Person.Utils exposing (ageInMonths)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -63,9 +63,9 @@ generateAssembledData id db =
                             |> Maybe.withDefault NotAsked
                     )
 
-        previousMeasurementsWithDates =
+        previousEncountersData =
             RemoteData.toMaybe encounter
-                |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
+                |> Maybe.map (\encounter_ -> generatePreviousEncountersData (Just id) encounter_.participant db)
                 |> Maybe.withDefault []
     in
     RemoteData.map AssembledData (Success id)
@@ -73,11 +73,11 @@ generateAssembledData id db =
         |> RemoteData.andMap participant
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
-        |> RemoteData.andMap (Success previousMeasurementsWithDates)
+        |> RemoteData.andMap (Success previousEncountersData)
 
 
-generatePreviousMeasurements : Maybe NCDEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List ( NominalDate, ( NCDEncounterId, NCDMeasurements ) )
-generatePreviousMeasurements currentEncounterId participantId db =
+generatePreviousEncountersData : Maybe NCDEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List PreviousEncounterData
+generatePreviousEncountersData currentEncounterId participantId db =
     getNCDEncountersForParticipant db participantId
         |> List.filterMap
             (\( encounterId, encounter ) ->
@@ -88,20 +88,120 @@ generatePreviousMeasurements currentEncounterId participantId db =
 
                 else
                     case Dict.get encounterId db.ncdMeasurements of
-                        Just (Success data) ->
-                            Just ( encounter.startDate, ( encounterId, data ) )
+                        Just (Success measurements) ->
+                            Just
+                                { id = encounterId
+                                , startDate = encounter.startDate
+                                , diagnoses = encounter.diagnoses
+                                , measurements = measurements
+                                }
 
                         _ ->
                             Nothing
             )
         -- Most recent date to least recent date.
-        |> List.sortWith sortTuplesByDateDesc
+        |> List.sortWith sortByStartDateDesc
 
 
 generateNCDDiagnoses : NominalDate -> AssembledData -> EverySet NCDDiagnosis
 generateNCDDiagnoses currentDate assembled =
     List.filter (matchNCDDiagnosis currentDate assembled) allNCDDiagnoses
+        |> applyHypertensionDiagnosesLogic assembled
+        |> filterDiagnosesOfDeterminedConditions assembled
         |> EverySet.fromList
+
+
+applyHypertensionDiagnosesLogic : AssembledData -> List NCDDiagnosis -> List NCDDiagnosis
+applyHypertensionDiagnosesLogic assembled diagnoses =
+    let
+        ( hypertension, others ) =
+            List.partition
+                (\diagnosis ->
+                    List.member diagnosis
+                        [ DiagnosisHypertensionStage1
+                        , DiagnosisHypertensionStage2
+                        , DiagnosisHypertensionStage3
+                        ]
+                )
+                diagnoses
+
+        currentHypertensionCondition =
+            resolveCurrentHypertensionCondition assembled
+    in
+    -- If no hypertension criteria is met, check if we can lower hypertanstion stage.
+    if List.isEmpty hypertension && bloodPressureSatisfiesCondition lowerHypertensionStageCondition assembled then
+        Maybe.map
+            (\current ->
+                case current of
+                    DiagnosisHypertensionStage1 ->
+                        -- For the moment we remain at stage 1.
+                        DiagnosisHypertensionStage1 :: others
+
+                    DiagnosisHypertensionStage2 ->
+                        DiagnosisHypertensionStage1 :: others
+
+                    DiagnosisHypertensionStage3 ->
+                        DiagnosisHypertensionStage2 :: others
+
+                    _ ->
+                        others
+            )
+            currentHypertensionCondition
+            |> Maybe.withDefault diagnoses
+
+    else
+        Maybe.map2
+            (\new current ->
+                if ncdDiagnosisToNumber new > ncdDiagnosisToNumber current then
+                    new :: others
+
+                else
+                    -- We already diagnosed patient with higher stage, so
+                    -- we can drop current diagnosis.
+                    others
+            )
+            (List.head hypertension)
+            currentHypertensionCondition
+            |> Maybe.withDefault diagnoses
+
+
+ncdDiagnosisToNumber : NCDDiagnosis -> Int
+ncdDiagnosisToNumber diagnosis =
+    case diagnosis of
+        DiagnosisHypertensionStage1 ->
+            1
+
+        DiagnosisHypertensionStage2 ->
+            2
+
+        DiagnosisHypertensionStage3 ->
+            3
+
+        _ ->
+            0
+
+
+filterDiagnosesOfDeterminedConditions : AssembledData -> List NCDDiagnosis -> List NCDDiagnosis
+filterDiagnosesOfDeterminedConditions assembled =
+    let
+        diagnosesToFilter =
+            diagnosesToFilterForDiabetes ++ diagnosesToFilterForRenalComplications
+
+        diagnosesToFilterForDiabetes =
+            if diagnosedPreviouslyWithDiabetes assembled then
+                diabetesDiagnoses
+
+            else
+                []
+
+        diagnosesToFilterForRenalComplications =
+            if diagnosedPreviously DiagnosisRenalComplications assembled then
+                [ DiagnosisRenalComplications ]
+
+            else
+                []
+    in
+    List.filter (\diagnosis -> not <| List.member diagnosis diagnosesToFilter)
 
 
 matchNCDDiagnosis : NominalDate -> AssembledData -> NCDDiagnosis -> Bool
@@ -169,18 +269,23 @@ bloodPressureSatisfiesCondition condition assembled =
 
 
 stage1BloodPressureCondition : Float -> Float -> Bool
-stage1BloodPressureCondition dia sys =
+stage1BloodPressureCondition sys dia =
     (sys >= 140 && sys < 160) || (dia >= 90 && dia < 100)
 
 
 stage2BloodPressureCondition : Float -> Float -> Bool
-stage2BloodPressureCondition dia sys =
+stage2BloodPressureCondition sys dia =
     (sys >= 160 && sys < 180) || (dia >= 100 && dia < 110)
 
 
 stage3BloodPressureCondition : Float -> Float -> Bool
-stage3BloodPressureCondition dia sys =
+stage3BloodPressureCondition sys dia =
     (sys >= 180) || (dia >= 110)
+
+
+lowerHypertensionStageCondition : Float -> Float -> Bool
+lowerHypertensionStageCondition sys dia =
+    sys < 100
 
 
 renalComplicationsByCreatine : AssembledData -> Bool
@@ -209,6 +314,86 @@ allNCDDiagnoses =
     , DiagnosisRenalComplications
     , NoNCDDiagnosis
     ]
+
+
+hypertensionDiagnoses : List NCDDiagnosis
+hypertensionDiagnoses =
+    [ DiagnosisHypertensionStage1
+    , DiagnosisHypertensionStage2
+    , DiagnosisHypertensionStage3
+    ]
+
+
+diabetesDiagnoses : List NCDDiagnosis
+diabetesDiagnoses =
+    [ DiagnosisDiabetesInitial, DiagnosisDiabetesRecurrent ]
+
+
+resolvePreviousHypertensionCondition : AssembledData -> Maybe NCDDiagnosis
+resolvePreviousHypertensionCondition =
+    .previousEncountersData >> resolveHypertensionCondition
+
+
+resolveCurrentHypertensionCondition : AssembledData -> Maybe NCDDiagnosis
+resolveCurrentHypertensionCondition assembled =
+    { id = assembled.id
+    , startDate = assembled.encounter.startDate
+    , diagnoses = assembled.encounter.diagnoses
+    , measurements = assembled.measurements
+    }
+        :: assembled.previousEncountersData
+        |> resolveHypertensionCondition
+
+
+resolveHypertensionCondition : List PreviousEncounterData -> Maybe NCDDiagnosis
+resolveHypertensionCondition encountersData =
+    List.filterMap
+        (\data ->
+            if EverySet.member DiagnosisHypertensionStage3 data.diagnoses then
+                Just DiagnosisHypertensionStage3
+
+            else if EverySet.member DiagnosisHypertensionStage2 data.diagnoses then
+                Just DiagnosisHypertensionStage2
+
+            else if EverySet.member DiagnosisHypertensionStage1 data.diagnoses then
+                Just DiagnosisHypertensionStage1
+
+            else
+                Nothing
+        )
+        encountersData
+        |> List.head
+
+
+diagnosedPreviouslyWithDiabetes : AssembledData -> Bool
+diagnosedPreviouslyWithDiabetes =
+    diagnosedPreviouslyAnyOf diabetesDiagnoses
+
+
+diagnosed : NCDDiagnosis -> AssembledData -> Bool
+diagnosed diagnosis assembled =
+    diagnosedAnyOf [ diagnosis ] assembled
+
+
+diagnosedAnyOf : List NCDDiagnosis -> AssembledData -> Bool
+diagnosedAnyOf diagnoses assembled =
+    List.any (\diagnosis -> EverySet.member diagnosis assembled.encounter.diagnoses) diagnoses
+
+
+diagnosedPreviously : NCDDiagnosis -> AssembledData -> Bool
+diagnosedPreviously diagnosis assembled =
+    diagnosedPreviouslyAnyOf [ diagnosis ] assembled
+
+
+diagnosedPreviouslyAnyOf : List NCDDiagnosis -> AssembledData -> Bool
+diagnosedPreviouslyAnyOf diagnoses assembled =
+    List.filter
+        (\data ->
+            List.any (\diagnosis -> EverySet.member diagnosis data.diagnoses) diagnoses
+        )
+        assembled.previousEncountersData
+        |> List.isEmpty
+        |> not
 
 
 {-| Recommended Treatment activity appears on both initial and recurrent encounters.

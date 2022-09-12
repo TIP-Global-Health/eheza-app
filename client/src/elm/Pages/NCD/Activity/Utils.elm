@@ -6,6 +6,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
+import Backend.NCDEncounter.Types exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import EverySet exposing (EverySet)
@@ -19,16 +20,8 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vitalsFormWithDefault)
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
-import Pages.NCD.Encounter.Model exposing (AssembledData)
-import Pages.NCD.Utils
-    exposing
-        ( medicationDistributionFormWithDefault
-        , recommendedTreatmentMeasurementTaken
-        , recommendedTreatmentSignsForHypertension
-        , referralFormWithDefault
-        , resolveMedicationDistributionInputsAndTasks
-        , resolveReferralInputsAndTasks
-        )
+import Pages.NCD.Model exposing (AssembledData)
+import Pages.NCD.Utils exposing (..)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -121,16 +114,56 @@ expectNextStepsTask : NominalDate -> AssembledData -> Pages.NCD.Activity.Types.N
 expectNextStepsTask currentDate assembled task =
     case task of
         TaskHealthEducation ->
-            --@todo
-            True
+            -- Diagnosed Stage 1 at curernt encounter.
+            diagnosedAnyOf [ DiagnosisHypertensionStage1 ] assembled
+                -- Not diagnosed any Hypertension diagnoses at previous encounters.
+                && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled)
+                -- Not diagnosed any Hypertension diagnoses at current or previous encounters.
+                && (not <| diagnosedAnyOf [ DiagnosisRenalComplications, DiagnosisDiabetesInitial ] assembled)
+                && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
 
         TaskMedicationDistribution ->
-            --@todo
-            True
+            let
+                diabetesDiagnosed =
+                    diagnosed DiagnosisDiabetesInitial assembled
+                        || diagnosedPreviouslyWithDiabetes assembled
+
+                renalComplicationsDiagnosed =
+                    diagnosedPreviously DiagnosisRenalComplications assembled
+            in
+            diabetesDiagnosed
+                || (resolveCurrentHypertensionCondition assembled
+                        |> Maybe.map
+                            (\hypertensionDiagnosis ->
+                                case hypertensionDiagnosis of
+                                    DiagnosisHypertensionStage1 ->
+                                        renalComplicationsDiagnosed
+
+                                    DiagnosisHypertensionStage2 ->
+                                        renalComplicationsDiagnosed
+
+                                    DiagnosisHypertensionStage3 ->
+                                        True
+
+                                    _ ->
+                                        False
+                            )
+                        |> Maybe.withDefault diabetesDiagnosed
+                   )
 
         TaskReferral ->
-            --@todo
-            True
+            -- When Renal Complications are diagnosed. At this phase, it could happen
+            -- only at previous encounters.
+            diagnosedPreviously DiagnosisRenalComplications assembled
+                || -- When at Stage 3 Hypertension, or  other stages + diagnose Diabetes.
+                   (resolveCurrentHypertensionCondition assembled
+                        |> Maybe.map
+                            (\hypertensionDiagnosis ->
+                                (hypertensionDiagnosis == DiagnosisHypertensionStage3)
+                                    || diagnosedPreviouslyWithDiabetes assembled
+                            )
+                        |> Maybe.withDefault False
+                   )
 
 
 nextStepsTaskCompleted : AssembledData -> Pages.NCD.Activity.Types.NextStepsTask -> Bool
@@ -152,19 +185,13 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     True
 
 
-mandatoryActivitiesForAssessmentCompleted : NominalDate -> AssembledData -> Bool
-mandatoryActivitiesForAssessmentCompleted currentDate assembled =
-    -- At current stage, we do not have any preconditions for running assessment.
-    True
-
-
 resolvePreviousValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
+    assembled.previousEncountersData
         |> List.filterMap
-            (\( _, ( _, measurements ) ) ->
-                measurementFunc measurements
-                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            (.measurements
+                >> measurementFunc
+                >> Maybe.map (Tuple.second >> .value >> valueFunc)
             )
         |> List.reverse
         |> List.head
@@ -172,11 +199,11 @@ resolvePreviousValue assembled measurementFunc valueFunc =
 
 resolvePreviousMaybeValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> Maybe b) -> Maybe b
 resolvePreviousMaybeValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
+    assembled.previousEncountersData
         |> List.filterMap
-            (\( _, ( _, measurements ) ) ->
-                measurementFunc measurements
-                    |> Maybe.andThen (Tuple.second >> .value >> valueFunc)
+            (.measurements
+                >> measurementFunc
+                >> Maybe.andThen (Tuple.second >> .value >> valueFunc)
             )
         |> List.reverse
         |> List.head

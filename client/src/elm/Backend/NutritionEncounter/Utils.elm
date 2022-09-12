@@ -525,6 +525,11 @@ sortEncounterTuplesDesc =
     sortByDateDesc (Tuple.second >> .startDate)
 
 
+sortByStartDateDesc : { e | startDate : NominalDate } -> { e | startDate : NominalDate } -> Order
+sortByStartDateDesc =
+    sortByDateDesc .startDate
+
+
 sortDatesDesc : NominalDate -> NominalDate -> Order
 sortDatesDesc =
     sortByDateDesc identity

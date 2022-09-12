@@ -33,13 +33,3 @@ emptyModel =
     { selectedTab = Pending
     , showEndEncounterDialog = False
     }
-
-
-type alias AssembledData =
-    { id : NCDEncounterId
-    , encounter : NCDEncounter
-    , participant : IndividualEncounterParticipant
-    , person : Person
-    , measurements : NCDMeasurements
-    , previousMeasurementsWithDates : List ( NominalDate, ( NCDEncounterId, NCDMeasurements ) )
-    }
