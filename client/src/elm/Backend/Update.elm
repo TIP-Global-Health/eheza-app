@@ -2253,6 +2253,26 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults
                     )
 
+                [ NCDCoMorbiditiesRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NCDVitalsRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 _ ->
                     let
                         ( newModel, recalculateEditableSessions ) =
