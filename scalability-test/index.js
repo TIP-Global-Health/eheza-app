@@ -6,7 +6,7 @@ const pinCodeSelector = 'input[name=pincode]';
 const healthCenterSelector = "//button[contains(text(), 'Nyange Health Center')]";
 const baseUrl = 'http://localhost:3000';
 
-const inputDelay = 250;
+const inputDelay = 550;
 (async () => {
 
   function delay(time) {
@@ -155,7 +155,10 @@ const inputDelay = 250;
     await page.screenshot({path: 'regwitherrors' + Date.now() + '.png', fullPage: true, captureBeyondViewport: true});
   }
 
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+
   // It is helpful for the local tests when we execute it repeatedly.
   const context = await browser.createIncognitoBrowserContext();
   const page = await context.newPage();

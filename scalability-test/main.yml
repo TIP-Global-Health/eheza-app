@@ -10,13 +10,15 @@
         update_cache: yes
         cache_valid_time: 86400
 
-    - name: NodeJs
+    - name: NodeJs and Chrome dependencies
       package:
         name: "{{ item }}"
         state: present
       with_items:
          - nodejs
          - npm
+         - libgbm1
+         - libasound2
 
     - name: Sync the source code of the test
       copy:
@@ -32,6 +34,10 @@
 
     - name: Execute
       shell: 'cd /root && node index.js {{ pairingCode }} {{ pin }}'
+      register: command_output
+
+    - debug:
+        var: command_output.stdout_lines
 
     - name: End date
       debug:
