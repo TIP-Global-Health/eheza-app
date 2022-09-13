@@ -1862,7 +1862,7 @@ translationSet trans =
 
         AddedToPatientRecordOn ->
             { english = "Added to patient record on"
-            , kinyarwanda = Just "Yongewe ku makuru y umurwayi kuwa"
+            , kinyarwanda = Just "Yongewe ku makuru y'umurwayi kuwa"
             }
 
         AddFamilyMember ->
@@ -3668,7 +3668,7 @@ translationSet trans =
 
         DiagnosedAtAnotherFacilityPrefix ->
             { english = "You were diagnosed with"
-            , kinyarwanda = Just "Wasuzumwe "
+            , kinyarwanda = Just "Wasuzumwe"
             }
 
         DiagnosedAtAnotherFacilitySuffix ->
@@ -4069,7 +4069,7 @@ translationSet trans =
 
         EncounterDate ->
             { english = "Encounter Date"
-            , kinyarwanda = Just ""
+            , kinyarwanda = Just "Itariki igikorwa cyakoreweho"
             }
 
         EncounterTypeFollowUpQuestion encounterType ->
@@ -5110,7 +5110,7 @@ translationSet trans =
 
             else
                 { english = "This patient was previously diagnosed with Hypertension"
-                , kinyarwanda = Just "Mu isuzuma rishize uyu mubyeyi yagize umuvuduko w'amaraso "
+                , kinyarwanda = Just "Mu isuzuma rishize uyu mubyeyi yagize umuvuduko w'amaraso"
                 }
 
         HypertensionRecommendedTreatmentUpdateBPLabel ->
@@ -5120,7 +5120,7 @@ translationSet trans =
 
         HypertensionRecommendedTreatmentUpdateCurrentTreatment ->
             { english = "The patient is currently prescribed"
-            , kinyarwanda = Just "Ubu umubyeyi afata  imiti ikurikira"
+            , kinyarwanda = Just "Ubu umubyeyi afata imiti ikurikira"
             }
 
         HypertensionRecommendedTreatmentUpdateNewTreatment value ->
@@ -6384,7 +6384,7 @@ translationSet trans =
                     -- Names of Medication, therefore,
                     -- no translation is needed.
                     { english = "Iron"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Fer"
                     }
 
                 FolicAcid ->
@@ -6937,7 +6937,7 @@ translationSet trans =
 
                 NonAdministrationTooIll ->
                     { english = "Too Sick"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ararembye"
                     }
 
                 NonAdministrationOther ->
@@ -7017,7 +7017,7 @@ translationSet trans =
 
                 NonAdministrationTooIll ->
                     { english = "Too Sick"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ararembye"
                     }
 
                 NonAdministrationOther ->
@@ -8231,7 +8231,7 @@ translationSet trans =
 
                 DiagnosisHIVDetectableViralLoad ->
                     { english = "Detectable HIV Viral Load"
-                    , kinyarwanda = Just "Agaragaza  udukoko dutera virusi ya SIDA mu maraso"
+                    , kinyarwanda = Just "Agaragaza udukoko dutera virusi ya SIDA mu maraso"
                     }
 
                 DiagnosisDiscordantPartnership ->
@@ -8920,7 +8920,7 @@ translationSet trans =
 
                 DiagnosisMalariaWithAnemia ->
                     { english = "Patient has tested positive for Malaria with Anemia"
-                    , kinyarwanda = Just "Afite Malariya n'amaraso macye"
+                    , kinyarwanda = Just "Umubyeyi afite Malariya n'amaraso macye"
                     }
 
                 DiagnosisMalariaWithAnemiaMedicatedContinued ->
@@ -10260,7 +10260,7 @@ translationSet trans =
 
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe ku mugore utwite"
             }
 
         PrenatalLabsCaseManagementEntryTypeVitals ->
@@ -10804,12 +10804,12 @@ translationSet trans =
 
                 OutsideCareMedicationIron1 ->
                     { english = "Iron (60mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Fer (60mg)"
                     }
 
                 OutsideCareMedicationIron2 ->
                     { english = "Iron (60mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Fer (60mg)"
                     }
 
                 OutsideCareMedicationFolicAcid ->
@@ -11533,52 +11533,52 @@ translationSet trans =
 
                 TreatmentAluminiumHydroxide ->
                     { english = "1 tablet by mouth 3x a day for 7 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunywa ikinini 1 inshuro ku munsi mu minsi 7"
                     }
 
                 TreatmentNitrofurantoin ->
                     { english = "by mouth 2x a day for 7 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 2 ku munsi mu minsi 7"
                     }
 
                 TreatmentAmoxicillin ->
                     { english = "by mouth 3x a day for 7 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 3 ku munsi mu minsi 7"
                     }
 
                 TreatmentClotrimaxazole200 ->
                     { english = "vaginally every night x 3 night"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu gitsina buri joro mu majoro 3"
                     }
 
                 TreatmentClotrimaxazole500 ->
                     { english = "vaginally one time"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inshuro imwe mu gitsina"
                     }
 
                 TreatmentMethyldopa2 ->
                     { english = "by mouth 2x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentMethyldopa3 ->
                     { english = "by mouth 3x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 3 ku munsi"
                     }
 
                 TreatmentMethyldopa4 ->
                     { english = "by mouth 4x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 4 ku munsi"
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
                     { english = "by mouth 2x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
                     { english = "by mouth 1x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 1 ku munsi"
                     }
 
                 -- Dosage is not applicable for other options.
@@ -13275,12 +13275,12 @@ translationSet trans =
 
         TreatmentReviewWarningPopupMessage ->
             { english = "Patient non-adherent"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi ntabwo yubahiriza gahunda yo kunywa imiti uko bisabwa"
             }
 
         TreatmentReviewWarningPopupInstructions ->
             { english = "Further evaluation necessary"
-            , kinyarwanda = Just "Gusuma byimbitse"
+            , kinyarwanda = Just "Gusuzuma byimbitse"
             }
 
         TrySyncing ->
