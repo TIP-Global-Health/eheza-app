@@ -20,7 +20,7 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vitalsFormWithDefault)
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
-import Pages.NCD.Model exposing (AssembledData)
+import Pages.NCD.Model exposing (..)
 import Pages.NCD.Utils exposing (..)
 import Pages.Utils
     exposing
@@ -115,7 +115,7 @@ expectNextStepsTask currentDate assembled task =
     case task of
         TaskHealthEducation ->
             -- Diagnosed Stage 1 at curernt encounter.
-            diagnosedAnyOf [ DiagnosisHypertensionStage1 ] assembled
+            diagnosed DiagnosisHypertensionStage1 assembled
                 -- Not diagnosed any Hypertension diagnoses at previous encounters.
                 && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled)
                 -- Not diagnosed any Hypertension diagnoses at current or previous encounters.
@@ -123,47 +123,13 @@ expectNextStepsTask currentDate assembled task =
                 && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
 
         TaskMedicationDistribution ->
-            let
-                diabetesDiagnosed =
-                    diagnosed DiagnosisDiabetesInitial assembled
-                        || diagnosedPreviouslyWithDiabetes assembled
-
-                renalComplicationsDiagnosed =
-                    diagnosedPreviously DiagnosisRenalComplications assembled
-            in
-            diabetesDiagnosed
-                || (resolveCurrentHypertensionCondition assembled
-                        |> Maybe.map
-                            (\hypertensionDiagnosis ->
-                                case hypertensionDiagnosis of
-                                    DiagnosisHypertensionStage1 ->
-                                        renalComplicationsDiagnosed
-
-                                    DiagnosisHypertensionStage2 ->
-                                        renalComplicationsDiagnosed
-
-                                    DiagnosisHypertensionStage3 ->
-                                        True
-
-                                    _ ->
-                                        False
-                            )
-                        |> Maybe.withDefault diabetesDiagnosed
-                   )
+            medicateForDiabetes NCDEncounterPhaseInitial assembled
+                || medicateForHypertension NCDEncounterPhaseInitial assembled
 
         TaskReferral ->
-            -- When Renal Complications are diagnosed. At this phase, it could happen
-            -- only at previous encounters.
-            diagnosedPreviously DiagnosisRenalComplications assembled
-                || -- When at Stage 3 Hypertension, or  other stages + diagnose Diabetes.
-                   (resolveCurrentHypertensionCondition assembled
-                        |> Maybe.map
-                            (\hypertensionDiagnosis ->
-                                (hypertensionDiagnosis == DiagnosisHypertensionStage3)
-                                    || diagnosedPreviouslyWithDiabetes assembled
-                            )
-                        |> Maybe.withDefault False
-                   )
+            referForDiabetes NCDEncounterPhaseInitial assembled
+                || referForHypertension NCDEncounterPhaseInitial assembled
+                || referForRenalComplications NCDEncounterPhaseInitial assembled
 
 
 nextStepsTaskCompleted : AssembledData -> Pages.NCD.Activity.Types.NextStepsTask -> Bool
@@ -915,6 +881,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
                         currentDate
+                        NCDEncounterPhaseInitial
                         assembled
                         SetRecommendedTreatmentSign
                         SetMedicationDistributionBoolInput
@@ -932,6 +899,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, tasks ) =
                     resolveReferralInputsAndTasks language
                         currentDate
+                        NCDEncounterPhaseInitial
                         assembled
                         SetReferralBoolInput
                         SetFacilityNonReferralReason

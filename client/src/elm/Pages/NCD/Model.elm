@@ -29,6 +29,11 @@ type alias PreviousEncounterData =
     }
 
 
+type NCDEncounterPhase
+    = NCDEncounterPhaseInitial
+    | NCDEncounterPhaseRecurrent
+
+
 type alias ReferralForm =
     { referToHospital : Maybe Bool
     , referralFormHospital : Maybe Bool

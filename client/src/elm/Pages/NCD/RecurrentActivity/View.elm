@@ -357,6 +357,7 @@ viewNextStepsContent language currentDate assembled data =
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
                             currentDate
+                            NCDEncounterPhaseRecurrent
                             SetRecommendedTreatmentSign
                             SetMedicationDistributionBoolInput
                             assembled
@@ -366,6 +367,7 @@ viewNextStepsContent language currentDate assembled data =
                         |> referralFormWithDefault data.referralForm
                         |> viewReferralForm language
                             currentDate
+                            NCDEncounterPhaseRecurrent
                             SetReferralBoolInput
                             SetFacilityNonReferralReason
                             assembled

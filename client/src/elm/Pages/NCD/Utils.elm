@@ -526,28 +526,37 @@ toMedicationDistributionValue form =
 resolveMedicationDistributionInputsAndTasks :
     Language
     -> NominalDate
+    -> NCDEncounterPhase
     -> AssembledData
     -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveMedicationDistributionInputsAndTasks language currentDate assembled setRecommendedTreatmentSignMsg setMedicationDistributionBoolInputMsg form =
+resolveMedicationDistributionInputsAndTasks language currentDate phase assembled setRecommendedTreatmentSignMsg setMedicationDistributionBoolInputMsg form =
     let
         ( hypertensionInputs, hypertensionCompleted, hypertensionActive ) =
-            recommendedTreatmentForHypertensionInputAndTask language
-                currentDate
-                recommendedTreatmentSignsForHypertension
-                (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
-                assembled
-                form
+            if medicateForHypertension phase assembled then
+                recommendedTreatmentForHypertensionInputAndTask language
+                    currentDate
+                    recommendedTreatmentSignsForHypertension
+                    (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
+                    assembled
+                    form
+
+            else
+                emptySection
 
         ( diabetesInputs, diabetesCompleted, diabetesActive ) =
-            recommendedTreatmentForDiabetesInputAndTask language
-                currentDate
-                recommendedTreatmentSignsForDiabetes
-                (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForDiabetes)
-                assembled
-                form
+            if medicateForDiabetes phase assembled then
+                recommendedTreatmentForDiabetesInputAndTask language
+                    currentDate
+                    recommendedTreatmentSignsForDiabetes
+                    (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForDiabetes)
+                    assembled
+                    form
+
+            else
+                emptySection
 
         returnInOneMonthInput =
             [ viewQuestionLabel language <| Translate.NCDGuidanceSignQuestion ReturnInOneMonth
@@ -558,11 +567,48 @@ resolveMedicationDistributionInputsAndTasks language currentDate assembled setRe
                 "return-in-one-month"
                 Nothing
             ]
+
+        emptySection =
+            ( [], 0, 0 )
     in
     ( hypertensionInputs ++ diabetesInputs ++ returnInOneMonthInput
     , hypertensionCompleted + diabetesCompleted + taskCompleted form.guidedToReturnInOneMonth
     , hypertensionActive + diabetesActive + 1
     )
+
+
+medicateForDiabetes : NCDEncounterPhase -> AssembledData -> Bool
+medicateForDiabetes phase assembled =
+    case phase of
+        NCDEncounterPhaseInitial ->
+            diagnosed DiagnosisDiabetesInitial assembled
+                || diagnosedPreviouslyWithDiabetes assembled
+
+        NCDEncounterPhaseRecurrent ->
+            diagnosed DiagnosisDiabetesRecurrent assembled
+
+
+medicateForHypertension : NCDEncounterPhase -> AssembledData -> Bool
+medicateForHypertension phase assembled =
+    case phase of
+        NCDEncounterPhaseInitial ->
+            resolveCurrentHypertensionCondition assembled |> isJust
+
+        -- This can only happen on first diagnostics of stage 1 Hypertension (without
+        -- any HYpertension history), and with no history of Diabetes or Renal
+        -- Complications, and Diabetes at initial phase of the encounter.
+        NCDEncounterPhaseRecurrent ->
+            -- No Hypertension history.
+            (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled)
+                -- No Diabetes or Renal Complication history.
+                && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
+                && -- Diagnosed with Stage 1 Hypertension at curernt encounter.
+                   diagnosed DiagnosisHypertensionStage1 assembled
+                && -- Diagnosed with either Diabetes or Renal Complications on
+                   -- recurrent phase of the encounter.
+                   (diagnosed DiagnosisRenalComplications assembled
+                        || diagnosed DiagnosisDiabetesRecurrent assembled
+                   )
 
 
 recommendedTreatmentForHypertensionInputAndTask :
@@ -667,25 +713,20 @@ viewTreatmentOptionForDiabetes language sign =
 resolveReferralInputsAndTasks :
     Language
     -> NominalDate
+    -> NCDEncounterPhase
     -> AssembledData
     -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
     -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
     -> ReferralForm
     -> ( List (Html msg), List (Maybe Bool) )
-resolveReferralInputsAndTasks language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+resolveReferralInputsAndTasks language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
     let
         facility =
-            if isPregnant then
+            if referForHypertension phase assembled && patientIsPregnant assembled then
                 FacilityANCServices
 
             else
                 FacilityHospital
-
-        isPregnant =
-            getMeasurementValueFunc assembled.measurements.pregnancyTest
-                |> Maybe.andThen .testResult
-                |> Maybe.map ((==) TestPositive)
-                |> Maybe.withDefault False
 
         maybeConfig =
             case facility of
@@ -798,6 +839,59 @@ resolveReferralInputsAndTasks language currentDate assembled setReferralBoolInpu
         )
         maybeConfig
         |> Maybe.withDefault ( [], [] )
+
+
+referForHypertension : NCDEncounterPhase -> AssembledData -> Bool
+referForHypertension phase assembled =
+    case phase of
+        NCDEncounterPhaseInitial ->
+            resolveCurrentHypertensionCondition assembled
+                |> Maybe.map
+                    (\condition ->
+                        (condition == DiagnosisHypertensionStage3)
+                            || patientIsPregnant assembled
+                    )
+                |> Maybe.withDefault False
+
+        NCDEncounterPhaseRecurrent ->
+            False
+
+
+patientIsPregnant : AssembledData -> Bool
+patientIsPregnant assembled =
+    getMeasurementValueFunc assembled.measurements.pregnancyTest
+        |> Maybe.map
+            (\value ->
+                (value.executionNote == TestNoteKnownAsPositive)
+                    || (value.testResult == Just TestPositive)
+            )
+        |> Maybe.withDefault False
+
+
+referForDiabetes : NCDEncounterPhase -> AssembledData -> Bool
+referForDiabetes phase assembled =
+    (isJust <| resolveCurrentHypertensionCondition assembled)
+        && (case phase of
+                NCDEncounterPhaseInitial ->
+                    diagnosedPreviouslyWithDiabetes assembled
+                        || diagnosed DiagnosisDiabetesInitial assembled
+
+                NCDEncounterPhaseRecurrent ->
+                    diagnosed DiagnosisDiabetesRecurrent assembled
+           )
+
+
+referForRenalComplications : NCDEncounterPhase -> AssembledData -> Bool
+referForRenalComplications phase assembled =
+    (isJust <| resolveCurrentHypertensionCondition assembled)
+        && (case phase of
+                NCDEncounterPhaseInitial ->
+                    diagnosedPreviously DiagnosisRenalComplications assembled
+
+                NCDEncounterPhaseRecurrent ->
+                    (not <| diagnosedPreviously DiagnosisRenalComplications assembled)
+                        && diagnosed DiagnosisRenalComplications assembled
+           )
 
 
 nonReferralReasonSection :

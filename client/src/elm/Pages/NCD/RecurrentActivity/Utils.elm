@@ -13,7 +13,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils exposing (vitalsFormWithDefault)
-import Pages.NCD.Model exposing (AssembledData)
+import Pages.NCD.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
 import Pages.NCD.Utils exposing (..)
@@ -75,49 +75,13 @@ expectNextStepsTask : NominalDate -> AssembledData -> Pages.NCD.RecurrentActivit
 expectNextStepsTask currentDate assembled task =
     case task of
         TaskMedicationDistribution ->
-            let
-                diabetesDiagnosed =
-                    diagnosed DiagnosisDiabetesRecurrent assembled
-
-                renalComplicationsDiagnosed =
-                    diagnosed DiagnosisRenalComplications assembled
-            in
-            diabetesDiagnosed
-                || (resolveCurrentHypertensionCondition assembled
-                        |> Maybe.map
-                            (\hypertensionDiagnosis ->
-                                case hypertensionDiagnosis of
-                                    DiagnosisHypertensionStage1 ->
-                                        renalComplicationsDiagnosed
-
-                                    DiagnosisHypertensionStage2 ->
-                                        renalComplicationsDiagnosed
-
-                                    DiagnosisHypertensionStage3 ->
-                                        -- For this stage, medications are given at initial
-                                        -- phase of encounter.
-                                        False
-
-                                    _ ->
-                                        False
-                            )
-                        |> Maybe.withDefault diabetesDiagnosed
-                   )
+            medicateForDiabetes NCDEncounterPhaseRecurrent assembled
+                || medicateForHypertension NCDEncounterPhaseRecurrent assembled
 
         TaskReferral ->
-            -- When Renal Complications are diagnosed.
-            ((not <| diagnosedPreviously DiagnosisRenalComplications assembled)
-                && diagnosed DiagnosisRenalComplications assembled
-            )
-                || -- When at Stage 1 / 2 of Hypertension + diagnosed Diabetes.
-                   (resolveCurrentHypertensionCondition assembled
-                        |> Maybe.map
-                            (\hypertensionDiagnosis ->
-                                (hypertensionDiagnosis /= DiagnosisHypertensionStage3)
-                                    && diagnosed DiagnosisDiabetesRecurrent assembled
-                            )
-                        |> Maybe.withDefault False
-                   )
+            referForDiabetes NCDEncounterPhaseRecurrent assembled
+                || referForHypertension NCDEncounterPhaseRecurrent assembled
+                || referForRenalComplications NCDEncounterPhaseRecurrent assembled
 
 
 nextStepsTaskCompleted : AssembledData -> Pages.NCD.RecurrentActivity.Types.NextStepsTask -> Bool
@@ -161,6 +125,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
                         currentDate
+                        NCDEncounterPhaseRecurrent
                         assembled
                         SetRecommendedTreatmentSign
                         SetMedicationDistributionBoolInput
@@ -178,6 +143,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, tasks ) =
                     resolveReferralInputsAndTasks language
                         currentDate
+                        NCDEncounterPhaseRecurrent
                         assembled
                         SetReferralBoolInput
                         SetFacilityNonReferralReason

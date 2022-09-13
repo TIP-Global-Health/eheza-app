@@ -74,16 +74,18 @@ import Translate exposing (Language, TranslationId, translate)
 viewMedicationDistributionForm :
     Language
     -> NominalDate
+    -> NCDEncounterPhase
     -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> AssembledData
     -> MedicationDistributionForm
     -> Html msg
-viewMedicationDistributionForm language currentDate setRecommendedTreatmentSignMsg setMedicationDistributionBoolInputMsg assembled form =
+viewMedicationDistributionForm language currentDate phase setRecommendedTreatmentSignMsg setMedicationDistributionBoolInputMsg assembled form =
     let
         ( content, _, _ ) =
             resolveMedicationDistributionInputsAndTasks language
                 currentDate
+                phase
                 assembled
                 setRecommendedTreatmentSignMsg
                 setMedicationDistributionBoolInputMsg
@@ -96,16 +98,18 @@ viewMedicationDistributionForm language currentDate setRecommendedTreatmentSignM
 viewReferralForm :
     Language
     -> NominalDate
+    -> NCDEncounterPhase
     -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
     -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
     -> AssembledData
     -> ReferralForm
     -> Html msg
-viewReferralForm language currentDate setReferralBoolInputMsg setFacilityNonReferralReasonMsg assembled form =
+viewReferralForm language currentDate phase setReferralBoolInputMsg setFacilityNonReferralReasonMsg assembled form =
     let
         ( inputs, _ ) =
             resolveReferralInputsAndTasks language
                 currentDate
+                phase
                 assembled
                 setReferralBoolInputMsg
                 setFacilityNonReferralReasonMsg
