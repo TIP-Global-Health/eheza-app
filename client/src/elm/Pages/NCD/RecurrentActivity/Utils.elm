@@ -134,7 +134,8 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         currentDate
                         NCDEncounterPhaseRecurrent
                         assembled
-                        SetRecommendedTreatmentSign
+                        SetRecommendedTreatmentSignSingle
+                        SetRecommendedTreatmentSignMultiple
                         SetMedicationDistributionBoolInput
                         form
             in

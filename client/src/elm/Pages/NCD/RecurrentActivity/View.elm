@@ -358,7 +358,8 @@ viewNextStepsContent language currentDate assembled data =
                         |> viewMedicationDistributionForm language
                             currentDate
                             NCDEncounterPhaseRecurrent
-                            SetRecommendedTreatmentSign
+                            SetRecommendedTreatmentSignSingle
+                            SetRecommendedTreatmentSignMultiple
                             SetMedicationDistributionBoolInput
                             assembled
 

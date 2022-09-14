@@ -59,7 +59,6 @@ import Pages.Utils
         , taskCompleted
         , tasksBarId
         , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
@@ -76,18 +75,20 @@ viewMedicationDistributionForm :
     -> NominalDate
     -> NCDEncounterPhase
     -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> AssembledData
     -> MedicationDistributionForm
     -> Html msg
-viewMedicationDistributionForm language currentDate phase setRecommendedTreatmentSignMsg setMedicationDistributionBoolInputMsg assembled form =
+viewMedicationDistributionForm language currentDate phase setRecommendedTreatmentSignSingleMsg setRecommendedTreatmentSignMultipleMsg setMedicationDistributionBoolInputMsg assembled form =
     let
         ( content, _, _ ) =
             resolveMedicationDistributionInputsAndTasks language
                 currentDate
                 phase
                 assembled
-                setRecommendedTreatmentSignMsg
+                setRecommendedTreatmentSignSingleMsg
+                setRecommendedTreatmentSignMultipleMsg
                 setMedicationDistributionBoolInputMsg
                 form
     in

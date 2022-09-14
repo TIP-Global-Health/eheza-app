@@ -26,6 +26,7 @@ import Pages.Utils
         , maybeToBoolTask
         , taskCompleted
         , viewBoolInput
+        , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
@@ -535,16 +536,17 @@ resolveMedicationDistributionInputsAndTasks :
     -> NCDEncounterPhase
     -> AssembledData
     -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveMedicationDistributionInputsAndTasks language currentDate phase assembled setRecommendedTreatmentSignMsg setMedicationDistributionBoolInputMsg form =
+resolveMedicationDistributionInputsAndTasks language currentDate phase assembled setRecommendedTreatmentSignSingleMsg setRecommendedTreatmentSignMultipleMsg setMedicationDistributionBoolInputMsg form =
     let
         ( hypertensionInputs, hypertensionCompleted, hypertensionActive ) =
             if medicateForHypertension phase assembled then
                 recommendedTreatmentForHypertensionInputAndTask language
                     currentDate
-                    (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
+                    (setRecommendedTreatmentSignMultipleMsg recommendedTreatmentSignsForHypertension NoTreatmentForHypertension)
                     assembled
                     form
 
@@ -559,7 +561,7 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                 recommendedTreatmentForDiabetesInputAndTask language
                     currentDate
                     recommendedTreatmentSignsForDiabetes
-                    (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForDiabetes)
+                    (setRecommendedTreatmentSignSingleMsg recommendedTreatmentSignsForDiabetes)
                     assembled
                     form
 
@@ -632,14 +634,18 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate setRecommen
         -- the other phase of encounter, we need to filter them out,
         -- to be able to determine the current value.
         currentValue =
-            Maybe.andThen
-                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension)
-                    >> List.head
-                )
+            Maybe.map
+                (List.filter (\sign -> List.member sign recommendedTreatmentSignsForHypertension))
                 form.recommendedTreatmentSigns
+                |> Maybe.withDefault []
 
         recommendedTreatmentSignsForHypertension =
             generateRecommendedTreatmentSignsForHypertension assembled
+
+        options =
+            EverySet.fromList recommendedTreatmentSignsForHypertension
+                |> EverySet.remove NoTreatmentForHypertension
+                |> EverySet.toList
 
         ( header, instructions ) =
             if patientIsPregnant assembled then
@@ -673,15 +679,20 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate setRecommen
                 "icon-pills"
                 (text <| translate language instructions ++ ":")
             ]
-      , viewCheckBoxSelectCustomInput language
-            recommendedTreatmentSignsForHypertension
+      , viewCheckBoxMultipleSelectCustomInput language
+            options
             []
             currentValue
+            (Just NoTreatmentForHypertension)
             setRecommendedTreatmentSignMsg
             (viewTreatmentOptionWithDosage language)
       , div [ class "separator" ] []
       ]
-    , taskCompleted currentValue
+    , if List.isEmpty currentValue then
+        0
+
+      else
+        1
     , 1
     )
 

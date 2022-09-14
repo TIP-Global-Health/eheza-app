@@ -489,7 +489,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SetRecommendedTreatmentSign allowedSigns sign ->
+        SetRecommendedTreatmentSignSingle allowedSigns sign ->
             let
                 updatedSigns =
                     -- Since we may have values from recurrent phase of encounter, we make
@@ -501,6 +501,42 @@ update currentDate id db msg model =
                         )
                         medicationDistributionForm.recommendedTreatmentSigns
                         |> Maybe.withDefault [ sign ]
+
+                updatedForm =
+                    { medicationDistributionForm | recommendedTreatmentSigns = Just updatedSigns }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetRecommendedTreatmentSignMultiple allowedSigns noneValue sign ->
+            let
+                ( currentSigns, preservedSigns ) =
+                    Maybe.map
+                        (\signs ->
+                            List.partition (\sign_ -> List.member sign_ allowedSigns) signs
+                        )
+                        medicationDistributionForm.recommendedTreatmentSigns
+                        |> Maybe.withDefault ( [], [] )
+
+                form =
+                    { signs = Just currentSigns }
+
+                formAfterUpdate =
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        noneValue
+                        sign
+                        form
+
+                updatedSigns =
+                    Maybe.withDefault [] formAfterUpdate.signs
+                        |> List.append preservedSigns
 
                 updatedForm =
                     { medicationDistributionForm | recommendedTreatmentSigns = Just updatedSigns }

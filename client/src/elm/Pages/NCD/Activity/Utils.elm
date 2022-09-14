@@ -65,12 +65,12 @@ expectActivity currentDate assembled activity =
             True
 
         NextSteps ->
-            mandatoryActivitiesForNextStepsCompleted currentDate assembled
-                && (resolveNextStepsTasks currentDate assembled
-                        |> List.filter (expectNextStepsTask currentDate assembled)
-                        |> List.isEmpty
-                        |> not
-                   )
+            -- mandatoryActivitiesForNextStepsCompleted currentDate assembled
+            --     &&
+            resolveNextStepsTasks currentDate assembled
+                |> List.filter (expectNextStepsTask currentDate assembled)
+                |> List.isEmpty
+                |> not
 
 
 activityCompleted : NominalDate -> AssembledData -> NCDActivity -> Bool
@@ -892,7 +892,8 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         currentDate
                         NCDEncounterPhaseInitial
                         assembled
-                        SetRecommendedTreatmentSign
+                        SetRecommendedTreatmentSignSingle
+                        SetRecommendedTreatmentSignMultiple
                         SetMedicationDistributionBoolInput
                         form
             in
