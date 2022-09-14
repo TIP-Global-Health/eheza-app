@@ -6,6 +6,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
+import Backend.NCDActivity.Utils exposing (getAllActivities)
 import Backend.NCDEncounter.Types exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
@@ -42,8 +43,8 @@ import Translate exposing (Language, translate)
 import Translate.Model exposing (Language(..))
 
 
-expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> NCDActivity -> Bool
-expectActivity currentDate assembled db activity =
+expectActivity : NominalDate -> AssembledData -> NCDActivity -> Bool
+expectActivity currentDate assembled activity =
     case activity of
         DangerSigns ->
             True
@@ -72,8 +73,8 @@ expectActivity currentDate assembled db activity =
                    )
 
 
-activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> NCDActivity -> Bool
-activityCompleted currentDate assembled db activity =
+activityCompleted : NominalDate -> AssembledData -> NCDActivity -> Bool
+activityCompleted currentDate assembled activity =
     case activity of
         DangerSigns ->
             isJust assembled.measurements.dangerSigns
@@ -86,7 +87,7 @@ activityCompleted currentDate assembled db activity =
                 && isJust assembled.measurements.vitals
 
         FamilyPlanning ->
-            (not <| expectActivity currentDate assembled db FamilyPlanning)
+            (not <| expectActivity currentDate assembled FamilyPlanning)
                 || isJust assembled.measurements.familyPlanning
 
         MedicalHistory ->
@@ -151,8 +152,12 @@ nextStepsTaskCompleted assembled task =
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
-    --@todo
-    True
+    -- All activities that will appear at current
+    -- encounter are completed, besides Next Steps itself.
+    EverySet.fromList getAllActivities
+        |> EverySet.remove NextSteps
+        |> EverySet.toList
+        |> List.all (activityCompleted currentDate assembled)
 
 
 resolvePreviousValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> b) -> Maybe b

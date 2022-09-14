@@ -99,8 +99,8 @@ viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData
 viewMainPageContent language currentDate db assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            List.filter (expectActivity currentDate assembled db) getAllActivities
-                |> List.partition (activityCompleted currentDate assembled db)
+            List.filter (expectActivity currentDate assembled) getAllActivities
+                |> List.partition (activityCompleted currentDate assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
