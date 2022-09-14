@@ -54,6 +54,10 @@ import Pages.NCD.Encounter.Model
 import Pages.NCD.Encounter.Update
 import Pages.NCD.ProgressReport.Model
 import Pages.NCD.ProgressReport.Update
+import Pages.NCD.RecurrentActivity.Model
+import Pages.NCD.RecurrentActivity.Update
+import Pages.NCD.RecurrentEncounter.Model
+import Pages.NCD.RecurrentEncounter.Update
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.Update
 import Pages.Nutrition.Encounter.Model
@@ -478,6 +482,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageNCDRecurrentEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdRecurrentEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NCD.RecurrentEncounter.Model.emptyModel
+                                        |> Pages.NCD.RecurrentEncounter.Update.update id subMsg
+                            in
+                            ( { data | ncdRecurrentEncounterPages = Dict.insert id subModel data.ncdRecurrentEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDRecurrentEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -584,6 +601,19 @@ update msg model =
                             in
                             ( { data | ncdActivityPages = Dict.insert ( id, activity ) subModel data.ncdActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNCDActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNCDRecurrentActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdRecurrentActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.NCD.RecurrentActivity.Model.emptyModel
+                                        |> Pages.NCD.RecurrentActivity.Update.update model.language currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | ncdRecurrentActivityPages = Dict.insert ( id, activity ) subModel data.ncdRecurrentActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDRecurrentActivity id activity) subCmd
                             , extraMsgs
                             )
 

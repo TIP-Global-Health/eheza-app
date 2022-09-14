@@ -36,6 +36,7 @@ import Backend.Measurement.Utils
         , splitMotherMeasurements
         )
 import Backend.Model exposing (..)
+import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
 import Backend.NCDEncounter.Update
 import Backend.NutritionActivity.Model
@@ -93,7 +94,8 @@ import Pages.AcuteIllness.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
 import Pages.GlobalCaseManagement.Utils
-import Pages.NCD.Encounter.Utils
+import Pages.NCD.RecurrentActivity.Utils
+import Pages.NCD.Utils
 import Pages.NextSteps.Model
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.Utils
@@ -4873,7 +4875,7 @@ generateNCDLabsTestAddedMsgs :
     -> NCDEncounterId
     -> List App.Model.Msg
 generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
-    Pages.NCD.Encounter.Utils.generateAssembledData id after
+    Pages.NCD.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
@@ -4935,7 +4937,7 @@ generateNCDLabsResultsAddedMsgs :
     -> NCDEncounterId
     -> List App.Model.Msg
 generateNCDLabsResultsAddedMsgs currentDate after test id =
-    Pages.NCD.Encounter.Utils.generateAssembledData id after
+    Pages.NCD.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.andThen
             (\assembled ->
@@ -4962,12 +4964,10 @@ generateNCDLabsResultsAddedMsgs currentDate after test id =
                                                         -- completed, or not required, setting today as resolution date.
                                                         if
                                                             (List.length updatedCompletedTests == List.length performedTests)
-                                                                && -- @todo
-                                                                   -- Pages.NCD.RecurrentActivity.Utils.activityCompleted
-                                                                   --  currentDate
-                                                                   --  assembled
-                                                                   --  Backend.NCDActivity.Model.RecurrentNextSteps
-                                                                   True
+                                                                && Pages.NCD.RecurrentActivity.Utils.activityCompleted
+                                                                    currentDate
+                                                                    assembled
+                                                                    Backend.NCDActivity.Model.RecurrentNextSteps
                                                         then
                                                             currentDate
 

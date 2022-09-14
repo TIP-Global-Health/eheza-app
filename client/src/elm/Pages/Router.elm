@@ -11,7 +11,7 @@ import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator)
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString, individualEncounterTypeToString)
 import Backend.Measurement.Model exposing (LaboratoryTest)
-import Backend.NCDActivity.Model exposing (NCDActivity(..))
+import Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
 import Backend.NCDActivity.Utils
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionActivity.Utils
@@ -295,6 +295,12 @@ pageToFragment current =
                 NCDActivityPage id activity ->
                     Just <| "ncd-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.NCDActivity.Utils.activityToString activity
 
+                NCDRecurrentEncounterPage id ->
+                    Just <| "ncd-recurrent-encounter/" ++ fromEntityUuid id
+
+                NCDRecurrentActivityPage id activity ->
+                    Just <| "ncd-recurrent-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.NCDActivity.Utils.recurrentActivityToString activity
+
                 NCDProgressReportPage encounterId ->
                     Just <| "ncd-progress-report/" ++ fromEntityUuid encounterId
 
@@ -358,6 +364,8 @@ parser =
         , map (\id -> UserPage <| WellChildProgressReportPage id) (s "well-child-progress-report" </> parseUuid)
         , map (\id -> UserPage <| NCDEncounterPage id) (s "ncd-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDActivityPage id activity) (s "ncd-activity" </> parseUuid </> parseNCDActivity)
+        , map (\id -> UserPage <| NCDRecurrentEncounterPage id) (s "ncd-recurrent-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| NCDRecurrentActivityPage id activity) (s "ncd-recurrent-activity" </> parseUuid </> parseNCDRecurrentActivity)
         , map (\id -> UserPage <| NCDProgressReportPage id) (s "ncd-progress-report" </> parseUuid)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
@@ -444,6 +452,11 @@ parseWellChildActivity =
 parseNCDActivity : Parser (NCDActivity -> c) c
 parseNCDActivity =
     custom "NCDActivity" Backend.NCDActivity.Utils.activityFromString
+
+
+parseNCDRecurrentActivity : Parser (NCDRecurrentActivity -> c) c
+parseNCDRecurrentActivity =
+    custom "NCDRecurrentActivity" Backend.NCDActivity.Utils.recurrentActivityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

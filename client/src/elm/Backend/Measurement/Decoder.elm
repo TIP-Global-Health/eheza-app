@@ -194,6 +194,7 @@ decodeFollowUpMeasurements =
         |> optional "well_child_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeWellChildFollowUp)) Dict.empty
         |> optional "acute_illness_trace_contact" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessTraceContact)) Dict.empty
         |> optional "prenatal_labs_results" (map Dict.fromList <| list (decodeWithEntityUuid decodePrenatalLabsResults)) Dict.empty
+        |> optional "ncd_labs_results" (map Dict.fromList <| list (decodeWithEntityUuid decodeNCDLabsResults)) Dict.empty
 
 
 decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements
@@ -432,7 +433,7 @@ decodePrenatalBloodGpRsTest =
     decodePrenatalMeasurement decodeBloodGpRsTestValue
 
 
-decodeBloodGpRsTestValue : Decoder BloodGpRsTestValue
+decodeBloodGpRsTestValue : Decoder (BloodGpRsTestValue (EntityUuid a))
 decodeBloodGpRsTestValue =
     succeed BloodGpRsTestValue
         |> required "test_execution_note" decodeTestExecutionNote
@@ -482,7 +483,7 @@ decodePrenatalHepatitisBTest =
     decodePrenatalMeasurement decodeHepatitisBTestValue
 
 
-decodeHepatitisBTestValue : Decoder HepatitisBTestValue
+decodeHepatitisBTestValue : Decoder (HepatitisBTestValue (EntityUuid a))
 decodeHepatitisBTestValue =
     succeed HepatitisBTestValue
         |> required "test_execution_note" decodeTestExecutionNote
@@ -567,7 +568,7 @@ decodePrenatalRandomBloodSugarTest =
     decodePrenatalMeasurement decodeRandomBloodSugarTestValue
 
 
-decodeRandomBloodSugarTestValue : Decoder RandomBloodSugarTestValue
+decodeRandomBloodSugarTestValue : Decoder (RandomBloodSugarTestValue (EntityUuid a))
 decodeRandomBloodSugarTestValue =
     succeed RandomBloodSugarTestValue
         |> required "test_execution_note" decodeTestExecutionNote
@@ -599,7 +600,7 @@ decodePrenatalSyphilisTest =
     decodePrenatalMeasurement decodeSyphilisTestValue
 
 
-decodeSyphilisTestValue : Decoder SyphilisTestValue
+decodeSyphilisTestValue : Decoder (SyphilisTestValue (EntityUuid a))
 decodeSyphilisTestValue =
     succeed SyphilisTestValue
         |> required "test_execution_note" decodeTestExecutionNote

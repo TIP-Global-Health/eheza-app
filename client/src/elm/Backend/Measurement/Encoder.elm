@@ -291,7 +291,7 @@ encodePrenatalBloodGpRsTest =
     encodePrenatalMeasurement encodeBloodGpRsTestValue
 
 
-encodeBloodGpRsTestValue : BloodGpRsTestValue -> List ( String, Value )
+encodeBloodGpRsTestValue : BloodGpRsTestValue (EntityUuid a) -> List ( String, Value )
 encodeBloodGpRsTestValue value =
     let
         executionDate =
@@ -373,7 +373,7 @@ encodePrenatalHepatitisBTest =
     encodePrenatalMeasurement encodeHepatitisBTestValue
 
 
-encodeHepatitisBTestValue : HepatitisBTestValue -> List ( String, Value )
+encodeHepatitisBTestValue : HepatitisBTestValue (EntityUuid a) -> List ( String, Value )
 encodeHepatitisBTestValue value =
     let
         executionDate =
@@ -532,7 +532,7 @@ encodePrenatalRandomBloodSugarTest =
     encodePrenatalMeasurement (encodeRandomBloodSugarTestValue "prenatal_random_blood_sugar_test")
 
 
-encodeRandomBloodSugarTestValue : String -> RandomBloodSugarTestValue -> List ( String, Value )
+encodeRandomBloodSugarTestValue : String -> RandomBloodSugarTestValue (EntityUuid a) -> List ( String, Value )
 encodeRandomBloodSugarTestValue type_ value =
     let
         executionDate =
@@ -589,7 +589,7 @@ encodePrenatalSyphilisTest =
     encodePrenatalMeasurement encodeSyphilisTestValue
 
 
-encodeSyphilisTestValue : SyphilisTestValue -> List ( String, Value )
+encodeSyphilisTestValue : SyphilisTestValue (EntityUuid a) -> List ( String, Value )
 encodeSyphilisTestValue value =
     let
         executionDate =

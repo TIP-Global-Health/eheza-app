@@ -55,7 +55,7 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
 import Backend.Measurement.Model exposing (LaboratoryTest)
-import Backend.NCDActivity.Model exposing (NCDActivity)
+import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator)
@@ -167,7 +167,7 @@ type UserPage
     | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
     | PrenatalRecurrentEncounterPage PrenatalEncounterId -- prenatal recurrent activities index
-    | PrenatalRecurrentActivityPage PrenatalEncounterId PrenatalRecurrentActivity -- record prenatal arecurrent activity
+    | PrenatalRecurrentActivityPage PrenatalEncounterId PrenatalRecurrentActivity -- record prenatal recurrent activity
     | PrenatalLabsHistoryPage PrenatalEncounterId PrenatalEncounterId LaboratoryTest
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
@@ -189,6 +189,8 @@ type UserPage
     | NCDParticipantPage IndividualParticipantInitiator PersonId
     | NCDEncounterPage NCDEncounterId -- NCD activities index.
     | NCDActivityPage NCDEncounterId NCDActivity -- record NCD activity.
+    | NCDRecurrentEncounterPage NCDEncounterId -- NCD recurrent activities index
+    | NCDRecurrentActivityPage NCDEncounterId NCDRecurrentActivity -- record NCD recurrent activity
     | NCDProgressReportPage NCDEncounterId
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId

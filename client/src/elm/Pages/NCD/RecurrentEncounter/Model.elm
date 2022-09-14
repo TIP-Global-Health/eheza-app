@@ -1,13 +1,12 @@
-module Pages.Prenatal.RecurrentEncounter.Model exposing (..)
+module Pages.NCD.RecurrentEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
-import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.NCDEncounter.Model exposing (..)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
     { selectedTab : Tab
-    , showAlertsDialog : Bool
     , showEndEncounterDialog : Bool
     }
 
@@ -15,7 +14,6 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
-    , showAlertsDialog = False
     , showEndEncounterDialog = False
     }
 
@@ -23,7 +21,6 @@ emptyModel =
 type Msg
     = CloseEncounter
     | SetActivePage Page
-    | SetAlertsDialogState Bool
     | SetEndEncounterDialogState Bool
     | SetSelectedTab Tab
 

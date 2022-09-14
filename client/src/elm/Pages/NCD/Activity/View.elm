@@ -49,7 +49,7 @@ import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
 import Pages.NCD.Encounter.Model exposing (AssembledData)
-import Pages.NCD.Encounter.Utils exposing (generateAssembledData)
+import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing

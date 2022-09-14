@@ -20,7 +20,25 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (laboratoryTaskIconClass, vitalsFormWithDefault)
+import Measurement.Utils
+    exposing
+        ( bloodGpRsResultFormAndTasks
+        , bloodGpRsResultFormWithDefault
+        , hemoglobinResultFormAndTasks
+        , hemoglobinResultFormWithDefault
+        , hepatitisBResultFormAndTasks
+        , hepatitisBResultFormWithDefault
+        , hivPCRResultFormAndTasks
+        , hivPCRResultFormWithDefault
+        , laboratoryTaskIconClass
+        , randomBloodSugarResultFormAndTasks
+        , randomBloodSugarResultFormWithDefault
+        , syphilisResultFormAndTasks
+        , syphilisResultFormWithDefault
+        , urineDipstickResultFormAndTasks
+        , urineDipstickResultFormWithDefault
+        , vitalsFormWithDefault
+        )
 import Measurement.View exposing (viewSendToHospitalForm, viewVitalsForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.View exposing (warningPopup)
@@ -118,43 +136,53 @@ viewLab language currentDate lab assembled data =
                     measurements.syphilisTest
                         |> getMeasurementValueFunc
                         |> syphilisResultFormWithDefault data.syphilisTestForm
-                        |> prenatalSyphilisResultFormAndTasks language currentDate TaskSyphilisTest
+                        |> syphilisResultFormAndTasks language currentDate SetIllnessSymptom SetSyphilisTestResult
 
                 TestHepatitisB ->
                     measurements.hepatitisBTest
                         |> getMeasurementValueFunc
-                        |> hepatitisBFormWithDefault data.hepatitisBTestForm
-                        |> prenatalHepatitisBResultFormAndTasks language currentDate TaskHepatitisBTest
+                        |> hepatitisBResultFormWithDefault data.hepatitisBTestForm
+                        |> hepatitisBResultFormAndTasks language currentDate SetHepatitisBTestResult
 
                 TestBloodGpRs ->
                     measurements.bloodGpRsTest
                         |> getMeasurementValueFunc
-                        |> prenatalBloodGpRsResultFormWithDefault data.bloodGpRsTestForm
-                        |> prenatalBloodGpRsResultFormAndTasks language currentDate
+                        |> bloodGpRsResultFormWithDefault data.bloodGpRsTestForm
+                        |> bloodGpRsResultFormAndTasks language currentDate SetBloodGroup SetRhesus
 
                 TestUrineDipstick ->
                     measurements.urineDipstickTest
                         |> getMeasurementValueFunc
-                        |> prenatalUrineDipstickResultFormWithDefault data.urineDipstickTestForm
-                        |> prenatalUrineDipstickResultFormAndTasks language currentDate
+                        |> urineDipstickResultFormWithDefault data.urineDipstickTestForm
+                        |> urineDipstickResultFormAndTasks language
+                            currentDate
+                            SetProtein
+                            SetPH
+                            SetGlucose
+                            SetLeukocytes
+                            SetNitrite
+                            SetUrobilinogen
+                            SetHaemoglobin
+                            SetKetone
+                            SetBilirubin
 
                 TestHemoglobin ->
                     measurements.hemoglobinTest
                         |> getMeasurementValueFunc
-                        |> prenatalHemoglobinResultFormWithDefault data.hemoglobinTestForm
-                        |> prenatalHemoglobinResultFormAndTasks language currentDate
+                        |> hemoglobinResultFormWithDefault data.hemoglobinTestForm
+                        |> hemoglobinResultFormAndTasks language currentDate SetHemoglobin
 
                 TestRandomBloodSugar ->
                     measurements.randomBloodSugarTest
                         |> getMeasurementValueFunc
-                        |> prenatalRandomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
-                        |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
+                        |> randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
+                        |> randomBloodSugarResultFormAndTasks language currentDate SetRandomBloodSugar
 
                 TestHIVPCR ->
                     measurements.hivPCRTest
                         |> getMeasurementValueFunc
-                        |> prenatalHIVPCRResultFormWithDefault data.hivPCRTestForm
-                        |> prenatalHIVPCRResultFormAndTasks language currentDate
+                        |> hivPCRResultFormWithDefault data.hivPCRTestForm
+                        |> hivPCRResultFormAndTasks language currentDate SetHIVViralLoad SetHIVViralLoadUndetectable
 
                 TestVitalsRecheck ->
                     ( emptyNode, 0, 0 )
@@ -309,13 +337,13 @@ viewLabResultsContent language currentDate assembled model =
                             measurements.syphilisTest
                                 |> getMeasurementValueFunc
                                 |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
-                                |> prenatalSyphilisResultFormAndTasks language currentDate TaskSyphilisTest
+                                |> syphilisResultFormAndTasks language currentDate SetIllnessSymptom SetSyphilisTestResult
 
                         TaskHepatitisBTest ->
                             measurements.hepatitisBTest
                                 |> getMeasurementValueFunc
-                                |> hepatitisBFormWithDefault model.labResultsData.hepatitisBTestForm
-                                |> prenatalHepatitisBResultFormAndTasks language currentDate TaskHepatitisBTest
+                                |> hepatitisBResultFormWithDefault model.labResultsData.hepatitisBTestForm
+                                |> hepatitisBResultFormAndTasks language currentDate SetHepatitisBTestResult
 
                         TaskMalariaTest ->
                             ( emptyNode, 0, 0 )
@@ -323,32 +351,42 @@ viewLabResultsContent language currentDate assembled model =
                         TaskBloodGpRsTest ->
                             measurements.bloodGpRsTest
                                 |> getMeasurementValueFunc
-                                |> prenatalBloodGpRsResultFormWithDefault model.labResultsData.bloodGpRsTestForm
-                                |> prenatalBloodGpRsResultFormAndTasks language currentDate
+                                |> bloodGpRsResultFormWithDefault model.labResultsData.bloodGpRsTestForm
+                                |> bloodGpRsResultFormAndTasks language currentDate SetBloodGroup SetRhesus
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
                                 |> getMeasurementValueFunc
-                                |> prenatalUrineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
-                                |> prenatalUrineDipstickResultFormAndTasks language currentDate
+                                |> urineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
+                                |> urineDipstickResultFormAndTasks language
+                                    currentDate
+                                    SetProtein
+                                    SetPH
+                                    SetGlucose
+                                    SetLeukocytes
+                                    SetNitrite
+                                    SetUrobilinogen
+                                    SetHaemoglobin
+                                    SetKetone
+                                    SetBilirubin
 
                         TaskHemoglobinTest ->
                             measurements.hemoglobinTest
                                 |> getMeasurementValueFunc
-                                |> prenatalHemoglobinResultFormWithDefault model.labResultsData.hemoglobinTestForm
-                                |> prenatalHemoglobinResultFormAndTasks language currentDate
+                                |> hemoglobinResultFormWithDefault model.labResultsData.hemoglobinTestForm
+                                |> hemoglobinResultFormAndTasks language currentDate SetHemoglobin
 
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
-                                |> prenatalRandomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
-                                |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
+                                |> randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
+                                |> randomBloodSugarResultFormAndTasks language currentDate SetRandomBloodSugar
 
                         TaskHIVPCRTest ->
                             measurements.hivPCRTest
                                 |> getMeasurementValueFunc
-                                |> prenatalHIVPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
-                                |> prenatalHIVPCRResultFormAndTasks language currentDate
+                                |> hivPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
+                                |> hivPCRResultFormAndTasks language currentDate SetHIVViralLoad SetHIVViralLoadUndetectable
 
                         TaskCompletePreviousTests ->
                             ( emptyNode, 0, 0 )
@@ -433,370 +471,6 @@ viewLabResultsContent language currentDate assembled model =
             ]
         ]
     ]
-
-
-prenatalSyphilisResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> SyphilisResultForm -> ( Html Msg, Int, Int )
-prenatalSyphilisResultFormAndTasks language currentDate task form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            let
-                ( symptomsSection, symptomsTasksCompleted, symptomsTasksTotal ) =
-                    if form.testResult == Just PrenatalTestPositive then
-                        ( [ viewLabel language Translate.SelectIllnessSymptoms
-                          , viewCheckBoxMultipleSelectInput language
-                                [ IllnessSymptomHeadache
-                                , IllnessSymptomVisionChanges
-                                , IllnessSymptomRash
-                                , IllnessSymptomPainlessUlcerMouth
-                                , IllnessSymptomPainlessUlcerGenitals
-                                ]
-                                []
-                                (form.symptoms |> Maybe.withDefault [])
-                                (Just NoIllnessSymptoms)
-                                SetIllnessSymptom
-                                Translate.IllnessSymptom
-                          ]
-                        , taskCompleted form.symptoms
-                        , 1
-                        )
-
-                    else
-                        ( [], 0, 0 )
-            in
-            ( viewSelectInput language
-                (Translate.LaboratoryTaskResult task)
-                form.testResult
-                Translate.TestResult
-                testResultToString
-                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
-                SetSyphilisTestResult
-                ++ symptomsSection
-            , taskCompleted form.testResult + symptomsTasksCompleted
-            , 1 + symptomsTasksTotal
-            )
-    in
-    ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate task
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-prenatalHepatitisBResultFormAndTasks : Language -> NominalDate -> LaboratoryTask -> HepatitisBResultForm -> ( Html Msg, Int, Int )
-prenatalHepatitisBResultFormAndTasks language currentDate task form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            let
-                emptyOption =
-                    if isNothing form.testResult then
-                        emptySelectOption True
-
-                    else
-                        emptyNode
-            in
-            ( viewSelectInput language
-                (Translate.LaboratoryTaskResult task)
-                form.testResult
-                Translate.TestResult
-                testResultToString
-                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
-                SetHepatitisBTestResult
-            , taskCompleted form.testResult
-            , 1
-            )
-    in
-    ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate task
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-prenatalBloodGpRsResultFormAndTasks : Language -> NominalDate -> PrenatalBloodGpRsResultForm -> ( Html Msg, Int, Int )
-prenatalBloodGpRsResultFormAndTasks language currentDate form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( viewSelectInput language
-                Translate.PrenatalLaboratoryBloodGroupTestResult
-                form.bloodGroup
-                Translate.PrenatalLaboratoryBloodGroup
-                bloodGroupToString
-                [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
-                SetBloodGroup
-                ++ viewSelectInput language
-                    Translate.PrenatalLaboratoryRhesusTestResult
-                    form.rhesus
-                    Translate.PrenatalLaboratoryRhesus
-                    rhesusToString
-                    [ RhesusPositive, RhesusNegative ]
-                    SetRhesus
-            , taskCompleted form.bloodGroup + taskCompleted form.rhesus
-            , 2
-            )
-    in
-    ( div [ class "ui form laboratory blood-group-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskBloodGpRsTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-prenatalUrineDipstickResultFormAndTasks : Language -> NominalDate -> PrenatalUrineDipstickResultForm -> ( Html Msg, Int, Int )
-prenatalUrineDipstickResultFormAndTasks language currentDate form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            Maybe.map
-                (\testVariant ->
-                    let
-                        ( commonSection, commonTasksCompleted, commonTasksTotal ) =
-                            ( viewSelectInput language
-                                Translate.PrenatalLaboratoryProteinTestResult
-                                form.protein
-                                Translate.PrenatalLaboratoryProteinValue
-                                proteinValueToString
-                                [ Protein0
-                                , ProteinPlus1
-                                , ProteinPlus2
-                                , ProteinPlus3
-                                , ProteinPlus4
-                                ]
-                                SetProtein
-                                ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryPHTestResult
-                                    form.ph
-                                    Translate.PrenatalLaboratoryPHValue
-                                    phValueToString
-                                    [ Ph40
-                                    , Ph45
-                                    , Ph50
-                                    , Ph60
-                                    , Ph65
-                                    , Ph70
-                                    , Ph75
-                                    , Ph80
-                                    , Ph85
-                                    ]
-                                    SetPH
-                                ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryGlucoseTestResult
-                                    form.glucose
-                                    Translate.PrenatalLaboratoryGlucoseValue
-                                    glucoseValueToString
-                                    [ Glucose0
-                                    , GlucosePlus1
-                                    , GlucosePlus2
-                                    , GlucosePlus3
-                                    , GlucosePlus4
-                                    ]
-                                    SetGlucose
-                            , taskCompleted form.protein + taskCompleted form.ph + taskCompleted form.glucose
-                            , 3
-                            )
-                    in
-                    case testVariant of
-                        VariantShortTest ->
-                            ( commonSection, commonTasksCompleted, commonTasksTotal )
-
-                        VariantLongTest ->
-                            ( commonSection
-                                ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryLeukocytesTestResult
-                                    form.leukocytes
-                                    Translate.PrenatalLaboratoryLeukocytesValue
-                                    leukocytesValueToString
-                                    [ LeukocytesNegative
-                                    , LeukocytesSmall
-                                    , LeukocytesMedium
-                                    , LeukocytesLarge
-                                    ]
-                                    SetLeukocytes
-                                ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryNitriteTestResult
-                                    form.nitrite
-                                    Translate.PrenatalLaboratoryNitriteValue
-                                    nitriteValueToString
-                                    [ NitriteNegative
-                                    , NitritePlus
-                                    , NitritePlusPlus
-                                    ]
-                                    SetNitrite
-                                ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryUrobilinogenTestResult
-                                    form.urobilinogen
-                                    Translate.PrenatalLaboratoryUrobilinogenValue
-                                    urobilinogenValueToString
-                                    [ Urobilinogen002
-                                    , Urobilinogen10
-                                    , Urobilinogen20
-                                    , Urobilinogen40
-                                    , Urobilinogen80
-                                    ]
-                                    SetUrobilinogen
-                                ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryHaemoglobinTestResult
-                                    form.haemoglobin
-                                    Translate.PrenatalLaboratoryHaemoglobinValue
-                                    haemoglobinValueToString
-                                    [ HaemoglobinNegative
-                                    , HaemoglobinNonHemolyzedTrace
-                                    , HaemoglobinNonHemolyzedModerate
-                                    , HaemoglobinHemolyzedTrace
-                                    , HaemoglobinSmall
-                                    , HaemoglobinModerate
-                                    , HaemoglobinLarge
-                                    ]
-                                    SetHaemoglobin
-                                ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryKetoneTestResult
-                                    form.ketone
-                                    Translate.PrenatalLaboratoryKetoneValue
-                                    ketoneValueToString
-                                    [ KetoneNegative
-                                    , Ketone5
-                                    , Ketone10
-                                    , Ketone15
-                                    , Ketone40
-                                    , Ketone80
-                                    , Ketone100
-                                    ]
-                                    SetKetone
-                                ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryBilirubinTestResult
-                                    form.bilirubin
-                                    Translate.PrenatalLaboratoryBilirubinValue
-                                    bilirubinValueToString
-                                    [ BilirubinNegative
-                                    , BilirubinSmall
-                                    , BilirubinMedium
-                                    , BilirubinLarge
-                                    ]
-                                    SetBilirubin
-                            , commonTasksCompleted
-                                + taskCompleted form.leukocytes
-                                + taskCompleted form.nitrite
-                                + taskCompleted form.urobilinogen
-                                + taskCompleted form.haemoglobin
-                                + taskCompleted form.ketone
-                                + taskCompleted form.bilirubin
-                            , commonTasksTotal + 6
-                            )
-                )
-                form.testVariant
-                |> Maybe.withDefault ( [], 0, 0 )
-    in
-    ( div [ class "ui form laboratory urine-dipstick-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskUrineDipstickTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-prenatalHemoglobinResultFormAndTasks : Language -> NominalDate -> PrenatalHemoglobinResultForm -> ( Html Msg, Int, Int )
-prenatalHemoglobinResultFormAndTasks language currentDate form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.PrenatalLaboratoryHemoglobinTestResult
-              , viewMeasurementInput language
-                    form.hemoglobinCount
-                    SetHemoglobin
-                    "hemoglobin-count"
-                    Translate.UnitGramsPerDeciliter
-              ]
-            , taskCompleted form.hemoglobinCount
-            , 1
-            )
-    in
-    ( div [ class "ui form laboratory hemoglobin-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskHemoglobinTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-prenatalRandomBloodSugarResultFormAndTasks : Language -> NominalDate -> PrenatalRandomBloodSugarResultForm -> ( Html Msg, Int, Int )
-prenatalRandomBloodSugarResultFormAndTasks language currentDate form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.PrenatalLaboratoryRandomBloodSugarTestResult
-              , viewMeasurementInput language
-                    form.sugarCount
-                    SetRandomBloodSugar
-                    "sugar-count"
-                    Translate.UnitMilliGramsPerDeciliter
-              ]
-            , taskCompleted form.sugarCount
-            , 1
-            )
-    in
-    ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-prenatalHIVPCRResultFormAndTasks : Language -> NominalDate -> PrenatalHIVPCRResultForm -> ( Html Msg, Int, Int )
-prenatalHIVPCRResultFormAndTasks language currentDate form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            let
-                ( derrivedSection, derrivedTasksCompleted, derrivedTasksTotal ) =
-                    if form.hivViralLoadStatus == Just ViralLoadDetectable then
-                        ( [ viewLabel language Translate.PrenatalLaboratoryHIVPCRTestResult
-                          , viewMeasurementInput language
-                                form.hivViralLoad
-                                SetHIVViralLoad
-                                "hiv-viral-load"
-                                Translate.UnitCopiesPerMM3
-                          ]
-                        , taskCompleted form.hivViralLoad
-                        , 1
-                        )
-
-                    else
-                        ( [], 0, 0 )
-            in
-            ( [ viewQuestionLabel language Translate.PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
-              , viewBoolInput language
-                    (Maybe.map ((==) ViralLoadUndetectable) form.hivViralLoadStatus)
-                    SetHIVViralLoadUndetectable
-                    "hiv-level-undetectable"
-                    Nothing
-              ]
-                ++ derrivedSection
-            , taskCompleted form.hivViralLoadStatus + derrivedTasksCompleted
-            , 1 + derrivedTasksTotal
-            )
-    in
-    ( div [ class "ui form laboratory hiv-prc-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskHIVPCRTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-resultFormHeaderSection : Language -> NominalDate -> Maybe NominalDate -> LaboratoryTask -> List (Html Msg)
-resultFormHeaderSection language currentDate executionDate task =
-    let
-        executionDateSection =
-            Maybe.map
-                (\date ->
-                    [ viewLabel language <| Translate.LaboratoryTaskDate task
-                    , p [ class "test-date" ] [ text <| formatDDMMYYYY date ]
-                    ]
-                )
-                executionDate
-                |> Maybe.withDefault []
-    in
-    viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
-        :: executionDateSection
 
 
 viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
@@ -1099,44 +773,3 @@ viewReferralForm language currentDate assembled form =
     in
     div [ class "ui form referral" ]
         inputs
-
-
-
--- HELPER FUNCTIONS
-
-
-viewSelectInput :
-    Language
-    -> TranslationId
-    -> Maybe a
-    -> (a -> TranslationId)
-    -> (a -> String)
-    -> List a
-    -> (String -> Msg)
-    -> List (Html Msg)
-viewSelectInput language labelTransId formValue valueTransId valueToStringFunc valuesList setMsg =
-    [ viewLabel language labelTransId
-    , emptyOptionForSelect formValue
-        :: List.map
-            (\item ->
-                option
-                    [ value (valueToStringFunc item)
-                    , selected (formValue == Just item)
-                    ]
-                    [ text <| translate language <| valueTransId item ]
-            )
-            valuesList
-        |> select
-            [ onInput setMsg
-            , class "form-input select"
-            ]
-    ]
-
-
-emptyOptionForSelect : Maybe a -> Html any
-emptyOptionForSelect value =
-    if isNothing value then
-        emptySelectOption True
-
-    else
-        emptyNode

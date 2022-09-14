@@ -33,7 +33,7 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.NCDActivity.Model exposing (NCDActivity(..))
+import Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model
     exposing
@@ -95,7 +95,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod(..)
         , FilterProgramType(..)
         )
-import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), PrenatalLabsEntryState(..))
+import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
@@ -844,10 +844,12 @@ type TranslationId
     | NCDDangerSign NCDDangerSign
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
     | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
+    | NCDLabsCaseManagementEntryTypeResults
     | NCDMedicalHistoryTask Pages.NCD.Activity.Types.MedicalHistoryTask
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
+    | NCDRecurrentActivitiesTitle NCDRecurrentActivity
     | NCDSocialHistoryFoodQuestion
     | NCDSocialHistoryFoodQuestionInstructions
     | NCDSocialHistorySignQuestion NCDSocialHistorySign
@@ -1058,7 +1060,7 @@ type TranslationId
     | LaboratoryTest LaboratoryTest
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
-    | PrenatalLabsEntryState PrenatalLabsEntryState
+    | LabsEntryState LabsEntryState
     | PrenatalLabsHistoryCompletedQuestion
     | PrenatalLabsHistoryInstructions
     | PrenatalLabsHistoryLabel
@@ -2900,8 +2902,13 @@ translationSet trans =
                     }
 
                 FilterPrenatalLabs ->
-                    { english = "Lab Results"
-                    , kinyarwanda = Just "Ibisubizo ku bizamina byafashwe"
+                    { english = "ANC Labs"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterNCDLabs ->
+                    { english = "NCD Labs"
+                    , kinyarwanda = Nothing
                     }
 
         CaseManagementPaneHeader encounterType ->
@@ -2927,8 +2934,13 @@ translationSet trans =
                     }
 
                 FilterPrenatalLabs ->
-                    { english = "Lab Results"
-                    , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
+                    { english = "ANC Labs"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterNCDLabs ->
+                    { english = "NCD Labs"
+                    , kinyarwanda = Nothing
                     }
 
         CentimeterShorthand ->
@@ -7425,6 +7437,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        NCDLabsCaseManagementEntryTypeResults ->
+            { english = "NCD Lab Results"
+            , kinyarwanda = Nothing
+            }
+
         NCDMedicalHistoryTask task ->
             case task of
                 TaskCoMorbidities ->
@@ -7596,6 +7613,18 @@ translationSet trans =
                 NoNCDPainSymptoms ->
                     { english = "None of the Above"
                     , kinyarwanda = Nothing
+                    }
+
+        NCDRecurrentActivitiesTitle activity ->
+            case activity of
+                Backend.NCDActivity.Model.LabResults ->
+                    { english = "Lab Results"
+                    , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
+                    }
+
+                Backend.NCDActivity.Model.RecurrentNextSteps ->
+                    { english = "Next Steps"
+                    , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
         NCDSocialHistoryFoodQuestion ->
@@ -9191,7 +9220,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
                     }
 
-                RecurrentNextSteps ->
+                Backend.PrenatalActivity.Model.RecurrentNextSteps ->
                     { english = "Next Steps"
                     , kinyarwanda = Just "Ibikurikiyeho"
                     }
@@ -11304,14 +11333,14 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PrenatalLabsEntryState state ->
+        LabsEntryState state ->
             case state of
-                PrenatalLabsEntryPending ->
+                LabsEntryPending ->
                     { english = "Pending"
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalLabsEntryClosingSoon ->
+                LabsEntryClosingSoon ->
                     { english = "Closing Soon"
                     , kinyarwanda = Nothing
                     }
@@ -15791,6 +15820,16 @@ translateActivePage page =
 
                 NCDActivityPage _ _ ->
                     { english = "NCD Activity"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDRecurrentEncounterPage _ ->
+                    { english = "NCD Recurrent Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDRecurrentActivityPage _ _ ->
+                    { english = "NCD Recurrent Activity"
                     , kinyarwanda = Nothing
                     }
 

@@ -9,3 +9,8 @@ type NCDActivity
     | MedicalHistory
     | NextSteps
     | SymptomReview
+
+
+type NCDRecurrentActivity
+    = LabResults
+    | RecurrentNextSteps

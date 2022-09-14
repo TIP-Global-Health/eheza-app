@@ -1,4 +1,4 @@
-module Pages.NCD.Encounter.Utils exposing (..)
+module Pages.NCD.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -12,10 +12,9 @@ import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, fromLocalDateTime)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Pages.NCD.Encounter.Model exposing (..)
+import Pages.NCD.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
-import ZScore.Model
 
 
 generateAssembledData : NCDEncounterId -> ModelIndexedDb -> WebData AssembledData

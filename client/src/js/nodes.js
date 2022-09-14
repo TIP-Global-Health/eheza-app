@@ -548,13 +548,15 @@
       'prenatal_follow_up',
       'well_child_follow_up',
       'acute_illness_trace_contact',
-      'prenatal_labs_results'
+      'prenatal_labs_results',
+      'ncd_labs_results'
     ];
 
     // Follow Ups that get resolved using date_concluded field.
     var resolvedFollowUpMeasurementsTypes = [
       'acute_illness_trace_contact',
-      'prenatal_labs_results'
+      'prenatal_labs_results',
+      'ncd_labs_results'
     ];
 
     function viewFollowUpMeasurements (shard) {
