@@ -139,6 +139,10 @@ nextStepsTaskCompleted assembled task =
             isJust assembled.measurements.healthEducation
 
         TaskMedicationDistribution ->
+            let
+                recommendedTreatmentSignsForHypertension =
+                    generateRecommendedTreatmentSignsForHypertension assembled
+            in
             recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
         TaskReferral ->

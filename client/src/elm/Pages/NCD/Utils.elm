@@ -412,17 +412,23 @@ recommendedTreatmentMeasurementTaken allowedSigns measurements =
         |> Maybe.withDefault False
 
 
-recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
-recommendedTreatmentSignsForHypertension =
-    [ TreatmentHydrochlorothiazide
-    , TreatmentAmlodipine
-    , TreatmentNifedipine
-    , TreatmentCaptopril
-    , TreatmentLisinopril
-    , TreatmentAtenlol
-    , TreatmentMethyldopa2
-    , NoTreatmentForHypertension
-    ]
+generateRecommendedTreatmentSignsForHypertension : AssembledData -> List RecommendedTreatmentSign
+generateRecommendedTreatmentSignsForHypertension assembled =
+    if patientIsPregnant assembled then
+        [ TreatmentMethyldopa2
+        , NoTreatmentForHypertension
+        ]
+
+    else
+        [ TreatmentHydrochlorothiazide
+        , TreatmentAmlodipine
+        , TreatmentNifedipine
+        , TreatmentCaptopril
+        , TreatmentLisinopril
+        , TreatmentAtenlol
+        , TreatmentMethyldopa2
+        , NoTreatmentForHypertension
+        ]
 
 
 recommendedTreatmentSignsForDiabetes : List RecommendedTreatmentSign
@@ -538,13 +544,15 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
             if medicateForHypertension phase assembled then
                 recommendedTreatmentForHypertensionInputAndTask language
                     currentDate
-                    recommendedTreatmentSignsForHypertension
                     (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
                     assembled
                     form
 
             else
                 emptySection
+
+        recommendedTreatmentSignsForHypertension =
+            generateRecommendedTreatmentSignsForHypertension assembled
 
         ( diabetesInputs, diabetesCompleted, diabetesActive ) =
             if medicateForDiabetes phase assembled then
@@ -614,12 +622,11 @@ medicateForHypertension phase assembled =
 recommendedTreatmentForHypertensionInputAndTask :
     Language
     -> NominalDate
-    -> List RecommendedTreatmentSign
     -> (RecommendedTreatmentSign -> msg)
     -> AssembledData
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-recommendedTreatmentForHypertensionInputAndTask language currentDate options setRecommendedTreatmentSignMsg assembled form =
+recommendedTreatmentForHypertensionInputAndTask language currentDate setRecommendedTreatmentSignMsg assembled form =
     let
         -- Since we may have values set for another diagnosis, or from
         -- the other phase of encounter, we need to filter them out,
@@ -630,6 +637,9 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate options set
                     >> List.head
                 )
                 form.recommendedTreatmentSigns
+
+        recommendedTreatmentSignsForHypertension =
+            generateRecommendedTreatmentSignsForHypertension assembled
     in
     ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
       , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
@@ -639,7 +649,7 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate options set
                 (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":")
             ]
       , viewCheckBoxSelectCustomInput language
-            options
+            recommendedTreatmentSignsForHypertension
             []
             currentValue
             setRecommendedTreatmentSignMsg
