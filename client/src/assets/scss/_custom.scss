@@ -1976,17 +1976,18 @@ input::placeholder {
   }
 }
 
+.icon-pregnancy,
 .icon-obstetrical-exam {
   .active &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-white.svg);
+    background-image: url(#{$img-path}icon-pregnancy-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-pregnancy-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-gray.svg);
+    background-image: url(#{$img-path}icon-pregnancy-gray.svg);
   }
 }
 
@@ -2004,17 +2005,18 @@ input::placeholder {
   }
 }
 
+.icon-creatinine,
 .icon-gu-exam {
   .active &:after {
-    background-image: url(#{$img-path}icon-gu-exam-white.svg);
+    background-image: url(#{$img-path}icon-uterus-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-gu-exam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-uterus-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-gu-exam-gray.svg);
+    background-image: url(#{$img-path}icon-uterus-gray.svg);
   }
 }
 
@@ -2186,17 +2188,18 @@ input::placeholder {
   }
 }
 
+.icon-liver-function,
 .icon-laboratory-hepatitis-b {
   .active &:after {
-    background-image: url(#{$img-path}icon-hepatitis-b-white.svg);
+    background-image: url(#{$img-path}icon-liver-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-hepatitis-b-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-liver-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-hepatitis-b-gray.svg);
+    background-image: url(#{$img-path}icon-liver-gray.svg);
   }
 }
 

@@ -117,11 +117,11 @@ encodePhotoUrlWithType type_ (PhotoUrl url) =
 
 encodePregnancyTest : PregnancyTest -> List ( String, Value )
 encodePregnancyTest =
-    encodePrenatalMeasurement encodePregnancyTestValue
+    encodePrenatalMeasurement encodeCHWPregnancyTestValue
 
 
-encodePregnancyTestValue : PregnancyTestResult -> List ( String, Value )
-encodePregnancyTestValue value =
+encodeCHWPregnancyTestValue : PregnancyTestResult -> List ( String, Value )
+encodeCHWPregnancyTestValue value =
     [ ( "urine_pregnancy_test", encodePregnancyTestResult value )
     , ( "deleted", bool False )
     , ( "type", string "pregnancy_testing" )
@@ -821,32 +821,8 @@ encodeLabsResultsValue type_ value =
 
 
 encodeLaboratoryTest : LaboratoryTest -> Value
-encodeLaboratoryTest value =
-    string <|
-        case value of
-            TestSyphilis ->
-                "syphilis"
-
-            TestHepatitisB ->
-                "hepatitis-b"
-
-            TestBloodGpRs ->
-                "blood-group"
-
-            TestUrineDipstick ->
-                "urine-dipstick"
-
-            TestHemoglobin ->
-                "hemoglobin"
-
-            TestRandomBloodSugar ->
-                "random-blood-sugar"
-
-            TestVitalsRecheck ->
-                "vitals-recheck"
-
-            TestHIVPCR ->
-                "hiv-pcr"
+encodeLaboratoryTest =
+    laboratoryTestToString >> string
 
 
 encodePrenatalMentalHealth : PrenatalMentalHealth -> List ( String, Value )
@@ -4151,14 +4127,37 @@ encodeNCDCoreExam =
 
 encodeNCDCreatinineTest : NCDCreatinineTest -> List ( String, Value )
 encodeNCDCreatinineTest =
-    encodeNCDMeasurement encodeNCDCreatinineTestValue
+    encodeNCDMeasurement encodeCreatinineTestValue
 
 
-encodeNCDCreatinineTestValue : NCDCreatinineTestValue -> List ( String, Value )
-encodeNCDCreatinineTestValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_creatinine_test" )
-    ]
+encodeCreatinineTestValue : CreatinineTestValue -> List ( String, Value )
+encodeCreatinineTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map3
+                (\creatinineResult ureaResult nitorogenResult ->
+                    [ ( "creatinine_result", float creatinineResult )
+                    , ( "urea_result", float ureaResult )
+                    , ( "nitorogen_result", float nitorogenResult )
+                    ]
+                )
+                value.creatinineResult
+                value.ureaResult
+                value.nitorogenResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_creatinine_test" )
+           ]
 
 
 encodeNCDDangerSigns : NCDDangerSigns -> List ( String, Value )
@@ -4259,14 +4258,35 @@ encodeNCDLabsResults =
 
 encodeNCDLiverFunctionTest : NCDLiverFunctionTest -> List ( String, Value )
 encodeNCDLiverFunctionTest =
-    encodeNCDMeasurement encodeNCDLiverFunctionTestValue
+    encodeNCDMeasurement encodeLiverFunctionTestValue
 
 
-encodeNCDLiverFunctionTestValue : NCDLiverFunctionTestValue -> List ( String, Value )
-encodeNCDLiverFunctionTestValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_liver_function_test" )
-    ]
+encodeLiverFunctionTestValue : LiverFunctionTestValue -> List ( String, Value )
+encodeLiverFunctionTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map2
+                (\altResult astResult ->
+                    [ ( "alt_result", float altResult )
+                    , ( "ast_result", float astResult )
+                    ]
+                )
+                value.altResult
+                value.astResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_liver_function_test" )
+           ]
 
 
 encodeNCDMedicationDistribution : NCDMedicationDistribution -> List ( String, Value )
@@ -4318,14 +4338,30 @@ encodeNCDOutsideCare =
 
 encodeNCDPregnancyTest : NCDPregnancyTest -> List ( String, Value )
 encodeNCDPregnancyTest =
-    encodeNCDMeasurement encodeNCDPregnancyTestValue
+    encodeNCDMeasurement encodePregnancyTestValue
 
 
-encodeNCDPregnancyTestValue : NCDPregnancyTestValue -> List ( String, Value )
-encodeNCDPregnancyTestValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_pregnancy_test" )
-    ]
+encodePregnancyTestValue : PregnancyTestValue -> List ( String, Value )
+encodePregnancyTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
+                value.testResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_pregnancy_test" )
+           ]
 
 
 encodeNCDRandomBloodSugarTest : NCDRandomBloodSugarTest -> List ( String, Value )

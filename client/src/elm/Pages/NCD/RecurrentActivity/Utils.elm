@@ -69,7 +69,9 @@ activityCompleted currentDate assembled activity =
 laboratoryResultTasks : List LaboratoryTask
 laboratoryResultTasks =
     [ TaskRandomBloodSugarTest
+    , TaskLiverFunctionTest
     , TaskUrineDipstickTest
+    , TaskCreatinineTest
     ]
 
 
@@ -91,15 +93,27 @@ laboratoryResultTaskCompleted currentDate assembled task =
                 |> isJust
     in
     case task of
+        TaskHIVTest ->
+            not <| taskExpected TaskHIVTest
+
         TaskRandomBloodSugarTest ->
             (not <| taskExpected TaskRandomBloodSugarTest) || testResultsCompleted .randomBloodSugarTest .sugarCount
 
         TaskUrineDipstickTest ->
             (not <| taskExpected TaskUrineDipstickTest) || testResultsCompleted .urineDipstickTest .protein
 
+        TaskPregnancyTest ->
+            not <| taskExpected TaskPregnancyTest
+
+        TaskCreatinineTest ->
+            (not <| taskExpected TaskCreatinineTest) || testResultsCompleted .creatinineTest .creatinineResult
+
+        TaskLiverFunctionTest ->
+            (not <| taskExpected TaskLiverFunctionTest) || testResultsCompleted .liverFunctionTest .altResult
+
         -- Others are not in use for NCD.
         _ ->
-            True
+            False
 
 
 expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
@@ -115,12 +129,24 @@ expectLaboratoryResultTask currentDate assembled task =
                 |> Maybe.withDefault False
     in
     case task of
+        TaskHIVTest ->
+            False
+
         TaskRandomBloodSugarTest ->
             wasTestPerformed .randomBloodSugarTest
 
         TaskUrineDipstickTest ->
             wasTestPerformed .urineDipstickTest
 
+        TaskPregnancyTest ->
+            False
+
+        TaskCreatinineTest ->
+            wasTestPerformed .creatinineTest
+
+        TaskLiverFunctionTest ->
+            wasTestPerformed .liverFunctionTest
+
         -- Others are not in use for NCD.
         _ ->
-            True
+            False

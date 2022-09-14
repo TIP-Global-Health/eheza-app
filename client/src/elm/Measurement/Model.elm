@@ -566,7 +566,84 @@ type LaboratoryTask
     | TaskSyphilisTest
     | TaskUrineDipstickTest
     | TaskHIVPCRTest
+    | TaskPregnancyTest
+    | TaskCreatinineTest
+    | TaskLiverFunctionTest
     | TaskCompletePreviousTests
+
+
+type alias ContentAndTasksLaboratoryTestInitialConfig msg =
+    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
+    , setHIVTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHIVTestResultMsg : String -> msg
+    , setSyphilisTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setSyphilisTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHepatitisBTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHepatitisBTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
+    , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setMalariaTestResultMsg : String -> msg
+    , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
+    , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setUrineDipstickTestVariantMsg : TestVariant -> msg
+    , setHemoglobinTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHemoglobinTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
+    , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPregnancyTestFormBoolInputMsg : (Bool -> PregnancyTestForm msg -> PregnancyTestForm msg) -> Bool -> msg
+    , setPregnancyTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPregnancyTestResultMsg : String -> msg
+    , setCreatinineTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setCreatinineTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLiverFunctionTestExecutionNoteMsg : TestExecutionNote -> msg
+    , noOpMsg : msg
+    }
+
+
+type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
+    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
+    , setHIVTestExecutionDateMsg : NominalDate -> msg
+    , setHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setSyphilisTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setSyphilisTestExecutionDateMsg : NominalDate -> msg
+    , setSyphilisTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHepatitisBTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHepatitisBTestExecutionDateMsg : NominalDate -> msg
+    , setHepatitisBTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
+    , setMalariaTestExecutionDateMsg : NominalDate -> msg
+    , setMalariaTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setBloodGpRsTestExecutionDateMsg : NominalDate -> msg
+    , setBloodGpRsTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
+    , setUrineDipstickTestExecutionDateMsg : NominalDate -> msg
+    , setUrineDipstickTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHemoglobinTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHemoglobinTestExecutionDateMsg : NominalDate -> msg
+    , setHemoglobinTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
+    , setRandomBloodSugarTestExecutionDateMsg : NominalDate -> msg
+    , setRandomBloodSugarTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHIVPCRTestExecutionDateMsg : NominalDate -> msg
+    , setHIVPCRTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setPregnancyTestFormBoolInputMsg : (Bool -> PregnancyTestForm msg -> PregnancyTestForm msg) -> Bool -> msg
+    , setPregnancyTestExecutionDateMsg : NominalDate -> msg
+    , setPregnancyTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setCreatinineTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setCreatinineTestExecutionDateMsg : NominalDate -> msg
+    , setCreatinineTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLiverFunctionTestExecutionDateMsg : NominalDate -> msg
+    , setLiverFunctionTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , noOpMsg : msg
+    }
 
 
 type alias HIVTestForm msg =
@@ -683,6 +760,37 @@ emptyRandomBloodSugarForm =
     }
 
 
+type alias PregnancyTestForm msg =
+    { knownAsPositive : Maybe Bool
+    , testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe TestResult
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyPregnancyTestForm : PregnancyTestForm msg
+emptyPregnancyTestForm =
+    { knownAsPositive = Nothing
+    , testPerformed = Nothing
+    , testPerformedDirty = False
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testResult = Nothing
+    , dateSelectorPopupState = Nothing
+    }
+
+
 type alias NonRDTForm msg =
     { knownAsPositive : Maybe Bool
     , testPerformed : Maybe Bool
@@ -700,64 +808,6 @@ type alias NonRDTForm msg =
 emptyNonRDTForm : NonRDTForm msg
 emptyNonRDTForm =
     NonRDTForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing
-
-
-type alias ContentAndTasksLaboratoryTestInitialConfig msg =
-    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
-    , setHIVTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setHIVTestResultMsg : String -> msg
-    , setSyphilisTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setSyphilisTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setHepatitisBTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHepatitisBTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
-    , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setMalariaTestResultMsg : String -> msg
-    , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
-    , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setUrineDipstickTestVariantMsg : TestVariant -> msg
-    , setHemoglobinTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHemoglobinTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
-    , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
-    , noOpMsg : msg
-    }
-
-
-type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
-    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
-    , setHIVTestExecutionDateMsg : NominalDate -> msg
-    , setHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setSyphilisTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setSyphilisTestExecutionDateMsg : NominalDate -> msg
-    , setSyphilisTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setHepatitisBTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHepatitisBTestExecutionDateMsg : NominalDate -> msg
-    , setHepatitisBTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
-    , setMalariaTestExecutionDateMsg : NominalDate -> msg
-    , setMalariaTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setBloodGpRsTestExecutionDateMsg : NominalDate -> msg
-    , setBloodGpRsTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
-    , setUrineDipstickTestExecutionDateMsg : NominalDate -> msg
-    , setUrineDipstickTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setHemoglobinTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHemoglobinTestExecutionDateMsg : NominalDate -> msg
-    , setHemoglobinTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
-    , setRandomBloodSugarTestExecutionDateMsg : NominalDate -> msg
-    , setRandomBloodSugarTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setHIVPCRTestExecutionDateMsg : NominalDate -> msg
-    , setHIVPCRTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , noOpMsg : msg
-    }
 
 
 type alias SyphilisResultForm encounterId =
@@ -872,3 +922,30 @@ type alias HIVPCRResultForm =
 emptyHIVPCRResultForm : HIVPCRResultForm
 emptyHIVPCRResultForm =
     HIVPCRResultForm Nothing Nothing Nothing Nothing
+
+
+type alias CreatinineResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , creatinineResult : Maybe Float
+    , ureaResult : Maybe Float
+    , nitorogenResult : Maybe Float
+    }
+
+
+emptyCreatinineResultForm : CreatinineResultForm
+emptyCreatinineResultForm =
+    CreatinineResultForm Nothing Nothing Nothing Nothing Nothing
+
+
+type alias LiverFunctionResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , altResult : Maybe Float
+    , astResult : Maybe Float
+    }
+
+
+emptyLiverFunctionResultForm : LiverFunctionResultForm
+emptyLiverFunctionResultForm =
+    LiverFunctionResultForm Nothing Nothing Nothing Nothing

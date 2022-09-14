@@ -1513,6 +1513,10 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
                         TaskCompletePreviousTests ->
                             viewLabsHistoryForm language currentDate assembled data.labsHistoryForm
+
+                        -- Others do not participate at Prenatal.
+                        _ ->
+                            ( emptyNode, 0, 0 )
                     )
                 )
                 tasks
@@ -1572,6 +1576,10 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
                                 TaskCompletePreviousTests ->
                                     SaveLabsHistory
+
+                                -- Others do not participate at Prenatal.
+                                _ ->
+                                    NoOp
 
                         disableSave =
                             if task == TaskCompletePreviousTests then

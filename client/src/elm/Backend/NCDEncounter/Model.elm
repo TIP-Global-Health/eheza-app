@@ -42,6 +42,9 @@ type alias Model =
     , saveHIVTest : WebData ()
     , saveUrineDipstickTest : WebData ()
     , saveRandomBloodSugarTest : WebData ()
+    , savePregnancyTest : WebData ()
+    , saveCreatinineTest : WebData ()
+    , saveLiverFunctionTest : WebData ()
     , saveLabsResults : WebData ()
     }
 
@@ -62,6 +65,9 @@ emptyModel =
     , saveHIVTest = NotAsked
     , saveUrineDipstickTest = NotAsked
     , saveRandomBloodSugarTest = NotAsked
+    , savePregnancyTest = NotAsked
+    , saveCreatinineTest = NotAsked
+    , saveLiverFunctionTest = NotAsked
     , saveLabsResults = NotAsked
     }
 
@@ -97,3 +103,9 @@ type Msg
     | HandleSavedRandomBloodSugarTest (WebData ())
     | SaveLabsResults PersonId (Maybe NCDLabsResultsId) LabsResultsValue
     | HandleSavedLabsResults (WebData ())
+    | SavePregnancyTest PersonId (Maybe NCDPregnancyTestId) PregnancyTestValue
+    | HandleSavedPregnancyTest (WebData ())
+    | SaveCreatinineTest PersonId (Maybe NCDCreatinineTestId) CreatinineTestValue
+    | HandleSavedCreatinineTest (WebData ())
+    | SaveLiverFunctionTest PersonId (Maybe NCDLiverFunctionTestId) LiverFunctionTestValue
+    | HandleSavedLiverFunctionTest (WebData ())

@@ -4918,6 +4918,10 @@ laboratoryTaskCompleted currentDate assembled task =
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
 
+        -- Others are not in use at Prenatal.
+        _ ->
+            False
+
 
 expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
 expectLaboratoryTask currentDate assembled task =
@@ -5018,6 +5022,10 @@ expectLaboratoryTask currentDate assembled task =
 
                 TaskCompletePreviousTests ->
                     -- If we got this far, history task was completed.
+                    False
+
+                -- Others are not in use at Prenatal.
+                _ ->
                     False
 
         else

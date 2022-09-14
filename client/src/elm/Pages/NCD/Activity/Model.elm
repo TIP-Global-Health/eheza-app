@@ -15,13 +15,16 @@ import Measurement.Model
         , NonRDTForm
         , OutsideCareForm
         , OutsideCareStep(..)
+        , PregnancyTestForm
         , RandomBloodSugarForm
         , UrineDipstickForm
         , VitalsForm
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
         , emptyHIVTestForm
+        , emptyNonRDTForm
         , emptyOutsideCareForm
+        , emptyPregnancyTestForm
         , emptyRandomBloodSugarForm
         , emptyUrineDipstickForm
         , emptyVitalsForm
@@ -104,6 +107,22 @@ type Msg
     | SetRandomBloodSugarTestExecutionDate NominalDate
     | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveRandomBloodSugarTest PersonId (Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )) (Maybe LaboratoryTask)
+    | SetPregnancyTestFormBoolInput (Bool -> PregnancyTestForm Msg -> PregnancyTestForm Msg) Bool
+    | SetPregnancyTestExecutionNote TestExecutionNote
+    | SetPregnancyTestExecutionDate NominalDate
+    | SetPregnancyTestResult String
+    | SetPregnancyTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SavePregnancyTest PersonId (Maybe ( NCDPregnancyTestId, NCDPregnancyTest )) (Maybe LaboratoryTask)
+    | SetCreatinineTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetCreatinineTestExecutionNote TestExecutionNote
+    | SetCreatinineTestExecutionDate NominalDate
+    | SetCreatinineTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveCreatinineTest PersonId (Maybe ( NCDCreatinineTestId, NCDCreatinineTest )) (Maybe LaboratoryTask)
+    | SetLiverFunctionTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetLiverFunctionTestExecutionNote TestExecutionNote
+    | SetLiverFunctionTestExecutionDate NominalDate
+    | SetLiverFunctionTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveLiverFunctionTest PersonId (Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )) (Maybe LaboratoryTask)
 
 
 type alias Model =
@@ -302,6 +321,9 @@ type alias LaboratoryData =
     { hivTestForm : HIVTestForm Msg
     , urineDipstickTestForm : UrineDipstickForm Msg
     , randomBloodSugarTestForm : RandomBloodSugarForm Msg
+    , pregnancyTestForm : PregnancyTestForm Msg
+    , creatinineTestForm : NonRDTForm Msg
+    , liverFunctionTestForm : NonRDTForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -311,5 +333,8 @@ emptyLaboratoryData =
     { hivTestForm = emptyHIVTestForm
     , urineDipstickTestForm = emptyUrineDipstickForm
     , randomBloodSugarTestForm = emptyRandomBloodSugarForm
+    , pregnancyTestForm = emptyPregnancyTestForm
+    , creatinineTestForm = emptyNonRDTForm
+    , liverFunctionTestForm = emptyNonRDTForm
     , activeTask = Nothing
     }

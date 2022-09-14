@@ -720,6 +720,11 @@ type TranslationId
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
     | LabHistory
+    | LaboratoryCreatinineCreatinineResult
+    | LaboratoryCreatinineUreaResult
+    | LaboratoryCreatinineNitorogenResult
+    | LaboratoryLiverFunctionAltResult
+    | LaboratoryLiverFunctionAstResult
     | LaboratoryTask LaboratoryTask
     | LaboratoryTaskLabel LaboratoryTask
     | LaboratoryTaskDate LaboratoryTask
@@ -1353,6 +1358,7 @@ type TranslationId
     | UndeterminedDiagnosisMessage
     | UnitCopiesPerMM3
     | UnitGramsPerDeciliter
+    | UnitInternationalUnitsPerLiter
     | UnitMilliGramsPerDeciliter
     | Unknown
     | Update
@@ -5700,6 +5706,11 @@ translationSet trans =
                     , kinyarwanda = Just "Uyu murwayi yaba asanzwe azwi ko afite indwara ya Malariya"
                     }
 
+                TaskPregnancyTest ->
+                    { english = "Is this patient known to be pregnant"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskBloodGpRsTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
@@ -5731,6 +5742,20 @@ translationSet trans =
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskHIVPCRTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                TaskCreatinineTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                TaskLiverFunctionTest ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
@@ -5777,6 +5802,31 @@ translationSet trans =
             , kinyarwanda = Just "Amakuru ku bizamini byakozwe"
             }
 
+        LaboratoryCreatinineCreatinineResult ->
+            { english = "Creatinine Result"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryCreatinineUreaResult ->
+            { english = "Urea Result"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryCreatinineNitorogenResult ->
+            { english = "Nitorogen Result"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLiverFunctionAltResult ->
+            { english = "ALT Result"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLiverFunctionAstResult ->
+            { english = "AST Result"
+            , kinyarwanda = Nothing
+            }
+
         LaboratoryTask task ->
             case task of
                 TaskHIVTest ->
@@ -5821,6 +5871,21 @@ translationSet trans =
 
                 TaskHIVPCRTest ->
                     { english = "HIV PCR"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskPregnancyTest ->
+                    { english = "Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskCreatinineTest ->
+                    { english = "Creatinine"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLiverFunctionTest ->
+                    { english = "Liver Function"
                     , kinyarwanda = Nothing
                     }
 
@@ -5873,6 +5938,21 @@ translationSet trans =
 
                 TaskHIVPCRTest ->
                     { english = "HIV PCR"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskPregnancyTest ->
+                    { english = "Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskCreatinineTest ->
+                    { english = "Creatinine"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLiverFunctionTest ->
+                    { english = "Liver Function"
                     , kinyarwanda = Nothing
                     }
 
@@ -5929,6 +6009,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskPregnancyTest ->
+                    { english = "Pregnancy Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskCreatinineTest ->
+                    { english = "Creatinine Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLiverFunctionTest ->
+                    { english = "Liver Function Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -5979,6 +6074,21 @@ translationSet trans =
 
                 TaskHIVPCRTest ->
                     { english = "HIV PCR Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskPregnancyTest ->
+                    { english = "Pregnancy Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskCreatinineTest ->
+                    { english = "Creatinine Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLiverFunctionTest ->
+                    { english = "Liver Function Test Result"
                     , kinyarwanda = Nothing
                     }
 
@@ -11323,6 +11433,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TestCreatinine ->
+                    { english = "Creatinine"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestLiverFunction ->
+                    { english = "Liver Function"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
             , kinyarwanda = Nothing
@@ -14618,6 +14738,11 @@ translationSet trans =
 
         UnitGramsPerDeciliter ->
             { english = "g/dL"
+            , kinyarwanda = Nothing
+            }
+
+        UnitInternationalUnitsPerLiter ->
+            { english = "IU/L"
             , kinyarwanda = Nothing
             }
 

@@ -715,8 +715,17 @@ expectLaboratoryTask currentDate assembled task =
         TaskHIVTest ->
             True
 
+        TaskPregnancyTest ->
+            isPersonAFertileWoman currentDate assembled.person
+
+        TaskCreatinineTest ->
+            True
+
+        TaskLiverFunctionTest ->
+            True
+
+        -- Others are not in use at NCD.
         _ ->
-            -- @todo
             False
 
 
@@ -739,22 +748,26 @@ laboratoryTaskCompleted currentDate assembled task =
         TaskHIVTest ->
             (not <| taskExpected TaskHIVTest) || isJust measurements.hivTest
 
+        TaskPregnancyTest ->
+            (not <| taskExpected TaskPregnancyTest) || isJust measurements.pregnancyTest
+
+        TaskCreatinineTest ->
+            (not <| taskExpected TaskCreatinineTest) || isJust measurements.creatinineTest
+
+        TaskLiverFunctionTest ->
+            (not <| taskExpected TaskLiverFunctionTest) || isJust measurements.liverFunctionTest
+
+        -- Others are not in use at NCD.
         _ ->
-            -- @todo
             False
 
 
 laboratoryTasks : List LaboratoryTask
 laboratoryTasks =
     [ TaskRandomBloodSugarTest
-
-    -- @todo
-    --, TaskCreatinineTest
+    , TaskCreatinineTest
     , TaskUrineDipstickTest
     , TaskHIVTest
-
-    -- @todo
-    --, TaskPregnancyTest
-    -- @todo
-    --, TaskLiverFunctionTest
+    , TaskPregnancyTest
+    , TaskLiverFunctionTest
     ]

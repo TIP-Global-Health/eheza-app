@@ -21,7 +21,11 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..))
 import Measurement.Utils
     exposing
-        ( laboratoryTaskIconClass
+        ( creatinineResultFormAndTasks
+        , creatinineResultFormWithDefault
+        , laboratoryTaskIconClass
+        , liverFunctionResultFormAndTasks
+        , liverFunctionResultFormWithDefault
         , randomBloodSugarResultFormAndTasks
         , randomBloodSugarResultFormWithDefault
         , urineDipstickResultFormAndTasks
@@ -182,6 +186,22 @@ viewLabResultsContent language currentDate assembled model =
                                     SetKetone
                                     SetBilirubin
 
+                        TaskCreatinineTest ->
+                            measurements.creatinineTest
+                                |> getMeasurementValueFunc
+                                |> creatinineResultFormWithDefault model.labResultsData.creatinineTestForm
+                                |> creatinineResultFormAndTasks language
+                                    currentDate
+                                    SetCreatinineResult
+                                    SetUreaResult
+                                    SetNitorogenResult
+
+                        TaskLiverFunctionTest ->
+                            measurements.liverFunctionTest
+                                |> getMeasurementValueFunc
+                                |> liverFunctionResultFormWithDefault model.labResultsData.liverFunctionTestForm
+                                |> liverFunctionResultFormAndTasks language currentDate SetAltResult SetAstResult
+
                         -- Others are not in use for NCD.
                         _ ->
                             ( emptyNode, 0, 0 )
@@ -220,6 +240,12 @@ viewLabResultsContent language currentDate assembled model =
 
                                 TaskUrineDipstickTest ->
                                     SaveUrineDipstickResult personId measurements.urineDipstickTest nextTask |> Just
+
+                                TaskCreatinineTest ->
+                                    SaveCreatinineResult personId measurements.creatinineTest nextTask |> Just
+
+                                TaskLiverFunctionTest ->
+                                    SaveLiverFunctionResult personId measurements.liverFunctionTest nextTask |> Just
 
                                 -- Others are not in use for NCD.
                                 _ ->

@@ -36,9 +36,13 @@ import Measurement.Utils
         , familyPlanningFormWithDefault
         , outsideCareFormWithDefault
         , toCorePhysicalExamValueWithDefault
+        , toCreatinineTestValueWithEmptyResults
         , toFamilyPlanningValueWithDefault
         , toHIVTestValueWithDefault
+        , toLiverFunctionTestValueWithEmptyResults
+        , toNonRDTValueWithDefault
         , toOutsideCareValueWithDefault
+        , toPregnancyTestValueWithDefault
         , toRandomBloodSugarTestValueWithDefault
         , toUrineDipstickTestValueWithDefault
         , toVitalsValueWithDefault
@@ -1371,6 +1375,320 @@ update currentDate id db msg model =
                         |> toRandomBloodSugarTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveRandomBloodSugarTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetPregnancyTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.pregnancyTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | pregnancyTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPregnancyTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.pregnancyTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | pregnancyTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPregnancyTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.pregnancyTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | pregnancyTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPregnancyTestResult value ->
+            let
+                form =
+                    model.laboratoryData.pregnancyTestForm
+
+                updatedForm =
+                    { form | testResult = testResultFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | pregnancyTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPregnancyTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.pregnancyTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | pregnancyTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SavePregnancyTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.pregnancyTestForm
+                        |> toPregnancyTestValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SavePregnancyTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetCreatinineTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.creatinineTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | creatinineTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCreatinineTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.creatinineTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | creatinineTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCreatinineTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.creatinineTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | creatinineTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCreatinineTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.creatinineTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | creatinineTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveCreatinineTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.creatinineTestForm
+                        |> toNonRDTValueWithDefault measurement toCreatinineTestValueWithEmptyResults
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveCreatinineTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetLiverFunctionTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.liverFunctionTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | liverFunctionTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLiverFunctionTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.liverFunctionTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | liverFunctionTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLiverFunctionTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.liverFunctionTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | liverFunctionTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLiverFunctionTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.liverFunctionTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | liverFunctionTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveLiverFunctionTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.liverFunctionTestForm
+                        |> toNonRDTValueWithDefault measurement toLiverFunctionTestValueWithEmptyResults
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveLiverFunctionTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

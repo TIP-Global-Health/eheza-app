@@ -1854,6 +1854,55 @@ toRandomBloodSugarTestValue form =
         form.executionNote
 
 
+pregnancyTestFormWithDefault : PregnancyTestForm msg -> Maybe PregnancyTestValue -> PregnancyTestForm msg
+pregnancyTestFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    knownAsPositiveValue =
+                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+
+                    testPerformedValue =
+                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
+                in
+                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
+                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
+                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedTodayDirty = form.testPerformedTodayDirty
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , testResult = or form.testResult value.testResult
+                , dateSelectorPopupState = form.dateSelectorPopupState
+                }
+            )
+
+
+toPregnancyTestValueWithDefault : Maybe PregnancyTestValue -> PregnancyTestForm msg -> Maybe PregnancyTestValue
+toPregnancyTestValueWithDefault saved form =
+    pregnancyTestFormWithDefault form saved
+        |> toPregnancyTestValue
+
+
+toPregnancyTestValue : PregnancyTestForm msg -> Maybe PregnancyTestValue
+toPregnancyTestValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testResult = form.testResult
+            }
+        )
+        form.executionNote
+
+
 nonRDTFormWithDefault :
     NonRDTForm msg
     -> Maybe { value | executionNote : TestExecutionNote, executionDate : Maybe NominalDate }
@@ -1924,6 +1973,16 @@ toBloodGpRsTestValueWithEmptyResults note date =
 toHIVPCRTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> HIVPCRTestValue
 toHIVPCRTestValueWithEmptyResults note date =
     HIVPCRTestValue note date Nothing Nothing
+
+
+toCreatinineTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> CreatinineTestValue
+toCreatinineTestValueWithEmptyResults note date =
+    CreatinineTestValue note date Nothing Nothing Nothing
+
+
+toLiverFunctionTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> LiverFunctionTestValue
+toLiverFunctionTestValueWithEmptyResults note date =
+    LiverFunctionTestValue note date Nothing Nothing
 
 
 viewHIVTestForm :
@@ -2089,6 +2148,34 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
     )
 
 
+viewPregnancyTestForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
+    -> PregnancyTestForm msg
+    -> ( Html msg, Int, Int )
+viewPregnancyTestForm language currentDate configInitial configPerformed form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestKnownAsPositive language currentDate configInitial TaskPregnancyTest form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.knownAsPositive /= Just False then
+                ( [], 0, 0 )
+
+            else
+                prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed TaskPregnancyTest form
+    in
+    ( div [ class "ui form laboratory malaria" ] <|
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPregnancyTest) "" "label header" ]
+            ++ initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
 prenatalRDTFormInputsAndTasks :
     Language
     -> NominalDate
@@ -2123,6 +2210,9 @@ prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed
 
                             TaskMalariaTest ->
                                 Just configInitial.setMalariaTestResultMsg
+
+                            TaskPregnancyTest ->
+                                Just configInitial.setPregnancyTestResultMsg
 
                             _ ->
                                 Nothing
@@ -2456,6 +2546,21 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     , setExecutionNoteMsg = config.setHIVPCRTestExecutionNoteMsg
                     }
 
+                TaskPregnancyTest ->
+                    { setBoolInputMsg = config.setPregnancyTestFormBoolInputMsg boolInputUpdateFunc
+                    , setExecutionNoteMsg = config.setPregnancyTestExecutionNoteMsg
+                    }
+
+                TaskCreatinineTest ->
+                    { setBoolInputMsg = config.setCreatinineTestFormBoolInputMsg boolInputUpdateFunc
+                    , setExecutionNoteMsg = config.setCreatinineTestExecutionNoteMsg
+                    }
+
+                TaskLiverFunctionTest ->
+                    { setBoolInputMsg = config.setLiverFunctionTestFormBoolInputMsg boolInputUpdateFunc
+                    , setExecutionNoteMsg = config.setLiverFunctionTestExecutionNoteMsg
+                    }
+
                 TaskCompletePreviousTests ->
                     -- Not in use, as this task got a proprietary form.
                     { setBoolInputMsg = always config.noOpMsg
@@ -2600,6 +2705,24 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                         , setDateSelectorStateMsg = config.setHIVPCRTestDateSelectorStateMsg
                         }
 
+                    TaskPregnancyTest ->
+                        { setBoolInputMsg = config.setPregnancyTestFormBoolInputMsg boolInputUpdateFunc
+                        , setExecutionDateMsg = config.setPregnancyTestExecutionDateMsg
+                        , setDateSelectorStateMsg = config.setPregnancyTestDateSelectorStateMsg
+                        }
+
+                    TaskCreatinineTest ->
+                        { setBoolInputMsg = config.setCreatinineTestFormBoolInputMsg boolInputUpdateFunc
+                        , setExecutionDateMsg = config.setCreatinineTestExecutionDateMsg
+                        , setDateSelectorStateMsg = config.setCreatinineTestDateSelectorStateMsg
+                        }
+
+                    TaskLiverFunctionTest ->
+                        { setBoolInputMsg = config.setLiverFunctionTestFormBoolInputMsg boolInputUpdateFunc
+                        , setExecutionDateMsg = config.setLiverFunctionTestExecutionDateMsg
+                        , setDateSelectorStateMsg = config.setLiverFunctionTestDateSelectorStateMsg
+                        }
+
                     TaskCompletePreviousTests ->
                         -- Not in use, as this task got a proprietary form.
                         { setBoolInputMsg = always config.noOpMsg
@@ -2710,6 +2833,9 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate config task fo
                 TaskHepatitisBTest ->
                     config.setHepatitisBTestFormBoolInputMsg updateFunc
 
+                TaskPregnancyTest ->
+                    config.setPregnancyTestFormBoolInputMsg updateFunc
+
                 -- Known as positive is not applicable for other tests.
                 _ ->
                     always config.noOpMsg
@@ -2750,6 +2876,13 @@ emptyContentAndTasksLaboratoryTestInitialConfig noOpMsg =
     , setRandomBloodSugarTestExecutionNoteMsg = always noOpMsg
     , setHIVPCRTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setHIVPCRTestExecutionNoteMsg = always noOpMsg
+    , setPregnancyTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setPregnancyTestExecutionNoteMsg = always noOpMsg
+    , setPregnancyTestResultMsg = always noOpMsg
+    , setCreatinineTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setCreatinineTestExecutionNoteMsg = always noOpMsg
+    , setLiverFunctionTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setLiverFunctionTestExecutionNoteMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -2783,6 +2916,15 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
     , setHIVPCRTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setHIVPCRTestExecutionDateMsg = always noOpMsg
     , setHIVPCRTestDateSelectorStateMsg = always noOpMsg
+    , setPregnancyTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setPregnancyTestExecutionDateMsg = always noOpMsg
+    , setPregnancyTestDateSelectorStateMsg = always noOpMsg
+    , setCreatinineTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setCreatinineTestExecutionDateMsg = always noOpMsg
+    , setCreatinineTestDateSelectorStateMsg = always noOpMsg
+    , setLiverFunctionTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setLiverFunctionTestExecutionDateMsg = always noOpMsg
+    , setLiverFunctionTestDateSelectorStateMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -2819,6 +2961,15 @@ laboratoryTaskIconClass task =
 
         TaskCompletePreviousTests ->
             "laboratory-history"
+
+        TaskPregnancyTest ->
+            "pregnancy"
+
+        TaskCreatinineTest ->
+            "creatinine"
+
+        TaskLiverFunctionTest ->
+            "liver-function"
 
 
 hepatitisBResultFormWithDefault : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId
@@ -3068,6 +3219,74 @@ toHIVPCRRResultsValue form =
             , executionDate = form.executionDate
             , hivViralLoadStatus = form.hivViralLoadStatus
             , hivViralLoad = form.hivViralLoad
+            }
+        )
+        form.executionNote
+
+
+creatinineResultFormWithDefault : CreatinineResultForm -> Maybe CreatinineTestValue -> CreatinineResultForm
+creatinineResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , creatinineResult = or form.creatinineResult value.creatinineResult
+                , ureaResult = or form.ureaResult value.ureaResult
+                , nitorogenResult = or form.nitorogenResult value.nitorogenResult
+                }
+            )
+
+
+toCreatinineResultsValueWithDefault : Maybe CreatinineTestValue -> CreatinineResultForm -> Maybe CreatinineTestValue
+toCreatinineResultsValueWithDefault saved form =
+    creatinineResultFormWithDefault form saved
+        |> toCreatinineResultsValue
+
+
+toCreatinineResultsValue : CreatinineResultForm -> Maybe CreatinineTestValue
+toCreatinineResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , creatinineResult = form.creatinineResult
+            , ureaResult = form.ureaResult
+            , nitorogenResult = form.nitorogenResult
+            }
+        )
+        form.executionNote
+
+
+liverFunctionResultFormWithDefault : LiverFunctionResultForm -> Maybe LiverFunctionTestValue -> LiverFunctionResultForm
+liverFunctionResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , altResult = or form.altResult value.altResult
+                , astResult = or form.astResult value.astResult
+                }
+            )
+
+
+toLiverFunctionResultsValueWithDefault : Maybe LiverFunctionTestValue -> LiverFunctionResultForm -> Maybe LiverFunctionTestValue
+toLiverFunctionResultsValueWithDefault saved form =
+    liverFunctionResultFormWithDefault form saved
+        |> toLiverFunctionResultsValue
+
+
+toLiverFunctionResultsValue : LiverFunctionResultForm -> Maybe LiverFunctionTestValue
+toLiverFunctionResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , altResult = form.altResult
+            , astResult = form.astResult
             }
         )
         form.executionNote
@@ -3466,6 +3685,83 @@ hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoad
     )
 
 
+creatinineResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> CreatinineResultForm
+    -> ( Html msg, Int, Int )
+creatinineResultFormAndTasks language currentDate setCreatinineResultMsg setUreaResultMsg setNitorogenResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            ( [ viewLabel language Translate.LaboratoryCreatinineCreatinineResult
+              , viewMeasurementInput language
+                    form.creatinineResult
+                    setCreatinineResultMsg
+                    "creatinine-result"
+                    Translate.UnitMilliGramsPerDeciliter
+              , viewLabel language Translate.LaboratoryCreatinineUreaResult
+              , viewMeasurementInput language
+                    form.ureaResult
+                    setUreaResultMsg
+                    "urea-result"
+                    Translate.UnitMilliGramsPerDeciliter
+              , viewLabel language Translate.LaboratoryCreatinineNitorogenResult
+              , viewMeasurementInput language
+                    form.nitorogenResult
+                    setNitorogenResultMsg
+                    "nitorogen-result"
+                    Translate.UnitMilliGramsPerDeciliter
+              ]
+            , taskCompleted form.creatinineResult + taskCompleted form.ureaResult + taskCompleted form.nitorogenResult
+            , 3
+            )
+    in
+    ( div [ class "ui form laboratory creatinine-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskCreatinineTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+liverFunctionResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> LiverFunctionResultForm
+    -> ( Html msg, Int, Int )
+liverFunctionResultFormAndTasks language currentDate setAltResultMsg setAstResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            ( [ viewLabel language Translate.LaboratoryLiverFunctionAltResult
+              , viewMeasurementInput language
+                    form.altResult
+                    setAltResultMsg
+                    "alt-result"
+                    Translate.UnitInternationalUnitsPerLiter
+              , viewLabel language Translate.LaboratoryLiverFunctionAstResult
+              , viewMeasurementInput language
+                    form.astResult
+                    setAstResultMsg
+                    "ast-result"
+                    Translate.UnitInternationalUnitsPerLiter
+              ]
+            , taskCompleted form.altResult + taskCompleted form.astResult
+            , 2
+            )
+    in
+    ( div [ class "ui form laboratory liver-function-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskLiverFunctionTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
 resultFormHeaderSection : Language -> NominalDate -> Maybe NominalDate -> LaboratoryTask -> List (Html msg)
 resultFormHeaderSection language currentDate executionDate task =
     let
@@ -3473,7 +3769,7 @@ resultFormHeaderSection language currentDate executionDate task =
             Maybe.map
                 (\date ->
                     [ viewLabel language <| Translate.LaboratoryTaskDate task
-                    , p [ class "test-date" ] [ text <| formatDDMMYYYY date ]
+                    , p [ class "execution-date" ] [ text <| formatDDMMYYYY date ]
                     ]
                 )
                 executionDate
