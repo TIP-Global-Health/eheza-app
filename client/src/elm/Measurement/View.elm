@@ -2283,6 +2283,7 @@ viewTreatmentOptionWithDosage language sign =
             , NoTreatmentForMalaria
             , NoTreatmentForSyphilis
             , NoTreatmentForMastitis
+            , NoTreatmentForDiabetes
             ]
     then
         label [] [ text <| translate language <| Translate.RecommendedTreatmentSignLabel sign ]
