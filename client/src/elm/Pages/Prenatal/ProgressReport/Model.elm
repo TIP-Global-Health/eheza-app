@@ -23,7 +23,7 @@ emptyModel =
 
 
 type PrenatalTestReport
-    = TestPerformed PrenatalTestResult
+    = TestPerformed TestResult
     | TestNotPerformedKnownAsPositive
 
 
@@ -41,9 +41,9 @@ type LabResultsCurrentMode
 type LabResultsHistoryMode
     = LabResultsHistoryHIV (List ( NominalDate, Maybe PrenatalTestReport ))
     | LabResultsHistoryHIVPCR (List ( NominalDate, Maybe HIVPCRResult ))
-    | LabResultsHistorySyphilis (List ( NominalDate, Maybe PrenatalTestResult ))
+    | LabResultsHistorySyphilis (List ( NominalDate, Maybe TestResult ))
     | LabResultsHistoryHepatitisB (List ( NominalDate, Maybe PrenatalTestReport ))
-    | LabResultsHistoryMalaria (List ( NominalDate, Maybe PrenatalTestResult ))
+    | LabResultsHistoryMalaria (List ( NominalDate, Maybe TestResult ))
     | LabResultsHistoryProtein (List ( NominalDate, Maybe ProteinValue ))
     | LabResultsHistoryPH (List ( NominalDate, Maybe PHValue ))
     | LabResultsHistoryGlucose (List ( NominalDate, Maybe GlucoseValue ))

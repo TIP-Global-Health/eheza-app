@@ -30,8 +30,8 @@ import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
         , pregnancyTestResultFromString
-        , prenatalTestResultFromString
         , socialHistoryHivTestingResultFromString
+        , testResultFromString
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
@@ -48,10 +48,20 @@ import Measurement.Utils
         ( corePhysicalExamFormWithDefault
         , familyPlanningFormWithDefault
         , outsideCareFormWithDefault
+        , toBloodGpRsTestValueWithEmptyResults
         , toCorePhysicalExamValueWithDefault
         , toFamilyPlanningValueWithDefault
+        , toHIVPCRTestValueWithEmptyResults
+        , toHIVTestValueWithDefault
+        , toHemoglobinTestValueWithEmptyResults
+        , toHepatitisBTestValueWithEmptyResults
+        , toMalariaTestValueWithDefault
+        , toNonRDTValueWithDefault
         , toOutsideCareValueWithDefault
+        , toRandomBloodSugarTestValueWithDefault
         , toSendToHCValueWithDefault
+        , toSyphilisTestValueWithEmptyResults
+        , toUrineDipstickTestValueWithDefault
         , toVaccinationValueWithDefault
         , toVitalsValueWithDefault
         , vaccinationFormWithDefault
@@ -1769,7 +1779,7 @@ update language currentDate id db msg model =
 
                 updatedForm =
                     { form
-                        | testResult = prenatalTestResultFromString value
+                        | testResult = testResultFromString value
                         , hivProgramHC = Nothing
                         , hivProgramHCDirty = True
                         , partnerHIVPositive = Nothing
@@ -1822,7 +1832,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.hivTestForm
-                        |> toPrenatalHIVTestValueWithDefault measurement
+                        |> toHIVTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -1921,7 +1931,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.syphilisTestForm
-                        |> toPrenatalNonRDTValueWithDefault measurement toSyphilisTestValueWithEmptyResults
+                        |> toNonRDTValueWithDefault measurement toSyphilisTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2020,7 +2030,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.hepatitisBTestForm
-                        |> toPrenatalNonRDTValueWithDefault measurement toHepatitisBTestValueWithEmptyResults
+                        |> toNonRDTValueWithDefault measurement toHepatitisBTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2092,7 +2102,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.malariaTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value }
+                    { form | testResult = testResultFromString value }
 
                 updatedData =
                     model.laboratoryData
@@ -2136,7 +2146,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.malariaTestForm
-                        |> toPrenatalMalariaTestValueWithDefault measurement
+                        |> toMalariaTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveMalariaTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2235,7 +2245,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.bloodGpRsTestForm
-                        |> toPrenatalNonRDTValueWithDefault measurement toBloodGpRsTestValueWithEmptyResults
+                        |> toNonRDTValueWithDefault measurement toBloodGpRsTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2351,7 +2361,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.urineDipstickTestForm
-                        |> toPrenatalUrineDipstickTestValueWithDefault measurement
+                        |> toUrineDipstickTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2450,7 +2460,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.hemoglobinTestForm
-                        |> toPrenatalNonRDTValueWithDefault measurement toHemoglobinTestValueWithEmptyResults
+                        |> toNonRDTValueWithDefault measurement toHemoglobinTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2549,7 +2559,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.randomBloodSugarTestForm
-                        |> toPrenatalRandomBloodSugarValueWithDefault measurement
+                        |> toRandomBloodSugarTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2648,7 +2658,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.hivPCRTestForm
-                        |> toPrenatalNonRDTValueWithDefault measurement toHIVPCRTestValueWithEmptyResults
+                        |> toNonRDTValueWithDefault measurement toHIVPCRTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

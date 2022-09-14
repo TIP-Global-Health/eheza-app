@@ -13,8 +13,8 @@ expected (and not completed).
 import Backend.Measurement.Model
     exposing
         ( HeightInCm(..)
+        , LaboratoryTest(..)
         , MuacInCm(..)
-        , PrenatalLaboratoryTest(..)
         , PrenatalMeasurements
         , PreviousDeliverySign(..)
         , WeightInKg(..)
@@ -194,8 +194,8 @@ recurrentActivityFromString s =
             Nothing
 
 
-prenatalLaboratoryTestToString : PrenatalLaboratoryTest -> String
-prenatalLaboratoryTestToString value =
+laboratoryTestToString : LaboratoryTest -> String
+laboratoryTestToString value =
     case value of
         TestBloodGpRs ->
             "blood-gp-rs"
@@ -222,8 +222,8 @@ prenatalLaboratoryTestToString value =
             "hiv-pcr"
 
 
-prenatalLaboratoryTestFromString : String -> Maybe PrenatalLaboratoryTest
-prenatalLaboratoryTestFromString value =
+laboratoryTestFromString : String -> Maybe LaboratoryTest
+laboratoryTestFromString value =
     case value of
         "blood-gp-rs" ->
             Just TestBloodGpRs

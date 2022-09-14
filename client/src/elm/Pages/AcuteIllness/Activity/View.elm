@@ -966,7 +966,7 @@ viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.LaboratoryTask task)
+                    , text <| translate language (Translate.AILaboratoryTask task)
                     ]
                 ]
 

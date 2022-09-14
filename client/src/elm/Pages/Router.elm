@@ -10,7 +10,7 @@ import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator)
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString, individualEncounterTypeToString)
-import Backend.Measurement.Model exposing (PrenatalLaboratoryTest)
+import Backend.Measurement.Model exposing (LaboratoryTest)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.NCDActivity.Utils
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
@@ -241,7 +241,7 @@ pageToFragment current =
                             ++ "/"
                             ++ fromEntityUuid labEncounterId
                             ++ "/"
-                            ++ Backend.PrenatalActivity.Utils.prenatalLaboratoryTestToString lab
+                            ++ Backend.PrenatalActivity.Utils.laboratoryTestToString lab
 
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
@@ -338,7 +338,7 @@ parser =
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
         , map (\id -> UserPage <| PrenatalRecurrentEncounterPage id) (s "prenatal-recurrent-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalRecurrentActivityPage id activity) (s "prenatal-recurrent-activity" </> parseUuid </> parsePrenatalRecurrentActivity)
-        , map (\id labEncounterId lab -> UserPage <| PrenatalLabsHistoryPage id labEncounterId lab) (s "prenatal-labs-history" </> parseUuid </> parseUuid </> parsePrenatalLaboratoryTest)
+        , map (\id labEncounterId lab -> UserPage <| PrenatalLabsHistoryPage id labEncounterId lab) (s "prenatal-labs-history" </> parseUuid </> parseUuid </> parseLaboratoryTest)
         , map (\id initiator -> UserPage <| ClinicalProgressReportPage initiator id) (s "clinical-progress-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (\id initiator -> UserPage <| DemographicsReportPage initiator id) (s "demographics-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
@@ -416,9 +416,9 @@ parsePrenatalRecurrentActivity =
     custom "PrenatalRecurrentActivity" Backend.PrenatalActivity.Utils.recurrentActivityFromString
 
 
-parsePrenatalLaboratoryTest : Parser (PrenatalLaboratoryTest -> c) c
-parsePrenatalLaboratoryTest =
-    custom "PrenatalLaboratoryTest" Backend.PrenatalActivity.Utils.prenatalLaboratoryTestFromString
+parseLaboratoryTest : Parser (LaboratoryTest -> c) c
+parseLaboratoryTest =
+    custom "LaboratoryTest" Backend.PrenatalActivity.Utils.laboratoryTestFromString
 
 
 parseNutritionActivity : Parser (NutritionActivity -> c) c

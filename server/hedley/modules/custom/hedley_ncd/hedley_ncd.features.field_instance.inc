@@ -2567,6 +2567,99 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_hiv_test-field_execution_date'.
+  $field_instances['node-ncd_hiv_test-field_execution_date'] = array(
+    'bundle' => 'ncd_hiv_test',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_execution_date',
+    'label' => 'Execution Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_hiv_test-field_hiv_signs'.
+  $field_instances['node-ncd_hiv_test-field_hiv_signs'] = array(
+    'bundle' => 'ncd_hiv_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_hiv_signs',
+    'label' => 'HIV signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_hiv_test-field_ncd_encounter'.
   $field_instances['node-ncd_hiv_test-field_ncd_encounter'] = array(
     'bundle' => 'ncd_hiv_test',
@@ -2739,7 +2832,81 @@ function hedley_ncd_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 8,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_hiv_test-field_test_execution_note'.
+  $field_instances['node-ncd_hiv_test-field_test_execution_note'] = array(
+    'bundle' => 'ncd_hiv_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_execution_note',
+    'label' => 'Test Execution Note',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_hiv_test-field_test_result'.
+  $field_instances['node-ncd_hiv_test-field_test_result'] = array(
+    'bundle' => 'ncd_hiv_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_result',
+    'label' => 'Test Result',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
     ),
   );
 
@@ -2779,7 +2946,100 @@ function hedley_ncd_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 6,
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_labs_results-field_completed_tests'.
+  $field_instances['node-ncd_labs_results-field_completed_tests'] = array(
+    'bundle' => 'ncd_labs_results',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_completed_tests',
+    'label' => 'Completed Tests',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 12,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_labs_results-field_date_concluded'.
+  $field_instances['node-ncd_labs_results-field_date_concluded'] = array(
+    'bundle' => 'ncd_labs_results',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_concluded',
+    'label' => 'Date concluded',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 14,
     ),
   );
 
@@ -2924,6 +3184,43 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_labs_results-field_performed_tests'.
+  $field_instances['node-ncd_labs_results-field_performed_tests'] = array(
+    'bundle' => 'ncd_labs_results',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_performed_tests',
+    'label' => 'Performed tests',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
     ),
   );
 
@@ -4703,6 +5000,63 @@ function hedley_ncd_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-ncd_random_blood_sugar_test-field_execution_date'.
+  $field_instances['node-ncd_random_blood_sugar_test-field_execution_date'] = array(
+    'bundle' => 'ncd_random_blood_sugar_test',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_execution_date',
+    'label' => 'Execution Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 14,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-ncd_random_blood_sugar_test-field_ncd_encounter'.
   $field_instances['node-ncd_random_blood_sugar_test-field_ncd_encounter'] = array(
     'bundle' => 'ncd_random_blood_sugar_test',
@@ -4876,6 +5230,128 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_random_blood_sugar_test-field_sugar_count'.
+  $field_instances['node-ncd_random_blood_sugar_test-field_sugar_count'] = array(
+    'bundle' => 'ncd_random_blood_sugar_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_sugar_count',
+    'label' => 'Sugar Count',
+    'required' => FALSE,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 16,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_random_blood_sugar_test-field_test_execution_note'.
+  $field_instances['node-ncd_random_blood_sugar_test-field_test_execution_note'] = array(
+    'bundle' => 'ncd_random_blood_sugar_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_execution_note',
+    'label' => 'Test Execution Note',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_random_blood_sugar_test-field_test_prerequisites'.
+  $field_instances['node-ncd_random_blood_sugar_test-field_test_prerequisites'] = array(
+    'bundle' => 'ncd_random_blood_sugar_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 12,
     ),
   );
 
@@ -6017,6 +6493,43 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_urine_dipstick_test-field_bilirubin'.
+  $field_instances['node-ncd_urine_dipstick_test-field_bilirubin'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 17,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_bilirubin',
+    'label' => 'Bilirubin',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 32,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-ncd_urine_dipstick_test-field_date_measured'.
   $field_instances['node-ncd_urine_dipstick_test-field_date_measured'] = array(
@@ -6075,6 +6588,211 @@ function hedley_ncd_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-ncd_urine_dipstick_test-field_execution_date'.
+  $field_instances['node-ncd_urine_dipstick_test-field_execution_date'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_execution_date',
+    'label' => 'Execution Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 14,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_urine_dipstick_test-field_glucose'.
+  $field_instances['node-ncd_urine_dipstick_test-field_glucose'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_glucose',
+    'label' => 'Glucose',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 20,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_urine_dipstick_test-field_haemoglobin'.
+  $field_instances['node-ncd_urine_dipstick_test-field_haemoglobin'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 15,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_haemoglobin',
+    'label' => 'Haemoglobin',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 28,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_urine_dipstick_test-field_ketone'.
+  $field_instances['node-ncd_urine_dipstick_test-field_ketone'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 16,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ketone',
+    'label' => 'Ketone',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 30,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_urine_dipstick_test-field_leukocytes'.
+  $field_instances['node-ncd_urine_dipstick_test-field_leukocytes'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_leukocytes',
+    'label' => 'Leukocytes',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 22,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-ncd_urine_dipstick_test-field_ncd_encounter'.
   $field_instances['node-ncd_urine_dipstick_test-field_ncd_encounter'] = array(
     'bundle' => 'ncd_urine_dipstick_test',
@@ -6116,6 +6834,43 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_urine_dipstick_test-field_nitrite'.
+  $field_instances['node-ncd_urine_dipstick_test-field_nitrite'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 13,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nitrite',
+    'label' => 'Nitrite',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 24,
     ),
   );
 
@@ -6207,6 +6962,80 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_urine_dipstick_test-field_ph'.
+  $field_instances['node-ncd_urine_dipstick_test-field_ph'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ph',
+    'label' => 'PH',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 18,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_urine_dipstick_test-field_protein'.
+  $field_instances['node-ncd_urine_dipstick_test-field_protein'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_protein',
+    'label' => 'Protein',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 16,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_urine_dipstick_test-field_shards'.
   $field_instances['node-ncd_urine_dipstick_test-field_shards'] = array(
     'bundle' => 'ncd_urine_dipstick_test',
@@ -6248,6 +7077,118 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_urine_dipstick_test-field_test_execution_note'.
+  $field_instances['node-ncd_urine_dipstick_test-field_test_execution_note'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_execution_note',
+    'label' => 'Test Execution Note',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 12,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_urine_dipstick_test-field_test_variant'.
+  $field_instances['node-ncd_urine_dipstick_test-field_test_variant'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_variant',
+    'label' => 'Test variant',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_urine_dipstick_test-field_urobilinogen'.
+  $field_instances['node-ncd_urine_dipstick_test-field_urobilinogen'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 14,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_urobilinogen',
+    'label' => 'Urobilinogen',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 26,
     ),
   );
 
@@ -6797,15 +7738,23 @@ function hedley_ncd_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Abdomen');
   t('Beverages Per Week');
+  t('Bilirubin');
   t('Body temperature');
   t('Cigarettes Per Week');
   t('CoMorbidities');
+  t('Completed Tests');
   t('Date Measured');
+  t('Date concluded');
   t('Dia');
   t('Diabetes Predecessors');
+  t('Diagnosed Medical Conditions');
+  t('Execution Date');
   t('Eyes');
   t('Family Planning');
   t('Food Group');
+  t('Glucose');
+  t('HIV signs');
+  t('Haemoglobin');
   t('Hands');
   t('Head / hair');
   t('Heart');
@@ -6813,7 +7762,9 @@ function hedley_ncd_field_default_field_instances() {
   t('Heart Problem Predecessors');
   t('Heart rate');
   t('Hypertension Predecessors');
+  t('Ketone');
   t('Legs');
+  t('Leukocytes');
   t('Lungs');
   t('Medications Causing Hypertension');
   t('Medications Treating Diabetes');
@@ -6826,12 +7777,24 @@ function hedley_ncd_field_default_field_instances() {
   t('NCD Pain Symptoms');
   t('NCD Social History Signs');
   t('Neck');
+  t('Nitrite');
   t('Nurse');
+  t('Outside Care Medications');
+  t('Outside Care Signs');
+  t('PH');
+  t('Performed tests');
   t('Person');
+  t('Protein');
   t('Respiratory rate');
   t('Shards');
+  t('Sugar Count');
   t('Sys');
+  t('Test Execution Note');
+  t('Test Prerequisites');
+  t('Test Result');
+  t('Test variant');
   t('UUID');
+  t('Urobilinogen');
 
   return $field_instances;
 }

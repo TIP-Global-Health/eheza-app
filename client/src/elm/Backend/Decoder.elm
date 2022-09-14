@@ -192,7 +192,7 @@ decodeRevision =
                         decodeWithUuid NCDHealthEducationRevision decodeNCDHealthEducation
 
                     "ncd_hiv_test" ->
-                        decodeWithUuid NCDHivTestRevision decodeNCDHivTest
+                        decodeWithUuid NCDHIVTestRevision decodeNCDHIVTest
 
                     "ncd_labs_results" ->
                         decodeWithUuid NCDLabsResultsRevision decodeNCDLabsResults

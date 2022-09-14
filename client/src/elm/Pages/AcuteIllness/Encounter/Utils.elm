@@ -11,7 +11,7 @@ import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.AcuteIllness.Activity.Types exposing (ExposureTask(..), LaboratoryTask(..), NextStepsTask(..), PhysicalExamTask(..))
+import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), ExposureTask(..), NextStepsTask(..), PhysicalExamTask(..))
 import Pages.AcuteIllness.Activity.Utils exposing (resolveAcuteIllnessDiagnosis)
 import Pages.AcuteIllness.Encounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)

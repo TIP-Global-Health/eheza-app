@@ -38,19 +38,6 @@ type PatientProvisionsTask
     | Resources
 
 
-type LaboratoryTask
-    = TaskBloodGpRsTest
-    | TaskHemoglobinTest
-    | TaskHepatitisBTest
-    | TaskHIVTest
-    | TaskMalariaTest
-    | TaskRandomBloodSugarTest
-    | TaskSyphilisTest
-    | TaskUrineDipstickTest
-    | TaskHIVPCRTest
-    | TaskCompletePreviousTests
-
-
 type SymptomReviewStep
     = SymptomReviewStepSymptoms
     | SymptomReviewStepQuestions

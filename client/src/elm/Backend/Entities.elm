@@ -1239,12 +1239,12 @@ type NCDHealthEducationUuidType
     = NCDHealthEducationUuidType
 
 
-type alias NCDHivTestId =
-    EntityUuid NCDHivTestUuidType
+type alias NCDHIVTestId =
+    EntityUuid NCDHIVTestUuidType
 
 
-type NCDHivTestUuidType
-    = NCDHivTestUuidType
+type NCDHIVTestUuidType
+    = NCDHIVTestUuidType
 
 
 type alias NCDLabsResultsId =

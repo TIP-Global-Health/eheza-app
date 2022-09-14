@@ -520,7 +520,7 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityNCDHealthEducation identifier ->
             getIdentifier identifier "ncd_health_education"
 
-        BackendAuthorityNCDHivTest identifier ->
+        BackendAuthorityNCDHIVTest identifier ->
             getIdentifier identifier "ncd_hiv_test"
 
         BackendAuthorityNCDLabsResults identifier ->
@@ -1165,8 +1165,8 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityNCDHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodeNCDHealthEducation identifier
 
-        BackendAuthorityNCDHivTest identifier ->
-            encode Backend.Measurement.Encoder.encodeNCDHivTest identifier
+        BackendAuthorityNCDHIVTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDHIVTest identifier
 
         BackendAuthorityNCDLabsResults identifier ->
             encode Backend.Measurement.Encoder.encodeNCDLabsResults identifier
@@ -1773,8 +1773,8 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityNCDHealthEducation identifier ->
             NCDHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityNCDHivTest identifier ->
-            NCDHivTestRevision (toEntityUuid identifier.uuid) identifier.entity
+        BackendAuthorityNCDHIVTest identifier ->
+            NCDHIVTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNCDLabsResults identifier ->
             NCDLabsResultsRevision (toEntityUuid identifier.uuid) identifier.entity

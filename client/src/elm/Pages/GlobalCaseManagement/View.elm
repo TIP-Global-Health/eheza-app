@@ -8,9 +8,9 @@ import Backend.Measurement.Model
     exposing
         ( AcuteIllnessTraceContact
         , FollowUpMeasurements
+        , LaboratoryTest(..)
         , NutritionAssessment(..)
         , PrenatalAssesment(..)
-        , PrenatalLaboratoryTest(..)
         , PrenatalLabsResults
         )
 import Backend.Measurement.Utils exposing (prenatalLabExpirationPeriod)

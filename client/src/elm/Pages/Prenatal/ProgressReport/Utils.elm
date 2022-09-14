@@ -34,6 +34,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils
     exposing
         ( outsideCareMedicationOptionsAnemia
@@ -43,7 +44,6 @@ import Measurement.Utils
         , outsideCareMedicationOptionsSyphilis
         )
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.Activity.Utils exposing (respiratoryRateElevated)
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
@@ -116,9 +116,9 @@ hivPCRResultNormal =
     (==) ResultSuppressedViralLoad
 
 
-syphilisResultNormal : PrenatalTestResult -> Bool
+syphilisResultNormal : TestResult -> Bool
 syphilisResultNormal =
-    prenatalTestResultNormal
+    testResultNormal
 
 
 hepatitisBResultNormal : PrenatalTestReport -> Bool
@@ -126,9 +126,9 @@ hepatitisBResultNormal =
     prenatalTestReportNormal
 
 
-malariaResultNormal : PrenatalTestResult -> Bool
+malariaResultNormal : TestResult -> Bool
 malariaResultNormal =
-    prenatalTestResultNormal
+    testResultNormal
 
 
 proteinResultNormal : ProteinValue -> Bool
@@ -195,14 +195,14 @@ prenatalTestReportNormal : PrenatalTestReport -> Bool
 prenatalTestReportNormal report =
     case report of
         TestPerformed result ->
-            prenatalTestResultNormal result
+            testResultNormal result
 
         TestNotPerformedKnownAsPositive ->
             True
 
 
-prenatalTestResultNormal : PrenatalTestResult -> Bool
-prenatalTestResultNormal =
+testResultNormal : TestResult -> Bool
+testResultNormal =
     (==) PrenatalTestNegative
 
 

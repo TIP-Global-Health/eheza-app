@@ -929,17 +929,17 @@ type alias PrenatalAppointmentConfirmation =
 
 
 type alias PrenatalMalariaTest =
-    PrenatalMeasurement PrenatalMalariaTestValue
+    PrenatalMeasurement MalariaTestValue
 
 
-type alias PrenatalMalariaTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias MalariaTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     }
 
 
-type PrenatalTestExecutionNote
+type TestExecutionNote
     = TestNoteRunToday
     | TestNoteRunPreviously
     | TestNoteLackOfReagents
@@ -950,20 +950,20 @@ type PrenatalTestExecutionNote
     | TestNoteKnownAsPositive
 
 
-type PrenatalTestResult
+type TestResult
     = PrenatalTestPositive
     | PrenatalTestNegative
     | PrenatalTestIndeterminate
 
 
 type alias PrenatalHIVTest =
-    PrenatalMeasurement PrenatalHIVTestValue
+    PrenatalMeasurement HIVTestValue
 
 
-type alias PrenatalHIVTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias HIVTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
 
@@ -977,7 +977,7 @@ type PrenatalHIVSign
 
 
 type alias PrenatalHIVPCRTest =
-    PrenatalMeasurement PrenatalHIVPCRTestValue
+    PrenatalMeasurement HIVPCRTestValue
 
 
 type HIVPCRResult
@@ -986,11 +986,11 @@ type HIVPCRResult
 
 
 type alias PrenatalHepatitisBTest =
-    PrenatalMeasurement PrenatalHepatitisBTestValue
+    PrenatalMeasurement HepatitisBTestValue
 
 
-type alias PrenatalHIVPCRTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias HIVPCRTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , hivViralLoadStatus : Maybe ViralLoadStatus
     , hivViralLoad : Maybe Float
@@ -1002,22 +1002,22 @@ type ViralLoadStatus
     | ViralLoadUndetectable
 
 
-type alias PrenatalHepatitisBTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias HepatitisBTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 type alias PrenatalSyphilisTest =
-    PrenatalMeasurement PrenatalSyphilisTestValue
+    PrenatalMeasurement SyphilisTestValue
 
 
-type alias PrenatalSyphilisTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias SyphilisTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     , symptoms : Maybe (EverySet IllnessSymptom)
     , originatingEncounter : Maybe PrenatalEncounterId
     }
@@ -1033,22 +1033,22 @@ type IllnessSymptom
 
 
 type alias PrenatalHemoglobinTest =
-    PrenatalMeasurement PrenatalHemoglobinTestValue
+    PrenatalMeasurement HemoglobinTestValue
 
 
-type alias PrenatalHemoglobinTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias HemoglobinTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , hemoglobinCount : Maybe Float
     }
 
 
 type alias PrenatalRandomBloodSugarTest =
-    PrenatalMeasurement PrenatalRandomBloodSugarTestValue
+    PrenatalMeasurement RandomBloodSugarTestValue
 
 
-type alias PrenatalRandomBloodSugarTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias RandomBloodSugarTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
@@ -1062,11 +1062,11 @@ type TestPrerequisite
 
 
 type alias PrenatalBloodGpRsTest =
-    PrenatalMeasurement PrenatalBloodGpRsTestValue
+    PrenatalMeasurement BloodGpRsTestValue
 
 
-type alias PrenatalBloodGpRsTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias BloodGpRsTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
@@ -1087,12 +1087,12 @@ type Rhesus
 
 
 type alias PrenatalUrineDipstickTest =
-    PrenatalMeasurement PrenatalUrineDipstickTestValue
+    PrenatalMeasurement UrineDipstickTestValue
 
 
-type alias PrenatalUrineDipstickTestValue =
-    { testVariant : Maybe PrenatalTestVariant
-    , executionNote : PrenatalTestExecutionNote
+type alias UrineDipstickTestValue =
+    { testVariant : Maybe TestVariant
+    , executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , protein : Maybe ProteinValue
     , ph : Maybe PHValue
@@ -1106,7 +1106,7 @@ type alias PrenatalUrineDipstickTestValue =
     }
 
 
-type PrenatalTestVariant
+type TestVariant
     = VariantShortTest
     | VariantLongTest
 
@@ -1188,18 +1188,18 @@ type BilirubinValue
 
 
 type alias PrenatalLabsResults =
-    PrenatalMeasurement PrenatalLabsResultsValue
+    PrenatalMeasurement LabsResultsValue
 
 
-type alias PrenatalLabsResultsValue =
-    { performedTests : EverySet PrenatalLaboratoryTest
-    , completedTests : EverySet PrenatalLaboratoryTest
+type alias LabsResultsValue =
+    { performedTests : EverySet LaboratoryTest
+    , completedTests : EverySet LaboratoryTest
     , resolutionDate : NominalDate
     , patientNotified : Bool
     }
 
 
-type PrenatalLaboratoryTest
+type LaboratoryTest
     = TestBloodGpRs
     | TestHemoglobin
     | TestHepatitisB
@@ -2355,20 +2355,12 @@ type alias NCDHealthEducationValue =
     {}
 
 
-type alias NCDHivTest =
-    NCDMeasurement NCDHivTestValue
-
-
-type alias NCDHivTestValue =
-    {}
+type alias NCDHIVTest =
+    NCDMeasurement HIVTestValue
 
 
 type alias NCDLabsResults =
-    NCDMeasurement NCDLabsResultsValue
-
-
-type alias NCDLabsResultsValue =
-    {}
+    NCDMeasurement LabsResultsValue
 
 
 type alias NCDLiverFunctionTest =
@@ -2437,11 +2429,7 @@ type alias NCDPregnancyTestValue =
 
 
 type alias NCDRandomBloodSugarTest =
-    NCDMeasurement NCDRandomBloodSugarTestValue
-
-
-type alias NCDRandomBloodSugarTestValue =
-    {}
+    NCDMeasurement RandomBloodSugarTestValue
 
 
 type alias NCDReferral =
@@ -2528,11 +2516,7 @@ type NCDGroup2Symptom
 
 
 type alias NCDUrineDipstickTest =
-    NCDMeasurement NCDUrineDipstickTestValue
-
-
-type alias NCDUrineDipstickTestValue =
-    {}
+    NCDMeasurement UrineDipstickTestValue
 
 
 type alias NCDVitals =
@@ -2819,7 +2803,7 @@ type alias NCDMeasurements =
     , familyHistory : Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )
     , familyPlanning : Maybe ( NCDFamilyPlanningId, NCDFamilyPlanning )
     , healthEducation : Maybe ( NCDHealthEducationId, NCDHealthEducation )
-    , hivTest : Maybe ( NCDHivTestId, NCDHivTest )
+    , hivTest : Maybe ( NCDHIVTestId, NCDHIVTest )
     , labsResults : Maybe ( NCDLabsResultsId, NCDLabsResults )
     , liverFunctionTest : Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )
     , medicationDistribution : Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )

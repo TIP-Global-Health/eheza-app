@@ -18,8 +18,11 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model
     exposing
-        ( CorePhysicalExamForm
+        ( ContentAndTasksForPerformedLaboratoryTestConfig
+        , ContentAndTasksLaboratoryTestInitialConfig
+        , CorePhysicalExamForm
         , InvokationModule(..)
+        , LaboratoryTask(..)
         , OutsideCareStep(..)
         , VitalsForm
         , VitalsFormMode(..)
@@ -27,9 +30,18 @@ import Measurement.Model
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
+        , emptyContentAndTasksForPerformedLaboratoryTestConfig
+        , emptyContentAndTasksLaboratoryTestInitialConfig
         , familyPlanningFormWithDefault
+        , hivTestFormWithDefault
+        , laboratoryTaskIconClass
         , outsideCareFormInputsAndTasks
         , outsideCareFormWithDefault
+        , randomBloodSugarFormWithDefault
+        , urineDipstickFormWithDefault
+        , viewHIVTestForm
+        , viewRandomBloodSugarForm
+        , viewUrineDipstickForm
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (viewCorePhysicalExamForm, viewFamilyPlanningForm, viewVitalsForm)
@@ -44,6 +56,7 @@ import Pages.Utils
         ( isTaskCompleted
         , saveButton
         , taskCompleted
+        , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
@@ -52,6 +65,7 @@ import Pages.Utils
         , viewNumberInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
+        , viewSaveAction
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -114,9 +128,7 @@ viewActivity language currentDate activity assembled db model =
             viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
 
         Laboratory ->
-            -- @todo
-            -- viewLaboratoryContent language currentDate assembled model.laboratoryData
-            []
+            viewLaboratoryContent language currentDate assembled model.laboratoryData
 
         MedicalHistory ->
             viewMedicalHistoryContent language currentDate assembled model.medicalHistoryData
@@ -781,3 +793,178 @@ viewFamilyHistoryForm language currentDate form =
     in
     div [ class "ui form family-history" ]
         inputs
+
+
+viewLaboratoryContent : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            List.filter (expectLaboratoryTask currentDate assembled) laboratoryTasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                iconClass =
+                    laboratoryTaskIconClass task
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    laboratoryTaskCompleted currentDate assembled task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveLaboratoryTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.LaboratoryTask task)
+                    ]
+                ]
+
+        formHtmlAndTasks =
+            List.map
+                (\task ->
+                    ( task
+                    , case task of
+                        TaskRandomBloodSugarTest ->
+                            measurements.randomBloodSugarTest
+                                |> getMeasurementValueFunc
+                                |> randomBloodSugarFormWithDefault data.randomBloodSugarTestForm
+                                |> viewRandomBloodSugarForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+
+                        TaskUrineDipstickTest ->
+                            measurements.urineDipstickTest
+                                |> getMeasurementValueFunc
+                                |> urineDipstickFormWithDefault data.urineDipstickTestForm
+                                |> viewUrineDipstickForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+
+                        TaskHIVTest ->
+                            measurements.hivTest
+                                |> getMeasurementValueFunc
+                                |> hivTestFormWithDefault data.hivTestForm
+                                |> viewHIVTestForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+
+                        -- @todo:
+                        _ ->
+                            ( emptyNode, 0, 0 )
+                    )
+                )
+                tasks
+                |> Dict.fromList
+
+        tasksCompletedFromTotalDict =
+            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                formHtmlAndTasks
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            Maybe.andThen
+                (\task -> Dict.get task formHtmlAndTasks)
+                activeTask
+                |> Maybe.withDefault ( emptyNode, 0, 0 )
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                TaskHIVTest ->
+                                    SaveHIVTest personId measurements.hivTest nextTask
+
+                                TaskUrineDipstickTest ->
+                                    SaveUrineDipstickTest personId measurements.urineDipstickTest nextTask
+
+                                TaskRandomBloodSugarTest ->
+                                    SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
+
+                                _ ->
+                                    --@todo
+                                    NoOp
+                    in
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            [ viewForm, actions ]
+        ]
+    ]
+
+
+contentAndTasksLaboratoryTestInitialConfig : ContentAndTasksLaboratoryTestInitialConfig Msg
+contentAndTasksLaboratoryTestInitialConfig =
+    emptyContentAndTasksLaboratoryTestInitialConfig NoOp
+        |> (\config ->
+                { config
+                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
+                    , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
+                    , setHIVTestResultMsg = SetHIVTestResult
+                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
+                    , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
+                    , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
+                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
+                    , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
+                }
+           )
+
+
+contentAndTasksForPerformedLaboratoryTestConfig : ContentAndTasksForPerformedLaboratoryTestConfig Msg
+contentAndTasksForPerformedLaboratoryTestConfig =
+    emptyContentAndTasksForPerformedLaboratoryTestConfig NoOp
+        |> (\config ->
+                { config
+                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
+                    , setHIVTestExecutionDateMsg = SetHIVTestExecutionDate
+                    , setHIVTestDateSelectorStateMsg = SetHIVTestDateSelectorState
+                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
+                    , setUrineDipstickTestExecutionDateMsg = SetUrineDipstickTestExecutionDate
+                    , setUrineDipstickTestDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState
+                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
+                    , setRandomBloodSugarTestExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
+                    , setRandomBloodSugarTestDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                }
+           )
