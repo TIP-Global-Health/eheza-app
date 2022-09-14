@@ -1978,12 +1978,12 @@ translationSet trans =
 
         AdministerParacetamolHelper ->
             { english = "Take 1 tablet by mouth 3 times a day for 5 days"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Fata ikinini 1 mu kanwa inshuro 3 ku munsi mu minsi 5"
             }
 
         AdministerVitaminAHelperPrenatal ->
             { english = "Vitamin A is given once"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Vitamine A itangwa inshuro 1"
             }
 
         AdministerVitaminAHelperWellChild ->
@@ -2614,7 +2614,7 @@ translationSet trans =
             case sign of
                 IsBreastfeeding ->
                     { english = "Are you breastfeeding"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uronsa"
                     }
 
                 BreastPain ->
@@ -3845,7 +3845,7 @@ translationSet trans =
 
                 ReliefMethodIncreaseFluid ->
                     { english = "Increase fluid"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ongera ibyo kunywa"
                     }
 
                 ReliefMethodBreastfeedingOrHandExpression ->
@@ -4370,7 +4370,7 @@ translationSet trans =
 
         EpisiotomyOrPerinealTearHealingQuestion ->
             { english = "Is it healing normally"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hari gukira nkuko bikwiriye"
             }
 
         ErrorCheckLocalConfig ->
@@ -4657,7 +4657,7 @@ translationSet trans =
 
         FollowPostpartumProtocols ->
             { english = "Follow Postpartum Protocols"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kurikiza Amabwiriza ya nyuma yo kubyara"
             }
 
         FollowUpWithPatientIn ->
@@ -6288,7 +6288,7 @@ translationSet trans =
 
         MastitisRecommendedTreatmentHelper ->
             { english = "Select the best treatment option for the patient below"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
             }
 
         MeasurementNoChange ->
@@ -6410,7 +6410,7 @@ translationSet trans =
 
         MedicationDistributionHelperVitaminA ->
             { english = "This patient did not receive Vitamin A"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu mubyeyi ntiyahawe Vitamine A"
             }
 
         MedicationDistributionNoticeGonorrhea ->
@@ -8052,12 +8052,12 @@ translationSet trans =
 
                 HealingProblemSwelling ->
                     { english = "Swelling"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Harabyimbye"
                     }
 
                 HealingProblemDischarge ->
                     { english = "Discharge"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Harasohoka ibintu bidasanzwe"
                     }
 
                 HealingProblemReleaseOfSutures ->
@@ -8302,7 +8302,7 @@ translationSet trans =
 
                 Backend.PrenatalActivity.Model.Breastfeeding ->
                     { english = "Breastfeeding"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Konso"
                     }
 
                 SpecialityCare ->
@@ -8708,17 +8708,17 @@ translationSet trans =
 
                 DiagnosisPostpartumHeadache ->
                     { english = "Headache"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuribwa Umutwe"
                     }
 
                 DiagnosisPostpartumFatigue ->
                     { english = "Fatigue"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umunaniro"
                     }
 
                 DiagnosisPostpartumFever ->
                     { english = "Fever"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guhinda Umuriro"
                     }
 
                 DiagnosisPostpartumPerinealPainOrDischarge ->
@@ -8728,12 +8728,12 @@ translationSet trans =
 
                 DiagnosisPostpartumInfection ->
                     { english = "Infection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara iterwa n'udukoko tutabonwa n'amaso (Microbes)/infegisiyo"
                     }
 
                 DiagnosisPostpartumExcessiveBleeding ->
                     { english = "Excessive Bleeding"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuva cyane"
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
@@ -9105,7 +9105,7 @@ translationSet trans =
 
                 DiagnosisPostpartumAbdominalPain ->
                     { english = "Abdominal Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara mu nda"
                     }
 
                 DiagnosisPostpartumUrinaryIncontinence ->
@@ -9115,17 +9115,17 @@ translationSet trans =
 
                 DiagnosisPostpartumHeadache ->
                     { english = "Headache"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuribwa Umutwe"
                     }
 
                 DiagnosisPostpartumFatigue ->
                     { english = "Fatigue"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umunaniro"
                     }
 
                 DiagnosisPostpartumFever ->
                     { english = "Fever"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guhinda Umuriro"
                     }
 
                 DiagnosisPostpartumPerinealPainOrDischarge ->
@@ -9135,12 +9135,12 @@ translationSet trans =
 
                 DiagnosisPostpartumInfection ->
                     { english = "Infection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara iterwa n'udukoko tutabonwa n'amaso (Microbes)/infegisiyo"
                     }
 
                 DiagnosisPostpartumExcessiveBleeding ->
                     { english = "Excessive Bleeding"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Excessive Bleeding"
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
@@ -9402,7 +9402,7 @@ translationSet trans =
 
                 DiagnosisPostpartumAbdominalPain ->
                     { english = "Abdominal Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara mu nda"
                     }
 
                 DiagnosisPostpartumUrinaryIncontinence ->
@@ -9412,17 +9412,17 @@ translationSet trans =
 
                 DiagnosisPostpartumHeadache ->
                     { english = "Headache"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuribwa Umutwe"
                     }
 
                 DiagnosisPostpartumFatigue ->
                     { english = "Fatigue"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umunaniro"
                     }
 
                 DiagnosisPostpartumFever ->
                     { english = "Fever"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guhinda Umuriro"
                     }
 
                 DiagnosisPostpartumPerinealPainOrDischarge ->
@@ -9812,17 +9812,17 @@ translationSet trans =
 
         PrenatalNCDProgramHeaderPrefix ->
             { english = "This patient was diagnosed with"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yasuzumwe uburwayi bwa"
             }
 
         PrenatalNCDProgramHeaderSuffix ->
             { english = "during her pregnancy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Mu gihe yari atwite"
             }
 
         PrenatalNCDProgramInstructions ->
             { english = "Refer patient to NCD services for further management"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umurwayi muri serivisi y'indwara zitandura bamwiteho byimbitse"
             }
 
         PrenatalNextStepsTask isChw task ->
@@ -11274,7 +11274,7 @@ translationSet trans =
 
                 PostpartumAbdominalPain ->
                     { english = "Abdominal Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara mu nda"
                     }
 
                 PostpartumUrinaryIncontinence ->
@@ -11284,17 +11284,17 @@ translationSet trans =
 
                 PostpartumHeadache ->
                     { english = "Headache"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuribwa Umutwe"
                     }
 
                 PostpartumFatigue ->
                     { english = "Fatigue"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umunaniro"
                     }
 
                 PostpartumFever ->
                     { english = "Fever"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guhinda Umuriro"
                     }
 
                 PostpartumPerinealPainOrDischarge ->
@@ -11857,7 +11857,7 @@ translationSet trans =
 
         ReceivedFolicAcid ->
             { english = "Have you received Folic Acid"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wahawe ibinini bya Folic Acid"
             }
 
         ReceivedIronFolicAcid ->
@@ -11877,7 +11877,7 @@ translationSet trans =
 
         ReceivedVitaminA ->
             { english = "Have you received Vitamin A"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wahawe Vitamine A"
             }
 
         Recommendation114 recommendation ->
@@ -12058,17 +12058,17 @@ translationSet trans =
 
                 TreatmentPenecilinV ->
                     { english = "2 tablets by mouth 3 times a day for 7 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinini 2 mu kanwa inshuri 3 ku munsi mu minsi 7"
                     }
 
                 TreatmentParacetamol ->
                     { english = "1 tablet by mouth 3 times a day for 5 days or"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikinini 1 mu kanwa inshuri 3 ku munsi mu minsi 5"
                     }
 
                 TreatmentIbuprofen ->
                     { english = "1 tablet by mouth 3 times a day for 5 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikinini 1 mu kanwa inshuri 3 ku munsi mu minsi 5"
                     }
 
                 -- Dosage is not applicable for other options.
@@ -13093,12 +13093,12 @@ translationSet trans =
 
         SpecialityCareHeaderPrefix ->
             { english = "You were diagnosed with"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wasuzumwe uburwayi bwa"
             }
 
         SpecialityCareHeaderSuffix ->
             { english = "during your pregnancy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Mu gihe wari utwite"
             }
 
         SpecialityCareSignQuestion sign ->
