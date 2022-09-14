@@ -602,10 +602,30 @@ medicateForHypertension : NCDEncounterPhase -> AssembledData -> Bool
 medicateForHypertension phase assembled =
     case phase of
         NCDEncounterPhaseInitial ->
-            resolveCurrentHypertensionCondition assembled |> isJust
+            resolveCurrentHypertensionCondition assembled
+                |> Maybe.map
+                    (\stage ->
+                        case stage of
+                            -- Per requirements, if first Hypertension diagosis is stage 1, and
+                            -- there're no other complecations (at previous or current encouters),
+                            -- we do not medicate.
+                            DiagnosisHypertensionStage1 ->
+                                -- History of Hypertension.
+                                diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled
+                                    || --History of Renal Complications or Diabetes.
+                                       diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled
+                                    || -- Diabetes diagnosed at initial phase of encounter.
+                                       -- Note that we do not check for Renal Complications, since
+                                       -- it can only be diagnosed at recurrent phase.
+                                       diagnosed DiagnosisDiabetesInitial assembled
+
+                            _ ->
+                                True
+                    )
+                |> Maybe.withDefault False
 
         -- This can only happen on first diagnostics of stage 1 Hypertension (without
-        -- any HYpertension history), and with no history of Diabetes or Renal
+        -- any Hypertension history), and with no history of Diabetes or Renal
         -- Complications, and Diabetes at initial phase of the encounter.
         NCDEncounterPhaseRecurrent ->
             -- No Hypertension history.
