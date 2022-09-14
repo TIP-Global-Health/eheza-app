@@ -640,13 +640,38 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate setRecommen
 
         recommendedTreatmentSignsForHypertension =
             generateRecommendedTreatmentSignsForHypertension assembled
+
+        ( header, instructions ) =
+            if patientIsPregnant assembled then
+                ( Translate.HypertensionAndPregnantHeader
+                , Translate.InstructionsChooseOneMedication
+                )
+
+            else
+                let
+                    renalComplicationsPresent =
+                        diagnosed DiagnosisRenalComplications assembled
+                            || diagnosedPreviously DiagnosisRenalComplications assembled
+                in
+                resolveCurrentHypertensionCondition assembled
+                    |> Maybe.map
+                        (\diagnosis ->
+                            ( Translate.HypertensionStageAndRenalComplicationsHeader renalComplicationsPresent diagnosis
+                            , if diagnosis == DiagnosisHypertensionStage1 then
+                                Translate.InstructionsChooseOneMedication
+
+                              else
+                                Translate.InstructionsChooseTwoMedications
+                            )
+                        )
+                    |> Maybe.withDefault ( Translate.EmptyString, Translate.EmptyString )
     in
-    ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
+    ( [ viewCustomLabel language header "." "instructions"
       , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
       , div [ class "instructions" ]
             [ viewInstructionsLabel
                 "icon-pills"
-                (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":")
+                (text <| translate language instructions ++ ":")
             ]
       , viewCheckBoxSelectCustomInput language
             recommendedTreatmentSignsForHypertension
@@ -680,13 +705,54 @@ recommendedTreatmentForDiabetesInputAndTask language currentDate options setReco
                     >> List.head
                 )
                 form.recommendedTreatmentSigns
+
+        header =
+            -- We specify values at diganosis only if diagnosis was made as a result
+            -- of lab test (which can happen only on recurrent phase of encounter).
+            if diagnosed DiagnosisDiabetesRecurrent assembled then
+                let
+                    bySugarCount =
+                        Maybe.map diabetesBySugarCount randomBloodSugarValue
+                            |> Maybe.withDefault False
+
+                    randomBloodSugarValue =
+                        getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
+                in
+                if bySugarCount then
+                    Maybe.andThen
+                        (\value ->
+                            Maybe.map2
+                                (\testPrerequisites sugarCount ->
+                                    let
+                                        fasting =
+                                            EverySet.member PrerequisiteFastFor12h testPrerequisites
+                                    in
+                                    Translate.PatientGotDiabetesByGlucoseHeader fasting sugarCount
+                                )
+                                value.testPrerequisites
+                                value.sugarCount
+                        )
+                        randomBloodSugarValue
+                        |> Maybe.withDefault Translate.EmptyString
+
+                else
+                    getMeasurementValueFunc assembled.measurements.urineDipstickTest
+                        |> Maybe.andThen .glucose
+                        |> Maybe.map
+                            (\glucose ->
+                                Translate.PatientGotDiabetesByUrineDip (translate language <| Translate.PrenatalLaboratoryGlucoseValue glucose)
+                            )
+                        |> Maybe.withDefault Translate.EmptyString
+
+            else
+                Translate.PatientGotDiabetesHeader
     in
-    ( [ viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
+    ( [ viewCustomLabel language header "." "instructions"
       , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
       , div [ class "instructions" ]
             [ viewInstructionsLabel
                 "icon-pills"
-                (text <| translate language Translate.HypertensionRecommendedTreatmentHelper ++ ":")
+                (text <| translate language Translate.InstructionsChooseOneMedication ++ ":")
             ]
       , viewCheckBoxSelectCustomInput language
             options
