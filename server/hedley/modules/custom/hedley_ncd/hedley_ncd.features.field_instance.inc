@@ -4248,11 +4248,12 @@ function hedley_ncd_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_ncd_guidance',
     'label' => 'NCD Guidance',
-    'required' => FALSE,
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
     'widget' => array(
+      'active' => 1,
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',

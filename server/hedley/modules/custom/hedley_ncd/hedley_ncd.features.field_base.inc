@@ -506,7 +506,7 @@ function hedley_ncd_field_default_field_bases() {
   // Exported field_base: 'field_ncd_guidance'.
   $field_bases['field_ncd_guidance'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_id_type' => NULL,
     'entity_types' => array(),
