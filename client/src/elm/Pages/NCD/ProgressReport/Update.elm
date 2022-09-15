@@ -26,5 +26,8 @@ update msg model =
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
 
+        SetLabResultsMode mode ->
+            ( { model | labResultsMode = mode }, Cmd.none, [] )
+
         SetEndEncounterDialogState isOpen ->
             ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )

@@ -113,9 +113,10 @@ import Pages.Prenatal.Activity.Types
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
-import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), LabResultsCurrentMode(..), LabResultsHistoryMode(..))
+import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.TraceContact.Model exposing (NoContactReason(..))
+import Pages.Types exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Pages.WellChild.ProgressReport.Model exposing (ECDStatus(..), PaneEntryStatus(..))

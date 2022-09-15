@@ -63,6 +63,7 @@ import Pages.Prenatal.Utils
         , recommendedTreatmentSignsForSyphilis
         , resolvePreviousHypertensionDiagnosis
         )
+import Pages.Types exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), TestReport(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -106,9 +107,9 @@ filterNurseMeasurementsWithDatesToDate limitDate nursePreviousMeasurementsWithDa
         nursePreviousMeasurementsWithDates
 
 
-hivResultNormal : PrenatalTestReport -> Bool
+hivResultNormal : TestReport -> Bool
 hivResultNormal =
-    prenatalTestReportNormal
+    testReportNormal
 
 
 hivPCRResultNormal : HIVPCRResult -> Bool
@@ -121,9 +122,9 @@ syphilisResultNormal =
     testResultNormal
 
 
-hepatitisBResultNormal : PrenatalTestReport -> Bool
+hepatitisBResultNormal : TestReport -> Bool
 hepatitisBResultNormal =
-    prenatalTestReportNormal
+    testReportNormal
 
 
 malariaResultNormal : TestResult -> Bool
@@ -191,8 +192,8 @@ rhesusResultsNormal =
     (==) RhesusPositive
 
 
-prenatalTestReportNormal : PrenatalTestReport -> Bool
-prenatalTestReportNormal report =
+testReportNormal : TestReport -> Bool
+testReportNormal report =
     case report of
         TestPerformed result ->
             testResultNormal result

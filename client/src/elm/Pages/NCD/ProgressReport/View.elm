@@ -16,6 +16,7 @@ import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.ProgressReport.Model exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Types exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), TestReport(..))
 import Pages.Utils exposing (viewPersonDetailsExtended)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
@@ -29,7 +30,7 @@ view language currentDate id initiator db model =
             generateAssembledData id db
 
         header =
-            viewHeader language initiator
+            viewHeader language initiator model
 
         content =
             viewWebData language (viewContent language currentDate initiator model) identity assembled
@@ -56,9 +57,67 @@ view language currentDate id initiator db model =
         ]
 
 
-viewHeader : Language -> NCDProgressReportInitiator -> Html Msg
-viewHeader language initiator =
+viewHeader : Language -> NCDProgressReportInitiator -> Model -> Html Msg
+viewHeader language initiator model =
     let
+        label =
+            Maybe.map
+                (\mode ->
+                    case mode of
+                        LabResultsCurrent currentMode ->
+                            Translate.LabResults
+
+                        LabResultsHistory _ ->
+                            Translate.LabHistory
+                )
+                model.labResultsMode
+                |> Maybe.withDefault Translate.NCDProgressReport
+
+        backIcon =
+            let
+                iconForView action =
+                    span
+                        [ class "link-back" ]
+                        [ span
+                            [ class "icon-back"
+                            , onClick action
+                            ]
+                            []
+                        ]
+
+                goBackActionByLabResultsState defaultAction =
+                    Maybe.map
+                        (\mode ->
+                            let
+                                backToCurrentMsg targetMode =
+                                    SetLabResultsMode (Just (LabResultsCurrent targetMode))
+                            in
+                            case mode of
+                                LabResultsCurrent currentMode ->
+                                    case currentMode of
+                                        LabResultsCurrentMain ->
+                                            SetLabResultsMode Nothing
+
+                                        LabResultsCurrentDipstickShort ->
+                                            backToCurrentMsg LabResultsCurrentMain
+
+                                        LabResultsCurrentDipstickLong ->
+                                            backToCurrentMsg LabResultsCurrentMain
+
+                                LabResultsHistory historyMode ->
+                                    Maybe.withDefault LabResultsCurrentMain model.labResultsHistoryOrigin
+                                        |> backToCurrentMsg
+                        )
+                        model.labResultsMode
+                        |> Maybe.withDefault defaultAction
+            in
+            case initiator of
+                InitiatorEncounterPage id ->
+                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| NCDEncounterPage id)
+
+                InitiatorRecurrentEncounterPage id ->
+                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| NCDRecurrentEncounterPage id)
+
         goBackPage =
             case initiator of
                 InitiatorEncounterPage id ->
@@ -70,15 +129,8 @@ viewHeader language initiator =
     div
         [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
-            [ text <| translate language Translate.NCDProgressReport ]
-        , span
-            [ class "link-back" ]
-            [ span
-                [ class "icon-back"
-                , onClick <| SetActivePage <| UserPage goBackPage
-                ]
-                []
-            ]
+            [ text <| translate language label ]
+        , backIcon
         ]
 
 
@@ -107,8 +159,8 @@ viewContent language currentDate initiator model assembled =
             --                         let
             --                             ( completedActivities, pendingActivities ) =
             --                                 getAllActivities assembled
-            --                                     |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
-            --                                     |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
+            --                                     |> List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled)
+            --                                     |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
             --                         in
             --                         viewActionButton language
             --                             pendingActivities
@@ -120,9 +172,9 @@ viewContent language currentDate initiator model assembled =
             --                     InitiatorRecurrentEncounterPage _ ->
             --                         let
             --                             ( completedActivities, pendingActivities ) =
-            --                                 Pages.Prenatal.RecurrentEncounter.Utils.allActivities
-            --                                     |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
-            --                                     |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+            --                                 Pages.NCD.RecurrentEncounter.Utils.allActivities
+            --                                     |> List.filter (Pages.NCD.RecurrentActivity.Utils.expectActivity currentDate assembled)
+            --                                     |> List.partition (Pages.NCD.RecurrentActivity.Utils.activityCompleted currentDate assembled)
             --
             --                             allowEndEcounter =
             --                                 List.isEmpty pendingActivities
@@ -133,12 +185,12 @@ viewContent language currentDate initiator model assembled =
             --                         div [ class "actions" ]
             --                             [ button
             --                                 [ class "ui fluid primary button"
-            --                                 , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
+            --                                 , onClick <| SetActivePage <| UserPage <| NCDEncounterPage encounterId
             --                                 ]
             --                                 [ text <| translate language Translate.Reviewed ]
             --                             ]
             --
-            --                     Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
+            --                     Backend.NCDEncounter.Model.InitiatorPatientRecord _ ->
             --                         emptyNode
             --         in
             --         [ viewRiskFactorsPane language currentDate firstEncounterMeasurements

@@ -92,6 +92,7 @@ import Pages.Prenatal.Utils
         , resolveARVReferralDiagnosis
         , resolveNCDReferralDiagnoses
         )
+import Pages.Types exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), TestReport(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -187,10 +188,10 @@ viewHeader language id initiator model =
             in
             case initiator of
                 InitiatorEncounterPage prenatalEncounterId ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage id)
+                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId)
 
                 InitiatorRecurrentEncounterPage prenatalEncounterId ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id)
+                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage prenatalEncounterId)
 
                 InitiatorNewEncounter _ ->
                     emptyNode
@@ -1628,7 +1629,7 @@ viewLabResultsEntry language currentDate results =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
                     { label = Translate.LaboratoryTaskLabel TaskHIVTest
-                    , recentResult = Maybe.map (translatePrenatalTestReport language) recentResultValue
+                    , recentResult = Maybe.map (translateTestReport language) recentResultValue
                     , knownAsPositive = recentResultValue == Just TestNotPerformedKnownAsPositive
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
@@ -1673,7 +1674,7 @@ viewLabResultsEntry language currentDate results =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
                     { label = Translate.LaboratoryTaskLabel TaskHepatitisBTest
-                    , recentResult = Maybe.map (translatePrenatalTestReport language) recentResultValue
+                    , recentResult = Maybe.map (translateTestReport language) recentResultValue
                     , knownAsPositive = recentResultValue == Just TestNotPerformedKnownAsPositive
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
@@ -1925,8 +1926,8 @@ viewLabResultsEntry language currentDate results =
         ]
 
 
-translatePrenatalTestReport : Language -> PrenatalTestReport -> String
-translatePrenatalTestReport language report =
+translateTestReport : Language -> TestReport -> String
+translateTestReport language report =
     case report of
         TestPerformed result ->
             Translate.TestResult result
@@ -1975,7 +1976,7 @@ viewLabResultsHistoryPane language currentDate mode =
         entries =
             case mode of
                 LabResultsHistoryHIV assembled ->
-                    List.map (viewEntry (translatePrenatalTestReport language) hivResultNormal) assembled
+                    List.map (viewEntry (translateTestReport language) hivResultNormal) assembled
 
                 LabResultsHistoryHIVPCR assembled ->
                     List.map (viewEntry (Translate.HIVPCRResult >> translate language) hivPCRResultNormal) assembled
@@ -1984,7 +1985,7 @@ viewLabResultsHistoryPane language currentDate mode =
                     List.map (viewEntry (Translate.TestResult >> translate language) syphilisResultNormal) assembled
 
                 LabResultsHistoryHepatitisB assembled ->
-                    List.map (viewEntry (translatePrenatalTestReport language) hepatitisBResultNormal) assembled
+                    List.map (viewEntry (translateTestReport language) hepatitisBResultNormal) assembled
 
                 LabResultsHistoryMalaria assembled ->
                     List.map (viewEntry (Translate.TestResult >> translate language) malariaResultNormal) assembled
