@@ -867,6 +867,7 @@ type TranslationId
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
+    | NCDProgressReport
     | NCDRecurrentActivitiesTitle NCDRecurrentActivity
     | NCDRecurrentNextStepsTask Pages.NCD.RecurrentActivity.Types.NextStepsTask
     | NCDSocialHistoryFoodQuestion
@@ -7852,6 +7853,11 @@ translationSet trans =
                     { english = "None of the Above"
                     , kinyarwanda = Nothing
                     }
+
+        NCDProgressReport ->
+            { english = "NCD Progress Report"
+            , kinyarwanda = Nothing
+            }
 
         NCDRecurrentActivitiesTitle activity ->
             case activity of

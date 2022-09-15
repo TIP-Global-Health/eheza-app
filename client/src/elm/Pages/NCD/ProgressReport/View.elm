@@ -70,7 +70,7 @@ viewHeader language initiator =
     div
         [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
-            [ text <| translate language Translate.ProgressReport ]
+            [ text <| translate language Translate.NCDProgressReport ]
         , span
             [ class "link-back" ]
             [ span
