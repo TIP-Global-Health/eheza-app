@@ -5131,13 +5131,13 @@ translationSet trans =
                     }
 
                 TreatementUpdateIncreaseOneDose ->
-                    { english = "It is recommended that the medication increase one dosage level to"
-                    , kinyarwanda = Just "Birasabwa ko agomba kongererwa Doze imwe kuri"
+                    { english = "It is recommended that the medication is increased one dosage level to"
+                    , kinyarwanda = Just "Birasabwa ko agomba kongererwa doze imwe kuri"
                     }
 
                 TreatementUpdateIncreaseTwoDoses ->
-                    { english = "It is recommended that the medication increase two dosage levels to"
-                    , kinyarwanda = Just "Birasabwa ko agomba kongererwa Doze ebyiri kuri"
+                    { english = "It is recommended that the medication is increased two dosage levels to"
+                    , kinyarwanda = Just "Birasabwa ko agomba kongererwa doze ebyiri kuri"
                     }
 
                 -- We're not required to view this option.
