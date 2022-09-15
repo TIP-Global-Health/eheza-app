@@ -2,13 +2,15 @@ module Pages.Report.View exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, labExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
+import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Person)
 import Date exposing (Interval(..), Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,6 +18,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Report.Model exposing (..)
 import Pages.Report.Types exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), TestReport(..))
 import Pages.Report.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
@@ -386,6 +389,337 @@ viewUncompetedResult language currentDate resultDate =
                 |> Maybe.withDefault Translate.ResultsPending
     in
     span [ class "uncompleted" ] [ translateText language transId ]
+
+
+viewLabResultsPane :
+    Language
+    -> NominalDate
+    -> LabResultsCurrentMode
+    -> (Maybe LabResultsMode -> msg)
+    -> LabsResultsDisplayConfig
+    -> LabsResultsValues encounterId
+    -> Html msg
+viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig data =
+    let
+        heading =
+            div [ class "heading" ]
+                [ div [ class "name" ] [ translateText language Translate.TestName ]
+                , div [ class "date" ] [ translateText language Translate.TestDate ]
+                , div [ class "result" ] [ translateText language Translate.Result ]
+                , div [ class "normal-range" ] [ translateText language Translate.NormalRange ]
+                ]
+
+        getTestResults getValueFunc getResultFunc =
+            getValueFunc data
+                |> List.filterMap
+                    (\value ->
+                        if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                            Maybe.map (\executionDate -> ( executionDate, getResultFunc value ))
+                                value.executionDate
+
+                        else
+                            Nothing
+                    )
+                |> List.sortWith sortTuplesByDateDesc
+
+        getTestResultsKnownAsPositive getValueFunc getResultFunc =
+            getValueFunc data
+                |> List.filterMap
+                    (\value ->
+                        if value.executionNote == TestNoteKnownAsPositive then
+                            Just ( currentDate, Just TestNotPerformedKnownAsPositive )
+
+                        else if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                            Maybe.map (\executionDate -> ( executionDate, getResultFunc value |> Maybe.map TestPerformed ))
+                                value.executionDate
+
+                        else
+                            Nothing
+                    )
+                |> List.sortWith sortTuplesByDateDesc
+
+        hivTestResults =
+            getTestResultsKnownAsPositive .hiv .testResult
+
+        hivPCRTestResults =
+            getTestResults .hivPCR
+                (\value ->
+                    Maybe.andThen
+                        (\status ->
+                            case status of
+                                ViralLoadUndetectable ->
+                                    Just ResultSuppressedViralLoad
+
+                                ViralLoadDetectable ->
+                                    Maybe.map ResultDetectibleViralLoad value.hivViralLoad
+                        )
+                        value.hivViralLoadStatus
+                )
+
+        syphilisTestResults =
+            getTestResults .syphilis .testResult
+
+        hepatitisBTestResults =
+            getTestResultsKnownAsPositive .hepatitisB .testResult
+
+        malariaTestResults =
+            getTestResults .malaria .testResult
+
+        urineDipstickTestResults =
+            List.filterMap
+                (\value ->
+                    if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                        Maybe.map (\executionDate -> ( executionDate, ( value.protein, value.ph, value.glucose ) ))
+                            value.executionDate
+
+                    else
+                        Nothing
+                )
+                data.urineDipstick
+                |> List.sortWith sortTuplesByDateDesc
+
+        longUrineDipstickTestResults =
+            List.filterMap
+                (\value ->
+                    if value.testVariant == Just VariantLongTest && List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                        Maybe.map (\executionDate -> ( executionDate, value ))
+                            value.executionDate
+
+                    else
+                        Nothing
+                )
+                data.urineDipstick
+                |> List.sortWith sortTuplesByDateDesc
+
+        proteinResults =
+            List.map (\( date, ( protein, _, _ ) ) -> ( date, protein )) urineDipstickTestResults
+
+        phResults =
+            List.map (\( date, ( _, ph, _ ) ) -> ( date, ph )) urineDipstickTestResults
+
+        glucoseResults =
+            List.map (\( date, ( _, _, glucose ) ) -> ( date, glucose )) urineDipstickTestResults
+
+        leukocytesResults =
+            List.map (\( date, value ) -> ( date, value.leukocytes )) longUrineDipstickTestResults
+
+        nitriteResults =
+            List.map (\( date, value ) -> ( date, value.nitrite )) longUrineDipstickTestResults
+
+        urobilinogenResults =
+            List.map (\( date, value ) -> ( date, value.urobilinogen )) longUrineDipstickTestResults
+
+        haemoglobinResults =
+            List.map (\( date, value ) -> ( date, value.haemoglobin )) longUrineDipstickTestResults
+
+        ketoneResults =
+            List.map (\( date, value ) -> ( date, value.ketone )) longUrineDipstickTestResults
+
+        bilirubinResults =
+            List.map (\( date, value ) -> ( date, value.bilirubin )) longUrineDipstickTestResults
+
+        randomBloodSugarResults =
+            getTestResults .randomBloodSugar .sugarCount
+
+        hemoglobinResults =
+            getTestResults .hemoglobin .hemoglobinCount
+
+        bloodGpRsResults =
+            getTestResults .bloodGpRs (\value -> ( value.bloodGroup, value.rhesus ))
+
+        bloodGroupResults =
+            List.map (\( date, ( bloodGroup, _ ) ) -> ( date, bloodGroup )) bloodGpRsResults
+
+        rhesusResults =
+            List.map (\( date, ( _, rhesus ) ) -> ( date, rhesus )) bloodGpRsResults
+
+        content =
+            case mode of
+                LabResultsCurrentMain ->
+                    [ viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHIV hivTestResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
+                        |> showIf displayConfig.hivPCR
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistorySyphilis syphilisTestResults)
+                        |> showIf displayConfig.syphilis
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHepatitisB hepatitisBTestResults)
+                        |> showIf displayConfig.hepatitisB
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryMalaria malariaTestResults)
+                        |> showIf displayConfig.malaria
+                    , dipstickShortEntry
+                    , dipstickLongEntry
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHemoglobin hemoglobinResults)
+                        |> showIf displayConfig.hemoglobin
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryBloodGroup bloodGroupResults)
+                        |> showIf displayConfig.bloodGpRs
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryRhesus rhesusResults)
+                        |> showIf displayConfig.bloodGpRs
+                    ]
+
+                LabResultsCurrentDipstickShort ->
+                    [ proteinEntry
+                    , phEntry
+                    , glucoseEntry
+                    ]
+
+                LabResultsCurrentDipstickLong ->
+                    [ proteinEntry
+                    , phEntry
+                    , glucoseEntry
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryLeukocytes leukocytesResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryNitrite nitriteResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryUrobilinogen urobilinogenResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHaemoglobin haemoglobinResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryKetone ketoneResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryBilirubin bilirubinResults)
+                    ]
+
+        proteinEntry =
+            viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryProtein proteinResults)
+
+        phEntry =
+            viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryPH phResults)
+
+        glucoseEntry =
+            viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryGlucose glucoseResults)
+
+        dipstickShortEntry =
+            List.head proteinResults
+                |> Maybe.map
+                    (\( date, proteinResult ) ->
+                        let
+                            proteinResultNormal_ =
+                                Maybe.map proteinResultNormal proteinResult
+                                    |> -- It's ok not to have a result, because test
+                                       -- may have been not performed yet.
+                                       Maybe.withDefault True
+
+                            resultsNormal =
+                                if not proteinResultNormal_ then
+                                    False
+
+                                else
+                                    Maybe.map2
+                                        (\phResult glucoseResult ->
+                                            phResultNormal phResult && glucoseResultNormal glucoseResult
+                                        )
+                                        (List.head phResults |> Maybe.andThen Tuple.second)
+                                        (List.head glucoseResults |> Maybe.andThen Tuple.second)
+                                        |> -- We should never get here since protein result
+                                           -- existed, and all 3 are entered together.
+                                           Maybe.withDefault False
+
+                            result =
+                                if resultsNormal then
+                                    translate language Translate.Normal
+
+                                else
+                                    translate language Translate.Abnormal
+                        in
+                        viewDipstickEntry (Translate.PrenatalUrineDipstickTestLabel VariantShortTest)
+                            (formatDDMMYYYY date)
+                            result
+                            (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickShort)
+                            resultsNormal
+                    )
+                |> Maybe.withDefault (emptyDipstickEntry (Translate.PrenatalUrineDipstickTestLabel VariantShortTest))
+
+        dipstickLongEntry =
+            List.head leukocytesResults
+                |> Maybe.map
+                    (\( date, leukocytesResult ) ->
+                        let
+                            leukocytesResultNormal_ =
+                                Maybe.map leukocytesResultNormal leukocytesResult
+                                    |> -- It's ok not to have a result, because test
+                                       -- may have been not performed yet.
+                                       Maybe.withDefault True
+
+                            resultsNormal =
+                                if not leukocytesResultNormal_ then
+                                    False
+
+                                else
+                                    let
+                                        firstGroupResultsNormal =
+                                            Maybe.map5
+                                                (\proteinResult phResult glucoseResult nitriteResult urobilinogenResult ->
+                                                    proteinResultNormal proteinResult
+                                                        && phResultNormal phResult
+                                                        && glucoseResultNormal glucoseResult
+                                                        && nitriteResultNormal nitriteResult
+                                                        && urobilinogenResultNormal urobilinogenResult
+                                                )
+                                                (List.head proteinResults |> Maybe.andThen Tuple.second)
+                                                (List.head phResults |> Maybe.andThen Tuple.second)
+                                                (List.head glucoseResults |> Maybe.andThen Tuple.second)
+                                                (List.head nitriteResults |> Maybe.andThen Tuple.second)
+                                                (List.head urobilinogenResults |> Maybe.andThen Tuple.second)
+                                                |> -- We should never get here since leukocytes result
+                                                   -- existed, and all the results are entered together.
+                                                   Maybe.withDefault False
+
+                                        secondGroupResultsNormal =
+                                            Maybe.map3
+                                                (\haemoglobinResult ketoneResult bilirubinResult ->
+                                                    urineHaemoglobinValueResultNormal haemoglobinResult
+                                                        && ketoneResultNormal ketoneResult
+                                                        && bilirubinResultNormal bilirubinResult
+                                                )
+                                                (List.head haemoglobinResults |> Maybe.andThen Tuple.second)
+                                                (List.head ketoneResults |> Maybe.andThen Tuple.second)
+                                                (List.head bilirubinResults |> Maybe.andThen Tuple.second)
+                                                |> -- We should never get here since leukocytes result
+                                                   -- existed, and all the results are entered together.
+                                                   Maybe.withDefault False
+                                    in
+                                    firstGroupResultsNormal && secondGroupResultsNormal
+
+                            result =
+                                if resultsNormal then
+                                    translate language Translate.Normal
+
+                                else
+                                    translate language Translate.Abnormal
+                        in
+                        viewDipstickEntry (Translate.PrenatalUrineDipstickTestLabel VariantLongTest)
+                            (formatDDMMYYYY date)
+                            result
+                            (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickLong)
+                            resultsNormal
+                    )
+                |> Maybe.withDefault (emptyDipstickEntry (Translate.PrenatalUrineDipstickTestLabel VariantLongTest))
+
+        emptyDipstickEntry label =
+            viewDipstickEntry label "--/--/----" "---" Nothing True
+
+        viewDipstickEntry label date result maybeAction resultNormal =
+            let
+                forwardIcon =
+                    Maybe.map
+                        (\action ->
+                            div
+                                [ class "icon-forward"
+                                , onClick action
+                                ]
+                                []
+                        )
+                        maybeAction
+                        |> Maybe.withDefault emptyNode
+            in
+            div [ classList [ ( "entry", True ), ( "warning", not resultNormal ) ] ]
+                [ div [ class "name" ] [ translateText language label ]
+                , div [ class "date" ] [ text date ]
+                , div [ class "result" ] [ text result ]
+                , div [ class "normal-range" ] [ translateText language Translate.Normal ]
+                , forwardIcon
+                ]
+    in
+    div [ class "lab-results" ]
+        [ viewItemHeading language (Translate.LabResultsPaneHeader mode) "blue"
+        , div [ class "pane-content" ] [ heading ]
+        , div [ class "group-content" ] content
+        ]
 
 
 viewLabResultsHistoryPane : Language -> NominalDate -> LabResultsHistoryMode -> Html any
