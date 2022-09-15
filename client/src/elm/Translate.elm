@@ -3673,7 +3673,7 @@ translationSet trans =
 
         DiagnosedAtAnotherFacilitySuffix ->
             { english = "at another facility and were given medication. Which medication was given?"
-            , kinyarwanda = Just "Ku rindi vuriro wagiyeho ugahabwa imiti. Ni iyihe miti wahawe"
+            , kinyarwanda = Just "Ku rindi vuriro wagiyeho ugahabwa imiti. Ni iyihe miti wahawe?"
             }
 
         DiagnosedByOutsideCare ->
@@ -6280,7 +6280,7 @@ translationSet trans =
 
         MedicationDistributionNoticeGonorrhea ->
             { english = "Note: It is also recommended to prescribe the partner"
-            , kinyarwanda = Just "Icyitonderwa:Ni ngombwa kuvura uwo babana/bashakanye"
+            , kinyarwanda = Just "Icyitonderwa: Ni ngombwa kuvura uwo babana/bashakanye"
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed1 ->
@@ -10739,12 +10739,12 @@ translationSet trans =
 
                 OutsideCareMedicationErythromycin ->
                     { english = "Erythromycin (500mg)"
-                    , kinyarwanda = Just "Erythromicine"
+                    , kinyarwanda = Just "Erythromicine (500mg)"
                     }
 
                 OutsideCareMedicationAzithromycin ->
                     { english = "Azithromycin (2g)"
-                    , kinyarwanda = Just "Azithromycine"
+                    , kinyarwanda = Just "Azithromycine (2g)"
                     }
 
                 OutsideCareMedicationCeftriaxon ->
@@ -11518,12 +11518,12 @@ translationSet trans =
 
                 TreatmentErythromycin ->
                     { english = "by mouth 4x a day for 14 days"
-                    , kinyarwanda = Just "Mu kanwa inshuro enye ku munsi mu minsi 14"
+                    , kinyarwanda = Just "mu kanwa inshuro enye ku munsi mu minsi 14"
                     }
 
                 TreatmentAzithromycin ->
                     { english = "4 tabs by mouth x one day"
-                    , kinyarwanda = Just "Ibinini 4 abinywe mu kanwa umunsi umwe"
+                    , kinyarwanda = Just "ibinini 4 abinywe mu kanwa umunsi umwe"
                     }
 
                 TreatmentCeftriaxon ->
@@ -11533,52 +11533,52 @@ translationSet trans =
 
                 TreatmentAluminiumHydroxide ->
                     { english = "1 tablet by mouth 3x a day for 7 days"
-                    , kinyarwanda = Just "Kunywa ikinini 1 inshuro ku munsi mu minsi 7"
+                    , kinyarwanda = Just "kunywa ikinini 1 inshuro ku munsi mu minsi 7"
                     }
 
                 TreatmentNitrofurantoin ->
                     { english = "by mouth 2x a day for 7 days"
-                    , kinyarwanda = Just "Mu kanwa inshuro 2 ku munsi mu minsi 7"
+                    , kinyarwanda = Just "mu kanwa inshuro 2 ku munsi mu minsi 7"
                     }
 
                 TreatmentAmoxicillin ->
                     { english = "by mouth 3x a day for 7 days"
-                    , kinyarwanda = Just "Mu kanwa inshuro 3 ku munsi mu minsi 7"
+                    , kinyarwanda = Just "mu kanwa inshuro 3 ku munsi mu minsi 7"
                     }
 
                 TreatmentClotrimaxazole200 ->
                     { english = "vaginally every night x 3 night"
-                    , kinyarwanda = Just "Mu gitsina buri joro mu majoro 3"
+                    , kinyarwanda = Just "mu gitsina buri joro mu majoro 3"
                     }
 
                 TreatmentClotrimaxazole500 ->
                     { english = "vaginally one time"
-                    , kinyarwanda = Just "Inshuro imwe mu gitsina"
+                    , kinyarwanda = Just "inshuro imwe mu gitsina"
                     }
 
                 TreatmentMethyldopa2 ->
                     { english = "by mouth 2x a day"
-                    , kinyarwanda = Just "Mu kanwa inshuro 2 ku munsi"
+                    , kinyarwanda = Just "mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentMethyldopa3 ->
                     { english = "by mouth 3x a day"
-                    , kinyarwanda = Just "Mu kanwa inshuro 3 ku munsi"
+                    , kinyarwanda = Just "mu kanwa inshuro 3 ku munsi"
                     }
 
                 TreatmentMethyldopa4 ->
                     { english = "by mouth 4x a day"
-                    , kinyarwanda = Just "Mu kanwa inshuro 4 ku munsi"
+                    , kinyarwanda = Just "mu kanwa inshuro 4 ku munsi"
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
                     { english = "by mouth 2x a day"
-                    , kinyarwanda = Just "Mu kanwa inshuro 2 ku munsi"
+                    , kinyarwanda = Just "mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
                     { english = "by mouth 1x a day"
-                    , kinyarwanda = Just "Mu kanwa inshuro 1 ku munsi"
+                    , kinyarwanda = Just "mu kanwa inshuro 1 ku munsi"
                     }
 
                 -- Dosage is not applicable for other options.
@@ -11628,14 +11628,14 @@ translationSet trans =
                     -- Names of Medication, therefore,
                     -- no translation is needed.
                     { english = "Erythromycin (500mg)"
-                    , kinyarwanda = Just "Erythromicine"
+                    , kinyarwanda = Just "Erythromicine (500mg)"
                     }
 
                 TreatmentAzithromycin ->
                     -- Names of Medication, therefore,
                     -- no translation is needed.
                     { english = "Azithromycin (2g)"
-                    , kinyarwanda = Just "Azithromycine"
+                    , kinyarwanda = Just "Azithromycine (2g)"
                     }
 
                 TreatmentCeftriaxon ->
@@ -11682,7 +11682,7 @@ translationSet trans =
 
                 TreatmentHealthEducationForHeartburn ->
                     { english = "Not dispensing medicine. Follow health education protocols."
-                    , kinyarwanda = Just "Witanga umuti. Kurikiza amabwiriza ajyanye n'inyigisho z'buzima"
+                    , kinyarwanda = Just "Witanga umuti. Kurikiza amabwiriza ajyanye n'inyigisho z'buzima."
                     }
 
                 TreatmentNitrofurantoin ->
@@ -13165,7 +13165,7 @@ translationSet trans =
 
                 TreatmentCoartem ->
                     { english = "At the previous visit you were given Coartem, 4 tablets by mouth twice per day x 3 days."
-                    , kinyarwanda = Just "Mu isura rishize wahawe AL (Kowaritemu), ibibini bine (4) byo kunywa mu kanwa inshuri ebyiri ku munsi mu minsi itatu"
+                    , kinyarwanda = Just "Mu isura rishize wahawe AL (Kowaritemu), ibibini bine (4) byo kunywa mu kanwa inshuri ebyiri ku munsi mu minsi itatu."
                     }
 
                 _ ->
