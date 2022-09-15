@@ -1,4 +1,4 @@
-module Pages.Types exposing (..)
+module Pages.Report.Types exposing (..)
 
 import Backend.Measurement.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)

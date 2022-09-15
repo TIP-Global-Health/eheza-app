@@ -1365,8 +1365,8 @@ bilirubinValueFromString value =
 expired, and do not provide option of filling the results.
 Note: HIV PCR can take up to one month to get a result.
 -}
-prenatalLabExpirationPeriod : Int
-prenatalLabExpirationPeriod =
+labExpirationPeriod : Int
+labExpirationPeriod =
     35
 
 

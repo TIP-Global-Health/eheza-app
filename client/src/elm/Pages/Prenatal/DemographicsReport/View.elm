@@ -1,4 +1,4 @@
-module Pages.Prenatal.DemographicsReport.View exposing (view, viewHeader, viewItemHeading)
+module Pages.Prenatal.DemographicsReport.View exposing (view, viewHeader)
 
 import App.Model exposing (Msg(..))
 import AssocList as Dict
@@ -16,6 +16,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Report.View exposing (viewItemHeading)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
@@ -232,12 +233,6 @@ viewContactInformationPane language currentDate db person =
             , viewLineItem language Translate.HealthCenter healthCenterName
             ]
         ]
-
-
-viewItemHeading : Language -> TranslationId -> String -> Html any
-viewItemHeading language label color =
-    div [ class <| "pane-heading " ++ color ]
-        [ text <| translate language label ]
 
 
 viewLineItem : Language -> TranslationId -> String -> Html Msg

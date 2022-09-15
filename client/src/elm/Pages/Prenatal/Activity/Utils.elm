@@ -11,7 +11,7 @@ import Backend.Measurement.Utils
         , getMeasurementValueFunc
         , muacIndication
         , muacValueFunc
-        , prenatalLabExpirationPeriod
+        , labExpirationPeriod
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -5090,7 +5090,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
                                         -- we treat the test as if it was not performed.
                                         Nothing
 
-                                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= prenatalLabExpirationPeriod) then
+                                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
                                         -- No results were entered for more than 35 days since the
                                         -- day on which measurement was taken.
                                         -- Test is considered expired, and is being ignored

@@ -31,7 +31,7 @@ import Backend.Measurement.Utils
         ( getMeasurementValueFunc
         , mapChildMeasurementsAtOfflineSession
         , mapMeasurementData
-        , prenatalLabExpirationPeriod
+        , labExpirationPeriod
         , splitChildMeasurements
         , splitMotherMeasurements
         )
@@ -4848,7 +4848,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
 
                                                     else
                                                         EverySet.remove test value.performedTests
-                                                , resolutionDate = Date.add Days prenatalLabExpirationPeriod currentDate
+                                                , resolutionDate = Date.add Days labExpirationPeriod currentDate
                                             }
                                        )
                         in
@@ -4870,7 +4870,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                                     Backend.Measurement.Model.LabsResultsValue
                                         (EverySet.singleton test)
                                         EverySet.empty
-                                        (Date.add Days prenatalLabExpirationPeriod currentDate)
+                                        (Date.add Days labExpirationPeriod currentDate)
                                         False
                             in
                             [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
@@ -5012,7 +5012,7 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
 
                                                     else
                                                         EverySet.remove test value.performedTests
-                                                , resolutionDate = Date.add Days prenatalLabExpirationPeriod currentDate
+                                                , resolutionDate = Date.add Days labExpirationPeriod currentDate
                                             }
                                        )
                         in
@@ -5034,7 +5034,7 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
                                     Backend.Measurement.Model.LabsResultsValue
                                         (EverySet.singleton test)
                                         EverySet.empty
-                                        (Date.add Days prenatalLabExpirationPeriod currentDate)
+                                        (Date.add Days labExpirationPeriod currentDate)
                                         False
                             in
                             [ saveNCDLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
