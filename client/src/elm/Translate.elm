@@ -8737,7 +8737,7 @@ translationSet trans =
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-                    { english = "Early Mastitis or Engorgment"
+                    { english = "Early Mastitis or Engorgement"
                     , kinyarwanda = Nothing
                     }
 
@@ -9144,7 +9144,7 @@ translationSet trans =
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-                    { english = "Early Mastitis or Engorgment"
+                    { english = "Early Mastitis or Engorgemen"
                     , kinyarwanda = Nothing
                     }
 
@@ -9441,7 +9441,7 @@ translationSet trans =
                     }
 
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-                    { english = "Patient shows signs of Early Mastitis or Engorgment"
+                    { english = "Patient shows signs of Early Mastitis or Engorgement"
                     , kinyarwanda = Nothing
                     }
 
@@ -9653,7 +9653,7 @@ translationSet trans =
                     }
 
                 EducationEarlyMastitisOrEngorgment ->
-                    { english = "Early Mastitis or Engorgment"
+                    { english = "Early Mastitis or Engorgement"
                     , kinyarwanda = Nothing
                     }
 
@@ -12062,7 +12062,7 @@ translationSet trans =
                     }
 
                 TreatmentParacetamol ->
-                    { english = "1 tablet by mouth 3 times a day for 5 days or"
+                    { english = "1 tablet by mouth 3 times a day for 5 days"
                     , kinyarwanda = Just "Ikinini 1 mu kanwa inshuri 3 ku munsi mu minsi 5"
                     }
 
@@ -12211,7 +12211,7 @@ translationSet trans =
                     }
 
                 TreatmentPenecilinV ->
-                    { english = "Penecilin V (250mg)"
+                    { english = "Penicillin V (250mg)"
                     , kinyarwanda = Nothing
                     }
 
