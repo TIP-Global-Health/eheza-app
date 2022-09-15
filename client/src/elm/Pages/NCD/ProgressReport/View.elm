@@ -16,6 +16,7 @@ import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.ProgressReport.Model exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Utils exposing (viewPersonDetailsExtended)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
@@ -30,8 +31,10 @@ view language currentDate id initiator db model =
         header =
             viewHeader language initiator
 
-        -- content =
-        --     viewWebData language (viewContent language currentDate initiator model) identity assembled
+        content =
+            viewWebData language (viewContent language currentDate initiator model) identity assembled
+
+        -- @todo
         -- endEncounterDialog =
         --     if model.showEndEncounterDialog then
         --         Just <|
@@ -46,8 +49,9 @@ view language currentDate id initiator db model =
     in
     div [ class "page-report ncd" ] <|
         [ header
+        , content
 
-        -- , content
+        -- @todo
         -- , viewModal endEncounterDialog
         ]
 
@@ -76,3 +80,93 @@ viewHeader language initiator =
                 []
             ]
         ]
+
+
+viewContent : Language -> NominalDate -> NCDProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContent language currentDate initiator model assembled =
+    let
+        derivedContent =
+            -- @todo
+            -- case model.labResultsMode of
+            --     Just mode ->
+            --         case mode of
+            --             LabResultsCurrent currentMode ->
+            --                 [ viewLabResultsPane language currentDate currentMode assembled ]
+            --
+            --             LabResultsHistory historyMode ->
+            --                 [ viewLabResultsHistoryPane language currentDate historyMode ]
+            --
+            --     Nothing ->
+            --         let
+            --             firstEncounterMeasurements =
+            --                 getFirstEncounterMeasurements isChw assembled
+            --
+            --             actions =
+            --                 case initiator of
+            --                     InitiatorEncounterPage _ ->
+            --                         let
+            --                             ( completedActivities, pendingActivities ) =
+            --                                 getAllActivities assembled
+            --                                     |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
+            --                                     |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
+            --                         in
+            --                         viewActionButton language
+            --                             pendingActivities
+            --                             completedActivities
+            --                             (SetActivePage PinCodePage)
+            --                             SetEndEncounterDialogState
+            --                             assembled
+            --
+            --                     InitiatorRecurrentEncounterPage _ ->
+            --                         let
+            --                             ( completedActivities, pendingActivities ) =
+            --                                 Pages.Prenatal.RecurrentEncounter.Utils.allActivities
+            --                                     |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
+            --                                     |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+            --
+            --                             allowEndEcounter =
+            --                                 List.isEmpty pendingActivities
+            --                         in
+            --                         viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+            --
+            --                     InitiatorNewEncounter encounterId ->
+            --                         div [ class "actions" ]
+            --                             [ button
+            --                                 [ class "ui fluid primary button"
+            --                                 , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
+            --                                 ]
+            --                                 [ text <| translate language Translate.Reviewed ]
+            --                             ]
+            --
+            --                     Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
+            --                         emptyNode
+            --         in
+            --         [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
+            --         , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+            --         , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+            --         , viewChwActivityPane language currentDate isChw assembled
+            --         , viewPatientProgressPane language currentDate isChw assembled
+            --         , viewLabsPane language currentDate assembled
+            --         , viewProgressPhotosPane language currentDate isChw assembled
+            --         , actions
+            --         ]
+            []
+    in
+    div [ class "ui unstackable items" ] <|
+        viewPersonInfoPane language currentDate assembled.person
+            :: derivedContent
+
+
+viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
+viewPersonInfoPane language currentDate person =
+    div [ class "pane person-details" ]
+        [ viewPaneHeading language Translate.PatientInformation
+        , div [ class "patient-info" ] <|
+            viewPersonDetailsExtended language currentDate person
+        ]
+
+
+viewPaneHeading : Language -> TranslationId -> Html any
+viewPaneHeading language label =
+    div [ class <| "pane-heading" ]
+        [ text <| translate language label ]
