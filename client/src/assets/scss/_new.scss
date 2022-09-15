@@ -3315,6 +3315,7 @@ div.page-activity.trace-contact,
 div.page-activity.well-child,
 div.page-report.well-child,
 div.page-activity.patient-record,
+div.page-report.ncd,
 div.page-encounter.ncd,
 div.page-activity.ncd {
 
@@ -3463,7 +3464,8 @@ div.page-report.acute-illness,
 div.page-report.well-child,
 div.page-report.clinical,
 div.page-report.demographics,
-div.page-activity.patient-record {
+div.page-activity.patient-record,
+div.page-report.ncd {
   background: unset;
 
   .pane-heading {
