@@ -1,5 +1,7 @@
 module Backend.NCDEncounter.Types exposing (..)
 
+import Backend.Entities exposing (NCDEncounterId)
+
 
 type NCDDiagnosis
     = DiagnosisHypertensionStage1
@@ -9,3 +11,8 @@ type NCDDiagnosis
     | DiagnosisDiabetesRecurrent
     | DiagnosisRenalComplications
     | NoNCDDiagnosis
+
+
+type NCDProgressReportInitiator
+    = InitiatorEncounterPage NCDEncounterId
+    | InitiatorRecurrentEncounterPage NCDEncounterId

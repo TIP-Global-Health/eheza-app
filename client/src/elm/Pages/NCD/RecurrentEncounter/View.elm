@@ -7,6 +7,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (..)
 import Backend.NCDActivity.Utils exposing (getRecurrentActivityIcon)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Date exposing (Interval(..))
@@ -160,7 +161,7 @@ viewMainPageContent language currentDate assembled model =
                         Translate.ProgressReport
                         (SetActivePage <|
                             UserPage <|
-                                NCDProgressReportPage assembled.id
+                                NCDProgressReportPage (InitiatorRecurrentEncounterPage assembled.id)
                         )
                     ]
 

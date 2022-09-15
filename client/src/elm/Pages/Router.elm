@@ -14,6 +14,8 @@ import Backend.Measurement.Model exposing (LaboratoryTest)
 import Backend.Measurement.Utils
 import Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
 import Backend.NCDActivity.Utils
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
+import Backend.NCDEncounter.Utils
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionActivity.Utils
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
@@ -302,8 +304,8 @@ pageToFragment current =
                 NCDRecurrentActivityPage id activity ->
                     Just <| "ncd-recurrent-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.NCDActivity.Utils.recurrentActivityToString activity
 
-                NCDProgressReportPage encounterId ->
-                    Just <| "ncd-progress-report/" ++ fromEntityUuid encounterId
+                NCDProgressReportPage initiator ->
+                    Just <| "ncd-progress-report/" ++ Backend.NCDEncounter.Utils.progressReportInitiatorToUrlFragmemt initiator
 
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
@@ -367,7 +369,7 @@ parser =
         , map (\id activity -> UserPage <| NCDActivityPage id activity) (s "ncd-activity" </> parseUuid </> parseNCDActivity)
         , map (\id -> UserPage <| NCDRecurrentEncounterPage id) (s "ncd-recurrent-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDRecurrentActivityPage id activity) (s "ncd-recurrent-activity" </> parseUuid </> parseNCDRecurrentActivity)
-        , map (\id -> UserPage <| NCDProgressReportPage id) (s "ncd-progress-report" </> parseUuid)
+        , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
 
@@ -493,3 +495,8 @@ parsePatientRecordInitiator =
 parseIndividualParticipantInitiator : Parser (IndividualParticipantInitiator -> c) c
 parseIndividualParticipantInitiator =
     custom "IndividualParticipantInitiator" Backend.IndividualEncounterParticipant.Utils.initiatorFromUrlFragmemt
+
+
+parseNCDProgressReportInitiator : Parser (NCDProgressReportInitiator -> c) c
+parseNCDProgressReportInitiator =
+    custom "NCDProgressReportInitiator" Backend.NCDEncounter.Utils.progressReportInitiatorFromUrlFragmemt

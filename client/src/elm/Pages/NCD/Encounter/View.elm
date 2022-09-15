@@ -8,6 +8,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.NCDActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -153,7 +154,7 @@ viewMainPageContent language currentDate db assembled model =
                         Translate.ProgressReport
                         (SetActivePage <|
                             UserPage <|
-                                NCDProgressReportPage assembled.id
+                                NCDProgressReportPage (InitiatorEncounterPage assembled.id)
                         )
                     ]
 

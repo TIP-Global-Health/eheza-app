@@ -3,6 +3,7 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
@@ -723,13 +724,21 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageNCDRecurrentActivity id activity)
                             |> flexPageWrapper model
 
-                    NCDProgressReportPage encounterId ->
+                    NCDProgressReportPage initiator ->
                         let
+                            encounterId =
+                                case initiator of
+                                    InitiatorEncounterPage id ->
+                                        id
+
+                                    InitiatorRecurrentEncounterPage id ->
+                                        id
+
                             page_ =
                                 Dict.get encounterId loggedInModel.ncdProgressReportPages
                                     |> Maybe.withDefault Pages.NCD.ProgressReport.Model.emptyModel
                         in
-                        Pages.NCD.ProgressReport.View.view model.language currentDate encounterId model.indexedDb page_
+                        Pages.NCD.ProgressReport.View.view model.language currentDate encounterId initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDProgressReport encounterId)
                             |> flexPageWrapper model
 

@@ -5,6 +5,7 @@ import App.Utils exposing (getLoggedInData)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Fetch
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.AcuteIllness.Activity.Fetch
@@ -313,8 +314,17 @@ fetch model =
                 Pages.WellChild.ProgressReport.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (NCDProgressReportPage id) ->
-                Pages.NCD.ProgressReport.Fetch.fetch id model.indexedDb
+            UserPage (NCDProgressReportPage initiator) ->
+                let
+                    encounterId =
+                        case initiator of
+                            InitiatorEncounterPage id ->
+                                id
+
+                            InitiatorRecurrentEncounterPage id ->
+                                id
+                in
+                Pages.NCD.ProgressReport.Fetch.fetch encounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (AcuteIllnessOutcomePage id) ->
