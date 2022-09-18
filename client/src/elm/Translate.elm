@@ -975,7 +975,6 @@ type TranslationId
     | PrenatalHealthEducationEarlyMastitisOrEngorgmentInform
     | PrenatalHealthEducationMentalHealthInform
     | PrenatalARVProgramInstructions Bool
-    | PrenatalARVProgramPostpartumHeader
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
     | PrenatalImmunisationDescription PrenatalVaccineType
@@ -9896,11 +9895,6 @@ translationSet trans =
                 { english = "Refer patient to ARV services for assessment of ARVs"
                 , kinyarwanda = Nothing
                 }
-
-        PrenatalARVProgramPostpartumHeader ->
-            { english = "This patient was diagnosed with HIV during her pregnancy"
-            , kinyarwanda = Nothing
-            }
 
         PrenatalHIVSignQuestion sign ->
             case sign of
