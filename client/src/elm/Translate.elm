@@ -13660,23 +13660,23 @@ translationSet trans =
             }
 
         TreatmentDetailsAnemia ->
-            { english = "At the previous visit you were given Iron (120mg), one 60mg tablet 2x a day for 3 months and Folic Acid (400 IU) take daily for 3 months."
+            { english = "At the previous visit you were given Iron (120mg), one 60mg tablet to be taken 2x a day for 3 months and Folic Acid (400 IU) to be taken daily for 3 months."
             , kinyarwanda = Nothing
             }
 
         TreatmentDetailsHIV dolutegravir arvs ->
             if dolutegravir && arvs then
-                { english = "At the previous visit you were given TDF + 3TC (1 tablet), by mouth 1x a day and Doltegravir (50mg) by mouth 1x a day."
+                { english = "At the previous visit you were given TDF + 3TC (1 tablet), to be taken by mouth 1x a day and Doltegravir (50mg) to be taken by mouth 1x a day."
                 , kinyarwanda = Nothing
                 }
 
             else if dolutegravir then
-                { english = "At the previous visit you were given Doltegravir (50mg), by mouth 1x a day."
+                { english = "At the previous visit you were given Doltegravir (50mg), to be taken by mouth 1x a day."
                 , kinyarwanda = Nothing
                 }
 
             else if arvs then
-                { english = "At the previous visit you were given TDF + 3TC (1 tablet), by mouth 1x a day."
+                { english = "At the previous visit you were given TDF + 3TC (1 tablet), to be taken by mouth 1x a day."
                 , kinyarwanda = Nothing
                 }
 
@@ -13696,27 +13696,27 @@ translationSet trans =
             in
             case sign of
                 TreatmentMethyldopa2 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 2x a day for " ++ diagnosis ++ "."
+                    { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 2x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa3 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 3x a day for " ++ diagnosis ++ "."
+                    { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 3x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa4 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day for " ++ diagnosis ++ "."
+                    { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day and Carvedilol (6.25mg), by mouth 2x a day for " ++ diagnosis ++ "."
+                    { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day and Carvedilol (6.25mg), to be taken by mouth 2x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
-                    { english = "At the previous visit you were given Methyldopa (250mg,) by mouth 4x a day, Carvedilol (6.25mg), by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for " ++ diagnosis ++ "."
+                    { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day and Carvedilol (6.25mg), to be taken by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Nothing
                     }
 
@@ -13729,12 +13729,12 @@ translationSet trans =
         TreatmentDetailsMalaria sign ->
             case sign of
                 TreatmentQuinineSulphate ->
-                    { english = "At the previous visit you were given Quinine Sulphate per os 10 mg/kg/dose, 3 times a day for 7 days."
+                    { english = "At the previous visit you were given Quinine Sulphate per os 10 mg/kg/dose, to be taken 3 times a day for 7 days."
                     , kinyarwanda = Nothing
                     }
 
                 TreatmentCoartem ->
-                    { english = "At the previous visit you were given Coartem, 4 tablets by mouth twice per day x 3 days."
+                    { english = "At the previous visit you were given Coartem, 4 tablets to be taken by mouth twice per day x 3 days."
                     , kinyarwanda = Nothing
                     }
 
