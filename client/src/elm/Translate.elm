@@ -9904,7 +9904,7 @@ translationSet trans =
         PrenatalHIVSignQuestion sign ->
             case sign of
                 HIVProgramHC ->
-                    { english = "Does the health center have a ARV services program"
+                    { english = "Does the health center have an ARV services program"
                     , kinyarwanda = Nothing
                     }
 
