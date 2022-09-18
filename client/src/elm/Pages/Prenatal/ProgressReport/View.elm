@@ -635,11 +635,16 @@ viewChwActivityPane language currentDate isChw assembled =
                 )
                 allMeasurementsWithDates
 
-        heading =
-            div [ class "heading" ]
-                [ div [ class "date" ] [ text <| translate language Translate.Date ]
-                , div [ class "chw-actions" ] [ text <| translate language Translate.Actions ]
-                ]
+        content =
+            if not <| List.isEmpty actions then
+                div [ class "heading" ]
+                    [ div [ class "date" ] [ text <| translate language Translate.Date ]
+                    , div [ class "chw-actions" ] [ text <| translate language Translate.Actions ]
+                    ]
+                    :: actions
+
+            else
+                []
 
         actions =
             List.map
@@ -659,9 +664,8 @@ viewChwActivityPane language currentDate isChw assembled =
     in
     div [ class "chw-activities" ]
         [ viewItemHeading language Translate.ChwActivity "blue"
-        , div [ class "pane-content" ] <|
-            heading
-                :: actions
+        , div [ class "pane-content" ]
+            content
         ]
 
 
