@@ -11162,7 +11162,7 @@ translationSet trans =
                     }
 
                 OutsideCareMedicationAmlodipine ->
-                    { english = "Amlodipine (5pmg)"
+                    { english = "Amlodipine (5mg)"
                     , kinyarwanda = Nothing
                     }
 

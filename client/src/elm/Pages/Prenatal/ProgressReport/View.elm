@@ -3088,6 +3088,11 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
     in
     if List.member diagnosis outsideCareDiagnosesWithPossibleMedication then
         let
+            treatmentForHypertensionMessage =
+                treatedWithPhrase outsideCareMedicationOptionsHypertension NoOutsideCareMedicationForHypertension
+                    |> Just
+                    |> completePhrase
+
             treatedWithPhrase treartmentOptions noTreatmentOption =
                 Maybe.map
                     (EverySet.toList
@@ -3138,14 +3143,13 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
                     |> completePhrase
 
             DiagnosisGestationalHypertensionImmediate ->
-                treatedWithPhrase outsideCareMedicationOptionsHypertension NoOutsideCareMedicationForHypertension
-                    |> Just
-                    |> completePhrase
+                treatmentForHypertensionMessage
 
             DiagnosisChronicHypertensionImmediate ->
-                treatedWithPhrase outsideCareMedicationOptionsHypertension NoOutsideCareMedicationForHypertension
-                    |> Just
-                    |> completePhrase
+                treatmentForHypertensionMessage
+
+            DiagnosisModeratePreeclampsiaInitialPhase ->
+                treatmentForHypertensionMessage
 
             -- Will never get here.
             _ ->
