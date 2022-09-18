@@ -1158,7 +1158,7 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
                    )
 
         NursePostpartumEncounter ->
-            mandatoryActivitiesFoNurseCompleted
+            mandatoryActivitiesForNurseCompleted
 
         ChwFirstEncounter ->
             let
