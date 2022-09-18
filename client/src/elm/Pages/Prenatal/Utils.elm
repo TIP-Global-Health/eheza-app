@@ -190,6 +190,7 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                 PrenatalEncounterPhaseInitial ->
                     emergencyReferralDiagnosesInitial
                         ++ [ DiagnosisModeratePreeclampsiaInitialPhase
+                           , DiagnosisSeverePreeclampsiaInitialPhase
                            , DiagnosisHeartburnPersistent
                            , DiagnosisDeepVeinThrombosis
                            , DiagnosisPelvicPainIntense
@@ -213,6 +214,7 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                            , DiagnosisMalariaWithSevereAnemia
                            , DiagnosisSevereAnemia
                            , DiagnosisModeratePreeclampsiaRecurrentPhase
+                           , DiagnosisSeverePreeclampsiaRecurrentPhase
                            , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
                            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
                            , DiagnosisRhesusNegative
