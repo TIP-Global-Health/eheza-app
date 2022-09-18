@@ -1343,6 +1343,7 @@ type TranslationId
     | View
     | ViewProgressReport
     | Village
+    | VitaminAWarningPopupMessage
     | WaitForVitalsRecheckHelper
     | WaitForLabsResultsHelper
     | WaitInstructions
@@ -14128,6 +14129,11 @@ translationSet trans =
         Village ->
             { english = "Village"
             , kinyarwanda = Just "Umudugudu"
+            }
+
+        VitaminAWarningPopupMessage ->
+            { english = "Patient did not recieve Vitamin A"
+            , kinyarwanda = Nothing
             }
 
         WaitForVitalsRecheckHelper ->

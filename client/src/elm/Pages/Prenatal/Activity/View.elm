@@ -228,6 +228,13 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
                                 , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
                                 , treatmentReviewAtion
                                 )
+
+                        WarningPopupVitaminA treatmentReviewAtion ->
+                            Just <|
+                                ( p [] [ text <| translate language Translate.VitaminAWarningPopupMessage ]
+                                , emptyNode
+                                , treatmentReviewAtion
+                                )
             in
             Maybe.map (customWarningPopup language) data
         )
@@ -4718,6 +4725,17 @@ viewPostpartumTreatmentReviewContent language currentDate assembled data =
 
         receivedVitaminAUpdateFunc value form_ =
             { form_ | receivedVitaminA = Just value }
+
+        action =
+            let
+                saveMsg =
+                    SavePostpartumTreatmentReview assembled.participant.person assembled.measurements.medication
+            in
+            if form.receivedVitaminA == Just False then
+                SetWarningPopupState (Just (WarningPopupVitaminA saveMsg))
+
+            else
+                saveMsg
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -4729,7 +4747,7 @@ viewPostpartumTreatmentReviewContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePostpartumTreatmentReview assembled.participant.person assembled.measurements.medication
+                , onClick action
                 ]
                 [ text <| translate language Translate.Save ]
             ]
