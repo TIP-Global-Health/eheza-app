@@ -3227,7 +3227,23 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                     assembled.encounter.encounterType == NursePostpartumEncounter
                             in
                             if forPostpartum then
-                                [ viewCustomLabel language Translate.PrenatalARVProgramPostpartumHeader "." "instructions"
+                                let
+                                    header =
+                                        resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
+                                            |> Maybe.map
+                                                (\diagnosis ->
+                                                    div [ class "label header" ]
+                                                        [ text <| translate language Translate.PrenatalNCDProgramHeaderPrefix
+                                                        , text " "
+                                                        , text <| translate language <| Translate.PrenatalDiagnosis diagnosis
+                                                        , text " "
+                                                        , text <| translate language Translate.PrenatalNCDProgramHeaderSuffix
+                                                        , text "."
+                                                        ]
+                                                )
+                                            |> Maybe.withDefault emptyNode
+                                in
+                                [ header
                                 , viewCustomLabel language (Translate.PrenatalARVProgramInstructions forPostpartum) "." "instructions"
                                 ]
 

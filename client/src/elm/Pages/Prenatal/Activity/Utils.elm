@@ -1134,7 +1134,7 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     let
-        mandatoryActivitiesFoNurseCompleted =
+        mandatoryActivitiesForNurseCompleted =
             -- All activities that will appear at
             -- current encounter are completed, besides
             -- Photo and Next Steps itself.
@@ -1154,7 +1154,7 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
                 || (-- Otherwise, we need all activities that will appear at
                     -- current encounter completed, besides Photo
                     -- and Next Steps itself.
-                    mandatoryActivitiesFoNurseCompleted
+                    mandatoryActivitiesForNurseCompleted
                    )
 
         NursePostpartumEncounter ->
