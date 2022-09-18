@@ -3110,7 +3110,6 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
                                                 treatments
                                                 |> String.join ", "
                                            )
-                                        ++ " "
                            )
                     )
                     medications
