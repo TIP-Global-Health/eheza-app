@@ -3126,7 +3126,7 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
         in
         case diagnosis of
             DiagnosisHIV ->
-                treatedWithPhrase outsideCareMedicationOptionsMalaria NoOutsideCareMedicationForMalaria
+                treatedWithPhrase outsideCareMedicationOptionsHIV NoOutsideCareMedicationForMalaria
                     |> Just
                     |> completePhrase
 
