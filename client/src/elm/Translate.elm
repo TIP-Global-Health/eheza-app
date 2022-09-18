@@ -6289,7 +6289,7 @@ translationSet trans =
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed2 ->
-            { english = "Doxycycline (100mg): by moth 2x a day for 7 days"
+            { english = "Doxycycline (100mg): by mouth 2x a day for 7 days"
             , kinyarwanda = Nothing
             }
 
