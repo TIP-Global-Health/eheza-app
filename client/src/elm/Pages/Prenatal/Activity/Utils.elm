@@ -472,6 +472,25 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
+                    let
+                        perHypertensionlikeDiagnosesLogic =
+                            -- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
+                            (updateHypertensionTreatmentWithMedication assembled
+                                && (-- Hypertension / Moderate Preeclamsia treatemnt
+                                    -- did not cause an adverse event.
+                                    not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
+                                   )
+                                && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
+                                    -- in referral to hospital.
+                                    not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
+                                   )
+                            )
+                                || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
+                                   -- at current encounter does not indicate a need for hospitalization.
+                                   (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
+                                        && (not <| bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled)
+                                   )
+                    in
                     -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
                         && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
@@ -490,17 +509,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisTrichomonasOrBacterialVaginosis
                                     ]
                                     assembled
-                                || (updateHypertensionTreatmentWithMedication assembled
-                                        && (-- Hypertension / Moderate Preeclamsia treatemnt
-                                            -- did not cause an adverse event.
-                                            not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
-                                           )
-                                        && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
-                                            -- in referral to hospital. EGA37 diagnoses are not included, since they
-                                            -- trigger emergency referral.
-                                            not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
-                                           )
-                                   )
+                                || perHypertensionlikeDiagnosesLogic
                            )
 
                 NursePostpartumEncounter ->

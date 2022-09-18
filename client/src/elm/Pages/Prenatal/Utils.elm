@@ -160,11 +160,6 @@ mentalHealthDiagnosesRequiringTreatment =
 diagnosesCausingHospitalReferralByOtherReasons : AssembledData -> List PrenatalDiagnosis
 diagnosesCausingHospitalReferralByOtherReasons assembled =
     let
-        severeMalariaTreatment =
-            getMeasurementValueFunc assembled.measurements.medicationDistribution
-                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
-                |> Maybe.withDefault False
-
         malaria =
             if diagnosedMalaria assembled && severeMalariaTreatment then
                 [ DiagnosisMalaria ]
@@ -172,14 +167,64 @@ diagnosesCausingHospitalReferralByOtherReasons assembled =
             else
                 []
 
+        severeMalariaTreatment =
+            getMeasurementValueFunc assembled.measurements.medicationDistribution
+                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
+                |> Maybe.withDefault False
+
         hypertension =
+            let
+                moderatePreeclampsiaAsCurrent =
+                    moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
+            in
             if updateHypertensionTreatmentWithHospitalization assembled then
-                [ DiagnosisChronicHypertensionImmediate ]
+                List.singleton <|
+                    if moderatePreeclampsiaAsCurrent then
+                        DiagnosisModeratePreeclampsiaInitialPhase
+
+                    else
+                        DiagnosisChronicHypertensionImmediate
 
             else
-                []
+                let
+                    bloodPreasureRequiresHospitalization =
+                        bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled
+                in
+                if moderatePreeclampsiaAsCurrent && bloodPreasureRequiresHospitalization then
+                    [ DiagnosisModeratePreeclampsiaInitialPhase ]
+
+                else
+                    []
     in
     malaria ++ hypertension
+
+
+moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis : AssembledData -> Bool
+moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled =
+    resolvePreviousHypertensionlikeDiagnosis assembled.nursePreviousMeasurementsWithDates
+        |> Maybe.map
+            (\diagnosis ->
+                List.member diagnosis
+                    [ DiagnosisModeratePreeclampsiaInitialPhase
+                    , DiagnosisModeratePreeclampsiaRecurrentPhase
+                    ]
+            )
+        |> Maybe.withDefault False
+
+
+bloodPreasureAtHypertensionTreatmentRequiresHospitalization : AssembledData -> Bool
+bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled =
+    getMeasurementValueFunc assembled.measurements.vitals
+        |> Maybe.andThen
+            (\value ->
+                Maybe.map2
+                    (\sys dia ->
+                        sys >= 180 || dia >= 110
+                    )
+                    value.sys
+                    value.dia
+            )
+        |> Maybe.withDefault False
 
 
 diagnosesCausingHospitalReferralByImmediateDiagnoses : PrenatalEncounterPhase -> AssembledData -> List PrenatalDiagnosis
@@ -792,34 +837,48 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks :
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
 resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg setAvoidingGuidanceReasonMsg assembled form =
+    let
+        diagnosisHeader =
+            viewCustomLabel language (Translate.HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia) "." "label"
+
+        forModeratePreeclamsia =
+            diagnosedModeratePreeclampsiaPrevoiusly assembled
+
+        currentBPLabel =
+            getMeasurementValueFunc assembled.measurements.vitals
+                |> Maybe.andThen
+                    (\value ->
+                        Maybe.map2
+                            (\sys dia ->
+                                let
+                                    floatToString =
+                                        round >> String.fromInt
+                                in
+                                div [ class "label overview" ]
+                                    [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateBPLabel
+                                    , text " "
+                                    , span [ class "highlight" ] [ text <| floatToString sys ++ "/" ++ floatToString dia ]
+                                    , text "."
+                                    ]
+                            )
+                            value.sys
+                            value.dia
+                    )
+                |> Maybe.withDefault emptyNode
+
+        ( input, completed, active ) =
+            recommendedTreatmentForHypertensionInputAndTask language
+                currentDate
+                recommendedTreatmentSignsForHypertension
+                setRecommendedTreatmentSignMsg
+                assembled
+                form
+    in
+    -- This usecase is when we already provide treatment and want
+    -- update it.
     Maybe.map2
         (\recommendationDosageUpdate recommendedMedication ->
             let
-                forModeratePreeclamsia =
-                    diagnosedModeratePreeclampsiaPrevoiusly assembled
-
-                currentBPLabel =
-                    getMeasurementValueFunc assembled.measurements.vitals
-                        |> Maybe.andThen
-                            (\value ->
-                                Maybe.map2
-                                    (\sys dia ->
-                                        let
-                                            floatToString =
-                                                round >> String.fromInt
-                                        in
-                                        div [ class "label overview" ]
-                                            [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateBPLabel
-                                            , text " "
-                                            , span [ class "highlight" ] [ text <| floatToString sys ++ "/" ++ floatToString dia ]
-                                            , text "."
-                                            ]
-                                    )
-                                    value.sys
-                                    value.dia
-                            )
-                        |> Maybe.withDefault emptyNode
-
                 ( currentTreatmentLabel, newTreatmentLabel ) =
                     getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled
                         |> Maybe.map
@@ -855,24 +914,12 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                                 , div [ class "label overview" ]
                                     [ text <| translate language recommendationDosageUpdateLabel
                                     , text " "
-                                    , span [ class "highlight" ]
-                                        [ text <| translate language <| Translate.RecommendedTreatmentSignLabel recommendedMedication
-                                        , text " "
-                                        , text <| translate language <| Translate.RecommendedTreatmentSignDosage recommendedMedication
-                                        , text "."
-                                        ]
+                                    , viewTreatmentOptionForHypertension language recommendedMedication
+                                    , text "."
                                     ]
                                 )
                             )
                         |> Maybe.withDefault ( emptyNode, emptyNode )
-
-                ( input, completed, active ) =
-                    recommendedTreatmentForHypertensionInputAndTask language
-                        currentDate
-                        recommendedTreatmentSignsForHypertension
-                        setRecommendedTreatmentSignMsg
-                        assembled
-                        form
 
                 ( derrivedInput, derrivedCompleted, derrivedActive ) =
                     Maybe.map
@@ -902,7 +949,7 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                         form.recommendedTreatmentSigns
                         |> Maybe.withDefault ( [], 0, 0 )
             in
-            ( [ viewCustomLabel language (Translate.HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia) "." "label"
+            ( [ diagnosisHeader
               , currentBPLabel
               , currentTreatmentLabel
               , newTreatmentLabel
@@ -916,7 +963,18 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
         )
         (hypertensionTreatementUpdateRecommendationByBP assembled)
         (resolveHypertensionTreatementUpdateMedication assembled)
-        |> Maybe.withDefault ( [], 0, 0 )
+        |> -- There's no treatment, and only case when this is possible,
+           -- is when Moderate Preeclamsia was diagnosed at previous encounter,
+           -- and patient was referred to hospital.
+           Maybe.withDefault
+            ( [ diagnosisHeader
+              , currentBPLabel
+              ]
+                ++ input
+                ++ [ div [ class "separator" ] [] ]
+            , completed
+            , active
+            )
 
 
 recommendedTreatmentForHypertensionInputAndTask :
@@ -963,7 +1021,7 @@ viewTreatmentOptionForHypertension : Language -> RecommendedTreatmentSign -> Htm
 viewTreatmentOptionForHypertension language sign =
     let
         multipleTreatmentWithDosage =
-            List.map (viewtreatmentWithDosage language)
+            List.map (viewTreatmentWithDosage language)
                 >> List.intersperse [ b [] [ text <| " " ++ (String.toUpper <| translate language Translate.And) ++ " " ] ]
                 >> List.concat
                 >> label []
@@ -1375,12 +1433,12 @@ viewTreatmentOptionWithDosage language sign =
         label [] [ text <| translate language <| Translate.RecommendedTreatmentSignLabel sign ]
 
     else
-        viewtreatmentWithDosage language sign
+        viewTreatmentWithDosage language sign
             |> label []
 
 
-viewtreatmentWithDosage : Language -> RecommendedTreatmentSign -> List (Html any)
-viewtreatmentWithDosage language sign =
+viewTreatmentWithDosage : Language -> RecommendedTreatmentSign -> List (Html any)
+viewTreatmentWithDosage language sign =
     [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
     , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
     ]
