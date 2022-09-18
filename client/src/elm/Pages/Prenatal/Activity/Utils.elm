@@ -332,7 +332,7 @@ activityCompleted currentDate assembled activity =
 
         NextSteps ->
             resolveNextStepsTasks currentDate assembled
-                |> List.all (nextStepsTaskCompleted assembled)
+                |> List.all (nextStepsTaskCompleted currentDate assembled)
 
         PregnancyOutcome ->
             isJust assembled.participant.dateConcluded
@@ -539,8 +539,8 @@ expectNextStepsTask currentDate assembled task =
                    )
 
 
-nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
-nextStepsTaskCompleted assembled task =
+nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted currentDate assembled task =
     case task of
         NextStepsAppointmentConfirmation ->
             isJust assembled.measurements.appointmentConfirmation
@@ -562,6 +562,18 @@ nextStepsTaskCompleted assembled task =
             let
                 allowedSigns =
                     NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
+
+                medicationDistributionRequired =
+                    resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
+                        |> List.isEmpty
+                        |> not
+
+                medicationDistributionCompleted =
+                    if medicationDistributionRequired then
+                        medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+
+                    else
+                        True
 
                 malariaTreatmentCompleted =
                     if diagnosedMalaria assembled then
@@ -605,7 +617,7 @@ nextStepsTaskCompleted assembled task =
                     else
                         True
             in
-            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+            medicationDistributionCompleted
                 && malariaTreatmentCompleted
                 && heartburnTreatmentCompleted
                 && hypertensionTreatmentCompleted
@@ -3302,7 +3314,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
         NextStepsWait ->
             let
                 completed =
-                    if nextStepsTaskCompleted assembled NextStepsWait then
+                    if nextStepsTaskCompleted currentDate assembled NextStepsWait then
                         1
 
                     else
