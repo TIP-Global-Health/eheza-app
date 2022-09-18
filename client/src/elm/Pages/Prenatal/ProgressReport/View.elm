@@ -2275,7 +2275,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                                         " - "
                                                             ++ (String.toLower <| translate language Translate.TreatedWith)
                                                             ++ " "
-                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabelForProgressReport medication)
                                                     )
                                                 |> Maybe.withDefault ""
                                     in
@@ -2758,7 +2758,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisMalariaWithSevereAnemia ->
-            malariaTreatmentMessage ++ referredToHospitalMessage
+            malariaTreatmentMessage
 
         DiagnosisHepatitisB ->
             referredToHospitalMessage

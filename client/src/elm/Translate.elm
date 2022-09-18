@@ -1099,6 +1099,7 @@ type TranslationId
     | RecommendedSymptomRelief
     | RecommendedTreatmentSignDosage RecommendedTreatmentSign
     | RecommendedTreatmentSignLabel RecommendedTreatmentSign
+    | RecommendedTreatmentSignLabelForProgressReport RecommendedTreatmentSign
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
     | RectalHemorrhoids
@@ -12071,6 +12072,21 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        RecommendedTreatmentSignLabelForProgressReport sign ->
+            case sign of
+                TreatmentQuinineSulphate ->
+                    { english = "Quinine Sulphate - per os 10 mg/kg/dose, 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentCoartem ->
+                    { english = "Coartem - 4 tablets by mouth twice per day x 3 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    translationSet (RecommendedTreatmentSignLabel sign)
 
         RecommendedTreatmentSignLabel sign ->
             case sign of
