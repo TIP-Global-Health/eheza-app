@@ -15,7 +15,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
 import Pages.Prenatal.Activity.Types exposing (NextStepsTask(..))
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -266,7 +266,7 @@ generatePreviousMeasurements :
     -> IndividualEncounterParticipantId
     -> ModelIndexedDb
     ->
-        ( List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
+        ( List PreviousEncounterData
         , List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements )
         )
 generatePreviousMeasurements currentEncounterId participantId db =
@@ -285,7 +285,12 @@ generatePreviousMeasurements currentEncounterId participantId db =
                     getEncounterDataForNurse ( encounterId, encounter ) =
                         case Dict.get encounterId db.prenatalMeasurements of
                             Just (Success measurements) ->
-                                Just ( encounter.startDate, encounter.diagnoses, measurements )
+                                Just
+                                    { startDate = encounter.startDate
+                                    , diagnoses = encounter.diagnoses
+                                    , pastDiagnoses = encounter.pastDiagnoses
+                                    , measurements = measurements
+                                    }
 
                             _ ->
                                 Nothing
@@ -331,7 +336,7 @@ generateAssembledData id db =
                             |> Maybe.withDefault NotAsked
                     )
 
-        ( nursePreviousMeasurementsWithDates, chwPreviousMeasurementsWithDates ) =
+        ( nursePreviousEncountersData, chwPreviousMeasurementsWithDates ) =
             encounter
                 |> RemoteData.toMaybe
                 |> Maybe.map
@@ -341,7 +346,7 @@ generateAssembledData id db =
                 |> Maybe.withDefault ( [], [] )
 
         nursePreviousMeasurements =
-            List.map (\( _, _, previousMeasurements ) -> previousMeasurements) nursePreviousMeasurementsWithDates
+            List.map .measurements nursePreviousEncountersData
 
         chwPreviousMeasurements =
             List.map (\( _, _, previousMeasurements ) -> previousMeasurements) chwPreviousMeasurementsWithDates
@@ -369,7 +374,7 @@ generateAssembledData id db =
         |> RemoteData.andMap participant
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
-        |> RemoteData.andMap (Success nursePreviousMeasurementsWithDates)
+        |> RemoteData.andMap (Success nursePreviousEncountersData)
         |> RemoteData.andMap (Success chwPreviousMeasurementsWithDates)
         |> RemoteData.andMap (Success globalLmpDate)
         |> RemoteData.andMap (Success globalObstetricHistory)
@@ -379,7 +384,7 @@ generateAssembledData id db =
 
 getFirstEncounterMeasurements : Bool -> AssembledData -> PrenatalMeasurements
 getFirstEncounterMeasurements isChw assembled =
-    case assembled.nursePreviousMeasurementsWithDates of
+    case assembled.nursePreviousEncountersData of
         [] ->
             if isChw then
                 emptyPrenatalMeasurements
@@ -387,22 +392,22 @@ getFirstEncounterMeasurements isChw assembled =
             else
                 assembled.measurements
 
-        ( _, _, measurements ) :: others ->
-            measurements
+        encounterData :: others ->
+            encounterData.measurements
 
 
 getLastEncounterMeasurementsWithDate : NominalDate -> Bool -> AssembledData -> ( NominalDate, PrenatalMeasurements )
 getLastEncounterMeasurementsWithDate currentDate isChw assembled =
-    case List.reverse assembled.nursePreviousMeasurementsWithDates of
+    case List.reverse assembled.nursePreviousEncountersData of
         [] ->
             if isChw then
                 ( currentDate, emptyPrenatalMeasurements )
 
             else
-                ( currentDate, assembled.measurements )
+                ( assembled.encounter.startDate, assembled.measurements )
 
-        ( date, _, measurements ) :: others ->
-            ( date, measurements )
+        encounterData :: others ->
+            ( encounterData.startDate, encounterData.measurements )
 
 
 getLastEncounterMeasurements : NominalDate -> Bool -> AssembledData -> PrenatalMeasurements
@@ -410,7 +415,7 @@ getLastEncounterMeasurements currentDate isChw assembled =
     getLastEncounterMeasurementsWithDate currentDate isChw assembled |> Tuple.second
 
 
-getAllNurseMeasurements : NominalDate -> Bool -> AssembledData -> List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
+getAllNurseMeasurements : NominalDate -> Bool -> AssembledData -> List PreviousEncounterData
 getAllNurseMeasurements currentDate isChw assembled =
     let
         currentEncounterData =
@@ -418,10 +423,15 @@ getAllNurseMeasurements currentDate isChw assembled =
                 []
 
             else
-                [ ( currentDate, assembled.encounter.diagnoses, assembled.measurements ) ]
+                [ { startDate = assembled.encounter.startDate
+                  , diagnoses = assembled.encounter.diagnoses
+                  , pastDiagnoses = assembled.encounter.pastDiagnoses
+                  , measurements = assembled.measurements
+                  }
+                ]
     in
     currentEncounterData
-        ++ assembled.nursePreviousMeasurementsWithDates
+        ++ assembled.nursePreviousEncountersData
 
 
 generateRecurringHighSeverityAlertData : Language -> NominalDate -> Bool -> AssembledData -> RecurringHighSeverityAlert -> List ( String, String, String )
@@ -436,8 +446,8 @@ generateRecurringHighSeverityAlertData language currentDate isChw assembled aler
     case alert of
         BloodPressure ->
             let
-                resolveAlert ( date, _, measurements ) =
-                    getMeasurementValueFunc measurements.vitals
+                resolveAlert data =
+                    getMeasurementValueFunc data.measurements.vitals
                         |> Maybe.andThen
                             (\value ->
                                 case ( value.sys, value.dia ) of
@@ -446,7 +456,7 @@ generateRecurringHighSeverityAlertData language currentDate isChw assembled aler
                                             Just
                                                 ( trans Translate.High ++ " " ++ transAlert alert
                                                 , String.fromFloat sys ++ "/" ++ String.fromFloat dia ++ trans Translate.MMHGUnit
-                                                , formatDDMMYYYY date
+                                                , formatDDMMYYYY data.startDate
                                                 )
 
                                         else
@@ -790,21 +800,22 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                 lowBloodPressureOccasions =
                     getAllNurseMeasurements currentDate isChw assembled
                         |> List.filterMap
-                            (\( _, _, measurements ) ->
-                                getMeasurementValueFunc measurements.vitals
-                                    |> Maybe.andThen
-                                        (\value ->
-                                            case ( value.sys, value.dia ) of
-                                                ( Just sys, Just dia ) ->
-                                                    if sys < 110 || dia < 70 then
-                                                        Just True
+                            (.measurements
+                                >> .vitals
+                                >> getMeasurementValueFunc
+                                >> Maybe.andThen
+                                    (\value ->
+                                        case ( value.sys, value.dia ) of
+                                            ( Just sys, Just dia ) ->
+                                                if sys < 110 || dia < 70 then
+                                                    Just True
 
-                                                    else
-                                                        Nothing
-
-                                                _ ->
+                                                else
                                                     Nothing
-                                        )
+
+                                            _ ->
+                                                Nothing
+                                    )
                             )
                         |> List.length
             in
@@ -823,21 +834,22 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                     highBloodPressureOccasions =
                         getAllNurseMeasurements currentDate isChw assembled
                             |> List.filterMap
-                                (\( _, _, measurements ) ->
-                                    getMeasurementValueFunc measurements.vitals
-                                        |> Maybe.andThen
-                                            (\value ->
-                                                case ( value.sys, value.dia ) of
-                                                    ( Just sys, Just dia ) ->
-                                                        if sys > 140 || dia > 90 then
-                                                            Just True
+                                (.measurements
+                                    >> .vitals
+                                    >> getMeasurementValueFunc
+                                    >> Maybe.andThen
+                                        (\value ->
+                                            case ( value.sys, value.dia ) of
+                                                ( Just sys, Just dia ) ->
+                                                    if sys > 140 || dia > 90 then
+                                                        Just True
 
-                                                        else
-                                                            Nothing
-
-                                                    _ ->
+                                                    else
                                                         Nothing
-                                            )
+
+                                                _ ->
+                                                    Nothing
+                                        )
                                 )
                             |> List.length
                 in

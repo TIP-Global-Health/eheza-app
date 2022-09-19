@@ -382,34 +382,39 @@ viewMedicalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasuremen
 viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
     let
         allMeasurementsWithDates =
-            assembled.nursePreviousMeasurementsWithDates
+            assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
 
                     else
-                        [ ( currentDate, assembled.encounter.diagnoses, assembled.measurements ) ]
+                        [ { startDate = assembled.encounter.startDate
+                          , diagnoses = assembled.encounter.diagnoses
+                          , pastDiagnoses = assembled.encounter.pastDiagnoses
+                          , measurements = assembled.measurements
+                          }
+                        ]
                    )
-                |> List.sortWith (sortByDateDesc (\( date, _, _ ) -> date))
+                |> List.sortWith (sortByDateDesc .startDate)
 
         dignoses =
             List.map
-                (\( date, diagnoses, measurements ) ->
+                (\data ->
                     let
                         diagnosesIncludingChronic =
-                            updateChronicHypertensionDiagnoses date diagnoses assembled medicalDiagnoses
+                            updateChronicHypertensionDiagnoses data.startDate data.diagnoses assembled medicalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) diagnosesIncludingChronic
+                            List.map (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
                                 |> List.concat
 
                         outsideCareDiagnosesEntries =
-                            getMeasurementValueFunc measurements.outsideCare
+                            getMeasurementValueFunc data.measurements.outsideCare
                                 |> Maybe.andThen
                                     (\value ->
                                         Maybe.map
                                             (EverySet.toList
                                                 >> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
-                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language date value.medications)
+                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language data.startDate value.medications)
                                                 >> List.concat
                                             )
                                             value.diagnoses
@@ -417,19 +422,19 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                                 |> Maybe.withDefault []
 
                         knownAsPositiveEntries =
-                            viewKnownPositives language date measurements
+                            viewKnownPositives language data.startDate data.measurements
 
                         programReferralEntries =
-                            getMeasurementValueFunc measurements.specialityCare
+                            getMeasurementValueFunc data.measurements.specialityCare
                                 |> Maybe.map
                                     (\value ->
                                         let
                                             arvEntry =
-                                                resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
+                                                resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
                                                     |> Maybe.map
                                                         (\diagnosis ->
                                                             if not <| EverySet.member EnrolledToARVProgram value then
-                                                                viewProgramReferralEntry language date diagnosis FacilityARVProgram
+                                                                viewProgramReferralEntry language data.startDate diagnosis FacilityARVProgram
 
                                                             else
                                                                 []
@@ -437,11 +442,11 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                                                     |> Maybe.withDefault []
 
                                             ncdEntries =
-                                                resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+                                                resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
                                                     |> List.map
                                                         (\diagnosis ->
                                                             if not <| EverySet.member EnrolledToARVProgram value then
-                                                                viewProgramReferralEntry language date diagnosis FacilityNCDProgram
+                                                                viewProgramReferralEntry language data.startDate diagnosis FacilityNCDProgram
 
                                                             else
                                                                 []
@@ -490,19 +495,24 @@ viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasur
 viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
     let
         allMeasurementsWithDates =
-            assembled.nursePreviousMeasurementsWithDates
+            assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
 
                     else
-                        [ ( currentDate, assembled.encounter.diagnoses, assembled.measurements ) ]
+                        [ { startDate = assembled.encounter.startDate
+                          , diagnoses = assembled.encounter.diagnoses
+                          , pastDiagnoses = assembled.encounter.pastDiagnoses
+                          , measurements = assembled.measurements
+                          }
+                        ]
                    )
-                |> List.sortWith (sortByDateDesc (\( date, _, _ ) -> date))
+                |> List.sortWith (sortByDateDesc .startDate)
 
         initialHealthEducationOccurances =
             List.foldr
-                (\( date, _, measurements ) accum ->
-                    getMeasurementValueFunc measurements.healthEducation
+                (\data accum ->
+                    getMeasurementValueFunc data.measurements.healthEducation
                         |> Maybe.map
                             (\value ->
                                 let
@@ -511,7 +521,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                             EverySet.member sign value.signs
                                                 && (isNothing <| Dict.get sign accum)
                                         then
-                                            Just ( sign, date )
+                                            Just ( sign, data.startDate )
 
                                         else
                                             Nothing
@@ -535,23 +545,23 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
 
         dignoses =
             List.map
-                (\( date, diagnoses, measurements ) ->
+                (\data ->
                     let
                         diagnosesIncludingChronic =
-                            updateChronicHypertensionDiagnoses date diagnoses assembled obstetricalDiagnoses
+                            updateChronicHypertensionDiagnoses data.startDate data.diagnoses assembled obstetricalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) diagnosesIncludingChronic
+                            List.map (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
                                 |> List.concat
 
                         outsideCareDiagnosesEntries =
-                            getMeasurementValueFunc measurements.outsideCare
+                            getMeasurementValueFunc data.measurements.outsideCare
                                 |> Maybe.andThen
                                     (\value ->
                                         Maybe.map
                                             (EverySet.toList
                                                 >> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
-                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language date value.medications)
+                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language data.startDate value.medications)
                                                 >> List.concat
                                             )
                                             value.diagnoses
@@ -559,12 +569,12 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                 |> Maybe.withDefault []
 
                         healthEducationDiagnosesEntries =
-                            getMeasurementValueFunc measurements.healthEducation
+                            getMeasurementValueFunc data.measurements.healthEducation
                                 |> Maybe.map
                                     (\value ->
                                         let
                                             formatedDate =
-                                                formatDDMMYYYY date
+                                                formatDDMMYYYY data.startDate
 
                                             messageForSign sign =
                                                 if EverySet.member sign value.signs then
@@ -573,7 +583,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                                             (\initialDate ->
                                                                 let
                                                                     currentIsInitial =
-                                                                        Date.compare initialDate date == EQ
+                                                                        Date.compare initialDate data.startDate == EQ
                                                                 in
                                                                 Translate.PrenatalHealthEducationSignsDiagnosis currentIsInitial formatedDate sign
                                                                     |> translate language
@@ -713,7 +723,7 @@ viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Ht
 viewPatientProgressPane language currentDate isChw assembled =
     let
         allMeasurementsWithDates =
-            List.map (\( date, _, measurements ) -> ( date, measurements )) assembled.nursePreviousMeasurementsWithDates
+            List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
 
@@ -722,8 +732,7 @@ viewPatientProgressPane language currentDate isChw assembled =
                    )
 
         allMeasurements =
-            allMeasurementsWithDates
-                |> List.map Tuple.second
+            List.map Tuple.second allMeasurementsWithDates
 
         encountersTrimestersData =
             allMeasurementsWithDates
@@ -1309,7 +1318,7 @@ viewLabResultsPane language currentDate mode assembled =
 
         measurementsWithLabResults =
             assembled.measurements
-                :: List.map (\( _, _, measurements ) -> measurements) assembled.nursePreviousMeasurementsWithDates
+                :: List.map .measurements assembled.nursePreviousEncountersData
 
         getTestResults getMeasurementFunc getResultFunc =
             List.filterMap (getMeasurementFunc >> getMeasurementValueFunc)
@@ -2069,7 +2078,7 @@ viewProgressPhotosPane : Language -> NominalDate -> Bool -> AssembledData -> Htm
 viewProgressPhotosPane language currentDate isChw assembled =
     let
         allMeasurementsWithDates =
-            List.map (\( date, _, measurements ) -> ( date, measurements )) assembled.nursePreviousMeasurementsWithDates
+            List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
 

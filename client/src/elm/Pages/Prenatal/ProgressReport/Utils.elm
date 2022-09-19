@@ -48,7 +48,7 @@ import Pages.Prenatal.Activity.Utils
 import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.Prenatal.RecurrentActivity.Utils
@@ -85,7 +85,7 @@ updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled fi
     -- We want to be looking at encounters performed
     -- before the encounter we're processing, to be able to locate
     -- previous chronic diagnosis.
-    filterNurseMeasurementsWithDatesToDate encounterDate assembled.nursePreviousMeasurementsWithDates
+    filterNurseMeasurementsWithDatesToDate encounterDate assembled.nursePreviousEncountersData
         |> resolvePreviousHypertensionDiagnosis
         |> Maybe.map
             (\previousHypertensionDiagnosis ->
@@ -102,14 +102,14 @@ updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled fi
 
 filterNurseMeasurementsWithDatesToDate :
     NominalDate
-    -> List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
-    -> List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
-filterNurseMeasurementsWithDatesToDate limitDate nursePreviousMeasurementsWithDates =
+    -> List PreviousEncounterData
+    -> List PreviousEncounterData
+filterNurseMeasurementsWithDatesToDate limitDate nursePreviousEncountersData =
     List.filter
-        (\( date, _, _ ) ->
-            Date.compare date limitDate == LT
+        (\data ->
+            Date.compare data.startDate limitDate == LT
         )
-        nursePreviousMeasurementsWithDates
+        nursePreviousEncountersData
 
 
 hivResultNormal : PrenatalTestReport -> Bool
