@@ -476,7 +476,7 @@ expectNextStepsTask currentDate assembled task =
                         perHypertensionlikeDiagnosesLogic =
                             -- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
                             (updateHypertensionTreatmentWithMedication assembled
-                                && (-- Hypertension / Moderate Preeclamsia treatemnt
+                                && (-- Hypertension / Moderate Preeclamsia treatment
                                     -- did not cause an adverse event.
                                     not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
                                    )
@@ -599,7 +599,16 @@ nextStepsTaskCompleted currentDate assembled task =
                         True
 
                 hypertensionTreatmentCompleted =
-                    if diagnosedHypertension PrenatalEncounterPhaseInitial assembled then
+                    if
+                        diagnosedHypertension PrenatalEncounterPhaseInitial assembled
+                            || -- Adding this to account for continuous treatment that may be
+                               -- provided for Moderate Preeclampsia.
+                               diagnosedPreviouslyAnyOf
+                                [ DiagnosisModeratePreeclampsiaInitialPhase
+                                , DiagnosisModeratePreeclampsiaRecurrentPhase
+                                ]
+                                assembled
+                    then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
                     else
