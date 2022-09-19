@@ -468,12 +468,12 @@ expectNextStepsTask currentDate assembled task =
         NextStepsNewbornEnrolment ->
             assembled.encounter.encounterType == ChwPostpartumEncounter
 
-        -- Exclusive task for Nurse encounter.
+        -- Exclusive task for Nurse.
         NextStepsMedicationDistribution ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     let
-                        perHypertensionlikeDiagnosesLogic =
+                        hypertensionlikeDiagnosesCondition =
                             -- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
                             (updateHypertensionTreatmentWithMedication assembled
                                 && (-- Hypertension / Moderate Preeclamsia treatment
@@ -509,7 +509,18 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisTrichomonasOrBacterialVaginosis
                                     ]
                                     assembled
-                                || perHypertensionlikeDiagnosesLogic
+                                || (hypertensionlikeDiagnosesCondition
+                                        && -- If Preeclampsia was diagnosed at current
+                                           -- encounter, there's no need to medicate, because
+                                           -- patient is sent to hospital anyway.
+                                           (not <|
+                                                diagnosedAnyOf
+                                                    [ DiagnosisModeratePreeclampsiaInitialPhase
+                                                    , DiagnosisSeverePreeclampsiaInitialPhase
+                                                    ]
+                                                    assembled
+                                           )
+                                   )
                            )
 
                 NursePostpartumEncounter ->
