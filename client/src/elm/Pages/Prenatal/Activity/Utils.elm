@@ -2391,17 +2391,24 @@ severePreeclampsiaRecurrentPhase dangerSigns measurements =
     let
         byBloodPreasure =
             getMeasurementValueFunc measurements.vitals
-                |> Maybe.andThen
+                |> Maybe.map
                     (\value ->
-                        Maybe.map4
-                            (\dia sys diaRepeated sysRepeated ->
-                                (dia >= 110 && sys >= 160)
-                                    || (diaRepeated >= 110 && sys >= 160)
-                            )
-                            value.dia
-                            value.sys
-                            value.diaRepeated
-                            value.sysRepeated
+                        let
+                            byInital =
+                                Maybe.map2
+                                    (\dia sys -> dia >= 110 && sys >= 160)
+                                    value.dia
+                                    value.sys
+                                    |> Maybe.withDefault False
+
+                            byRecurrent =
+                                Maybe.map2
+                                    (\dia sys -> dia >= 110 && sys >= 160)
+                                    value.diaRepeated
+                                    value.sysRepeated
+                                    |> Maybe.withDefault False
+                        in
+                        byInital || byRecurrent
                     )
                 |> Maybe.withDefault False
     in
