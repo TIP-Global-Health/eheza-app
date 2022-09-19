@@ -55,7 +55,8 @@ import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
     exposing
-        ( diagnosedMalaria
+        ( applyHypertensionlikeDiagnosesHierarchy
+        , diagnosedMalaria
         , hypertensionDiagnoses
         , outsideCareDiagnoses
         , outsideCareDiagnosesWithPossibleMedication
@@ -89,6 +90,10 @@ updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled fi
         |> Maybe.map
             (\previousHypertensionDiagnosis ->
                 EverySet.insert previousHypertensionDiagnosis encounterDiagnoses
+                    |> -- Adding this to avoid a situation where we have 2 hypetensionlike diagnoses.
+                       -- For example, if we had chronic Moderate Preeclampsia, and at current
+                       -- encounter we diagnosed Severe Preeclampsia.
+                       applyHypertensionlikeDiagnosesHierarchy
             )
         |> Maybe.withDefault encounterDiagnoses
         |> EverySet.toList

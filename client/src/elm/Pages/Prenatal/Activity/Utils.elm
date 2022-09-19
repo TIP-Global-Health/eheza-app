@@ -1464,26 +1464,6 @@ applyDiagnosesHierarchy =
         >> applyGeneralDiagnosesHierarchy
 
 
-applyHypertensionlikeDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyHypertensionlikeDiagnosesHierarchy diagnoses =
-    let
-        ( bloodPreasureDiagnoses, others ) =
-            EverySet.toList diagnoses
-                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPreasureDiagnoses)
-
-        topBloodPreasureDiagnosis =
-            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPreasureDiagnoses
-                |> Maybe.Extra.values
-                |> List.maximum
-                |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
-                |> Maybe.map List.singleton
-                |> Maybe.withDefault []
-    in
-    topBloodPreasureDiagnosis
-        ++ others
-        |> EverySet.fromList
-
-
 applyMastitisDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyMastitisDiagnosesHierarchy diagnoses =
     let
