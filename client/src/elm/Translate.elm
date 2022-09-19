@@ -673,7 +673,7 @@ type TranslationId
     | HttpError Http.Error
     | Hypertension
     | HypertensionBeforePregnancy
-    | HypertensionRecommendedTreatmentHeader
+    | HypertensionRecommendedTreatmentHeader Bool
     | HypertensionRecommendedTreatmentHelper
     | HypertensionRecommendedTreatmentUpdateHeader Bool
     | HypertensionRecommendedTreatmentUpdateBPLabel
@@ -5208,10 +5208,16 @@ translationSet trans =
             , kinyarwanda = Just "Umuvuduko w'amaraso mbere yo gutwita"
             }
 
-        HypertensionRecommendedTreatmentHeader ->
-            { english = "This patient shows signs of Chronic hypertension"
-            , kinyarwanda = Just "Uyu murwayi agaragaza ibimenyetso by'indwara y'umuvuduko w'amaraso imaze igihe kirekire"
-            }
+        HypertensionRecommendedTreatmentHeader isChronic ->
+            if isChronic then
+                { english = "This patient shows signs of Chronic hypertension"
+                , kinyarwanda = Just "Uyu murwayi agaragaza ibimenyetso by'indwara y'umuvuduko w'amaraso imaze igihe kirekire"
+                }
+
+            else
+                { english = "This patient shows signs of Pregnancy-Induced hypertension"
+                , kinyarwanda = Nothing
+                }
 
         HypertensionRecommendedTreatmentHelper ->
             { english = "Select the best treatment option for the patient below"
@@ -8353,19 +8359,15 @@ translationSet trans =
                     }
 
                 DiagnosisChronicHypertensionAfterRecheck ->
-                    { english = "Chronic Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisChronicHypertensionImmediate
 
                 DiagnosisGestationalHypertensionImmediate ->
                     { english = "Pregnancy-Induced Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
-                    { english = "Pregnancy-Induced Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisGestationalHypertensionImmediate
 
                 DiagnosisModeratePreeclampsiaInitialPhase ->
                     { english = "Mild to Moderate Preeclampsia"
@@ -8373,19 +8375,13 @@ translationSet trans =
                     }
 
                 DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisModeratePreeclampsiaRecurrentPhase ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaInitialPhase ->
                     { english = "Severe Preeclampsia"
@@ -8393,19 +8389,13 @@ translationSet trans =
                     }
 
                 DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaRecurrentPhase ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisEclampsia ->
                     { english = "Eclampsia"
@@ -8760,19 +8750,15 @@ translationSet trans =
                     }
 
                 DiagnosisChronicHypertensionAfterRecheck ->
-                    { english = "Chronic Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisChronicHypertensionImmediate
 
                 DiagnosisGestationalHypertensionImmediate ->
                     { english = "Pregnancy-Induced Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
-                    { english = "Pregnancy-Induced Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisGestationalHypertensionImmediate
 
                 DiagnosisModeratePreeclampsiaInitialPhase ->
                     { english = "Mild to Moderate Preeclampsia"
@@ -8780,19 +8766,13 @@ translationSet trans =
                     }
 
                 DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisModeratePreeclampsiaRecurrentPhase ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaInitialPhase ->
                     { english = "Severe Preeclampsia"
@@ -8800,19 +8780,13 @@ translationSet trans =
                     }
 
                 DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaRecurrentPhase ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisEclampsia ->
                     { english = "Eclampsia"
@@ -9242,19 +9216,15 @@ translationSet trans =
                     }
 
                 DiagnosisChronicHypertensionAfterRecheck ->
-                    { english = "Patient shows signs of Chronic Hypertension"
-                    , kinyarwanda = Just "Agaragaza ibimenyetso by'indwara y'umuvuduko w'amaraso imaze igihe kirekire"
-                    }
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisChronicHypertensionImmediate
 
                 DiagnosisGestationalHypertensionImmediate ->
                     { english = "Patient shows signs of Pregnancy-Induced Hypertension"
-                    , kinyarwanda = Just "Afite ibimenyetso by'indwara y'umuvuduko w'amaraso uterwa no gutwita"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
-                    { english = "Patient shows signs of Pregnancy-Induced Hypertension"
-                    , kinyarwanda = Just "Afite ibimenyetso by'indwara y'umuvuduko w'amaraso uterwa no gutwita"
-                    }
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisGestationalHypertensionImmediate
 
                 DiagnosisModeratePreeclampsiaInitialPhase ->
                     { english = "Patient shows signs of Mild to Moderate Preeclampsia"

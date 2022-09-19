@@ -819,8 +819,11 @@ resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks language curre
                 setRecommendedTreatmentSignMsg
                 assembled
                 form
+
+        isChronic =
+            diagnosedAnyOf [ DiagnosisChronicHypertensionImmediate, DiagnosisChronicHypertensionAfterRecheck ] assembled
     in
-    ( viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
+    ( viewCustomLabel language (Translate.HypertensionRecommendedTreatmentHeader isChronic) "." "instructions"
         :: input
         ++ [ div [ class "separator" ] [] ]
     , completed
