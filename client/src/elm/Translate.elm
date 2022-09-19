@@ -9564,12 +9564,12 @@ translationSet trans =
 
                 EducationVaricoseVeins ->
                     if isInitial then
-                        { english = "Varicose veins during pregnancy provided health education on " ++ date
+                        { english = "Varicose veins during pregnancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
                         }
 
                     else
-                        { english = "Persistent varicose veins during pregnancy provided health education on " ++ date
+                        { english = "Persistent varicose veins during - pregnancy provided health education on " ++ date
                         , kinyarwanda = Nothing
                         }
 
