@@ -9520,12 +9520,12 @@ translationSet trans =
             case sign of
                 EducationNauseaVomiting ->
                     if isInitial then
-                        { english = "Nausea + vomitting in pregnancy - provided health education on " ++ date
+                        { english = "Nausea + vomiting in pregnancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
                         }
 
                     else
-                        { english = "Persistent nausea + vomitting in pregnancy - provided health education on " ++ date
+                        { english = "Persistent nausea + vomiting in pregnancy - provided health education on " ++ date
                         , kinyarwanda = Nothing
                         }
 
