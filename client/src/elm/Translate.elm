@@ -8358,12 +8358,12 @@ translationSet trans =
                     }
 
                 DiagnosisGestationalHypertensionImmediate ->
-                    { english = "Gestational Hypertension"
+                    { english = "Pregnancy-Induced Hypertension"
                     , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
-                    { english = "Gestational Hypertension"
+                    { english = "Pregnancy-Induced Hypertension"
                     , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
                     }
 
@@ -8765,12 +8765,12 @@ translationSet trans =
                     }
 
                 DiagnosisGestationalHypertensionImmediate ->
-                    { english = "Gestational Hypertension"
+                    { english = "Pregnancy-Induced Hypertension"
                     , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
-                    { english = "Gestational Hypertension"
+                    { english = "Pregnancy-Induced Hypertension"
                     , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
                     }
 
@@ -9247,12 +9247,12 @@ translationSet trans =
                     }
 
                 DiagnosisGestationalHypertensionImmediate ->
-                    { english = "Patient shows signs of Gestational Hypertension"
+                    { english = "Patient shows signs of Pregnancy-Induced Hypertension"
                     , kinyarwanda = Just "Afite ibimenyetso by'indwara y'umuvuduko w'amaraso uterwa no gutwita"
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
-                    { english = "Patient shows signs of Gestational Hypertension"
+                    { english = "Patient shows signs of Pregnancy-Induced Hypertension"
                     , kinyarwanda = Just "Afite ibimenyetso by'indwara y'umuvuduko w'amaraso uterwa no gutwita"
                     }
 

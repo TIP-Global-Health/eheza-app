@@ -920,8 +920,8 @@ function hedley_prenatal_field_default_field_bases() {
       'allowed_values' => array(
         'chronic-hypertension-immediate' => 'Chronic Hypertension Immediate',
         'chronic-hypertension-recheck' => 'Chronic Hypertension After Recheck',
-        'gestational-hypertension-immediate' => 'Gestational Hypertension Immediate',
-        'gestational-hypertension-recheck' => 'Gestational Hypertension After Recheck',
+        'gestational-hypertension-immediate' => 'Pregnancy-Induced Hypertension Immediate',
+        'gestational-hypertension-recheck' => 'Pregnancy-Induced Hypertension After Recheck',
         'moderate-preeclampsia-initial' => 'Moderate Preeclampsia Initial',
         'moderate-preeclampsia-initial-ega-37+' => 'Moderate Preeclampsia Initial EGA 37 or more',
         'moderate-preeclampsia-recurrent' => 'Moderate Preeclampsia Recurrent',
