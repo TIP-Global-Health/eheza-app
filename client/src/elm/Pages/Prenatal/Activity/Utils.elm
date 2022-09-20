@@ -7249,7 +7249,6 @@ matchRequiredReferralFacility assembled facility =
 
         FacilityNCDProgram ->
             referredToSpecialityCareProgram EnrolledToNCDProgram assembled
-                || diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
 
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved
