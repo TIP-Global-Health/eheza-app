@@ -85,7 +85,7 @@ updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled fi
     -- We want to be looking at encounters performed
     -- before the encounter we're processing, to be able to locate
     -- previous chronic diagnosis.
-    filterNurseMeasurementsWithDatesToDate encounterDate assembled.nursePreviousEncountersData
+    filterNursePreviousEncountersDataToDate encounterDate assembled.nursePreviousEncountersData
         |> resolvePreviousHypertensionDiagnosis
         |> Maybe.map
             (\previousHypertensionDiagnosis ->
@@ -100,11 +100,11 @@ updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled fi
         |> List.filter (\diagnosis -> List.member diagnosis filterList)
 
 
-filterNurseMeasurementsWithDatesToDate :
+filterNursePreviousEncountersDataToDate :
     NominalDate
     -> List PreviousEncounterData
     -> List PreviousEncounterData
-filterNurseMeasurementsWithDatesToDate limitDate nursePreviousEncountersData =
+filterNursePreviousEncountersDataToDate limitDate nursePreviousEncountersData =
     List.filter
         (\data ->
             Date.compare data.startDate limitDate == LT

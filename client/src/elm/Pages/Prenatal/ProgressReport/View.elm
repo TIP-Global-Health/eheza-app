@@ -381,7 +381,7 @@ viewRiskFactorsPane language currentDate measurements =
 viewMedicalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
 viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
     let
-        allMeasurementsWithDates =
+        allNurseEncountersData =
             assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
@@ -456,13 +456,17 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                                         arvEntry ++ ncdEntries
                                     )
                                 |> Maybe.withDefault []
+
+                        -- pastDiagnosesEntries =
+                        --     List.map (\diagnosis) data.pa
+                        --         |> List.concat
                     in
                     knownAsPositiveEntries
                         ++ diagnosesEntries
                         ++ outsideCareDiagnosesEntries
                         ++ programReferralEntries
                 )
-                allMeasurementsWithDates
+                allNurseEncountersData
                 |> List.concat
                 |> ul []
 
@@ -494,7 +498,7 @@ viewProgramReferralEntry language date diagnosis facility =
 viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
 viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
     let
-        allMeasurementsWithDates =
+        allNurseEncountersData =
             assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
@@ -541,7 +545,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                         |> Maybe.withDefault accum
                 )
                 Dict.empty
-                allMeasurementsWithDates
+                allNurseEncountersData
 
         dignoses =
             List.map
@@ -608,7 +612,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                     in
                     diagnosesEntries ++ outsideCareDiagnosesEntries ++ healthEducationDiagnosesEntries
                 )
-                allMeasurementsWithDates
+                allNurseEncountersData
                 |> List.concat
                 |> ul []
 
@@ -722,7 +726,7 @@ matchCHWActivityAtEncounter measurements activity =
 viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
 viewPatientProgressPane language currentDate isChw assembled =
     let
-        allMeasurementsWithDates =
+        allNurseEncountersData =
             List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
@@ -732,10 +736,10 @@ viewPatientProgressPane language currentDate isChw assembled =
                    )
 
         allMeasurements =
-            List.map Tuple.second allMeasurementsWithDates
+            List.map Tuple.second allNurseEncountersData
 
         encountersTrimestersData =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.map
                     (\( date, _ ) ->
                         ( date
@@ -767,7 +771,7 @@ viewPatientProgressPane language currentDate isChw assembled =
             List.length encountersThirdTrimester
 
         fetalMovementsDate =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.filter
                     (\( _, measurements ) ->
                         measurements.obstetricalExam
@@ -778,7 +782,7 @@ viewPatientProgressPane language currentDate isChw assembled =
                 |> Maybe.map Tuple.first
 
         fetalHeartRateDate =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.filter
                     (\( _, measurements ) ->
                         measurements.obstetricalExam
@@ -1011,7 +1015,7 @@ viewPatientProgressPane language currentDate isChw assembled =
                 ]
 
         egaBmiValues =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.filterMap
                     (\( date, measurements ) ->
                         assembled.globalLmpDate
@@ -1045,7 +1049,7 @@ viewPatientProgressPane language currentDate isChw assembled =
                     )
 
         egaFundalHeightValues =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.filterMap
                     (\( date, measurements ) ->
                         assembled.globalLmpDate
@@ -1088,13 +1092,13 @@ viewPatientProgressPane language currentDate isChw assembled =
                 [ viewMarkers
                 , div [ class "bmi-info" ]
                     [ viewChartHeading Translate.BMI
-                    , heightWeightBMITable language currentDate assembled.globalLmpDate allMeasurementsWithDates
+                    , heightWeightBMITable language currentDate assembled.globalLmpDate allNurseEncountersData
                     , viewBMIForEGA language egaBmiValues
                     , illustrativePurposes language
                     ]
                 , div [ class "fundal-height-info" ]
                     [ viewChartHeading Translate.FundalHeight
-                    , fundalHeightTable language currentDate assembled.globalLmpDate allMeasurementsWithDates
+                    , fundalHeightTable language currentDate assembled.globalLmpDate allNurseEncountersData
                     , viewFundalHeightForEGA language egaFundalHeightValues
                     , illustrativePurposes language
                     ]
@@ -2077,7 +2081,7 @@ viewLabResultsHistoryPane language currentDate mode =
 viewProgressPhotosPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
 viewProgressPhotosPane language currentDate isChw assembled =
     let
-        allMeasurementsWithDates =
+        allNurseEncountersData =
             List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
@@ -2087,7 +2091,7 @@ viewProgressPhotosPane language currentDate isChw assembled =
                    )
 
         content =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.filterMap
                     (\( date, measurements ) ->
                         measurements.prenatalPhoto
