@@ -1467,7 +1467,7 @@ translationSet trans =
 
                 FacilityARVProgram ->
                     { english = "Will you accompany the patient to ARV services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uraherekeza umubyei muri erivice itanga imiti igabanya ubukana bwa Virusi itera SIDA"
                     }
 
                 FacilityNCDProgram ->
@@ -3850,7 +3850,7 @@ translationSet trans =
 
                 ReliefMethodBreastfeedingOrHandExpression ->
                     { english = "continue breastfeeding or use hand expression"
-                    , kinyarwanda = Just "Komeza konsa cyangwa ukoreshe ikiganza wikame"
+                    , kinyarwanda = Just "komeza konsa cyangwa ukoreshe ikiganza wikame"
                     }
 
         ECDSignQuestion sign ->
@@ -9817,7 +9817,7 @@ translationSet trans =
 
         PrenatalNCDProgramHeaderSuffix ->
             { english = "during her pregnancy"
-            , kinyarwanda = Just "Mu gihe yari atwite"
+            , kinyarwanda = Just "mu gihe yari atwite"
             }
 
         PrenatalNCDProgramInstructions ->
@@ -9888,12 +9888,12 @@ translationSet trans =
         PrenatalARVProgramInstructions forPostpartum ->
             if forPostpartum then
                 { english = "Refer patient to ARV services for further management"
-                , kinyarwanda = Just ""
+                , kinyarwanda = Just "Ohereza umurwayi muri serivisi itanga imiti igabanya ubukana bwa Virusi itera SIDA bamwiteho byimbiste"
                 }
 
             else
                 { english = "Refer patient to ARV services for assessment of ARVs"
-                , kinyarwanda = Just "Ohereza umurwayi muri service itanga imiti igabanya ubukana bwa Virusi itera SIDA"
+                , kinyarwanda = Just "Ohereza umurwayi muri serivise itanga imiti igabanya ubukana kugirango hasuzumwe neza ibijyanye n'imiti igabanya ubukana bwa Virusi itera SIDA"
                 }
 
         PrenatalARVProgramPostpartumHeader ->
@@ -11659,7 +11659,7 @@ translationSet trans =
             case value of
                 PrerequisiteFastFor12h ->
                     { english = "Was this test performed before a meal"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi yafatiwe iki kizamini mbere yo kurya"
                     }
 
                 NoTestPrerequisites ->
@@ -12337,12 +12337,12 @@ translationSet trans =
             case facility of
                 FacilityARVProgram ->
                     { english = "referred to ARV services for post-partum management"
-                    , kinyarwanda = Just "Yoherejwe muri serivise itanga imiti igabanya ubukana bwa Virusi itera SIDA kugirango akurikiranwe nyuma yo kubyara"
+                    , kinyarwanda = Just "yoherejwe muri serivise itanga imiti igabanya ubukana bwa Virusi itera SIDA kugirango akurikiranwe nyuma yo kubyara"
                     }
 
                 FacilityNCDProgram ->
                     { english = "referred to NCD program for post-partum management"
-                    , kinyarwanda = Just "Yoherejwe muri serivise y'indwara zitandura kugirango akurikiranwe nyuma yo kubyara"
+                    , kinyarwanda = Just "yoherejwe muri serivise y'indwara zitandura kugirango akurikiranwe nyuma yo kubyara"
                     }
 
                 _ ->
