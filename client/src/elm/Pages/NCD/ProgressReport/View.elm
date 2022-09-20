@@ -15,6 +15,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
+import Measurement.Model exposing (LaboratoryTask(..))
+import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.ProgressReport.Model exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
@@ -157,7 +159,7 @@ viewContent language currentDate initiator model assembled =
                                     , bloodGpRs = False
                                     , creatinine = True
                                     , liverFunction = True
-                                    , pregnancy = True
+                                    , pregnancy = expectLaboratoryTask currentDate assembled TaskPregnancyTest
                                     }
                             in
                             [ generateLabsResultsPaneData currentDate assembled
