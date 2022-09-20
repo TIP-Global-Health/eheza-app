@@ -17,8 +17,7 @@ class HedleyRestfulNCDCreatinineTest extends HedleyRestfulNCDActivityBase {
     'field_test_execution_note',
     'field_execution_date',
     'field_creatinine_result',
-    'field_urea_result',
-    'field_nitorogen_result',
+    'field_bun_result',
   ];
 
   /**
