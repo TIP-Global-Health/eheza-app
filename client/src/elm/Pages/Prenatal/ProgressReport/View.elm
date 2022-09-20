@@ -457,13 +457,16 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                                     )
                                 |> Maybe.withDefault []
 
-                        -- pastDiagnosesEntries =
-                        --     List.map (\diagnosis) data.pa
-                        --         |> List.concat
+                        pastDiagnosesEntries =
+                            EverySet.toList data.pastDiagnoses
+                                |> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
+                                |> List.map (viewTreatmentForPastDiagnosis language data.startDate)
+                                |> List.concat
                     in
                     knownAsPositiveEntries
                         ++ diagnosesEntries
                         ++ outsideCareDiagnosesEntries
+                        ++ pastDiagnosesEntries
                         ++ programReferralEntries
                 )
                 allNurseEncountersData
@@ -572,6 +575,12 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                     )
                                 |> Maybe.withDefault []
 
+                        pastDiagnosesEntries =
+                            EverySet.toList data.pastDiagnoses
+                                |> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
+                                |> List.map (viewTreatmentForPastDiagnosis language data.startDate)
+                                |> List.concat
+
                         healthEducationDiagnosesEntries =
                             getMeasurementValueFunc data.measurements.healthEducation
                                 |> Maybe.map
@@ -610,7 +619,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                     )
                                 |> Maybe.withDefault []
                     in
-                    diagnosesEntries ++ outsideCareDiagnosesEntries ++ healthEducationDiagnosesEntries
+                    diagnosesEntries ++ outsideCareDiagnosesEntries ++ pastDiagnosesEntries ++ healthEducationDiagnosesEntries
                 )
                 allNurseEncountersData
                 |> List.concat
@@ -3177,3 +3186,15 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
     else
         -- Not an outside care diagnosis.
         []
+
+
+viewTreatmentForPastDiagnosis : Language -> NominalDate -> PrenatalDiagnosis -> List (Html any)
+viewTreatmentForPastDiagnosis language date diagnosis =
+    diagnosisForProgressReportToString language diagnosis
+        ++ " - diagnosed on "
+        -- ++ " "
+        -- ++ (String.toLower <| translate language Translate.On)
+        -- ++ " "
+        ++ formatDDMMYYYY date
+        ++ " as a result of entering lab results from past encounter."
+        |> wrapWithLI
