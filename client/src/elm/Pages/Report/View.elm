@@ -894,24 +894,19 @@ viewLabResultsHistoryPane language currentDate mode =
                     List.map (viewEntry (Translate.PrenatalLaboratoryRhesus >> translate language) rhesusResultsNormal) assembled
 
                 LabResultsHistoryCreatinine assembled ->
-                    -- @todo
-                    []
+                    List.map (viewEntry String.fromFloat creatinineResultNormal) assembled
 
                 LabResultsHistoryBUN assembled ->
-                    -- @todo
-                    []
+                    List.map (viewEntry String.fromFloat bunResultNormal) assembled
 
                 LabResultsHistoryALT assembled ->
-                    -- @todo
-                    []
+                    List.map (viewEntry String.fromFloat altResultNormal) assembled
 
                 LabResultsHistoryAST assembled ->
-                    -- @todo
-                    []
+                    List.map (viewEntry String.fromFloat astResultNormal) assembled
 
                 LabResultsHistoryPregnancy assembled ->
-                    -- @todo
-                    []
+                    List.map (viewEntry (translateTestReport language) pregnancyResultNormal) assembled
 
         viewEntry resultToStringFunc resultNormalFunc ( date, maybeResult ) =
             let
