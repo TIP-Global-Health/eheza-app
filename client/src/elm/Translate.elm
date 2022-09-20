@@ -529,6 +529,7 @@ type TranslationId
     | DiagnosedAtAnotherFacilityPrefix
     | DiagnosedAtAnotherFacilitySuffix
     | DiagnosedByOutsideCare
+    | DiagnosedOn
     | Diagnosis
     | DiagnosisDate
     | DifferenceBetweenDueAndDeliveryDates
@@ -905,6 +906,7 @@ type TranslationId
     | PartnerHivTestResult
     | PartnerReceivedHivCounseling
     | PartnerReceivedHivTesting
+    | PastDiagnosisReportReason
     | PatientDiagnosedWithLabel
     | PatientExhibitAnyFindings
     | PatientExhibitAnyRespiratoryFindings
@@ -3757,6 +3759,11 @@ translationSet trans =
 
         DiagnosedByOutsideCare ->
             { english = "Diagnosed by outside care"
+            , kinyarwanda = Nothing
+            }
+
+        DiagnosedOn ->
+            { english = "Diagnosed on"
             , kinyarwanda = Nothing
             }
 
@@ -7785,6 +7792,11 @@ translationSet trans =
         PartnerReceivedHivTesting ->
             { english = "Did partner receive HIV Testing during this pregnancy"
             , kinyarwanda = Just "Umugabo  yasuzumwe Virusi itera SIDA?"
+            }
+
+        PastDiagnosisReportReason ->
+            { english = "As a result of entering lab results from past encounter"
+            , kinyarwanda = Nothing
             }
 
         PatientDiagnosedWithLabel ->

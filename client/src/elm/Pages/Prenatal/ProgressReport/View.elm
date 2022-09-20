@@ -3191,10 +3191,11 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
 viewTreatmentForPastDiagnosis : Language -> NominalDate -> PrenatalDiagnosis -> List (Html any)
 viewTreatmentForPastDiagnosis language date diagnosis =
     diagnosisForProgressReportToString language diagnosis
-        ++ " - diagnosed on "
-        -- ++ " "
-        -- ++ (String.toLower <| translate language Translate.On)
-        -- ++ " "
+        ++ " - "
+        ++ (String.toLower <| translate language Translate.DiagnosedOn)
+        ++ " "
         ++ formatDDMMYYYY date
-        ++ " as a result of entering lab results from past encounter."
+        ++ " "
+        ++ (String.toLower <| translate language Translate.PastDiagnosisReportReason)
+        ++ "."
         |> wrapWithLI
