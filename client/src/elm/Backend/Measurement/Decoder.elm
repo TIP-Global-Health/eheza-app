@@ -4605,8 +4605,7 @@ decodeCreatinineTestValue =
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "creatinine_result" (nullable decodeFloat) Nothing
-        |> optional "urea_result" (nullable decodeFloat) Nothing
-        |> optional "nitorogen_result" (nullable decodeFloat) Nothing
+        |> optional "bun_result" (nullable decodeFloat) Nothing
 
 
 decodeNCDDangerSigns : Decoder NCDDangerSigns

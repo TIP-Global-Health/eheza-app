@@ -2318,8 +2318,7 @@ type alias CreatinineTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , creatinineResult : Maybe Float
-    , ureaResult : Maybe Float
-    , nitorogenResult : Maybe Float
+    , bunResult : Maybe Float
     }
 
 

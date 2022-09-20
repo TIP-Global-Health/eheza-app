@@ -728,8 +728,7 @@ type TranslationId
     | LabelDocumentPregnancyOutcome
     | LabHistory
     | LaboratoryCreatinineCreatinineResult
-    | LaboratoryCreatinineUreaResult
-    | LaboratoryCreatinineNitorogenResult
+    | LaboratoryCreatinineBUNResult
     | LaboratoryLiverFunctionAltResult
     | LaboratoryLiverFunctionAstResult
     | LaboratoryTask LaboratoryTask
@@ -5890,13 +5889,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        LaboratoryCreatinineUreaResult ->
-            { english = "Urea Result"
-            , kinyarwanda = Nothing
-            }
-
-        LaboratoryCreatinineNitorogenResult ->
-            { english = "Nitorogen Result"
+        LaboratoryCreatinineBUNResult ->
+            { english = "BUN Result"
             , kinyarwanda = Nothing
             }
 

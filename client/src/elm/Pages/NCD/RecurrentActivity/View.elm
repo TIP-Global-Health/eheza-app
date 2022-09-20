@@ -192,8 +192,7 @@ viewLabResultsContent language currentDate assembled model =
                                 |> creatinineResultFormAndTasks language
                                     currentDate
                                     SetCreatinineResult
-                                    SetUreaResult
-                                    SetNitorogenResult
+                                    SetBUNResult
 
                         TaskLiverFunctionTest ->
                             measurements.liverFunctionTest

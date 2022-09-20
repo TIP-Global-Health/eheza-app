@@ -1977,7 +1977,7 @@ toHIVPCRTestValueWithEmptyResults note date =
 
 toCreatinineTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> CreatinineTestValue
 toCreatinineTestValueWithEmptyResults note date =
-    CreatinineTestValue note date Nothing Nothing Nothing
+    CreatinineTestValue note date Nothing Nothing
 
 
 toLiverFunctionTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> LiverFunctionTestValue
@@ -3233,8 +3233,7 @@ creatinineResultFormWithDefault form saved =
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
                 , creatinineResult = or form.creatinineResult value.creatinineResult
-                , ureaResult = or form.ureaResult value.ureaResult
-                , nitorogenResult = or form.nitorogenResult value.nitorogenResult
+                , bunResult = or form.bunResult value.bunResult
                 }
             )
 
@@ -3252,8 +3251,7 @@ toCreatinineResultsValue form =
             { executionNote = executionNote
             , executionDate = form.executionDate
             , creatinineResult = form.creatinineResult
-            , ureaResult = form.ureaResult
-            , nitorogenResult = form.nitorogenResult
+            , bunResult = form.bunResult
             }
         )
         form.executionNote
@@ -3690,10 +3688,9 @@ creatinineResultFormAndTasks :
     -> NominalDate
     -> (String -> msg)
     -> (String -> msg)
-    -> (String -> msg)
     -> CreatinineResultForm
     -> ( Html msg, Int, Int )
-creatinineResultFormAndTasks language currentDate setCreatinineResultMsg setUreaResultMsg setNitorogenResultMsg form =
+creatinineResultFormAndTasks language currentDate setCreatinineResultMsg setBUNResultMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             ( [ viewLabel language Translate.LaboratoryCreatinineCreatinineResult
@@ -3702,21 +3699,15 @@ creatinineResultFormAndTasks language currentDate setCreatinineResultMsg setUrea
                     setCreatinineResultMsg
                     "creatinine-result"
                     Translate.UnitMilliGramsPerDeciliter
-              , viewLabel language Translate.LaboratoryCreatinineUreaResult
+              , viewLabel language Translate.LaboratoryCreatinineBUNResult
               , viewMeasurementInput language
-                    form.ureaResult
-                    setUreaResultMsg
-                    "urea-result"
-                    Translate.UnitMilliGramsPerDeciliter
-              , viewLabel language Translate.LaboratoryCreatinineNitorogenResult
-              , viewMeasurementInput language
-                    form.nitorogenResult
-                    setNitorogenResultMsg
-                    "nitorogen-result"
+                    form.bunResult
+                    setBUNResultMsg
+                    "bun-result"
                     Translate.UnitMilliGramsPerDeciliter
               ]
-            , taskCompleted form.creatinineResult + taskCompleted form.ureaResult + taskCompleted form.nitorogenResult
-            , 3
+            , taskCompleted form.creatinineResult + taskCompleted form.bunResult
+            , 2
             )
     in
     ( div [ class "ui form laboratory creatinine-result" ] <|
