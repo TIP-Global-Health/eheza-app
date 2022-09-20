@@ -2,7 +2,7 @@ module Pages.Prenatal.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
@@ -17,7 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (SendToHCForm)
 import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel)
+import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage, viewTreatmentWithDosage)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Utils
@@ -960,22 +960,15 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate options set
 -}
 viewTreatmentOptionForHypertension : Language -> RecommendedTreatmentSign -> Html any
 viewTreatmentOptionForHypertension language sign =
-    let
-        multipleTreatmentWithDosage =
-            List.map (viewtreatmentWithDosage language)
-                >> List.intersperse [ b [] [ text <| " " ++ (String.toUpper <| translate language Translate.And) ++ " " ] ]
-                >> List.concat
-                >> label []
-    in
     case sign of
         TreatmentHypertensionAddCarvedilol ->
-            multipleTreatmentWithDosage
+            viewMultipleTreatmentWithDosage language
                 [ TreatmentMethyldopa4
                 , TreatmentHypertensionAddCarvedilol
                 ]
 
         TreatmentHypertensionAddAmlodipine ->
-            multipleTreatmentWithDosage
+            viewMultipleTreatmentWithDosage language
                 [ TreatmentMethyldopa4
                 , TreatmentHypertensionAddCarvedilol
                 , TreatmentHypertensionAddAmlodipine
@@ -1359,30 +1352,6 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
     , taskCompleted currentValue
     , 1
     )
-
-
-viewTreatmentOptionWithDosage : Language -> RecommendedTreatmentSign -> Html any
-viewTreatmentOptionWithDosage language sign =
-    if
-        List.member sign
-            [ NoTreatmentForHypertension
-            , NoTreatmentForMalaria
-            , NoTreatmentForSyphilis
-            , NoTreatmentForMastitis
-            ]
-    then
-        label [] [ text <| translate language <| Translate.RecommendedTreatmentSignLabel sign ]
-
-    else
-        viewtreatmentWithDosage language sign
-            |> label []
-
-
-viewtreatmentWithDosage : Language -> RecommendedTreatmentSign -> List (Html any)
-viewtreatmentWithDosage language sign =
-    [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
-    , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
-    ]
 
 
 recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign
@@ -2714,11 +2683,7 @@ recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> Prenatal
 recommendedTreatmentMeasurementTaken allowedSigns measurements =
     getMeasurementValueFunc measurements.medicationDistribution
         |> Maybe.andThen .recommendedTreatmentSigns
-        |> Maybe.map
-            (\signs ->
-                List.any (\sign -> EverySet.member sign signs)
-                    allowedSigns
-            )
+        |> Maybe.map (Backend.Measurement.Utils.recommendedTreatmentMeasurementTaken allowedSigns)
         |> Maybe.withDefault False
 
 
@@ -3231,8 +3196,12 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                         , reasonToSignFunc = NonReferralReasonNCDProgram
                         }
 
+                FacilityANCServices ->
+                    -- Not in use at Prenatal
+                    Nothing
+
                 FacilityHealthCenter ->
-                    -- We should never get here.
+                    -- Not in use at Prenatal
                     Nothing
     in
     Maybe.map
@@ -3357,95 +3326,19 @@ getCurrentReasonForNonReferralByForm reasonToSignFunc form =
     getCurrentReasonForNonReferral reasonToSignFunc form.facilityNonReferralReasons
 
 
-getCurrentReasonForNonReferral :
-    (ReasonForNonReferral -> NonReferralSign)
-    -> Maybe (EverySet NonReferralSign)
-    -> Maybe ReasonForNonReferral
-getCurrentReasonForNonReferral reasonToSignFunc nonReferralReasons =
-    let
-        facilityNonReferralReasons =
-            Maybe.withDefault EverySet.empty nonReferralReasons
-    in
-    List.filterMap
-        (\reason ->
-            if EverySet.member (reasonToSignFunc reason) facilityNonReferralReasons then
-                Just reason
-
-            else
-                Nothing
-        )
-        [ ClientRefused
-        , NoAmbulance
-        , ClientUnableToAffordFees
-        , ClientAlreadyInCare
-        , ReasonForNonReferralNotIndicated
-        , ReasonForNonReferralOther
-        ]
-        |> List.head
-
-
-nonReferralReasonToSign : ReferralFacility -> ReasonForNonReferral -> NonReferralSign
-nonReferralReasonToSign facility reason =
-    case facility of
-        FacilityHospital ->
-            NonReferralReasonHospital reason
-
-        FacilityMentalHealthSpecialist ->
-            NonReferralReasonMentalHealthSpecialist reason
-
-        FacilityARVProgram ->
-            NonReferralReasonARVProgram reason
-
-        FacilityNCDProgram ->
-            NonReferralReasonNCDProgram reason
-
-        FacilityHealthCenter ->
-            -- We should never get here.
-            NoNonReferralSigns
-
-
 {-| Referal to facility is completed when we mark that facility was referred to,
 or, reason was set for not referring to that facility.
-|
 -}
 referralToFacilityCompleted : AssembledData -> ReferralFacility -> Bool
 referralToFacilityCompleted assembled facility =
     getMeasurementValueFunc assembled.measurements.sendToHC
         |> Maybe.andThen
             (\value ->
-                let
-                    referralConfig =
-                        case facility of
-                            FacilityHospital ->
-                                Just ( ReferToHospital, NonReferralReasonHospital )
-
-                            FacilityMentalHealthSpecialist ->
-                                Just ( ReferToMentalHealthSpecialist, NonReferralReasonMentalHealthSpecialist )
-
-                            FacilityARVProgram ->
-                                Just ( ReferToARVProgram, NonReferralReasonARVProgram )
-
-                            FacilityNCDProgram ->
-                                Just ( ReferToNCDProgram, NonReferralReasonNCDProgram )
-
-                            FacilityHealthCenter ->
-                                -- We should never get here.
-                                Nothing
-                in
                 Maybe.map
-                    (\( referralSign, nonReferralSign ) ->
-                        let
-                            facilityWasReferred =
-                                Maybe.map (EverySet.member referralSign)
-                                    value.referToFacilitySigns
-                                    |> Maybe.withDefault False
-
-                            facilityNonReferralReasonSet =
-                                isJust <| getCurrentReasonForNonReferral nonReferralSign value.facilityNonReferralReasons
-                        in
-                        facilityWasReferred || facilityNonReferralReasonSet
+                    (\referralSigns ->
+                        Backend.Measurement.Utils.referralToFacilityCompleted referralSigns value.facilityNonReferralReasons facility
                     )
-                    referralConfig
+                    value.referToFacilitySigns
             )
         |> Maybe.withDefault False
 

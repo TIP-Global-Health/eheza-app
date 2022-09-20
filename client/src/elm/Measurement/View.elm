@@ -11,9 +11,12 @@ module Measurement.View exposing
     , viewHealthEducationForm
     , viewMeasurementFloatDiff
     , viewMother
+    , viewMultipleTreatmentWithDosage
     , viewReferToProgramForm
     , viewSendToHealthCenterForm
     , viewSendToHospitalForm
+    , viewTreatmentOptionWithDosage
+    , viewTreatmentWithDosage
     , viewVitalsForm
     , zScoreForHeightOrLength
     )
@@ -2262,3 +2265,35 @@ viewCorePhysicalExamForm language currentDate config form =
             config.setLegsMsg
             Translate.LegsCPESign
         ]
+
+
+viewMultipleTreatmentWithDosage : Language -> List RecommendedTreatmentSign -> Html any
+viewMultipleTreatmentWithDosage language =
+    List.map (viewTreatmentWithDosage language)
+        >> List.intersperse [ b [] [ text <| " " ++ (String.toUpper <| translate language Translate.And) ++ " " ] ]
+        >> List.concat
+        >> label []
+
+
+viewTreatmentOptionWithDosage : Language -> RecommendedTreatmentSign -> Html any
+viewTreatmentOptionWithDosage language sign =
+    if
+        List.member sign
+            [ NoTreatmentForHypertension
+            , NoTreatmentForMalaria
+            , NoTreatmentForSyphilis
+            , NoTreatmentForMastitis
+            ]
+    then
+        label [] [ text <| translate language <| Translate.RecommendedTreatmentSignLabel sign ]
+
+    else
+        viewTreatmentWithDosage language sign
+            |> label []
+
+
+viewTreatmentWithDosage : Language -> RecommendedTreatmentSign -> List (Html any)
+viewTreatmentWithDosage language sign =
+    [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
+    , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
+    ]

@@ -75,7 +75,6 @@ import Measurement.View
         , viewFamilyPlanningForm
         , viewFamilyPlanningInput
         , viewSendToHealthCenterForm
-        , viewSendToHospitalForm
         )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
@@ -2010,16 +2009,15 @@ viewNextStepsContent language currentDate isChw assembled data =
                     viewNewbornEnrolmentForm language currentDate assembled
 
                 Just NextStepsMedicationDistribution ->
-                    getMeasurementValueFunc measurements.medicationDistribution
-                        |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
-                        |> viewMedicationDistributionForm language
-                            currentDate
-                            PrenatalEncounterPhaseInitial
-                            assembled
-                            SetMedicationDistributionBoolInput
-                            SetMedicationDistributionAdministrationNote
-                            SetRecommendedTreatmentSign
-                            SetAvoidingGuidanceReason
+                    viewMedicationDistributionForm language
+                        currentDate
+                        PrenatalEncounterPhaseInitial
+                        assembled
+                        SetMedicationDistributionBoolInput
+                        SetMedicationDistributionAdministrationNote
+                        SetRecommendedTreatmentSign
+                        SetAvoidingGuidanceReason
+                        medicationDistributionForm
 
                 Just NextStepsWait ->
                     viewWaitForm language currentDate assembled
@@ -2028,8 +2026,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     emptyNode
 
         medicationDistributionForm =
-            measurements.medicationDistribution
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc measurements.medicationDistribution
                 |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
 
         tasksAfterSave =

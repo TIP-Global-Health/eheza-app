@@ -201,3 +201,33 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveLiverFunctionTest = data }
             , Cmd.none
             )
+
+        SaveHealthEducation personId valueId value ->
+            ( { model | saveHealthEducation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdHealthEducationEndpoint HandleSavedHealthEducation
+            )
+
+        HandleSavedHealthEducation data ->
+            ( { model | saveHealthEducation = data }
+            , Cmd.none
+            )
+
+        SaveMedicationDistribution personId valueId value ->
+            ( { model | saveMedicationDistribution = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdMedicationDistributionEndpoint HandleSavedMedicationDistribution
+            )
+
+        HandleSavedMedicationDistribution data ->
+            ( { model | saveMedicationDistribution = data }
+            , Cmd.none
+            )
+
+        SaveReferral personId valueId value ->
+            ( { model | saveReferral = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdReferralEndpoint HandleSavedReferral
+            )
+
+        HandleSavedReferral data ->
+            ( { model | saveReferral = data }
+            , Cmd.none
+            )

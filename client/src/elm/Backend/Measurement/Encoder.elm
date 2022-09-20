@@ -2372,6 +2372,15 @@ encodeReferToFacilitySign sign =
             AccompanyToNCDProgram ->
                 "ncd-accompany"
 
+            ReferToANCServices ->
+                "anc"
+
+            ReferralFormANCServices ->
+                "anc-referral-form"
+
+            AccompanyToANCServices ->
+                "anc-accompany"
+
             NoReferToFacilitySigns ->
                 "none"
 
@@ -2391,6 +2400,9 @@ encodeNonReferralSign sign =
 
             NonReferralReasonNCDProgram reason ->
                 "ncd-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonANCServices reason ->
+                "anc-" ++ reasonForNonReferralToString reason
 
             NoNonReferralSigns ->
                 "none"
@@ -2414,6 +2426,9 @@ encodeReferralFacility facility =
 
             FacilityNCDProgram ->
                 "ncd"
+
+            FacilityANCServices ->
+                "anc"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )
@@ -2749,15 +2764,15 @@ encodeNutritionCaring =
 
 encodeNutritionCaringValue : NutritionCaringValue -> List ( String, Value )
 encodeNutritionCaringValue value =
-    [ ( "nutrition_caring_signs", encodeEverySet encondeNutritionCaringSign value.signs )
+    [ ( "nutrition_caring_signs", encodeEverySet encodeNutritionCaringSign value.signs )
     , ( "child_caring_options", encodeNutritionCaringOption value.caringOption )
     , ( "deleted", bool False )
     , ( "type", string "nutrition_caring" )
     ]
 
 
-encondeNutritionCaringSign : NutritionCaringSign -> Value
-encondeNutritionCaringSign sign =
+encodeNutritionCaringSign : NutritionCaringSign -> Value
+encodeNutritionCaringSign sign =
     string <|
         case sign of
             ParentsAliveHealthy ->
@@ -2800,7 +2815,7 @@ encodeMedicationDistribution =
 
 encodeMedicationDistributionValue : MedicationDistributionValue -> List ( String, Value )
 encodeMedicationDistributionValue value =
-    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
+    [ ( "prescribed_medication", encodeEverySet encodeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
     , ( "deleted", bool False )
     , ( "type", string "medication_distribution" )
@@ -2839,7 +2854,7 @@ encodePrenatalMedicationDistributionValue value =
                 value.avoidingGuidanceReason
                 |> Maybe.withDefault []
     in
-    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
+    [ ( "prescribed_medication", encodeEverySet encodeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_medication_distribution" )
@@ -2848,8 +2863,8 @@ encodePrenatalMedicationDistributionValue value =
         ++ avoidingGuidanceReason
 
 
-encondeMedicationDistributionSign : MedicationDistributionSign -> Value
-encondeMedicationDistributionSign sign =
+encodeMedicationDistributionSign : MedicationDistributionSign -> Value
+encodeMedicationDistributionSign sign =
     string <|
         case sign of
             Amoxicillin ->
@@ -4241,9 +4256,21 @@ encodeNCDHealthEducation =
 
 encodeNCDHealthEducationValue : NCDHealthEducationValue -> List ( String, Value )
 encodeNCDHealthEducationValue value =
-    [ ( "deleted", bool False )
+    [ ( "ncd_health_education_signs", encodeEverySet encodeNCDHealthEducationSign value )
+    , ( "deleted", bool False )
     , ( "type", string "ncd_health_education" )
     ]
+
+
+encodeNCDHealthEducationSign : NCDHealthEducationSign -> Value
+encodeNCDHealthEducationSign sign =
+    string <|
+        case sign of
+            EducationHypertension ->
+                "hypertension"
+
+            NoNCDHealthEducationSigns ->
+                "none"
 
 
 encodeNCDHIVTest : NCDHIVTest -> List ( String, Value )
@@ -4296,9 +4323,22 @@ encodeNCDMedicationDistribution =
 
 encodeNCDMedicationDistributionValue : NCDMedicationDistributionValue -> List ( String, Value )
 encodeNCDMedicationDistributionValue value =
-    [ ( "deleted", bool False )
+    [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign value.recommendedTreatmentSigns )
+    , ( "ncd_guidance", encodeEverySet encodeNCDGuidanceSign value.guidanceSigns )
+    , ( "deleted", bool False )
     , ( "type", string "ncd_medication_distribution" )
     ]
+
+
+encodeNCDGuidanceSign : NCDGuidanceSign -> Value
+encodeNCDGuidanceSign sign =
+    string <|
+        case sign of
+            ReturnInOneMonth ->
+                "return-1m"
+
+            NoNCDGuidanceSigns ->
+                "none"
 
 
 encodeNCDMedicationHistory : NCDMedicationHistory -> List ( String, Value )
@@ -4371,14 +4411,21 @@ encodeNCDRandomBloodSugarTest =
 
 encodeNCDReferral : NCDReferral -> List ( String, Value )
 encodeNCDReferral =
-    encodeNCDMeasurement encodeNCDReferralValue
+    encodeNCDMeasurement encodeReferralValue
 
 
-encodeNCDReferralValue : NCDReferralValue -> List ( String, Value )
-encodeNCDReferralValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "ncd_referral" )
-    ]
+encodeReferralValue : ReferralValue -> List ( String, Value )
+encodeReferralValue value =
+    let
+        nonReferralReasons =
+            Maybe.map (\reason -> [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ])
+                value.nonReferralReasons
+                |> Maybe.withDefault []
+    in
+    (( "referrals", encodeEverySet encodeReferToFacilitySign value.referralSigns ) :: nonReferralReasons)
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_referral" )
+           ]
 
 
 encodeNCDSocialHistory : NCDSocialHistory -> List ( String, Value )

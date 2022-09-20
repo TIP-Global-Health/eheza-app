@@ -28,7 +28,7 @@ import Backend.Measurement.Model
         , TestVariant(..)
         , ViralLoadStatus(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc, prenatalLabExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortTuplesByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
@@ -82,7 +82,6 @@ import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
     exposing
         ( diagnosedMalaria
-        , getCurrentReasonForNonReferral
         , hypertensionDiagnoses
         , outsideCareDiagnoses
         , outsideCareDiagnosesWithPossibleMedication
@@ -2326,6 +2325,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         FacilityNCDProgram ->
                                             EverySet.member ReferToNCDProgram referToFacilitySigns
 
+                                        FacilityANCServices ->
+                                            -- Explicit NCD facility.
+                                            False
+
                                         FacilityHealthCenter ->
                                             -- We should never get here.
                                             False
@@ -2361,6 +2364,9 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
 
                                             FacilityNCDProgram ->
                                                 getCurrentReasonForNonReferral NonReferralReasonNCDProgram value.facilityNonReferralReasons
+
+                                            FacilityANCServices ->
+                                                getCurrentReasonForNonReferral NonReferralReasonANCServices value.facilityNonReferralReasons
 
                                             FacilityHealthCenter ->
                                                 -- We should never get here.

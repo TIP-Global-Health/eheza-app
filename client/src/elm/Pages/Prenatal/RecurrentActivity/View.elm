@@ -39,7 +39,7 @@ import Measurement.Utils
         , urineDipstickResultFormWithDefault
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (viewSendToHospitalForm, viewVitalsForm)
+import Measurement.View exposing (viewVitalsForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.View exposing (warningPopup)
 import Pages.Prenatal.Encounter.Utils exposing (..)

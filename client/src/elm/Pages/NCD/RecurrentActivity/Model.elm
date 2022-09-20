@@ -17,6 +17,7 @@ import Measurement.Model
         , emptyRandomBloodSugarResultForm
         , emptyUrineDipstickResultForm
         )
+import Pages.NCD.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
 import Pages.Page exposing (Page)
 
@@ -46,31 +47,26 @@ type Msg
     | SetAstResult String
     | SaveLiverFunctionResult PersonId (Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
-      -- | SetActiveNextStepsTask NextStepsTask
-      -- | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
-      -- | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
-      -- | SaveSendToHC PersonId (Maybe ( NCDSendToHCId, NCDSendToHC )) (Maybe NextStepsTask)
-      -- | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
-      -- | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
-      -- | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
-      -- | SaveMedicationDistribution PersonId (Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )) (Maybe NextStepsTask)
-      -- | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
-      -- | SaveHealthEducation PersonId (Maybe ( NCDHealthEducationId, NCDHealthEducation )) (Maybe NextStepsTask)
+    | SetActiveNextStepsTask NextStepsTask
+    | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
+    | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
+    | SaveMedicationDistribution PersonId (Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )) (Maybe NextStepsTask)
+    | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
+    | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
+    | SaveReferral PersonId (Maybe ( NCDReferralId, NCDReferral )) (Maybe NextStepsTask)
     | CloseLabsResultsEntry PersonId NCDLabsResultsId LabsResultsValue
 
 
 type alias Model =
     { labResultsData : LabResultsData
-
-    -- , nextStepsData : NextStepsData
+    , nextStepsData : NextStepsData
     }
 
 
 emptyModel : Model
 emptyModel =
     { labResultsData = emptyLabResultsData
-
-    -- , nextStepsData = emptyNextStepsData
+    , nextStepsData = emptyNextStepsData
     }
 
 
@@ -93,19 +89,16 @@ emptyLabResultsData =
     }
 
 
+type alias NextStepsData =
+    { referralForm : ReferralForm
+    , medicationDistributionForm : MedicationDistributionForm
+    , activeTask : Maybe NextStepsTask
+    }
 
--- type alias NextStepsData =
---     { referralForm : ReferralForm
---     , medicationDistributionForm : MedicationDistributionForm
---     , healthEducationForm : HealthEducationForm
---     , activeTask : Maybe NextStepsTask
---     }
---
---
--- emptyNextStepsData : NextStepsData
--- emptyNextStepsData =
---     { referralForm = emptyReferralForm
---     , medicationDistributionForm = emptyMedicationDistributionForm
---     , healthEducationForm = emptyHealthEducationForm
---     , activeTask = Nothing
---     }
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { referralForm = emptyReferralForm
+    , medicationDistributionForm = emptyMedicationDistributionForm
+    , activeTask = Nothing
+    }

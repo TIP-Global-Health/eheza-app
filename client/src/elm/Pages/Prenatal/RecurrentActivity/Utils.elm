@@ -546,6 +546,10 @@ matchRequiredReferralFacility assembled facility =
         FacilityNCDProgram ->
             False
 
+        -- Explicit NCD facility.
+        FacilityANCServices ->
+            False
+
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved
             -- with resolveReferralInputsAndTasksForCHW.

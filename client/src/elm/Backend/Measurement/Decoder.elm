@@ -2957,6 +2957,15 @@ decodeReferToFacilitySign =
                     "ncd-accompany" ->
                         succeed AccompanyToNCDProgram
 
+                    "anc" ->
+                        succeed ReferToANCServices
+
+                    "anc-referral-form" ->
+                        succeed ReferralFormANCServices
+
+                    "anc-accompany" ->
+                        succeed AccompanyToANCServices
+
                     "none" ->
                         succeed NoReferToFacilitySigns
 
@@ -3009,6 +3018,10 @@ decodeNonReferralSign =
                                         Maybe.map (NonReferralReasonNCDProgram >> succeed) reasonForNonReferral
                                             |> Maybe.withDefault failure
 
+                                    "anc" ->
+                                        Maybe.map (NonReferralReasonANCServices >> succeed) reasonForNonReferral
+                                            |> Maybe.withDefault failure
+
                                     "none" ->
                                         succeed NoNonReferralSigns
 
@@ -3039,6 +3052,9 @@ decodeReferralFacility =
 
                     "ncd" ->
                         succeed FacilityNCDProgram
+
+                    "anc" ->
+                        succeed FacilityANCServices
 
                     _ ->
                         fail <|
@@ -4664,7 +4680,24 @@ decodeNCDHealthEducation =
 
 decodeNCDHealthEducationValue : Decoder NCDHealthEducationValue
 decodeNCDHealthEducationValue =
-    succeed NCDHealthEducationValue
+    field "ncd_health_education_signs" (decodeEverySet decodeNCDHealthEducationSign)
+
+
+decodeNCDHealthEducationSign : Decoder NCDHealthEducationSign
+decodeNCDHealthEducationSign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "hypertension" ->
+                        succeed EducationHypertension
+
+                    "none" ->
+                        succeed NoNCDHealthEducationSigns
+
+                    _ ->
+                        fail <| s ++ " is not a recognized NCDHealthEducationSign"
+            )
 
 
 decodeNCDHIVTest : Decoder NCDHIVTest
@@ -4699,6 +4732,25 @@ decodeNCDMedicationDistribution =
 decodeNCDMedicationDistributionValue : Decoder NCDMedicationDistributionValue
 decodeNCDMedicationDistributionValue =
     succeed NCDMedicationDistributionValue
+        |> required "recommended_treatment" (decodeEverySet decodeRecommendedTreatmentSign)
+        |> required "ncd_guidance" (decodeEverySet decodeNCDGuidanceSign)
+
+
+decodeNCDGuidanceSign : Decoder NCDGuidanceSign
+decodeNCDGuidanceSign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "return-1m" ->
+                        succeed ReturnInOneMonth
+
+                    "none" ->
+                        succeed NoNCDGuidanceSigns
+
+                    _ ->
+                        fail <| s ++ " is not a recognized NCDGuidanceSign"
+            )
 
 
 decodeNCDMedicationHistory : Decoder NCDMedicationHistory
@@ -4772,12 +4824,14 @@ decodeNCDRandomBloodSugarTest =
 
 decodeNCDReferral : Decoder NCDReferral
 decodeNCDReferral =
-    decodeNCDMeasurement decodeNCDReferralValue
+    decodeNCDMeasurement decodeReferralValue
 
 
-decodeNCDReferralValue : Decoder NCDReferralValue
-decodeNCDReferralValue =
-    succeed NCDReferralValue
+decodeReferralValue : Decoder ReferralValue
+decodeReferralValue =
+    succeed ReferralValue
+        |> required "referrals" (decodeEverySet decodeReferToFacilitySign)
+        |> optional "reasons_for_non_referrals" (nullable (decodeEverySet decodeNonReferralSign)) Nothing
 
 
 decodeNCDSocialHistory : Decoder NCDSocialHistory

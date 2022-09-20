@@ -20,9 +20,19 @@ import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vitalsFormWi
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Encounter.Model exposing (AssembledData)
+import Pages.NCD.Utils
+    exposing
+        ( medicationDistributionFormWithDefault
+        , recommendedTreatmentMeasurementTaken
+        , recommendedTreatmentSignsForHypertension
+        , referralFormWithDefault
+        , resolveMedicationDistributionInputsAndTasks
+        , resolveReferralInputsAndTasks
+        )
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
+        , ifNullableTrue
         , ifTrue
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
@@ -61,8 +71,12 @@ expectActivity currentDate assembled db activity =
             True
 
         NextSteps ->
-            -- @todo
-            False
+            mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                && (resolveNextStepsTasks currentDate assembled
+                        |> List.filter (expectNextStepsTask currentDate assembled)
+                        |> List.isEmpty
+                        |> not
+                   )
 
 
 activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> NCDActivity -> Bool
@@ -92,9 +106,50 @@ activityCompleted currentDate assembled db activity =
         Laboratory ->
             List.all (laboratoryTaskCompleted currentDate assembled) laboratoryTasks
 
-        -- @todo
         NextSteps ->
-            False
+            resolveNextStepsTasks currentDate assembled
+                |> List.all (nextStepsTaskCompleted assembled)
+
+
+resolveNextStepsTasks : NominalDate -> AssembledData -> List Pages.NCD.Activity.Types.NextStepsTask
+resolveNextStepsTasks currentDate assembled =
+    List.filter (expectNextStepsTask currentDate assembled)
+        [ TaskHealthEducation, TaskMedicationDistribution, TaskReferral ]
+
+
+expectNextStepsTask : NominalDate -> AssembledData -> Pages.NCD.Activity.Types.NextStepsTask -> Bool
+expectNextStepsTask currentDate assembled task =
+    case task of
+        TaskHealthEducation ->
+            --@todo
+            True
+
+        TaskMedicationDistribution ->
+            --@todo
+            True
+
+        TaskReferral ->
+            --@todo
+            True
+
+
+nextStepsTaskCompleted : AssembledData -> Pages.NCD.Activity.Types.NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
+    case task of
+        TaskHealthEducation ->
+            isJust assembled.measurements.healthEducation
+
+        TaskMedicationDistribution ->
+            recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+        TaskReferral ->
+            isJust assembled.measurements.referral
+
+
+mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForNextStepsCompleted currentDate assembled =
+    --@todo
+    True
 
 
 resolvePreviousValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> b) -> Maybe b
@@ -771,3 +826,85 @@ laboratoryTasks =
     , TaskPregnancyTest
     , TaskLiverFunctionTest
     ]
+
+
+toHealthEducationValueWithDefault : Maybe NCDHealthEducationValue -> Pages.NCD.Activity.Model.HealthEducationForm -> Maybe NCDHealthEducationValue
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue saved
+
+
+healthEducationFormWithDefault :
+    Pages.NCD.Activity.Model.HealthEducationForm
+    -> Maybe NCDHealthEducationValue
+    -> Pages.NCD.Activity.Model.HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { hypertension = or form.hypertension (EverySet.member EducationHypertension value |> Just) }
+            )
+
+
+toHealthEducationValue : Maybe NCDHealthEducationValue -> Pages.NCD.Activity.Model.HealthEducationForm -> Maybe NCDHealthEducationValue
+toHealthEducationValue saved form =
+    [ ifNullableTrue EducationHypertension form.hypertension ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDHealthEducationSigns)
+
+
+nextStepsTasksCompletedFromTotal :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> NextStepsData
+    -> Pages.NCD.Activity.Types.NextStepsTask
+    -> ( Int, Int )
+nextStepsTasksCompletedFromTotal language currentDate assembled data task =
+    case task of
+        TaskHealthEducation ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+            in
+            ( taskCompleted form.hypertension
+            , 1
+            )
+
+        TaskMedicationDistribution ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
+                ( _, completed, total ) =
+                    resolveMedicationDistributionInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetRecommendedTreatmentSign
+                        SetMedicationDistributionBoolInput
+                        form
+            in
+            ( completed, total )
+
+        TaskReferral ->
+            let
+                form =
+                    assembled.measurements.referral
+                        |> getMeasurementValueFunc
+                        |> referralFormWithDefault data.referralForm
+
+                ( _, tasks ) =
+                    resolveReferralInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )

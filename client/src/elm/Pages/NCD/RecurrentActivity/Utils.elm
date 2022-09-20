@@ -15,6 +15,15 @@ import Measurement.Utils exposing (vitalsFormWithDefault)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
+import Pages.NCD.Utils
+    exposing
+        ( medicationDistributionFormWithDefault
+        , recommendedTreatmentMeasurementTaken
+        , recommendedTreatmentSignsForHypertension
+        , referralFormWithDefault
+        , resolveMedicationDistributionInputsAndTasks
+        , resolveReferralInputsAndTasks
+        )
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -41,11 +50,12 @@ expectActivity currentDate assembled activity =
                 |> not
 
         RecurrentNextSteps ->
-            -- @todo
-            -- resolveNextStepsTasks currentDate assembled
-            --     |> List.isEmpty
-            --     |> not
-            False
+            mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                && (resolveNextStepsTasks currentDate assembled
+                        |> List.filter (expectNextStepsTask currentDate assembled)
+                        |> List.isEmpty
+                        |> not
+                   )
 
 
 activityCompleted : NominalDate -> AssembledData -> NCDRecurrentActivity -> Bool
@@ -58,21 +68,95 @@ activityCompleted currentDate assembled activity =
                    )
 
         RecurrentNextSteps ->
-            (not <| expectActivity currentDate assembled RecurrentNextSteps)
-                || -- @todo
-                   -- (resolveNextStepsTasks currentDate assembled
-                   --       |> List.all (nextStepsTaskCompleted assembled)
-                   --  )
-                   False
+            resolveNextStepsTasks currentDate assembled
+                |> List.all (nextStepsTaskCompleted assembled)
 
 
-laboratoryResultTasks : List LaboratoryTask
-laboratoryResultTasks =
-    [ TaskRandomBloodSugarTest
-    , TaskLiverFunctionTest
-    , TaskUrineDipstickTest
-    , TaskCreatinineTest
-    ]
+resolveNextStepsTasks : NominalDate -> AssembledData -> List Pages.NCD.RecurrentActivity.Types.NextStepsTask
+resolveNextStepsTasks currentDate assembled =
+    List.filter (expectNextStepsTask currentDate assembled)
+        [ TaskMedicationDistribution, TaskReferral ]
+
+
+expectNextStepsTask : NominalDate -> AssembledData -> Pages.NCD.RecurrentActivity.Types.NextStepsTask -> Bool
+expectNextStepsTask currentDate assembled task =
+    case task of
+        TaskMedicationDistribution ->
+            --@todo
+            True
+
+        TaskReferral ->
+            --@todo
+            True
+
+
+nextStepsTaskCompleted : AssembledData -> Pages.NCD.RecurrentActivity.Types.NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
+    case task of
+        TaskMedicationDistribution ->
+            --@todo
+            -- let
+            --     allowedSigns =
+            --         recommendedTreatmentSignsForHypertension ++ recommendedTreatmentSignsForDiabetes
+            -- in
+            -- recommendedTreatmentMeasurementTaken allowedSigns assembled.measurements
+            False
+
+        TaskReferral ->
+            --@todo
+            False
+
+
+mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForNextStepsCompleted currentDate assembled =
+    --@todo
+    True
+
+
+nextStepsTasksCompletedFromTotal :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> NextStepsData
+    -> Pages.NCD.RecurrentActivity.Types.NextStepsTask
+    -> ( Int, Int )
+nextStepsTasksCompletedFromTotal language currentDate assembled data task =
+    case task of
+        TaskMedicationDistribution ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
+                ( _, completed, total ) =
+                    resolveMedicationDistributionInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetRecommendedTreatmentSign
+                        SetMedicationDistributionBoolInput
+                        form
+            in
+            ( completed, total )
+
+        TaskReferral ->
+            let
+                form =
+                    assembled.measurements.referral
+                        |> getMeasurementValueFunc
+                        |> referralFormWithDefault data.referralForm
+
+                ( _, tasks ) =
+                    resolveReferralInputsAndTasks language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
 
 
 resolveLaboratoryResultTask : NominalDate -> AssembledData -> List LaboratoryTask
@@ -150,3 +234,12 @@ expectLaboratoryResultTask currentDate assembled task =
         -- Others are not in use for NCD.
         _ ->
             False
+
+
+laboratoryResultTasks : List LaboratoryTask
+laboratoryResultTasks =
+    [ TaskRandomBloodSugarTest
+    , TaskLiverFunctionTest
+    , TaskUrineDipstickTest
+    , TaskCreatinineTest
+    ]

@@ -2,6 +2,5 @@ module Pages.NCD.RecurrentActivity.Types exposing (..)
 
 
 type NextStepsTask
-    = NextStepsSendToHC
-    | NextStepsMedicationDistribution
-    | NextStepsHealthEducation
+    = TaskMedicationDistribution
+    | TaskReferral

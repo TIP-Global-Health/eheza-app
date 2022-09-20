@@ -24,9 +24,10 @@ import Backend.Measurement.Model
         , OutsideCareMedication(..)
         , Predecessor(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testResultFromString)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, nonReferralReasonToSign, testResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Model
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
@@ -49,6 +50,7 @@ import Measurement.Utils
         )
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
+import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
@@ -108,6 +110,26 @@ update currentDate id db msg model =
                     )
                 |> Maybe.withDefault model.medicalHistoryData.outsideCareForm
 
+        medicationDistributionForm =
+            Dict.get id db.ncdMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.medicationDistribution
+                        >> getMeasurementValueFunc
+                        >> medicationDistributionFormWithDefault model.nextStepsData.medicationDistributionForm
+                    )
+                |> Maybe.withDefault model.nextStepsData.medicationDistributionForm
+
+        referralForm =
+            Dict.get id db.ncdMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.referral
+                        >> getMeasurementValueFunc
+                        >> referralFormWithDefault model.nextStepsData.referralForm
+                    )
+                |> Maybe.withDefault model.nextStepsData.referralForm
+
         generateExaminationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveExaminationTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| NCDEncounterPage id ]
@@ -118,6 +140,10 @@ update currentDate id db msg model =
 
         generateLaboratoryMsgs nextTask =
             Maybe.map (\task -> [ SetActiveLaboratoryTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| NCDEncounterPage id ]
+
+        generateNextStepsMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| NCDEncounterPage id ]
     in
     case msg of
@@ -1689,6 +1715,196 @@ update currentDate id db msg model =
                         |> toNonRDTValueWithDefault measurement toLiverFunctionTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveLiverFunctionTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetActiveNextStepsTask task ->
+            let
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHealthEducationBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.nextStepsData.healthEducationForm
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHealthEducation personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    toHealthEducationValueWithDefault measurement model.nextStepsData.healthEducationForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveHealthEducation personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetRecommendedTreatmentSign allowedSigns sign ->
+            let
+                updatedSigns =
+                    -- Since we may have values from recurrent phase of encounter, we make
+                    -- sure to preserve them, before setting new value at inital phase.
+                    Maybe.map
+                        (\signs ->
+                            List.filter (\sign_ -> not <| List.member sign_ allowedSigns) signs
+                                |> List.append [ sign ]
+                        )
+                        medicationDistributionForm.recommendedTreatmentSigns
+                        |> Maybe.withDefault [ sign ]
+
+                updatedForm =
+                    { medicationDistributionForm | recommendedTreatmentSigns = Just updatedSigns }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationDistributionBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.nextStepsData.medicationDistributionForm
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMedicationDistribution personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    toMedicationDistributionValueWithDefault measurement model.nextStepsData.medicationDistributionForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveMedicationDistribution personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetReferralBoolInput updateFunc value ->
+            let
+                updatedForm =
+                    updateFunc value model.nextStepsData.referralForm
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | referralForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetFacilityNonReferralReason currentValue facility reason ->
+            let
+                updatedValue =
+                    nonReferralReasonToSign facility reason
+
+                updatedNonReferralReasons =
+                    Maybe.map
+                        (\nonReferralReasons ->
+                            case currentValue of
+                                Just value ->
+                                    EverySet.remove (nonReferralReasonToSign facility value) nonReferralReasons
+                                        |> EverySet.insert updatedValue
+
+                                Nothing ->
+                                    EverySet.insert updatedValue nonReferralReasons
+                        )
+                        referralForm.nonReferralReasons
+                        |> Maybe.withDefault (EverySet.singleton updatedValue)
+
+                updatedForm =
+                    { referralForm | nonReferralReasons = Just updatedNonReferralReasons }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | referralForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveReferral personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    toReferralValueWithDefault measurement model.nextStepsData.referralForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveReferral personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

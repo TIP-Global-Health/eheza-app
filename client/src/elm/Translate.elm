@@ -97,6 +97,7 @@ import Pages.Dashboard.Model as Dashboard
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
+import Pages.NCD.RecurrentActivity.Types
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
@@ -784,6 +785,7 @@ type TranslationId
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
     | MedicalConditionQuestion
+    | MedicationDistribution
     | MedicationTreatingDiabetes MedicationTreatingDiabetes
     | MedicationTreatingDiabetesQuestion
     | MedicationTreatingHypertension MedicationTreatingHypertension
@@ -846,15 +848,22 @@ type TranslationId
     | Name
     | NationalIdNumber
     | NCDActivityTitle NCDActivity
+    | NCDANCServicesInstructions
     | NCDDangerSign NCDDangerSign
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
     | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
+    | NCDGuidanceSignQuestion NCDGuidanceSign
+    | NCDHealthEducationHeader
+    | NCDHealthEducationInstructions
+    | NCDHealthEducationQuestion
     | NCDLabsCaseManagementEntryTypeResults
     | NCDMedicalHistoryTask Pages.NCD.Activity.Types.MedicalHistoryTask
+    | NCDNextStepsTask Pages.NCD.Activity.Types.NextStepsTask
     | NCDGroup1Symptom NCDGroup1Symptom
     | NCDGroup2Symptom NCDGroup2Symptom
     | NCDPainSymptom NCDPainSymptom
     | NCDRecurrentActivitiesTitle NCDRecurrentActivity
+    | NCDRecurrentNextStepsTask Pages.NCD.RecurrentActivity.Types.NextStepsTask
     | NCDSocialHistoryFoodQuestion
     | NCDSocialHistoryFoodQuestionInstructions
     | NCDSocialHistorySignQuestion NCDSocialHistorySign
@@ -1147,6 +1156,7 @@ type TranslationId
     | ReferredToFacility ReferralFacility
     | ReferredToFacilityNot ReferralFacility
     | ReferredToFacilityPostpartum ReferralFacility
+    | ReferToHospitalForFurtherEvaluation
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -1513,6 +1523,11 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Will you accompany the patient to NCD services"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityANCServices ->
+                    { english = "Will you accompany the patient to ANC services"
                     , kinyarwanda = Nothing
                     }
 
@@ -3229,6 +3244,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityANCServices ->
+                    { english = "Complete a ANC services referral form"
+                    , kinyarwanda = Nothing
+                    }
+
         Contacted114 ->
             { english = "Contacted 114"
             , kinyarwanda = Just "Namenyesheje 114"
@@ -4196,9 +4216,7 @@ translationSet trans =
             }
 
         EmergencyReferralHelperReferToHospitalForEvaluation ->
-            { english = "Refer patient to hospital for further evaluation"
-            , kinyarwanda = Nothing
-            }
+            translationSet ReferToHospitalForFurtherEvaluation
 
         EmergencyReferralHelperReferToHospitalForImmediateDelivery ->
             { english = "Refer patient to hospital for immediate delivery"
@@ -6858,6 +6876,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        MedicationDistribution ->
+            { english = "Medication Distribution"
+            , kinyarwanda = Just "Gutanga Imiti"
+            }
+
         MedicationTreatingDiabetes medication ->
             case medication of
                 MedicationMetformin ->
@@ -7471,6 +7494,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
 
+        NCDANCServicesInstructions ->
+            { english = "Refer patient to ANC services for further management of hypertension during pregnancy"
+            , kinyarwanda = Nothing
+            }
+
         NCDDangerSign sign ->
             case sign of
                 Dyspnea ->
@@ -7547,6 +7575,33 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        NCDGuidanceSignQuestion sign ->
+            case sign of
+                ReturnInOneMonth ->
+                    { english = "Have you advised the patient to return in one month for a check-up"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDGuidanceSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDHealthEducationHeader ->
+            { english = "Stage One Hypertension"
+            , kinyarwanda = Nothing
+            }
+
+        NCDHealthEducationInstructions ->
+            { english = "Council patient on lifestyle changes and the root causes of hypertension"
+            , kinyarwanda = Nothing
+            }
+
+        NCDHealthEducationQuestion ->
+            { english = "Have you provided the appropriate health education to the patient"
+            , kinyarwanda = Nothing
+            }
+
         NCDLabsCaseManagementEntryTypeResults ->
             { english = "NCD Lab Results"
             , kinyarwanda = Nothing
@@ -7577,6 +7632,21 @@ translationSet trans =
                 TaskOutsideCare ->
                     { english = "Outside Care"
                     , kinyarwanda = Nothing
+                    }
+
+        NCDNextStepsTask task ->
+            case task of
+                Pages.NCD.Activity.Types.TaskHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Just "Inyigisho ku buzima"
+                    }
+
+                Pages.NCD.Activity.Types.TaskMedicationDistribution ->
+                    translationSet MedicationDistribution
+
+                Pages.NCD.Activity.Types.TaskReferral ->
+                    { english = "Referral"
+                    , kinyarwanda = Just "Kohereza"
                     }
 
         NCDGroup1Symptom symptom ->
@@ -7737,6 +7807,16 @@ translationSet trans =
                     , kinyarwanda = Just "Ibikurikiyeho"
                     }
 
+        NCDRecurrentNextStepsTask task ->
+            case task of
+                Pages.NCD.RecurrentActivity.Types.TaskMedicationDistribution ->
+                    translationSet MedicationDistribution
+
+                Pages.NCD.RecurrentActivity.Types.TaskReferral ->
+                    { english = "Referral"
+                    , kinyarwanda = Just "Kohereza"
+                    }
+
         NCDSocialHistoryFoodQuestion ->
             { english = "What foods do you eat most"
             , kinyarwanda = Nothing
@@ -7868,9 +7948,7 @@ translationSet trans =
                     }
 
                 NextStepsMedicationDistribution ->
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Just "Gutanga Imiti"
-                    }
+                    translationSet MedicationDistribution
 
                 Pages.AcuteIllness.Activity.Types.NextStepsSendToHC ->
                     if isChw then
@@ -7901,9 +7979,7 @@ translationSet trans =
                 NextStepsSymptomsReliefGuidance ->
                     -- We qualify it as Medication distribution, to keep
                     -- consistant with other types of Covid steps.
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Just "Gutanga Imiti"
-                    }
+                    translationSet MedicationDistribution
 
         No ->
             { english = "No"
@@ -10867,9 +10943,7 @@ translationSet trans =
                     }
 
                 Pages.Prenatal.Activity.Types.NextStepsMedicationDistribution ->
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Just "Gutanga Imiti"
-                    }
+                    translationSet MedicationDistribution
 
                 Pages.Prenatal.Activity.Types.NextStepsWait ->
                     { english = "Wait"
@@ -10884,9 +10958,7 @@ translationSet trans =
                     }
 
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution ->
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Just "Gutanga Imiti"
-                    }
+                    translationSet MedicationDistribution
 
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsHealthEducation ->
                     { english = "Health Education"
@@ -12250,17 +12322,17 @@ translationSet trans =
 
         TestResult result ->
             case result of
-                PrenatalTestPositive ->
+                TestPositive ->
                     { english = "Positive"
                     , kinyarwanda = Just "Afite ubwandu"
                     }
 
-                PrenatalTestNegative ->
+                TestNegative ->
                     { english = "Negative"
                     , kinyarwanda = Just "Nta bwandu afite"
                     }
 
-                PrenatalTestIndeterminate ->
+                TestIndeterminate ->
                     { english = "Indeterminate"
                     , kinyarwanda = Just "Ntibisobanutse"
                     }
@@ -12848,6 +12920,36 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentHydrochlorothiazide ->
+                    { english = "1 tablet by mouth daily"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAmlodipine ->
+                    { english = "1 tablet by mouth daily"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentNifedipine ->
+                    { english = "1 tablet by mouth twice a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentCaptopril ->
+                    { english = "1 tablet by mouth 3 times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentLisinopril ->
+                    { english = "1 tablet by mouth daily"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAtenlol ->
+                    { english = "1 tablet by mouth daily"
+                    , kinyarwanda = Nothing
+                    }
+
                 TreatmentCloxacillin ->
                     { english = "2 capsules by mouth 3 times a day for 7 days"
                     , kinyarwanda = Nothing
@@ -12870,6 +12972,36 @@ translationSet trans =
 
                 TreatmentIbuprofen ->
                     { english = "1 tablet by mouth 3 times a day for 5 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin1m1e ->
+                    { english = "1 tablet by mouth twice a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide1m1e ->
+                    { english = "1 tablet by mouth twice a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin2m1e ->
+                    { english = "2 tablets by mouth in the morning and 1 tablet by mouth in the evening"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide2m1e ->
+                    { english = "2 tablets by mouth in the morning and 1 tablet by mouth in the evening"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin2m2e ->
+                    { english = "2 tablets by mouth twice a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide2m2e ->
+                    { english = "2 tablets by mouth twice a day"
                     , kinyarwanda = Nothing
                     }
 
@@ -12967,6 +13099,36 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TreatmentHydrochlorothiazide ->
+                    { english = "Hydrochlorothiazide (12.5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAmlodipine ->
+                    { english = "Amlodipine (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentNifedipine ->
+                    { english = "Nifedipine (20mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentCaptopril ->
+                    { english = "Captopril (25mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentLisinopril ->
+                    { english = "Lisinopril (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentAtenlol ->
+                    { english = "Atenlol (12ץ5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoTreatmentForHypertension ->
                     { english = "No Treatment Administered"
                     , kinyarwanda = Just "Nta muti watanzwe"
@@ -13032,6 +13194,51 @@ translationSet trans =
                     , kinyarwanda = Just "Nta muti watanzwe"
                     }
 
+                TreatmentMetformin1m1e ->
+                    { english = "Metformin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide1m1e ->
+                    { english = "Glipenclamide (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin2m1e ->
+                    { english = "Metformin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide2m1e ->
+                    { english = "Glipenclamide (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin2m2e ->
+                    { english = "Metformin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide2m2e ->
+                    { english = "Glipenclamide (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentMetformin2m2eGlipenclamide1m1e ->
+                    { english = "Metformin (500mg), Glipenclamide (5mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentGlipenclamide2m2eMetformin1m1e ->
+                    { english = "Glipenclamide (5mg), Metformin (500mg)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoTreatmentForDiabetes ->
+                    { english = "No Treatment Administered"
+                    , kinyarwanda = Just "Nta muti watanzwe"
+                    }
+
         RecordAcuteIllnessOutcome ->
             { english = "Record Acute Illness Outcome"
             , kinyarwanda = Just "Andika iherezo ry'indwara ifatiyeho"
@@ -13081,6 +13288,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityANCServices ->
+                    { english = "Have you referred the patient to ANC services"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacility facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -13105,6 +13317,11 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Referred to NCD services"
+                    , kinyarwanda = Nothing
+                    }
+
+                FacilityANCServices ->
+                    { english = "Referred to ANC services"
                     , kinyarwanda = Nothing
                     }
 
@@ -13135,6 +13352,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FacilityANCServices ->
+                    { english = "Not referred to ANC services"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacilityPostpartum facility ->
             case facility of
                 FacilityARVProgram ->
@@ -13151,6 +13373,11 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        ReferToHospitalForFurtherEvaluation ->
+            { english = "Refer patient to hospital for further evaluation"
+            , kinyarwanda = Nothing
+            }
 
         ReferToProgramAction ->
             { english = "Refer patient to appropriate nutrition program"
@@ -14284,9 +14511,10 @@ translationSet trans =
                     }
 
                 FacilityNCDProgram ->
-                    { english = "Direct patient to the appropriate location"
-                    , kinyarwanda = Just "Yobora umurwayi ahantu habugenewe"
-                    }
+                    translationSet (SendPatientToFacility FacilityARVProgram)
+
+                FacilityANCServices ->
+                    translationSet (SendPatientToFacility FacilityARVProgram)
 
         ShowAll ->
             { english = "Show All"

@@ -10,6 +10,7 @@ import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import LocalData
+import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
 
@@ -883,13 +884,13 @@ covidIsolationPeriod =
 testResultToString : TestResult -> String
 testResultToString value =
     case value of
-        PrenatalTestPositive ->
+        TestPositive ->
             "positive"
 
-        PrenatalTestNegative ->
+        TestNegative ->
             "negative"
 
-        PrenatalTestIndeterminate ->
+        TestIndeterminate ->
             "indeterminate"
 
 
@@ -897,13 +898,13 @@ testResultFromString : String -> Maybe TestResult
 testResultFromString value =
     case value of
         "positive" ->
-            Just PrenatalTestPositive
+            Just TestPositive
 
         "negative" ->
-            Just PrenatalTestNegative
+            Just TestNegative
 
         "indeterminate" ->
-            Just PrenatalTestIndeterminate
+            Just TestIndeterminate
 
         _ ->
             Nothing
@@ -1461,6 +1462,24 @@ recommendedTreatmentSignToString sign =
         TreatmentHypertensionAddAmlodipine ->
             "add-amlodipine"
 
+        TreatmentHydrochlorothiazide ->
+            "hydrochlorothiazide"
+
+        TreatmentAmlodipine ->
+            "amlodipine"
+
+        TreatmentNifedipine ->
+            "nifedipine"
+
+        TreatmentCaptopril ->
+            "captopril"
+
+        TreatmentLisinopril ->
+            "lisinopril"
+
+        TreatmentAtenlol ->
+            "atenlol"
+
         NoTreatmentForHypertension ->
             "no-treatment-hypertension"
 
@@ -1499,6 +1518,33 @@ recommendedTreatmentSignToString sign =
 
         NoTreatmentForMastitis ->
             "no-treatment-mastitis"
+
+        TreatmentMetformin1m1e ->
+            "metformin-1m1e"
+
+        TreatmentGlipenclamide1m1e ->
+            "glipenclamide-1m1e"
+
+        TreatmentMetformin2m1e ->
+            "metformin-2m1e"
+
+        TreatmentGlipenclamide2m1e ->
+            "glipenclamide-2m1e"
+
+        TreatmentMetformin2m2e ->
+            "metformin-2m2e"
+
+        TreatmentGlipenclamide2m2e ->
+            "glipenclamide-2m2e"
+
+        TreatmentMetformin2m2eGlipenclamide1m1e ->
+            "metformin-2m2e-glipenclamide-1m1e"
+
+        TreatmentGlipenclamide2m2eMetformin1m1e ->
+            "glipenclamide-2m2e-metformin-1m1e"
+
+        NoTreatmentForDiabetes ->
+            "no-treatment-diabetes"
 
 
 recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
@@ -1552,6 +1598,24 @@ recommendedTreatmentSignFromString sign =
         "add-amlodipine" ->
             Just TreatmentHypertensionAddAmlodipine
 
+        "hydrochlorothiazide" ->
+            Just TreatmentHydrochlorothiazide
+
+        "amlodipine" ->
+            Just TreatmentAmlodipine
+
+        "nifedipine" ->
+            Just TreatmentNifedipine
+
+        "captopril" ->
+            Just TreatmentCaptopril
+
+        "lisinopril" ->
+            Just TreatmentLisinopril
+
+        "atenlol" ->
+            Just TreatmentAtenlol
+
         "no-treatment-hypertension" ->
             Just NoTreatmentForHypertension
 
@@ -1590,6 +1654,33 @@ recommendedTreatmentSignFromString sign =
 
         "no-treatment-mastitis" ->
             Just NoTreatmentForMastitis
+
+        "metformin-1m1e" ->
+            Just TreatmentMetformin1m1e
+
+        "glipenclamide-1m1e" ->
+            Just TreatmentGlipenclamide1m1e
+
+        "metformin-2m1e" ->
+            Just TreatmentMetformin2m1e
+
+        "glipenclamide-2m1e" ->
+            Just TreatmentGlipenclamide2m1e
+
+        "metformin-2m2e" ->
+            Just TreatmentMetformin2m2e
+
+        "glipenclamide-2m2e" ->
+            Just TreatmentGlipenclamide2m2e
+
+        "metformin-2m2e-glipenclamide-1m1e" ->
+            Just TreatmentMetformin2m2eGlipenclamide1m1e
+
+        "glipenclamide-2m2e-metformin-1m1e" ->
+            Just TreatmentGlipenclamide2m2eMetformin1m1e
+
+        "no-treatment-diabetes" ->
+            Just NoTreatmentForDiabetes
 
         _ ->
             Nothing
@@ -3304,3 +3395,108 @@ laboratoryTestFromString value =
 
         _ ->
             Nothing
+
+
+{-| Referal to facility is completed when we mark that facility was referred to,
+or, reason was set for not referring to that facility.
+-}
+referralToFacilityCompleted : EverySet ReferToFacilitySign -> Maybe (EverySet NonReferralSign) -> ReferralFacility -> Bool
+referralToFacilityCompleted referralSigns nonReferralReasons facility =
+    let
+        referralConfig =
+            case facility of
+                FacilityHospital ->
+                    Just ( ReferToHospital, NonReferralReasonHospital )
+
+                FacilityMentalHealthSpecialist ->
+                    Just ( ReferToMentalHealthSpecialist, NonReferralReasonMentalHealthSpecialist )
+
+                FacilityARVProgram ->
+                    Just ( ReferToARVProgram, NonReferralReasonARVProgram )
+
+                FacilityNCDProgram ->
+                    Just ( ReferToNCDProgram, NonReferralReasonNCDProgram )
+
+                FacilityANCServices ->
+                    Just ( ReferToANCServices, NonReferralReasonANCServices )
+
+                FacilityHealthCenter ->
+                    -- We should never get here, as referral to HC
+                    -- got special treatement, and not supported here.
+                    Nothing
+    in
+    Maybe.map
+        (\( referralSign, nonReferralSign ) ->
+            let
+                facilityWasReferred =
+                    EverySet.member referralSign referralSigns
+
+                facilityNonReferralReasonSet =
+                    isJust <| getCurrentReasonForNonReferral nonReferralSign nonReferralReasons
+            in
+            facilityWasReferred || facilityNonReferralReasonSet
+        )
+        referralConfig
+        |> Maybe.withDefault False
+
+
+getCurrentReasonForNonReferral :
+    (ReasonForNonReferral -> NonReferralSign)
+    -> Maybe (EverySet NonReferralSign)
+    -> Maybe ReasonForNonReferral
+getCurrentReasonForNonReferral reasonToSignFunc nonReferralReasons =
+    let
+        facilityNonReferralReasons =
+            Maybe.withDefault EverySet.empty nonReferralReasons
+    in
+    List.filterMap
+        (\reason ->
+            if EverySet.member (reasonToSignFunc reason) facilityNonReferralReasons then
+                Just reason
+
+            else
+                Nothing
+        )
+        [ ClientRefused
+        , NoAmbulance
+        , ClientUnableToAffordFees
+        , ClientAlreadyInCare
+        , ReasonForNonReferralNotIndicated
+        , ReasonForNonReferralOther
+        ]
+        |> List.head
+
+
+nonReferralReasonToSign : ReferralFacility -> ReasonForNonReferral -> NonReferralSign
+nonReferralReasonToSign facility reason =
+    case facility of
+        FacilityHospital ->
+            NonReferralReasonHospital reason
+
+        FacilityMentalHealthSpecialist ->
+            NonReferralReasonMentalHealthSpecialist reason
+
+        FacilityARVProgram ->
+            NonReferralReasonARVProgram reason
+
+        FacilityNCDProgram ->
+            NonReferralReasonNCDProgram reason
+
+        FacilityANCServices ->
+            NonReferralReasonANCServices reason
+
+        FacilityHealthCenter ->
+            -- We should never get here, as referral to HC
+            -- got special treatement, and not supported here.
+            NoNonReferralSigns
+
+
+{-| Recommended Treatment activity appears on both initial and recurrent encounters.
+Each one of them got unique set of signs that can be used, and at least one of
+them must be set.
+In order to know if activity was completed or not, we check if at least one
+of those signs was set.
+-}
+recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> EverySet RecommendedTreatmentSign -> Bool
+recommendedTreatmentMeasurementTaken allowedSigns signs =
+    List.any (\sign -> EverySet.member sign signs) allowedSigns

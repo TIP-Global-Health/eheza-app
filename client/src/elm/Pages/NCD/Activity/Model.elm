@@ -30,6 +30,7 @@ import Measurement.Model
         , emptyVitalsForm
         )
 import Pages.NCD.Activity.Types exposing (..)
+import Pages.NCD.Model exposing (..)
 import Pages.Page exposing (Page)
 
 
@@ -123,6 +124,16 @@ type Msg
     | SetLiverFunctionTestExecutionDate NominalDate
     | SetLiverFunctionTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveLiverFunctionTest PersonId (Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )) (Maybe LaboratoryTask)
+      -- NextStepsMsgs
+    | SetActiveNextStepsTask NextStepsTask
+    | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducation PersonId (Maybe ( NCDHealthEducationId, NCDHealthEducation )) (Maybe NextStepsTask)
+    | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
+    | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
+    | SaveMedicationDistribution PersonId (Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )) (Maybe NextStepsTask)
+    | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
+    | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
+    | SaveReferral PersonId (Maybe ( NCDReferralId, NCDReferral )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -132,6 +143,7 @@ type alias Model =
     , familyPlanningData : FamilyPlanningData
     , medicalHistoryData : MedicalHistoryData
     , laboratoryData : LaboratoryData
+    , nextStepsData : NextStepsData
     }
 
 
@@ -143,6 +155,7 @@ emptyModel =
     , familyPlanningData = emptyFamilyPlanningData
     , medicalHistoryData = emptyMedicalHistoryData
     , laboratoryData = emptyLaboratoryData
+    , nextStepsData = emptyNextStepsData
     }
 
 
@@ -338,3 +351,29 @@ emptyLaboratoryData =
     , liverFunctionTestForm = emptyNonRDTForm
     , activeTask = Nothing
     }
+
+
+type alias NextStepsData =
+    { referralForm : ReferralForm
+    , healthEducationForm : HealthEducationForm
+    , medicationDistributionForm : MedicationDistributionForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { referralForm = emptyReferralForm
+    , healthEducationForm = emptyHealthEducationForm
+    , medicationDistributionForm = emptyMedicationDistributionForm
+    , activeTask = Nothing
+    }
+
+
+type alias HealthEducationForm =
+    { hypertension : Maybe Bool }
+
+
+emptyHealthEducationForm : HealthEducationForm
+emptyHealthEducationForm =
+    { hypertension = Nothing }
