@@ -107,8 +107,8 @@ altResultNormal value =
     value >= 7 && value <= 56
 
 
-alsResultNormal : Float -> Bool
-alsResultNormal value =
+astResultNormal : Float -> Bool
+astResultNormal value =
     value >= 8 && value <= 33
 
 

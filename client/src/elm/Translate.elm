@@ -6292,8 +6292,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                LabResultsHistoryALS _ ->
-                    { english = "ALS Test History"
+                LabResultsHistoryAST _ ->
+                    { english = "AST Test History"
                     , kinyarwanda = Nothing
                     }
 
@@ -6409,7 +6409,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                LabResultsHistoryALS _ ->
+                LabResultsHistoryAST _ ->
                     { english = "8-33 IU/L"
                     , kinyarwanda = Nothing
                     }

@@ -363,7 +363,7 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                             |> Maybe.withDefault True
                     }
 
-                LabResultsHistoryALS assembled ->
+                LabResultsHistoryAST assembled ->
                     let
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
@@ -374,7 +374,7 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     , recentResultNormal =
-                        Maybe.map alsResultNormal recentResultValue
+                        Maybe.map astResultNormal recentResultValue
                             |> Maybe.withDefault True
                     }
 
@@ -607,6 +607,27 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
         rhesusResults =
             List.map (\( date, ( _, rhesus ) ) -> ( date, rhesus )) bloodGpRsResults
 
+        creatinineTestResults =
+            getTestResults .creatinine (\value -> ( value.creatinineResult, value.bunResult ))
+
+        creatinineResults =
+            List.map (\( date, ( creatinineResult, _ ) ) -> ( date, creatinineResult )) creatinineTestResults
+
+        bunResults =
+            List.map (\( date, ( _, bunResult ) ) -> ( date, bunResult )) creatinineTestResults
+
+        liverFunctionResults =
+            getTestResults .liverFunction (\value -> ( value.altResult, value.astResult ))
+
+        altResults =
+            List.map (\( date, ( altResult, _ ) ) -> ( date, altResult )) liverFunctionResults
+
+        astResults =
+            List.map (\( date, ( _, astResult ) ) -> ( date, astResult )) liverFunctionResults
+
+        pregnancyTestResults =
+            getTestResultsKnownAsPositive .pregnancy .testResult
+
         content =
             case mode of
                 LabResultsCurrentMain ->
@@ -628,6 +649,16 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                         |> showIf displayConfig.bloodGpRs
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryRhesus rhesusResults)
                         |> showIf displayConfig.bloodGpRs
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryCreatinine creatinineResults)
+                        |> showIf displayConfig.creatinine
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryBUN bunResults)
+                        |> showIf displayConfig.creatinine
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryALT altResults)
+                        |> showIf displayConfig.liverFunction
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryAST astResults)
+                        |> showIf displayConfig.liverFunction
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryPregnancy pregnancyTestResults)
+                        |> showIf displayConfig.pregnancy
                     ]
 
                 LabResultsCurrentDipstickShort ->
@@ -874,7 +905,7 @@ viewLabResultsHistoryPane language currentDate mode =
                     -- @todo
                     []
 
-                LabResultsHistoryALS assembled ->
+                LabResultsHistoryAST assembled ->
                     -- @todo
                     []
 

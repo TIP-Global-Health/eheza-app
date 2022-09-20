@@ -66,7 +66,7 @@ type LabResultsHistoryMode
     | LabResultsHistoryCreatinine (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryBUN (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryALT (List ( NominalDate, Maybe Float ))
-    | LabResultsHistoryALS (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryAST (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryPregnancy (List ( NominalDate, Maybe TestReport ))
 
 
