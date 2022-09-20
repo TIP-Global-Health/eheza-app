@@ -924,6 +924,52 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_creatinine_test-field_bun_result'.
+  $field_instances['node-ncd_creatinine_test-field_bun_result'] = array(
+    'bundle' => 'ncd_creatinine_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_bun_result',
+    'label' => 'BUN Result',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 16,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-ncd_creatinine_test-field_creatinine_result'.
   $field_instances['node-ncd_creatinine_test-field_creatinine_result'] = array(
@@ -1127,52 +1173,6 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-ncd_creatinine_test-field_nitorogen_result'.
-  $field_instances['node-ncd_creatinine_test-field_nitorogen_result'] = array(
-    'bundle' => 'ncd_creatinine_test',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'number',
-        'settings' => array(
-          'decimal_separator' => '.',
-          'prefix_suffix' => TRUE,
-          'scale' => 2,
-          'thousand_separator' => '',
-        ),
-        'type' => 'number_decimal',
-        'weight' => 10,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_nitorogen_result',
-    'label' => 'Nitorogen Result',
-    'required' => 0,
-    'settings' => array(
-      'max' => '',
-      'min' => '',
-      'prefix' => '',
-      'suffix' => '',
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'number',
-      'settings' => array(),
-      'type' => 'number',
-      'weight' => 15,
-    ),
-  );
-
   // Exported field_instance: 'node-ncd_creatinine_test-field_nurse'.
   $field_instances['node-ncd_creatinine_test-field_nurse'] = array(
     'bundle' => 'ncd_creatinine_test',
@@ -1340,52 +1340,6 @@ function hedley_ncd_field_default_field_instances() {
       'settings' => array(),
       'type' => 'options_select',
       'weight' => 10,
-    ),
-  );
-
-  // Exported field_instance: 'node-ncd_creatinine_test-field_urea_result'.
-  $field_instances['node-ncd_creatinine_test-field_urea_result'] = array(
-    'bundle' => 'ncd_creatinine_test',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'number',
-        'settings' => array(
-          'decimal_separator' => '.',
-          'prefix_suffix' => TRUE,
-          'scale' => 2,
-          'thousand_separator' => '',
-        ),
-        'type' => 'number_decimal',
-        'weight' => 9,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_urea_result',
-    'label' => 'Urea Result',
-    'required' => 0,
-    'settings' => array(
-      'max' => '',
-      'min' => '',
-      'prefix' => '',
-      'suffix' => '',
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'number',
-      'settings' => array(),
-      'type' => 'number',
-      'weight' => 14,
     ),
   );
 
@@ -8516,6 +8470,7 @@ function hedley_ncd_field_default_field_instances() {
   t('ALT Result');
   t('AST Result');
   t('Abdomen');
+  t('BUN Result');
   t('Beverages Per Week');
   t('Bilirubin');
   t('Body temperature');
@@ -8560,7 +8515,6 @@ function hedley_ncd_field_default_field_instances() {
   t('NCD Pain Symptoms');
   t('NCD Social History Signs');
   t('Neck');
-  t('Nitorogen Result');
   t('Nitrite');
   t('Nurse');
   t('Outside Care Medications');
@@ -8581,7 +8535,6 @@ function hedley_ncd_field_default_field_instances() {
   t('Test Result');
   t('Test variant');
   t('UUID');
-  t('Urea Result');
   t('Urobilinogen');
 
   return $field_instances;
