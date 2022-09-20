@@ -62,7 +62,7 @@ import Pages.Prenatal.Utils
         , recommendedTreatmentSignsForSyphilis
         , resolvePreviousHypertensionDiagnosis
         )
-import Pages.Report.Types exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), TestReport(..))
+import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), TestReport(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round

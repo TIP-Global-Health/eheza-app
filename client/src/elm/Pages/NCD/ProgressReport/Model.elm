@@ -2,7 +2,7 @@ module Pages.NCD.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Pages.Page exposing (Page)
-import Pages.Report.Types exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..))
+import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..))
 
 
 type alias Model =

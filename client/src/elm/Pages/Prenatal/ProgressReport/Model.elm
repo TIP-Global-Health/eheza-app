@@ -5,7 +5,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
-import Pages.Report.Types exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..))
+import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..))
 
 
 type alias Model =

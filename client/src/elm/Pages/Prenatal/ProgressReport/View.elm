@@ -92,7 +92,6 @@ import Pages.Prenatal.Utils
         , resolveNCDReferralDiagnoses
         )
 import Pages.Report.Model exposing (..)
-import Pages.Report.Types exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), TestReport(..))
 import Pages.Report.View exposing (..)
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)

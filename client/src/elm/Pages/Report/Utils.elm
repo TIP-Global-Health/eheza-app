@@ -3,7 +3,7 @@ module Pages.Report.Utils exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Pages.Report.Types exposing (..)
+import Pages.Report.Model exposing (..)
 import Translate exposing (Language, TranslationId, translate, translateText)
 
 
