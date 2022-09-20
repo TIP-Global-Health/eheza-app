@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.NCDActivity.Model exposing (..)
+import Backend.NCDEncounter.Types exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
 import Html exposing (..)
@@ -12,18 +13,10 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils exposing (vitalsFormWithDefault)
-import Pages.NCD.Model exposing (AssembledData)
+import Pages.NCD.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
-import Pages.NCD.Utils
-    exposing
-        ( medicationDistributionFormWithDefault
-        , recommendedTreatmentMeasurementTaken
-        , recommendedTreatmentSignsForHypertension
-        , referralFormWithDefault
-        , resolveMedicationDistributionInputsAndTasks
-        , resolveReferralInputsAndTasks
-        )
+import Pages.NCD.Utils exposing (..)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -50,12 +43,10 @@ expectActivity currentDate assembled activity =
                 |> not
 
         RecurrentNextSteps ->
-            mandatoryActivitiesForNextStepsCompleted currentDate assembled
-                && (resolveNextStepsTasks currentDate assembled
-                        |> List.filter (expectNextStepsTask currentDate assembled)
-                        |> List.isEmpty
-                        |> not
-                   )
+            resolveNextStepsTasks currentDate assembled
+                |> List.filter (expectNextStepsTask currentDate assembled)
+                |> List.isEmpty
+                |> not
 
 
 activityCompleted : NominalDate -> AssembledData -> NCDRecurrentActivity -> Bool
@@ -82,35 +73,45 @@ expectNextStepsTask : NominalDate -> AssembledData -> Pages.NCD.RecurrentActivit
 expectNextStepsTask currentDate assembled task =
     case task of
         TaskMedicationDistribution ->
-            --@todo
-            True
+            medicateForDiabetes NCDEncounterPhaseRecurrent assembled
+                || medicateForHypertension NCDEncounterPhaseRecurrent assembled
 
         TaskReferral ->
-            --@todo
-            True
+            referForDiabetes NCDEncounterPhaseRecurrent assembled
+                || referForHypertension NCDEncounterPhaseRecurrent assembled
+                || referForRenalComplications NCDEncounterPhaseRecurrent assembled
 
 
 nextStepsTaskCompleted : AssembledData -> Pages.NCD.RecurrentActivity.Types.NextStepsTask -> Bool
 nextStepsTaskCompleted assembled task =
     case task of
         TaskMedicationDistribution ->
-            --@todo
-            -- let
-            --     allowedSigns =
-            --         recommendedTreatmentSignsForHypertension ++ recommendedTreatmentSignsForDiabetes
-            -- in
-            -- recommendedTreatmentMeasurementTaken allowedSigns assembled.measurements
-            False
+            let
+                hypertensionTreatmentCompleted =
+                    if medicateForHypertension NCDEncounterPhaseRecurrent assembled then
+                        let
+                            recommendedTreatmentSignsForHypertension =
+                                generateRecommendedTreatmentSignsForHypertension assembled
+                        in
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+                    else
+                        True
+
+                diabetesTreatmentCompleted =
+                    if medicateForDiabetes NCDEncounterPhaseRecurrent assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForDiabetes assembled.measurements
+
+                    else
+                        True
+            in
+            hypertensionTreatmentCompleted && diabetesTreatmentCompleted
 
         TaskReferral ->
-            --@todo
-            False
-
-
-mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
-mandatoryActivitiesForNextStepsCompleted currentDate assembled =
-    --@todo
-    True
+            -- On recurrent phase of the encounter, only referral
+            -- facility possible is hospital, since referal to ARV
+            -- Services always happens on initial phase.
+            referralToFacilityCompleted assembled FacilityHospital
 
 
 nextStepsTasksCompletedFromTotal :
@@ -131,8 +132,10 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
                         currentDate
+                        NCDEncounterPhaseRecurrent
                         assembled
-                        SetRecommendedTreatmentSign
+                        SetRecommendedTreatmentSignSingle
+                        SetRecommendedTreatmentSignMultiple
                         SetMedicationDistributionBoolInput
                         form
             in
@@ -148,6 +151,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, tasks ) =
                     resolveReferralInputsAndTasks language
                         currentDate
+                        NCDEncounterPhaseRecurrent
                         assembled
                         SetReferralBoolInput
                         SetFacilityNonReferralReason

@@ -17,6 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.NCD.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.NCD.Encounter.Model exposing (..)
+import Pages.NCD.Model exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended)
@@ -98,8 +99,8 @@ viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData
 viewMainPageContent language currentDate db assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            List.filter (expectActivity currentDate assembled db) getAllActivities
-                |> List.partition (activityCompleted currentDate assembled db)
+            List.filter (expectActivity currentDate assembled) getAllActivities
+                |> List.partition (activityCompleted currentDate assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

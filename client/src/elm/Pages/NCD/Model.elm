@@ -4,6 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis)
 import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -16,8 +17,21 @@ type alias AssembledData =
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : NCDMeasurements
-    , previousMeasurementsWithDates : List ( NominalDate, ( NCDEncounterId, NCDMeasurements ) )
+    , previousEncountersData : List PreviousEncounterData
     }
+
+
+type alias PreviousEncounterData =
+    { id : NCDEncounterId
+    , startDate : NominalDate
+    , diagnoses : EverySet NCDDiagnosis
+    , measurements : NCDMeasurements
+    }
+
+
+type NCDEncounterPhase
+    = NCDEncounterPhaseInitial
+    | NCDEncounterPhaseRecurrent
 
 
 type alias ReferralForm =

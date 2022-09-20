@@ -16,19 +16,13 @@ update : Maybe NurseId -> Maybe HealthCenterId -> NCDEncounterId -> Maybe NCDEnc
 update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
     case msg of
         CloseNCDEncounter ->
-            maybeEncounter
-                |> unwrap ( model, Cmd.none )
-                    (\encounter ->
-                        ( { model | closeNCDEncounter = Loading }
-                        , { encounter | endDate = Just currentDate }
-                            |> sw.patchFull ncdEncounterEndpoint encounterId
-                            |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleClosedNCDEncounter)
-                        )
-                    )
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
-        HandleClosedNCDEncounter data ->
-            ( { model | closeNCDEncounter = data }
+        SetNCDDiagnoses diagnoses ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnoses = diagnoses }) model
+
+        HandleUpdatedNCDEncounter data ->
+            ( { model | updateNCDEncounter = data }
             , Cmd.none
             )
 
@@ -230,4 +224,18 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
         HandleSavedReferral data ->
             ( { model | saveReferral = data }
             , Cmd.none
+            )
+
+
+updateEncounter : NominalDate -> NCDEncounterId -> Maybe NCDEncounter -> (NCDEncounter -> NCDEncounter) -> Model -> ( Model, Cmd Msg )
+updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+    maybeEncounter
+        |> unwrap ( model, Cmd.none )
+            (\encounter ->
+                ( { model | updateNCDEncounter = Loading }
+                , updateFunc encounter
+                    |> sw.patchFull ncdEncounterEndpoint encounterId
+                    |> withoutDecoder
+                    |> toCmd (RemoteData.fromResult >> HandleUpdatedNCDEncounter)
+                )
             )

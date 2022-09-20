@@ -2,6 +2,7 @@ module Backend.NCDEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDEncounter.Types exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -11,6 +12,7 @@ type alias NCDEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , diagnoses : EverySet NCDDiagnosis
     , shard : Maybe HealthCenterId
     }
 
@@ -20,6 +22,7 @@ emptyNCDEncounter participant startDate shard =
     { participant = participant
     , startDate = startDate
     , endDate = Nothing
+    , diagnoses = EverySet.empty
     , shard = shard
     }
 
@@ -28,7 +31,7 @@ emptyNCDEncounter participant startDate shard =
 to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
-    { closeNCDEncounter : WebData ()
+    { updateNCDEncounter : WebData ()
     , saveDangerSigns : WebData ()
     , saveSymptomReview : WebData ()
     , saveFamilyPlanning : WebData ()
@@ -54,7 +57,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { closeNCDEncounter = NotAsked
+    { updateNCDEncounter = NotAsked
     , saveDangerSigns = NotAsked
     , saveSymptomReview = NotAsked
     , saveFamilyPlanning = NotAsked
@@ -80,7 +83,8 @@ emptyModel =
 
 type Msg
     = CloseNCDEncounter
-    | HandleClosedNCDEncounter (WebData ())
+    | SetNCDDiagnoses (EverySet NCDDiagnosis)
+    | HandleUpdatedNCDEncounter (WebData ())
     | SaveDangerSigns PersonId (Maybe NCDDangerSignsId) NCDDangerSignsValue
     | HandleSavedDangerSigns (WebData ())
     | SaveSymptomReview PersonId (Maybe NCDSymptomReviewId) NCDSymptomReviewValue

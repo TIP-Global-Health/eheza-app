@@ -6,6 +6,8 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
+import Backend.NCDActivity.Utils exposing (getAllActivities)
+import Backend.NCDEncounter.Types exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import EverySet exposing (EverySet)
@@ -19,16 +21,8 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vitalsFormWithDefault)
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
-import Pages.NCD.Encounter.Model exposing (AssembledData)
-import Pages.NCD.Utils
-    exposing
-        ( medicationDistributionFormWithDefault
-        , recommendedTreatmentMeasurementTaken
-        , recommendedTreatmentSignsForHypertension
-        , referralFormWithDefault
-        , resolveMedicationDistributionInputsAndTasks
-        , resolveReferralInputsAndTasks
-        )
+import Pages.NCD.Model exposing (..)
+import Pages.NCD.Utils exposing (..)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -49,8 +43,8 @@ import Translate exposing (Language, translate)
 import Translate.Model exposing (Language(..))
 
 
-expectActivity : NominalDate -> AssembledData -> ModelIndexedDb -> NCDActivity -> Bool
-expectActivity currentDate assembled db activity =
+expectActivity : NominalDate -> AssembledData -> NCDActivity -> Bool
+expectActivity currentDate assembled activity =
     case activity of
         DangerSigns ->
             True
@@ -79,8 +73,8 @@ expectActivity currentDate assembled db activity =
                    )
 
 
-activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> NCDActivity -> Bool
-activityCompleted currentDate assembled db activity =
+activityCompleted : NominalDate -> AssembledData -> NCDActivity -> Bool
+activityCompleted currentDate assembled activity =
     case activity of
         DangerSigns ->
             isJust assembled.measurements.dangerSigns
@@ -93,7 +87,7 @@ activityCompleted currentDate assembled db activity =
                 && isJust assembled.measurements.vitals
 
         FamilyPlanning ->
-            (not <| expectActivity currentDate assembled db FamilyPlanning)
+            (not <| expectActivity currentDate assembled FamilyPlanning)
                 || isJust assembled.measurements.familyPlanning
 
         MedicalHistory ->
@@ -121,16 +115,22 @@ expectNextStepsTask : NominalDate -> AssembledData -> Pages.NCD.Activity.Types.N
 expectNextStepsTask currentDate assembled task =
     case task of
         TaskHealthEducation ->
-            --@todo
-            True
+            -- Diagnosed Stage 1 at current encounter.
+            diagnosed DiagnosisHypertensionStage1 assembled
+                -- Not diagnosed any Hypertension diagnoses at previous encounters.
+                && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled)
+                -- Not diagnosed any Hypertension diagnoses at current or previous encounters.
+                && (not <| diagnosedAnyOf [ DiagnosisRenalComplications, DiagnosisDiabetesInitial ] assembled)
+                && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
 
         TaskMedicationDistribution ->
-            --@todo
-            True
+            medicateForDiabetes NCDEncounterPhaseInitial assembled
+                || medicateForHypertension NCDEncounterPhaseInitial assembled
 
         TaskReferral ->
-            --@todo
-            True
+            referForDiabetes NCDEncounterPhaseInitial assembled
+                || referForHypertension NCDEncounterPhaseInitial assembled
+                || referForRenalComplications NCDEncounterPhaseInitial assembled
 
 
 nextStepsTaskCompleted : AssembledData -> Pages.NCD.Activity.Types.NextStepsTask -> Bool
@@ -140,6 +140,10 @@ nextStepsTaskCompleted assembled task =
             isJust assembled.measurements.healthEducation
 
         TaskMedicationDistribution ->
+            let
+                recommendedTreatmentSignsForHypertension =
+                    generateRecommendedTreatmentSignsForHypertension assembled
+            in
             recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
         TaskReferral ->
@@ -148,17 +152,21 @@ nextStepsTaskCompleted assembled task =
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
-    --@todo
-    True
+    -- All activities that will appear at current
+    -- encounter are completed, besides Next Steps itself.
+    EverySet.fromList getAllActivities
+        |> EverySet.remove NextSteps
+        |> EverySet.toList
+        |> List.all (activityCompleted currentDate assembled)
 
 
 resolvePreviousValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
+    assembled.previousEncountersData
         |> List.filterMap
-            (\( _, ( _, measurements ) ) ->
-                measurementFunc measurements
-                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            (.measurements
+                >> measurementFunc
+                >> Maybe.map (Tuple.second >> .value >> valueFunc)
             )
         |> List.reverse
         |> List.head
@@ -166,11 +174,11 @@ resolvePreviousValue assembled measurementFunc valueFunc =
 
 resolvePreviousMaybeValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> Maybe b) -> Maybe b
 resolvePreviousMaybeValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
+    assembled.previousEncountersData
         |> List.filterMap
-            (\( _, ( _, measurements ) ) ->
-                measurementFunc measurements
-                    |> Maybe.andThen (Tuple.second >> .value >> valueFunc)
+            (.measurements
+                >> measurementFunc
+                >> Maybe.andThen (Tuple.second >> .value >> valueFunc)
             )
         |> List.reverse
         |> List.head
@@ -882,8 +890,10 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, completed, total ) =
                     resolveMedicationDistributionInputsAndTasks language
                         currentDate
+                        NCDEncounterPhaseInitial
                         assembled
-                        SetRecommendedTreatmentSign
+                        SetRecommendedTreatmentSignSingle
+                        SetRecommendedTreatmentSignMultiple
                         SetMedicationDistributionBoolInput
                         form
             in
@@ -899,6 +909,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, tasks ) =
                     resolveReferralInputsAndTasks language
                         currentDate
+                        NCDEncounterPhaseInitial
                         assembled
                         SetReferralBoolInput
                         SetFacilityNonReferralReason

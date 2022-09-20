@@ -34,6 +34,7 @@ import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model
     exposing
@@ -684,6 +685,7 @@ type TranslationId
     | HttpError Http.Error
     | HowManyPerWeek
     | Hypertension
+    | HypertensionAndPregnantHeader
     | HypertensionBeforePregnancy
     | HypertensionRecommendedTreatmentHeader
     | HypertensionRecommendedTreatmentHelper
@@ -693,6 +695,7 @@ type TranslationId
     | HypertensionRecommendedTreatmentUpdateNewTreatment HypertensionTreatementUpdateOption
     | HypertensionRecommendedTreatmentUpdateNoCurrentTreatment
     | HypertensionRecommendedTreatmentUpdateStartTreatment
+    | HypertensionStageAndRenalComplicationsHeader Bool NCDDiagnosis
     | IdleWaitingForSync
     | IllnessSymptom IllnessSymptom
     | Immunisation
@@ -709,6 +712,8 @@ type TranslationId
     | InitialResultsDisplay InitialResultsDisplay
     | IntractableVomiting Bool
     | IntractableVomitingQuestion
+    | InstructionsChooseOneMedication
+    | InstructionsChooseTwoMedications
     | IsCurrentlyBreastfeeding
     | IsolatedAtHome
     | KilogramShorthand
@@ -961,6 +966,9 @@ type TranslationId
     | PatientGotAnyDangerSigns
     | PatientGotAnySymptoms
     | PatientGotPainAnywhewre
+    | PatientGotDiabetesByGlucoseHeader Bool Float
+    | PatientGotDiabetesByUrineDip String
+    | PatientGotDiabetesHeader
     | PatientProgress
     | PatientRecord
     | PatientInformation
@@ -5315,6 +5323,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HypertensionAndPregnantHeader ->
+            { english = "This patient has Hypertension and is pregnant"
+            , kinyarwanda = Nothing
+            }
+
         HypertensionBeforePregnancy ->
             { english = "Hypertension before pregnancy"
             , kinyarwanda = Just "Umuvuduko w'amaraso mbere yo gutwita"
@@ -5383,6 +5396,41 @@ translationSet trans =
             { english = "It is recommended to start treatment with"
             , kinyarwanda = Nothing
             }
+
+        HypertensionStageAndRenalComplicationsHeader renalComplications diagnosis ->
+            case diagnosis of
+                DiagnosisHypertensionStage1 ->
+                    if renalComplications then
+                        { english = "This patient has Stage One Hypertension with Renal Complications"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "This patient has Stage One Hypertension"
+                        , kinyarwanda = Nothing
+                        }
+
+                DiagnosisHypertensionStage2 ->
+                    if renalComplications then
+                        { english = "This patient has Stage Two Hypertension with Renal Complications"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "This patient has Stage Two Hypertension"
+                        , kinyarwanda = Nothing
+                        }
+
+                DiagnosisHypertensionStage3 ->
+                    { english = "This patient has Stage Three Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- We should never get here.
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         IdleWaitingForSync ->
             { english = "Idle, waiting for next Sync cycle"
@@ -5680,6 +5728,16 @@ translationSet trans =
         IntractableVomitingQuestion ->
             { english = "Is Vomiting Intractable"
             , kinyarwanda = Just "Kuruka bikabije"
+            }
+
+        InstructionsChooseOneMedication ->
+            { english = "Choose one of the medications from the list to prescribe to the patient"
+            , kinyarwanda = Nothing
+            }
+
+        InstructionsChooseTwoMedications ->
+            { english = "Choose two of the medications from the list to prescribe to the patient"
+            , kinyarwanda = Nothing
             }
 
         IsCurrentlyBreastfeeding ->
@@ -8854,6 +8912,27 @@ translationSet trans =
 
         PatientGotPainAnywhewre ->
             { english = "Does the patient have pain anywhere"
+            , kinyarwanda = Nothing
+            }
+
+        PatientGotDiabetesHeader ->
+            { english = "This patient has Diabetes"
+            , kinyarwanda = Nothing
+            }
+
+        PatientGotDiabetesByGlucoseHeader fasting value ->
+            if fasting then
+                { english = "This patient has Diabetes with fasting glucose levels of " ++ " " ++ String.fromFloat value ++ " mg/dL"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "This patient has Diabetes with non-fasting glucose levels of " ++ " " ++ String.fromFloat value ++ " mg/dL"
+                , kinyarwanda = Nothing
+                }
+
+        PatientGotDiabetesByUrineDip value ->
+            { english = "This patient has Diabetes with a urine dip glucose levels of " ++ value
             , kinyarwanda = Nothing
             }
 
@@ -13125,7 +13204,7 @@ translationSet trans =
                     }
 
                 TreatmentAtenlol ->
-                    { english = "Atenlol (12ץ5mg)"
+                    { english = "Atenlol (125mg)"
                     , kinyarwanda = Nothing
                     }
 

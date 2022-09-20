@@ -508,7 +508,8 @@ viewCheckBoxSelectCustomInput : Language -> List a -> List a -> Maybe a -> (a ->
 viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc =
     let
         checkedOptions =
-            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
+            Maybe.map List.singleton currentValue
+                |> Maybe.withDefault []
     in
     viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions Nothing setMsg viewOptionFunc
 

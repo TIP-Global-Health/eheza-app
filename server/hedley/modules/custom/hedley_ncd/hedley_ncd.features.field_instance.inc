@@ -1738,6 +1738,43 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_encounter-field_ncd_diagnoses'.
+  $field_instances['node-ncd_encounter-field_ncd_diagnoses'] = array(
+    'bundle' => 'ncd_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncd_diagnoses',
+    'label' => 'NCD Diagnoses',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 4,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_family_history-field_date_measured'.
   $field_instances['node-ncd_family_history-field_date_measured'] = array(
     'bundle' => 'ncd_family_history',
@@ -4211,11 +4248,12 @@ function hedley_ncd_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_ncd_guidance',
     'label' => 'NCD Guidance',
-    'required' => FALSE,
+    'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
     ),
     'widget' => array(
+      'active' => 1,
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
@@ -8512,6 +8550,7 @@ function hedley_ncd_field_default_field_instances() {
   t('Medications Treating Diabetes');
   t('Medications Treating Hypertension');
   t('NCD Danger Signs');
+  t('NCD Diagnoses');
   t('NCD Encounter');
   t('NCD Family History Signs');
   t('NCD Group1 Symptoms');
