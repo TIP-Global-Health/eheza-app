@@ -9,9 +9,9 @@ import Backend.Measurement.Utils
         , diabetesByUrineGlucose
         , getHeightValue
         , getMeasurementValueFunc
+        , labExpirationPeriod
         , muacIndication
         , muacValueFunc
-        , labExpirationPeriod
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
