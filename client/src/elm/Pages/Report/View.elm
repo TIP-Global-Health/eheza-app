@@ -319,82 +319,77 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                     }
 
                 LabResultsHistoryCreatinine assembled ->
-                    -- @todo
                     let
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
-                    { label = Translate.PrenatalLaboratoryRhesusLabel
-                    , recentResult = Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language) recentResultValue
+                    { label = Translate.PrenatalLaboratoryCreatinineLabel
+                    , recentResult = Maybe.map String.fromFloat recentResultValue
                     , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     , recentResultNormal =
-                        Maybe.map rhesusResultsNormal recentResultValue
+                        Maybe.map creatinineResultNormal recentResultValue
                             |> Maybe.withDefault True
                     }
 
                 LabResultsHistoryBUN assembled ->
-                    -- @todo
                     let
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
-                    { label = Translate.PrenatalLaboratoryRhesusLabel
-                    , recentResult = Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language) recentResultValue
+                    { label = Translate.PrenatalLaboratoryBUNLabel
+                    , recentResult = Maybe.map String.fromFloat recentResultValue
                     , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     , recentResultNormal =
-                        Maybe.map rhesusResultsNormal recentResultValue
+                        Maybe.map bunResultNormal recentResultValue
                             |> Maybe.withDefault True
                     }
 
                 LabResultsHistoryALT assembled ->
-                    -- @todo
                     let
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
-                    { label = Translate.PrenatalLaboratoryRhesusLabel
-                    , recentResult = Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language) recentResultValue
+                    { label = Translate.PrenatalLaboratoryALTLabel
+                    , recentResult = Maybe.map String.fromFloat recentResultValue
                     , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     , recentResultNormal =
-                        Maybe.map rhesusResultsNormal recentResultValue
+                        Maybe.map altResultNormal recentResultValue
                             |> Maybe.withDefault True
                     }
 
                 LabResultsHistoryALS assembled ->
-                    -- @todo
                     let
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
-                    { label = Translate.PrenatalLaboratoryRhesusLabel
-                    , recentResult = Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language) recentResultValue
+                    { label = Translate.PrenatalLaboratoryALSLabel
+                    , recentResult = Maybe.map String.fromFloat recentResultValue
                     , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     , recentResultNormal =
-                        Maybe.map rhesusResultsNormal recentResultValue
+                        Maybe.map alsResultNormal recentResultValue
                             |> Maybe.withDefault True
                     }
 
                 LabResultsHistoryPregnancy assembled ->
-                    -- @todo
                     let
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
-                    { label = Translate.PrenatalLaboratoryRhesusLabel
-                    , recentResult = Maybe.map (Translate.PrenatalLaboratoryRhesus >> translate language) recentResultValue
-                    , knownAsPositive = False
+                    { label = Translate.PrenatalLaboratoryPregnancyLabel
+                    , recentResult = Maybe.map (translateTestReport language) recentResultValue
+                    , knownAsPositive = recentResultValue == Just TestNotPerformedKnownAsPositive
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
                     , recentResultNormal =
-                        Maybe.map rhesusResultsNormal recentResultValue
+                        Maybe.map pregnancyResultNormal recentResultValue
                             |> Maybe.withDefault True
                     }
 

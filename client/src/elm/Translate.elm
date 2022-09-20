@@ -1081,6 +1081,11 @@ type TranslationId
     | PrenatalLaboratoryRandomBloodSugarTestResult
     | PrenatalLaboratoryHIVPCRTestResult
     | PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
+    | PrenatalLaboratoryCreatinineLabel
+    | PrenatalLaboratoryBUNLabel
+    | PrenatalLaboratoryALTLabel
+    | PrenatalLaboratoryALSLabel
+    | PrenatalLaboratoryPregnancyLabel
     | LaboratoryTest LaboratoryTest
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
@@ -11596,6 +11601,31 @@ translationSet trans =
 
         PrenatalLaboratoryHIVPCRViralLoadStatusQuestion ->
             { english = "Are there less than 20 copies/mm3"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryCreatinineLabel ->
+            { english = "Creatinine"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryBUNLabel ->
+            { english = "BUN"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryALTLabel ->
+            { english = "ALT"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryALSLabel ->
+            { english = "ALS"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryPregnancyLabel ->
+            { english = "Pregnancy"
             , kinyarwanda = Nothing
             }
 

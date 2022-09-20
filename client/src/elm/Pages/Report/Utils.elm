@@ -92,6 +92,31 @@ rhesusResultsNormal =
     (==) RhesusPositive
 
 
+creatinineResultNormal : Float -> Bool
+creatinineResultNormal value =
+    value >= 0.5 && value <= 1.3
+
+
+bunResultNormal : Float -> Bool
+bunResultNormal value =
+    value >= 6 && value <= 24
+
+
+altResultNormal : Float -> Bool
+altResultNormal value =
+    value >= 7 && value <= 56
+
+
+alsResultNormal : Float -> Bool
+alsResultNormal value =
+    value >= 8 && value <= 33
+
+
+pregnancyResultNormal : TestReport -> Bool
+pregnancyResultNormal =
+    testReportNormal
+
+
 testReportNormal : TestReport -> Bool
 testReportNormal report =
     case report of
