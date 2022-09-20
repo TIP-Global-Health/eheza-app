@@ -223,6 +223,9 @@ viewContent language currentDate isChw initiator model assembled =
                                     , malaria = True
                                     , hemoglobin = True
                                     , bloodGpRs = True
+                                    , creatinine = False
+                                    , liverFunction = False
+                                    , pregnancy = False
                                     }
                             in
                             [ generateLabsResultsPaneData currentDate assembled
@@ -1312,6 +1315,9 @@ generateLabsResultsPaneData currentDate assembled =
     , malaria = extractValues .malariaTest
     , hemoglobin = extractValues .hemoglobinTest
     , bloodGpRs = extractValues .bloodGpRsTest
+    , creatinine = []
+    , liverFunction = []
+    , pregnancy = []
     }
 
 

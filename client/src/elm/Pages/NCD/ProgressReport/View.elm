@@ -20,7 +20,6 @@ import Pages.NCD.ProgressReport.Model exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
-import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), TestReport(..))
 import Pages.Report.Utils exposing (..)
 import Pages.Report.View exposing (..)
 import Pages.Utils exposing (viewPersonDetailsExtended)
@@ -156,6 +155,9 @@ viewContent language currentDate initiator model assembled =
                                     , malaria = False
                                     , hemoglobin = False
                                     , bloodGpRs = False
+                                    , creatinine = True
+                                    , liverFunction = True
+                                    , pregnancy = True
                                     }
                             in
                             [ generateLabsResultsPaneData currentDate assembled
@@ -253,4 +255,7 @@ generateLabsResultsPaneData currentDate assembled =
     , malaria = []
     , hemoglobin = []
     , bloodGpRs = []
+    , creatinine = extractValues .creatinineTest
+    , liverFunction = extractValues .liverFunctionTest
+    , pregnancy = extractValues .pregnancyTest
     }

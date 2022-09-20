@@ -11,6 +11,9 @@ type alias LabsResultsDisplayConfig =
     , hivPCR : Bool
     , malaria : Bool
     , syphilis : Bool
+    , creatinine : Bool
+    , liverFunction : Bool
+    , pregnancy : Bool
     }
 
 
@@ -24,6 +27,9 @@ type alias LabsResultsValues encounterId =
     , hivPCR : List Backend.Measurement.Model.HIVPCRTestValue
     , malaria : List Backend.Measurement.Model.MalariaTestValue
     , syphilis : List (Backend.Measurement.Model.SyphilisTestValue encounterId)
+    , creatinine : List Backend.Measurement.Model.CreatinineTestValue
+    , liverFunction : List Backend.Measurement.Model.LiverFunctionTestValue
+    , pregnancy : List Backend.Measurement.Model.PregnancyTestValue
     }
 
 
@@ -57,6 +63,11 @@ type LabResultsHistoryMode
     | LabResultsHistoryHemoglobin (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryBloodGroup (List ( NominalDate, Maybe BloodGroup ))
     | LabResultsHistoryRhesus (List ( NominalDate, Maybe Rhesus ))
+    | LabResultsHistoryCreatinine (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryBUN (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryALT (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryALS (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryPregnancy (List ( NominalDate, Maybe TestReport ))
 
 
 type TestReport

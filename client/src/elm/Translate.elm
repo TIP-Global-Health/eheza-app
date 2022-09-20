@@ -6278,6 +6278,31 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru kuri kizamini cya Rezisi"
                     }
 
+                LabResultsHistoryCreatinine _ ->
+                    { english = "Creatinine Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryBUN _ ->
+                    { english = "BUN Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryALT _ ->
+                    { english = "ALT Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryALS _ ->
+                    { english = "ALS Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryPregnancy _ ->
+                    { english = "Pregnancy Test History"
+                    , kinyarwanda = Nothing
+                    }
+
         LabResultsNormalRange mode ->
             case mode of
                 LabResultsHistoryHIV _ ->
@@ -6367,6 +6392,31 @@ translationSet trans =
 
                 LabResultsHistoryRhesus _ ->
                     { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryCreatinine _ ->
+                    { english = "0.5-1.3 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryBUN _ ->
+                    { english = "6-24 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryALT _ ->
+                    { english = "7-56 IU/L"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryALS _ ->
+                    { english = "8-33 IU/L"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryPregnancy _ ->
+                    { english = "Negative"
                     , kinyarwanda = Nothing
                     }
 
