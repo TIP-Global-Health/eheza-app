@@ -594,30 +594,30 @@ viewHistoryContent language currentDate assembled data =
                                 |> socialHistoryFormWithDefault data.socialForm
 
                         showCounselingQuestion =
-                            assembled.nursePreviousMeasurementsWithDates
+                            assembled.nursePreviousEncountersData
                                 |> List.filter
-                                    (\( _, _, measurements ) ->
-                                        measurements.socialHistory
-                                            |> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
-                                            |> Maybe.withDefault False
+                                    (.measurements
+                                        >> .socialHistory
+                                        >> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
+                                        >> Maybe.withDefault False
                                     )
                                 |> List.isEmpty
 
                         showTestingQuestions =
-                            assembled.nursePreviousMeasurementsWithDates
+                            assembled.nursePreviousEncountersData
                                 |> List.filter
-                                    (\( _, _, measurements ) ->
-                                        measurements.socialHistory
-                                            |> Maybe.map
-                                                (\socialHistory ->
-                                                    let
-                                                        value =
-                                                            Tuple.second socialHistory |> .value
-                                                    in
-                                                    (value.hivTestingResult == ResultHivPositive)
-                                                        || (value.hivTestingResult == ResultHivNegative)
-                                                )
-                                            |> Maybe.withDefault False
+                                    (.measurements
+                                        >> .socialHistory
+                                        >> Maybe.map
+                                            (\socialHistory ->
+                                                let
+                                                    value =
+                                                        Tuple.second socialHistory |> .value
+                                                in
+                                                (value.hivTestingResult == ResultHivPositive)
+                                                    || (value.hivTestingResult == ResultHivNegative)
+                                            )
+                                        >> Maybe.withDefault False
                                     )
                                 |> List.isEmpty
                     in
@@ -2424,7 +2424,7 @@ viewSpecialityCareContent language currentDate assembled data =
             arvTasks ++ ncdTasks
 
         ( arvSection, arvTasks ) =
-            resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
+            resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
                 |> Maybe.map
                     (\referraDiagnosis ->
                         ( [ sectionHeader (translate language <| Translate.PrenatalDiagnosis referraDiagnosis)
@@ -2447,7 +2447,7 @@ viewSpecialityCareContent language currentDate assembled data =
         ( ncdSection, ncdTasks ) =
             let
                 referraDiagnoses =
-                    resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+                    resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
             in
             if not <| List.isEmpty referraDiagnoses then
                 ( [ List.map (Translate.PrenatalDiagnosis >> translate language) referraDiagnoses
