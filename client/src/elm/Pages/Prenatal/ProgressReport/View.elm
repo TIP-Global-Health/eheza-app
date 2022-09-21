@@ -255,7 +255,7 @@ viewContent language currentDate isChw initiator model assembled =
                                         allowEndEcounter =
                                             List.isEmpty pendingActivities
                                     in
-                                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                                    viewEndEncounterButton language allowEndEcounter (always <| SetActivePage PinCodePage)
 
                                 InitiatorNewEncounter encounterId ->
                                     div [ class "actions" ]

@@ -188,7 +188,7 @@ viewMainPageContent language currentDate assembled model =
                 , div [ class "actions" ]
                     [ button
                         [ class "ui fluid primary button"
-                        , onClick (SetActivePage PinCodePage)
+                        , onClick (SetActivePage <| UserPage GlobalCaseManagementPage)
                         ]
                         [ text <| translate language Translate.LeaveEncounter ]
                     ]
