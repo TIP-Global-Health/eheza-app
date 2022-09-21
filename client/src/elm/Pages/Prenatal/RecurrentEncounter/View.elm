@@ -68,23 +68,10 @@ viewHeaderAndContent language currentDate id model assembled =
 
         content =
             viewContent language currentDate assembled model
-
-        endEncounterDialog =
-            if model.showEndEncounterDialog then
-                Just <|
-                    viewEndEncounterDialog language
-                        Translate.EndEncounterQuestion
-                        Translate.OnceYouEndTheEncounter
-                        CloseEncounter
-                        (SetEndEncounterDialogState False)
-
-            else
-                Nothing
     in
     div [ class "page-encounter prenatal" ]
         [ header
         , content
-        , viewModal endEncounterDialog
         ]
 
 
@@ -195,17 +182,16 @@ viewMainPageContent language currentDate assembled model =
                         ]
                     ]
 
-        endEncounterButtonEnabled =
-            if emergencyReferalRequired assembled then
-                List.member RecurrentNextSteps completedActivities
-
-            else
-                List.isEmpty pendingActivities
-
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language endEncounterButtonEnabled SetEndEncounterDialogState
+                , div [ class "actions" ]
+                    [ button
+                        [ class "ui fluid primary button"
+                        , onClick (SetActivePage PinCodePage)
+                        ]
+                        [ text <| translate language Translate.LeaveEncounter ]
+                    ]
                 ]
     in
     [ tabs

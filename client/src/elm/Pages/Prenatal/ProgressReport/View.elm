@@ -228,7 +228,7 @@ viewContent language currentDate isChw initiator model assembled =
 
                         actions =
                             case initiator of
-                                InitiatorEncounterPage _ ->
+                                InitiatorEncounterPage id ->
                                     let
                                         ( completedActivities, pendingActivities ) =
                                             getAllActivities assembled
@@ -238,7 +238,10 @@ viewContent language currentDate isChw initiator model assembled =
                                     viewActionButton language
                                         pendingActivities
                                         completedActivities
-                                        (SetActivePage PinCodePage)
+                                        -- When pausing, we close the encounter.
+                                        -- Entering lab results is available from
+                                        -- Case management page.
+                                        (CloseEncounter id)
                                         SetEndEncounterDialogState
                                         assembled
 
