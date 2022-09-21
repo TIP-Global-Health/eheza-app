@@ -480,12 +480,17 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                 |> ul []
 
         alerts =
-            List.filterMap
-                (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
-                allMedicalDiagnoses
-                |> List.map (\alert -> li [] [ text alert ])
-                |> ul []
-                |> List.singleton
+            -- Alerts are displayed only for CHW.
+            if isChw then
+                List.filterMap
+                    (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
+                    allMedicalDiagnoses
+                    |> List.map (\alert -> li [] [ text alert ])
+                    |> ul []
+                    |> List.singleton
+
+            else
+                []
     in
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
@@ -635,12 +640,17 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                 |> ul []
 
         alerts =
-            List.filterMap
-                (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
-                allObstetricalDiagnoses
-                |> List.map (\alert -> li [] [ text alert ])
-                |> ul []
-                |> List.singleton
+            -- Alerts are displayed only for CHW.
+            if isChw then
+                List.filterMap
+                    (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
+                    allObstetricalDiagnoses
+                    |> List.map (\alert -> li [] [ text alert ])
+                    |> ul []
+                    |> List.singleton
+
+            else
+                []
     in
     div [ class "obstetric-diagnosis" ]
         [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
