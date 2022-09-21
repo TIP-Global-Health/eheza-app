@@ -171,7 +171,6 @@ allMedicalDiagnosis =
     , DiagnosisBowedLegs
     , DiagnosisKnownHIV
     , DiagnosisMentalHealthHistory
-    , DiagnosisDiabetes
     ]
 
 
