@@ -12,8 +12,8 @@ import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
-        , allMedicalDiagnosis
-        , allObstetricalDiagnosis
+        , allMedicalDiagnoses
+        , allObstetricalDiagnoses
         , allRiskFactors
         , allTrimesters
         )

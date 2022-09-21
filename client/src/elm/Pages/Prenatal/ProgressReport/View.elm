@@ -37,8 +37,8 @@ import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
-        , allMedicalDiagnosis
-        , allObstetricalDiagnosis
+        , allMedicalDiagnoses
+        , allObstetricalDiagnoses
         , allRiskFactors
         , allTrimesters
         )
@@ -365,9 +365,12 @@ viewRiskFactorsPane : Language -> NominalDate -> PrenatalMeasurements -> Html Ms
 viewRiskFactorsPane language currentDate measurements =
     let
         alerts =
-            allRiskFactors
-                |> List.filterMap (generateRiskFactorAlertData language currentDate measurements)
-                |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
+            List.filterMap
+                (generateRiskFactorAlertData language currentDate measurements)
+                allRiskFactors
+                |> List.map (\alert -> li [] [ text alert ])
+                |> ul []
+                |> List.singleton
     in
     div [ class "risk-factors" ]
         [ div [ class <| "pane-heading red" ]
@@ -474,9 +477,12 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                 |> ul []
 
         alerts =
-            allMedicalDiagnosis
-                |> List.filterMap (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
-                |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
+            List.filterMap
+                (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
+                allMedicalDiagnoses
+                |> List.map (\alert -> li [] [ text alert ])
+                |> ul []
+                |> List.singleton
     in
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
@@ -626,9 +632,12 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                 |> ul []
 
         alerts =
-            allObstetricalDiagnosis
-                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
-                |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
+            List.filterMap
+                (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
+                allObstetricalDiagnoses
+                |> List.map (\alert -> li [] [ text alert ])
+                |> ul []
+                |> List.singleton
     in
     div [ class "obstetric-diagnosis" ]
         [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
