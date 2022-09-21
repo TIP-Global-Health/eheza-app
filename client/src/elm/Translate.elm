@@ -1394,7 +1394,7 @@ translationSet trans =
     case trans of
         Abdomen ->
             { english = "Abdomen"
-            , kinyarwanda = Just "Isanzwe"
+            , kinyarwanda = Just "Inda"
             }
 
         AbdomenCPESign option ->
@@ -1449,7 +1449,7 @@ translationSet trans =
 
         AccompaniedByPartner ->
             { english = "Was the patient accompanied by partner during the assessment"
-            , kinyarwanda = Just "Umubyeyi yaherekejwe n'umugabo we mu gihe yaje kwipimisha?"
+            , kinyarwanda = Just "Umubyeyi yaherekejwe n'umugabo we mu gihe yaje kwipimisha"
             }
 
         AccompanyToFacilityQuestion facility ->
@@ -1466,7 +1466,7 @@ translationSet trans =
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Will you accompany the patient to mental health specialist"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzaherekeza umurwayi ku muganaga winzobere k'ubuzima bwo mu mutwe"
                     }
 
                 FacilityARVProgram ->
@@ -1476,7 +1476,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Will you accompany the patient to NCD services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzaherekeza umurwayi muri serivisi y'indwara zitandura"
                     }
 
         AccessDenied ->
@@ -1486,7 +1486,7 @@ translationSet trans =
 
         Actions ->
             { english = "Actions"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibikorwa"
             }
 
         ActionsTaken ->
@@ -1897,7 +1897,7 @@ translationSet trans =
 
         AddedToPatientRecordOn ->
             { english = "Added to patient record on"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yongewe ku makuru y'umurwayi kuwa"
             }
 
         AddFamilyMember ->
@@ -1937,12 +1937,12 @@ translationSet trans =
 
         AdministerAzithromycinHelper ->
             { english = "By mouth 1x"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Inshuro imwe mu kanwa"
             }
 
         AdministerCeftriaxoneHelper ->
             { english = "IM once"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Urushinge mu mikaya inshuro imwe"
             }
 
         AdministerMebendezoleHelper ->
@@ -1952,7 +1952,7 @@ translationSet trans =
 
         AdministerMetronidazoleHelper ->
             { english = "By mouth twice a day for 7 days"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kunywa ikinini inshuro ebyiri ku munsi mu minsi irindwi"
             }
 
         AdministerAlbendazoleHelper ->
@@ -2581,7 +2581,7 @@ translationSet trans =
 
                 AvoidingGuidanceHypertensionReinforceAdherence ->
                     { english = "Reinforce adherence of existing dosage"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Shimangira umwigisha akamaro ko kubahiriza gufata imiti asanganwe"
                     }
 
                 AvoidingGuidanceHypertensionOther ->
@@ -2730,7 +2730,7 @@ translationSet trans =
             case option of
                 Mass ->
                     { english = "Mass"
-                    , kinyarwanda = Just "Uburemere"
+                    , kinyarwanda = Just "Utubyimba mu Ibere"
                     }
 
                 Discharge ->
@@ -2788,17 +2788,17 @@ translationSet trans =
 
         CandidiasisRecommendedTreatmentHeader ->
             { english = "This patient shows signs of Candidiasis"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi agaragaza ibimenyetso bya Kandidoze"
             }
 
         CandidiasisRecommendedTreatmentHelper ->
             { english = "Select the medication and dosage you will administer to the patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
             }
 
         CandidiasisRecommendedTreatmentInstructions ->
             { english = "Ensure the patient is not allergic to the medication before prescribing"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Menya neza ko umurwayi adafite aleriji ku miti mbere yo kuyimwandikira"
             }
 
         CannotStartEncounterLabel ->
@@ -3018,42 +3018,42 @@ translationSet trans =
             case value of
                 ActionPregnancyDating ->
                     { english = "Pregnancy Dating"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igihe inda imaze"
                     }
 
                 ActionLabs ->
                     { english = "Labs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibizamini byafashwe"
                     }
 
                 ActionDangerSignsPresent ->
                     { english = "Danger Signs Present"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hagaragaye Ibimenyetso Mpuruza"
                     }
 
                 ActionReferredToHealthCenter ->
                     { english = "Referred to Health Center"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yoherejwe Ku Kigonderbuzima"
                     }
 
                 ActionAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwemeza Itariki yo Kugarukaho"
                     }
 
                 ActionHealthEducation ->
                     { english = "Health Education"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inyigisho ku Buzima"
                     }
 
                 ActionBirthPlan ->
                     { english = "Birth Plan"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutegura gahunda yo kubyara"
                     }
 
         ChwActivity ->
             { english = "Chw Activity"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igikorwa cy'Umujyana w'Ubuzima"
             }
 
         ChildOf ->
@@ -3157,7 +3157,7 @@ translationSet trans =
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Complete a referral form"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzuza urupapuro rwo koherza umurwayi"
                     }
 
                 FacilityARVProgram ->
@@ -3167,7 +3167,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Complete a NCD services referral form"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi muri service y'indwara zitandura"
                     }
 
         Contacted114 ->
@@ -3222,7 +3222,7 @@ translationSet trans =
 
         Continued ->
             { english = "Continued"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yakomeje"
             }
 
         ContributingFactor factor ->
@@ -3720,7 +3720,7 @@ translationSet trans =
 
         DetectableViralLoad ->
             { english = "Detectable Viral Load"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ingano ya virusi itera SIDA iracyagaragara mu maraso"
             }
 
         Device ->
@@ -3750,17 +3750,17 @@ translationSet trans =
 
         DiagnosedAtAnotherFacilityPrefix ->
             { english = "You were diagnosed with"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wasuzumwe"
             }
 
         DiagnosedAtAnotherFacilitySuffix ->
             { english = "at another facility and were given medication. Which medication was given?"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ku rindi vuriro wagiyeho ugahabwa imiti. Ni iyihe miti wahawe?"
             }
 
         DiagnosedByOutsideCare ->
             { english = "Diagnosed by outside care"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yasuzumiwe ku rindi vuriro"
             }
 
         DiagnosedOn ->
@@ -4098,7 +4098,7 @@ translationSet trans =
 
         Edd ->
             { english = "EDD"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itariki y'agateganyo yo kubyara"
             }
 
         EddHeader ->
@@ -4118,7 +4118,7 @@ translationSet trans =
 
         Ega ->
             { english = "EGA"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibyumweru inda imaze"
             }
 
         EgaHeader ->
@@ -4143,12 +4143,12 @@ translationSet trans =
 
         EmergencyReferralHelperReferToHospitalForEvaluation ->
             { english = "Refer patient to hospital for further evaluation"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umurwayi ku bitaro kugirango asuzumwe byimbitse"
             }
 
         EmergencyReferralHelperReferToHospitalForImmediateDelivery ->
             { english = "Refer patient to hospital for immediate delivery"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umubyeyi aka kanya ku bitaro abyarireyo"
             }
 
         EmergencyReferralHelperReferToHospitalImmediately ->
@@ -4173,7 +4173,7 @@ translationSet trans =
 
         EncounterDate ->
             { english = "Encounter Date"
-            , kinyarwanda = Just ""
+            , kinyarwanda = Just "Itariki igikorwa cyakoreweho"
             }
 
         EncounterTypeFollowUpQuestion encounterType ->
@@ -4337,7 +4337,7 @@ translationSet trans =
 
                 StatusResolved ->
                     { english = "Concluded"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Byasojwe"
                     }
 
         EntryStatusDiagnosis status ->
@@ -4369,7 +4369,7 @@ translationSet trans =
 
         EPDSPreformedOn ->
             { english = "EPDS performed on"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igipimo cy'ukuntu yiyumva nyuma yo kubyara cyakozwe kuwa"
             }
 
         EpisiotomyOrPerinealTearQuestion ->
@@ -4823,7 +4823,7 @@ translationSet trans =
 
         Gravida ->
             { english = "Gravida"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Inda zose watwise"
             }
 
         HalfOfDosage dosage ->
@@ -4938,32 +4938,32 @@ translationSet trans =
             case method of
                 ReliefMethodAvoidLargeMeals ->
                     { english = "Avoid large, fatty meals"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Irinde ibiribwa byinshi, byongera ibinure"
                     }
 
                 ReliefMethodCeaseSmoking ->
                     { english = "Cease smoking "
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hagarika kunywa itabi"
                     }
 
                 ReliefMethodAvoidAlcohom ->
                     { english = "Avoid alcohol consumption "
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Irinde kunywa ibisindisha"
                     }
 
                 ReliefMethodSleepWithHeadRaised ->
                     { english = "Sleep with their head raised in the bed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gerageza kuryama umutwe wegutse/useguye"
                     }
 
         HeartburnRecommendedTreatmentHeader ->
             { english = "This patient has signs of persistent heartburn"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi afite ikirungurira gihoraho"
             }
 
         HeartburnRecommendedTreatmentHelper ->
             { english = "Select the best treatment option for the patient below"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umuti ukwiye wo guha uyu murwayi"
             }
 
         HeartMurmur ->
@@ -5081,7 +5081,7 @@ translationSet trans =
 
                 OutsideCare ->
                     { english = "Outside Care"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuvurirwa ku rindi vuriro"
                     }
 
         HIV ->
@@ -5093,7 +5093,7 @@ translationSet trans =
             case result of
                 ResultSuppressedViralLoad ->
                     { english = "<20 copies"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Munsi ya kopi 20"
                     }
 
                 ResultDetectibleViralLoad value ->
@@ -5137,22 +5137,22 @@ translationSet trans =
             case sign of
                 HIVTreatmentNoMedicineNotSeenAtPMTCT ->
                     { english = "Never seen at PMTCT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntiyigeze agera muri PMTCT"
                     }
 
                 HIVTreatmentNoMedicineOutOfStock ->
                     { english = "Stock Out"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta miti iri mu bubiko"
                     }
 
                 HIVTreatmentNoMedicinePatientRefused ->
                     { english = "Patient Refused"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi yabyanze"
                     }
 
                 HIVTreatmentNoMedicineOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 -- We do not require translation for other signs.
@@ -5208,7 +5208,7 @@ translationSet trans =
 
         Hypertension ->
             { english = "Hypertension"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Indwara y'umuvuduko w'amaraso"
             }
 
         HypertensionBeforePregnancy ->
@@ -5235,39 +5235,39 @@ translationSet trans =
         HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia ->
             if forModeratePreeclamsia then
                 { english = "This patient was previously diagnosed with Moderate Preeclamsia"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Mu isuzuma rishize uyu mubyeyi yagize preekalampusi"
                 }
 
             else
                 { english = "This patient was previously diagnosed with Hypertension"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Mu isuzuma rishize uyu mubyeyi yagize umuvuduko w'amaraso"
                 }
 
         HypertensionRecommendedTreatmentUpdateBPLabel ->
             { english = "The patients current BP is"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ubu umubyeyi afite umuvuduko w'amaraso ungana na"
             }
 
         HypertensionRecommendedTreatmentUpdateCurrentTreatment ->
             { english = "The patient is currently prescribed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ubu umubyeyi afata imiti ikurikira"
             }
 
         HypertensionRecommendedTreatmentUpdateNewTreatment value ->
             case value of
                 TreatementUpdateMaintainCurrentDoasage ->
                     { english = "It is recommended that the medication remain unchanged -"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birasabwa ko imiti idahinduka -"
                     }
 
                 TreatementUpdateIncreaseOneDose ->
                     { english = "It is recommended that the medication is increased one dosage level to"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birasabwa ko agomba kongererwa doze imwe kuri"
                     }
 
                 TreatementUpdateIncreaseTwoDoses ->
                     { english = "It is recommended that the medication is increased two dosage levels to"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birasabwa ko agomba kongererwa doze ebyiri kuri"
                     }
 
                 -- We're not required to view this option.
@@ -5278,12 +5278,12 @@ translationSet trans =
 
         HypertensionRecommendedTreatmentUpdateNoCurrentTreatment ->
             { english = "The patient is currently receiving no treatment"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ubu umubyeyi nta muti ari gufata"
             }
 
         HypertensionRecommendedTreatmentUpdateStartTreatment ->
             { english = "It is recommended to start treatment with"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Arasabwa gutangirira kuri iyi miti"
             }
 
         IdleWaitingForSync ->
@@ -5704,7 +5704,7 @@ translationSet trans =
 
                 LabResultsHistoryHIVPCR _ ->
                     { english = "HIV PCR Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya PCR gipima Virusi itera SIDA"
                     }
 
                 LabResultsHistorySyphilis _ ->
@@ -5791,27 +5791,27 @@ translationSet trans =
             case mode of
                 LabResultsHistoryHIV _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta bwandu afite"
                     }
 
                 LabResultsHistoryHIVPCR _ ->
                     { english = "<20 copies"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Munsi ya kopi 20"
                     }
 
                 LabResultsHistorySyphilis _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta Bwandu Afite"
                     }
 
                 LabResultsHistoryHepatitisB _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kibazo afite"
                     }
 
                 LabResultsHistoryMalaria _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta bwandu afite"
                     }
 
                 LabResultsHistoryProtein _ ->
@@ -5831,32 +5831,32 @@ translationSet trans =
 
                 LabResultsHistoryLeukocytes _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kibazo afite"
                     }
 
                 LabResultsHistoryNitrite _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kibazo afite"
                     }
 
                 LabResultsHistoryUrobilinogen _ ->
                     { english = "1 mg/dL or less"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "1 mg/dl cyangwa munsi"
                     }
 
                 LabResultsHistoryHaemoglobin _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kibazo afite"
                     }
 
                 LabResultsHistoryKetone _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kibazo afite"
                     }
 
                 LabResultsHistoryBilirubin _ ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta kibazo afite"
                     }
 
                 LabResultsHistoryRandomBloodSugar _ ->
@@ -5876,24 +5876,24 @@ translationSet trans =
 
                 LabResultsHistoryRhesus _ ->
                     { english = "Positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite Rezisi pisitifu"
                     }
 
         LabResultsPaneHeader mode ->
             case mode of
                 LabResultsCurrentMain ->
                     { english = "Lab Results"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
                     }
 
                 LabResultsCurrentDipstickShort ->
                     { english = "Short Dipstick Lab Results"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini k'inkari gitanga ibisubizo bike"
                     }
 
                 LabResultsCurrentDipstickLong ->
                     { english = "Long Dipstick Lab Results"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini k'inkari gitanga ibisubizo byinshi"
                     }
 
         LastChecked ->
@@ -5918,49 +5918,49 @@ translationSet trans =
 
         Left ->
             { english = "Left"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibumoso"
             }
 
         LegCrampsReliefMethod method ->
             case method of
                 ReliefMethodMuscleStretching ->
                     { english = "Muscle stretching"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imyitozo ngororamubiri inanura imitsi"
                     }
 
                 ReliefMethodDorsiflexion ->
                     { english = "Dorsiflexion"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imyitozo ngororamubiri inanura amaguru & ibirenge"
                     }
 
                 ReliefMethodRelaxation ->
                     { english = "Relaxation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuruhura umubiri"
                     }
 
                 ReliefMethodSleepWithPillowBetweenLegs ->
                     { english = "Sleep with a pillow between the legs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuryama ufite umusego hagati y'amaguru"
                     }
 
                 ReliefMethodHeatTherapy ->
                     { english = "Heat therapy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuvura ukoresheje ubushyuhe"
                     }
 
                 ReliefMethodMassage ->
                     { english = "Massage"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kugorora ingingo"
                     }
 
         LegLeft ->
             { english = "Left leg"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ukuguru kw'ibumoso"
             }
 
         LegRight ->
             { english = "Right leg"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ukuguru kw'iburyo"
             }
 
         Legs ->
@@ -6043,7 +6043,7 @@ translationSet trans =
 
         LmpDateConfidentHeader ->
             { english = "Is the Patient confident of LMP Date"
-            , kinyarwanda = Just "Ese umubyeyi azi neza itariki aherukira mu mihango?"
+            , kinyarwanda = Just "Ese umubyeyi azi neza itariki aherukira mu mihango"
             }
 
         LmpDateHeader ->
@@ -6058,7 +6058,7 @@ translationSet trans =
 
         LmpRangeHeader ->
             { english = "When was the Patient's Last Menstrual Period"
-            , kinyarwanda = Just "Ni ryari umubyeyi aherukira mu mihango?"
+            , kinyarwanda = Just "Ni ryari umubyeyi aherukira mu mihango"
             }
 
         LmpRange range ->
@@ -6420,12 +6420,12 @@ translationSet trans =
 
         MedicationDistributionHelperGonorrhea ->
             { english = "This patient has signs of possible Gonorrhea"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu mubyeyi agaragaza ibimenyetso by'umitezi"
             }
 
         MedicationDistributionHelperTrichomonasOrBacterialVaginosis ->
             { english = "This patient has signs of possible Trichomonas or Bacterial Vaginosis"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyii afite ibimenyetso bishobora kuba ari ibya Tirikomonasi cyangwa Mikorobe zo mu nda ibyara"
             }
 
         MedicationDistributionHelperVitaminA ->
@@ -6435,17 +6435,17 @@ translationSet trans =
 
         MedicationDistributionNoticeGonorrhea ->
             { english = "Note: It is also recommended to prescribe the partner"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Icyitonderwa: Ni ngombwa kuvura uwo babana/bashakanye"
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed1 ->
             { english = "Ciprofloxacin (1000mg): by mouth as a single dose"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kunywa ikinini cya Ciplofoloxacine (1000mg) inshuro imwe"
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed2 ->
             { english = "Doxycycline (100mg): by mouth 2x a day for 7 days"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kunywa ikinini cya Doxycycline (100mg) inshuro ebyri ku munsi mu minsi irindwi"
             }
 
         MedicationDistributionSign sign ->
@@ -6539,7 +6539,7 @@ translationSet trans =
                     -- Names of Medication, therefore,
                     -- no translation is needed.
                     { english = "Iron"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Fer"
                     }
 
                 FolicAcid ->
@@ -6738,7 +6738,7 @@ translationSet trans =
 
         ModeratePreeclampsia ->
             { english = "Moderate Preeclampsia"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Preklampusi Yoroheje"
             }
 
         Month ->
@@ -7008,7 +7008,7 @@ translationSet trans =
 
         NormalRange ->
             { english = "Normal Range"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibimeze neza"
             }
 
         NoTreatmentAdministered ->
@@ -7050,7 +7050,7 @@ translationSet trans =
 
                 ReasonForNonReferralNotIndicated ->
                     { english = "Not indicated"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibyasabwe"
                     }
 
                 ReasonForNonReferralOther ->
@@ -7060,7 +7060,7 @@ translationSet trans =
 
                 NoReasonForNonReferral ->
                     { english = "No Reason"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta mpamvu"
                     }
 
         AdministrationNote note ->
@@ -7092,7 +7092,7 @@ translationSet trans =
 
                 NonAdministrationTooIll ->
                     { english = "Too Sick"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ararembye"
                     }
 
                 NonAdministrationOther ->
@@ -7134,7 +7134,7 @@ translationSet trans =
 
                 NonAdministrationTooIll ->
                     { english = "Too Sick"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ararembye"
                     }
 
                 NonAdministrationOther ->
@@ -7172,7 +7172,7 @@ translationSet trans =
 
                 NonAdministrationTooIll ->
                     { english = "Too Sick"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ararembye"
                     }
 
                 NonAdministrationOther ->
@@ -7727,7 +7727,7 @@ translationSet trans =
 
         Para ->
             { english = "Para"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imbyaro"
             }
 
         ParacetamolPrescriptionForAdult ->
@@ -7807,7 +7807,7 @@ translationSet trans =
 
         PatientDiagnosedWithLabel ->
             { english = "The patient has been diagnosed with"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yasuzumwe uburwayi bwo"
             }
 
         PatientExhibitAnyFindings ->
@@ -7832,7 +7832,7 @@ translationSet trans =
 
         PatientRecord ->
             { english = "Patient Record"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru y'Umurwayi"
             }
 
         PatientInformation ->
@@ -7860,22 +7860,22 @@ translationSet trans =
             case filter of
                 Pages.PatientRecord.Model.FilterAcuteIllness ->
                     { english = "Acute Illness"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uburwayi butunguranye"
                     }
 
                 Pages.PatientRecord.Model.FilterAntenatal ->
                     { english = "Antenatal Care"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
                     }
 
                 FilterDemographics ->
                     { english = "Demographics"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwirondoro"
                     }
 
                 FilterFamilyPlanning ->
                     { english = "Family Planning"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuboneza Urubyaro"
                     }
 
         PauseEncounter ->
@@ -8186,12 +8186,12 @@ translationSet trans =
 
         PregnancyConclusion ->
             { english = "Pregnancy Conclusion"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Iherezo ry'Inda"
             }
 
         PregnancyStart ->
             { english = "Pregnancy Start"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itangira ryo Gutwita"
             }
 
         PregnancyTestResult result ->
@@ -8317,7 +8317,7 @@ translationSet trans =
 
                 MaternalMentalHealth ->
                     { english = "Maternal Mental Health"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubuzima bwo mu mutwe ku mugore utwite"
                     }
 
                 PrenatalImmunisation ->
@@ -8427,7 +8427,7 @@ translationSet trans =
 
                 DiagnosisHIVDetectableViralLoad ->
                     { english = "Detectable HIV Viral Load"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Agaragaza udukoko dutera virusi ya SIDA mu maraso"
                     }
 
                 DiagnosisDiscordantPartnership ->
@@ -8462,7 +8462,7 @@ translationSet trans =
 
                 DiagnosisMalariaMedicatedContinued ->
                     { english = "Malaria Continued"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uburwayi bwa Malariya buracyagaragara"
                     }
 
                 DiagnosisMalariaWithAnemia ->
@@ -8472,7 +8472,7 @@ translationSet trans =
 
                 DiagnosisMalariaWithAnemiaMedicatedContinued ->
                     { english = "Malaria with Anemia Continued"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya n'Amaraso Macye bikigaragara"
                     }
 
                 DiagnosisMalariaWithSevereAnemia ->
@@ -8557,12 +8557,12 @@ translationSet trans =
 
                 DiagnosisSevereVomiting ->
                     { english = "Severe Vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuruka bikabije"
                     }
 
                 DiagnosisSevereVomitingBySymptoms ->
                     { english = "Severe Vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuruka bikabije"
                     }
 
                 DiagnosisMaternalComplications ->
@@ -8587,122 +8587,122 @@ translationSet trans =
 
                 DiagnosisHeartburn ->
                     { english = "Heartburn"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikirungurira"
                     }
 
                 DiagnosisHeartburnPersistent ->
                     { english = "Persistent Heartburn"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikirungurira gihoraho"
                     }
 
                 DiagnosisDeepVeinThrombosis ->
                     { english = "Deep Vein Thrombosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gufatana(Kuvura) gukabije kw'amaraso"
                     }
 
                 DiagnosisPelvicPainIntense ->
                     { english = "Intense Pelvic Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ububabare bukabije mu kiziba cy'inda"
                     }
 
                 DiagnosisPelvicPainContinued ->
                     { english = "Persistent Pelvic Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ububabare buhoraho mu kiziba cy'inda"
                     }
 
                 DiagnosisUrinaryTractInfection ->
                     { english = "Urinary Tract Infection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'ubwandu bw'umuyoboro w'inkari"
                     }
 
                 DiagnosisUrinaryTractInfectionContinued ->
                     { english = "Urinary Tract Infection Continued"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'ubwandu bukomeje bw'umuyoboro w'inkari"
                     }
 
                 DiagnosisPyelonephritis ->
                     { english = "Pyelonephritis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara yo kubyimba impyiko"
                     }
 
                 DiagnosisCandidiasis ->
                     { english = "Candidiasis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kandidoze"
                     }
 
                 DiagnosisCandidiasisContinued ->
                     { english = "Candidiasis Continued"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kandidoze ikomeje kugaragara"
                     }
 
                 DiagnosisGonorrhea ->
                     { english = "Gonorrhea"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'umutezi"
                     }
 
                 DiagnosisGonorrheaContinued ->
                     { english = "Gonorrhea Continued"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umutezi ukomeje kugaragara"
                     }
 
                 DiagnosisTrichomonasOrBacterialVaginosis ->
                     { english = "Trichomonas or Bacterial Vaginosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Tirikomonasi cyangwa Mikorobe zo mu nda ibyara"
                     }
 
                 DiagnosisTrichomonasOrBacterialVaginosisContinued ->
                     { english = "Trichomonas or Bacterial Vaginosis Continued"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Tirikomonasi cyangwa Mikorobe zo mu nda ibyara ikomeje kugaragara"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Tuberculosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igituntu"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
                     { english = "Diabetes"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Diyabete (indwara y'igisukari)"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
                     { english = "Gestational Diabetes"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Diyabete iterwa no utwite"
                     }
 
                 DiagnosisRhesusNegative ->
                     { english = "Rhesus Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Rezisi negatifu"
                     }
 
                 DiagnosisDepressionNotLikely ->
                     { english = "Depression not Likely"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birashoboka ko adafite indwara y'agahinda gakabije"
                     }
 
                 DiagnosisDepressionPossible ->
                     { english = "Depression Possible"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birashoboka ko yagira indwara y'agahinda gakabije"
                     }
 
                 DiagnosisDepressionHighlyPossible ->
                     { english = "Fairly High Possibility of Depression"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birashoboka cyane ko afite indwara y'agahinda gakabije"
                     }
 
                 DiagnosisDepressionProbable ->
                     { english = "Probable Depression"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birashoboka ko afite indwara y'agahinda gakabije"
                     }
 
                 DiagnosisSuicideRisk ->
                     { english = "Suicide Risk"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite ibyago byo kwiyahura"
                     }
 
                 DiagnosisOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 DiagnosisPostpartumAbdominalPain ->
@@ -8818,7 +8818,7 @@ translationSet trans =
 
                 DiagnosisHIVDetectableViralLoad ->
                     { english = "Detectable HIV Viral Load"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Agaragaza  udukoko dutera virusi ya SIDA mu maraso"
                     }
 
                 DiagnosisDiscordantPartnership ->
@@ -8853,7 +8853,7 @@ translationSet trans =
 
                 DiagnosisMalariaMedicatedContinued ->
                     { english = "Malaria Continued"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uburwayi bwa Malariya buracyagaragara"
                     }
 
                 DiagnosisMalariaWithAnemia ->
@@ -8863,7 +8863,7 @@ translationSet trans =
 
                 DiagnosisMalariaWithAnemiaMedicatedContinued ->
                     { english = "Malaria with Anemia Continued"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya n'Amaraso Macye bikigaragara"
                     }
 
                 DiagnosisMalariaWithSevereAnemia ->
@@ -8948,12 +8948,12 @@ translationSet trans =
 
                 DiagnosisSevereVomiting ->
                     { english = "Severe Vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuruka bikabije"
                     }
 
                 DiagnosisSevereVomitingBySymptoms ->
                     { english = "Severe Vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuruka bikabije"
                     }
 
                 DiagnosisMaternalComplications ->
@@ -8978,122 +8978,122 @@ translationSet trans =
 
                 DiagnosisHeartburn ->
                     { english = "Heartburn in pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikirungurira mu gihe umubyeyi atwite"
                     }
 
                 DiagnosisHeartburnPersistent ->
                     { english = "Heartburn in pregnancy (persistent)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikirungurira gihoraho mu gihe umubyeyi atwite"
                     }
 
                 DiagnosisDeepVeinThrombosis ->
                     { english = "Possible DVT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ashobora kuba afite ibibazo by'imitsi, bituma amaraso adatembera neza mu mubiri"
                     }
 
                 DiagnosisPelvicPainIntense ->
                     { english = "Severe pelvic pain in pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ububabare bukabije mu kiziba cy'inda igihe umubyeyi atwite"
                     }
 
                 DiagnosisPelvicPainContinued ->
                     { english = "Persistent pelvic pain in pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ububabare buhoraho mu kiziba cy'inda igihe umubyeyi atwite"
                     }
 
                 DiagnosisUrinaryTractInfection ->
                     { english = "Lower urinary tract infection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'ubwandu bw'umuyoboro w'inkari wo hasi"
                     }
 
                 DiagnosisUrinaryTractInfectionContinued ->
                     { english = "Lower urinary tract infection (continued)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'ubwandu bw'umuyoboro w'inkari wo hasi bukomeje kugaragara"
                     }
 
                 DiagnosisPyelonephritis ->
                     { english = "Possible Pyelonephritis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ashobora kuba afite Indwara yo kubyimba impyiko"
                     }
 
                 DiagnosisCandidiasis ->
                     { english = "Candidiasis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kandidoze"
                     }
 
                 DiagnosisCandidiasisContinued ->
                     { english = "Candidiasis (continued)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kandidoze ikomeje kugaragara"
                     }
 
                 DiagnosisGonorrhea ->
                     { english = "Gonorrhea"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'umutezi"
                     }
 
                 DiagnosisGonorrheaContinued ->
                     { english = "Gonorrhea (continued)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umutezi ukomeje kugaragara"
                     }
 
                 DiagnosisTrichomonasOrBacterialVaginosis ->
                     { english = "Trichomonas or Bacterial Vaginosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Tirikomonasi cyangwa Mikorobe zo mu nda ibyara"
                     }
 
                 DiagnosisTrichomonasOrBacterialVaginosisContinued ->
                     { english = "Trichomonas or Bacterial Vaginosis (continued)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Tirikomonasi cyangwa Mikorobe zo mu nda ibyara ikomeje kugaragara"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Possible Active Tuberculosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ashobora kuba afite Igituntu"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
                     { english = "Diabetes"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Diyabete (Indwara y'igisukari)"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
                     { english = "Gestational Diabetes"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Diyabete yatewe no gutwita"
                     }
 
                 DiagnosisRhesusNegative ->
                     { english = "Rhesus Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Rezisi negatifu"
                     }
 
                 DiagnosisDepressionNotLikely ->
                     { english = "Depression not Likely"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birashoboka ko adafite indwara y'agahinda gakabije"
                     }
 
                 DiagnosisDepressionPossible ->
                     { english = "Depression Possible"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birashoboka ko yagira indwara y'agahinda gakabije"
                     }
 
                 DiagnosisDepressionHighlyPossible ->
                     { english = "Fairly High Possibility of Depression"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birashoboka cyane ko afite indwara y'agahinda gakabije"
                     }
 
                 DiagnosisDepressionProbable ->
                     { english = "Probable Depression"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birashoboka ko afite indwara y'agahinda gakabije"
                     }
 
                 DiagnosisSuicideRisk ->
                     { english = "Suicide Risk"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite ibyago byo kwiyahura"
                     }
 
                 DiagnosisOther ->
                     { english = "Received a diagnosis from a different health care facility - please follow up with patient"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yabwiwe uburwayi n'irindi vuriro - Gerageza ukurikirane umurwayi"
                     }
 
                 DiagnosisPostpartumAbdominalPain ->
@@ -9160,12 +9160,12 @@ translationSet trans =
 
                 DiagnosisHIVDetectableViralLoad ->
                     { english = "Patient has a detectable HIV Viral Load"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi agaragaza  udukoko dutera virusi ya SIDA mu maraso"
                     }
 
                 DiagnosisDiscordantPartnership ->
                     { english = "Patient is HIV Negative with a discordant partner"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwe mubashakanye afite ubwandu bwa virusi itera SIDA"
                     }
 
                 DiagnosisSyphilis ->
@@ -9195,37 +9195,37 @@ translationSet trans =
 
                 DiagnosisMalariaMedicatedContinued ->
                     { english = "Patient has tested positive for persistent Malaria"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi afite ubwandu bwa Malariya ikomeje kugaragara"
                     }
 
                 DiagnosisMalariaWithAnemia ->
                     { english = "Patient has tested positive for Malaria with Anemia"
-                    , kinyarwanda = Just "Afite Malariya n'amaraso macye"
+                    , kinyarwanda = Just "Umubyeyi afite Malariya n'amaraso macye"
                     }
 
                 DiagnosisMalariaWithAnemiaMedicatedContinued ->
                     { english = "Patient has tested positive for persistent Malaria with Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi afite ubwandu bwa Malariya n'amaraso make bikomeje kugaragara"
                     }
 
                 DiagnosisMalariaWithSevereAnemia ->
                     { english = "Patient has tested positive for Malaria with Severe Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi afite ubwandu bwa Malariya n'amaraso macye cyane"
                     }
 
                 DiagnosisModerateAnemia ->
                     { english = "Patient shows signs of Mild to Moderate Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'amaraso Macye byoroheje"
                     }
 
                 DiagnosisSevereAnemia ->
                     { english = "Patient shows signs of Severe Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'Amaraso Macye Cyane"
                     }
 
                 DiagnosisSevereAnemiaWithComplications ->
                     { english = "Patient has tested positive for Severe Anemia with Complications"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi afite Amaraso Macye Cyane n'Ibibazo Bishamikiyeho"
                     }
 
                 DiagnosisChronicHypertensionImmediate ->
@@ -9266,127 +9266,127 @@ translationSet trans =
 
                 DiagnosisHeartburn ->
                     { english = "Patient shows signs of Persistent Heartburn"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'ikirungurira gihoraho"
                     }
 
                 DiagnosisHeartburnPersistent ->
                     { english = "Patient shows signs of Persistent Heartburn that is not responding to treatment"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'ikirungurira gihoraho ariko imiti itari kuvura"
                     }
 
                 DiagnosisDeepVeinThrombosis ->
                     { english = "Patient shows signs of Deep Vein Thrombosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byo Gufatana(Kuvura) gukabije kw'amaraso"
                     }
 
                 DiagnosisPelvicPainIntense ->
                     { english = "Patient shows signs of Intense Pelvic Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "mubyeyi agaragaza ibimenyetso by'ububabare bukabije mu kiziba cy'inda"
                     }
 
                 DiagnosisPelvicPainContinued ->
                     { english = "Patient shows signs of Persistent Pelvic Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'ububabare buhoraho mu kiziba cy'inda"
                     }
 
                 DiagnosisUrinaryTractInfection ->
                     { english = "Patient shows signs of Urinary Tract Infection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi agaragaza ibimenyetso by'indwara y'ubwandu bw'umuyoboro w'inkari"
                     }
 
                 DiagnosisUrinaryTractInfectionContinued ->
                     { english = "Patient shows signs of Persistant Urinary Tract Infection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi agaragaza ibimenyetso by'indwara y'ubwandu bw'umuyoboro w'inkari buhoraho"
                     }
 
                 DiagnosisPyelonephritis ->
                     { english = "Patient shows signs of Pyelonephritis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'Indwara yo kubyimba impyiko"
                     }
 
                 DiagnosisCandidiasis ->
                     { english = "Patient shows signs of a Yeast infection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso bya infegisiyo"
                     }
 
                 DiagnosisCandidiasisContinued ->
                     { english = "Patient shows signs of a Persistant Yeast infection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso bya infegisiyo ikomeje kugaragara"
                     }
 
                 DiagnosisGonorrhea ->
                     { english = "Patient shows signs of Gonorrhea"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'ndwara y'umutezi"
                     }
 
                 DiagnosisGonorrheaContinued ->
                     { english = "Patient shows signs of Persistant Gonorrhea"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'ndwara y'umutezi ikomeje kugaragara"
                     }
 
                 DiagnosisTrichomonasOrBacterialVaginosis ->
-                    { english = "Patient shows signs ofTrichomonas or Bacterial Vaginosis"
-                    , kinyarwanda = Nothing
+                    { english = "Patient shows signs of Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso bya Tirikomonasi cyangwa Mikorobe zo mu nda ibyara"
                     }
 
                 DiagnosisTrichomonasOrBacterialVaginosisContinued ->
                     { english = "Patient shows signs of Persistant Trichomonas or Bacterial Vaginosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso bya Tirikomonasi cyangwa Mikorobe zo mu nda ibyara ikomeje kugaragara"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Patient shows signs of Tuberculosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'Igituntu"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
                     { english = "Patient shows signs of Diabetes"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso bya Diyabete"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
                     { english = "Patient shows signs of Gestational Diabetes"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso bya Diyabete yatewe no gutwita"
                     }
 
                 DiagnosisRhesusNegative ->
                     { english = "Patient has Rh-Negative status"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi afite Rezisi Negatifu"
                     }
 
                 DiagnosisHyperemesisGravidumBySymptoms ->
                     { english = "Patient shows signs of Hyperemesis Gravidum"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byo kuruka bikabije k'umugore utwite"
                     }
 
                 DiagnosisSevereVomitingBySymptoms ->
                     { english = "Patient shows signs of Severe Vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byo kuruka bikabije"
                     }
 
                 DiagnosisDepressionNotLikely ->
                     { english = "Depression not Likely"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birashoboka ko adafite indwara y'agahinda gakabije"
                     }
 
                 DiagnosisDepressionPossible ->
                     { english = "Patient shows signs of possible depression"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byuko bishoboka ko yagira indwara y'agahinda gakabije"
                     }
 
                 DiagnosisDepressionHighlyPossible ->
                     { english = "Patient shows signs of fairly high possibility of depression"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byuko bishoboka cyane ko afite indwara y'agahinda gakabije"
                     }
 
                 DiagnosisDepressionProbable ->
                     { english = "Patient shows signs of probable depression"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byuko ashobora kuba afite indwara y'agahinda gakabije"
                     }
 
                 DiagnosisSuicideRisk ->
                     { english = "Patient shows signs of being a suicide risk"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byo kuba afite ibyago byo kwiyahura"
                     }
 
                 DiagnosisPostpartumAbdominalPain ->
@@ -9486,22 +9486,22 @@ translationSet trans =
             case sign of
                 FlankPainLeftSide ->
                     { english = "Left side"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uruhande rw'ibumoso"
                     }
 
                 FlankPainRightSide ->
                     { english = "Right side"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uruhande rw'iburyo"
                     }
 
                 FlankPainBothSides ->
                     { english = "Both sides"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Impande zose"
                     }
 
                 NoFlankPain ->
                     { english = "None"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabyo"
                     }
 
         PrenatalHealthEducationSignsDiagnosis isInitial date sign ->
@@ -9509,78 +9509,78 @@ translationSet trans =
                 EducationNauseaVomiting ->
                     if isInitial then
                         { english = "Nausea + vomiting in pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Isesemi + kuruka igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                     else
                         { english = "Persistent nausea + vomiting in pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Isesemi + kuruka  bikomeje kugaragara igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                 EducationLegCramps ->
                     if isInitial then
                         { english = "Leg cramps in pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Ibinya mu maguru igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                     else
                         { english = "Persistent leg cramps in pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Ibinya mu maguru bikomeza kugaragara igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                 EducationLowBackPain ->
                     if isInitial then
                         { english = "Lower back pain in pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Kubabara umugongo wo hasi igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                     else
                         { english = "Persistent lower back pain in pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Kubabara umugongo wo hasi bikomeje kugaragara igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                 EducationConstipation ->
                     if isInitial then
                         { english = "Constipation in pregnacy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Kwituma impatwe igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                     else
                         { english = "Persistent constipation in pregnacy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Kwituma impatwe bikomeje igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                 EducationVaricoseVeins ->
                     if isInitial then
                         { english = "Varicose veins during pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Kubyimba kw'imitsi (imigarura) y'amaraso igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                     else
-                        { english = "Persistent varicose veins during - pregnancy provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        { english = "Persistent varicose veins during pregnancy - provided health education on " ++ date
+                        , kinyarwanda = Just <| "Kubyimba kw'imitsi (imigarura) y'amaraso bikomeje igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                 EducationLegPainRedness ->
                     if isInitial then
                         { english = "Leg pain during pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Kubabara akaguru kamwe igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                     else
                         { english = "Persistent leg pain during pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Kubabara akaguru kamwe bikomeje kugaragara igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                 EducationPelvicPain ->
                     if isInitial then
                         { english = "Pelvic pain in pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Ububabare mu kiziba cy'inda igihe umubyeyi atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                     else
                         { english = "Persistent pelvic pain in pregnancy - provided health education on " ++ date
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| "Ububabare buhoraho mu kiziba cy'inda igihe umubyeyi atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                 -- Other signs do not reflect a diagnosis.
@@ -9593,52 +9593,52 @@ translationSet trans =
             case sign of
                 EducationNauseaVomiting ->
                     { english = "Nausea and Vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Iseseme no kuruka"
                     }
 
                 EducationLegCramps ->
                     { english = "Leg Cramps"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinya mu maguru"
                     }
 
                 EducationLowBackPain ->
                     { english = "Lower Back Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara umugongo wo hasi"
                     }
 
                 EducationConstipation ->
                     { english = "Constipation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwituma impatwe"
                     }
 
                 EducationHeartburn ->
                     { english = "Heartburn"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikirungurira"
                     }
 
                 EducationVaricoseVeins ->
                     { english = "Varicose Veins"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubyimba kw'imitsi (imigarura) y'amaraso"
                     }
 
                 EducationLegPainRedness ->
                     { english = "Leg Pain or Redness"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara akaguru kamwe cyangwa gutukura ku kuguru kumwe"
                     }
 
                 EducationPelvicPain ->
                     { english = "Pelvic Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara mu kiziba cy'inda"
                     }
 
                 EducationSaferSex ->
                     { english = "Safer Sex Practices"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imibonano mpuzabitsina ikingiye"
                     }
 
                 EducationMentalHealth ->
                     { english = "Maternal Mental Health"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubuzima bwo mu mutwe ku mugore utwite"
                     }
 
                 EducationEarlyMastitisOrEngorgment ->
@@ -9658,7 +9658,7 @@ translationSet trans =
 
         PrenatalHealthEducationAppropriateProvided ->
             { english = "Have you provided the appropriate health education to the patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wahaye umubyeyi inyigisho zabugenewe ku buzima"
             }
 
         PrenatalHealthEducationQuestion isChw sign ->
@@ -9731,62 +9731,62 @@ translationSet trans =
 
         PrenatalHealthEducationDiabetesInform ->
             { english = "Counsel patient on healthy nutrition and exercise practices"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisha umubyeyi ku mirire myiza no gukora imyitozo ngororamubiri"
             }
 
         PrenatalHealthEducationHivDetectableViralLoadInform ->
             { english = "Instruct the patient on the importance of strict adherence to their medication and the dangers of transmission to their child during labor and delivery"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisha umubyeyi akamaro ku gufata imiti neza ndetse n'ingaruka zo kuba yakwanduza umwana mu gihe abyara"
             }
 
         PrenatalHealthEducationNauseaAndVomitingAdvise ->
             { english = "Advise the patient that small amounts of chamomile tea, ginger, and Vitamin B6 can help relieve these symptoms if these are available to the patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gira umubyeyi inama ko gufata icyayi cya Chamomile, tangawizi na vitamini B6 byagabanya ibimenyetso afite igihe byaba bihari"
             }
 
         PrenatalHealthEducationNauseaAndVomitingInform ->
             { english = "Inform the patient that the symptoms of nausea and vomiting usually resolve on their own in the second half of pregnancy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Menyesha umubyeyi ko ibimenyetso byo kugira iseseme no kuruka bigenda bigabanuka uko inda igenda ikura ( kumezi ane, atanu cyangwa atandatu)"
             }
 
         PrenatalHealthEducationLegCrampsInform ->
             { english = "Instruct the patient that the following may help relieve cramping in the legs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisha umubyeyi ko ibi bikurikira bishobora kugabanya ibinya mu maguru"
             }
 
         PrenatalHealthEducationLowBackPainInform ->
             { english = "Instruct the patient that regular exercise during pregnancy will help prevent lower back pain"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisha umubyeyi ko imyitozo ngororamubiri ihoraho mu gihe atwite igabanya uburibwe bw'umugongo wo hasi"
             }
 
         PrenatalHealthEducationConstipationInform ->
             { english = "Instruct the patient that increasing the intake of fruits, vegetables, high fiber foods, and water can help relieve constipation symptoms"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisha umubyeyi ko kurya imbuto, imboga, ibiryo bisukura umubiri (fibre) no kunywa amazi birinda kunanairwa kwituma"
             }
 
         PrenatalHealthEducationHeartburnInform ->
             { english = "Instruct the patient that the following may help relieve heartburn"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Sobanurira umubyeyi ko ibi bikurikira bifasha mu kugabanya ikirungurira"
             }
 
         PrenatalHealthEducationVaricoseVeinsInform ->
             { english = "Instruct the patient that compression stockings (tight socks or leggings) and elevating their legs will help reduce varicose veins"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisha umubyeyi ko kwambara ibintu bimufashe ku maguru (amasogisi,..) no gusegura amaguru igihe aryamye bizamurinda kubyimba kw'imitsi"
             }
 
         PrenatalHealthEducationLegPainRednessInform ->
             { english = "Instruct the patient that regular exercise and stretching can relieve leg pain or redness"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisha umubyeyi ko imyitozo ngororamubiri ihoraho izamurinda kuribwa amaguru ndetse no kuba yatukuara"
             }
 
         PrenatalHealthEducationPelvicPainInform ->
             { english = "Instruct the patient that regular exercise during pregnancy will help prevent pelvic pain"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igisha umubyeyi ko imyitozo ngoraramubiri ihoraho izamurinda kuribwa mu kiziba cy'inda"
             }
 
         PrenatalHealthEducationSaferSexInform ->
             { english = "Counsel patient on safer sex practices"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gira inama umubyeyi ku bijyanye no gukora imibonano mpuzabitsina ikingiye"
             }
 
         PrenatalHealthEducationEarlyMastitisOrEngorgmentInform ->
@@ -9796,7 +9796,7 @@ translationSet trans =
 
         PrenatalHealthEducationMentalHealthInform ->
             { english = "Provide information to support patients mental well being during pregnancy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Tanga inama zafasha umubyeyi utwite kubungabunga ubuzima bwo mu mutwe"
             }
 
         PrenatalNCDProgramHeaderPrefix ->
@@ -9916,28 +9916,28 @@ translationSet trans =
             case task of
                 Pages.Prenatal.Activity.Types.TaskTetanus ->
                     { english = "Tetanus"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Agakwega"
                     }
 
         PrenatalImmunisationDescription task ->
             case task of
                 VaccineTetanus ->
                     { english = "The Tetanus vaccine prevents the patient from getting Tetanus which causes muscle spasms, fever, high blood pressure, and death."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urukingo rw'agakwega rurinda umwana kwandura indwara y'agakwega (Tetanosi) itera kugagara kw'imitsi, umuriro, umuvuduko w'amaraso ndetse n'urupfu."
                     }
 
         PrenatalImmunisationHeader task ->
             case task of
                 VaccineTetanus ->
                     { english = "Tetanus"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Agakwega"
                     }
 
         PrenatalImmunisationHistory task ->
             case task of
                 VaccineTetanus ->
                     { english = "Tetanus History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku ndwara y'Agakwega"
                     }
 
         PrenatalLaboratoryBloodGroupLabel ->
@@ -10228,7 +10228,7 @@ translationSet trans =
 
         PrenatalLaboratoryHaemoglobinTestResult ->
             { english = "Hemoglobin Test Result"
-            , kinyarwanda = Just "IgisubiZo cy'ingano y'amaraso"
+            , kinyarwanda = Just "Igisubizo by'ikizamini gipima ingano y'amaraso"
             }
 
         PrenatalLaboratoryHaemoglobinValue value ->
@@ -10349,7 +10349,7 @@ translationSet trans =
 
         PrenatalLaboratoryHemoglobinTestResult ->
             { english = "Hemoglobin Test Result"
-            , kinyarwanda = Just "Igisubizo ku kizamini gipima ingano y'amaraso"
+            , kinyarwanda = Just "Igisubizo by'ikizamini gipima ingano y'amaraso"
             }
 
         PrenatalLaboratoryRandomBloodSugarTestResult ->
@@ -10359,12 +10359,12 @@ translationSet trans =
 
         PrenatalLaboratoryHIVPCRTestResult ->
             { english = "HIV PCR Test Result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo by'ikizamini cya PCR gipima Virusi itera SIDA"
             }
 
         PrenatalLaboratoryHIVPCRViralLoadStatusQuestion ->
             { english = "Are there less than 20 copies/mm3"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yaba afite ingano ya Virusi itera SIDA mu maraso iri munsi ya kopi 20 kuri mirimetero kibe"
             }
 
         PrenatalLaboratoryTask task ->
@@ -10411,12 +10411,12 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
                     { english = "HIV PCR"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "PCR ipima virusi itera SIDA"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskCompletePreviousTests ->
                     { english = "History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru"
                     }
 
         PrenatalLaboratoryTaskLabel task ->
@@ -10463,7 +10463,7 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
                     { english = "HIV PCR"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "PCR ipima Virusi itera SIDA"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -10511,12 +10511,12 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki yakoreweho ikizamini gipima ingano y'isukari mu maraso"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
                     { english = "HIV PCR Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki y'ikizamini cya PCR gipima virusi itera SIDA"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -10529,47 +10529,47 @@ translationSet trans =
             case task of
                 Pages.Prenatal.Activity.Types.TaskHIVTest ->
                     { english = "HIV Antibody Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo cy'abasirikari barwanya Virusi itera SIDA"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskSyphilisTest ->
                     { english = "Syphilis - RPR Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo cy'ikizamini cya Mburugu"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHepatitisBTest ->
                     { english = "Hepatitis B Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo bya hepatite B"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskMalariaTest ->
                     { english = "Malaria RDT Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cya Malariya"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskBloodGpRsTest ->
                     { english = "Blood Group + Rhesus Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cy'ubwoka bw'amaraso na Rezisi yayo"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskUrineDipstickTest ->
                     { english = "Urine Dipstick Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cy'inkari"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHemoglobinTest ->
                     { english = "Hemoglobin Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo by'ikizamini gipima ingano y'amaraso"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskRandomBloodSugarTest ->
                     { english = "Random Blood Sugar Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igisubizo ku kizamini gipima ingano y'isukari mu maraso"
                     }
 
                 Pages.Prenatal.Activity.Types.TaskHIVPCRTest ->
                     { english = "HIV PCR Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cya PCR gipima Virusi itera SIDA"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -10580,138 +10580,138 @@ translationSet trans =
 
         PrenatalLaboratoryTaskResultsHelper ->
             { english = "When ready, update test results via case management"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo nibiboneka, uhite ubyandika unyuze ku Gukurikirana umurwayi"
             }
 
         PrenatalLaboratoryTest value ->
             case value of
                 TestBloodGpRs ->
                     { english = "Blood Group"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubwoko bw'Amaraso"
                     }
 
                 TestHemoglobin ->
                     { english = "Hemoglobin"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingano y'Amaraso"
                     }
 
                 TestHepatitisB ->
                     { english = "Hepatitis B"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwijima wo mu bwoko bwa B"
                     }
 
                 TestRandomBloodSugar ->
                     { english = "Blood Sugar"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingano y'isukari mu Maraso"
                     }
 
                 TestSyphilis ->
                     { english = "Syphilis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mburugu"
                     }
 
                 TestUrineDipstick ->
                     { english = "Urine Dipstick"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cy'inkari"
                     }
 
                 TestVitalsRecheck ->
                     { english = "Vitals Recheck"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusubiramo ibipimo by'ubuzima"
                     }
 
                 TestHIVPCR ->
                     { english = "HIV PCR"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "PCR ipima Virusi itera SIDA"
                     }
 
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe ku mugore utwite"
             }
 
         PrenatalLabsCaseManagementEntryTypeVitals ->
             { english = "Vitals Recheck"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gusubiramo ibipimo by'ubuzima"
             }
 
         PrenatalLabsEntryState state ->
             case state of
                 PrenatalLabsEntryPending ->
                     { english = "Pending"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birategerejwe"
                     }
 
                 PrenatalLabsEntryClosingSoon ->
                     { english = "Closing Soon"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Birafunga vuba"
                     }
 
         PrenatalLabsHistoryCompletedQuestion ->
             { english = "Have you updated all results that have been returned for this patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba wujuje ibisubizo byose byaba byabonetse kuri uyu mubyeyi"
             }
 
         PrenatalLabsHistoryInstructions ->
             { english = "Please update all outstanding lab results before proceeding"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gerageza gushyiramo ibisubizo byose mbere yo gukomeza"
             }
 
         PrenatalLabsHistoryLabel ->
             { english = "This patient has pending lab results"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi afite ibizamini bitarabonerwa ibisubizo"
             }
 
         PrenatalMentalHealthQuestion question ->
             case question of
                 MentalHealthQuestion1 ->
                     { english = "I have been able to laugh and see the funny side of things"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Njya nshobora guseka kandi nkabona ibintu mu buryo bwiza"
                     }
 
                 MentalHealthQuestion2 ->
                     { english = "I have looked forward with enjoyment to things"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nategereje ko ibintu nezerewe"
                     }
 
                 MentalHealthQuestion3 ->
                     { english = "I have blamed myself unnecessarily when things went wrong"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Njya niciraga urubanza iyo ibintu byabaga byagenze nabi"
                     }
 
                 MentalHealthQuestion4 ->
                     { english = "I have been anxious or worried for no good reason"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Njya mpangayika nta mpamvu igaragara"
                     }
 
                 MentalHealthQuestion5 ->
                     { english = "I have felt scared or panicky for no very good reason"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Njya ngira ubwoba cyangwa nkakuka umutima nta mpamvu ifatika"
                     }
 
                 MentalHealthQuestion6 ->
                     { english = "Things have been getting on top of me"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibintu bijya bindenga "
                     }
 
                 MentalHealthQuestion7 ->
                     { english = "I have been so unhappy that I have had difficulty sleeping"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Njya numva mbabaye ku buryo ngira ikibazo cyo kudasinzira"
                     }
 
                 MentalHealthQuestion8 ->
                     { english = "I have felt sad or miserable"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Njya numva mbabaye cyangwa mfite ishavu "
                     }
 
                 MentalHealthQuestion9 ->
                     { english = "I have been so unhappy that I have been crying"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Njya numva mbabaye cyane ku buryo ndira"
                     }
 
                 MentalHealthQuestion10 ->
-                    { english = "The thought of harming myself has occured to me"
-                    , kinyarwanda = Nothing
+                    { english = "The thought of harming myself has occurred to me"
+                    , kinyarwanda = Just "Ibitekerezo byo kwigirira nabi bijya binzamo"
                     }
 
         PrenatalMentalHealthOptionForQuestion question option ->
@@ -10720,262 +10720,262 @@ translationSet trans =
                     case option of
                         MentalHealthQuestionOption0 ->
                             { english = "As much as I always could"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Buri gihe"
                             }
 
                         MentalHealthQuestionOption1 ->
                             { english = "Not quite so much now"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Ubu ntago ari cyane"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Definitely not so much now"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Ntago ari cyane na gato"
                             }
 
                         MentalHealthQuestionOption3 ->
                             { english = "Not at all"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Nta na rimwe"
                             }
 
                 MentalHealthQuestion2 ->
                     case option of
                         MentalHealthQuestionOption0 ->
                             { english = "As much as I ever did"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Nk'ibisanzwe"
                             }
 
                         MentalHealthQuestionOption1 ->
                             { english = "Rather less than I used to"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Byaraganutse ugereranyije nuko byari bisanzwe"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Definitely less than I used to"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Gake cyane ugereranyije n‘uko byari bisanzwe"
                             }
 
                         MentalHealthQuestionOption3 ->
                             { english = "Hardly at all"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Habe na mba"
                             }
 
                 MentalHealthQuestion3 ->
                     case option of
                         MentalHealthQuestionOption0 ->
                             { english = "No, never"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Oya, nta na rimwe"
                             }
 
                         MentalHealthQuestionOption1 ->
                             { english = "Not very often"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Si cyane"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Yes, some of the time"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, rimwe na rimwe"
                             }
 
                         MentalHealthQuestionOption3 ->
                             { english = "Yes, most of the time"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, akenshi"
                             }
 
                 MentalHealthQuestion4 ->
                     case option of
                         MentalHealthQuestionOption0 ->
                             { english = "No, not at all"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "No, nta na rimwe"
                             }
 
                         MentalHealthQuestionOption1 ->
                             { english = "Hardly ever"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Gake gashoboka"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Yes, sometimes"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, rimwe na rimwe"
                             }
 
                         MentalHealthQuestionOption3 ->
                             { english = "Yes, very often"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, kenshi na kenshi"
                             }
 
                 MentalHealthQuestion5 ->
                     case option of
                         MentalHealthQuestionOption0 ->
                             { english = "Not at all"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Nta na rimwe"
                             }
 
                         MentalHealthQuestionOption1 ->
                             { english = "No, not much"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Oya, ntago ari cyane"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Yes, sometimes"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, rimwe na rimwe"
                             }
 
                         MentalHealthQuestionOption3 ->
                             { english = "Yes, quite a lot"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, akenshi"
                             }
 
                 MentalHealthQuestion6 ->
                     case option of
                         MentalHealthQuestionOption0 ->
                             { english = "No, I have been coping as well as ever"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Oya, ndabyakira nk'ibisanzwe"
                             }
 
                         MentalHealthQuestionOption1 ->
                             { english = "No, most of the time I have coped quite well"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Oya, akenshi njya nshoboraga kubyakira neza"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Yes, sometimes I haven’t been coping as well as usual"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yes, rimwe na rimwe ntago njya mbyakira neza"
                             }
 
                         MentalHealthQuestionOption3 ->
                             { english = "Yes, most of the time I haven’t been able to cope"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, kenshi na kenshi ntago njya mbyakira neza"
                             }
 
                 MentalHealthQuestion7 ->
                     case option of
                         MentalHealthQuestionOption0 ->
                             { english = "Not at all"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "nta na rimwe"
                             }
 
                         MentalHealthQuestionOption1 ->
                             { english = "No, not very often"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Oya, ntago ari kenshi"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Yes, sometimes"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, rimwe na rimwe"
                             }
 
                         MentalHealthQuestionOption3 ->
                             { english = "Yes, most of the time"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, kenshi na kenshi"
                             }
 
                 MentalHealthQuestion8 ->
                     case option of
                         MentalHealthQuestionOption0 ->
                             { english = "Not at all"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Nta na rimwe"
                             }
 
                         MentalHealthQuestionOption1 ->
                             { english = "Not very often"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Ntago ari kenshi"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Yes, quite often"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, kenshi"
                             }
 
                         MentalHealthQuestionOption3 ->
                             { english = "Yes, most of the time"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, kenshi na kenshi"
                             }
 
                 MentalHealthQuestion9 ->
                     case option of
                         MentalHealthQuestionOption0 ->
                             { english = "No, never"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Oya, Nta na rimwe"
                             }
 
                         MentalHealthQuestionOption1 ->
                             { english = "Only occasionally"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Gisa rimwe na riwme"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Yes, quite often"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "yego, kenshi"
                             }
 
                         MentalHealthQuestionOption3 ->
                             { english = "Yes, most of the time"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, Kemshi na kenshi"
                             }
 
                 MentalHealthQuestion10 ->
                     case option of
                         MentalHealthQuestionOption0 ->
                             { english = "Never"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Nta na rimwe"
                             }
 
                         MentalHealthQuestionOption1 ->
                             { english = "Hardly ever"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Gake gashoboka"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Sometimes"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "rimwe na rimwe"
                             }
 
                         MentalHealthQuestionOption3 ->
                             { english = "Yes, quite often"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Yego, kenshi"
                             }
 
         PrenatalMentalHealthSpecialistHelper ->
             { english = "Refer patient to mental health specialist for further evaluation"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umubyeyi ku muganga w'inzobere ku buzima bwo mu mutwe kugirango hakorwe isuzuma ryimbitse"
             }
 
         PrenatalMentalHealthSpecialistQuestion ->
             { english = "Does this health center have a mental health specialist available"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Iki kigo nderabuzima gifite umuganga w'inzobere ku buzima bwo mu mutwe"
             }
 
         PrenatalMentalHealthWarningPopupMessage ->
             { english = "Patient shows signs of being a suicide risk"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byo kuba afite ibyago byo kwiyahura"
             }
 
         PrenatalMentalHealthWarningPopupInstructions ->
             { english = "Contact mental health specialist immediately"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ihutire kureba umuganga w'inzobere mu buzima bwo mu mutwe"
             }
 
         PrenatalOutsideCareSignQuestion sign ->
             case sign of
                 SeenAtAnotherFacility ->
                     { english = "Have you been seen at another facility since your last visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba hari irindi vuriro wagiyeho nyuma yo kuva hano"
                     }
 
                 GivenNewDiagnoses ->
                     { english = "Were you given a new diagnosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Haba hari ubundi burwayi bagusanzemo"
                     }
 
                 GivenMedicine ->
                     { english = "Were you given medicine"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba warahawe imiti"
                     }
 
                 PlannedFollowUpCareWithSpecialist ->
                     { english = "Do you have follow up care planned with a specialist"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ufite gahunda yo gukurikiranwa n'umuganga w'inzobere"
                     }
 
                 -- There's not question for this sign.
@@ -10988,87 +10988,87 @@ translationSet trans =
             case medication of
                 OutsideCareMedicationQuinineSulphate ->
                     { english = "3 x a day for 7 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "inshuri 3 ku munsi mu minsi 7"
                     }
 
                 OutsideCareMedicationCoartem ->
                     { english = "4 tablets by mouth 2x a day for 7 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunywa ibinini 4 inshuro 2 ku munsi mu minsi 7"
                     }
 
                 OutsideCareMedicationPenecilin1 ->
                     { english = "IM x 1"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "IM inshuro 1"
                     }
 
                 OutsideCareMedicationPenecilin3 ->
                     { english = "IM 1x a week for 3 weeks"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "IM inshuro 1 mu cyumweru mu byumweru 3"
                     }
 
                 OutsideCareMedicationErythromycin ->
                     { english = "by mouth 4x a day for 14 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunywa inshuro 4 ku munsi mu minsi 14"
                     }
 
                 OutsideCareMedicationAzithromycin ->
                     { english = "4 tabs by mouth x one day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunywa ibinini 4 ku munsi"
                     }
 
                 OutsideCareMedicationCeftriaxon ->
                     { english = "IM daily x 10 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "IM buri munsi mu minsi 10"
                     }
 
                 OutsideCareMedicationMethyldopa2 ->
                     { english = "by mouth 2x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 2 ku munsi"
                     }
 
                 OutsideCareMedicationMethyldopa3 ->
                     { english = "by mouth 3x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 3 ku munsi"
                     }
 
                 OutsideCareMedicationMethyldopa4 ->
                     { english = "by mouth 4x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 4 ku munsi"
                     }
 
                 OutsideCareMedicationCarvedilol ->
                     { english = "by mouth 2x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 2 ku munsi"
                     }
 
                 OutsideCareMedicationAmlodipine ->
                     { english = "by mouth 1x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 1 ku munsi"
                     }
 
                 OutsideCareMedicationTDF3TC ->
                     { english = "one tab by mouth 1x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunywa ikinini kimwe inshuro imwe ku munsi"
                     }
 
                 OutsideCareMedicationDolutegravir ->
                     { english = "one tab by mouth 1x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunywa ikinini kimwe inshuro imwe ku munsi"
                     }
 
                 OutsideCareMedicationIron1 ->
                     { english = "one tab by mouth 1x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunywa ikinini kimwe inshuro 1 ku munsi"
                     }
 
                 OutsideCareMedicationIron2 ->
                     { english = "one tab by mouth 2x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunywa ikinini kimwe inshuro 2 ku munsi"
                     }
 
                 OutsideCareMedicationFolicAcid ->
                     { english = "by mouth 3x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kanwa inshuro 3 ku munsi"
                     }
 
                 -- Dosage is not applicable for other options.
@@ -11086,32 +11086,32 @@ translationSet trans =
 
                 OutsideCareMedicationCoartem ->
                     { english = "Coartem"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kowaritemu"
                     }
 
                 NoOutsideCareMedicationForMalaria ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
                 OutsideCareMedicationPenecilin1 ->
                     { english = "Penicillin (2.4 million units)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Penisilini (Miliyoni 2.4)"
                     }
 
                 OutsideCareMedicationPenecilin3 ->
                     { english = "Penicillin (2.4 million units)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Penisilini (Miliyoni 2.4)"
                     }
 
                 OutsideCareMedicationErythromycin ->
                     { english = "Erythromycin (500mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Erythromicine (500mg)"
                     }
 
                 OutsideCareMedicationAzithromycin ->
                     { english = "Azithromycin (2g)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Azithromycine (2g)"
                     }
 
                 OutsideCareMedicationCeftriaxon ->
@@ -11121,7 +11121,7 @@ translationSet trans =
 
                 NoOutsideCareMedicationForSyphilis ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
                 OutsideCareMedicationMethyldopa2 ->
@@ -11151,7 +11151,7 @@ translationSet trans =
 
                 NoOutsideCareMedicationForHypertension ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta ns kimwe"
                     }
 
                 OutsideCareMedicationTDF3TC ->
@@ -11166,17 +11166,17 @@ translationSet trans =
 
                 NoOutsideCareMedicationForHIV ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
                 OutsideCareMedicationIron1 ->
                     { english = "Iron (60mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Fer (60mg)"
                     }
 
                 OutsideCareMedicationIron2 ->
                     { english = "Iron (60mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Fer (60mg)"
                     }
 
                 OutsideCareMedicationFolicAcid ->
@@ -11186,7 +11186,7 @@ translationSet trans =
 
                 NoOutsideCareMedicationForAnemia ->
                     { english = "None of these"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
                 _ ->
@@ -11203,57 +11203,57 @@ translationSet trans =
             case value of
                 BurningWithUrination ->
                     { english = "Burning with Urination"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunyara Ukababara"
                     }
 
                 AbnormalVaginalDischarge ->
                     { english = "Abnormal Vaginal Discharge"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusohora ibintu bidasanzwe mu gitsina"
                     }
 
                 NauseaAndVomiting ->
                     { english = "Nausea and Vomiting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Iseseme no kuruka"
                     }
 
                 Heartburn ->
                     { english = "Heartburn"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikirungurira"
                     }
 
                 LegCramps ->
                     { english = "Leg Cramps"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinya mu maguru"
                     }
 
                 LowBackPain ->
                     { english = "Lower Back Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara umugongo wo hasi"
                     }
 
                 CoughContinuous ->
                     { english = "Cough for >2 weeks"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inkorora irengeje ibyumweru 2"
                     }
 
                 PelvicPain ->
                     { english = "Pelvic Pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara mu kiziba cy'inda"
                     }
 
                 Constipation ->
                     { english = "Constipation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwituma impatwe"
                     }
 
                 VaricoseVeins ->
                     { english = "Varicose Veins"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubyimba kw'imitsi (imigarura) y'amaraso"
                     }
 
                 LegPainRedness ->
                     { english = "Leg Pain or Redness (One Leg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubabara akaguru kamwe cyangwa gutukura ku kuguru kumwe"
                     }
 
                 PostpartumAbdominalPain ->
@@ -11295,97 +11295,97 @@ translationSet trans =
             case value of
                 SymptomQuestionDizziness ->
                     { english = "Are you experiencing dizziness"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ujya ugira isereri"
                     }
 
                 SymptomQuestionLowUrineOutput ->
                     { english = "Are you experiencing low urine output"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ujya unyara inkari nkeya"
                     }
 
                 SymptomQuestionDarkUrine ->
                     { english = "Are you experiencing dark urine"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ujya unyara inkari zijimye"
                     }
 
                 SymptomQuestionPelvicPainHospitalization ->
                     { english = "Is there severe pain that requires referral to hospital"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ufite ububabare bukabije busaba koherezwa ku bitaro"
                     }
 
                 SymptomQuestionLegPainRednessLeft ->
                     { english = "On which side are you experiencing leg pain or redness"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ni uruhe ruhande rw'ukuguru ruribwa cyangwa rutukuye"
                     }
 
                 SymptomQuestionLegPainful ->
                     { english = "Is the leg painful"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubabara ukuguru"
                     }
 
                 SymptomQuestionLegSwollen ->
                     { english = "Is the leg swollen"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ukuguru kurabyimbye"
                     }
 
                 SymptomQuestionLegWarm ->
                     { english = "Is the leg red or warm to the touch"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ukuguru kuratukuye cyangwa kurashyushye iyo ukozeho"
                     }
 
                 SymptomQuestionNightSweats ->
                     { english = "Do you have night sweats"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ubira ibyuya nijoro"
                     }
 
                 SymptomQuestionBloodInSputum ->
                     { english = "Do you have blood in sputum"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ugira ikororwa kirimo amaraso"
                     }
 
                 SymptomQuestionWeightLoss ->
                     { english = "Do you have weight loss"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba waratakaje ibiro"
                     }
 
                 SymptomQuestionSevereFatigue ->
                     { english = "Do you have severe fatigue"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ugira umunaniro ukabije"
                     }
 
                 SymptomQuestionVaginalItching ->
                     { english = "Do you experience vaginal itching"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ufite uburyaryate mu gitsina"
                     }
 
                 SymptomQuestionVaginalDischarge ->
                     { english = "Do you experience vaginal discharge"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ujya ubona ibintu bidasanzwe biva mu gitsina"
                     }
 
                 SymptomQuestionFrequentUrination ->
                     { english = "Do you experience urinating frequently"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ujya kunyara buri kanya"
                     }
 
                 SymptomQuestionFlankPain ->
                     { english = "Do you experience flank pain"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba ujya uribwa mu ibondo"
                     }
 
                 SymptomQuestionPartnerUrethralDischarge ->
                     { english = "Does your partner have urethral discharge"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umugabo wawe ajya agira ibintu bidasanzwe biva mu gitsina"
                     }
 
                 NoSymptomQuestions ->
                     { english = "None"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
         PrenatalSymptomQuestionsHeader ->
             { english = "The patient has noted symptoms that require follow up questions"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi yagaragaje ibimenyetso bisaba ibindi bibazo"
             }
 
         PrenatalTestExecutionNote note ->
@@ -11451,12 +11451,12 @@ translationSet trans =
             case variant of
                 VariantShortTest ->
                     { english = "Urine Dipstick Short"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo bike"
                     }
 
                 VariantLongTest ->
                     { english = "Urine Dipstick Long"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo byinshi"
                     }
 
         PrenatalUrineDipstickTestVariant variant ->
@@ -11475,7 +11475,7 @@ translationSet trans =
             case value of
                 VaccineTetanus ->
                     { english = "Tetanus"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Agakwega"
                     }
 
         PreTerm ->
@@ -11586,7 +11586,7 @@ translationSet trans =
 
         ProgressReports ->
             { english = "Progress Reports"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Raporo z’ibyakozwe"
             }
 
         ProgressTimeline ->
@@ -11648,7 +11648,7 @@ translationSet trans =
 
                 NoTestPrerequisites ->
                     { english = "None"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabyo"
                     }
 
         TestVariantUrineDipstickQuestion ->
@@ -11957,7 +11957,7 @@ translationSet trans =
             case sign of
                 TreatmentPenecilin1 ->
                     { english = "IM x 1"
-                    , kinyarwanda = Just "IM inshuro 1 "
+                    , kinyarwanda = Just "IM inshuro 1"
                     }
 
                 TreatmentPenecilin3 ->
@@ -11972,7 +11972,7 @@ translationSet trans =
 
                 TreatmentAzithromycin ->
                     { english = "4 tabs by mouth x one day"
-                    , kinyarwanda = Just "Ibinini 4 abinywe mu kanwa umunsi umwe"
+                    , kinyarwanda = Just "ibinini 4 abinywe mu kanwa umunsi umwe"
                     }
 
                 TreatmentCeftriaxon ->
@@ -11982,52 +11982,52 @@ translationSet trans =
 
                 TreatmentAluminiumHydroxide ->
                     { english = "1 tablet by mouth 3x a day for 7 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "kunywa ikinini 1 inshuro ku munsi mu minsi 7"
                     }
 
                 TreatmentNitrofurantoin ->
                     { english = "by mouth 2x a day for 7 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "mu kanwa inshuro 2 ku munsi mu minsi 7"
                     }
 
                 TreatmentAmoxicillin ->
                     { english = "by mouth 3x a day for 7 days"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "mu kanwa inshuro 3 ku munsi mu minsi 7"
                     }
 
                 TreatmentClotrimaxazole200 ->
                     { english = "vaginally every night x 3 night"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "mu gitsina buri joro mu majoro 3"
                     }
 
                 TreatmentClotrimaxazole500 ->
                     { english = "vaginally one time"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "inshuro imwe mu gitsina"
                     }
 
                 TreatmentMethyldopa2 ->
                     { english = "by mouth 2x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentMethyldopa3 ->
                     { english = "by mouth 3x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "mu kanwa inshuro 3 ku munsi"
                     }
 
                 TreatmentMethyldopa4 ->
                     { english = "by mouth 4x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "mu kanwa inshuro 4 ku munsi"
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
                     { english = "by mouth 2x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
                     { english = "by mouth 1x a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "mu kanwa inshuro 1 ku munsi"
                     }
 
                 TreatmentCloxacillin ->
@@ -12117,14 +12117,14 @@ translationSet trans =
                     -- Names of Medication, therefore,
                     -- no translation is needed.
                     { english = "Erythromycin (500mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Erythromicine (500mg)"
                     }
 
                 TreatmentAzithromycin ->
                     -- Names of Medication, therefore,
                     -- no translation is needed.
                     { english = "Azithromycin (2g)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Azithromycine (2g)"
                     }
 
                 TreatmentCeftriaxon ->
@@ -12176,7 +12176,7 @@ translationSet trans =
 
                 TreatmentHealthEducationForHeartburn ->
                     { english = "Not dispensing medicine. Follow health education protocols."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Witanga umuti. Kurikiza amabwiriza ajyanye n'inyigisho z'buzima."
                     }
 
                 TreatmentNitrofurantoin ->
@@ -12260,12 +12260,12 @@ translationSet trans =
 
                 FacilityHospital ->
                     { english = "Have you referred the patient to the hospital"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba wohereje umubyeyi ku bitaro"
                     }
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Have you referred the patient to the specialist"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba wohereje umubyeyi ku muganaga w'inzobere"
                     }
 
                 FacilityARVProgram ->
@@ -12275,7 +12275,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Have you referred the patient to NCD services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba wohereje umubyeyi muri service y'indwara zitandura"
                     }
 
         ReferredToFacility facility ->
@@ -12302,7 +12302,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Referred to NCD services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yoherejwe muri service y'indwara zitandura"
                     }
 
         ReferredToFacilityNot facility ->
@@ -12319,7 +12319,7 @@ translationSet trans =
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Not referred to mental health specialist"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabwo yoherejwe kwa muganga w'inzobere w'ubuzima bwo mu mutwe"
                     }
 
                 FacilityARVProgram ->
@@ -12329,7 +12329,7 @@ translationSet trans =
 
                 FacilityNCDProgram ->
                     { english = "Not referred to NCD services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabwo yoherejwe muri service y'indwara zitandura"
                     }
 
         ReferredToFacilityPostpartum facility ->
@@ -12657,7 +12657,7 @@ translationSet trans =
 
         Right ->
             { english = "Right"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Iburyo"
             }
 
         RiskFactorAlert factor ->
@@ -12855,7 +12855,7 @@ translationSet trans =
 
         SelectAllDiagnoses ->
             { english = "Select all diagnoses"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo uburwayi bwose bwagaragaye"
             }
 
         SelectAllSigns ->
@@ -12875,7 +12875,7 @@ translationSet trans =
 
         SelectedFamilyPlanningMethod ->
             { english = "Selected Family Planning Method"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uburyo bwo kuboneza urubyaro bwatoranijwe"
             }
 
         SelectIllnessSymptoms ->
@@ -13467,12 +13467,12 @@ translationSet trans =
 
                 FacilityHospital ->
                     { english = "Send patient to the hospital"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ohereza umurwayi kwa muganga"
                     }
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Refer patient to mental health specialist for further evaluation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ohereza umubyeyi ku muganga w'inzobere ku buzima bwo mu mutwe kugirango hakorwe isuzuma ryimbitse"
                     }
 
                 FacilityARVProgram ->
@@ -13492,7 +13492,7 @@ translationSet trans =
 
         StartEncounter ->
             { english = "Start an encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Tangira igikorwa"
             }
 
         StartEndDate ->
@@ -13659,23 +13659,23 @@ translationSet trans =
 
         TreatmentDetailsAnemia ->
             { english = "At the previous visit you were given Iron (120mg), one 60mg tablet to be taken 2x a day for 3 months and Folic Acid (400 IU) to be taken daily for 3 months."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Mu isura riheruka wahawe umuti (Ubutare or Feri) wongera amaraso(120mg), miligarama 60 inshuro ebyiri ku munsi mu mezi atatu na Acide folike(400 UI)inshuro imwe ku munsi mu miezi atatu."
             }
 
         TreatmentDetailsHIV dolutegravir arvs ->
             if dolutegravir && arvs then
                 { english = "At the previous visit you were given TDF + 3TC (1 tablet), to be taken by mouth 1x a day and Doltegravir (50mg) to be taken by mouth 1x a day."
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine ikinini kimwe ku munsi na Dulutogaraviri (50mg), ikinini kimwe ku munsi."
                 }
 
             else if dolutegravir then
                 { english = "At the previous visit you were given Doltegravir (50mg), to be taken by mouth 1x a day."
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Mu isura rishize wahawe ikinini cya Dulutogaraviri(50mg), ikinini kimwe ku munsi."
                 }
 
             else if arvs then
                 { english = "At the previous visit you were given TDF + 3TC (1 tablet), to be taken by mouth 1x a day."
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine na Dulutogaraviri (50mg), ikinini kimwe ku munsi."
                 }
 
             else
@@ -13695,27 +13695,27 @@ translationSet trans =
             case sign of
                 TreatmentMethyldopa2 ->
                     { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 2x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro ebyri ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentMethyldopa3 ->
                     { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 3x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro eshatu ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentMethyldopa4 ->
                     { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
                     { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day and Carvedilol (6.25mg), to be taken by mouth 2x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi na Karuvedilole (5.25mg), mu kanwa inshuro 2 ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
                     { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day and Carvedilol (6.25mg), to be taken by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi na Karuvedilole (5.25mg), mu kanwa inshuro 2 ku munsi na Amlodipine (5mg), mu kanwa inshuro imwe ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 -- All others are not Hypertension treatments.
@@ -13728,12 +13728,12 @@ translationSet trans =
             case sign of
                 TreatmentQuinineSulphate ->
                     { english = "At the previous visit you were given Quinine Sulphate per os 10 mg/kg/dose, to be taken 3 times a day for 7 days."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe umuti wa Kinini 10mg ku kilo, gatatu ku munsi mu minsi irindwi."
                     }
 
                 TreatmentCoartem ->
                     { english = "At the previous visit you were given Coartem, 4 tablets to be taken by mouth twice per day x 3 days."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe AL (Kowaritemu), ibibini bine (4) byo kunywa mu kanwa inshuri ebyiri ku munsi mu minsi itatu."
                     }
 
                 _ ->
@@ -13745,27 +13745,27 @@ translationSet trans =
             case sign of
                 TreatmentPenecilin1 ->
                     { english = "At the previous visit you were given Penicillin (2.4 million units), IM x 1."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe Penisilini (inite Miliyoni 2.4 ), IM inshuro 1."
                     }
 
                 TreatmentPenecilin3 ->
                     { english = "At the previous visit you were given Penicillin (2.4 million units), IM 1x a week for 3 weeks."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe Penisilini (inite Miliyoni 2.4 ), IM inshuro 1, IM inshuro 1 buri cyumweru mu byumweru 3."
                     }
 
                 TreatmentErythromycin ->
                     { english = "At the previous visit you were given Erythromycin (500mg), by mouth 4x a day for 14 days."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe Erythromicine (500mg), mu kanwa inshuro enye ku munsi mu minsi 14."
                     }
 
                 TreatmentAzithromycin ->
                     { english = "At the previous visit you were given Azithromycin (2g), 4 tabs by mouth x one day."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe Azithromycine (2g), Ibinini 4 abinywe mu kanwa umunsi umwe."
                     }
 
                 TreatmentCeftriaxon ->
                     { english = "At the previous visit you were given Ceftriaxone (1g), IM daily x 10 days."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu isura rishize wahawe Ceftriaxone (1g), IM buri munsi mu minsi 10."
                     }
 
                 _ ->
@@ -13775,80 +13775,80 @@ translationSet trans =
 
         TreatmentReviewQuestionAdverseEvents ->
             { english = "Have you experienced any adverse events"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba hari ibintu wabonye bidasanzwe(bitewe n'imiti wafashe)"
             }
 
         TreatmentReviewQuestionAdverseEventsHospitalization ->
             { english = "The patient had an adverse reaction to the medication. Would you like to refer them to the hospital as next step"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yabonye ibintu bidasanzwe byatewe n'imiti yahawe. Waba ushaka kumwhoreza ku bitaro nk'igikorwa gikurikiyeho"
             }
 
         TreatmentReviewQuestionMedicationByPMTCT ->
             { english = "Did you receive medicine from PMTCT"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wahawe imiti muri PMTCT"
             }
 
         TreatmentReviewQuestionMissedDoses ->
             { english = "Have you missed any doses"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Haba hari imiti wasimbutse gufata"
             }
 
         TreatmentReviewQuestionStillTaking ->
             { english = "Are you still taking this medication"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uracyari gufata imiti"
             }
 
         TreatmentReviewQuestionStillTakingForHIV ->
             { english = "Are you still taking ARVs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uracyari gufata imiti igabanya ubukana bwa virusi itera SIDA"
             }
 
         TreatmentReviewTask forModeratePreeclamsia task ->
             case task of
                 TreatmentReviewPrenatalMedication ->
                     { english = "Prenatal Medication"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imiti yo gufata mu gihe utwite"
                     }
 
                 TreatmentReviewHIV ->
                     { english = "HIV Medication"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imiti ya Virusi Itera SIDA"
                     }
 
                 TreatmentReviewHypertension ->
                     if forModeratePreeclamsia then
                         { english = "Moderate Preeclamsia Medication"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Imiti Preklampusi Yoroheje"
                         }
 
                     else
                         { english = "Hypertension Medication"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Imiti y'Umuvuduko w'Amaraso"
                         }
 
                 TreatmentReviewMalaria ->
                     { english = "Malaria Medication"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imiti ya Malariya"
                     }
 
                 TreatmentReviewAnemia ->
                     { english = "Anemia Medication"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imiti ivura indwara y'Amaraso make"
                     }
 
                 TreatmentReviewSyphilis ->
                     { english = "Syphilis Medication"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imiti ya Mburugu"
                     }
 
         TreatmentReviewWarningPopupMessage ->
             { english = "Patient non-adherent"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi ntabwo yubahiriza gahunda yo kunywa imiti uko bisabwa"
             }
 
         TreatmentReviewWarningPopupInstructions ->
             { english = "Further evaluation necessary"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gusuzuma byimbitse"
             }
 
         TrySyncing ->
@@ -13868,17 +13868,17 @@ translationSet trans =
 
         TuberculosisInstructions ->
             { english = "Follow TB protocols"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kurikiza amabwiriza yo kuvura igitintu"
             }
 
         TuberculosisInstructionsFollowed ->
             { english = "followed TB protocols"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hakurikijwe amabwiriza yo kuvura igitintu"
             }
 
         TuberculosisWarning ->
             { english = "Patient is high risk for active Tuberculosis"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi afite ibyago byinshi byo kuba afite igituntu"
             }
 
         TwoVisits ->
@@ -13930,7 +13930,7 @@ translationSet trans =
 
         UnitCopiesPerMM3 ->
             { english = "copies/mm3"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kopi/mm3"
             }
 
         UnitGramsPerDeciliter ->
@@ -13965,17 +13965,17 @@ translationSet trans =
 
         UrinaryTractInfectionRecommendedTreatmentHeader ->
             { english = "This patient shows signs of Urinary Tract Infection"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi agaragaza ibimenyetso by'indwara y'ubwandu bw'umuyoboro w'inkari buhoraho"
             }
 
         UrinaryTractInfectionRecommendedTreatmentHelper ->
             { english = "Select the medication and dosage you will administer to the patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
             }
 
         UrinaryTractInfectionRecommendedTreatmentInstructions ->
             { english = "Ensure the patient is not allergic to the medication before prescribing"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Menya neza ko umurwayi adafite aleriji ku miti mbere yo kuyimwandikira"
             }
 
         UterineMyoma ->
@@ -14012,7 +14012,7 @@ translationSet trans =
 
         VaccineDoseAdministeredPreviouslyPrenatalQuestion vaccineType ->
             { english = "Did the patient receive any " ++ vaccineType ++ " immunizations prior to today that are not recorded above"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Uyu mubyeyi yaba yarabonye urukingo rw'" ++ vaccineType ++ "bakaba batarabyanditse"
             }
 
         VaccineDoseAdministeredPreviouslyWellChildQuestion vaccineType ->
@@ -14022,7 +14022,7 @@ translationSet trans =
 
         VaccineDoseAdministeredTodayPrenatalQuestion vaccineType ->
             { english = "Will the patient receive the " ++ vaccineType ++ " immunization today"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Umubyeyi arahabwa urukingo rw'" ++ vaccineType ++ " uyu munsi"
             }
 
         VaccineDoseAdministeredTodayWellChildQuestion vaccineType ->
@@ -14078,7 +14078,7 @@ translationSet trans =
                     case prenatalVaccineType of
                         VaccineTetanus ->
                             { english = "Tetanus"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Agakwega"
                             }
 
         VaginalExamination ->
@@ -15127,12 +15127,12 @@ translateActivePage page =
 
                 PatientRecordPage _ _ ->
                     { english = "Patient Record"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru y'Umurwayi"
                     }
 
                 PrenatalLabsHistoryPage _ _ _ ->
                     { english = "Labs History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku Bizamini byafashwe"
                     }
 
 
@@ -15442,7 +15442,7 @@ translateDashboard trans =
 
         FamilyPlanningLabel ->
             { english = "Family Planning"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kuboneza Urubyaro"
             }
 
         FamilyPlanningOutOfWomen { total, useFamilyPlanning } ->
