@@ -19,7 +19,7 @@ import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, with
 update : Maybe NurseId -> Maybe HealthCenterId -> PrenatalEncounterId -> Maybe PrenatalEncounter -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
 update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
     case msg of
-        ClosePrenatalEncounter ->
+        CloseEncounter ->
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
         SetPrenatalDiagnoses diagnoses ->

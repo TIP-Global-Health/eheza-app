@@ -44,7 +44,7 @@ import Translate exposing (Language, TranslationId, translate)
 
 nurseEncounterNotPerformed : AssembledData -> Bool
 nurseEncounterNotPerformed assembled =
-    List.isEmpty assembled.nursePreviousMeasurementsWithDates
+    List.isEmpty assembled.nursePreviousEncountersData
 
 
 nurseEncounterPerformed : AssembledData -> Bool
@@ -88,10 +88,10 @@ diagnosedPreviously diagnosis assembled =
 
 diagnosedPreviouslyAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
 diagnosedPreviouslyAnyOf diagnoses assembled =
-    assembled.nursePreviousMeasurementsWithDates
+    assembled.nursePreviousEncountersData
         |> List.filter
-            (\( _, encounterDiagnoses, _ ) ->
-                List.any (\diagnosis -> EverySet.member diagnosis encounterDiagnoses) diagnoses
+            (\data ->
+                List.any (\diagnosis -> EverySet.member diagnosis data.diagnoses) diagnoses
             )
         |> List.isEmpty
         |> not
@@ -160,11 +160,6 @@ mentalHealthDiagnosesRequiringTreatment =
 diagnosesCausingHospitalReferralByOtherReasons : AssembledData -> List PrenatalDiagnosis
 diagnosesCausingHospitalReferralByOtherReasons assembled =
     let
-        severeMalariaTreatment =
-            getMeasurementValueFunc assembled.measurements.medicationDistribution
-                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
-                |> Maybe.withDefault False
-
         malaria =
             if diagnosedMalaria assembled && severeMalariaTreatment then
                 [ DiagnosisMalaria ]
@@ -172,14 +167,64 @@ diagnosesCausingHospitalReferralByOtherReasons assembled =
             else
                 []
 
+        severeMalariaTreatment =
+            getMeasurementValueFunc assembled.measurements.medicationDistribution
+                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
+                |> Maybe.withDefault False
+
         hypertension =
+            let
+                moderatePreeclampsiaAsCurrent =
+                    moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
+            in
             if updateHypertensionTreatmentWithHospitalization assembled then
-                [ DiagnosisChronicHypertensionImmediate ]
+                List.singleton <|
+                    if moderatePreeclampsiaAsCurrent then
+                        DiagnosisModeratePreeclampsiaInitialPhase
+
+                    else
+                        DiagnosisChronicHypertensionImmediate
 
             else
-                []
+                let
+                    bloodPreasureRequiresHospitalization =
+                        bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled
+                in
+                if moderatePreeclampsiaAsCurrent && bloodPreasureRequiresHospitalization then
+                    [ DiagnosisModeratePreeclampsiaInitialPhase ]
+
+                else
+                    []
     in
     malaria ++ hypertension
+
+
+moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis : AssembledData -> Bool
+moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled =
+    resolvePreviousHypertensionlikeDiagnosis assembled.nursePreviousEncountersData
+        |> Maybe.map
+            (\diagnosis ->
+                List.member diagnosis
+                    [ DiagnosisModeratePreeclampsiaInitialPhase
+                    , DiagnosisModeratePreeclampsiaRecurrentPhase
+                    ]
+            )
+        |> Maybe.withDefault False
+
+
+bloodPreasureAtHypertensionTreatmentRequiresHospitalization : AssembledData -> Bool
+bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled =
+    getMeasurementValueFunc assembled.measurements.vitals
+        |> Maybe.andThen
+            (\value ->
+                Maybe.map2
+                    (\sys dia ->
+                        sys >= 180 || dia >= 110
+                    )
+                    value.sys
+                    value.dia
+            )
+        |> Maybe.withDefault False
 
 
 diagnosesCausingHospitalReferralByImmediateDiagnoses : PrenatalEncounterPhase -> AssembledData -> List PrenatalDiagnosis
@@ -190,6 +235,7 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                 PrenatalEncounterPhaseInitial ->
                     emergencyReferralDiagnosesInitial
                         ++ [ DiagnosisModeratePreeclampsiaInitialPhase
+                           , DiagnosisSeverePreeclampsiaInitialPhase
                            , DiagnosisHeartburnPersistent
                            , DiagnosisDeepVeinThrombosis
                            , DiagnosisPelvicPainIntense
@@ -213,6 +259,7 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                            , DiagnosisMalariaWithSevereAnemia
                            , DiagnosisSevereAnemia
                            , DiagnosisModeratePreeclampsiaRecurrentPhase
+                           , DiagnosisSeverePreeclampsiaRecurrentPhase
                            , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
                            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
                            , DiagnosisRhesusNegative
@@ -772,8 +819,11 @@ resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks language curre
                 setRecommendedTreatmentSignMsg
                 assembled
                 form
+
+        isChronic =
+            diagnosedAnyOf [ DiagnosisChronicHypertensionImmediate, DiagnosisChronicHypertensionAfterRecheck ] assembled
     in
-    ( viewCustomLabel language Translate.HypertensionRecommendedTreatmentHeader "." "instructions"
+    ( viewCustomLabel language (Translate.HypertensionRecommendedTreatmentHeader isChronic) "." "instructions"
         :: input
         ++ [ div [ class "separator" ] [] ]
     , completed
@@ -790,34 +840,48 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks :
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
 resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language currentDate setRecommendedTreatmentSignMsg setAvoidingGuidanceReasonMsg assembled form =
+    let
+        diagnosisHeader =
+            viewCustomLabel language (Translate.HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia) "." "label"
+
+        forModeratePreeclamsia =
+            diagnosedModeratePreeclampsiaPrevoiusly assembled
+
+        currentBPLabel =
+            getMeasurementValueFunc assembled.measurements.vitals
+                |> Maybe.andThen
+                    (\value ->
+                        Maybe.map2
+                            (\sys dia ->
+                                let
+                                    floatToString =
+                                        round >> String.fromInt
+                                in
+                                div [ class "label overview" ]
+                                    [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateBPLabel
+                                    , text " "
+                                    , span [ class "highlight" ] [ text <| floatToString sys ++ "/" ++ floatToString dia ]
+                                    , text "."
+                                    ]
+                            )
+                            value.sys
+                            value.dia
+                    )
+                |> Maybe.withDefault emptyNode
+
+        ( input, completed, active ) =
+            recommendedTreatmentForHypertensionInputAndTask language
+                currentDate
+                recommendedTreatmentSignsForHypertension
+                setRecommendedTreatmentSignMsg
+                assembled
+                form
+    in
+    -- This usecase is when we already provide treatment and want
+    -- update it.
     Maybe.map2
         (\recommendationDosageUpdate recommendedMedication ->
             let
-                forModeratePreeclamsia =
-                    diagnosedModeratePreeclampsiaPrevoiusly assembled
-
-                currentBPLabel =
-                    getMeasurementValueFunc assembled.measurements.vitals
-                        |> Maybe.andThen
-                            (\value ->
-                                Maybe.map2
-                                    (\sys dia ->
-                                        let
-                                            floatToString =
-                                                round >> String.fromInt
-                                        in
-                                        div [ class "label overview" ]
-                                            [ text <| translate language Translate.HypertensionRecommendedTreatmentUpdateBPLabel
-                                            , text " "
-                                            , span [ class "highlight" ] [ text <| floatToString sys ++ "/" ++ floatToString dia ]
-                                            , text "."
-                                            ]
-                                    )
-                                    value.sys
-                                    value.dia
-                            )
-                        |> Maybe.withDefault emptyNode
-
                 ( currentTreatmentLabel, newTreatmentLabel ) =
                     getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled
                         |> Maybe.map
@@ -853,24 +917,12 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                                 , div [ class "label overview" ]
                                     [ text <| translate language recommendationDosageUpdateLabel
                                     , text " "
-                                    , span [ class "highlight" ]
-                                        [ text <| translate language <| Translate.RecommendedTreatmentSignLabel recommendedMedication
-                                        , text " "
-                                        , text <| translate language <| Translate.RecommendedTreatmentSignDosage recommendedMedication
-                                        , text "."
-                                        ]
+                                    , viewTreatmentOptionForHypertension language recommendedMedication
+                                    , text "."
                                     ]
                                 )
                             )
                         |> Maybe.withDefault ( emptyNode, emptyNode )
-
-                ( input, completed, active ) =
-                    recommendedTreatmentForHypertensionInputAndTask language
-                        currentDate
-                        recommendedTreatmentSignsForHypertension
-                        setRecommendedTreatmentSignMsg
-                        assembled
-                        form
 
                 ( derrivedInput, derrivedCompleted, derrivedActive ) =
                     Maybe.map
@@ -900,7 +952,7 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                         form.recommendedTreatmentSigns
                         |> Maybe.withDefault ( [], 0, 0 )
             in
-            ( [ viewCustomLabel language (Translate.HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia) "." "label"
+            ( [ diagnosisHeader
               , currentBPLabel
               , currentTreatmentLabel
               , newTreatmentLabel
@@ -914,7 +966,18 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
         )
         (hypertensionTreatementUpdateRecommendationByBP assembled)
         (resolveHypertensionTreatementUpdateMedication assembled)
-        |> Maybe.withDefault ( [], 0, 0 )
+        |> -- There's no treatment, and only case when this is possible,
+           -- is when Moderate Preeclamsia was diagnosed at previous encounter,
+           -- and patient was referred to hospital.
+           Maybe.withDefault
+            ( [ diagnosisHeader
+              , currentBPLabel
+              ]
+                ++ input
+                ++ [ div [ class "separator" ] [] ]
+            , completed
+            , active
+            )
 
 
 recommendedTreatmentForHypertensionInputAndTask :
@@ -961,7 +1024,7 @@ viewTreatmentOptionForHypertension : Language -> RecommendedTreatmentSign -> Htm
 viewTreatmentOptionForHypertension language sign =
     let
         multipleTreatmentWithDosage =
-            List.map (viewtreatmentWithDosage language)
+            List.map (viewTreatmentWithDosage language)
                 >> List.intersperse [ b [] [ text <| " " ++ (String.toUpper <| translate language Translate.And) ++ " " ] ]
                 >> List.concat
                 >> label []
@@ -1213,19 +1276,20 @@ hypertensionTreatementUpdateToNumber value =
 
 getLatestTreatmentByTreatmentOptions : List RecommendedTreatmentSign -> AssembledData -> Maybe RecommendedTreatmentSign
 getLatestTreatmentByTreatmentOptions treatmentOptions assembled =
-    List.reverse assembled.nursePreviousMeasurementsWithDates
+    List.reverse assembled.nursePreviousEncountersData
         |> List.filterMap
-            (\( _, _, measurements ) ->
-                getMeasurementValueFunc measurements.medicationDistribution
-                    |> Maybe.andThen
-                        (\value ->
-                            Maybe.map
-                                (EverySet.toList
-                                    >> List.filter (\sign -> List.member sign treatmentOptions)
-                                    >> List.head
-                                )
-                                value.recommendedTreatmentSigns
-                        )
+            (.measurements
+                >> .medicationDistribution
+                >> getMeasurementValueFunc
+                >> Maybe.andThen
+                    (\value ->
+                        Maybe.map
+                            (EverySet.toList
+                                >> List.filter (\sign -> List.member sign treatmentOptions)
+                                >> List.head
+                            )
+                            value.recommendedTreatmentSigns
+                    )
             )
         |> Maybe.Extra.values
         |> List.head
@@ -1373,12 +1437,12 @@ viewTreatmentOptionWithDosage language sign =
         label [] [ text <| translate language <| Translate.RecommendedTreatmentSignLabel sign ]
 
     else
-        viewtreatmentWithDosage language sign
+        viewTreatmentWithDosage language sign
             |> label []
 
 
-viewtreatmentWithDosage : Language -> RecommendedTreatmentSign -> List (Html any)
-viewtreatmentWithDosage language sign =
+viewTreatmentWithDosage : Language -> RecommendedTreatmentSign -> List (Html any)
+viewTreatmentWithDosage language sign =
     [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
     , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
     ]
@@ -1877,23 +1941,24 @@ showMebendazoleQuestion currentDate assembled =
 
                     dewormingPillNotGiven =
                         List.filter
-                            (\( _, _, measurements ) ->
-                                getMeasurementValueFunc measurements.medication
-                                    |> Maybe.andThen .signs
-                                    |> Maybe.map (EverySet.member DewormingPill)
-                                    |> Maybe.withDefault False
+                            (.measurements
+                                >> .medication
+                                >> getMeasurementValueFunc
+                                >> Maybe.andThen .signs
+                                >> Maybe.map (EverySet.member DewormingPill)
+                                >> Maybe.withDefault False
                             )
-                            assembled.nursePreviousMeasurementsWithDates
+                            assembled.nursePreviousEncountersData
                             |> List.isEmpty
 
                     mebenadazoleNotPrescribed =
                         List.filter
-                            (\( _, _, measurements ) ->
-                                measurements.medicationDistribution
-                                    |> Maybe.map (Tuple.second >> .value >> .distributionSigns >> EverySet.member Mebendezole)
-                                    |> Maybe.withDefault False
+                            (.measurements
+                                >> .medicationDistribution
+                                >> Maybe.map (Tuple.second >> .value >> .distributionSigns >> EverySet.member Mebendezole)
+                                >> Maybe.withDefault False
                             )
-                            assembled.nursePreviousMeasurementsWithDates
+                            assembled.nursePreviousEncountersData
                             |> List.isEmpty
                 in
                 -- Starting EGA week 24.
@@ -2793,11 +2858,11 @@ diagnosedHypertensionPrevoiusly assembled =
     diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled
 
 
-resolvePreviousHypertensionDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
-resolvePreviousHypertensionDiagnosis nursePreviousMeasurementsWithDates =
+resolvePreviousHypertensionDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
+resolvePreviousHypertensionDiagnosis nursePreviousEncountersData =
     List.filterMap
-        (\( _, diagnoses, _ ) ->
-            EverySet.toList diagnoses
+        (\data ->
+            EverySet.toList data.diagnoses
                 |> List.filter
                     (\diagnosis ->
                         List.member diagnosis hypertensionDiagnoses
@@ -2805,7 +2870,7 @@ resolvePreviousHypertensionDiagnosis nursePreviousMeasurementsWithDates =
                     )
                 |> Just
         )
-        nursePreviousMeasurementsWithDates
+        nursePreviousEncountersData
         |> List.concat
         |> List.map hierarchalHypertensionlikeDiagnosisToNumber
         |> Maybe.Extra.values
@@ -2836,20 +2901,20 @@ moderatePreeclampsiaDiagnoses =
     ]
 
 
-resolveARVReferralDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
-resolveARVReferralDiagnosis nursePreviousMeasurementsWithDates =
+resolveARVReferralDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
+resolveARVReferralDiagnosis nursePreviousEncountersData =
     List.filterMap
-        (\( _, diagnoses, measurements ) ->
-            if EverySet.member DiagnosisHIV diagnoses || knownAsHIVPositive measurements then
+        (\data ->
+            if EverySet.member DiagnosisHIV data.diagnoses || knownAsHIVPositive data.measurements then
                 Just DiagnosisHIV
 
-            else if EverySet.member DiagnosisDiscordantPartnership diagnoses then
+            else if EverySet.member DiagnosisDiscordantPartnership data.diagnoses then
                 Just DiagnosisDiscordantPartnership
 
             else
                 Nothing
         )
-        nursePreviousMeasurementsWithDates
+        nursePreviousEncountersData
         |> List.head
 
 
@@ -2860,26 +2925,26 @@ knownAsHIVPositive measurements =
         |> Maybe.withDefault False
 
 
-resolveNCDReferralDiagnoses : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> List PrenatalDiagnosis
-resolveNCDReferralDiagnoses nursePreviousMeasurementsWithDates =
+resolveNCDReferralDiagnoses : List PreviousEncounterData -> List PrenatalDiagnosis
+resolveNCDReferralDiagnoses nursePreviousEncountersData =
     Maybe.Extra.values
-        [ resolvePreviousHypertensionlikeDiagnosis nursePreviousMeasurementsWithDates
-        , resolvePreviousDiabetesDiagnosis nursePreviousMeasurementsWithDates
+        [ resolvePreviousHypertensionlikeDiagnosis nursePreviousEncountersData
+        , resolvePreviousDiabetesDiagnosis nursePreviousEncountersData
         ]
 
 
-resolvePreviousHypertensionlikeDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
-resolvePreviousHypertensionlikeDiagnosis nursePreviousMeasurementsWithDates =
+resolvePreviousHypertensionlikeDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
+resolvePreviousHypertensionlikeDiagnosis nursePreviousEncountersData =
     List.filterMap
-        (\( _, diagnoses, _ ) ->
-            EverySet.toList diagnoses
+        (\data ->
+            EverySet.toList data.diagnoses
                 |> List.filter
                     (\diagnosis ->
                         List.member diagnosis hypertensionlikeDiagnoses
                     )
                 |> Just
         )
-        nursePreviousMeasurementsWithDates
+        nursePreviousEncountersData
         |> List.concat
         |> List.map hierarchalHypertensionlikeDiagnosisToNumber
         |> Maybe.Extra.values
@@ -2899,18 +2964,18 @@ hypertensionlikeDiagnoses =
            ]
 
 
-resolvePreviousDiabetesDiagnosis : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements ) -> Maybe PrenatalDiagnosis
-resolvePreviousDiabetesDiagnosis nursePreviousMeasurementsWithDates =
+resolvePreviousDiabetesDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
+resolvePreviousDiabetesDiagnosis nursePreviousEncountersData =
     List.filterMap
-        (\( _, diagnoses, _ ) ->
-            EverySet.toList diagnoses
+        (\data ->
+            EverySet.toList data.diagnoses
                 |> List.filter
                     (\diagnosis ->
                         List.member diagnosis diabetesDiagnoses
                     )
                 |> Just
         )
-        nursePreviousMeasurementsWithDates
+        nursePreviousEncountersData
         |> List.concat
         |> List.head
 
@@ -3167,7 +3232,23 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                     assembled.encounter.encounterType == NursePostpartumEncounter
                             in
                             if forPostpartum then
-                                [ viewCustomLabel language Translate.PrenatalARVProgramPostpartumHeader "." "instructions"
+                                let
+                                    header =
+                                        resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
+                                            |> Maybe.map
+                                                (\diagnosis ->
+                                                    div [ class "label header" ]
+                                                        [ text <| translate language Translate.PrenatalNCDProgramHeaderPrefix
+                                                        , text " "
+                                                        , text <| translate language <| Translate.PrenatalDiagnosis diagnosis
+                                                        , text " "
+                                                        , text <| translate language Translate.PrenatalNCDProgramHeaderSuffix
+                                                        , text "."
+                                                        ]
+                                                )
+                                            |> Maybe.withDefault emptyNode
+                                in
+                                [ header
                                 , viewCustomLabel language (Translate.PrenatalARVProgramInstructions forPostpartum) "." "instructions"
                                 ]
 
@@ -3205,7 +3286,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                         ++ "."
 
                                 diagnosesForView =
-                                    resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+                                    resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
                                         |> List.map (Translate.PrenatalDiagnosis >> translate language)
                                         |> String.join ", "
                             in
@@ -3466,3 +3547,23 @@ undeterminedPostpartumDiagnoses =
     -- by applyGeneralDiagnosesHierarchy.
     , DiagnosisPostpartumFever
     ]
+
+
+applyHypertensionlikeDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyHypertensionlikeDiagnosesHierarchy diagnoses =
+    let
+        ( bloodPreasureDiagnoses, others ) =
+            EverySet.toList diagnoses
+                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPreasureDiagnoses)
+
+        topBloodPreasureDiagnosis =
+            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPreasureDiagnoses
+                |> Maybe.Extra.values
+                |> List.maximum
+                |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
+                |> Maybe.map List.singleton
+                |> Maybe.withDefault []
+    in
+    topBloodPreasureDiagnosis
+        ++ others
+        |> EverySet.fromList

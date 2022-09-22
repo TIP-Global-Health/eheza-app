@@ -102,3 +102,4 @@ type WarningPopupType msg
     | WarningPopupTuberculosis
     | WarningPopupMentalHealth msg
     | WarningPopupTreatmentReview msg
+    | WarningPopupVitaminA msg

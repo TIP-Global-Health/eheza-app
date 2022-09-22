@@ -473,9 +473,10 @@ viewMainPageContent language currentDate assembled model =
                 , viewActionButton language
                     pendingActivities
                     completedActivities
-                    -- When pausing, we don't close the encounter,
-                    -- as it should happend on second phase.
-                    (SetActivePage PinCodePage)
+                    -- When pausing, we close the encounter.
+                    -- Entering lab results is available from
+                    -- Case management page.
+                    CloseEncounter
                     SetEndEncounterDialogState
                     assembled
                 ]

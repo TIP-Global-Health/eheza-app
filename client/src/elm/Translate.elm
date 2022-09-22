@@ -529,6 +529,7 @@ type TranslationId
     | DiagnosedAtAnotherFacilityPrefix
     | DiagnosedAtAnotherFacilitySuffix
     | DiagnosedByOutsideCare
+    | DiagnosedOn
     | Diagnosis
     | DiagnosisDate
     | DifferenceBetweenDueAndDeliveryDates
@@ -673,7 +674,7 @@ type TranslationId
     | HttpError Http.Error
     | Hypertension
     | HypertensionBeforePregnancy
-    | HypertensionRecommendedTreatmentHeader
+    | HypertensionRecommendedTreatmentHeader Bool
     | HypertensionRecommendedTreatmentHelper
     | HypertensionRecommendedTreatmentUpdateHeader Bool
     | HypertensionRecommendedTreatmentUpdateBPLabel
@@ -717,6 +718,7 @@ type TranslationId
     | LastChecked
     | LastContacted
     | LastSuccesfulContactLabel
+    | LeaveEncounter
     | Left
     | LegCrampsReliefMethod LegCrampsReliefMethod
     | LegLeft
@@ -905,6 +907,7 @@ type TranslationId
     | PartnerHivTestResult
     | PartnerReceivedHivCounseling
     | PartnerReceivedHivTesting
+    | PastDiagnosisReportReason
     | PatientDiagnosedWithLabel
     | PatientExhibitAnyFindings
     | PatientExhibitAnyRespiratoryFindings
@@ -975,7 +978,6 @@ type TranslationId
     | PrenatalHealthEducationEarlyMastitisOrEngorgmentInform
     | PrenatalHealthEducationMentalHealthInform
     | PrenatalARVProgramInstructions Bool
-    | PrenatalARVProgramPostpartumHeader
     | PrenatalHIVSignQuestion PrenatalHIVSign
     | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
     | PrenatalImmunisationDescription PrenatalVaccineType
@@ -1100,6 +1102,7 @@ type TranslationId
     | RecommendedSymptomRelief
     | RecommendedTreatmentSignDosage RecommendedTreatmentSign
     | RecommendedTreatmentSignLabel RecommendedTreatmentSign
+    | RecommendedTreatmentSignLabelForProgressReport RecommendedTreatmentSign
     | RecordAcuteIllnessOutcome
     | RecordPregnancyOutcome
     | RectalHemorrhoids
@@ -1343,6 +1346,7 @@ type TranslationId
     | View
     | ViewProgressReport
     | Village
+    | VitaminAWarningPopupMessage
     | WaitForVitalsRecheckHelper
     | WaitForLabsResultsHelper
     | WaitInstructions
@@ -3759,6 +3763,11 @@ translationSet trans =
             , kinyarwanda = Just "Yasuzumiwe ku rindi vuriro"
             }
 
+        DiagnosedOn ->
+            { english = "Diagnosed on"
+            , kinyarwanda = Nothing
+            }
+
         Diagnosis ->
             { english = "Diagnosis"
             , kinyarwanda = Just "Uburwayi bwabonetse"
@@ -5207,10 +5216,16 @@ translationSet trans =
             , kinyarwanda = Just "Umuvuduko w'amaraso mbere yo gutwita"
             }
 
-        HypertensionRecommendedTreatmentHeader ->
-            { english = "This patient shows signs of Chronic hypertension"
-            , kinyarwanda = Just "Uyu murwayi agaragaza ibimenyetso by'indwara y'umuvuduko w'amaraso imaze igihe kirekire"
-            }
+        HypertensionRecommendedTreatmentHeader isChronic ->
+            if isChronic then
+                { english = "This patient shows signs of Chronic hypertension"
+                , kinyarwanda = Just "Uyu murwayi agaragaza ibimenyetso by'indwara y'umuvuduko w'amaraso imaze igihe kirekire"
+                }
+
+            else
+                { english = "This patient shows signs of Pregnancy-Induced hypertension"
+                , kinyarwanda = Nothing
+                }
 
         HypertensionRecommendedTreatmentHelper ->
             { english = "Select the best treatment option for the patient below"
@@ -5896,6 +5911,11 @@ translationSet trans =
             , kinyarwanda = Just "Itariki n'isaha yanyuma igikoresho giheruka gukoresherezaho interineti bikagenda neza"
             }
 
+        LeaveEncounter ->
+            { english = "Leave Encounter"
+            , kinyarwanda = Nothing
+            }
+
         Left ->
             { english = "Left"
             , kinyarwanda = Just "Ibumoso"
@@ -6424,7 +6444,7 @@ translationSet trans =
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed2 ->
-            { english = "Doxycycline (100mg): by moth 2x a day for 7 days"
+            { english = "Doxycycline (100mg): by mouth 2x a day for 7 days"
             , kinyarwanda = Just "Kunywa ikinini cya Doxycycline (100mg) inshuro ebyri ku munsi mu minsi irindwi"
             }
 
@@ -7780,6 +7800,11 @@ translationSet trans =
             , kinyarwanda = Just "Umugabo  yasuzumwe Virusi itera SIDA?"
             }
 
+        PastDiagnosisReportReason ->
+            { english = "As a result of entering lab results from past encounter"
+            , kinyarwanda = Nothing
+            }
+
         PatientDiagnosedWithLabel ->
             { english = "The patient has been diagnosed with"
             , kinyarwanda = Just "Umurwayi yasuzumwe uburwayi bwo"
@@ -8352,19 +8377,15 @@ translationSet trans =
                     }
 
                 DiagnosisChronicHypertensionAfterRecheck ->
-                    { english = "Chronic Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisChronicHypertensionImmediate
 
                 DiagnosisGestationalHypertensionImmediate ->
-                    { english = "Gestational Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
+                    { english = "Pregnancy-Induced Hypertension"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
-                    { english = "Gestational Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisGestationalHypertensionImmediate
 
                 DiagnosisModeratePreeclampsiaInitialPhase ->
                     { english = "Mild to Moderate Preeclampsia"
@@ -8372,19 +8393,13 @@ translationSet trans =
                     }
 
                 DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisModeratePreeclampsiaRecurrentPhase ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaInitialPhase ->
                     { english = "Severe Preeclampsia"
@@ -8392,19 +8407,13 @@ translationSet trans =
                     }
 
                 DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaRecurrentPhase ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosis DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisEclampsia ->
                     { english = "Eclampsia"
@@ -8759,19 +8768,15 @@ translationSet trans =
                     }
 
                 DiagnosisChronicHypertensionAfterRecheck ->
-                    { english = "Chronic Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisChronicHypertensionImmediate
 
                 DiagnosisGestationalHypertensionImmediate ->
-                    { english = "Gestational Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
+                    { english = "Pregnancy-Induced Hypertension"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
-                    { english = "Gestational Hypertension"
-                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso uterwa no gutwita"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisGestationalHypertensionImmediate
 
                 DiagnosisModeratePreeclampsiaInitialPhase ->
                     { english = "Mild to Moderate Preeclampsia"
@@ -8779,19 +8784,13 @@ translationSet trans =
                     }
 
                 DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisModeratePreeclampsiaRecurrentPhase ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
-                    { english = "Mild to Moderate Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Yoroheje"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisModeratePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaInitialPhase ->
                     { english = "Severe Preeclampsia"
@@ -8799,19 +8798,13 @@ translationSet trans =
                     }
 
                 DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaRecurrentPhase ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
-                    { english = "Severe Preeclampsia"
-                    , kinyarwanda = Just "Preklampusi Ikabije"
-                    }
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisEclampsia ->
                     { english = "Eclampsia"
@@ -9241,19 +9234,15 @@ translationSet trans =
                     }
 
                 DiagnosisChronicHypertensionAfterRecheck ->
-                    { english = "Patient shows signs of Chronic Hypertension"
-                    , kinyarwanda = Just "Agaragaza ibimenyetso by'indwara y'umuvuduko w'amaraso imaze igihe kirekire"
-                    }
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisChronicHypertensionImmediate
 
                 DiagnosisGestationalHypertensionImmediate ->
-                    { english = "Patient shows signs of Gestational Hypertension"
-                    , kinyarwanda = Just "Afite ibimenyetso by'indwara y'umuvuduko w'amaraso uterwa no gutwita"
+                    { english = "Patient shows signs of Pregnancy-Induced Hypertension"
+                    , kinyarwanda = Nothing
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
-                    { english = "Patient shows signs of Gestational Hypertension"
-                    , kinyarwanda = Just "Afite ibimenyetso by'indwara y'umuvuduko w'amaraso uterwa no gutwita"
-                    }
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisGestationalHypertensionImmediate
 
                 DiagnosisModeratePreeclampsiaInitialPhase ->
                     { english = "Patient shows signs of Mild to Moderate Preeclampsia"
@@ -9519,12 +9508,12 @@ translationSet trans =
             case sign of
                 EducationNauseaVomiting ->
                     if isInitial then
-                        { english = "Nausea + vomitting in pregnancy - provided health education on " ++ date
+                        { english = "Nausea + vomiting in pregnancy - provided health education on " ++ date
                         , kinyarwanda = Just <| "Isesemi + kuruka igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                     else
-                        { english = "Persistent nausea + vomitting in pregnancy - provided health education on " ++ date
+                        { english = "Persistent nausea + vomiting in pregnancy - provided health education on " ++ date
                         , kinyarwanda = Just <| "Isesemi + kuruka  bikomeje kugaragara igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
@@ -9563,12 +9552,12 @@ translationSet trans =
 
                 EducationVaricoseVeins ->
                     if isInitial then
-                        { english = "Varicose veins during pregnancy provided health education on " ++ date
+                        { english = "Varicose veins during pregnancy - provided health education on " ++ date
                         , kinyarwanda = Just <| "Kubyimba kw'imitsi (imigarura) y'amaraso igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
                     else
-                        { english = "Persistent varicose veins during pregnancy provided health education on " ++ date
+                        { english = "Persistent varicose veins during pregnancy - provided health education on " ++ date
                         , kinyarwanda = Just <| "Kubyimba kw'imitsi (imigarura) y'amaraso bikomeje igihe umugore atwite - inyigisho ku buzima zatanzwe ku wa " ++ date
                         }
 
@@ -9895,11 +9884,6 @@ translationSet trans =
                 { english = "Refer patient to ARV services for assessment of ARVs"
                 , kinyarwanda = Just "Ohereza umurwayi muri serivise itanga imiti igabanya ubukana kugirango hasuzumwe neza ibijyanye n'imiti igabanya ubukana bwa Virusi itera SIDA"
                 }
-
-        PrenatalARVProgramPostpartumHeader ->
-            { english = "This patient was diagnosed with HIV during her pregnancy"
-            , kinyarwanda = Just "Umubyeyi yagaragaweho ubwandu bwa Virusi itera SIDA  igihe yari atwite"
-            }
 
         PrenatalHIVSignQuestion sign ->
             case sign of
@@ -11161,7 +11145,7 @@ translationSet trans =
                     }
 
                 OutsideCareMedicationAmlodipine ->
-                    { english = "Amlodipine (5pmg)"
+                    { english = "Amlodipine (5mg)"
                     , kinyarwanda = Nothing
                     }
 
@@ -12076,6 +12060,21 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        RecommendedTreatmentSignLabelForProgressReport sign ->
+            case sign of
+                TreatmentQuinineSulphate ->
+                    { english = "Quinine Sulphate - per os 10 mg/kg/dose, 3 times a day for 7 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentCoartem ->
+                    { english = "Coartem - 4 tablets by mouth twice per day x 3 days"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    translationSet (RecommendedTreatmentSignLabel sign)
 
         RecommendedTreatmentSignLabel sign ->
             case sign of
@@ -13659,23 +13658,23 @@ translationSet trans =
             }
 
         TreatmentDetailsAnemia ->
-            { english = "At the previous visit you were given Iron (120mg), one 60mg tablet 2x a day for 3 months and Folic Acid (400 IU) take daily for 3 months."
+            { english = "At the previous visit you were given Iron (120mg), one 60mg tablet to be taken 2x a day for 3 months and Folic Acid (400 IU) to be taken daily for 3 months."
             , kinyarwanda = Just "Mu isura riheruka wahawe umuti (Ubutare or Feri) wongera amaraso(120mg), miligarama 60 inshuro ebyiri ku munsi mu mezi atatu na Acide folike(400 UI)inshuro imwe ku munsi mu miezi atatu."
             }
 
         TreatmentDetailsHIV dolutegravir arvs ->
             if dolutegravir && arvs then
-                { english = "At the previous visit you were given TDF + 3TC (1 tablet), by mouth 1x a day and Doltegravir (50mg) by mouth 1x a day."
+                { english = "At the previous visit you were given TDF + 3TC (1 tablet), to be taken by mouth 1x a day and Doltegravir (50mg) to be taken by mouth 1x a day."
                 , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine ikinini kimwe ku munsi na Dulutogaraviri (50mg), ikinini kimwe ku munsi."
                 }
 
             else if dolutegravir then
-                { english = "At the previous visit you were given Doltegravir (50mg), by mouth 1x a day."
+                { english = "At the previous visit you were given Doltegravir (50mg), to be taken by mouth 1x a day."
                 , kinyarwanda = Just "Mu isura rishize wahawe ikinini cya Dulutogaraviri(50mg), ikinini kimwe ku munsi."
                 }
 
             else if arvs then
-                { english = "At the previous visit you were given TDF + 3TC (1 tablet), by mouth 1x a day."
+                { english = "At the previous visit you were given TDF + 3TC (1 tablet), to be taken by mouth 1x a day."
                 , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine na Dulutogaraviri (50mg), ikinini kimwe ku munsi."
                 }
 
@@ -13695,27 +13694,27 @@ translationSet trans =
             in
             case sign of
                 TreatmentMethyldopa2 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 2x a day for " ++ diagnosis ++ "."
+                    { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 2x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro ebyri ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentMethyldopa3 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 3x a day for " ++ diagnosis ++ "."
+                    { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 3x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro eshatu ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentMethyldopa4 ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day for " ++ diagnosis ++ "."
+                    { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
-                    { english = "At the previous visit you were given Methyldopa (250mg), by mouth 4x a day and Carvedilol (6.25mg), by mouth 2x a day for " ++ diagnosis ++ "."
+                    { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day and Carvedilol (6.25mg), to be taken by mouth 2x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi na Karuvedilole (5.25mg), mu kanwa inshuro 2 ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
-                    { english = "At the previous visit you were given Methyldopa (250mg,) by mouth 4x a day, Carvedilol (6.25mg), by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for " ++ diagnosis ++ "."
+                    { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day and Carvedilol (6.25mg), to be taken by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for " ++ diagnosis ++ "."
                     , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi na Karuvedilole (5.25mg), mu kanwa inshuro 2 ku munsi na Amlodipine (5mg), mu kanwa inshuro imwe ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     }
 
@@ -13728,12 +13727,12 @@ translationSet trans =
         TreatmentDetailsMalaria sign ->
             case sign of
                 TreatmentQuinineSulphate ->
-                    { english = "At the previous visit you were given Quinine Sulphate per os 10 mg/kg/dose, 3 times a day for 7 days."
+                    { english = "At the previous visit you were given Quinine Sulphate per os 10 mg/kg/dose, to be taken 3 times a day for 7 days."
                     , kinyarwanda = Just "Mu isura rishize wahawe umuti wa Kinini 10mg ku kilo, gatatu ku munsi mu minsi irindwi."
                     }
 
                 TreatmentCoartem ->
-                    { english = "At the previous visit you were given Coartem, 4 tablets by mouth twice per day x 3 days."
+                    { english = "At the previous visit you were given Coartem, 4 tablets to be taken by mouth twice per day x 3 days."
                     , kinyarwanda = Just "Mu isura rishize wahawe AL (Kowaritemu), ibibini bine (4) byo kunywa mu kanwa inshuri ebyiri ku munsi mu minsi itatu."
                     }
 
@@ -14128,6 +14127,11 @@ translationSet trans =
         Village ->
             { english = "Village"
             , kinyarwanda = Just "Umudugudu"
+            }
+
+        VitaminAWarningPopupMessage ->
+            { english = "Patient did not recieve Vitamin A"
+            , kinyarwanda = Nothing
             }
 
         WaitForVitalsRecheckHelper ->

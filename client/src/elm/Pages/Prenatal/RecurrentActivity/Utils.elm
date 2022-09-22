@@ -65,7 +65,7 @@ activityCompleted currentDate assembled activity =
         RecurrentNextSteps ->
             (not <| expectActivity currentDate assembled RecurrentNextSteps)
                 || (resolveNextStepsTasks currentDate assembled
-                        |> List.all (nextStepsTaskCompleted assembled)
+                        |> List.all (nextStepsTaskCompleted currentDate assembled)
                    )
 
         RecurrentExamination ->
@@ -429,8 +429,8 @@ expectNextStepsTask currentDate assembled task =
             diagnosedAnyOf (DiagnosisHIVDetectableViralLoad :: diabetesDiagnoses) assembled
 
 
-nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
-nextStepsTaskCompleted assembled task =
+nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted currentDate assembled task =
     case task of
         NextStepsSendToHC ->
             resolveRequiredReferralFacilities assembled
@@ -440,6 +440,18 @@ nextStepsTaskCompleted assembled task =
             let
                 allowedSigns =
                     NoMedicationDistributionSignsRecurrentPhase :: medicationsRecurrentPhase
+
+                medicationDistributionRequired =
+                    resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
+                        |> List.isEmpty
+                        |> not
+
+                medicationDistributionCompleted =
+                    if medicationDistributionRequired then
+                        medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+
+                    else
+                        True
 
                 syphilisTreatmentCompleted =
                     if diagnosedSyphilis assembled then
@@ -455,7 +467,7 @@ nextStepsTaskCompleted assembled task =
                     else
                         True
             in
-            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+            medicationDistributionCompleted
                 && syphilisTreatmentCompleted
                 && hypertensionTreatmentCompleted
 

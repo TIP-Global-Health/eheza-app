@@ -228,6 +228,13 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
                                 , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
                                 , treatmentReviewAtion
                                 )
+
+                        WarningPopupVitaminA treatmentReviewAtion ->
+                            Just <|
+                                ( p [] [ text <| translate language Translate.VitaminAWarningPopupMessage ]
+                                , emptyNode
+                                , treatmentReviewAtion
+                                )
             in
             Maybe.map (customWarningPopup language) data
         )
@@ -587,30 +594,30 @@ viewHistoryContent language currentDate assembled data =
                                 |> socialHistoryFormWithDefault data.socialForm
 
                         showCounselingQuestion =
-                            assembled.nursePreviousMeasurementsWithDates
+                            assembled.nursePreviousEncountersData
                                 |> List.filter
-                                    (\( _, _, measurements ) ->
-                                        measurements.socialHistory
-                                            |> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
-                                            |> Maybe.withDefault False
+                                    (.measurements
+                                        >> .socialHistory
+                                        >> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
+                                        >> Maybe.withDefault False
                                     )
                                 |> List.isEmpty
 
                         showTestingQuestions =
-                            assembled.nursePreviousMeasurementsWithDates
+                            assembled.nursePreviousEncountersData
                                 |> List.filter
-                                    (\( _, _, measurements ) ->
-                                        measurements.socialHistory
-                                            |> Maybe.map
-                                                (\socialHistory ->
-                                                    let
-                                                        value =
-                                                            Tuple.second socialHistory |> .value
-                                                    in
-                                                    (value.hivTestingResult == ResultHivPositive)
-                                                        || (value.hivTestingResult == ResultHivNegative)
-                                                )
-                                            |> Maybe.withDefault False
+                                    (.measurements
+                                        >> .socialHistory
+                                        >> Maybe.map
+                                            (\socialHistory ->
+                                                let
+                                                    value =
+                                                        Tuple.second socialHistory |> .value
+                                                in
+                                                (value.hivTestingResult == ResultHivPositive)
+                                                    || (value.hivTestingResult == ResultHivNegative)
+                                            )
+                                        >> Maybe.withDefault False
                                     )
                                 |> List.isEmpty
                     in
@@ -1810,7 +1817,7 @@ viewNextStepsContent language currentDate isChw assembled data =
             List.member NextStepsWait tasks
                 && -- There's one or less uncompleted task,
                    -- which is the Wait task.
-                   (List.filter (nextStepsTaskCompleted assembled >> not) tasks
+                   (List.filter (nextStepsTaskCompleted currentDate assembled >> not) tasks
                         |> List.length
                         |> (\length -> length < 2)
                    )
@@ -1844,7 +1851,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     activeTask == Just task
 
                 isCompleted =
-                    nextStepsTaskCompleted assembled task
+                    nextStepsTaskCompleted currentDate assembled task
 
                 attributes =
                     classList
@@ -2417,7 +2424,7 @@ viewSpecialityCareContent language currentDate assembled data =
             arvTasks ++ ncdTasks
 
         ( arvSection, arvTasks ) =
-            resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
+            resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
                 |> Maybe.map
                     (\referraDiagnosis ->
                         ( [ sectionHeader (translate language <| Translate.PrenatalDiagnosis referraDiagnosis)
@@ -2440,7 +2447,7 @@ viewSpecialityCareContent language currentDate assembled data =
         ( ncdSection, ncdTasks ) =
             let
                 referraDiagnoses =
-                    resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+                    resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
             in
             if not <| List.isEmpty referraDiagnoses then
                 ( [ List.map (Translate.PrenatalDiagnosis >> translate language) referraDiagnoses
@@ -4718,6 +4725,17 @@ viewPostpartumTreatmentReviewContent language currentDate assembled data =
 
         receivedVitaminAUpdateFunc value form_ =
             { form_ | receivedVitaminA = Just value }
+
+        action =
+            let
+                saveMsg =
+                    SavePostpartumTreatmentReview assembled.participant.person assembled.measurements.medication
+            in
+            if form.receivedVitaminA == Just False then
+                SetWarningPopupState (Just (WarningPopupVitaminA saveMsg))
+
+            else
+                saveMsg
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -4729,7 +4747,7 @@ viewPostpartumTreatmentReviewContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePostpartumTreatmentReview assembled.participant.person assembled.measurements.medication
+                , onClick action
                 ]
                 [ text <| translate language Translate.Save ]
             ]
