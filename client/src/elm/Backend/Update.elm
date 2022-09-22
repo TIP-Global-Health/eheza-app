@@ -4499,35 +4499,53 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test id =
                                 ( performedTests, completedTests ) =
                                     Pages.GlobalCaseManagement.Utils.prenatalLabsResultsTestData currentDate results
 
-                                updatedValue =
+                                ( updatedValue, navigateToProgressReportMsg ) =
                                     results.value
                                         |> (\value ->
                                                 let
                                                     updatedCompletedTests =
                                                         test :: completedTests
 
+                                                    allActivitiesCompleted =
+                                                        -- All performed tests are completed, and Next Steps are either
+                                                        -- completed, or not required,
+                                                        (List.length updatedCompletedTests == List.length performedTests)
+                                                            && Pages.Prenatal.RecurrentActivity.Utils.activityCompleted
+                                                                currentDate
+                                                                assembled
+                                                                Backend.PrenatalActivity.Model.RecurrentNextSteps
+
                                                     resolutionDate =
                                                         -- When all performed tests are completed, and Next Steps are either
                                                         -- completed, or not required, setting today as resolution date.
-                                                        if
-                                                            (List.length updatedCompletedTests == List.length performedTests)
-                                                                && Pages.Prenatal.RecurrentActivity.Utils.activityCompleted
-                                                                    currentDate
-                                                                    assembled
-                                                                    Backend.PrenatalActivity.Model.RecurrentNextSteps
-                                                        then
+                                                        if allActivitiesCompleted then
                                                             currentDate
 
                                                         else
                                                             value.resolutionDate
                                                 in
-                                                { value
+                                                ( { value
                                                     | completedTests = EverySet.fromList updatedCompletedTests
                                                     , resolutionDate = resolutionDate
-                                                }
+                                                  }
+                                                , if allActivitiesCompleted then
+                                                    -- When all activities are completed, we show progress report.
+                                                    -- Here we handle added Lab results, so, similar logic is applied
+                                                    -- at Pages.Prenatal.RecurrentActivity.Update, for Next Steps activities.
+                                                    [ App.Model.SetActivePage <|
+                                                        UserPage <|
+                                                            ClinicalProgressReportPage
+                                                                (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id)
+                                                                id
+                                                    ]
+
+                                                  else
+                                                    []
+                                                )
                                            )
                             in
-                            [ saveLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                            saveLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue
+                                :: navigateToProgressReportMsg
                     )
                     assembled.measurements.labsResults
             )
