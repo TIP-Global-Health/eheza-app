@@ -98,6 +98,7 @@ import Pages.Dashboard.Model as Dashboard
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
+import Pages.NCD.ProgressReport.Model exposing (NCDRiskFactor(..))
 import Pages.NCD.RecurrentActivity.Types
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
@@ -870,6 +871,7 @@ type TranslationId
     | NCDProgressReport
     | NCDRecurrentActivitiesTitle NCDRecurrentActivity
     | NCDRecurrentNextStepsTask Pages.NCD.RecurrentActivity.Types.NextStepsTask
+    | NCDRiskFactor NCDRiskFactor
     | NCDSocialHistoryFoodQuestion
     | NCDSocialHistoryFoodQuestionInstructions
     | NCDSocialHistorySignQuestion NCDSocialHistorySign
@@ -7929,6 +7931,33 @@ translationSet trans =
                 Pages.NCD.RecurrentActivity.Types.TaskReferral ->
                     { english = "Referral"
                     , kinyarwanda = Just "Kohereza"
+                    }
+
+        NCDRiskFactor value ->
+            case value of
+                RiskFactorSmokeCigarettes ->
+                    { english = "Smokes Cigarettes"
+                    , kinyarwanda = Nothing
+                    }
+
+                RiskFactorConsumeSalt ->
+                    { english = "Adds Salt to Diet"
+                    , kinyarwanda = Nothing
+                    }
+
+                RiskFactorHypertensionHistory ->
+                    { english = "Family History of Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                RiskFactorHearProblemHistory ->
+                    { english = "Family History of Heart Problems"
+                    , kinyarwanda = Nothing
+                    }
+
+                RiskFactorDiabetesHistory ->
+                    { english = "Family History of Diabetes"
+                    , kinyarwanda = Nothing
                     }
 
         NCDSocialHistoryFoodQuestion ->

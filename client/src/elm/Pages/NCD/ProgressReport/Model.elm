@@ -20,6 +20,14 @@ emptyModel =
     }
 
 
+type NCDRiskFactor
+    = RiskFactorSmokeCigarettes
+    | RiskFactorConsumeSalt
+    | RiskFactorHypertensionHistory
+    | RiskFactorHearProblemHistory
+    | RiskFactorDiabetesHistory
+
+
 type Msg
     = NoOp
     | CloseEncounter NCDEncounterId
