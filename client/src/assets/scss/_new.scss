@@ -2334,6 +2334,39 @@ div.page-report.ncd {
 div.page-report.clinical .ui.unstackable.items,
 div.page-report.ncd .ui.unstackable.items {
 
+  .risk-factors,
+  .medical-diagnosis,
+  .obstetric-diagnosis {
+    background: $color-white;
+
+    .pane-content p {
+      line-height: 32px;
+      margin-bottom: 5px;
+    }
+
+    .pane-content ul {
+      font-size: 24px;
+      line-height: 35px;
+      margin-bottom : 0;
+      margin-top : 0;
+      padding: 0 20px;
+    }
+  }
+
+  .risk-factors > .pane-heading {
+
+    img {
+      height: 24px;
+      width: 24px;
+      vertical-align: middle;
+    }
+
+    span {
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+  }
+
   .labs {
 
     .pane-content {
@@ -2554,23 +2587,6 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
-  .risk-factors,
-  .medical-diagnosis,
-  .obstetric-diagnosis {
-    background: $color-white;
-
-    .pane-content p {
-      line-height: 32px;
-      margin-bottom: 5px;
-    }
-
-    .pane-content ul {
-      font-size: 24px;
-      line-height: 35px;
-      padding: 0 20px;
-    }
-  }
-
   .chw-activities {
 
     .heading,
@@ -2638,20 +2654,6 @@ div.page-report.clinical .ui.unstackable.items {
       background: $color-cyan;
     }
 
-  }
-
-  .risk-factors > .pane-heading {
-
-    img {
-      height: 24px;
-      width: 24px;
-      vertical-align: middle;
-    }
-
-    span {
-      vertical-align: middle;
-      margin-left: 10px;
-    }
   }
 
   .patient-progress {
