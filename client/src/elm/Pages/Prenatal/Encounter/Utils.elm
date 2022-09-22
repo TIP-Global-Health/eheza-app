@@ -497,32 +497,40 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
 
         DiagnosisModerateUnderweight ->
             let
-                resolveAlert measurements =
-                    measurements.nutrition
-                        |> Maybe.andThen
-                            (\measurement ->
-                                let
-                                    muac =
-                                        Tuple.second measurement
-                                            |> .value
-                                            |> .muac
-                                            |> muacValueFunc
-                                in
-                                if muac >= 18.5 && muac < 22 then
-                                    Just (transAlert diagnosis)
-
-                                else
-                                    Nothing
-                            )
+                severeUnderweight =
+                    isJust <| generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled DiagnosisSevereUnderweight
             in
-            -- If nutrition measurements were taken at current encounter,
-            -- we issue the alarm according to those values.
-            -- Otherwise, we use values of last encounter.
-            if isJust assembled.measurements.nutrition then
-                resolveAlert assembled.measurements
+            if severeUnderweight then
+                Nothing
 
             else
-                resolveAlert lastEncounterMeasurements
+                let
+                    resolveAlert measurements =
+                        measurements.nutrition
+                            |> Maybe.andThen
+                                (\measurement ->
+                                    let
+                                        muac =
+                                            Tuple.second measurement
+                                                |> .value
+                                                |> .muac
+                                                |> muacValueFunc
+                                    in
+                                    if muac >= 18.5 && muac < 22 then
+                                        Just (transAlert diagnosis)
+
+                                    else
+                                        Nothing
+                                )
+                in
+                -- If nutrition measurements were taken at current encounter,
+                -- we issue the alarm according to those values.
+                -- Otherwise, we use values of last encounter.
+                if isJust assembled.measurements.nutrition then
+                    resolveAlert assembled.measurements
+
+                else
+                    resolveAlert lastEncounterMeasurements
 
         DiagnosisSevereUnderweight ->
             let

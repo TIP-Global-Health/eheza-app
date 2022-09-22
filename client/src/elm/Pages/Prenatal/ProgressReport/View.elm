@@ -37,8 +37,8 @@ import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
-        , allMedicalDiagnosis
-        , allObstetricalDiagnosis
+        , allMedicalDiagnoses
+        , allObstetricalDiagnoses
         , allRiskFactors
         , allTrimesters
         )
@@ -228,7 +228,7 @@ viewContent language currentDate isChw initiator model assembled =
 
                         actions =
                             case initiator of
-                                InitiatorEncounterPage _ ->
+                                InitiatorEncounterPage id ->
                                     let
                                         ( completedActivities, pendingActivities ) =
                                             getAllActivities assembled
@@ -238,7 +238,10 @@ viewContent language currentDate isChw initiator model assembled =
                                     viewActionButton language
                                         pendingActivities
                                         completedActivities
-                                        (SetActivePage PinCodePage)
+                                        -- When pausing, we close the encounter.
+                                        -- Entering lab results is available from
+                                        -- Case management page.
+                                        (CloseEncounter id)
                                         SetEndEncounterDialogState
                                         assembled
 
@@ -252,7 +255,7 @@ viewContent language currentDate isChw initiator model assembled =
                                         allowEndEcounter =
                                             List.isEmpty pendingActivities
                                     in
-                                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                                    viewEndEncounterButton language allowEndEcounter (always <| SetActivePage PinCodePage)
 
                                 InitiatorNewEncounter encounterId ->
                                     div [ class "actions" ]
@@ -365,9 +368,12 @@ viewRiskFactorsPane : Language -> NominalDate -> PrenatalMeasurements -> Html Ms
 viewRiskFactorsPane language currentDate measurements =
     let
         alerts =
-            allRiskFactors
-                |> List.filterMap (generateRiskFactorAlertData language currentDate measurements)
-                |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
+            List.filterMap
+                (generateRiskFactorAlertData language currentDate measurements)
+                allRiskFactors
+                |> List.map (\alert -> li [] [ text alert ])
+                |> ul []
+                |> List.singleton
     in
     div [ class "risk-factors" ]
         [ div [ class <| "pane-heading red" ]
@@ -474,9 +480,17 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                 |> ul []
 
         alerts =
-            allMedicalDiagnosis
-                |> List.filterMap (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
-                |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
+            -- Alerts are displayed only for CHW.
+            if isChw then
+                List.filterMap
+                    (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
+                    allMedicalDiagnoses
+                    |> List.map (\alert -> li [] [ text alert ])
+                    |> ul []
+                    |> List.singleton
+
+            else
+                []
     in
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
@@ -626,9 +640,17 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                 |> ul []
 
         alerts =
-            allObstetricalDiagnosis
-                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
-                |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
+            -- Alerts are displayed only for CHW.
+            if isChw then
+                List.filterMap
+                    (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
+                    allObstetricalDiagnoses
+                    |> List.map (\alert -> li [] [ text alert ])
+                    |> ul []
+                    |> List.singleton
+
+            else
+                []
     in
     div [ class "obstetric-diagnosis" ]
         [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"

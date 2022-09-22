@@ -718,6 +718,7 @@ type TranslationId
     | LastChecked
     | LastContacted
     | LastSuccesfulContactLabel
+    | LeaveEncounter
     | Left
     | LegCrampsReliefMethod LegCrampsReliefMethod
     | LegLeft
@@ -5908,6 +5909,11 @@ translationSet trans =
         LastSuccesfulContactLabel ->
             { english = "Last Successful Contact"
             , kinyarwanda = Just "Itariki n'isaha yanyuma igikoresho giheruka gukoresherezaho interineti bikagenda neza"
+            }
+
+        LeaveEncounter ->
+            { english = "Leave Encounter"
+            , kinyarwanda = Nothing
             }
 
         Left ->
