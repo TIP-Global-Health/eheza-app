@@ -2,7 +2,14 @@ module Pages.NCD.ProgressReport.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (NCDFamilyHistorySign(..), NCDSocialHistorySign(..), TestExecutionNote(..), TestVariant(..))
+import Backend.Measurement.Model
+    exposing
+        ( MedicalCondition(..)
+        , NCDFamilyHistorySign(..)
+        , NCDSocialHistorySign(..)
+        , TestExecutionNote(..)
+        , TestVariant(..)
+        )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
@@ -201,10 +208,10 @@ viewContent language currentDate initiator model assembled =
                             --             viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
                             emptyNode
                     in
-                    [ -- @todo
-                      viewRiskFactorsPane language currentDate assembled
+                    [ viewRiskFactorsPane language currentDate assembled
+                    , viewMedicalDiagnosisPane language currentDate assembled
 
-                    -- , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                    -- @todo
                     -- , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
                     -- , viewChwActivityPane language currentDate isChw assembled
                     -- , viewPatientProgressPane language currentDate isChw assembled
@@ -328,6 +335,55 @@ socialHistoryRiskFactors =
     [ RiskFactorSmokeCigarettes
     , RiskFactorConsumeSalt
     ]
+
+
+coMorbiditiesMedicalContitions : List MedicalCondition
+coMorbiditiesMedicalContitions =
+    [ MedicalConditionHIV
+    , MedicalConditionDiabetes
+    , MedicalConditionKidneyDisease
+    , MedicalConditionPregnancy
+    , MedicalConditionHypertension
+    , MedicalConditionGestationalDiabetes
+    , MedicalConditionPregnancyRelatedHypertension
+    ]
+
+
+viewMedicalDiagnosisPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewMedicalDiagnosisPane language currentDate assembled =
+    let
+        allMeasurements =
+            assembled.measurements
+                :: List.map .measurements assembled.previousEncountersData
+
+        content =
+            List.map (Translate.MedicalCondition >> translate language >> text >> List.singleton >> li [])
+                coMorbidities
+                |> ul []
+                |> List.singleton
+
+        coMorbidities =
+            List.map
+                (.coMorbidities
+                    >> getMeasurementValueFunc
+                    >> Maybe.map
+                        (EverySet.toList
+                            >> List.filter
+                                (\mdecicalCondition ->
+                                    List.member mdecicalCondition coMorbiditiesMedicalContitions
+                                )
+                        )
+                    >> Maybe.withDefault []
+                )
+                allMeasurements
+                |> List.concat
+                |> EverySet.fromList
+                |> EverySet.toList
+    in
+    div [ class "medical-diagnosis" ]
+        [ viewItemHeading language Translate.MedicalDiagnosis "blue"
+        , div [ class "pane-content" ] content
+        ]
 
 
 generateLabsResultsPaneData :
