@@ -24,105 +24,29 @@ Primary ports:
 
 ### GitPod first steps
 1. Wait until the Drupal login page shows up
-2. Login with `admin` / `admin` into the Drupal backend.
-3. Choose "Remote Explorer" on the left and open port 3000 too, either in new browser window or in preview.
-4. Use `12345678` as the pairing code (tied to Device nodes at the Drupal side).
-5. Use `1234` as the PIN code (tied to the Nurse nodes at the Drupal side).
-6. Initiate a sync process. The device status page allows you to initiate a manual sync with the backend.
+1. Login with `admin` / `admin` into the Drupal backend.
+1. Choose "Remote Explorer" on the left and open port 3000 too, either in new browser window or in preview.
+1. Use `12345678` as the pairing code (tied to Device nodes at the Drupal side).
+1. Use `1234` as the PIN code (tied to the Nurse nodes at the Drupal side).
+1. Initiate a sync process. The device status page allows you to initiate a manual sync with the backend.
    You can also choose which health centers to sync, for instance "Nyange Health Center" for the tests.
-7. Choose the synced health center.
-8. Explore the system.
+1. Choose the synced health center.
+1. Explore the system.
 
-## Develop locally with DDEV
+## Try out locally with DDEV
 
-### Requirements
-
-- https://ddev.readthedocs.io/en/latest/#installation . Minimum version: [v1.21.1](https://github.com/drud/ddev/releases/tag/v1.21.1)
-
-### Backend
-
-#### Installation
-
-        cp .ddev/config.local.yaml.example .ddev/config.local.yaml
-        ddev restart
-
-Migrate content with either `ddev migrate default` or `ddev migrate sample`
-depending on whether you want minimal development content or a full set of
-sample content (takes much longer).
-
-The installation script will perform following steps:
-
-1. Delete the /www folder.
-2. Recreate the /www folder.
-3. Download and extract all contrib modules, themes & libraries to the proper
-   subfolders of the profile.
-4. Download and extract Drupal 7 core in the /www folder
-5. Create an empty sites/default/files directory
-6. Makes a symlink within the /www/profiles directory to the /hedley
-   directory.
-7. Run the Drupal installer (Drush) using the Hedley profile.
-
-***Warning!***
-
-* The process above will not preserve the data located in the
-  sites/default/files directory.
-* The database is dropped during the installation.
-
-
-#### Deploy
-
-The default method assumes Pantheon as the hosting service provider.
-
-##### Prerequisites
-
-Prepare `Config.Deploy.elm` based on `Config.elm` that holds the
-infrastructure-related data for Elm. This file is gitignored, and it is
-used during Elm compilation, before the final artifact is pushed to Pantheon.
-The source of truth for this deployment config is in the Pantheon artifact repository,
-can be found under the repository root, so most of the time, you can copy it from there.
-
-#### Steps
-
-To propagate a new release, you can do the following:
-```
-ddev start
-ddev gulp publish
-ddev robo deploy:pantheon
-```
-
-To generate the release notes, use `ddev robo generate:release-notes prev-tag`.
-
-#### Infrastructure-related steps
-
-When the site is initially installed in an environment, there are recurring
-jobs that need to be configured.
-
- - Advancedqueue processing
- - Weekly report processing
-
-There are two main alternatives to achieve this. Either the hosting platform
-provides customizable cron-jobs or we can invoke it from an external place,
-like a Jenkins server.
-Check the scripts in `infrastructure_setup` directory, create either a Jenkins
-job from those or you can invoke them via `cron` or
-[`supervisord`](http://supervisord.org/), edit the Bash variables at the
-top of the scripts and study the file head comment that contains more
-information of the dependencies of the scripts.
-
-Example crontabs:
-```
-*/5 * * * *   /path/to/app/infrastructure_setup/advancedqueue.sh
-1 1 * * *     /path/to/app/infrastructure_setup/reporting.sh
-```
-
-We recommend an external source, like Jenkins to trigger these, it's
-a comfortable, high-level tool with easily configurable logging / history.
-Inside Jenkins, these scripts can be "Freestyle project"s with
-"Build periodically" trigger and a "Shell" build part.
-
-If that's a no-go, for the advancedqueue, `supervisord` is a better choice,
-as that queue needs to be processed all the time. For the reporting, a simple
-cron job might be sufficient.
+ 1. https://ddev.readthedocs.io/en/latest/#installation . Minimum version: [v1.21.1](https://github.com/drud/ddev/releases/tag/v1.21.1)
+1. cp .ddev/config.local.yaml.example .ddev/config.local.yaml
+1. ddev restart
+1. `cp client/src/elm/LocalConfig.Example.elm client/src/elm/LocalConfig.elm`
+1. `ddev gulp`
+1. Open the [app](http://localhost:3000) in the browser, typically it listens on port 3000.
+1. Use `12345678` as the pairing code (tied to Device nodes at the Drupal side).
+1. Use `1234` as the PIN code (tied to the Nurse nodes at the Drupal side).
+1. Initiate a sync process. The device status page allows you to initiate a manual sync with the backend.
+   You can also choose which health centers to sync, for instance "Nyange Health Center" for the tests.
+1. Choose the synced health center.
+1. Explore the system.
 
 ### Frontend
 
@@ -178,3 +102,59 @@ This should all happen automatically when you run `ddev gulp`.
 After you edited an Elm file, and the compilation process is executed, the changes are not visible in the browser.
 To activate the new version you've just created, click on the "Version" indication in the top-right corner of the app.
 That will take you to a page which allows you to check for updates and activate updates.
+
+#### Deployment
+
+The default method assumes Pantheon as the hosting service provider.
+
+##### Prerequisites
+
+Prepare `Config.Deploy.elm` based on `Config.elm` that holds the
+infrastructure-related data for Elm. This file is gitignored, and it is
+used during Elm compilation, before the final artifact is pushed to Pantheon.
+The source of truth for this deployment config is in the Pantheon artifact repository,
+can be found under the repository root, so most of the time, you can copy it from there.
+
+#### Steps
+
+To propagate a new release, you can do the following:
+```
+ddev start
+ddev gulp publish
+ddev robo deploy:pantheon
+```
+
+To generate the release notes, use `ddev robo generate:release-notes prev-tag`.
+
+#### Infrastructure-related steps
+
+When the site is initially installed in an environment, there are recurring
+jobs that need to be configured.
+
+ - Advancedqueue processing
+ - Weekly report processing
+
+There are two main alternatives to achieve this. Either the hosting platform
+provides customizable cron-jobs or we can invoke it from an external place,
+like a Jenkins server.
+Check the scripts in `infrastructure_setup` directory, create either a Jenkins
+job from those or you can invoke them via `cron` or
+[`supervisord`](http://supervisord.org/), edit the Bash variables at the
+top of the scripts and study the file head comment that contains more
+information of the dependencies of the scripts.
+
+Example crontabs:
+```
+*/5 * * * *   /path/to/app/infrastructure_setup/advancedqueue.sh
+1 1 * * *     /path/to/app/infrastructure_setup/reporting.sh
+```
+
+We recommend an external source, like Jenkins to trigger these, it's
+a comfortable, high-level tool with easily configurable logging / history.
+Inside Jenkins, these scripts can be "Freestyle project"s with
+"Build periodically" trigger and a "Shell" build part.
+
+If that's a no-go, for the advancedqueue, `supervisord` is a better choice,
+as that queue needs to be processed all the time. For the reporting, a simple
+cron job might be sufficient.
+
