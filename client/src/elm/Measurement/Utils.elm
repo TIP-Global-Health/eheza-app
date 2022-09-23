@@ -668,6 +668,9 @@ resolveMedicationsNonAdministrationReasons value =
                     MedicationMetronidazole reason ->
                         Just ( Metronidazole, reason )
 
+                    MedicationVitaminA reason ->
+                        Just ( VitaminA, reason )
+
                     NoMedicationNonAdministrationSigns ->
                         Nothing
             )

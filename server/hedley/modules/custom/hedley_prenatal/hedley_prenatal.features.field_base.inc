@@ -128,6 +128,42 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_breastfeeding_signs'.
+  $field_bases['field_breastfeeding_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_breastfeeding_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'breastfeeding' => 'Breastfeeding',
+        'not-breastfeeding-breast-pain' => 'Not breastfeeding - breast pain',
+        'not-breastfeeding-breast-redness' => 'Not breastfeeding - breast redness',
+        'not-breastfeeding-low-milk-production' => 'Not breastfeeding - low milk production',
+        'not-breastfeeding-problems-latching' => 'Not breastfeeding - problems latching',
+        'not-breastfeeding-medical-problems' => 'Not breastfeeding - medical problems',
+        'not-breastfeeding-personal-choice' => 'Not breastfeeding - personal choice',
+        'not-breastfeeding-other' => 'Not breastfeeding - other',
+        'breast-pain' => 'Breast pain',
+        'breast-redness' => 'Breast redness',
+        'enough-milk' => 'Enough milk for 8 feeds',
+        'latching-well' => 'Baby latching well',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_completed_tests'.
   $field_bases['field_completed_tests'] = array(
     'active' => 1,
@@ -257,6 +293,33 @@ function hedley_prenatal_field_default_field_bases() {
         '+2' => '+2',
         '+3' => '+3',
         '+4' => '+4',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_gu_exam_signs'.
+  $field_bases['field_gu_exam_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_gu_exam_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'episiotomy-perineal-tear' => 'Episiotomy or a perineal tear',
+        'rectal-hemorrhoids' => 'Rectal Hemorrhoids',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
@@ -784,6 +847,36 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_postpartum_healing_problem'.
+  $field_bases['field_postpartum_healing_problem'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_postpartum_healing_problem',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'normal-healing' => 'Normal Healing',
+        'swelling' => 'Swelling',
+        'discharge' => 'Discharge',
+        'release-of-sutures' => 'Release (lâchage) of sutures',
+        'hematoma' => 'Hematoma',
+        'bruising' => 'Bruising',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_prenatal_assesment'.
   $field_bases['field_prenatal_assesment'] = array(
     'active' => 1,
@@ -827,8 +920,8 @@ function hedley_prenatal_field_default_field_bases() {
       'allowed_values' => array(
         'chronic-hypertension-immediate' => 'Chronic Hypertension Immediate',
         'chronic-hypertension-recheck' => 'Chronic Hypertension After Recheck',
-        'gestational-hypertension-immediate' => 'Gestational Hypertension Immediate',
-        'gestational-hypertension-recheck' => 'Gestational Hypertension After Recheck',
+        'gestational-hypertension-immediate' => 'Pregnancy-Induced Hypertension Immediate',
+        'gestational-hypertension-recheck' => 'Pregnancy-Induced Hypertension After Recheck',
         'moderate-preeclampsia-initial' => 'Moderate Preeclampsia Initial',
         'moderate-preeclampsia-initial-ega-37+' => 'Moderate Preeclampsia Initial EGA 37 or more',
         'moderate-preeclampsia-recurrent' => 'Moderate Preeclampsia Recurrent',
@@ -894,6 +987,16 @@ function hedley_prenatal_field_default_field_bases() {
         'depression-probable' => 'Depression Probable',
         'suicide-risk' => 'Suicide Risk',
         'other' => 'Other',
+        'postpartum-abdominal-pain' => 'Postpartum Abdominal Pain',
+        'postpartum-urinary-incontinence' => 'Postpartum Urinary Incontinence',
+        'postpartum-headache' => 'Postpartum Headache',
+        'postpartum-fatigue' => 'Postpartum Fatigue',
+        'postpartum-fever' => 'Postpartum Fever',
+        'postpartum-perineal-pain-discharge' => 'Postpartum Perineal Pain Or Discharge',
+        'postpartum-infection' => 'Postpartum Infection',
+        'postpartum-excessive-bleeding' => 'Postpartum Excessive Bleeding',
+        'postpartum-early-mastitis-engorgment' => 'Postpartum Early Mastitis or Engorgment',
+        'postpartum-mastitis' => 'Postpartum Mastitis',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -995,6 +1098,12 @@ function hedley_prenatal_field_default_field_bases() {
         'constipation' => 'Constipation',
         'varicose-veins' => 'Varicose Veins',
         'leg-pain-redness' => 'Leg Pain or Redness (One Leg)',
+        'abdominal-pain' => 'Abdominal Pain',
+        'urinary-incontinence' => 'Urinary Incontinence',
+        'headache' => 'Headache',
+        'fatigue' => 'Fatigue',
+        'fever' => 'Fever',
+        'perineal-pain-discharge' => 'Perineal Pain or Discharge',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -1112,6 +1221,12 @@ function hedley_prenatal_field_default_field_bases() {
         'amoxicillin' => 'Amoxicillin',
         'clotrimaxazole-200' => 'Clotrimaxazole 200mg',
         'clotrimaxazole-500' => 'Clotrimaxazole 500mg',
+        'cloxacillin' => 'Cloxacillin',
+        'mastitis-amoxicillin' => 'Amoxicillin for Mastitis',
+        'penecilin-v' => 'Penecilin V',
+        'paracetamol' => 'Paracetamol',
+        'ibuprofen' => 'Ibuprofen',
+        'no-treatment-mastitis' => 'No treatment for Mastitis',
       ),
       'allowed_values_function' => '',
     ),
@@ -1203,6 +1318,33 @@ function hedley_prenatal_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_boolean',
+  );
+
+  // Exported field_base: 'field_speciality_care_signs'.
+  $field_bases['field_speciality_care_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_speciality_care_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'arv' => 'Enrolled to ARV program',
+        'ncd' => 'Enrolled to NCD program',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_sugar_count'.
@@ -1368,6 +1510,33 @@ function hedley_prenatal_field_default_field_bases() {
         2 => 2,
         4 => 4,
         8 => 8,
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_vaginal_exam_signs'.
+  $field_bases['field_vaginal_exam_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_vaginal_exam_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'foul-smelling-lochia' => 'Foul Smelling Lochia',
+        'bleeding' => 'Bleeding',
+        'normal' => 'Normal',
       ),
       'allowed_values_function' => '',
     ),

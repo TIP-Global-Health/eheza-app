@@ -7,6 +7,7 @@ import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model
+import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.Encounter.Model exposing (..)
 
 
@@ -16,7 +17,7 @@ update id msg model =
         CloseEncounter ->
             ( model
             , Cmd.none
-            , [ Backend.PrenatalEncounter.Model.ClosePrenatalEncounter
+            , [ Backend.PrenatalEncounter.Model.CloseEncounter
                     |> Backend.Model.MsgPrenatalEncounter id
                     |> App.Model.MsgIndexedDb
               , App.Model.SetActivePage PinCodePage
@@ -28,7 +29,7 @@ update id msg model =
                 appMsgs =
                     case page of
                         UserPage (PrenatalActivityPage _ NextSteps) ->
-                            Pages.Prenatal.Activity.Model.ViewWarningPopupForNonUrgentDiagnoses
+                            Pages.Prenatal.Activity.Model.SetWarningPopupState (Just WarningPopupRegular)
                                 |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
                                 |> App.Model.MsgLoggedIn
                                 |> List.singleton
@@ -52,3 +53,6 @@ update id msg model =
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
+
+        UndeterminedDiagnosesWarningAcknowledged ->
+            ( { model | undeterminedDiagnosesWarningAcknowledged = True }, Cmd.none, [] )

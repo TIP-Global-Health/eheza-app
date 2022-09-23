@@ -244,11 +244,20 @@ decodeRevision =
                     "prenatal_blood_gprs_test" ->
                         decodeWithUuid PrenatalBloodGpRsTestRevision decodePrenatalBloodGpRsTest
 
+                    "prenatal_breastfeeding" ->
+                        decodeWithUuid PrenatalBreastfeedingRevision decodePrenatalBreastfeeding
+
                     "prenatal_encounter" ->
                         decodeWithUuid PrenatalEncounterRevision decodePrenatalEncounter
 
                     "prenatal_family_planning" ->
                         decodeWithUuid PrenatalFamilyPlanningRevision decodePrenatalFamilyPlanning
+
+                    "prenatal_follow_up" ->
+                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+
+                    "prenatal_gu_exam" ->
+                        decodeWithUuid PrenatalGUExamRevision decodePrenatalGUExam
 
                     "prenatal_health_education" ->
                         decodeWithUuid PrenatalHealthEducationRevision decodePrenatalHealthEducation
@@ -264,9 +273,6 @@ decodeRevision =
 
                     "prenatal_hiv_pcr_test" ->
                         decodeWithUuid PrenatalHIVPCRTestRevision decodePrenatalHIVPCRTest
-
-                    "prenatal_follow_up" ->
-                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
 
                     "prenatal_labs_results" ->
                         decodeWithUuid PrenatalLabsResultsRevision decodePrenatalLabsResults
@@ -294,6 +300,9 @@ decodeRevision =
 
                     "prenatal_send_to_hc" ->
                         decodeWithUuid PrenatalSendToHCRevision decodePrenatalSendToHc
+
+                    "prenatal_speciality_care" ->
+                        decodeWithUuid PrenatalSpecialityCareRevision decodePrenatalSpecialityCare
 
                     "prenatal_symptom_review" ->
                         decodeWithUuid PrenatalSymptomReviewRevision decodePrenatalSymptomReview

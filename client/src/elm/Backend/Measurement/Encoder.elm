@@ -226,6 +226,12 @@ encodePrenatalHealthEducationSign sign =
             EducationDiabetes ->
                 "diabetes"
 
+            EducationEarlyMastitisOrEngorgment ->
+                "early-mastitis-engorgment"
+
+            EducationMastitis ->
+                "mastitis"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
@@ -865,6 +871,90 @@ encodePrenatalTetanusImmunisation =
     encodePrenatalMeasurement (encodeVaccinationValueWithType "prenatal_tetanus_immunisation")
 
 
+encodePrenatalBreastfeeding : PrenatalBreastfeeding -> List ( String, Value )
+encodePrenatalBreastfeeding =
+    encodePrenatalMeasurement encodeBreastfeedingValue
+
+
+encodeBreastfeedingValue : BreastfeedingValue -> List ( String, Value )
+encodeBreastfeedingValue value =
+    [ ( "breastfeeding_signs", encodeEverySet encodeBreastfeedingSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_breastfeeding" )
+    ]
+
+
+encodeBreastfeedingSign : BreastfeedingSign -> Value
+encodeBreastfeedingSign =
+    breastfeedingSignToString >> string
+
+
+encodePrenatalGUExam : PrenatalGUExam -> List ( String, Value )
+encodePrenatalGUExam =
+    encodePrenatalMeasurement encodeGUExamValue
+
+
+encodeGUExamValue : GUExamValue -> List ( String, Value )
+encodeGUExamValue value =
+    let
+        postpartumHealingProblems =
+            Maybe.map
+                (\problems ->
+                    [ ( "postpartum_healing_problem", encodeEverySet encodePostpartumHealingProblem problems ) ]
+                )
+                value.postpartumHealingProblems
+                |> Maybe.withDefault []
+    in
+    [ ( "vaginal_exam_signs", encodeEverySet encodeVaginalExamSign value.vaginalExamSigns )
+    , ( "gu_exam_signs", encodeEverySet encodeGUExamSign value.guExamSigns )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_gu_exam" )
+    ]
+        ++ postpartumHealingProblems
+
+
+encodeVaginalExamSign : VaginalExamSign -> Value
+encodeVaginalExamSign =
+    vaginalExamSignToString >> string
+
+
+encodeGUExamSign : GUExamSign -> Value
+encodeGUExamSign =
+    guExamSignToString >> string
+
+
+encodePostpartumHealingProblem : PostpartumHealingProblem -> Value
+encodePostpartumHealingProblem =
+    postpartumHealingProblemToString >> string
+
+
+encodePrenatalSpecialityCare : PrenatalSpecialityCare -> List ( String, Value )
+encodePrenatalSpecialityCare =
+    encodePrenatalMeasurement encodeSpecialityCareValue
+
+
+encodeSpecialityCareValue : SpecialityCareValue -> List ( String, Value )
+encodeSpecialityCareValue value =
+    [ ( "speciality_care_signs", encodeEverySet encodeSpecialityCareSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_speciality_care" )
+    ]
+
+
+encodeSpecialityCareSign : SpecialityCareSign -> Value
+encodeSpecialityCareSign sign =
+    string <|
+        case sign of
+            EnrolledToARVProgram ->
+                "arv"
+
+            EnrolledToNCDProgram ->
+                "ncd"
+
+            NoSpecialityCareSigns ->
+                "none"
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")
@@ -1085,6 +1175,9 @@ encodeBreastExamSign sign =
 
             Infection ->
                 "infection"
+
+            Warmth ->
+                "warmth"
 
             NormalBreast ->
                 "normal"
@@ -1399,6 +1492,12 @@ encodeMedicationSign sign =
 
             Mebendazole ->
                 "mebendezole"
+
+            PostpartumFolicAcid ->
+                "folic-acid"
+
+            PostpartumVitaminA ->
+                "vitamin-a"
 
             NoMedication ->
                 "none"
@@ -2795,9 +2894,6 @@ encondeMedicationDistributionSign sign =
             Mebendezole ->
                 "mebendezole"
 
-            VitaminA ->
-                "vitamin-a"
-
             Paracetamol ->
                 "paracetamol"
 
@@ -2827,6 +2923,9 @@ encondeMedicationDistributionSign sign =
 
             Metronidazole ->
                 "metronidazole"
+
+            VitaminA ->
+                "vitamina"
 
             NoMedicationDistributionSigns ->
                 "none"
@@ -2886,6 +2985,9 @@ encodeMedicationNonAdministrationSign sign =
 
             MedicationMetronidazole reason ->
                 "metronidazole-" ++ administrationNoteToString reason
+
+            MedicationVitaminA reason ->
+                "vitamina-" ++ administrationNoteToString reason
 
             NoMedicationNonAdministrationSigns ->
                 "none"

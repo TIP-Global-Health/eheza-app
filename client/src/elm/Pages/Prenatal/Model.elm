@@ -28,7 +28,7 @@ type alias AssembledData =
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : PrenatalMeasurements
-    , nursePreviousMeasurementsWithDates : List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
+    , nursePreviousEncountersData : List PreviousEncounterData
     , chwPreviousMeasurementsWithDates : List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements )
     , globalLmpDate : Maybe NominalDate
     , globalObstetricHistory : Maybe ObstetricHistoryValue
@@ -36,6 +36,14 @@ type alias AssembledData =
 
     -- Similar to vaccinationHistory, but includes immunisation data of current encounter.
     , vaccinationProgress : VaccinationProgressDict
+    }
+
+
+type alias PreviousEncounterData =
+    { startDate : NominalDate
+    , diagnoses : EverySet PrenatalDiagnosis
+    , pastDiagnoses : EverySet PrenatalDiagnosis
+    , measurements : PrenatalMeasurements
     }
 
 
@@ -58,6 +66,8 @@ type alias MedicationDistributionForm =
     , ceftriaxone : Maybe Bool
     , azithromycin : Maybe Bool
     , metronidazole : Maybe Bool
+    , vitaminA : Maybe Bool
+    , paracetamol : Maybe Bool
     , nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign)
     , recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
     , hypertensionAvoidingGuidanceReason : Maybe AvoidingGuidanceReason
@@ -77,6 +87,8 @@ emptyMedicationDistributionForm =
     , ceftriaxone = Nothing
     , azithromycin = Nothing
     , metronidazole = Nothing
+    , vitaminA = Nothing
+    , paracetamol = Nothing
     , nonAdministrationSigns = Nothing
     , recommendedTreatmentSigns = Nothing
     , hypertensionAvoidingGuidanceReason = Nothing
@@ -108,6 +120,8 @@ type alias HealthEducationForm =
     , mentalHealth : Maybe Bool
     , hivDetectableViralLoad : Maybe Bool
     , diabetes : Maybe Bool
+    , earlyMastitisOrEngorgment : Maybe Bool
+    , mastitis : Maybe Bool
     }
 
 
@@ -136,6 +150,8 @@ emptyHealthEducationForm =
     , mentalHealth = Nothing
     , hivDetectableViralLoad = Nothing
     , diabetes = Nothing
+    , earlyMastitisOrEngorgment = Nothing
+    , mastitis = Nothing
     }
 
 

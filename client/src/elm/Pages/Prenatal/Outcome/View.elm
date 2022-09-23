@@ -54,7 +54,7 @@ viewHeaderAndContent : Language -> NominalDate -> IndividualEncounterParticipant
 viewHeaderAndContent language currentDate id isChw initiator model data =
     let
         header =
-            viewHeader language data
+            viewHeader language initiator data
 
         content =
             viewContent language currentDate isChw initiator model data
@@ -66,15 +66,24 @@ viewHeaderAndContent language currentDate id isChw initiator model data =
         ]
 
 
-viewHeader : Language -> AssembledData -> Html Msg
-viewHeader language data =
+viewHeader : Language -> RecordPreganancyInitiator -> AssembledData -> Html Msg
+viewHeader language initiator data =
+    let
+        goBackPage =
+            case initiator of
+                InitiatorPostpartumEncounter encounterId ->
+                    PrenatalEncounterPage encounterId
+
+                _ ->
+                    PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
+    in
     div [ class "ui basic head segment" ]
         [ h1
             [ class "ui header" ]
             [ text <| translate language Translate.PregnancyOutcomeLabel ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
+            , onClick <| SetActivePage <| UserPage goBackPage
             ]
             [ span [ class "icon-back" ] []
             , span [] []

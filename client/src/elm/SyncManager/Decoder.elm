@@ -650,6 +650,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalBloodGpRsTest
                             BackendAuthorityPrenatalBloodGpRsTest
 
+                    "prenatal_breastfeeding" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalBreastfeeding
+                            BackendAuthorityPrenatalBreastfeeding
+
                     "prenatal_encounter" ->
                         doDecode
                             Backend.PrenatalEncounter.Decoder.decodePrenatalEncounter
@@ -664,6 +669,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalFollowUp
                             BackendAuthorityPrenatalFollowUp
+
+                    "prenatal_gu_exam" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalGUExam
+                            BackendAuthorityPrenatalGUExam
 
                     "prenatal_health_education" ->
                         doDecode
@@ -734,6 +744,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalSendToHc
                             BackendAuthorityPrenatalSendToHC
+
+                    "prenatal_speciality_care" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSpecialityCare
+                            BackendAuthorityPrenatalSpecialityCare
 
                     "prenatal_symptom_review" ->
                         doDecode

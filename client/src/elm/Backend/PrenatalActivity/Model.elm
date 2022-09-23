@@ -23,6 +23,9 @@ type PrenatalActivity
     | PrenatalTreatmentReview
     | MaternalMentalHealth
     | PrenatalImmunisation
+    | Breastfeeding
+    | SpecialityCare
+    | PostpartumTreatmentReview
 
 
 type PrenatalRecurrentActivity
@@ -139,8 +142,8 @@ allRiskFactors =
     ]
 
 
-allObstetricalDiagnosis : List ObstetricalDiagnosis
-allObstetricalDiagnosis =
+allObstetricalDiagnoses : List ObstetricalDiagnosis
+allObstetricalDiagnoses =
     [ DiagnosisRhNegative
     , DiagnosisModerateUnderweight
     , DiagnosisSevereUnderweight
@@ -156,8 +159,8 @@ allObstetricalDiagnosis =
     ]
 
 
-allMedicalDiagnosis : List MedicalDiagnosis
-allMedicalDiagnosis =
+allMedicalDiagnoses : List MedicalDiagnosis
+allMedicalDiagnoses =
     [ DiagnosisUterineMyoma
     , DiagnosisDiabetes
     , DiagnosisCardiacDisease
@@ -168,7 +171,6 @@ allMedicalDiagnosis =
     , DiagnosisBowedLegs
     , DiagnosisKnownHIV
     , DiagnosisMentalHealthHistory
-    , DiagnosisDiabetes
     ]
 
 

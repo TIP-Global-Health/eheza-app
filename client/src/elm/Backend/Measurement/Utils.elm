@@ -1482,6 +1482,24 @@ recommendedTreatmentSignToString sign =
         TreatmentClotrimaxazole500 ->
             "clotrimaxazole-500"
 
+        TreatmentCloxacillin ->
+            "cloxacillin"
+
+        TreatmentMastitisAmoxicillin ->
+            "mastitis-amoxicillin"
+
+        TreatmentPenecilinV ->
+            "penecilin-v"
+
+        TreatmentParacetamol ->
+            "paracetamol"
+
+        TreatmentIbuprofen ->
+            "ibuprofen"
+
+        NoTreatmentForMastitis ->
+            "no-treatment-mastitis"
+
 
 recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
 recommendedTreatmentSignFromString sign =
@@ -1554,6 +1572,24 @@ recommendedTreatmentSignFromString sign =
 
         "clotrimaxazole-500" ->
             Just TreatmentClotrimaxazole500
+
+        "cloxacillin" ->
+            Just TreatmentCloxacillin
+
+        "mastitis-amoxicillin" ->
+            Just TreatmentMastitisAmoxicillin
+
+        "penecilin-v" ->
+            Just TreatmentPenecilinV
+
+        "paracetamol" ->
+            Just TreatmentParacetamol
+
+        "ibuprofen" ->
+            Just TreatmentIbuprofen
+
+        "no-treatment-mastitis" ->
+            Just NoTreatmentForMastitis
 
         _ ->
             Nothing
@@ -1689,6 +1725,24 @@ prenatalSymptomToString value =
         LegPainRedness ->
             "leg-pain-redness"
 
+        PostpartumAbdominalPain ->
+            "abdominal-pain"
+
+        PostpartumUrinaryIncontinence ->
+            "urinary-incontinence"
+
+        PostpartumHeadache ->
+            "headache"
+
+        PostpartumFatigue ->
+            "fatigue"
+
+        PostpartumFever ->
+            "fever"
+
+        PostpartumPerinealPainOrDischarge ->
+            "perineal-pain-discharge"
+
         NoPrenatalSymptoms ->
             "none"
 
@@ -1728,6 +1782,24 @@ prenatalSymptomFromString value =
 
         "leg-pain-redness" ->
             Just LegPainRedness
+
+        "abdominal-pain" ->
+            Just PostpartumAbdominalPain
+
+        "urinary-incontinence" ->
+            Just PostpartumUrinaryIncontinence
+
+        "headache" ->
+            Just PostpartumHeadache
+
+        "fatigue" ->
+            Just PostpartumFatigue
+
+        "fever" ->
+            Just PostpartumFever
+
+        "perineal-pain-discharge" ->
+            Just PostpartumPerinealPainOrDischarge
 
         "none" ->
             Just NoPrenatalSymptoms
@@ -2186,6 +2258,95 @@ prenatalMentalHealthQuestionOptionFromString value =
             Nothing
 
 
+breastfeedingSignToString : BreastfeedingSign -> String
+breastfeedingSignToString value =
+    case value of
+        IsBreastfeeding ->
+            "breastfeeding"
+
+        NotBreastfeedingBreastPain ->
+            "not-breastfeeding-breast-pain"
+
+        NotBreastfeedingBreastRedness ->
+            "not-breastfeeding-breast-redness"
+
+        NotBreastfeedingLowMilkProduction ->
+            "not-breastfeeding-low-milk-production"
+
+        NotBreastfeedingProblemsLatching ->
+            "not-breastfeeding-problems-latching"
+
+        NotBreastfeedingMedicalProblems ->
+            "not-breastfeeding-medical-problems"
+
+        NotBreastfeedingPersonalChoice ->
+            "not-breastfeeding-personal-choice"
+
+        NotBreastfeedingOther ->
+            "not-breastfeeding-other"
+
+        BreastPain ->
+            "breast-pain"
+
+        BreastRedness ->
+            "breast-redness"
+
+        EnoughMilk ->
+            "enough-milk"
+
+        LatchingWell ->
+            "latching-well"
+
+        NoBreastfeedingSigns ->
+            "none"
+
+
+breastfeedingSignFromString : String -> Maybe BreastfeedingSign
+breastfeedingSignFromString value =
+    case value of
+        "breastfeeding" ->
+            Just IsBreastfeeding
+
+        "not-breastfeeding-breast-pain" ->
+            Just NotBreastfeedingBreastPain
+
+        "not-breastfeeding-breast-redness" ->
+            Just NotBreastfeedingBreastRedness
+
+        "not-breastfeeding-low-milk-production" ->
+            Just NotBreastfeedingLowMilkProduction
+
+        "not-breastfeeding-problems-latching" ->
+            Just NotBreastfeedingProblemsLatching
+
+        "not-breastfeeding-medical-problems" ->
+            Just NotBreastfeedingMedicalProblems
+
+        "not-breastfeeding-personal-choice" ->
+            Just NotBreastfeedingPersonalChoice
+
+        "not-breastfeeding-other" ->
+            Just NotBreastfeedingOther
+
+        "breast-pain" ->
+            Just BreastPain
+
+        "breast-redness" ->
+            Just BreastRedness
+
+        "enough-milk" ->
+            Just EnoughMilk
+
+        "latching-well" ->
+            Just LatchingWell
+
+        "none" ->
+            Just NoBreastfeedingSigns
+
+        _ ->
+            Nothing
+
+
 reasonForNonReferralFromString : String -> Maybe ReasonForNonReferral
 reasonForNonReferralFromString value =
     case value of
@@ -2209,6 +2370,64 @@ reasonForNonReferralFromString value =
 
         "none" ->
             Just NoReasonForNonReferral
+
+        _ ->
+            Nothing
+
+
+vaginalExamSignToString : VaginalExamSign -> String
+vaginalExamSignToString value =
+    case value of
+        FoulSmellingLochia ->
+            "foul-smelling-lochia"
+
+        ExcessiveVaginalBleeding ->
+            "bleeding"
+
+        NormalVaginalExam ->
+            "normal"
+
+
+vaginalExamSignFromString : String -> Maybe VaginalExamSign
+vaginalExamSignFromString value =
+    case value of
+        "foul-smelling-lochia" ->
+            Just FoulSmellingLochia
+
+        "bleeding" ->
+            Just ExcessiveVaginalBleeding
+
+        "normal" ->
+            Just NormalVaginalExam
+
+        _ ->
+            Nothing
+
+
+guExamSignToString : GUExamSign -> String
+guExamSignToString value =
+    case value of
+        EpisiotomyOrPerinealTear ->
+            "episiotomy-perineal-tear"
+
+        RectalHemorrhoids ->
+            "rectal-hemorrhoids"
+
+        NoGUExamSigns ->
+            "none"
+
+
+guExamSignFromString : String -> Maybe GUExamSign
+guExamSignFromString value =
+    case value of
+        "episiotomy-perineal-tear" ->
+            Just EpisiotomyOrPerinealTear
+
+        "rectal-hemorrhoids" ->
+            Just RectalHemorrhoids
+
+        "none" ->
+            Just NoGUExamSigns
 
         _ ->
             Nothing
@@ -2253,6 +2472,53 @@ socialHistoryHivTestingResultFromString result =
 
         "none" ->
             Just NoHivTesting
+
+        _ ->
+            Nothing
+
+
+postpartumHealingProblemToString : PostpartumHealingProblem -> String
+postpartumHealingProblemToString value =
+    case value of
+        NormalPostpartumHealing ->
+            "normal-healing"
+
+        HealingProblemSwelling ->
+            "swelling"
+
+        HealingProblemDischarge ->
+            "discharge"
+
+        HealingProblemReleaseOfSutures ->
+            "release-of-sutures"
+
+        HealingProblemHematoma ->
+            "hematoma"
+
+        HealingProblemBruising ->
+            "bruising"
+
+
+postpartumHealingProblemFromString : String -> Maybe PostpartumHealingProblem
+postpartumHealingProblemFromString value =
+    case value of
+        "normal-healing" ->
+            Just NormalPostpartumHealing
+
+        "swelling" ->
+            Just HealingProblemSwelling
+
+        "discharge" ->
+            Just HealingProblemDischarge
+
+        "release-of-sutures" ->
+            Just HealingProblemReleaseOfSutures
+
+        "hematoma" ->
+            Just HealingProblemHematoma
+
+        "bruising" ->
+            Just HealingProblemBruising
 
         _ ->
             Nothing

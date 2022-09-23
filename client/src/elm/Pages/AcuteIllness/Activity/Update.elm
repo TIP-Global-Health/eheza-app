@@ -52,7 +52,7 @@ import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Activity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (ifEverySetEmpty, setMultiSelectInputValue)
+import Pages.Utils exposing (getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, nonAdministrationReasonToSign, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 

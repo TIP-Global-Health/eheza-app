@@ -90,6 +90,7 @@ import Pages.AcuteIllness.Encounter.Model
 import Pages.AcuteIllness.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
+import Pages.GlobalCaseManagement.Utils
 import Pages.NextSteps.Model
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.Utils
@@ -99,6 +100,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Person.Model
 import Pages.Prenatal.Activity.Model
+import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.Activity.Utils
 import Pages.Prenatal.Encounter.Model
 import Pages.Prenatal.Encounter.Utils
@@ -1971,6 +1973,36 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ BreastExamRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalBreastfeedingRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalGUExamRevision uuid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ WellChildHeightRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -3534,6 +3566,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalBreastfeedingRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | breastfeeding = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalEncounterRevision uuid data ->
             let
                 prenatalEncounters =
@@ -3569,6 +3609,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | followUp = Just ( uuid, data ) })
                 modelWithMappedFollowUp
+            , recalc
+            )
+
+        PrenatalGUExamRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | guExam = Just ( uuid, data ) })
+                model
             , recalc
             )
 
@@ -3687,6 +3735,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalSpecialityCareRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | specialityCare = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -4100,12 +4156,12 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                         |> App.Model.SetActivePage
 
                 initialEncounterWarningPopupMsg state =
-                    Pages.Prenatal.Activity.Model.SetWarningPopupState (Just state)
+                    Pages.Prenatal.Activity.Model.SetWarningPopupState (Just <| WarningPopupUrgent state)
                         |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
                         |> App.Model.MsgLoggedIn
 
                 recurrentEncounterWarningPopupMsg state =
-                    Pages.Prenatal.RecurrentActivity.Model.SetWarningPopupState (Just state)
+                    Pages.Prenatal.RecurrentActivity.Model.SetWarningPopupState (Just <| WarningPopupUrgent state)
                         |> App.Model.MsgPagePrenatalRecurrentActivity id Backend.PrenatalActivity.Model.RecurrentNextSteps
                         |> App.Model.MsgLoggedIn
             in
@@ -4174,182 +4230,182 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                     diagnosesAfter =
                         Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
 
-                    updateDiagnosesMsg =
-                        Backend.PrenatalEncounter.Model.SetPrenatalDiagnoses diagnosesAfter
-                            |> Backend.Model.MsgPrenatalEncounter id
-                            |> App.Model.MsgIndexedDb
-
                     addedDiagnoses =
                         EverySet.diff diagnosesAfter diagnosesBefore
                             |> EverySet.toList
-
-                    initialEncounterMsgs =
-                        let
-                            urgentDiagnoses =
-                                List.filter
-                                    Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
-                                    addedDiagnoses
-
-                            additionalMsgs =
-                                if List.isEmpty urgentDiagnoses then
-                                    []
-
-                                else
-                                    let
-                                        ( message, instructions ) =
-                                            let
-                                                signs =
-                                                    List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
-                                                        |> String.join ", "
-                                            in
-                                            -- Instructions for Emergency Referral.
-                                            ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
-                                            , if
-                                                List.any
-                                                    (\immediateDeliveryDiagnosis ->
-                                                        List.member immediateDeliveryDiagnosis urgentDiagnoses
-                                                    )
-                                                    Pages.Prenatal.Activity.Utils.immediateDeliveryDiagnoses
-                                              then
-                                                translate language Translate.EmergencyReferralHelperReferToHospitalForImmediateDelivery
-
-                                              else if
-                                                List.any
-                                                    (\maternityWardDiagnosis ->
-                                                        List.member maternityWardDiagnosis urgentDiagnoses
-                                                    )
-                                                    Pages.Prenatal.Activity.Utils.maternityWardDiagnoses
-                                              then
-                                                translate language Translate.EmergencyReferralHelperReferToMaternityWard
-
-                                              else
-                                                translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
-                                            )
-                                    in
-                                    -- View warning popup and navigate to Next Steps activity.
-                                    [ initialEncounterWarningPopupMsg ( message, instructions )
-                                    , initialEncounterNextStepsMsg
-                                    ]
-                        in
-                        -- These messages are sent when diagnoses set has changed.
-                        -- Therefore, in any case, we need to send command to update
-                        -- diagnoses set.
-                        updateDiagnosesMsg
-                            :: -- For urgent diagnoses, we show warning popup and
-                               -- navigate to Next Steps activity.
-                               additionalMsgs
-
-                    recurrentEncounterMsgs =
-                        let
-                            urgentDiagnoses =
-                                List.filter
-                                    Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
-                                    addedDiagnoses
-
-                            additionalMsgs =
-                                if List.isEmpty urgentDiagnoses then
-                                    []
-
-                                else
-                                    let
-                                        signs =
-                                            List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) urgentDiagnoses
-                                                |> String.join ", "
-                                    in
-                                    [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
-                                        |> UserPage
-                                        |> App.Model.SetActivePage
-                                    , recurrentEncounterWarningPopupMsg
-                                        ( signs
-                                        , translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
-                                        )
-                                    ]
-                        in
-                        -- These messages are sent when diagnoses set has changed.
-                        -- Therefore, in any case, we need to send command to update
-                        -- diagnoses set.
-                        updateDiagnosesMsg
-                            :: -- For urgent diagnoses, we show warning popup and
-                               -- navigate to Next Steps activity.
-                               additionalMsgs
-
-                    reportToOriginMsgs =
-                        Maybe.map
-                            (\( originatingEncounterId, targetDiagnoses ) ->
-                                let
-                                    reportedDiagnoses =
-                                        List.filter (\diagnosis -> List.member diagnosis targetDiagnoses) addedDiagnoses
-                                            |> EverySet.fromList
-
-                                    diabetesDiagnoses =
-                                        EverySet.toList reportedDiagnoses
-                                            |> List.any
-                                                (\diagnosis ->
-                                                    List.member diagnosis Pages.Prenatal.Utils.diabetesDiagnoses
-                                                )
-
-                                    rhNegativeDiagnosis =
-                                        EverySet.member DiagnosisRhesusNegative reportedDiagnoses
-                                in
-                                if EverySet.isEmpty reportedDiagnoses then
-                                    []
-
-                                else if
-                                    (-- Reporting back about previous diagnosis results in hospital referral
-                                     -- at Next steps. For Diabetes, we have logic saying that when it's first
-                                     -- diagnosed, the patient is referred to hospital.
-                                     -- On next occasions, no next steps are required.
-                                     -- Therefore, if we know that Diabetes was already diagnosed, we will not
-                                     -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
-                                     diabetesDiagnoses
-                                        && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
-                                    )
-                                        || (-- Reporting back about previous diagnosis results in hospital referral
-                                            -- at Next steps.
-                                            -- Even though the Blood group and rhesus test are supposed to be run once,
-                                            -- we continue offering it until we get a result.
-                                            -- This way, theoretically, it's possible to have multiple tests pending,
-                                            -- and results can be entered multiple times.
-                                            -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
-                                            -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
-                                            rhNegativeDiagnosis
-                                                && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembledAfter
-                                           )
-                                then
-                                    []
-
-                                else
-                                    Backend.PrenatalEncounter.Model.SetPastPrenatalDiagnoses reportedDiagnoses
-                                        |> Backend.Model.MsgPrenatalEncounter originatingEncounterId
-                                        |> App.Model.MsgIndexedDb
-                                        |> List.singleton
-                            )
-                            originData
-                            |> Maybe.withDefault []
                 in
                 if everySetsEqual diagnosesBefore diagnosesAfter then
                     []
 
                 else
-                    case activePage of
-                        UserPage (PrenatalEncounterPage _) ->
-                            initialEncounterMsgs
+                    -- Here we know that trigger for update cam form another encounter.
+                    -- Therefore, we only need to perform actions for that originating encounter.
+                    Maybe.map
+                        (\( originatingEncounterId, targetDiagnoses ) ->
+                            let
+                                reportedDiagnoses =
+                                    List.filter (\diagnosis -> List.member diagnosis targetDiagnoses) addedDiagnoses
+                                        |> EverySet.fromList
 
-                        UserPage (PrenatalActivityPage _ _) ->
-                            -- reportToOriginMsgs are sent when nurse enters
-                            -- results of test from one of previous encounters,
-                            -- and on save, APP navigates back to Labs History
-                            -- sub activity.
-                            initialEncounterMsgs ++ reportToOriginMsgs
+                                diabetesDiagnoses =
+                                    EverySet.toList reportedDiagnoses
+                                        |> List.any
+                                            (\diagnosis ->
+                                                List.member diagnosis Pages.Prenatal.Utils.diabetesDiagnoses
+                                            )
 
-                        UserPage (PrenatalRecurrentEncounterPage _) ->
-                            recurrentEncounterMsgs
+                                rhNegativeDiagnosis =
+                                    EverySet.member DiagnosisRhesusNegative reportedDiagnoses
+                            in
+                            if EverySet.isEmpty reportedDiagnoses then
+                                []
 
-                        UserPage (PrenatalRecurrentActivityPage _ _) ->
-                            recurrentEncounterMsgs
+                            else if
+                                (-- Reporting back about previous diagnosis results in hospital referral
+                                 -- at Next steps. For Diabetes, we have logic saying that when it's first
+                                 -- diagnosed, the patient is referred to hospital.
+                                 -- On next occasions, no next steps are required.
+                                 -- Therefore, if we know that Diabetes was already diagnosed, we will not
+                                 -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
+                                 diabetesDiagnoses
+                                    && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
+                                )
+                                    || (-- Reporting back about previous diagnosis results in hospital referral
+                                        -- at Next steps.
+                                        -- Even though the Blood group and rhesus test are supposed to be run once,
+                                        -- we continue offering it until we get a result.
+                                        -- This way, theoretically, it's possible to have multiple tests pending,
+                                        -- and results can be entered multiple times.
+                                        -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
+                                        -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
+                                        rhNegativeDiagnosis
+                                            && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembledAfter
+                                       )
+                            then
+                                []
 
-                        _ ->
-                            []
+                            else
+                                Backend.PrenatalEncounter.Model.SetPastPrenatalDiagnoses reportedDiagnoses
+                                    |> Backend.Model.MsgPrenatalEncounter originatingEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                    |> List.singleton
+                        )
+                        originData
+                        |> -- No originating encounter data, therefore, perform
+                           -- required actions for current encounter.
+                           Maybe.withDefault
+                            (let
+                                updateDiagnosesMsg =
+                                    Backend.PrenatalEncounter.Model.SetPrenatalDiagnoses diagnosesAfter
+                                        |> Backend.Model.MsgPrenatalEncounter id
+                                        |> App.Model.MsgIndexedDb
+
+                                initialEncounterMsgs =
+                                    let
+                                        urgentDiagnoses =
+                                            List.filter
+                                                Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
+                                                addedDiagnoses
+
+                                        additionalMsgs =
+                                            if List.isEmpty urgentDiagnoses then
+                                                []
+
+                                            else
+                                                let
+                                                    ( message, instructions ) =
+                                                        let
+                                                            signs =
+                                                                List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
+                                                                    |> String.join ", "
+                                                        in
+                                                        -- Instructions for Emergency Referral.
+                                                        ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
+                                                        , if
+                                                            List.any
+                                                                (\immediateDeliveryDiagnosis ->
+                                                                    List.member immediateDeliveryDiagnosis urgentDiagnoses
+                                                                )
+                                                                Pages.Prenatal.Activity.Utils.immediateDeliveryDiagnoses
+                                                          then
+                                                            translate language Translate.EmergencyReferralHelperReferToHospitalForImmediateDelivery
+
+                                                          else if
+                                                            List.any
+                                                                (\maternityWardDiagnosis ->
+                                                                    List.member maternityWardDiagnosis urgentDiagnoses
+                                                                )
+                                                                Pages.Prenatal.Activity.Utils.maternityWardDiagnoses
+                                                          then
+                                                            translate language Translate.EmergencyReferralHelperReferToMaternityWard
+
+                                                          else
+                                                            translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
+                                                        )
+                                                in
+                                                -- View warning popup and navigate to Next Steps activity.
+                                                [ initialEncounterWarningPopupMsg ( message, instructions )
+                                                , initialEncounterNextStepsMsg
+                                                ]
+                                    in
+                                    -- These messages are sent when diagnoses set has changed.
+                                    -- Therefore, in any case, we need to send command to update
+                                    -- diagnoses set.
+                                    updateDiagnosesMsg
+                                        :: -- For urgent diagnoses, we show warning popup and
+                                           -- navigate to Next Steps activity.
+                                           additionalMsgs
+
+                                recurrentEncounterMsgs =
+                                    let
+                                        urgentDiagnoses =
+                                            List.filter
+                                                Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+                                                addedDiagnoses
+
+                                        additionalMsgs =
+                                            if List.isEmpty urgentDiagnoses then
+                                                []
+
+                                            else
+                                                let
+                                                    signs =
+                                                        List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) urgentDiagnoses
+                                                            |> String.join ", "
+                                                in
+                                                [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
+                                                    |> UserPage
+                                                    |> App.Model.SetActivePage
+                                                , recurrentEncounterWarningPopupMsg
+                                                    ( signs
+                                                    , translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
+                                                    )
+                                                ]
+                                    in
+                                    -- These messages are sent when diagnoses set has changed.
+                                    -- Therefore, in any case, we need to send command to update
+                                    -- diagnoses set.
+                                    updateDiagnosesMsg
+                                        :: -- For urgent diagnoses, we show warning popup and
+                                           -- navigate to Next Steps activity.
+                                           additionalMsgs
+                             in
+                             case activePage of
+                                UserPage (PrenatalEncounterPage _) ->
+                                    initialEncounterMsgs
+
+                                UserPage (PrenatalActivityPage _ _) ->
+                                    initialEncounterMsgs
+
+                                UserPage (PrenatalRecurrentEncounterPage _) ->
+                                    recurrentEncounterMsgs
+
+                                UserPage (PrenatalRecurrentActivityPage _ _) ->
+                                    recurrentEncounterMsgs
+
+                                _ ->
+                                    []
+                            )
 
             else
                 []
@@ -4433,36 +4489,63 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test id =
         |> Maybe.andThen
             (\assembled ->
                 Maybe.map
-                    (\( resultsId, measurement ) ->
-                        let
-                            updatedValue =
-                                measurement.value
-                                    |> (\value ->
-                                            let
-                                                completedTests =
-                                                    EverySet.insert test value.completedTests
-
-                                                resolutionDate =
-                                                    -- When all performed tests are completed, setting today
-                                                    -- as resolution date.
-                                                    if EverySet.size completedTests == EverySet.size value.performedTests then
-                                                        currentDate
-
-                                                    else
-                                                        value.resolutionDate
-                                            in
-                                            { value
-                                                | completedTests = completedTests
-                                                , resolutionDate = resolutionDate
-                                            }
-                                       )
-                        in
-                        if EverySet.member test measurement.value.completedTests then
+                    (\( resultsId, results ) ->
+                        if EverySet.member test results.value.completedTests then
                             -- Do not update value if we have it set up properly already.
                             []
 
                         else
-                            [ saveLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                            let
+                                ( performedTests, completedTests ) =
+                                    Pages.GlobalCaseManagement.Utils.prenatalLabsResultsTestData currentDate results
+
+                                ( updatedValue, navigateToProgressReportMsg ) =
+                                    results.value
+                                        |> (\value ->
+                                                let
+                                                    updatedCompletedTests =
+                                                        test :: completedTests
+
+                                                    allActivitiesCompleted =
+                                                        -- All performed tests are completed, and Next Steps are either
+                                                        -- completed, or not required,
+                                                        (List.length updatedCompletedTests == List.length performedTests)
+                                                            && Pages.Prenatal.RecurrentActivity.Utils.activityCompleted
+                                                                currentDate
+                                                                assembled
+                                                                Backend.PrenatalActivity.Model.RecurrentNextSteps
+
+                                                    resolutionDate =
+                                                        -- When all performed tests are completed, and Next Steps are either
+                                                        -- completed, or not required, setting today as resolution date.
+                                                        if allActivitiesCompleted then
+                                                            currentDate
+
+                                                        else
+                                                            value.resolutionDate
+                                                in
+                                                ( { value
+                                                    | completedTests = EverySet.fromList updatedCompletedTests
+                                                    , resolutionDate = resolutionDate
+                                                  }
+                                                , if allActivitiesCompleted then
+                                                    -- When all activities are completed, we show progress report.
+                                                    -- Here we handle added Lab results, so, similar logic is applied
+                                                    -- at Pages.Prenatal.RecurrentActivity.Update, for Next Steps activities.
+                                                    [ App.Model.SetActivePage <|
+                                                        UserPage <|
+                                                            ClinicalProgressReportPage
+                                                                (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id)
+                                                                id
+                                                    ]
+
+                                                  else
+                                                    []
+                                                )
+                                           )
+                            in
+                            saveLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue
+                                :: navigateToProgressReportMsg
                     )
                     assembled.measurements.labsResults
             )

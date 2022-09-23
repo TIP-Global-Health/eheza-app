@@ -29,8 +29,7 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetWarningPopupState (Maybe ( String, String ))
-    | ViewWarningPopupForNonUrgentDiagnoses
+    | SetWarningPopupState (Maybe (WarningPopupType Msg))
       -- PregnancyDatingMsgs
     | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetConfirmLmpDate NominalDate Bool
@@ -97,6 +96,11 @@ type Msg
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
     | SetBreastExamBreast BreastExamSign
     | SaveBreastExam PersonId (Maybe ( BreastExamId, BreastExam )) (Maybe ExaminationTask)
+      -- ExaminationMsgs, GU Exam
+    | SetGUExamBoolInput (Bool -> GUExamForm -> GUExamForm) Bool
+    | SetPostpartumHealingProblem PostpartumHealingProblem
+    | SetVaginalExamSign VaginalExamSign
+    | SaveGUExam PersonId (Maybe ( PrenatalGUExamId, PrenatalGUExam )) (Maybe ExaminationTask)
       -- FamilyPlanningMsgs
     | SetFamilyPlanningSign FamilyPlanningSign
     | SaveFamilyPlanning PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
@@ -202,7 +206,6 @@ type Msg
     | SaveSymptomReview PersonId (Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview ))
       -- TREATMENTREVIEWMsgs
     | SetActiveTreatmentReviewTask TreatmentReviewTask
-    | SetTreatmentReviewWarningPopupState (Maybe Msg)
     | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
     | SetHIVMedicationNotGivenReason HIVTreatmentSign
     | SaveMedicationSubActivity PersonId (Maybe ( MedicationId, Medication )) (Maybe TreatmentReviewTask)
@@ -210,9 +213,8 @@ type Msg
     | SetMentalHealthStep MentalHealthStep
     | SetMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | SetSpecialistAtHC Bool
-    | SetMentalHealthWarningPopupState (Maybe Msg)
     | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
-      -- IMMUNISATION
+      -- IMMUNISATIONMsgs
     | SetActiveImmunisationTask ImmunisationTask
     | SetVaccinationFormViewMode PrenatalVaccineType VaccinationFormViewMode
     | SetUpdatePreviousVaccines PrenatalVaccineType VaccineDose Bool
@@ -223,6 +225,16 @@ type Msg
     | SaveVaccinationUpdateDate PrenatalVaccineType VaccineDose
     | DeleteVaccinationUpdateDate PrenatalVaccineType VaccineDose NominalDate
     | SaveTetanusImmunisation PersonId (Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation ))
+      -- PostpartumTreatmentReviewMsgs
+    | SetPostpartumTreatmentReviewBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
+    | SavePostpartumTreatmentReview PersonId (Maybe ( MedicationId, Medication ))
+      -- BREASTFEEDINGMsgs
+    | SetBreastfeedingBoolInput (Bool -> BreastfeedingForm -> BreastfeedingForm) Bool
+    | SetReasonForNotBreastfeeding BreastfeedingSign
+    | SaveBreastfeeding PersonId (Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding ))
+      --  SpecialityCareMsgs
+    | SetSpecialityCareBoolInput (Bool -> SpecialityCareForm -> SpecialityCareForm) Bool
+    | SaveSpecialityCare PersonId (Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare ))
 
 
 type alias Model =
@@ -241,9 +253,12 @@ type alias Model =
     , treatmentReviewData : TreatmentReviewData
     , mentalHealthData : MentalHealthData
     , immunisationData : ImmunisationData
+    , postpartumTreatmentReviewData : PostpartumTreatmentReviewData
+    , breastfeedingData : BreastfeedingData
+    , specialityCareData : SpecialityCareData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
-    , warningPopupState : Maybe ( String, String )
+    , warningPopupState : Maybe (WarningPopupType Msg)
     }
 
 
@@ -264,6 +279,9 @@ emptyModel =
     , treatmentReviewData = emptyTreatmentReviewData
     , mentalHealthData = emptyMentalHealthData
     , immunisationData = emptyImmunisationData
+    , postpartumTreatmentReviewData = emptyPostpartumTreatmentReviewData
+    , breastfeedingData = emptyBreastfeedingData
+    , specialityCareData = emptySpecialityCareData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -316,7 +334,8 @@ type alias ExaminationData =
     , corePhysicalExamForm : CorePhysicalExamForm
     , obstetricalExamForm : ObstetricalExamForm
     , breastExamForm : BreastExamForm
-    , activeTask : ExaminationTask
+    , guExamForm : GUExamForm
+    , activeTask : Maybe ExaminationTask
     }
 
 
@@ -327,7 +346,8 @@ emptyExaminationData =
     , corePhysicalExamForm = emptyCorePhysicalExamForm
     , obstetricalExamForm = emptyObstetricalExamForm
     , breastExamForm = emptyBreastExamForm
-    , activeTask = Vitals
+    , guExamForm = emptyGUExamForm
+    , activeTask = Nothing
     }
 
 
@@ -378,6 +398,10 @@ type alias MedicationForm =
     { receivedIronFolicAcid : Maybe Bool
     , receivedDewormingPill : Maybe Bool
     , receivedMebendazole : Maybe Bool
+
+    -- Following 2 are for Postpartum encounter
+    , receivedFolicAcid : Maybe Bool
+    , receivedVitaminA : Maybe Bool
     , hivMedicationByPMTCT : Maybe Bool
     , hivMedicationNotGivenReason : Maybe HIVTreatmentSign
     , hivMedicationNotGivenReasonDirty : Bool
@@ -414,6 +438,8 @@ emptyMedicationForm =
     { receivedIronFolicAcid = Nothing
     , receivedDewormingPill = Nothing
     , receivedMebendazole = Nothing
+    , receivedFolicAcid = Nothing
+    , receivedVitaminA = Nothing
     , hivMedicationByPMTCT = Nothing
     , hivMedicationNotGivenReason = Nothing
     , hivMedicationNotGivenReasonDirty = False
@@ -579,7 +605,6 @@ emptySymptomReviewForm =
 type alias TreatmentReviewData =
     { medicationForm : MedicationForm
     , activeTask : Maybe TreatmentReviewTask
-    , warningPopupState : Maybe Msg
     }
 
 
@@ -587,20 +612,17 @@ emptyTreatmentReviewData : TreatmentReviewData
 emptyTreatmentReviewData =
     { medicationForm = emptyMedicationForm
     , activeTask = Nothing
-    , warningPopupState = Nothing
     }
 
 
 type alias MentalHealthData =
     { form : MentalHealthForm
-    , warningPopupState : Maybe Msg
     }
 
 
 emptyMentalHealthData : MentalHealthData
 emptyMentalHealthData =
     { form = emptyMentalHealthForm
-    , warningPopupState = Nothing
     }
 
 
@@ -618,6 +640,30 @@ emptyImmunisationData : ImmunisationData
 emptyImmunisationData =
     { tetanusForm = emptyVaccinationForm
     , activeTask = Nothing
+    }
+
+
+type alias SpecialityCareData =
+    { form : SpecialityCareForm
+    }
+
+
+emptySpecialityCareData : SpecialityCareData
+emptySpecialityCareData =
+    { form = emptySpecialityCareForm
+    }
+
+
+type alias SpecialityCareForm =
+    { enrolledToARVProgram : Maybe Bool
+    , enrolledToNCDProgram : Maybe Bool
+    }
+
+
+emptySpecialityCareForm : SpecialityCareForm
+emptySpecialityCareForm =
+    { enrolledToARVProgram = Nothing
+    , enrolledToNCDProgram = Nothing
     }
 
 
@@ -932,6 +978,29 @@ emptyBreastExamForm =
     BreastExamForm Nothing Nothing
 
 
+type alias GUExamForm =
+    { vaginalExamSigns : Maybe (List VaginalExamSign)
+    , episiotomyOrPerinealTear : Maybe Bool
+    , healingNormally : Maybe Bool
+    , healingNormallyDirty : Bool
+    , postpartumHealingProblems : Maybe (List PostpartumHealingProblem)
+    , postpartumHealingProblemsDirty : Bool
+    , rectalHemorrhoids : Maybe Bool
+    }
+
+
+emptyGUExamForm : GUExamForm
+emptyGUExamForm =
+    { vaginalExamSigns = Nothing
+    , episiotomyOrPerinealTear = Nothing
+    , healingNormally = Nothing
+    , healingNormallyDirty = False
+    , postpartumHealingProblems = Nothing
+    , postpartumHealingProblemsDirty = False
+    , rectalHemorrhoids = Nothing
+    }
+
+
 type alias FamilyPlanningForm =
     { signs : Maybe (List FamilyPlanningSign)
     }
@@ -1174,4 +1243,57 @@ emptyMentalHealthForm =
     { signs = Nothing
     , specialistAtHC = Nothing
     , step = MentalHealthQuestion MentalHealthQuestion1
+    }
+
+
+type alias PostpartumTreatmentReviewData =
+    { form : MedicationForm
+    }
+
+
+emptyPostpartumTreatmentReviewData : MedicationData
+emptyPostpartumTreatmentReviewData =
+    { form = emptyMedicationForm
+    }
+
+
+type alias BreastfeedingData =
+    { form : BreastfeedingForm
+    }
+
+
+emptyBreastfeedingData : BreastfeedingData
+emptyBreastfeedingData =
+    { form = emptyBreastfeedingForm
+    }
+
+
+type alias BreastfeedingForm =
+    { isBreastfeeding : Maybe Bool
+    , reasonForNotBreastfeeding : Maybe BreastfeedingSign
+    , reasonForNotBreastfeedingDirty : Bool
+    , breastPain : Maybe Bool
+    , breastPainDirty : Bool
+    , breastRedness : Maybe Bool
+    , breastRednessDirty : Bool
+    , enoughMilk : Maybe Bool
+    , enoughMilkDirty : Bool
+    , latchingWell : Maybe Bool
+    , latchingWellDirty : Bool
+    }
+
+
+emptyBreastfeedingForm : BreastfeedingForm
+emptyBreastfeedingForm =
+    { isBreastfeeding = Nothing
+    , reasonForNotBreastfeeding = Nothing
+    , reasonForNotBreastfeedingDirty = False
+    , breastPain = Nothing
+    , breastPainDirty = False
+    , breastRedness = Nothing
+    , breastRednessDirty = False
+    , enoughMilk = Nothing
+    , enoughMilkDirty = False
+    , latchingWell = Nothing
+    , latchingWellDirty = False
     }

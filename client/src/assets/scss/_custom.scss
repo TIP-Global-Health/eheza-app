@@ -437,6 +437,7 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-postpartum-treatment-review,
 .icon-task-prior-treatment {
   background-image: url(#{$img-path}icon-prior-treatment.svg);
   background-size: 78px 78px;
@@ -453,7 +454,8 @@ h3.ui.header {
 }
 
 .icon-task-send-to-hc,
-.icon-task-appointment-confirmation {
+.icon-task-appointment-confirmation,
+.icon-task-speciality-care {
   background-image: url(#{$img-path}icon-health-center-white.svg);
   background-size: 78px 78px;
 }
@@ -466,6 +468,11 @@ h3.ui.header {
 .icon-task-feeding {
   background-image: url(#{$img-path}icon-feeding-white.svg);
   background-size: 122px 122px;
+}
+
+.icon-task-breastfeeding {
+  background-image: url(#{$img-path}icon-breastfeeding-white.svg);
+  background-size: 92px 92px;
 }
 
 .icon-task-caring {
@@ -518,7 +525,7 @@ h3.ui.header {
 
 .icon-task-mental-health {
   background-image: url(#{$img-path}icon-mental-health-white.svg);
-  background-size: 100px 100px;
+  background-size: 92px 92px;
 }
 
 // Tasks horizontal scroll
@@ -1458,6 +1465,17 @@ input::placeholder {
     }
   }
 
+  &.diagnosis-popup {
+
+    .bottom-message p {
+      margin-bottom: 10px;
+    }
+
+    ul {
+      text-align: left;
+    }
+  }
+
   > .icon:first-child+*,
   >:first-child:not(.icon) {
     border-top-left-radius: 0;
@@ -1983,6 +2001,20 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-breastexam-gray.svg);
+  }
+}
+
+.icon-gu-exam {
+  .active &:after {
+    background-image: url(#{$img-path}icon-gu-exam-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-gu-exam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-gu-exam-gray.svg);
   }
 }
 

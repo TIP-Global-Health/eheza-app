@@ -6,6 +6,7 @@ import Backend.Model
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.RecurrentActivity.Model
 import Pages.Prenatal.RecurrentEncounter.Model exposing (..)
 
@@ -13,22 +14,12 @@ import Pages.Prenatal.RecurrentEncounter.Model exposing (..)
 update : PrenatalEncounterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update id msg model =
     case msg of
-        CloseEncounter ->
-            ( model
-            , Cmd.none
-            , [ Backend.PrenatalEncounter.Model.ClosePrenatalEncounter
-                    |> Backend.Model.MsgPrenatalEncounter id
-                    |> App.Model.MsgIndexedDb
-              , App.Model.SetActivePage PinCodePage
-              ]
-            )
-
         SetActivePage page ->
             let
                 appMsgs =
                     case page of
                         UserPage (PrenatalRecurrentActivityPage _ RecurrentNextSteps) ->
-                            Pages.Prenatal.RecurrentActivity.Model.ViewWarningPopupForNonUrgentDiagnoses
+                            Pages.Prenatal.RecurrentActivity.Model.SetWarningPopupState (Just WarningPopupRegular)
                                 |> App.Model.MsgPagePrenatalRecurrentActivity id Backend.PrenatalActivity.Model.RecurrentNextSteps
                                 |> App.Model.MsgLoggedIn
                                 |> List.singleton
@@ -43,9 +34,6 @@ update id msg model =
 
         SetAlertsDialogState value ->
             ( { model | showAlertsDialog = value }, Cmd.none, [] )
-
-        SetEndEncounterDialogState value ->
-            ( { model | showEndEncounterDialog = value }, Cmd.none, [] )
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )

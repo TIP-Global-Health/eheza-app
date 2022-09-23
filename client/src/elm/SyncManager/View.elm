@@ -564,14 +564,20 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalBloodGpRsTest identifier ->
                 viewMeasurement identifier "Prenatal Blood GpRs Test"
 
+            BackendAuthorityPrenatalBreastfeeding identifier ->
+                viewMeasurement identifier "Prenatal Breastfeeding"
+
             BackendAuthorityPrenatalFamilyPlanning identifier ->
                 viewMeasurement identifier "Prenatal Family Planning"
 
-            BackendAuthorityPrenatalHealthEducation identifier ->
-                viewMeasurement identifier "Prenatal Health Education"
-
             BackendAuthorityPrenatalFollowUp identifier ->
                 viewMeasurement identifier "Prenatal Follow Up"
+
+            BackendAuthorityPrenatalGUExam identifier ->
+                viewMeasurement identifier "Prenatal GU Exam"
+
+            BackendAuthorityPrenatalHealthEducation identifier ->
+                viewMeasurement identifier "Prenatal Health Education"
 
             BackendAuthorityPrenatalHemoglobinTest identifier ->
                 viewMeasurement identifier "Prenatal Hemoglobin Test"
@@ -611,6 +617,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityPrenatalSendToHC identifier ->
                 viewMeasurement identifier "Prenatal Send to HC"
+
+            BackendAuthorityPrenatalSpecialityCare identifier ->
+                viewMeasurement identifier "Prenatal Specialty Care"
 
             BackendAuthorityPrenatalSymptomReview identifier ->
                 viewMeasurement identifier "Prenatal Symptom Review"

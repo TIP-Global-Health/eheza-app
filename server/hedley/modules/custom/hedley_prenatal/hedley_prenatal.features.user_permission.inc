@@ -31,9 +31,29 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_breastfeeding content'.
+  $permissions['create prenatal_breastfeeding content'] = array(
+    'name' => 'create prenatal_breastfeeding content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_follow_up content'.
   $permissions['create prenatal_follow_up content'] = array(
     'name' => 'create prenatal_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create prenatal_gu_exam content'.
+  $permissions['create prenatal_gu_exam content'] = array(
+    'name' => 'create prenatal_gu_exam content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -151,6 +171,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_speciality_care content'.
+  $permissions['create prenatal_speciality_care content'] = array(
+    'name' => 'create prenatal_speciality_care content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_symptom_review content'.
   $permissions['create prenatal_symptom_review content'] = array(
     'name' => 'create prenatal_symptom_review content',
@@ -209,9 +239,27 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_breastfeeding content'.
+  $permissions['delete any prenatal_breastfeeding content'] = array(
+    'name' => 'delete any prenatal_breastfeeding content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_follow_up content'.
   $permissions['delete any prenatal_follow_up content'] = array(
     'name' => 'delete any prenatal_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any prenatal_gu_exam content'.
+  $permissions['delete any prenatal_gu_exam content'] = array(
+    'name' => 'delete any prenatal_gu_exam content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -317,6 +365,15 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_speciality_care content'.
+  $permissions['delete any prenatal_speciality_care content'] = array(
+    'name' => 'delete any prenatal_speciality_care content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_symptom_review content'.
   $permissions['delete any prenatal_symptom_review content'] = array(
     'name' => 'delete any prenatal_symptom_review content',
@@ -371,9 +428,27 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own prenatal_breastfeeding content'.
+  $permissions['delete own prenatal_breastfeeding content'] = array(
+    'name' => 'delete own prenatal_breastfeeding content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own prenatal_follow_up content'.
   $permissions['delete own prenatal_follow_up content'] = array(
     'name' => 'delete own prenatal_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_gu_exam content'.
+  $permissions['delete own prenatal_gu_exam content'] = array(
+    'name' => 'delete own prenatal_gu_exam content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -479,6 +554,15 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own prenatal_speciality_care content'.
+  $permissions['delete own prenatal_speciality_care content'] = array(
+    'name' => 'delete own prenatal_speciality_care content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own prenatal_symptom_review content'.
   $permissions['delete own prenatal_symptom_review content'] = array(
     'name' => 'delete own prenatal_symptom_review content',
@@ -535,9 +619,29 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any prenatal_breastfeeding content'.
+  $permissions['edit any prenatal_breastfeeding content'] = array(
+    'name' => 'edit any prenatal_breastfeeding content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any prenatal_follow_up content'.
   $permissions['edit any prenatal_follow_up content'] = array(
     'name' => 'edit any prenatal_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_gu_exam content'.
+  $permissions['edit any prenatal_gu_exam content'] = array(
+    'name' => 'edit any prenatal_gu_exam content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -655,6 +759,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any prenatal_speciality_care content'.
+  $permissions['edit any prenatal_speciality_care content'] = array(
+    'name' => 'edit any prenatal_speciality_care content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any prenatal_symptom_review content'.
   $permissions['edit any prenatal_symptom_review content'] = array(
     'name' => 'edit any prenatal_symptom_review content',
@@ -714,9 +828,29 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own prenatal_breastfeeding content'.
+  $permissions['edit own prenatal_breastfeeding content'] = array(
+    'name' => 'edit own prenatal_breastfeeding content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own prenatal_follow_up content'.
   $permissions['edit own prenatal_follow_up content'] = array(
     'name' => 'edit own prenatal_follow_up content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_gu_exam content'.
+  $permissions['edit own prenatal_gu_exam content'] = array(
+    'name' => 'edit own prenatal_gu_exam content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -827,6 +961,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit own prenatal_send_to_hc content'.
   $permissions['edit own prenatal_send_to_hc content'] = array(
     'name' => 'edit own prenatal_send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_speciality_care content'.
+  $permissions['edit own prenatal_speciality_care content'] = array(
+    'name' => 'edit own prenatal_speciality_care content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

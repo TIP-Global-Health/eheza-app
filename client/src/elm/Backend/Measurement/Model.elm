@@ -429,6 +429,7 @@ type BreastExamSign
     = Mass
     | Discharge
     | Infection
+    | Warmth
     | NormalBreast
 
 
@@ -590,6 +591,8 @@ type MedicationSign
       -- safe to remove starting Jan 2023.
     | DewormingPill
     | Mebendazole
+    | PostpartumFolicAcid
+    | PostpartumVitaminA
     | NoMedication
 
 
@@ -848,6 +851,8 @@ type PrenatalHealthEducationSign
     | EducationHIVDetectableViralLoad
     | EducationMentalHealth
     | EducationDiabetes
+    | EducationEarlyMastitisOrEngorgment
+    | EducationMastitis
     | NoPrenatalHealthEducationSigns
 
 
@@ -1243,6 +1248,13 @@ type RecommendedTreatmentSign
       -- For Candidiasis:
     | TreatmentClotrimaxazole200
     | TreatmentClotrimaxazole500
+      -- For Mastitis:
+    | TreatmentCloxacillin
+    | TreatmentMastitisAmoxicillin
+    | TreatmentPenecilinV
+    | TreatmentParacetamol
+    | TreatmentIbuprofen
+    | NoTreatmentForMastitis
 
 
 type AvoidingGuidanceReason
@@ -1277,6 +1289,13 @@ type PrenatalSymptom
     | Constipation
     | VaricoseVeins
     | LegPainRedness
+      -- For Postpartum:
+    | PostpartumAbdominalPain
+    | PostpartumUrinaryIncontinence
+    | PostpartumHeadache
+    | PostpartumFatigue
+    | PostpartumFever
+    | PostpartumPerinealPainOrDischarge
     | NoPrenatalSymptoms
 
 
@@ -1390,6 +1409,76 @@ type PrenatalMentalHealthQuestionOption
 
 type alias PrenatalTetanusImmunisation =
     PrenatalMeasurement VaccinationValue
+
+
+type alias PrenatalBreastfeeding =
+    PrenatalMeasurement BreastfeedingValue
+
+
+type alias BreastfeedingValue =
+    EverySet BreastfeedingSign
+
+
+type BreastfeedingSign
+    = IsBreastfeeding
+    | NotBreastfeedingBreastPain
+    | NotBreastfeedingBreastRedness
+    | NotBreastfeedingLowMilkProduction
+    | NotBreastfeedingProblemsLatching
+    | NotBreastfeedingMedicalProblems
+    | NotBreastfeedingPersonalChoice
+    | NotBreastfeedingOther
+    | BreastPain
+    | BreastRedness
+    | EnoughMilk
+    | LatchingWell
+    | NoBreastfeedingSigns
+
+
+type alias PrenatalGUExam =
+    PrenatalMeasurement GUExamValue
+
+
+type alias GUExamValue =
+    { vaginalExamSigns : EverySet VaginalExamSign
+    , guExamSigns : EverySet GUExamSign
+    , postpartumHealingProblems : Maybe (EverySet PostpartumHealingProblem)
+    }
+
+
+type VaginalExamSign
+    = FoulSmellingLochia
+    | ExcessiveVaginalBleeding
+    | NormalVaginalExam
+
+
+type GUExamSign
+    = EpisiotomyOrPerinealTear
+    | RectalHemorrhoids
+    | NoGUExamSigns
+
+
+type PostpartumHealingProblem
+    = NormalPostpartumHealing
+    | HealingProblemSwelling
+    | HealingProblemDischarge
+    | HealingProblemReleaseOfSutures
+    | HealingProblemHematoma
+    | HealingProblemBruising
+
+
+type alias PrenatalSpecialityCare =
+    PrenatalMeasurement SpecialityCareValue
+
+
+type alias SpecialityCareValue =
+    EverySet SpecialityCareSign
+
+
+type SpecialityCareSign
+    = EnrolledToARVProgram
+    | EnrolledToNCDProgram
+    | NoSpecialityCareSigns
 
 
 
@@ -1725,6 +1814,7 @@ type MedicationNonAdministrationSign
     | MedicationCeftriaxone AdministrationNote
     | MedicationAzithromycin AdministrationNote
     | MedicationMetronidazole AdministrationNote
+    | MedicationVitaminA AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
@@ -2276,6 +2366,9 @@ type alias PrenatalMeasurements =
     , hivPCRTest : Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )
     , mentalHealth : Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth )
     , tetanusImmunisation : Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation )
+    , breastfeeding : Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding )
+    , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
+    , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
     }
 
 
@@ -2317,6 +2410,9 @@ emptyPrenatalMeasurements =
     , hivPCRTest = Nothing
     , mentalHealth = Nothing
     , tetanusImmunisation = Nothing
+    , breastfeeding = Nothing
+    , guExam = Nothing
+    , specialityCare = Nothing
     }
 
 
