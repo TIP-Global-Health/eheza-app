@@ -12,6 +12,7 @@ type alias PrenatalEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , encounterType : PrenatalEncounterType
+    , diagnoses : EverySet PrenatalDiagnosis
     , shard : Maybe HealthCenterId
     }
 
@@ -22,6 +23,7 @@ emptyPrenatalEncounter participant startDate encounterType shard =
     , startDate = startDate
     , endDate = Nothing
     , encounterType = encounterType
+    , diagnoses = EverySet.empty
     , shard = shard
     }
 
@@ -34,6 +36,46 @@ type PrenatalEncounterType
     | ChwPostpartumEncounter
 
 
+type PrenatalDiagnosis
+    = DiagnosisChronicHypertensionImmediate
+    | DiagnosisChronicHypertensionAfterRecheck
+    | DiagnosisGestationalHypertensionImmediate
+    | DiagnosisGestationalHypertensionAfterRecheck
+    | DiagnosisModeratePreeclampsiaImmediate
+    | DiagnosisModeratePreeclampsiaAfterRecheck
+    | DiagnosisSeverePreeclampsiaImmediate
+    | DiagnosisSeverePreeclampsiaAfterRecheck
+    | DiagnosisEclampsia
+    | DiagnosisHIV
+    | DiagnosisDiscordantPartnership
+    | DiagnosisSyphilis
+    | DiagnosisSyphilisWithComplications
+    | DiagnosisNeurosyphilis
+    | DiagnosisHepatitisB
+    | DiagnosisMalaria
+    | DiagnosisMalariaWithAnemia
+    | DiagnosisMalariaWithSevereAnemia
+    | DiagnosisModerateAnemia
+    | DiagnosisSevereAnemia
+    | DiagnosisSevereAnemiaWithComplications
+    | DiagnosisMiscarriage
+    | DiagnosisMolarPregnancy
+    | DiagnosisPlacentaPrevia
+    | DiagnosisPlacentalAbruption
+    | DiagnosisUterineRupture
+    | DiagnosisObstructedLabor
+    | DiagnosisPostAbortionSepsis
+    | DiagnosisEctopicPregnancy
+    | DiagnosisPROM
+    | DiagnosisPPROM
+    | DiagnosisHyperemesisGravidum
+    | DiagnosisMaternalComplications
+    | DiagnosisInfection
+    | DiagnosisImminentDelivery
+    | DiagnosisLaborAndDelivery
+    | NoPrenatalDiagnosis
+
+
 type RecordPreganancyInitiator
     = InitiatorParticipantPage
     | InitiatorWarningPopup
@@ -42,6 +84,7 @@ type RecordPreganancyInitiator
 
 type PrenatalProgressReportInitiator
     = InitiatorEncounterPage PrenatalEncounterId
+    | InitiatorRecurrentEncounterPage PrenatalEncounterId
     | InitiatorNewEncounter PrenatalEncounterId
     | InitiatorPatientRecord PersonId
 
@@ -56,7 +99,7 @@ type PrenatalEncounterPostCreateDestination
 to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
-    { closePrenatalEncounter : WebData ()
+    { updatePrenatalEncounter : WebData ()
     , saveBreastExam : WebData ()
     , saveCorePhysicalExam : WebData ()
     , saveDangerSigns : WebData ()
@@ -87,12 +130,13 @@ type alias Model =
     , saveHemoglobinTest : WebData ()
     , saveRandomBloodSugarTest : WebData ()
     , saveLabsResults : WebData ()
+    , saveMedicationDistribution : WebData ()
     }
 
 
 emptyModel : Model
 emptyModel =
-    { closePrenatalEncounter = NotAsked
+    { updatePrenatalEncounter = NotAsked
     , saveBreastExam = NotAsked
     , saveCorePhysicalExam = NotAsked
     , saveDangerSigns = NotAsked
@@ -123,12 +167,14 @@ emptyModel =
     , saveHemoglobinTest = NotAsked
     , saveRandomBloodSugarTest = NotAsked
     , saveLabsResults = NotAsked
+    , saveMedicationDistribution = NotAsked
     }
 
 
 type Msg
     = ClosePrenatalEncounter
-    | HandleClosedPrenatalEncounter (WebData ())
+    | SetPrenatalDiagnoses (EverySet PrenatalDiagnosis)
+    | HandleUpdatedPrenatalEncounter (WebData ())
     | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())
     | SaveCorePhysicalExam PersonId (Maybe CorePhysicalExamId) CorePhysicalExamValue
@@ -171,13 +217,13 @@ type Msg
     | HandleSavedSendToHC (WebData ())
     | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
     | HandleSavedAppointmentConfirmation (WebData ())
-    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) PrenatalRapidTestValue
+    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) PrenatalHIVTestValue
     | HandleSavedHIVTest (WebData ())
     | SaveSyphilisTest PersonId (Maybe PrenatalSyphilisTestId) PrenatalSyphilisTestValue
     | HandleSavedSyphilisTest (WebData ())
     | SaveHepatitisBTest PersonId (Maybe PrenatalHepatitisBTestId) PrenatalHepatitisBTestValue
     | HandleSavedHepatitisBTest (WebData ())
-    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) PrenatalRapidTestValue
+    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) PrenatalMalariaTestValue
     | HandleSavedMalariaTest (WebData ())
     | SaveBloodGpRsTest PersonId (Maybe PrenatalBloodGpRsTestId) PrenatalBloodGpRsTestValue
     | HandleSavedBloodGpRsTest (WebData ())
@@ -189,3 +235,5 @@ type Msg
     | HandleSavedRandomBloodSugarTest (WebData ())
     | SaveLabsResults PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue
     | HandleSavedLabsResults (WebData ())
+    | SaveMedicationDistribution PersonId (Maybe PrenatalMedicationDistributionId) PrenatalMedicationDistributionValue
+    | HandleSavedMedicationDistribution (WebData ())

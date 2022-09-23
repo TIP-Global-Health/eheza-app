@@ -511,6 +511,12 @@ type DangerSign
     | DifficultyBreathing
     | Fever
     | ExtremeWeakness
+    | ImminentDelivery
+    | Labor
+    | LooksVeryIll
+    | SevereVomiting
+    | Unconscious
+    | GushLeakingVaginalFluid
     | NoDangerSign
 
 
@@ -577,7 +583,12 @@ type alias MedicalHistory =
 
 type MedicationSign
     = IronAndFolicAcidSupplement
+      -- This option is deprecated. However, we keep it, to support
+      -- ongoing pregnancies where it was used already.
+      -- Considering deployment schedule, it will be
+      -- safe to remove starting Jan 2023.
     | DewormingPill
+    | Mebendazole
     | NoMedication
 
 
@@ -732,6 +743,8 @@ type alias VitalsValue =
     , heartRate : Maybe Int
     , respiratoryRate : Int
     , bodyTemperature : Float
+    , sysRepeated : Maybe Float
+    , diaRepeated : Maybe Float
     }
 
 
@@ -782,6 +795,9 @@ type PrenatalHealthEducationSign
     | EducationBreastfeeding
     | EducationImmunization
     | EducationHygiene
+    | EducationPositiveHIV
+    | EducationSaferSex
+    | EducationPartnerTesting
     | NoPrenatalHealthEducationSigns
 
 
@@ -815,7 +831,14 @@ type alias PrenatalAppointmentConfirmation =
 
 
 type alias PrenatalMalariaTest =
-    PrenatalMeasurement PrenatalRapidTestValue
+    PrenatalMeasurement PrenatalMalariaTestValue
+
+
+type alias PrenatalMalariaTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe PrenatalTestResult
+    }
 
 
 type PrenatalTestExecutionNote
@@ -836,14 +859,23 @@ type PrenatalTestResult
 
 
 type alias PrenatalHIVTest =
-    PrenatalMeasurement PrenatalRapidTestValue
+    PrenatalMeasurement PrenatalHIVTestValue
 
 
-type alias PrenatalRapidTestValue =
+type alias PrenatalHIVTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
+    , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
+
+
+type PrenatalHIVSign
+    = HIVProgramHC
+    | PartnerHIVPositive
+    | PartnerTakingARV
+    | PartnerSurpressedViralLoad
+    | NoPrenatalHIVSign
 
 
 type alias PrenatalHepatitisBTest =
@@ -865,7 +897,17 @@ type alias PrenatalSyphilisTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
+    , symptoms : Maybe (EverySet IllnessSymptom)
     }
+
+
+type IllnessSymptom
+    = IllnessSymptomHeadache
+    | IllnessSymptomVisionChanges
+    | IllnessSymptomRash
+    | IllnessSymptomPainlessUlcerMouth
+    | IllnessSymptomPainlessUlcerGenitals
+    | NoIllnessSymptoms
 
 
 type alias PrenatalHemoglobinTest =
@@ -941,11 +983,11 @@ type PrenatalTestVariant
 
 
 type ProteinValue
-    = ProteinNegative
-    | Protein30
-    | Protein100
-    | Protein300
-    | Protein2000
+    = Protein0
+    | ProteinPlus1
+    | ProteinPlus2
+    | ProteinPlus3
+    | ProteinPlus4
 
 
 type PHValue
@@ -1032,6 +1074,7 @@ type alias PrenatalLabsResultsValue =
     { performedTests : EverySet PrenatalLaboratoryTest
     , completedTests : EverySet PrenatalLaboratoryTest
     , resolutionDate : NominalDate
+    , patientNotified : Bool
     }
 
 
@@ -1042,6 +1085,39 @@ type PrenatalLaboratoryTest
     | TestRandomBloodSugar
     | TestSyphilis
     | TestUrineDipstick
+    | TestVitalsRecheck
+
+
+type alias PrenatalMedicationDistribution =
+    PrenatalMeasurement PrenatalMedicationDistributionValue
+
+
+type alias PrenatalMedicationDistributionValue =
+    { distributionSigns : EverySet MedicationDistributionSign
+    , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
+    , recommendedTreatmentSigns : Maybe (EverySet RecommendedTreatmentSign)
+    }
+
+
+type RecommendedTreatmentSign
+    = -- For Malaria:
+      TreatmentQuinineSulphate
+    | TreatmentCoartem
+    | TreatmentWrittenProtocols
+    | TreatementReferToHospital
+    | NoTreatmentForMalaria
+      -- For Syphilis:
+    | TreatementPenecilin1
+    | TreatementPenecilin3
+    | TreatementErythromycin
+    | TreatementAzithromycin
+    | TreatementCeftriaxon
+    | NoTreatmentForSyphilis
+      -- For Hypertension:
+    | TreatmentMethyldopa2
+    | TreatmentMethyldopa3
+    | TreatmentMethyldopa4
+    | NoTreatmentForHypertension
 
 
 
@@ -1331,7 +1407,17 @@ type MedicationDistributionSign
     | Mebendezole
     | VitaminA
     | Paracetamol
+      -- HIV medication
+    | Tenofovir
+    | Lamivudine
+    | Dolutegravir
+    | TDF3TC
+      -- Anemia medication
+    | Iron
+    | FolicAcid
     | NoMedicationDistributionSigns
+    | NoMedicationDistributionSignsInitialPhase
+    | NoMedicationDistributionSignsRecurrentPhase
 
 
 type AdministrationNote
@@ -1352,6 +1438,13 @@ type MedicationNonAdministrationSign
     | MedicationORS AdministrationNote
     | MedicationZinc AdministrationNote
     | MedicationParacetamol AdministrationNote
+    | MedicationMebendezole AdministrationNote
+    | MedicationTenofovir AdministrationNote
+    | MedicationLamivudine AdministrationNote
+    | MedicationDolutegravir AdministrationNote
+    | MedicationTDF3TC AdministrationNote
+    | MedicationIron AdministrationNote
+    | MedicationFolicAcid AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
@@ -1373,6 +1466,7 @@ type ReasonForNotSendingToHC
     = ClientRefused
     | NoAmbulance
     | ClientUnableToAffordFees
+    | ClientAlreadyInCare
     | ReasonForNotSendingToHCOther
     | NoReasonForNotSendingToHC
 
@@ -1885,6 +1979,7 @@ type alias PrenatalMeasurements =
     , syphilisTest : Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )
     , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
     , labsResults : Maybe ( PrenatalLabsResultsId, PrenatalLabsResults )
+    , medicationDistribution : Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )
     }
 
 
@@ -1920,6 +2015,7 @@ emptyPrenatalMeasurements =
     , syphilisTest = Nothing
     , urineDipstickTest = Nothing
     , labsResults = Nothing
+    , medicationDistribution = Nothing
     }
 
 

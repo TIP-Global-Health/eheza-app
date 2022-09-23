@@ -4,7 +4,15 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (AcuteIllnessTraceContact, FollowUpMeasurements, NutritionAssessment(..), PrenatalAssesment(..), PrenatalLabsResults)
+import Backend.Measurement.Model
+    exposing
+        ( AcuteIllnessTraceContact
+        , FollowUpMeasurements
+        , NutritionAssessment(..)
+        , PrenatalAssesment(..)
+        , PrenatalLaboratoryTest(..)
+        , PrenatalLabsResults
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.Person.Model
@@ -21,16 +29,12 @@ import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.AcuteIllnessEncounter.Utils
-    exposing
-        ( compareAcuteIllnessEncounterDataDesc
-        , getAcuteIllnessEncountersForParticipant
-        )
+import Pages.AcuteIllness.Encounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.PrenatalEncounter.Utils exposing (getPrenatalEncountersForParticipant)
+import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
@@ -229,7 +233,7 @@ viewStartFollowUpPrenatalEncounterDialog language currentDate data =
             else
                 let
                     subsequentEncounterButton =
-                        Pages.PrenatalEncounter.Utils.getSubsequentEncounterType data.encounterType
+                        Pages.Prenatal.Encounter.Utils.getSubsequentEncounterType data.encounterType
                             |> Maybe.map
                                 (\subsequentEncounterType ->
                                     button
@@ -904,8 +908,20 @@ generatePrenatalLabsEntryData language currentDate db item =
 
                     else
                         PrenatalLabsEntryPending
+
+                label =
+                    if
+                        EverySet.member TestVitalsRecheck item.value.performedTests
+                            && (not <| EverySet.member TestVitalsRecheck item.value.completedTests)
+                    then
+                        -- Vitals recheck was scheduled, but not completed yet.
+                        Translate.PrenatalLabsCaseManagementEntryTypeVitals
+
+                    else
+                        Translate.PrenatalLabsCaseManagementEntryTypeResults
             in
-            PrenatalLabsEntryData item.participantId name encounterId state
+            translate language label
+                |> PrenatalLabsEntryData item.participantId name encounterId state
         )
         item.encounterId
 
@@ -929,10 +945,10 @@ viewPrenatalLabsEntry language data =
     div [ class "follow-up-entry" ]
         [ div [ class "name" ] [ text data.personName ]
         , div [ class entryStateClass ] [ translateText language <| Translate.PrenatalLabsEntryState data.state ]
-        , div [ class "assesment center" ] [ translateText language Translate.PrenatalLabsCaseManagementType ]
+        , div [ class "assesment center" ] [ text data.label ]
         , div
             [ class "icon-forward"
-            , onClick <| SetActivePage <| UserPage <| PrenatalLabResultsPage data.encounterId
+            , onClick <| SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage data.encounterId
             ]
             []
         ]

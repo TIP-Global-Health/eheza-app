@@ -1023,39 +1023,39 @@ rhesusFromString value =
 proteinValueToString : ProteinValue -> String
 proteinValueToString value =
     case value of
-        ProteinNegative ->
-            "negative"
+        Protein0 ->
+            "0"
 
-        Protein30 ->
-            "30"
+        ProteinPlus1 ->
+            "+1"
 
-        Protein100 ->
-            "100"
+        ProteinPlus2 ->
+            "+2"
 
-        Protein300 ->
-            "300"
+        ProteinPlus3 ->
+            "+3"
 
-        Protein2000 ->
-            "2000"
+        ProteinPlus4 ->
+            "+4"
 
 
 proteinValueFromString : String -> Maybe ProteinValue
 proteinValueFromString value =
     case value of
-        "negative" ->
-            Just ProteinNegative
+        "0" ->
+            Just Protein0
 
-        "30" ->
-            Just Protein30
+        "+1" ->
+            Just ProteinPlus1
 
-        "100" ->
-            Just Protein100
+        "+2" ->
+            Just ProteinPlus2
 
-        "300" ->
-            Just Protein300
+        "+3" ->
+            Just ProteinPlus3
 
-        "2000" ->
-            Just Protein2000
+        "+4" ->
+            Just ProteinPlus4
 
         _ ->
             Nothing
@@ -1460,3 +1460,192 @@ and do not provide option of filling the results.
 prenatalLabExpirationPeriod : Int
 prenatalLabExpirationPeriod =
     14
+
+
+prenatalHIVSignToString : PrenatalHIVSign -> String
+prenatalHIVSignToString sign =
+    case sign of
+        HIVProgramHC ->
+            "hiv-program-hc"
+
+        PartnerHIVPositive ->
+            "partner-hiv-positive"
+
+        PartnerTakingARV ->
+            "partner-taking-arv"
+
+        PartnerSurpressedViralLoad ->
+            "partner-surpressed-viral-load"
+
+        NoPrenatalHIVSign ->
+            "none"
+
+
+prenatalHIVSignFromString : String -> Maybe PrenatalHIVSign
+prenatalHIVSignFromString sign =
+    case sign of
+        "hiv-program-hc" ->
+            Just HIVProgramHC
+
+        "partner-hiv-positive" ->
+            Just PartnerHIVPositive
+
+        "partner-taking-arv" ->
+            Just PartnerTakingARV
+
+        "partner-surpressed-viral-load" ->
+            Just PartnerSurpressedViralLoad
+
+        "none" ->
+            Just NoPrenatalHIVSign
+
+        _ ->
+            Nothing
+
+
+recommendedTreatmentSignToString : RecommendedTreatmentSign -> String
+recommendedTreatmentSignToString sign =
+    case sign of
+        TreatmentQuinineSulphate ->
+            "quinine-sulphate"
+
+        TreatmentCoartem ->
+            "coartem"
+
+        TreatmentWrittenProtocols ->
+            "written-protocols"
+
+        TreatementReferToHospital ->
+            "refer-to-hospital"
+
+        NoTreatmentForMalaria ->
+            "no-treatment-malaria"
+
+        TreatementPenecilin1 ->
+            "penecilin-1"
+
+        TreatementPenecilin3 ->
+            "penecilin-3"
+
+        TreatementErythromycin ->
+            "erythromycin"
+
+        TreatementAzithromycin ->
+            "azithromycin"
+
+        TreatementCeftriaxon ->
+            "ceftriaxon"
+
+        NoTreatmentForSyphilis ->
+            "no-treatment-syphilis"
+
+        TreatmentMethyldopa2 ->
+            "methyldopa-2"
+
+        TreatmentMethyldopa3 ->
+            "methyldopa-3"
+
+        TreatmentMethyldopa4 ->
+            "methyldopa-4"
+
+        NoTreatmentForHypertension ->
+            "no-treatment-hypertension"
+
+
+recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
+recommendedTreatmentSignFromString sign =
+    case sign of
+        "quinine-sulphate" ->
+            Just TreatmentQuinineSulphate
+
+        "coartem" ->
+            Just TreatmentCoartem
+
+        "written-protocols" ->
+            Just TreatmentWrittenProtocols
+
+        "refer-to-hospital" ->
+            Just TreatementReferToHospital
+
+        "no-treatment-malaria" ->
+            Just NoTreatmentForMalaria
+
+        "penecilin-1" ->
+            Just TreatementPenecilin1
+
+        "penecilin-3" ->
+            Just TreatementPenecilin3
+
+        "erythromycin" ->
+            Just TreatementErythromycin
+
+        "azithromycin" ->
+            Just TreatementAzithromycin
+
+        "ceftriaxon" ->
+            Just TreatementCeftriaxon
+
+        "no-treatment-syphilis" ->
+            Just NoTreatmentForSyphilis
+
+        "methyldopa-2" ->
+            Just TreatmentMethyldopa2
+
+        "methyldopa-3" ->
+            Just TreatmentMethyldopa3
+
+        "methyldopa-4" ->
+            Just TreatmentMethyldopa4
+
+        "no-treatment-hypertension" ->
+            Just NoTreatmentForHypertension
+
+        _ ->
+            Nothing
+
+
+illnessSymptomToString : IllnessSymptom -> String
+illnessSymptomToString symptom =
+    case symptom of
+        IllnessSymptomHeadache ->
+            "headache"
+
+        IllnessSymptomVisionChanges ->
+            "vision-changes"
+
+        IllnessSymptomRash ->
+            "rash"
+
+        IllnessSymptomPainlessUlcerMouth ->
+            "painless-ulcer-mouth"
+
+        IllnessSymptomPainlessUlcerGenitals ->
+            "painless-ulcer-genitals"
+
+        NoIllnessSymptoms ->
+            "none"
+
+
+illnessSymptomFromString : String -> Maybe IllnessSymptom
+illnessSymptomFromString symptom =
+    case symptom of
+        "headache" ->
+            Just IllnessSymptomHeadache
+
+        "vision-changes" ->
+            Just IllnessSymptomVisionChanges
+
+        "rash" ->
+            Just IllnessSymptomRash
+
+        "painless-ulcer-mouth" ->
+            Just IllnessSymptomPainlessUlcerMouth
+
+        "painless-ulcer-genitals" ->
+            Just IllnessSymptomPainlessUlcerGenitals
+
+        "none" ->
+            Just NoIllnessSymptoms
+
+        _ ->
+            Nothing

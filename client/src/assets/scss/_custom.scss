@@ -2303,6 +2303,20 @@ input::placeholder {
   }
 }
 
+.icon-next-steps-treatment {
+  .active &:after {
+    background-image: url(#{$img-path}icon-treatment-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-treatment-gray.svg);
+  }
+}
+
 .icon-next-steps-send-to-hc {
   .active &:after {
     background-image: url(#{$img-path}icon-health-center-white.svg);
@@ -2314,6 +2328,20 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-health-center-gray.svg);
+  }
+}
+
+.icon-next-steps-wait {
+  .active &:after {
+    background-image: url(#{$img-path}icon-sand-watch-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-sand-watch-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-sand-watch-gray.svg);
   }
 }
 

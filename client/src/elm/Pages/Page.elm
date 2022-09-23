@@ -1,4 +1,12 @@
-module Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), SessionPage(..), UserPage(..))
+module Pages.Page exposing
+    ( AcuteIllnessDashboardPage(..)
+    , ChwDashboardPage(..)
+    , DashboardPage(..)
+    , NurseDashboardPage(..)
+    , Page(..)
+    , SessionPage(..)
+    , UserPage(..)
+    )
 
 {-| A module that defines a type which controls what the user wishes
 to be shown at the moment.
@@ -49,7 +57,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator)
-import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..), PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 
@@ -156,7 +164,8 @@ type UserPage
     | RelationshipPage PersonId PersonId Initiator
     | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
-    | PrenatalLabResultsPage PrenatalEncounterId -- record prenatal lab results
+    | PrenatalRecurrentEncounterPage PrenatalEncounterId -- prenatal recurrent activities index
+    | PrenatalRecurrentActivityPage PrenatalEncounterId PrenatalRecurrentActivity -- record prenatal arecurrent activity
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
     | NutritionParticipantPage IndividualParticipantInitiator PersonId

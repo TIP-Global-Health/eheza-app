@@ -1,15 +1,18 @@
 module Pages.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (PersonId)
-import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Measurement.Model exposing (AdministrationNote, MedicationDistributionSign(..), MedicationDistributionValue, MedicationNonAdministrationSign(..), PhotoUrl(..))
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -17,6 +20,81 @@ import Maybe.Extra exposing (isJust, or, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (thumbnailImage)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
+
+
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 120
+    , height = 120
+    }
+
+
+viewPersonDetails : Language -> NominalDate -> Person -> Maybe TranslationId -> List (Html msg)
+viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
+    let
+        isAdult =
+            isPersonAnAdult currentDate person
+                |> Maybe.withDefault True
+
+        isAboveAgeOf2Years =
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age >= 2)
+                |> Maybe.withDefault False
+
+        ( thumbnailClass, maybeAge ) =
+            if isAdult then
+                ( "mother"
+                , ageInYears currentDate person
+                    |> Maybe.map (\age -> translate language <| Translate.YearsOld age)
+                )
+
+            else
+                let
+                    renderAgeFunc =
+                        if isAboveAgeOf2Years then
+                            renderAgeYearsMonths
+
+                        else
+                            renderAgeMonthsDays
+                in
+                ( "child"
+                , person.birthDate
+                    |> Maybe.map
+                        (\birthDate -> renderAgeFunc language birthDate currentDate)
+                )
+    in
+    [ div [ class "ui image" ]
+        [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
+    , div [ class "content person-details" ]
+        [ h2 [ class "ui header" ]
+            [ text person.name ]
+        , maybeAge
+            |> Maybe.map
+                (\age ->
+                    p [ class "age-wrapper" ]
+                        [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ":" ]
+                        , span [] [ text age ]
+                        ]
+                )
+            |> Maybe.withDefault emptyNode
+        , maybeDiagnosisTranslationId
+            |> Maybe.map
+                (\diagnosis ->
+                    div
+                        [ classList
+                            [ ( "diagnosis-wrapper", True )
+                            , ( "covid-19", diagnosis == Translate.AcuteIllnessDiagnosis DiagnosisCovid19Suspect )
+                            ]
+                        ]
+                        [ div [ class "label upper" ] [ text <| translate language Translate.Diagnosis ++ ":" ]
+                        , div [ class "diagnosis" ] [ text <| translate language diagnosis ]
+                        ]
+                )
+            |> Maybe.withDefault emptyNode
+        ]
+    ]
 
 
 calculatePercentage : Int -> Int -> Float
@@ -221,10 +299,28 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
 viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
 viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg translateFunc =
     let
-        checkedOptions =
-            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
+        viewOptionFunc option =
+            label []
+                [ translateFunc option |> translate language |> text ]
     in
-    viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions Nothing setMsg translateFunc
+    viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc
+
+
+viewCheckBoxSelectInputWithRecommendation : Language -> List a -> List a -> a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
+viewCheckBoxSelectInputWithRecommendation language leftOptions rightOptions recommendedOption currentValue setMsg translateFunc =
+    let
+        viewOptionFunc option =
+            if option == recommendedOption then
+                label [ class "recommendation" ]
+                    [ div [] [ translateFunc option |> translate language |> text ]
+                    , div [ class "marker" ] [ text <| "(" ++ translate language Translate.Recommended ++ ")" ]
+                    ]
+
+            else
+                label []
+                    [ translateFunc option |> translate language |> text ]
+    in
+    viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc
 
 
 viewCheckBoxSelectCustomInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg
@@ -612,6 +708,14 @@ viewAlert color =
     img [ src icon ] []
 
 
+viewInstructionsLabel : String -> Html any -> Html any
+viewInstructionsLabel iconClass message =
+    div [ class "header icon-label" ] <|
+        [ i [ class iconClass ] []
+        , message
+        ]
+
+
 taskCompleted : Maybe a -> Int
 taskCompleted maybe =
     if isJust maybe then
@@ -744,3 +848,53 @@ emptySelectOption isSelected =
         , selected isSelected
         ]
         [ text "" ]
+
+
+resolveMedicationsNonAdministrationReasons :
+    { v | nonAdministrationSigns : EverySet MedicationNonAdministrationSign }
+    -> Dict MedicationDistributionSign AdministrationNote
+resolveMedicationsNonAdministrationReasons value =
+    EverySet.toList value.nonAdministrationSigns
+        |> List.filterMap
+            (\sign ->
+                case sign of
+                    MedicationAmoxicillin reason ->
+                        Just ( Amoxicillin, reason )
+
+                    MedicationCoartem reason ->
+                        Just ( Coartem, reason )
+
+                    MedicationORS reason ->
+                        Just ( ORS, reason )
+
+                    MedicationZinc reason ->
+                        Just ( Zinc, reason )
+
+                    MedicationParacetamol reason ->
+                        Just ( Paracetamol, reason )
+
+                    MedicationMebendezole reason ->
+                        Just ( Mebendezole, reason )
+
+                    MedicationTenofovir reason ->
+                        Just ( Tenofovir, reason )
+
+                    MedicationLamivudine reason ->
+                        Just ( Lamivudine, reason )
+
+                    MedicationDolutegravir reason ->
+                        Just ( Dolutegravir, reason )
+
+                    MedicationTDF3TC reason ->
+                        Just ( TDF3TC, reason )
+
+                    MedicationIron reason ->
+                        Just ( Iron, reason )
+
+                    MedicationFolicAcid reason ->
+                        Just ( FolicAcid, reason )
+
+                    NoMedicationNonAdministrationSigns ->
+                        Nothing
+            )
+        |> Dict.fromList

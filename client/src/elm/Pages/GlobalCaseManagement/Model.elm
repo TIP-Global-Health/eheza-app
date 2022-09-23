@@ -137,6 +137,7 @@ type alias PrenatalLabsEntryData =
     , personName : String
     , encounterId : PrenatalEncounterId
     , state : PrenatalLabsEntryState
+    , label : String
     }
 
 
