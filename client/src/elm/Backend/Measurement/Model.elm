@@ -7,6 +7,7 @@ and cached in local storage.
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -592,8 +593,39 @@ type MedicationSign
     | NoMedication
 
 
+type MedicationTreatmentSign
+    = MedicationTreatmentStillTaking
+    | MedicationTreatmentMissedDoses
+    | MedicationTreatmentAdverseEvents
+    | MedicationTreatmentAdverseEventsHospitalization
+    | NoMedicationTreatment
+
+
+type HIVTreatmentSign
+    = HIVTreatmentStillTaking
+    | HIVTreatmentMissedDoses
+    | HIVTreatmentAdverseEvents
+    | HIVTreatmentAdverseEventsHospitalization
+    | HIVTreatmentMedicineByPMTCT
+    | HIVTreatmentNoMedicineNotSeenAtPMTCT
+    | HIVTreatmentNoMedicineOutOfStock
+    | HIVTreatmentNoMedicinePatientRefused
+    | HIVTreatmentNoMedicineOther
+    | NoHIVTreatment
+
+
 type alias Medication =
-    PrenatalMeasurement (EverySet MedicationSign)
+    PrenatalMeasurement MedicationValue
+
+
+type alias MedicationValue =
+    { signs : Maybe (EverySet MedicationSign)
+    , hivTreatment : Maybe (EverySet HIVTreatmentSign)
+    , hypertensionTreatment : Maybe (EverySet MedicationTreatmentSign)
+    , malariaTreatment : Maybe (EverySet MedicationTreatmentSign)
+    , anemiaTreatment : Maybe (EverySet MedicationTreatmentSign)
+    , syphilisTreatment : Maybe (EverySet MedicationTreatmentSign)
+    }
 
 
 type alias ObstetricalExamValue =
@@ -783,7 +815,13 @@ type PregnancyTestResult
 
 
 type alias PrenatalHealthEducation =
-    PrenatalMeasurement (EverySet PrenatalHealthEducationSign)
+    PrenatalMeasurement PrenatalHealthEducationValue
+
+
+type alias PrenatalHealthEducationValue =
+    { signs : EverySet PrenatalHealthEducationSign
+    , signsPhase2 : Maybe (EverySet PrenatalHealthEducationSign)
+    }
 
 
 type PrenatalHealthEducationSign
@@ -796,8 +834,20 @@ type PrenatalHealthEducationSign
     | EducationImmunization
     | EducationHygiene
     | EducationPositiveHIV
-    | EducationSaferSex
+    | EducationSaferSexHIV
     | EducationPartnerTesting
+    | EducationNauseaVomiting
+    | EducationLegCramps
+    | EducationLowBackPain
+    | EducationConstipation
+    | EducationHeartburn
+    | EducationVaricoseVeins
+    | EducationLegPainRedness
+    | EducationPelvicPain
+    | EducationSaferSex
+    | EducationHIVDetectableViralLoad
+    | EducationMentalHealth
+    | EducationDiabetes
     | NoPrenatalHealthEducationSigns
 
 
@@ -818,7 +868,46 @@ type PrenatalAssesment
 
 
 type alias PrenatalSendToHC =
-    PrenatalMeasurement SendToHCValue
+    PrenatalMeasurement PrenatalReferralValue
+
+
+type alias PrenatalReferralValue =
+    { sendToHCSigns : Maybe (EverySet SendToHCSign)
+    , reasonForNotSendingToHC : Maybe ReasonForNonReferral
+    , referToFacilitySigns : Maybe (EverySet ReferToFacilitySign)
+    , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
+    }
+
+
+type ReferToFacilitySign
+    = ReferToHospital
+    | ReferralFormHospital
+    | ReferToMentalHealthSpecialist
+    | ReferralFormMentalHealthSpecialist
+    | AccompanyToMentalHealthSpecialist
+    | ReferToARVProgram
+    | ReferralFormARVProgram
+    | AccompanyToARVProgram
+    | ReferToNCDProgram
+    | ReferralFormNCDProgram
+    | AccompanyToNCDProgram
+    | NoReferToFacilitySigns
+
+
+type NonReferralSign
+    = NonReferralReasonHospital ReasonForNonReferral
+    | NonReferralReasonMentalHealthSpecialist ReasonForNonReferral
+    | NonReferralReasonARVProgram ReasonForNonReferral
+    | NonReferralReasonNCDProgram ReasonForNonReferral
+    | NoNonReferralSigns
+
+
+type ReferralFacility
+    = FacilityHealthCenter
+    | FacilityHospital
+    | FacilityMentalHealthSpecialist
+    | FacilityARVProgram
+    | FacilityNCDProgram
 
 
 type alias PrenatalAppointmentConfirmationValue =
@@ -878,14 +967,37 @@ type PrenatalHIVSign
     | NoPrenatalHIVSign
 
 
+type alias PrenatalHIVPCRTest =
+    PrenatalMeasurement PrenatalHIVPCRTestValue
+
+
+type HIVPCRResult
+    = ResultSuppressedViralLoad
+    | ResultDetectibleViralLoad Float
+
+
 type alias PrenatalHepatitisBTest =
     PrenatalMeasurement PrenatalHepatitisBTestValue
+
+
+type alias PrenatalHIVPCRTestValue =
+    { executionNote : PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hivViralLoadStatus : Maybe ViralLoadStatus
+    , hivViralLoad : Maybe Float
+    }
+
+
+type ViralLoadStatus
+    = ViralLoadDetectable
+    | ViralLoadUndetectable
 
 
 type alias PrenatalHepatitisBTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
@@ -898,6 +1010,7 @@ type alias PrenatalSyphilisTestValue =
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
     , symptoms : Maybe (EverySet IllnessSymptom)
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
@@ -928,8 +1041,15 @@ type alias PrenatalRandomBloodSugarTest =
 type alias PrenatalRandomBloodSugarTestValue =
     { executionNote : PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
+
+
+type TestPrerequisite
+    = PrerequisiteFastFor12h
+    | NoTestPrerequisites
 
 
 type alias PrenatalBloodGpRsTest =
@@ -941,6 +1061,7 @@ type alias PrenatalBloodGpRsTestValue =
     , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
@@ -971,7 +1092,6 @@ type alias PrenatalUrineDipstickTestValue =
     , nitrite : Maybe NitriteValue
     , urobilinogen : Maybe UrobilinogenValue
     , haemoglobin : Maybe HaemoglobinValue
-    , specificGravity : Maybe SpecificGravityValue
     , ketone : Maybe KetoneValue
     , bilirubin : Maybe BilirubinValue
     }
@@ -991,7 +1111,9 @@ type ProteinValue
 
 
 type PHValue
-    = Ph50
+    = Ph40
+    | Ph45
+    | Ph50
     | Ph60
     | Ph65
     | Ph70
@@ -1022,7 +1144,7 @@ type NitriteValue
 
 
 type UrobilinogenValue
-    = Urobilinogen02
+    = Urobilinogen002
     | Urobilinogen10
     | Urobilinogen20
     | Urobilinogen40
@@ -1037,16 +1159,6 @@ type HaemoglobinValue
     | HaemoglobinSmall
     | HaemoglobinModerate
     | HaemoglobinLarge
-
-
-type SpecificGravityValue
-    = SpecificGravity1000
-    | SpecificGravity1005
-    | SpecificGravity1010
-    | SpecificGravity1015
-    | SpecificGravity1020
-    | SpecificGravity1025
-    | SpecificGravity1030
 
 
 type KetoneValue
@@ -1086,6 +1198,7 @@ type PrenatalLaboratoryTest
     | TestSyphilis
     | TestUrineDipstick
     | TestVitalsRecheck
+    | TestHIVPCR
 
 
 type alias PrenatalMedicationDistribution =
@@ -1096,6 +1209,7 @@ type alias PrenatalMedicationDistributionValue =
     { distributionSigns : EverySet MedicationDistributionSign
     , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
     , recommendedTreatmentSigns : Maybe (EverySet RecommendedTreatmentSign)
+    , avoidingGuidanceReason : Maybe (EverySet AvoidingGuidanceReason)
     }
 
 
@@ -1104,20 +1218,178 @@ type RecommendedTreatmentSign
       TreatmentQuinineSulphate
     | TreatmentCoartem
     | TreatmentWrittenProtocols
-    | TreatementReferToHospital
+    | TreatmentReferToHospital
     | NoTreatmentForMalaria
       -- For Syphilis:
-    | TreatementPenecilin1
-    | TreatementPenecilin3
-    | TreatementErythromycin
-    | TreatementAzithromycin
-    | TreatementCeftriaxon
+    | TreatmentPenecilin1
+    | TreatmentPenecilin3
+    | TreatmentErythromycin
+    | TreatmentAzithromycin
+    | TreatmentCeftriaxon
     | NoTreatmentForSyphilis
       -- For Hypertension:
     | TreatmentMethyldopa2
     | TreatmentMethyldopa3
     | TreatmentMethyldopa4
+    | TreatmentHypertensionAddCarvedilol
+    | TreatmentHypertensionAddAmlodipine
     | NoTreatmentForHypertension
+      -- For Heartburn:
+    | TreatmentAluminiumHydroxide
+    | TreatmentHealthEducationForHeartburn
+      -- For Urinary Tract Infection:
+    | TreatmentNitrofurantoin
+    | TreatmentAmoxicillin
+      -- For Candidiasis:
+    | TreatmentClotrimaxazole200
+    | TreatmentClotrimaxazole500
+
+
+type AvoidingGuidanceReason
+    = AvoidingGuidanceHypertensionLackOfStock
+    | AvoidingGuidanceHypertensionKnownAllergy
+    | AvoidingGuidanceHypertensionPatientDeclined
+    | AvoidingGuidanceHypertensionPatientUnableToAfford
+    | AvoidingGuidanceHypertensionReinforceAdherence
+    | AvoidingGuidanceHypertensionOther
+
+
+type alias PrenatalSymptomReview =
+    PrenatalMeasurement PrenatalSymptomReviewValue
+
+
+type alias PrenatalSymptomReviewValue =
+    { symptoms : EverySet PrenatalSymptom
+    , symptomQuestions : EverySet PrenatalSymptomQuestion
+    , flankPainSign : Maybe PrenatalFlankPainSign
+    }
+
+
+type PrenatalSymptom
+    = BurningWithUrination
+    | AbnormalVaginalDischarge
+    | NauseaAndVomiting
+    | Heartburn
+    | LegCramps
+    | LowBackPain
+    | CoughContinuous
+    | PelvicPain
+    | Constipation
+    | VaricoseVeins
+    | LegPainRedness
+    | NoPrenatalSymptoms
+
+
+type PrenatalSymptomQuestion
+    = SymptomQuestionDizziness
+    | SymptomQuestionLowUrineOutput
+    | SymptomQuestionDarkUrine
+    | SymptomQuestionPelvicPainHospitalization
+    | SymptomQuestionLegPainRednessLeft
+    | SymptomQuestionLegPainful
+    | SymptomQuestionLegSwollen
+    | SymptomQuestionLegWarm
+    | SymptomQuestionNightSweats
+    | SymptomQuestionBloodInSputum
+    | SymptomQuestionWeightLoss
+    | SymptomQuestionSevereFatigue
+    | SymptomQuestionVaginalDischarge
+    | SymptomQuestionFrequentUrination
+    | SymptomQuestionFlankPain
+    | SymptomQuestionVaginalItching
+    | SymptomQuestionPartnerUrethralDischarge
+    | NoSymptomQuestions
+
+
+type PrenatalFlankPainSign
+    = FlankPainLeftSide
+    | FlankPainRightSide
+    | FlankPainBothSides
+    | NoFlankPain
+
+
+type alias PrenatalOutsideCare =
+    PrenatalMeasurement PrenatalOutsideCareValue
+
+
+type alias PrenatalOutsideCareValue =
+    { signs : EverySet PrenatalOutsideCareSign
+    , diagnoses : Maybe (EverySet PrenatalDiagnosis)
+    , medications : Maybe (EverySet PrenatalOutsideCareMedication)
+    }
+
+
+type PrenatalOutsideCareSign
+    = SeenAtAnotherFacility
+    | GivenNewDiagnoses
+    | GivenMedicine
+    | PlannedFollowUpCareWithSpecialist
+    | NoPrenatalOutsideCareSigns
+
+
+type PrenatalOutsideCareMedication
+    = -- For Malaria:
+      OutsideCareMedicationQuinineSulphate
+    | OutsideCareMedicationCoartem
+    | NoOutsideCareMedicationForMalaria
+      -- For Syphilis:
+    | OutsideCareMedicationPenecilin1
+    | OutsideCareMedicationPenecilin3
+    | OutsideCareMedicationErythromycin
+    | OutsideCareMedicationAzithromycin
+    | OutsideCareMedicationCeftriaxon
+    | NoOutsideCareMedicationForSyphilis
+      -- For Hypertension:
+    | OutsideCareMedicationMethyldopa2
+    | OutsideCareMedicationMethyldopa3
+    | OutsideCareMedicationMethyldopa4
+    | OutsideCareMedicationCarvedilol
+    | OutsideCareMedicationAmlodipine
+    | NoOutsideCareMedicationForHypertension
+      -- For HIV:
+    | OutsideCareMedicationTDF3TC
+    | OutsideCareMedicationDolutegravir
+    | NoOutsideCareMedicationForHIV
+      -- For Anemia:
+    | OutsideCareMedicationIron1
+    | OutsideCareMedicationIron2
+    | OutsideCareMedicationFolicAcid
+    | NoOutsideCareMedicationForAnemia
+    | NoPrenatalOutsideCareMedications
+
+
+type alias PrenatalMentalHealth =
+    PrenatalMeasurement PrenatalMentalHealthValue
+
+
+type alias PrenatalMentalHealthValue =
+    { signs : Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    , specialistAtHC : Bool
+    }
+
+
+type PrenatalMentalHealthQuestion
+    = MentalHealthQuestion1
+    | MentalHealthQuestion2
+    | MentalHealthQuestion3
+    | MentalHealthQuestion4
+    | MentalHealthQuestion5
+    | MentalHealthQuestion6
+    | MentalHealthQuestion7
+    | MentalHealthQuestion8
+    | MentalHealthQuestion9
+    | MentalHealthQuestion10
+
+
+type PrenatalMentalHealthQuestionOption
+    = MentalHealthQuestionOption0
+    | MentalHealthQuestionOption1
+    | MentalHealthQuestionOption2
+    | MentalHealthQuestionOption3
+
+
+type alias PrenatalTetanusImmunisation =
+    PrenatalMeasurement VaccinationValue
 
 
 
@@ -1380,7 +1652,7 @@ type alias Call114 =
 
 type alias SendToHCValue =
     { signs : EverySet SendToHCSign
-    , reasonForNotSendingToHC : ReasonForNotSendingToHC
+    , reasonForNotSendingToHC : ReasonForNonReferral
     }
 
 
@@ -1415,6 +1687,11 @@ type MedicationDistributionSign
       -- Anemia medication
     | Iron
     | FolicAcid
+      -- Gonorhea medication
+    | Ceftriaxone
+    | Azithromycin
+      -- Trichomonas / Bacterial Vaginosis medication
+    | Metronidazole
     | NoMedicationDistributionSigns
     | NoMedicationDistributionSignsInitialPhase
     | NoMedicationDistributionSignsRecurrentPhase
@@ -1445,6 +1722,9 @@ type MedicationNonAdministrationSign
     | MedicationTDF3TC AdministrationNote
     | MedicationIron AdministrationNote
     | MedicationFolicAcid AdministrationNote
+    | MedicationCeftriaxone AdministrationNote
+    | MedicationAzithromycin AdministrationNote
+    | MedicationMetronidazole AdministrationNote
     | NoMedicationNonAdministrationSigns
 
 
@@ -1462,13 +1742,14 @@ type alias AcuteIllnessMuac =
     AcuteIllnessMeasurement MuacInCm
 
 
-type ReasonForNotSendingToHC
+type ReasonForNonReferral
     = ClientRefused
     | NoAmbulance
     | ClientUnableToAffordFees
     | ClientAlreadyInCare
-    | ReasonForNotSendingToHCOther
-    | NoReasonForNotSendingToHC
+    | ReasonForNonReferralNotIndicated
+    | ReasonForNonReferralOther
+    | NoReasonForNonReferral
 
 
 type TreatmentOngoingSign
@@ -1765,6 +2046,11 @@ type ECDSign
 
 
 type VaccineType
+    = WellChildVaccine WellChildVaccineType
+    | PrenatalVaccine PrenatalVaccineType
+
+
+type WellChildVaccineType
     = VaccineBCG
     | VaccineOPV
     | VaccineDTP
@@ -1775,11 +2061,16 @@ type VaccineType
     | VaccineHPV
 
 
+type PrenatalVaccineType
+    = VaccineTetanus
+
+
 type VaccineDose
     = VaccineDoseFirst
     | VaccineDoseSecond
     | VaccineDoseThird
     | VaccineDoseFourth
+    | VaccineDoseFifth
 
 
 type alias WellChildMebendezole =
@@ -1968,7 +2259,7 @@ type alias PrenatalMeasurements =
     , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
     , healthEducation : Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )
     , followUp : Maybe ( PrenatalFollowUpId, PrenatalFollowUp )
-    , sendToHC : Maybe ( PrenatalSendToHcId, PrenatalSendToHC )
+    , sendToHC : Maybe ( PrenatalSendToHCId, PrenatalSendToHC )
     , appointmentConfirmation : Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )
     , bloodGpRsTest : Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )
     , hemoglobinTest : Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )
@@ -1980,6 +2271,11 @@ type alias PrenatalMeasurements =
     , urineDipstickTest : Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )
     , labsResults : Maybe ( PrenatalLabsResultsId, PrenatalLabsResults )
     , medicationDistribution : Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )
+    , symptomReview : Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview )
+    , outsideCare : Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )
+    , hivPCRTest : Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )
+    , mentalHealth : Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth )
+    , tetanusImmunisation : Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation )
     }
 
 
@@ -2016,6 +2312,11 @@ emptyPrenatalMeasurements =
     , urineDipstickTest = Nothing
     , labsResults = Nothing
     , medicationDistribution = Nothing
+    , symptomReview = Nothing
+    , outsideCare = Nothing
+    , hivPCRTest = Nothing
+    , mentalHealth = Nothing
+    , tetanusImmunisation = Nothing
     }
 
 

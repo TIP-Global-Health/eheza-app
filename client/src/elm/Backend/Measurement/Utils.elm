@@ -560,8 +560,8 @@ postpartumChildDangerSignFromString sign =
             Nothing
 
 
-heightValueFunc : HeightInCm -> Float
-heightValueFunc =
+getHeightValue : HeightInCm -> Float
+getHeightValue =
     \(HeightInCm cm) -> cm
 
 
@@ -580,65 +580,6 @@ headCircumferenceValueFunc =
     \(HeadCircumferenceInCm cm) -> cm
 
 
-vaccineTypeFromString : String -> Maybe VaccineType
-vaccineTypeFromString type_ =
-    case type_ of
-        "bcg" ->
-            Just VaccineBCG
-
-        "opv" ->
-            Just VaccineOPV
-
-        "dtp" ->
-            Just VaccineDTP
-
-        "pcv13" ->
-            Just VaccinePCV13
-
-        "rotarix" ->
-            Just VaccineRotarix
-
-        "ipv" ->
-            Just VaccineIPV
-
-        "mr" ->
-            Just VaccineMR
-
-        "hpv" ->
-            Just VaccineHPV
-
-        _ ->
-            Nothing
-
-
-vaccineTypeToString : VaccineType -> String
-vaccineTypeToString type_ =
-    case type_ of
-        VaccineBCG ->
-            "bcg"
-
-        VaccineOPV ->
-            "opv"
-
-        VaccineDTP ->
-            "dtp"
-
-        VaccinePCV13 ->
-            "pcv13"
-
-        VaccineRotarix ->
-            "rotarix"
-
-        VaccineIPV ->
-            "ipv"
-
-        VaccineMR ->
-            "mr"
-
-        VaccineHPV ->
-            "hpv"
-
-
 vaccineDoseFromString : String -> Maybe VaccineDose
 vaccineDoseFromString dose =
     case dose of
@@ -653,6 +594,9 @@ vaccineDoseFromString dose =
 
         "dose-4" ->
             Just VaccineDoseFourth
+
+        "dose-5" ->
+            Just VaccineDoseFifth
 
         _ ->
             Nothing
@@ -672,6 +616,9 @@ vaccineDoseToString dose =
 
         VaccineDoseFourth ->
             "dose-4"
+
+        VaccineDoseFifth ->
+            "dose-5"
 
 
 getMeasurementValueFunc : Maybe ( id, { measurement | value : v } ) -> Maybe v
@@ -1064,6 +1011,12 @@ proteinValueFromString value =
 phValueToString : PHValue -> String
 phValueToString value =
     case value of
+        Ph40 ->
+            "4.0"
+
+        Ph45 ->
+            "4.5"
+
         Ph50 ->
             "5.0"
 
@@ -1089,6 +1042,12 @@ phValueToString value =
 phValueFromString : String -> Maybe PHValue
 phValueFromString value =
     case value of
+        "4.0" ->
+            Just Ph40
+
+        "4.5" ->
+            Just Ph45
+
         "5.0" ->
             Just Ph50
 
@@ -1222,8 +1181,8 @@ nitriteValueFromString value =
 urobilinogenValueToString : UrobilinogenValue -> String
 urobilinogenValueToString value =
     case value of
-        Urobilinogen02 ->
-            "0.2"
+        Urobilinogen002 ->
+            "0-0.2"
 
         Urobilinogen10 ->
             "1"
@@ -1241,8 +1200,8 @@ urobilinogenValueToString value =
 urobilinogenValueFromString : String -> Maybe UrobilinogenValue
 urobilinogenValueFromString value =
     case value of
-        "0.2" ->
-            Just Urobilinogen02
+        "0-0.2" ->
+            Just Urobilinogen002
 
         "1" ->
             Just Urobilinogen10
@@ -1308,59 +1267,6 @@ haemoglobinValueFromString value =
 
         "large" ->
             Just HaemoglobinLarge
-
-        _ ->
-            Nothing
-
-
-specificGravityValueToString : SpecificGravityValue -> String
-specificGravityValueToString value =
-    case value of
-        SpecificGravity1000 ->
-            "1.000"
-
-        SpecificGravity1005 ->
-            "1.005"
-
-        SpecificGravity1010 ->
-            "1.010"
-
-        SpecificGravity1015 ->
-            "1.015"
-
-        SpecificGravity1020 ->
-            "1.020"
-
-        SpecificGravity1025 ->
-            "1.025"
-
-        SpecificGravity1030 ->
-            "1.030"
-
-
-specificGravityValueFromString : String -> Maybe SpecificGravityValue
-specificGravityValueFromString value =
-    case value of
-        "1.000" ->
-            Just SpecificGravity1000
-
-        "1.005" ->
-            Just SpecificGravity1005
-
-        "1.010" ->
-            Just SpecificGravity1010
-
-        "1.015" ->
-            Just SpecificGravity1015
-
-        "1.020" ->
-            Just SpecificGravity1020
-
-        "1.025" ->
-            Just SpecificGravity1025
-
-        "1.030" ->
-            Just SpecificGravity1030
 
         _ ->
             Nothing
@@ -1454,12 +1360,13 @@ bilirubinValueFromString value =
             Nothing
 
 
-{-| If lab results are not provided within 14 days, we consider the expired,
-and do not provide option of filling the results.
+{-| If lab results are not provided within this period, we consider them
+expired, and do not provide option of filling the results.
+Note: HIV PCR can take up to one month to get a result.
 -}
 prenatalLabExpirationPeriod : Int
 prenatalLabExpirationPeriod =
-    14
+    35
 
 
 prenatalHIVSignToString : PrenatalHIVSign -> String
@@ -1515,25 +1422,25 @@ recommendedTreatmentSignToString sign =
         TreatmentWrittenProtocols ->
             "written-protocols"
 
-        TreatementReferToHospital ->
+        TreatmentReferToHospital ->
             "refer-to-hospital"
 
         NoTreatmentForMalaria ->
             "no-treatment-malaria"
 
-        TreatementPenecilin1 ->
+        TreatmentPenecilin1 ->
             "penecilin-1"
 
-        TreatementPenecilin3 ->
+        TreatmentPenecilin3 ->
             "penecilin-3"
 
-        TreatementErythromycin ->
+        TreatmentErythromycin ->
             "erythromycin"
 
-        TreatementAzithromycin ->
+        TreatmentAzithromycin ->
             "azithromycin"
 
-        TreatementCeftriaxon ->
+        TreatmentCeftriaxon ->
             "ceftriaxon"
 
         NoTreatmentForSyphilis ->
@@ -1548,8 +1455,32 @@ recommendedTreatmentSignToString sign =
         TreatmentMethyldopa4 ->
             "methyldopa-4"
 
+        TreatmentHypertensionAddCarvedilol ->
+            "add-carvedilol"
+
+        TreatmentHypertensionAddAmlodipine ->
+            "add-amlodipine"
+
         NoTreatmentForHypertension ->
             "no-treatment-hypertension"
+
+        TreatmentAluminiumHydroxide ->
+            "aluminium-hydroxide"
+
+        TreatmentHealthEducationForHeartburn ->
+            "education-heartburn"
+
+        TreatmentNitrofurantoin ->
+            "nitrofurantoin"
+
+        TreatmentAmoxicillin ->
+            "amoxicillin"
+
+        TreatmentClotrimaxazole200 ->
+            "clotrimaxazole-200"
+
+        TreatmentClotrimaxazole500 ->
+            "clotrimaxazole-500"
 
 
 recommendedTreatmentSignFromString : String -> Maybe RecommendedTreatmentSign
@@ -1565,25 +1496,25 @@ recommendedTreatmentSignFromString sign =
             Just TreatmentWrittenProtocols
 
         "refer-to-hospital" ->
-            Just TreatementReferToHospital
+            Just TreatmentReferToHospital
 
         "no-treatment-malaria" ->
             Just NoTreatmentForMalaria
 
         "penecilin-1" ->
-            Just TreatementPenecilin1
+            Just TreatmentPenecilin1
 
         "penecilin-3" ->
-            Just TreatementPenecilin3
+            Just TreatmentPenecilin3
 
         "erythromycin" ->
-            Just TreatementErythromycin
+            Just TreatmentErythromycin
 
         "azithromycin" ->
-            Just TreatementAzithromycin
+            Just TreatmentAzithromycin
 
         "ceftriaxon" ->
-            Just TreatementCeftriaxon
+            Just TreatmentCeftriaxon
 
         "no-treatment-syphilis" ->
             Just NoTreatmentForSyphilis
@@ -1597,11 +1528,82 @@ recommendedTreatmentSignFromString sign =
         "methyldopa-4" ->
             Just TreatmentMethyldopa4
 
+        "add-carvedilol" ->
+            Just TreatmentHypertensionAddCarvedilol
+
+        "add-amlodipine" ->
+            Just TreatmentHypertensionAddAmlodipine
+
         "no-treatment-hypertension" ->
             Just NoTreatmentForHypertension
 
+        "aluminium-hydroxide" ->
+            Just TreatmentAluminiumHydroxide
+
+        "education-heartburn" ->
+            Just TreatmentHealthEducationForHeartburn
+
+        "nitrofurantoin" ->
+            Just TreatmentNitrofurantoin
+
+        "amoxicillin" ->
+            Just TreatmentAmoxicillin
+
+        "clotrimaxazole-200" ->
+            Just TreatmentClotrimaxazole200
+
+        "clotrimaxazole-500" ->
+            Just TreatmentClotrimaxazole500
+
         _ ->
             Nothing
+
+
+avoidingGuidanceReasonFromString : String -> Maybe AvoidingGuidanceReason
+avoidingGuidanceReasonFromString value =
+    case value of
+        "hypertension-lack-of-stock" ->
+            Just AvoidingGuidanceHypertensionLackOfStock
+
+        "hypertension-known-allergy" ->
+            Just AvoidingGuidanceHypertensionKnownAllergy
+
+        "hypertension-patient-declined" ->
+            Just AvoidingGuidanceHypertensionPatientDeclined
+
+        "hypertension-patient-unable-to-afford" ->
+            Just AvoidingGuidanceHypertensionPatientUnableToAfford
+
+        "hypertension-reinforce-adherence" ->
+            Just AvoidingGuidanceHypertensionReinforceAdherence
+
+        "hypertension-other" ->
+            Just AvoidingGuidanceHypertensionOther
+
+        _ ->
+            Nothing
+
+
+avoidingGuidanceReasonToString : AvoidingGuidanceReason -> String
+avoidingGuidanceReasonToString value =
+    case value of
+        AvoidingGuidanceHypertensionLackOfStock ->
+            "hypertension-lack-of-stock"
+
+        AvoidingGuidanceHypertensionKnownAllergy ->
+            "hypertension-known-allergy"
+
+        AvoidingGuidanceHypertensionPatientDeclined ->
+            "hypertension-patient-declined"
+
+        AvoidingGuidanceHypertensionPatientUnableToAfford ->
+            "hypertension-patient-unable-to-afford"
+
+        AvoidingGuidanceHypertensionReinforceAdherence ->
+            "hypertension-reinforce-adherence"
+
+        AvoidingGuidanceHypertensionOther ->
+            "hypertension-other"
 
 
 illnessSymptomToString : IllnessSymptom -> String
@@ -1649,3 +1651,659 @@ illnessSymptomFromString symptom =
 
         _ ->
             Nothing
+
+
+prenatalSymptomToString : PrenatalSymptom -> String
+prenatalSymptomToString value =
+    case value of
+        BurningWithUrination ->
+            "burning-with-urination"
+
+        AbnormalVaginalDischarge ->
+            "abnormal-vaginal-discharge"
+
+        NauseaAndVomiting ->
+            "nausea-and-vomiting"
+
+        Heartburn ->
+            "heartburn"
+
+        LegCramps ->
+            "leg-cramps"
+
+        LowBackPain ->
+            "low-back-pain"
+
+        CoughContinuous ->
+            "cough-continuous"
+
+        PelvicPain ->
+            "pelvic-pain"
+
+        Constipation ->
+            "constipation"
+
+        VaricoseVeins ->
+            "varicose-veins"
+
+        LegPainRedness ->
+            "leg-pain-redness"
+
+        NoPrenatalSymptoms ->
+            "none"
+
+
+prenatalSymptomFromString : String -> Maybe PrenatalSymptom
+prenatalSymptomFromString value =
+    case value of
+        "burning-with-urination" ->
+            Just BurningWithUrination
+
+        "abnormal-vaginal-discharge" ->
+            Just AbnormalVaginalDischarge
+
+        "nausea-and-vomiting" ->
+            Just NauseaAndVomiting
+
+        "heartburn" ->
+            Just Heartburn
+
+        "leg-cramps" ->
+            Just LegCramps
+
+        "low-back-pain" ->
+            Just LowBackPain
+
+        "cough-continuous" ->
+            Just CoughContinuous
+
+        "pelvic-pain" ->
+            Just PelvicPain
+
+        "constipation" ->
+            Just Constipation
+
+        "varicose-veins" ->
+            Just VaricoseVeins
+
+        "leg-pain-redness" ->
+            Just LegPainRedness
+
+        "none" ->
+            Just NoPrenatalSymptoms
+
+        _ ->
+            Nothing
+
+
+prenatalSymptomQuestionToString : PrenatalSymptomQuestion -> String
+prenatalSymptomQuestionToString value =
+    case value of
+        SymptomQuestionDizziness ->
+            "dizziness"
+
+        SymptomQuestionLowUrineOutput ->
+            "low-urine-output"
+
+        SymptomQuestionDarkUrine ->
+            "dark-urine"
+
+        SymptomQuestionPelvicPainHospitalization ->
+            "pelvic-pain-hospitalization"
+
+        SymptomQuestionLegPainRednessLeft ->
+            "leg-pain-redness-left"
+
+        SymptomQuestionLegSwollen ->
+            "leg-swollen"
+
+        SymptomQuestionLegPainful ->
+            "leg-painful"
+
+        SymptomQuestionLegWarm ->
+            "leg-warm"
+
+        SymptomQuestionNightSweats ->
+            "night-sweats"
+
+        SymptomQuestionBloodInSputum ->
+            "blood-in-sputum"
+
+        SymptomQuestionWeightLoss ->
+            "weight-loss"
+
+        SymptomQuestionSevereFatigue ->
+            "severe-fatigue"
+
+        SymptomQuestionVaginalItching ->
+            "vaginal-itching"
+
+        SymptomQuestionPartnerUrethralDischarge ->
+            "partner-urethral-discharge"
+
+        SymptomQuestionVaginalDischarge ->
+            "vaginal-discharge"
+
+        SymptomQuestionFrequentUrination ->
+            "frequent-urination"
+
+        SymptomQuestionFlankPain ->
+            "flank-pain"
+
+        NoSymptomQuestions ->
+            "none"
+
+
+prenatalSymptomQuestionFromString : String -> Maybe PrenatalSymptomQuestion
+prenatalSymptomQuestionFromString value =
+    case value of
+        "dizziness" ->
+            Just SymptomQuestionDizziness
+
+        "low-urine-output" ->
+            Just SymptomQuestionLowUrineOutput
+
+        "dark-urine" ->
+            Just SymptomQuestionDarkUrine
+
+        "pelvic-pain-hospitalization" ->
+            Just SymptomQuestionPelvicPainHospitalization
+
+        "leg-pain-redness-left" ->
+            Just SymptomQuestionLegPainRednessLeft
+
+        "leg-painful" ->
+            Just SymptomQuestionLegPainful
+
+        "leg-swollen" ->
+            Just SymptomQuestionLegSwollen
+
+        "leg-warm" ->
+            Just SymptomQuestionLegWarm
+
+        "night-sweats" ->
+            Just SymptomQuestionNightSweats
+
+        "blood-in-sputum" ->
+            Just SymptomQuestionBloodInSputum
+
+        "weight-loss" ->
+            Just SymptomQuestionWeightLoss
+
+        "severe-fatigue" ->
+            Just SymptomQuestionSevereFatigue
+
+        "vaginal-itching" ->
+            Just SymptomQuestionVaginalItching
+
+        "partner-urethral-discharge" ->
+            Just SymptomQuestionPartnerUrethralDischarge
+
+        "vaginal-discharge" ->
+            Just SymptomQuestionVaginalDischarge
+
+        "frequent-urination" ->
+            Just SymptomQuestionFrequentUrination
+
+        "flank-pain" ->
+            Just SymptomQuestionFlankPain
+
+        "none" ->
+            Just NoSymptomQuestions
+
+        _ ->
+            Nothing
+
+
+prenatalFlankPainSignToString : PrenatalFlankPainSign -> String
+prenatalFlankPainSignToString value =
+    case value of
+        FlankPainLeftSide ->
+            "left"
+
+        FlankPainRightSide ->
+            "right"
+
+        FlankPainBothSides ->
+            "both"
+
+        NoFlankPain ->
+            "none"
+
+
+prenatalFlankPainSignFromString : String -> Maybe PrenatalFlankPainSign
+prenatalFlankPainSignFromString value =
+    case value of
+        "left" ->
+            Just FlankPainLeftSide
+
+        "right" ->
+            Just FlankPainRightSide
+
+        "both" ->
+            Just FlankPainBothSides
+
+        "none" ->
+            Just NoFlankPain
+
+        _ ->
+            Nothing
+
+
+prenatalOutsideCareSignToString : PrenatalOutsideCareSign -> String
+prenatalOutsideCareSignToString value =
+    case value of
+        SeenAtAnotherFacility ->
+            "seen-at-another-facility"
+
+        GivenNewDiagnoses ->
+            "given-new-diagnoses"
+
+        GivenMedicine ->
+            "given-medicine"
+
+        PlannedFollowUpCareWithSpecialist ->
+            "follow-up-with-specialist"
+
+        NoPrenatalOutsideCareSigns ->
+            "none"
+
+
+prenatalOutsideCareSignFromString : String -> Maybe PrenatalOutsideCareSign
+prenatalOutsideCareSignFromString value =
+    case value of
+        "seen-at-another-facility" ->
+            Just SeenAtAnotherFacility
+
+        "given-new-diagnoses" ->
+            Just GivenNewDiagnoses
+
+        "given-medicine" ->
+            Just GivenMedicine
+
+        "follow-up-with-specialist" ->
+            Just PlannedFollowUpCareWithSpecialist
+
+        "none" ->
+            Just NoPrenatalOutsideCareSigns
+
+        _ ->
+            Nothing
+
+
+prenatalOutsideCareMedicationToString : PrenatalOutsideCareMedication -> String
+prenatalOutsideCareMedicationToString value =
+    case value of
+        OutsideCareMedicationQuinineSulphate ->
+            "quinine-sulphate"
+
+        OutsideCareMedicationCoartem ->
+            "coartem"
+
+        NoOutsideCareMedicationForMalaria ->
+            "no-treatment-malaria"
+
+        OutsideCareMedicationPenecilin1 ->
+            "penecilin-1"
+
+        OutsideCareMedicationPenecilin3 ->
+            "penecilin-3"
+
+        OutsideCareMedicationErythromycin ->
+            "erythromycin"
+
+        OutsideCareMedicationAzithromycin ->
+            "azithromycin"
+
+        OutsideCareMedicationCeftriaxon ->
+            "ceftriaxon"
+
+        NoOutsideCareMedicationForSyphilis ->
+            "no-treatment-syphilis"
+
+        OutsideCareMedicationMethyldopa2 ->
+            "methyldopa-2"
+
+        OutsideCareMedicationMethyldopa3 ->
+            "methyldopa-3"
+
+        OutsideCareMedicationMethyldopa4 ->
+            "methyldopa-4"
+
+        NoOutsideCareMedicationForHypertension ->
+            "no-treatment-hypertension"
+
+        OutsideCareMedicationCarvedilol ->
+            "carvedilol"
+
+        OutsideCareMedicationAmlodipine ->
+            "amlodipine"
+
+        OutsideCareMedicationTDF3TC ->
+            "tdf3tc"
+
+        OutsideCareMedicationDolutegravir ->
+            "dolutegravir"
+
+        NoOutsideCareMedicationForHIV ->
+            "no-treatment-hiv"
+
+        OutsideCareMedicationIron1 ->
+            "iron1"
+
+        OutsideCareMedicationIron2 ->
+            "iron2"
+
+        OutsideCareMedicationFolicAcid ->
+            "folic-acid"
+
+        NoOutsideCareMedicationForAnemia ->
+            "no-treatment-anemia"
+
+        NoPrenatalOutsideCareMedications ->
+            "none"
+
+
+prenatalOutsideCareMedicationFromString : String -> Maybe PrenatalOutsideCareMedication
+prenatalOutsideCareMedicationFromString value =
+    case value of
+        "quinine-sulphate" ->
+            Just OutsideCareMedicationQuinineSulphate
+
+        "coartem" ->
+            Just OutsideCareMedicationCoartem
+
+        "no-treatment-malaria" ->
+            Just NoOutsideCareMedicationForMalaria
+
+        "penecilin-1" ->
+            Just OutsideCareMedicationPenecilin1
+
+        "penecilin-3" ->
+            Just OutsideCareMedicationPenecilin3
+
+        "erythromycin" ->
+            Just OutsideCareMedicationErythromycin
+
+        "azithromycin" ->
+            Just OutsideCareMedicationAzithromycin
+
+        "ceftriaxon" ->
+            Just OutsideCareMedicationCeftriaxon
+
+        "no-treatment-syphilis" ->
+            Just NoOutsideCareMedicationForSyphilis
+
+        "methyldopa-2" ->
+            Just OutsideCareMedicationMethyldopa2
+
+        "methyldopa-3" ->
+            Just OutsideCareMedicationMethyldopa3
+
+        "methyldopa-4" ->
+            Just OutsideCareMedicationMethyldopa4
+
+        "carvedilol" ->
+            Just OutsideCareMedicationCarvedilol
+
+        "amlodipine" ->
+            Just OutsideCareMedicationAmlodipine
+
+        "no-treatment-hypertension" ->
+            Just NoOutsideCareMedicationForHypertension
+
+        "tdf3tc" ->
+            Just OutsideCareMedicationTDF3TC
+
+        "dolutegravir" ->
+            Just OutsideCareMedicationDolutegravir
+
+        "no-treatment-hiv" ->
+            Just NoOutsideCareMedicationForHIV
+
+        "iron1" ->
+            Just OutsideCareMedicationIron1
+
+        "iron2" ->
+            Just OutsideCareMedicationIron2
+
+        "folic-acid" ->
+            Just OutsideCareMedicationFolicAcid
+
+        "no-treatment-anemia" ->
+            Just NoOutsideCareMedicationForAnemia
+
+        "none" ->
+            Just NoPrenatalOutsideCareMedications
+
+        _ ->
+            Nothing
+
+
+prenatalMentalHealthQuestionToString : PrenatalMentalHealthQuestion -> String
+prenatalMentalHealthQuestionToString value =
+    case value of
+        MentalHealthQuestion1 ->
+            "q1"
+
+        MentalHealthQuestion2 ->
+            "q2"
+
+        MentalHealthQuestion3 ->
+            "q3"
+
+        MentalHealthQuestion4 ->
+            "q4"
+
+        MentalHealthQuestion5 ->
+            "q5"
+
+        MentalHealthQuestion6 ->
+            "q6"
+
+        MentalHealthQuestion7 ->
+            "q7"
+
+        MentalHealthQuestion8 ->
+            "q8"
+
+        MentalHealthQuestion9 ->
+            "q9"
+
+        MentalHealthQuestion10 ->
+            "q10"
+
+
+prenatalMentalHealthQuestionFromString : String -> Maybe PrenatalMentalHealthQuestion
+prenatalMentalHealthQuestionFromString value =
+    case value of
+        "q1" ->
+            Just MentalHealthQuestion1
+
+        "q2" ->
+            Just MentalHealthQuestion2
+
+        "q3" ->
+            Just MentalHealthQuestion3
+
+        "q4" ->
+            Just MentalHealthQuestion4
+
+        "q5" ->
+            Just MentalHealthQuestion5
+
+        "q6" ->
+            Just MentalHealthQuestion6
+
+        "q7" ->
+            Just MentalHealthQuestion7
+
+        "q8" ->
+            Just MentalHealthQuestion8
+
+        "q9" ->
+            Just MentalHealthQuestion9
+
+        "q10" ->
+            Just MentalHealthQuestion10
+
+        _ ->
+            Nothing
+
+
+prenatalMentalHealthQuestionOptionToString : PrenatalMentalHealthQuestionOption -> String
+prenatalMentalHealthQuestionOptionToString value =
+    case value of
+        MentalHealthQuestionOption0 ->
+            "0"
+
+        MentalHealthQuestionOption1 ->
+            "1"
+
+        MentalHealthQuestionOption2 ->
+            "2"
+
+        MentalHealthQuestionOption3 ->
+            "3"
+
+
+prenatalMentalHealthQuestionOptionFromString : String -> Maybe PrenatalMentalHealthQuestionOption
+prenatalMentalHealthQuestionOptionFromString value =
+    case value of
+        "0" ->
+            Just MentalHealthQuestionOption0
+
+        "1" ->
+            Just MentalHealthQuestionOption1
+
+        "2" ->
+            Just MentalHealthQuestionOption2
+
+        "3" ->
+            Just MentalHealthQuestionOption3
+
+        _ ->
+            Nothing
+
+
+reasonForNonReferralFromString : String -> Maybe ReasonForNonReferral
+reasonForNonReferralFromString value =
+    case value of
+        "client-refused" ->
+            Just ClientRefused
+
+        "no-ambulance" ->
+            Just NoAmbulance
+
+        "unable-to-afford-fee" ->
+            Just ClientUnableToAffordFees
+
+        "already-in-care" ->
+            Just ClientAlreadyInCare
+
+        "not-indicated" ->
+            Just ReasonForNonReferralNotIndicated
+
+        "other" ->
+            Just ReasonForNonReferralOther
+
+        "none" ->
+            Just NoReasonForNonReferral
+
+        _ ->
+            Nothing
+
+
+reasonForNonReferralToString : ReasonForNonReferral -> String
+reasonForNonReferralToString value =
+    case value of
+        ClientRefused ->
+            "client-refused"
+
+        NoAmbulance ->
+            "no-ambulance"
+
+        ClientUnableToAffordFees ->
+            "unable-to-afford-fee"
+
+        ClientAlreadyInCare ->
+            "already-in-care"
+
+        ReasonForNonReferralNotIndicated ->
+            "not-indicated"
+
+        ReasonForNonReferralOther ->
+            "other"
+
+        NoReasonForNonReferral ->
+            "none"
+
+
+socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
+socialHistoryHivTestingResultFromString result =
+    case result of
+        "positive" ->
+            Just ResultHivPositive
+
+        "negative" ->
+            Just ResultHivNegative
+
+        "indeterminate" ->
+            Just ResultHivIndeterminate
+
+        "none" ->
+            Just NoHivTesting
+
+        _ ->
+            Nothing
+
+
+socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
+socialHistoryHivTestingResultToString result =
+    case result of
+        ResultHivPositive ->
+            "positive"
+
+        ResultHivNegative ->
+            "negative"
+
+        ResultHivIndeterminate ->
+            "indeterminate"
+
+        NoHivTesting ->
+            "none"
+
+
+pregnancyTestResultFromString : String -> Maybe PregnancyTestResult
+pregnancyTestResultFromString result =
+    case result of
+        "positive" ->
+            Just PregnancyTestPositive
+
+        "negative" ->
+            Just PregnancyTestNegative
+
+        "indeterminate" ->
+            Just PregnancyTestIndeterminate
+
+        "unable-to-conduct" ->
+            Just PregnancyTestUnableToConduct
+
+        _ ->
+            Nothing
+
+
+pregnancyTestResultToString : PregnancyTestResult -> String
+pregnancyTestResultToString sign =
+    case sign of
+        PregnancyTestPositive ->
+            "positive"
+
+        PregnancyTestNegative ->
+            "negative"
+
+        PregnancyTestIndeterminate ->
+            "indeterminate"
+
+        PregnancyTestUnableToConduct ->
+            "unable-to-conduct"

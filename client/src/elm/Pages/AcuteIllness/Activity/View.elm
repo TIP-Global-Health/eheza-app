@@ -1726,7 +1726,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                         |> sendToFacilityFunc language
                             currentDate
                             SetReferToHealthCenter
-                            SetReasonForNotSendingToHC
+                            SetReasonForNonReferral
                             SetHandReferralForm
                             Nothing
 

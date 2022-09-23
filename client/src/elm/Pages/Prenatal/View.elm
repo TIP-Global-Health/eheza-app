@@ -22,9 +22,10 @@ viewMedicationDistributionForm :
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> (Maybe AdministrationNote -> MedicationDistributionSign -> AdministrationNote -> msg)
     -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
+    -> (AvoidingGuidanceReason -> msg)
     -> MedicationDistributionForm
     -> Html msg
-viewMedicationDistributionForm language currentDate phase assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg setRecommendedTreatmentSignMsg form =
+viewMedicationDistributionForm language currentDate phase assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg setRecommendedTreatmentSignMsg avoidingGuidanceReasonMsg form =
     let
         ( content, _, _ ) =
             resolveMedicationDistributionInputsAndTasks language
@@ -34,6 +35,7 @@ viewMedicationDistributionForm language currentDate phase assembled setMedicatio
                 setMedicationDistributionBoolInputMsg
                 setMedicationDistributionAdministrationNoteMsg
                 setRecommendedTreatmentSignMsg
+                avoidingGuidanceReasonMsg
                 form
     in
     div [ class "ui form medication-distribution" ]

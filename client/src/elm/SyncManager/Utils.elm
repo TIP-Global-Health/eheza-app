@@ -588,6 +588,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalHIVTest identifier ->
             getIdentifier identifier "prenatal_hiv_test"
 
+        BackendAuthorityPrenatalHIVPCRTest identifier ->
+            getIdentifier identifier "prenatal_hiv_pcr_test"
+
         BackendAuthorityPrenatalLabsResults identifier ->
             getIdentifier identifier "prenatal_labs_results"
 
@@ -597,8 +600,14 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalMedicationDistribution identifier ->
             getIdentifier identifier "prenatal_medication_distribution"
 
+        BackendAuthorityPrenatalMentalHealth identifier ->
+            getIdentifier identifier "prenatal_mental_health"
+
         BackendAuthorityPrenatalNutrition identifier ->
             getIdentifier identifier "prenatal_nutrition"
+
+        BackendAuthorityPrenatalOutsideCare identifier ->
+            getIdentifier identifier "prenatal_outside_care"
 
         BackendAuthorityPrenatalPhoto identifier ->
             getIdentifier identifier "prenatal_photo"
@@ -609,8 +618,14 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalSendToHC identifier ->
             getIdentifier identifier "prenatal_send_to_hc"
 
+        BackendAuthorityPrenatalSymptomReview identifier ->
+            getIdentifier identifier "prenatal_symptom_review"
+
         BackendAuthorityPrenatalSyphilisTest identifier ->
             getIdentifier identifier "prenatal_syphilis_test"
+
+        BackendAuthorityPrenatalTetanusImmunisation identifier ->
+            getIdentifier identifier "prenatal_tetanus_immunisation"
 
         BackendAuthorityPrenatalUrineDipstickTest identifier ->
             getIdentifier identifier "prenatal_urine_dipstick_test"
@@ -1146,6 +1161,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalHIVTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalHIVTest identifier
 
+        BackendAuthorityPrenatalHIVPCRTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalHIVPCRTest identifier
+
         BackendAuthorityPrenatalLabsResults identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalLabsResults identifier
 
@@ -1155,8 +1173,14 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalMedicationDistribution identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalMedicationDistribution identifier
 
+        BackendAuthorityPrenatalMentalHealth identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalMentalHealth identifier
+
         BackendAuthorityPrenatalNutrition identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalNutrition identifier
+
+        BackendAuthorityPrenatalOutsideCare identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalOutsideCare identifier
 
         BackendAuthorityPrenatalPhoto identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
@@ -1167,8 +1191,14 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalSendToHC identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalSendToHC identifier
 
+        BackendAuthorityPrenatalSymptomReview identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalSymptomReview identifier
+
         BackendAuthorityPrenatalSyphilisTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalSyphilisTest identifier
+
+        BackendAuthorityPrenatalTetanusImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalTetanusImmunisation identifier
 
         BackendAuthorityPrenatalUrineDipstickTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalUrineDipstickTest identifier
@@ -1667,6 +1697,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityPrenatalHIVTest identifier ->
             PrenatalHIVTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityPrenatalHIVPCRTest identifier ->
+            PrenatalHIVPCRTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityPrenatalLabsResults identifier ->
             PrenatalLabsResultsRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1676,8 +1709,14 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityPrenatalMedicationDistribution identifier ->
             PrenatalMedicationDistributionRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityPrenatalMentalHealth identifier ->
+            PrenatalMentalHealthRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityPrenatalNutrition identifier ->
             PrenatalNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalOutsideCare identifier ->
+            PrenatalOutsideCareRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalPhoto identifier ->
             PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1688,8 +1727,14 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityPrenatalSendToHC identifier ->
             PrenatalSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityPrenatalSymptomReview identifier ->
+            PrenatalSymptomReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityPrenatalSyphilisTest identifier ->
             PrenatalSyphilisTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalTetanusImmunisation identifier ->
+            PrenatalTetanusImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalUrineDipstickTest identifier ->
             PrenatalUrineDipstickTestRevision (toEntityUuid identifier.uuid) identifier.entity

@@ -516,6 +516,11 @@ h3.ui.header {
   background-size: 100px 100px;
 }
 
+.icon-task-mental-health {
+  background-image: url(#{$img-path}icon-mental-health-white.svg);
+  background-size: 100px 100px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
@@ -2205,6 +2210,20 @@ input::placeholder {
   }
 }
 
+.icon-laboratory-history {
+  .active &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-gray.svg);
+  }
+}
+
 .icon-exposure-travel {
   .active &:after {
     background-image: url(#{$img-path}icon-travel-white.svg);
@@ -2289,6 +2308,7 @@ input::placeholder {
   }
 }
 
+.icon-outside-care,
 .icon-next-steps-medication-distribution {
   .active &:after {
     background-image: url(#{$img-path}icon-medication-distribution-white.svg);
@@ -2328,6 +2348,20 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-health-center-gray.svg);
+  }
+}
+
+.icon-next-steps-referral {
+  .active &:after {
+    background-image: url(#{$img-path}icon-cross-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-cross-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-cross-gray.svg);
   }
 }
 
@@ -2501,20 +2535,7 @@ input::placeholder {
   }
 }
 
-.icon-albendazole {
-  .active &:after {
-    background-image: url(#{$img-path}icon-pills-box-white.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-pills-box-white.svg), url(#{$img-path}icon-completed-circle.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-pills-box-gray.svg);
-  }
-}
-
+.icon-albendazole,
 .icon-mebendezole {
   .active &:after {
     background-image: url(#{$img-path}icon-pills-box-white.svg);
@@ -2652,6 +2673,20 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-contributing-factors-gray.svg);
+  }
+}
+
+.icon-tetanus-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-tetanus-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-tetanus-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-tetanus-gray.svg);
   }
 }
 

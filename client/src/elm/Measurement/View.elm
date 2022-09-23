@@ -9,7 +9,6 @@ module Measurement.View exposing
     , viewMeasurementFloatDiff
     , viewMother
     , viewReferToProgramForm
-    , viewSendToHIVProgramForm
     , viewSendToHealthCenterForm
     , viewSendToHospitalForm
     , viewVitalsForm
@@ -30,8 +29,8 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
         ( currentValues
+        , getHeightValue
         , getMeasurementValueFunc
-        , heightValueFunc
         , mapMeasurementData
         , muacIndication
         , muacValueFunc
@@ -42,6 +41,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -162,7 +162,7 @@ heightFormConfig =
     , constraints = getInputConstraintsHeight
     , unit = Translate.CentimeterShorthand
     , inputValue = .height
-    , storedValue = .value >> heightValueFunc
+    , storedValue = .value >> getHeightValue
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
@@ -1093,7 +1093,7 @@ viewSendToHC language currentDate measurement form_ =
             viewSendToHealthCenterForm language
                 currentDate
                 SetReferToHealthCenter
-                SetReasonForNotSendingToHC
+                SetReasonForNonReferral
                 SetHandReferralForm
                 Nothing
                 form
@@ -1143,7 +1143,7 @@ viewSendToHealthCenterForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
@@ -1156,7 +1156,7 @@ viewSendToHospitalForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
@@ -1165,41 +1165,25 @@ viewSendToHospitalForm language currentDate =
     viewSendToFacilityForm language currentDate FacilityHospital
 
 
-viewSendToHIVProgramForm :
-    Language
-    -> NominalDate
-    -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
-    -> (Bool -> msg)
-    -> Maybe (Bool -> msg)
-    -> SendToHCForm
-    -> Html msg
-viewSendToHIVProgramForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHIVProgram
-
-
 viewSendToFacilityForm :
     Language
     -> NominalDate
     -> ReferralFacility
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
         headerHelper =
             case facility of
-                FacilityHealthCenter ->
-                    emptyNode
-
                 FacilityHospital ->
-                    viewCustomLabel language Translate.AcuteIllnessHighRiskCaseHelper "." "instructions"
+                    [ viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions" ]
 
-                FacilityHIVProgram ->
-                    viewCustomLabel language Translate.PrenatalHIVProgramHelper "." "instructions"
+                _ ->
+                    []
 
         sendToHCSection =
             let
@@ -1209,23 +1193,19 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
 
                 reasonForNotSendingToHCInput =
                     if not sentToHealthCenter then
-                        let
-                            options =
-                                case facility of
-                                    FacilityHIVProgram ->
-                                        [ ClientRefused, ClientAlreadyInCare, ReasonForNotSendingToHCOther ]
-
-                                    _ ->
-                                        [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
-                        in
                         [ div [ class "why-not" ]
                             [ viewQuestionLabel language Translate.WhyNot
                             , viewCheckBoxSelectInput language
-                                options
+                                [ ClientRefused
+                                , NoAmbulance
+                                , ClientUnableToAffordFees
+                                , ReasonForNonReferralNotIndicated
+                                , ReasonForNonReferralOther
+                                ]
                                 []
                                 form.reasonForNotSendingToHC
-                                setReasonForNotSendingToHCMsg
-                                Translate.ReasonForNotSendingToHC
+                                setReasonForNonReferralMsg
+                                Translate.ReasonForNonReferral
                             ]
                         ]
 
@@ -1268,13 +1248,13 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
                 |> Maybe.withDefault []
     in
     div [ class "ui form send-to-hc" ] <|
-        [ headerHelper
-        , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
-            , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
-            ]
-        ]
+        headerHelper
+            ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+               , div [ class "instructions" ]
+                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+                    , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
+                    ]
+               ]
             ++ sendToHCSection
             ++ handReferralFormSection
             ++ accompanyToHCSection
@@ -1369,10 +1349,10 @@ viewVitalsForm language currentDate config form =
                                             ( 140, 90 )
                                 in
                                 ( [ [ (<) redAlertHighSys ]
-                                  , [ (>) 110 ]
+                                  , [ (>) 100 ]
                                   ]
                                 , [ [ (<) redAlertHighDia ]
-                                  , [ (>) 70 ]
+                                  , [ (>) 60 ]
                                   ]
                                 )
                         in

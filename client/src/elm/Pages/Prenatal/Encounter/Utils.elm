@@ -3,11 +3,12 @@ module Pages.Prenatal.Encounter.Utils exposing (..)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (getHeightValue, getMeasurementValueFunc, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples, sortEncounterTuplesDesc)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -20,16 +21,11 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 
 
-isFirstEncounter : AssembledData -> Bool
-isFirstEncounter assembled =
-    List.isEmpty assembled.nursePreviousMeasurementsWithDates
-
-
 getAllActivities : AssembledData -> List PrenatalActivity
 getAllActivities assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
-            if isFirstEncounter assembled then
+            if nurseEncounterNotPerformed assembled then
                 [ PregnancyDating
                 , History
                 , Examination
@@ -37,20 +33,25 @@ getAllActivities assembled =
                 , Medication
                 , Backend.PrenatalActivity.Model.MalariaPrevention
                 , DangerSigns
+                , SymptomReview
+                , PrenatalImmunisation
                 , Laboratory
+                , MaternalMentalHealth
                 , PrenatalPhoto
                 , NextSteps
                 ]
 
             else
                 [ DangerSigns
-                , PregnancyDating
+                , SymptomReview
                 , History
                 , Examination
                 , FamilyPlanning
-                , Medication
+                , PrenatalTreatmentReview
                 , Backend.PrenatalActivity.Model.MalariaPrevention
+                , PrenatalImmunisation
                 , Laboratory
+                , MaternalMentalHealth
                 , PrenatalPhoto
                 , NextSteps
                 ]
@@ -335,6 +336,14 @@ generateAssembledData id db =
             measurements
                 |> RemoteData.map (resolveGlobalObstetricHistory nursePreviousMeasurements)
                 |> RemoteData.withDefault Nothing
+
+        ( vaccinationHistory, vaccinationProgress ) =
+            ( generateVaccinationProgress nursePreviousMeasurements
+            , RemoteData.toMaybe measurements
+                |> Maybe.map (\measurements_ -> measurements_ :: nursePreviousMeasurements)
+                |> Maybe.withDefault nursePreviousMeasurements
+                |> generateVaccinationProgress
+            )
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
@@ -345,6 +354,8 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success chwPreviousMeasurementsWithDates)
         |> RemoteData.andMap (Success globalLmpDate)
         |> RemoteData.andMap (Success globalObstetricHistory)
+        |> RemoteData.andMap (Success vaccinationHistory)
+        |> RemoteData.andMap (Success vaccinationProgress)
 
 
 getFirstEncounterMeasurements : Bool -> AssembledData -> PrenatalMeasurements
@@ -495,7 +506,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                         Tuple.second measurement
                                             |> .value
                                             |> .height
-                                            |> heightValueFunc
+                                            |> getHeightValue
 
                                     weight =
                                         Tuple.second measurement
@@ -544,7 +555,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                         Tuple.second measurement
                                             |> .value
                                             |> .height
-                                            |> heightValueFunc
+                                            |> getHeightValue
 
                                     weight =
                                         Tuple.second measurement
@@ -583,7 +594,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                         Tuple.second measurement
                                             |> .value
                                             |> .height
-                                            |> heightValueFunc
+                                            |> getHeightValue
 
                                     weight =
                                         Tuple.second measurement
@@ -884,7 +895,7 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
         DiagnosisUterineMyoma ->
             generateAlertForDiagnosis [ Backend.Measurement.Model.UterineMyoma ]
 
-        DiagnosisDiabetes ->
+        Backend.PrenatalActivity.Model.DiagnosisDiabetes ->
             generateAlertForDiagnosis [ Backend.Measurement.Model.Diabetes ]
 
         DiagnosisCardiacDisease ->
@@ -896,7 +907,7 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
         DiagnosisHypertensionBeforePregnancy ->
             generateAlertForDiagnosis [ Backend.Measurement.Model.HypertensionBeforePregnancy ]
 
-        DiagnosisTuberculosis ->
+        Backend.PrenatalActivity.Model.DiagnosisTuberculosis ->
             generateAlertForDiagnosis
                 [ Backend.Measurement.Model.TuberculosisPast
                 , Backend.Measurement.Model.TuberculosisPresent

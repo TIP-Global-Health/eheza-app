@@ -2,6 +2,7 @@ module Backend.PrenatalEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -13,6 +14,8 @@ type alias PrenatalEncounter =
     , endDate : Maybe NominalDate
     , encounterType : PrenatalEncounterType
     , diagnoses : EverySet PrenatalDiagnosis
+    , pastDiagnoses : EverySet PrenatalDiagnosis
+    , indicators : EverySet PrenatalIndicator
     , shard : Maybe HealthCenterId
     }
 
@@ -24,6 +27,8 @@ emptyPrenatalEncounter participant startDate encounterType shard =
     , endDate = Nothing
     , encounterType = encounterType
     , diagnoses = EverySet.empty
+    , pastDiagnoses = EverySet.empty
+    , indicators = EverySet.empty
     , shard = shard
     }
 
@@ -34,46 +39,6 @@ type PrenatalEncounterType
     | ChwSecondEncounter
     | ChwThirdPlusEncounter
     | ChwPostpartumEncounter
-
-
-type PrenatalDiagnosis
-    = DiagnosisChronicHypertensionImmediate
-    | DiagnosisChronicHypertensionAfterRecheck
-    | DiagnosisGestationalHypertensionImmediate
-    | DiagnosisGestationalHypertensionAfterRecheck
-    | DiagnosisModeratePreeclampsiaImmediate
-    | DiagnosisModeratePreeclampsiaAfterRecheck
-    | DiagnosisSeverePreeclampsiaImmediate
-    | DiagnosisSeverePreeclampsiaAfterRecheck
-    | DiagnosisEclampsia
-    | DiagnosisHIV
-    | DiagnosisDiscordantPartnership
-    | DiagnosisSyphilis
-    | DiagnosisSyphilisWithComplications
-    | DiagnosisNeurosyphilis
-    | DiagnosisHepatitisB
-    | DiagnosisMalaria
-    | DiagnosisMalariaWithAnemia
-    | DiagnosisMalariaWithSevereAnemia
-    | DiagnosisModerateAnemia
-    | DiagnosisSevereAnemia
-    | DiagnosisSevereAnemiaWithComplications
-    | DiagnosisMiscarriage
-    | DiagnosisMolarPregnancy
-    | DiagnosisPlacentaPrevia
-    | DiagnosisPlacentalAbruption
-    | DiagnosisUterineRupture
-    | DiagnosisObstructedLabor
-    | DiagnosisPostAbortionSepsis
-    | DiagnosisEctopicPregnancy
-    | DiagnosisPROM
-    | DiagnosisPPROM
-    | DiagnosisHyperemesisGravidum
-    | DiagnosisMaternalComplications
-    | DiagnosisInfection
-    | DiagnosisImminentDelivery
-    | DiagnosisLaborAndDelivery
-    | NoPrenatalDiagnosis
 
 
 type RecordPreganancyInitiator
@@ -93,6 +58,11 @@ type PrenatalEncounterPostCreateDestination
     = DestinationEncounterPage
     | DestinationEncounterPageWithWarningPopup
     | DestinationClinicalProgressReportPage
+
+
+type PrenatalIndicator
+    = IndicatorHistoryLabsCompleted
+    | NoPrenatalIndicators
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
@@ -131,6 +101,11 @@ type alias Model =
     , saveRandomBloodSugarTest : WebData ()
     , saveLabsResults : WebData ()
     , saveMedicationDistribution : WebData ()
+    , saveSymptomReview : WebData ()
+    , saveOutsideCare : WebData ()
+    , saveHIVPCRTest : WebData ()
+    , saveMentalHealth : WebData ()
+    , saveTetanusImmunisation : WebData ()
     }
 
 
@@ -168,12 +143,19 @@ emptyModel =
     , saveRandomBloodSugarTest = NotAsked
     , saveLabsResults = NotAsked
     , saveMedicationDistribution = NotAsked
+    , saveSymptomReview = NotAsked
+    , saveOutsideCare = NotAsked
+    , saveHIVPCRTest = NotAsked
+    , saveMentalHealth = NotAsked
+    , saveTetanusImmunisation = NotAsked
     }
 
 
 type Msg
     = ClosePrenatalEncounter
     | SetPrenatalDiagnoses (EverySet PrenatalDiagnosis)
+    | SetPastPrenatalDiagnoses (EverySet PrenatalDiagnosis)
+    | SetLabsHistoryCompleted
     | HandleUpdatedPrenatalEncounter (WebData ())
     | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())
@@ -185,7 +167,7 @@ type Msg
     | HandleSavedLastMenstrualPeriod (WebData ())
     | SaveMedicalHistory PersonId (Maybe MedicalHistoryId) (EverySet MedicalHistorySign)
     | HandleSavedMedicalHistory (WebData ())
-    | SaveMedication PersonId (Maybe MedicationId) (EverySet MedicationSign)
+    | SaveMedication PersonId (Maybe MedicationId) MedicationValue
     | HandleSavedMedication (WebData ())
     | SaveObstetricalExam PersonId (Maybe ObstetricalExamId) ObstetricalExamValue
     | HandleSavedObstetricalExam (WebData ())
@@ -209,11 +191,11 @@ type Msg
     | HandleSavedBirthPlan (WebData ())
     | SavePregnancyTest PersonId (Maybe PregnancyTestId) PregnancyTestResult
     | HandleSavedPregnancyTest (WebData ())
-    | SaveHealthEducation PersonId (Maybe PrenatalHealthEducationId) (EverySet PrenatalHealthEducationSign)
+    | SaveHealthEducation PersonId (Maybe PrenatalHealthEducationId) PrenatalHealthEducationValue
     | HandleSavedHealthEducation (WebData ())
     | SaveFollowUp PersonId (Maybe PrenatalFollowUpId) PrenatalFollowUpValue
     | HandleSavedFollowUp (WebData ())
-    | SaveSendToHC PersonId (Maybe PrenatalSendToHcId) SendToHCValue
+    | SaveSendToHC PersonId (Maybe PrenatalSendToHCId) PrenatalReferralValue
     | HandleSavedSendToHC (WebData ())
     | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
     | HandleSavedAppointmentConfirmation (WebData ())
@@ -237,3 +219,13 @@ type Msg
     | HandleSavedLabsResults (WebData ())
     | SaveMedicationDistribution PersonId (Maybe PrenatalMedicationDistributionId) PrenatalMedicationDistributionValue
     | HandleSavedMedicationDistribution (WebData ())
+    | SaveSymptomReview PersonId (Maybe PrenatalSymptomReviewId) PrenatalSymptomReviewValue
+    | HandleSavedSymptomReview (WebData ())
+    | SaveOutsideCare PersonId (Maybe PrenatalOutsideCareId) PrenatalOutsideCareValue
+    | HandleSavedOutsideCare (WebData ())
+    | SaveHIVPCRTest PersonId (Maybe PrenatalHIVPCRTestId) PrenatalHIVPCRTestValue
+    | HandleSavedHIVPCRTest (WebData ())
+    | SaveMentalHealth PersonId (Maybe PrenatalMentalHealthId) PrenatalMentalHealthValue
+    | HandleSavedMentalHealth (WebData ())
+    | SaveTetanusImmunisation PersonId (Maybe PrenatalTetanusImmunisationId) VaccinationValue
+    | HandleSavedTetanusImmunisation (WebData ())

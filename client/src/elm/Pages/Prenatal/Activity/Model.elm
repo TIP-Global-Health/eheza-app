@@ -1,12 +1,24 @@
 module Pages.Prenatal.Activity.Model exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Date exposing (Date)
-import DateSelector.SelectorPopup exposing (DateSelectorConfig)
+import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (DropZoneFile, SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
+import Measurement.Model
+    exposing
+        ( DropZoneFile
+        , SendToHCForm
+        , VaccinationForm
+        , VaccinationFormViewMode
+        , VitalsForm
+        , emptySendToHCForm
+        , emptyVaccinationForm
+        , emptyVitalsForm
+        )
 import Pages.Page exposing (Page)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Model exposing (..)
@@ -46,6 +58,16 @@ type Msg
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
     | SetSocialHivTestingResult String
     | SaveSocialHistory PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
+      -- HistoryMsgs, Outside Care
+    | SetOutsideCareStep OutsideCareStep
+    | SetOutsideCareSignBoolInput (Bool -> OutsideCareForm -> OutsideCareForm) Bool
+    | SetOutsideCareDiagnosis PrenatalDiagnosis
+    | SetOutsideCareMalariaMedication PrenatalOutsideCareMedication
+    | SetOutsideCareHypertensionMedication PrenatalOutsideCareMedication
+    | SetOutsideCareSyphilisMedication PrenatalOutsideCareMedication
+    | SetOutsideCareAnemiaMedication PrenatalOutsideCareMedication
+    | SetOutsideCareHIVMedication PrenatalOutsideCareMedication
+    | SaveOutsideCare PersonId (Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )) (Maybe HistoryTask)
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
       -- ExaminationMsgs, Vitals
@@ -137,11 +159,18 @@ type Msg
     | SetHemoglobinTestExecutionDate NominalDate
     | SetHemoglobinTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
-    | SetRandomBloodSugarTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
+    | SetRandomBloodSugarTestFormBoolInput (Bool -> PrenatalRandomBloodSugarForm -> PrenatalRandomBloodSugarForm) Bool
     | SetRandomBloodSugarTestExecutionNote PrenatalTestExecutionNote
     | SetRandomBloodSugarTestExecutionDate NominalDate
     | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
+    | SetHIVPCRTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
+    | SetHIVPCRTestExecutionNote PrenatalTestExecutionNote
+    | SetHIVPCRTestExecutionDate NominalDate
+    | SetHIVPCRTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveHIVPCRTest PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
+    | SetLabsHistoryCompleted Bool
+    | SaveLabsHistory
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
@@ -152,19 +181,48 @@ type Msg
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId PrenatalAssesment (Maybe ( PrenatalFollowUpId, PrenatalFollowUp )) Bool (Maybe NextStepsTask)
     | SaveNewbornEnrollment Bool (Maybe NextStepsTask)
-    | SetReferToHealthCenter Bool
-    | SetHandReferralForm Bool
-    | SetAccompanyToHC Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) Bool (Maybe NextStepsTask)
+    | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
+    | SetHealthCenterNonReferralReason ReasonForNonReferral
+    | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) Bool (Maybe NextStepsTask)
     | SetAppointmentDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetAppointmentConfirmation Date
     | SaveAppointmentConfirmation PersonId (Maybe ( PrenatalAppointmentConfirmationId, PrenatalAppointmentConfirmation )) Bool (Maybe NextStepsTask)
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
+    | SetAvoidingGuidanceReason AvoidingGuidanceReason
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) Bool (Maybe NextStepsTask)
     | SaveWait PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue Bool (Maybe NextStepsTask)
+      -- SYMPTOMREVIEWMsgs
+    | SetSymptomReviewStep SymptomReviewStep
+    | SetPrenatalSymptom PrenatalSymptom
+    | SetPrenatalSymptomQuestionBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
+    | SetFlankPainSign PrenatalFlankPainSign
+    | SaveSymptomReview PersonId (Maybe ( PrenatalSymptomReviewId, PrenatalSymptomReview ))
+      -- TREATMENTREVIEWMsgs
+    | SetActiveTreatmentReviewTask TreatmentReviewTask
+    | SetTreatmentReviewWarningPopupState (Maybe Msg)
+    | SetMedicationSubActivityBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
+    | SetHIVMedicationNotGivenReason HIVTreatmentSign
+    | SaveMedicationSubActivity PersonId (Maybe ( MedicationId, Medication )) (Maybe TreatmentReviewTask)
+      -- MENTALHEALTHMsgs
+    | SetMentalHealthStep MentalHealthStep
+    | SetMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
+    | SetSpecialistAtHC Bool
+    | SetMentalHealthWarningPopupState (Maybe Msg)
+    | SaveMentalHealth PersonId (Maybe ( PrenatalMentalHealthId, PrenatalMentalHealth ))
+      -- IMMUNISATION
+    | SetActiveImmunisationTask ImmunisationTask
+    | SetVaccinationFormViewMode PrenatalVaccineType VaccinationFormViewMode
+    | SetUpdatePreviousVaccines PrenatalVaccineType VaccineDose Bool
+    | SetWillReceiveVaccineToday PrenatalVaccineType VaccineDose Bool
+    | SetAdministrationNote PrenatalVaccineType AdministrationNote
+    | SetVaccinationUpdateDateSelectorState PrenatalVaccineType (Maybe (DateSelectorConfig Msg))
+    | SetVaccinationUpdateDate PrenatalVaccineType NominalDate
+    | SaveVaccinationUpdateDate PrenatalVaccineType VaccineDose
+    | DeleteVaccinationUpdateDate PrenatalVaccineType VaccineDose NominalDate
+    | SaveTetanusImmunisation PersonId (Maybe ( PrenatalTetanusImmunisationId, PrenatalTetanusImmunisation ))
 
 
 type alias Model =
@@ -179,6 +237,10 @@ type alias Model =
     , birthPlanData : BirthPlanData
     , laboratoryData : LaboratoryData
     , healthEducationData : HealthEducationData
+    , symptomReviewData : SymptomReviewData
+    , treatmentReviewData : TreatmentReviewData
+    , mentalHealthData : MentalHealthData
+    , immunisationData : ImmunisationData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe ( String, String )
@@ -198,6 +260,10 @@ emptyModel =
     , birthPlanData = emptyBirthPlanData
     , laboratoryData = emptyLaboratoryData
     , healthEducationData = emptyHealthEducationData
+    , symptomReviewData = emptySymptomReviewData
+    , treatmentReviewData = emptyTreatmentReviewData
+    , mentalHealthData = emptyMentalHealthData
+    , immunisationData = emptyImmunisationData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
@@ -225,7 +291,9 @@ type alias HistoryData =
     , obstetricHistoryStep : ObstetricHistoryStep
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
-    , activeTask : HistoryTask
+    , outsideCareForm : OutsideCareForm
+    , outsideCareStep : OutsideCareStep
+    , activeTask : Maybe HistoryTask
     }
 
 
@@ -236,7 +304,9 @@ emptyHistoryData =
     , obstetricHistoryStep = ObstetricHistoryFirstStep
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
-    , activeTask = Obstetric
+    , outsideCareForm = emptyOutsideCareForm
+    , outsideCareStep = OutsideCareStepDiagnoses
+    , activeTask = Nothing
     }
 
 
@@ -308,12 +378,71 @@ type alias MedicationForm =
     { receivedIronFolicAcid : Maybe Bool
     , receivedDewormingPill : Maybe Bool
     , receivedMebendazole : Maybe Bool
+    , hivMedicationByPMTCT : Maybe Bool
+    , hivMedicationNotGivenReason : Maybe HIVTreatmentSign
+    , hivMedicationNotGivenReasonDirty : Bool
+    , hivStillTaking : Maybe Bool
+    , hivMissedDoses : Maybe Bool
+    , hivAdverseEvents : Maybe Bool
+    , hivAdverseEventsHospitalization : Maybe Bool
+    , hivAdverseEventsHospitalizationDirty : Bool
+    , hypertensionStillTaking : Maybe Bool
+    , hypertensionMissedDoses : Maybe Bool
+    , hypertensionAdverseEvents : Maybe Bool
+    , hypertensionAdverseEventsHospitalization : Maybe Bool
+    , hypertensionAdverseEventsHospitalizationDirty : Bool
+    , malariaStillTaking : Maybe Bool
+    , malariaMissedDoses : Maybe Bool
+    , malariaAdverseEvents : Maybe Bool
+    , malariaAdverseEventsHospitalization : Maybe Bool
+    , malariaAdverseEventsHospitalizationDirty : Bool
+    , anemiaStillTaking : Maybe Bool
+    , anemiaMissedDoses : Maybe Bool
+    , anemiaAdverseEvents : Maybe Bool
+    , anemiaAdverseEventsHospitalization : Maybe Bool
+    , anemiaAdverseEventsHospitalizationDirty : Bool
+    , syphilisStillTaking : Maybe Bool
+    , syphilisMissedDoses : Maybe Bool
+    , syphilisAdverseEvents : Maybe Bool
+    , syphilisAdverseEventsHospitalization : Maybe Bool
+    , syphilisAdverseEventsHospitalizationDirty : Bool
     }
 
 
 emptyMedicationForm : MedicationForm
 emptyMedicationForm =
-    MedicationForm Nothing Nothing Nothing
+    { receivedIronFolicAcid = Nothing
+    , receivedDewormingPill = Nothing
+    , receivedMebendazole = Nothing
+    , hivMedicationByPMTCT = Nothing
+    , hivMedicationNotGivenReason = Nothing
+    , hivMedicationNotGivenReasonDirty = False
+    , hivStillTaking = Nothing
+    , hivMissedDoses = Nothing
+    , hivAdverseEvents = Nothing
+    , hivAdverseEventsHospitalization = Nothing
+    , hivAdverseEventsHospitalizationDirty = False
+    , hypertensionStillTaking = Nothing
+    , hypertensionMissedDoses = Nothing
+    , hypertensionAdverseEvents = Nothing
+    , hypertensionAdverseEventsHospitalization = Nothing
+    , hypertensionAdverseEventsHospitalizationDirty = False
+    , malariaStillTaking = Nothing
+    , malariaMissedDoses = Nothing
+    , malariaAdverseEvents = Nothing
+    , malariaAdverseEventsHospitalization = Nothing
+    , malariaAdverseEventsHospitalizationDirty = False
+    , anemiaStillTaking = Nothing
+    , anemiaMissedDoses = Nothing
+    , anemiaAdverseEvents = Nothing
+    , anemiaAdverseEventsHospitalization = Nothing
+    , anemiaAdverseEventsHospitalizationDirty = False
+    , syphilisStillTaking = Nothing
+    , syphilisMissedDoses = Nothing
+    , syphilisAdverseEvents = Nothing
+    , syphilisAdverseEventsHospitalization = Nothing
+    , syphilisAdverseEventsHospitalizationDirty = False
+    }
 
 
 type alias DangerSignsData =
@@ -353,9 +482,11 @@ type alias LaboratoryData =
     , hepatitisBTestForm : PrenatalLabsNonRDTForm
     , hivTestForm : PrenatalHIVTestForm
     , malariaTestForm : PrenatalMalariaTestForm
-    , randomBloodSugarTestForm : PrenatalLabsNonRDTForm
+    , randomBloodSugarTestForm : PrenatalRandomBloodSugarForm
     , syphilisTestForm : PrenatalLabsNonRDTForm
     , urineDipstickTestForm : PrenatalUrineDipstickForm
+    , hivPCRTestForm : PrenatalLabsNonRDTForm
+    , labsHistoryForm : LabsHistoryForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -368,9 +499,11 @@ emptyLaboratoryData =
     , hepatitisBTestForm = emptyPrenatalLabsNonRDTForm
     , hivTestForm = emptyPrenatalHIVTestForm
     , malariaTestForm = emptyPrenatalMalariaTestForm
-    , randomBloodSugarTestForm = emptyPrenatalLabsNonRDTForm
+    , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarForm
     , syphilisTestForm = emptyPrenatalLabsNonRDTForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
+    , hivPCRTestForm = emptyPrenatalLabsNonRDTForm
+    , labsHistoryForm = emptyLabsHistoryForm
     , activeTask = Nothing
     }
 
@@ -385,10 +518,113 @@ emptyHealthEducationData =
     HealthEducationData emptyHealthEducationForm
 
 
+type alias SymptomReviewData =
+    { form : SymptomReviewForm
+    , step : SymptomReviewStep
+    }
+
+
+emptySymptomReviewData : SymptomReviewData
+emptySymptomReviewData =
+    { form = emptySymptomReviewForm
+    , step = SymptomReviewStepSymptoms
+    }
+
+
+type alias SymptomReviewForm =
+    { symptoms : Maybe (List PrenatalSymptom)
+    , dizziness : Maybe Bool
+    , lowUrineOutput : Maybe Bool
+    , darkUrine : Maybe Bool
+    , pelvicPainHospitalization : Maybe Bool
+    , problemLeftLeg : Maybe Bool
+    , legPainful : Maybe Bool
+    , legWarm : Maybe Bool
+    , legSwollen : Maybe Bool
+    , nightSweats : Maybe Bool
+    , bloodInSputum : Maybe Bool
+    , weightLoss : Maybe Bool
+    , severeFatigue : Maybe Bool
+    , vaginalDischarge : Maybe Bool
+    , frequentUrination : Maybe Bool
+    , vaginalItching : Maybe Bool
+    , partnerUrethralDischarge : Maybe Bool
+    , flankPainSign : Maybe PrenatalFlankPainSign
+    }
+
+
+emptySymptomReviewForm : SymptomReviewForm
+emptySymptomReviewForm =
+    { symptoms = Nothing
+    , dizziness = Nothing
+    , lowUrineOutput = Nothing
+    , darkUrine = Nothing
+    , pelvicPainHospitalization = Nothing
+    , problemLeftLeg = Nothing
+    , legPainful = Nothing
+    , legWarm = Nothing
+    , legSwollen = Nothing
+    , nightSweats = Nothing
+    , bloodInSputum = Nothing
+    , weightLoss = Nothing
+    , severeFatigue = Nothing
+    , vaginalDischarge = Nothing
+    , frequentUrination = Nothing
+    , vaginalItching = Nothing
+    , partnerUrethralDischarge = Nothing
+    , flankPainSign = Nothing
+    }
+
+
+type alias TreatmentReviewData =
+    { medicationForm : MedicationForm
+    , activeTask : Maybe TreatmentReviewTask
+    , warningPopupState : Maybe Msg
+    }
+
+
+emptyTreatmentReviewData : TreatmentReviewData
+emptyTreatmentReviewData =
+    { medicationForm = emptyMedicationForm
+    , activeTask = Nothing
+    , warningPopupState = Nothing
+    }
+
+
+type alias MentalHealthData =
+    { form : MentalHealthForm
+    , warningPopupState : Maybe Msg
+    }
+
+
+emptyMentalHealthData : MentalHealthData
+emptyMentalHealthData =
+    { form = emptyMentalHealthForm
+    , warningPopupState = Nothing
+    }
+
+
+type alias ImmunisationData =
+    { tetanusForm : PrenatalVaccinationForm
+    , activeTask : Maybe ImmunisationTask
+    }
+
+
+type alias PrenatalVaccinationForm =
+    VaccinationForm Msg
+
+
+emptyImmunisationData : ImmunisationData
+emptyImmunisationData =
+    { tetanusForm = emptyVaccinationForm
+    , activeTask = Nothing
+    }
+
+
 type alias NextStepsData =
     { appointmentConfirmationForm : AppointmentConfirmationForm
     , followUpForm : FollowUpForm
-    , sendToHCForm : SendToHCForm
+    , referralForm : ReferralForm
     , healthEducationForm : HealthEducationForm
     , newbornEnrolmentForm : NewbornEnrolmentForm
     , medicationDistributionForm : MedicationDistributionForm
@@ -400,7 +636,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { appointmentConfirmationForm = emptyAppointmentConfirmationForm
     , followUpForm = emptyFollowUpForm
-    , sendToHCForm = emptySendToHCForm
+    , referralForm = emptyReferralForm
     , healthEducationForm = emptyHealthEducationForm
     , newbornEnrolmentForm = emptyNewbornEnrolmentForm
     , medicationDistributionForm = emptyMedicationDistributionForm
@@ -551,6 +787,37 @@ type alias SocialHistoryForm =
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing Nothing
+
+
+type alias OutsideCareForm =
+    { seenAtAnotherFacility : Maybe Bool
+    , givenNewDiagnosis : Maybe Bool
+    , givenMedicine : Maybe Bool
+    , plannedFollowUp : Maybe Bool
+    , diagnoses : Maybe (List PrenatalDiagnosis)
+    , diagnosesDirty : Bool
+    , malariaMedications : Maybe (List PrenatalOutsideCareMedication)
+    , hypertensionMedications : Maybe (List PrenatalOutsideCareMedication)
+    , syphilisMedications : Maybe (List PrenatalOutsideCareMedication)
+    , hivMedications : Maybe (List PrenatalOutsideCareMedication)
+    , anemiaMedications : Maybe (List PrenatalOutsideCareMedication)
+    }
+
+
+emptyOutsideCareForm : OutsideCareForm
+emptyOutsideCareForm =
+    { seenAtAnotherFacility = Nothing
+    , givenNewDiagnosis = Nothing
+    , givenMedicine = Nothing
+    , plannedFollowUp = Nothing
+    , diagnoses = Nothing
+    , diagnosesDirty = False
+    , malariaMedications = Nothing
+    , hypertensionMedications = Nothing
+    , syphilisMedications = Nothing
+    , hivMedications = Nothing
+    , anemiaMedications = Nothing
+    }
 
 
 encodeLmpRange : LmpRange -> String
@@ -732,6 +999,35 @@ emptyPrenatalMalariaTestForm =
     PrenatalMalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
 
 
+type alias PrenatalRandomBloodSugarForm =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , patientFasted : Maybe Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe PrenatalTestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    }
+
+
+emptyPrenatalRandomBloodSugarForm : PrenatalRandomBloodSugarForm
+emptyPrenatalRandomBloodSugarForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , patientFasted = Nothing
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , dateSelectorPopupState = Nothing
+    }
+
+
 type alias PrenatalLabsNonRDTForm =
     { knownAsPositive : Maybe Bool
     , testPerformed : Maybe Bool
@@ -817,6 +1113,16 @@ emptyPrenatalHIVTestForm =
     }
 
 
+type alias LabsHistoryForm =
+    { completed : Maybe Bool
+    }
+
+
+emptyLabsHistoryForm : LabsHistoryForm
+emptyLabsHistoryForm =
+    LabsHistoryForm Nothing
+
+
 type alias AppointmentConfirmationForm =
     { appointmentDate : Maybe Date
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
@@ -842,37 +1148,6 @@ emptyFollowUpForm =
     FollowUpForm Nothing Nothing Nothing
 
 
-type alias HealthEducationForm =
-    { expectations : Maybe Bool
-    , visitsReview : Maybe Bool
-    , warningSigns : Maybe Bool
-    , hemorrhaging : Maybe Bool
-    , familyPlanning : Maybe Bool
-    , breastfeeding : Maybe Bool
-    , immunization : Maybe Bool
-    , hygiene : Maybe Bool
-    , positiveHIV : Maybe Bool
-    , saferSex : Maybe Bool
-    , partnerTesting : Maybe Bool
-    }
-
-
-emptyHealthEducationForm : HealthEducationForm
-emptyHealthEducationForm =
-    { expectations = Nothing
-    , visitsReview = Nothing
-    , warningSigns = Nothing
-    , hemorrhaging = Nothing
-    , familyPlanning = Nothing
-    , breastfeeding = Nothing
-    , immunization = Nothing
-    , hygiene = Nothing
-    , positiveHIV = Nothing
-    , saferSex = Nothing
-    , partnerTesting = Nothing
-    }
-
-
 type alias NewbornEnrolmentForm =
     {}
 
@@ -880,3 +1155,23 @@ type alias NewbornEnrolmentForm =
 emptyNewbornEnrolmentForm : NewbornEnrolmentForm
 emptyNewbornEnrolmentForm =
     {}
+
+
+type alias MentalHealthForm =
+    { signs : Maybe (Dict PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption)
+    , specialistAtHC : Maybe Bool
+    , step : MentalHealthStep
+    }
+
+
+type MentalHealthStep
+    = MentalHealthQuestion PrenatalMentalHealthQuestion
+    | MentalHealthSpecialistQuestion
+
+
+emptyMentalHealthForm : MentalHealthForm
+emptyMentalHealthForm =
+    { signs = Nothing
+    , specialistAtHC = Nothing
+    , step = MentalHealthQuestion MentalHealthQuestion1
+    }

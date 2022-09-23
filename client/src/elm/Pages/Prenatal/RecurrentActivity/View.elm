@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.View exposing (view)
+module Pages.Prenatal.RecurrentActivity.View exposing (view, viewLabsHistory)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -20,7 +20,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (InvokationModule(..), VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils exposing (vitalsFormWithDefault)
 import Measurement.View exposing (viewSendToHospitalForm, viewVitalsForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
@@ -28,7 +28,7 @@ import Pages.Prenatal.Activity.Utils exposing (laboratoryTaskIconClass)
 import Pages.Prenatal.Activity.View exposing (warningPopup)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
-import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
@@ -58,6 +58,150 @@ import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
+viewLabsHistory :
+    Language
+    -> NominalDate
+    -> PrenatalEncounterId
+    -> PrenatalEncounterId
+    -> PrenatalLaboratoryTest
+    -> ModelIndexedDb
+    -> LabResultsData
+    -> Html Msg
+viewLabsHistory language currentDate originatingEncounterId labEncounterId lab db data =
+    let
+        assembled =
+            generateAssembledData labEncounterId db
+    in
+    viewWebData language (viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data) identity assembled
+
+
+viewLabsHistoryHeaderAndContent :
+    Language
+    -> NominalDate
+    -> PrenatalEncounterId
+    -> PrenatalEncounterId
+    -> PrenatalLaboratoryTest
+    -> ModelIndexedDb
+    -> LabResultsData
+    -> AssembledData
+    -> Html Msg
+viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data assembled =
+    div [ class "page-activity prenatal labs-history" ] <|
+        [ viewHeader language
+            (PrenatalActivityPage originatingEncounterId Backend.PrenatalActivity.Model.Laboratory)
+            (Translate.PrenatalLaboratoryTest lab)
+            assembled
+        , viewLabsHistoryContent language currentDate lab db data assembled
+        ]
+
+
+viewLabsHistoryContent : Language -> NominalDate -> PrenatalLaboratoryTest -> ModelIndexedDb -> LabResultsData -> AssembledData -> Html Msg
+viewLabsHistoryContent language currentDate lab db data assembled =
+    div [ class "ui unstackable items" ] <|
+        viewMotherAndMeasurements language currentDate False assembled Nothing
+            ++ viewLab language currentDate lab assembled data
+            ++ []
+
+
+viewLab : Language -> NominalDate -> PrenatalLaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
+viewLab language currentDate lab assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            case lab of
+                TestSyphilis ->
+                    measurements.syphilisTest
+                        |> getMeasurementValueFunc
+                        |> syphilisResultFormWithDefault data.syphilisTestForm
+                        |> prenatalSyphilisResultFormAndTasks language currentDate TaskSyphilisTest
+
+                TestHepatitisB ->
+                    measurements.hepatitisBTest
+                        |> getMeasurementValueFunc
+                        |> hepatitisBFormWithDefault data.hepatitisBTestForm
+                        |> prenatalHepatitisBResultFormAndTasks language currentDate TaskHepatitisBTest
+
+                TestBloodGpRs ->
+                    measurements.bloodGpRsTest
+                        |> getMeasurementValueFunc
+                        |> prenatalBloodGpRsResultFormWithDefault data.bloodGpRsTestForm
+                        |> prenatalBloodGpRsResultFormAndTasks language currentDate
+
+                TestUrineDipstick ->
+                    measurements.urineDipstickTest
+                        |> getMeasurementValueFunc
+                        |> prenatalUrineDipstickResultFormWithDefault data.urineDipstickTestForm
+                        |> prenatalUrineDipstickResultFormAndTasks language currentDate
+
+                TestHemoglobin ->
+                    measurements.hemoglobinTest
+                        |> getMeasurementValueFunc
+                        |> prenatalHemoglobinResultFormWithDefault data.hemoglobinTestForm
+                        |> prenatalHemoglobinResultFormAndTasks language currentDate
+
+                TestRandomBloodSugar ->
+                    measurements.randomBloodSugarTest
+                        |> getMeasurementValueFunc
+                        |> prenatalRandomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
+                        |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
+
+                TestHIVPCR ->
+                    measurements.hivPCRTest
+                        |> getMeasurementValueFunc
+                        |> prenatalHIVPCRResultFormWithDefault data.hivPCRTestForm
+                        |> prenatalHIVPCRResultFormAndTasks language currentDate
+
+                TestVitalsRecheck ->
+                    ( emptyNode, 0, 0 )
+
+        actions =
+            let
+                saveMsg =
+                    case lab of
+                        TestSyphilis ->
+                            SaveSyphilisResult personId measurements.syphilisTest Nothing
+
+                        TestHepatitisB ->
+                            SaveHepatitisBResult personId measurements.hepatitisBTest Nothing
+
+                        TestBloodGpRs ->
+                            SaveBloodGpRsResult personId measurements.bloodGpRsTest Nothing
+
+                        TestUrineDipstick ->
+                            SaveUrineDipstickResult personId measurements.urineDipstickTest Nothing
+
+                        TestHemoglobin ->
+                            SaveHemoglobinResult personId measurements.hemoglobinTest Nothing
+
+                        TestRandomBloodSugar ->
+                            SaveRandomBloodSugarResult personId measurements.randomBloodSugarTest Nothing
+
+                        TestHIVPCR ->
+                            SaveHIVPCRResult personId measurements.hivPCRTest Nothing
+
+                        TestVitalsRecheck ->
+                            NoOp
+            in
+            viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
 view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id activity db model =
     let
@@ -70,22 +214,22 @@ view language currentDate id activity db model =
 viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate id activity db model assembled =
     div [ class "page-activity prenatal" ] <|
-        [ viewHeader language id activity assembled
+        [ viewHeader language (PrenatalRecurrentEncounterPage id) (Translate.PrenatalRecurrentActivitiesTitle activity) assembled
         , viewContent language currentDate activity db model assembled
         , viewModal <|
             warningPopup language currentDate False SetWarningPopupState model.warningPopupState
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> PrenatalRecurrentActivity -> AssembledData -> Html Msg
-viewHeader language id activity assembled =
+viewHeader : Language -> UserPage -> TranslationId -> AssembledData -> Html Msg
+viewHeader language goBackPage labelTransId assembled =
     div
         [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
-            [ text <| translate language <| Translate.PrenatalRecurrentActivitiesTitle activity ]
+            [ text <| translate language labelTransId ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id
+            , onClick <| SetActivePage <| UserPage goBackPage
             ]
             [ span [ class "icon-back" ] [] ]
         ]
@@ -202,6 +346,15 @@ viewLabResultsContent language currentDate assembled model =
                                 |> getMeasurementValueFunc
                                 |> prenatalRandomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
                                 |> prenatalRandomBloodSugarResultFormAndTasks language currentDate
+
+                        TaskHIVPCRTest ->
+                            measurements.hivPCRTest
+                                |> getMeasurementValueFunc
+                                |> prenatalHIVPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
+                                |> prenatalHIVPCRResultFormAndTasks language currentDate
+
+                        TaskCompletePreviousTests ->
+                            ( emptyNode, 0, 0 )
                     )
                 )
                 tasks
@@ -255,6 +408,12 @@ viewLabResultsContent language currentDate assembled model =
 
                                 TaskRandomBloodSugarTest ->
                                     SaveRandomBloodSugarResult personId measurements.randomBloodSugarTest nextTask |> Just
+
+                                TaskHIVPCRTest ->
+                                    SaveHIVPCRResult personId measurements.hivPCRTest nextTask |> Just
+
+                                TaskCompletePreviousTests ->
+                                    Nothing
                     in
                     Maybe.map
                         (\msg ->
@@ -413,7 +572,9 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                     form.ph
                                     Translate.PrenatalLaboratoryPHValue
                                     phValueToString
-                                    [ Ph50
+                                    [ Ph40
+                                    , Ph45
+                                    , Ph50
                                     , Ph60
                                     , Ph65
                                     , Ph70
@@ -470,7 +631,7 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                     form.urobilinogen
                                     Translate.PrenatalLaboratoryUrobilinogenValue
                                     urobilinogenValueToString
-                                    [ Urobilinogen02
+                                    [ Urobilinogen002
                                     , Urobilinogen10
                                     , Urobilinogen20
                                     , Urobilinogen40
@@ -491,20 +652,6 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                     , HaemoglobinLarge
                                     ]
                                     SetHaemoglobin
-                                ++ viewSelectInput language
-                                    Translate.PrenatalLaboratorySpecificGravityTestResult
-                                    form.specificGravity
-                                    Translate.PrenatalLaboratorySpecificGravityValue
-                                    specificGravityValueToString
-                                    [ SpecificGravity1000
-                                    , SpecificGravity1005
-                                    , SpecificGravity1010
-                                    , SpecificGravity1015
-                                    , SpecificGravity1020
-                                    , SpecificGravity1025
-                                    , SpecificGravity1030
-                                    ]
-                                    SetSpecificGravity
                                 ++ viewSelectInput language
                                     Translate.PrenatalLaboratoryKetoneTestResult
                                     form.ketone
@@ -535,10 +682,9 @@ prenatalUrineDipstickResultFormAndTasks language currentDate form =
                                 + taskCompleted form.nitrite
                                 + taskCompleted form.urobilinogen
                                 + taskCompleted form.haemoglobin
-                                + taskCompleted form.specificGravity
                                 + taskCompleted form.ketone
                                 + taskCompleted form.bilirubin
-                            , commonTasksTotal + 7
+                            , commonTasksTotal + 6
                             )
                 )
                 form.testVariant
@@ -598,6 +744,47 @@ prenatalRandomBloodSugarResultFormAndTasks language currentDate form =
     )
 
 
+prenatalHIVPCRResultFormAndTasks : Language -> NominalDate -> PrenatalHIVPCRResultForm -> ( Html Msg, Int, Int )
+prenatalHIVPCRResultFormAndTasks language currentDate form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            let
+                ( derrivedSection, derrivedTasksCompleted, derrivedTasksTotal ) =
+                    if form.hivViralLoadStatus == Just ViralLoadDetectable then
+                        ( [ viewLabel language Translate.PrenatalLaboratoryHIVPCRTestResult
+                          , viewMeasurementInput language
+                                form.hivViralLoad
+                                SetHIVViralLoad
+                                "hiv-viral-load"
+                                Translate.UnitCopiesPerMM3
+                          ]
+                        , taskCompleted form.hivViralLoad
+                        , 1
+                        )
+
+                    else
+                        ( [], 0, 0 )
+            in
+            ( [ viewQuestionLabel language Translate.PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
+              , viewBoolInput language
+                    (Maybe.map ((==) ViralLoadUndetectable) form.hivViralLoadStatus)
+                    SetHIVViralLoadUndetectable
+                    "hiv-level-undetectable"
+                    Nothing
+              ]
+                ++ derrivedSection
+            , taskCompleted form.hivViralLoadStatus + derrivedTasksCompleted
+            , 1 + derrivedTasksTotal
+            )
+    in
+    ( div [ class "ui form laboratory hiv-prc-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskHIVPCRTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
 resultFormHeaderSection : Language -> NominalDate -> Maybe NominalDate -> LaboratoryTask -> List (Html Msg)
 resultFormHeaderSection language currentDate executionDate task =
     let
@@ -643,11 +830,14 @@ viewNextStepsContent language currentDate assembled data =
                         NextStepsMedicationDistribution ->
                             "next-steps-medication-distribution"
 
+                        NextStepsHealthEducation ->
+                            "next-steps-health-education"
+
                 isActive =
                     activeTask == Just task
 
                 isCompleted =
-                    nextStepsMeasurementTaken assembled task
+                    nextStepsTaskCompleted assembled task
 
                 navigationAction =
                     if isActive then
@@ -687,19 +877,12 @@ viewNextStepsContent language currentDate assembled data =
         viewForm =
             case activeTask of
                 Just NextStepsSendToHC ->
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
-                        |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHospitalForm language
-                            currentDate
-                            SetReferToHealthCenter
-                            SetReasonForNotSendingToHC
-                            SetHandReferralForm
-                            Nothing
+                    getMeasurementValueFunc measurements.sendToHC
+                        |> referralFormWithDefault data.referralForm
+                        |> viewReferralForm language currentDate assembled
 
                 Just NextStepsMedicationDistribution ->
-                    measurements.medicationDistribution
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefaultRecurrentPhase data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
                             currentDate
@@ -708,6 +891,12 @@ viewNextStepsContent language currentDate assembled data =
                             SetMedicationDistributionBoolInput
                             SetMedicationDistributionAdministrationNote
                             SetRecommendedTreatmentSign
+                            (always NoOp)
+
+                Just NextStepsHealthEducation ->
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewHealthEducationForm language currentDate assembled
 
                 Nothing ->
                     emptyNode
@@ -733,6 +922,9 @@ viewNextStepsContent language currentDate assembled data =
 
                                     NextStepsMedicationDistribution ->
                                         SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                    NextStepsHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
                         in
                         div [ class "actions next-steps" ]
                             [ button
@@ -885,6 +1077,31 @@ viewVitalsForm language currentDate assembled form =
             }
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
+
+
+viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            healthEducationFormInputsAndTasks language assembled form
+    in
+    div [ class "ui form health-education" ]
+        inputs
+
+
+viewReferralForm : Language -> NominalDate -> AssembledData -> ReferralForm -> Html Msg
+viewReferralForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            resolveReferralInputsAndTasks language
+                currentDate
+                assembled
+                SetReferralBoolInput
+                SetFacilityNonReferralReason
+                form
+    in
+    div [ class "ui form referral" ]
+        inputs
 
 
 

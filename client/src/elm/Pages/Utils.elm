@@ -262,7 +262,20 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
 
             else
                 "four"
+    in
+    viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth
 
+
+viewCustomBoolInput :
+    Language
+    -> Maybe Bool
+    -> (Bool -> msg)
+    -> String
+    -> ( TranslationId, TranslationId )
+    -> String
+    -> Html msg
+viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth =
+    let
         viewInput value =
             let
                 isChecked =
@@ -850,51 +863,8 @@ emptySelectOption isSelected =
         [ text "" ]
 
 
-resolveMedicationsNonAdministrationReasons :
-    { v | nonAdministrationSigns : EverySet MedicationNonAdministrationSign }
-    -> Dict MedicationDistributionSign AdministrationNote
-resolveMedicationsNonAdministrationReasons value =
-    EverySet.toList value.nonAdministrationSigns
-        |> List.filterMap
-            (\sign ->
-                case sign of
-                    MedicationAmoxicillin reason ->
-                        Just ( Amoxicillin, reason )
-
-                    MedicationCoartem reason ->
-                        Just ( Coartem, reason )
-
-                    MedicationORS reason ->
-                        Just ( ORS, reason )
-
-                    MedicationZinc reason ->
-                        Just ( Zinc, reason )
-
-                    MedicationParacetamol reason ->
-                        Just ( Paracetamol, reason )
-
-                    MedicationMebendezole reason ->
-                        Just ( Mebendezole, reason )
-
-                    MedicationTenofovir reason ->
-                        Just ( Tenofovir, reason )
-
-                    MedicationLamivudine reason ->
-                        Just ( Lamivudine, reason )
-
-                    MedicationDolutegravir reason ->
-                        Just ( Dolutegravir, reason )
-
-                    MedicationTDF3TC reason ->
-                        Just ( TDF3TC, reason )
-
-                    MedicationIron reason ->
-                        Just ( Iron, reason )
-
-                    MedicationFolicAcid reason ->
-                        Just ( FolicAcid, reason )
-
-                    NoMedicationNonAdministrationSigns ->
-                        Nothing
-            )
-        |> Dict.fromList
+insertIntoSet : a -> Maybe (EverySet a) -> Maybe (EverySet a)
+insertIntoSet value set =
+    Maybe.map (EverySet.insert value) set
+        |> Maybe.withDefault (EverySet.singleton value)
+        |> Just

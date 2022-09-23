@@ -767,7 +767,7 @@ type PrenatalFollowUpUuidType
     = PrenatalFollowUpUuidType
 
 
-type alias PrenatalSendToHcId =
+type alias PrenatalSendToHCId =
     EntityUuid PrenatalSendToHcUuidType
 
 
@@ -1109,3 +1109,43 @@ type alias PrenatalMedicationDistributionId =
 
 type PrenatalMedicationDistributionUuidType
     = PrenatalMedicationDistributionUuidType
+
+
+type alias PrenatalSymptomReviewId =
+    EntityUuid PrenatalSymptomReviewUuidType
+
+
+type PrenatalSymptomReviewUuidType
+    = PrenatalSymptomReviewUuidType
+
+
+type alias PrenatalOutsideCareId =
+    EntityUuid PrenatalOutsideCareUuidType
+
+
+type PrenatalOutsideCareUuidType
+    = PrenatalOutsideCareUuidType
+
+
+type alias PrenatalHIVPCRTestId =
+    EntityUuid PrenatalHIVPCRTestUuidType
+
+
+type PrenatalHIVPCRTestUuidType
+    = PrenatalHIVPCRTestUuidType
+
+
+type alias PrenatalMentalHealthId =
+    EntityUuid PrenatalMentalHealthUuidType
+
+
+type PrenatalMentalHealthUuidType
+    = PrenatalMentalHealthUuidType
+
+
+type alias PrenatalTetanusImmunisationId =
+    EntityUuid PrenatalTetanusImmunisationUuidType
+
+
+type PrenatalTetanusImmunisationUuidType
+    = PrenatalTetanusImmunisationUuidType

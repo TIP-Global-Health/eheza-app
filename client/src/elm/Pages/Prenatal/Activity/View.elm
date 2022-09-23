@@ -3,17 +3,28 @@ module Pages.Prenatal.Activity.View exposing (view, warningPopup)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Encoder exposing (pregnancyTestResultAsString, socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, heightValueFunc, muacIndication, muacValueFunc, prenatalTestResultToString, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( getHeightValue
+        , getMeasurementValueFunc
+        , muacIndication
+        , muacValueFunc
+        , pregnancyTestResultToString
+        , prenatalTestResultToString
+        , socialHistoryHivTestingResultToString
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
-import Backend.PrenatalEncounter.Model exposing (PrenatalDiagnosis(..), PrenatalEncounter, PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date exposing (Unit(..))
-import DateSelector.SelectorPopup exposing (DateSelectorConfig, viewCalendarPopup)
+import DateSelector.Model exposing (DateSelectorConfig)
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -21,9 +32,9 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (sendToHCFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHIVProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Utils exposing (vaccinationFormWithDefault, vitalsFormWithDefault)
+import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -121,30 +132,35 @@ viewContent language currentDate isChw activity db model assembled =
 
 warningPopup : Language -> NominalDate -> Bool -> (Maybe ( String, String ) -> msg) -> Maybe ( String, String ) -> Maybe (Html msg)
 warningPopup language currentDate isChw setStateMsg state =
-    state
-        |> Maybe.map
-            (\( message, instructions ) ->
-                div [ class "ui active modal diagnosis-popup" ]
-                    [ div [ class "content" ] <|
-                        [ div [ class "popup-heading-wrapper" ]
-                            [ img [ src "assets/images/exclamation-red.png" ] []
-                            , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
-                            ]
-                        , div [ class "popup-title" ]
-                            [ p [] [ text message ]
-                            , p [] [ text instructions ]
-                            ]
+    customWarningPopup language (setStateMsg Nothing) state
+
+
+customWarningPopup : Language -> msg -> Maybe ( String, String ) -> Maybe (Html msg)
+customWarningPopup language action state =
+    Maybe.map
+        (\( message, instructions ) ->
+            div [ class "ui active modal diagnosis-popup" ]
+                [ div [ class "content" ] <|
+                    [ div [ class "popup-heading-wrapper" ]
+                        [ img [ src "assets/images/exclamation-red.png" ] []
+                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
                         ]
-                    , div
-                        [ class "actions" ]
-                        [ button
-                            [ class "ui primary fluid button"
-                            , onClick <| setStateMsg Nothing
-                            ]
-                            [ text <| translate language Translate.Continue ]
+                    , div [ class "popup-title" ]
+                        [ p [] [ text message ]
+                        , p [] [ text instructions ]
                         ]
                     ]
-            )
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick action
+                        ]
+                        [ text <| translate language Translate.Continue ]
+                    ]
+                ]
+        )
+        state
 
 
 viewActivity : Language -> NominalDate -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
@@ -177,14 +193,26 @@ viewActivity language currentDate isChw activity assembled db model =
         BirthPlan ->
             viewBirthPlanContent language currentDate assembled model.birthPlanData
 
-        NextSteps ->
-            viewNextStepsContent language currentDate isChw assembled model.nextStepsData
-
         Backend.PrenatalActivity.Model.MalariaPrevention ->
             viewMalariaPreventionContent language currentDate assembled model.malariaPreventionData
 
         Backend.PrenatalActivity.Model.Medication ->
             viewMedicationContent language currentDate assembled model.medicationData
+
+        SymptomReview ->
+            viewSymptomReviewContent language currentDate assembled model.symptomReviewData
+
+        PrenatalTreatmentReview ->
+            viewTreatmentReviewContent language currentDate assembled model.treatmentReviewData
+
+        MaternalMentalHealth ->
+            viewMentalHealthContent language currentDate assembled model.mentalHealthData
+
+        PrenatalImmunisation ->
+            viewImmunisationContent language currentDate assembled model.immunisationData
+
+        NextSteps ->
+            viewNextStepsContent language currentDate isChw assembled model.nextStepsData
 
         PregnancyOutcome ->
             -- When selected, we redirect to Pregannacy Outcome page.
@@ -347,42 +375,44 @@ viewPregnancyDatingContent language currentDate assembled data =
 
 
 viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> List (Html Msg)
-viewHistoryContent language currentDate assembled data_ =
+viewHistoryContent language currentDate assembled data =
     let
-        firstEnconter =
-            isFirstEncounter assembled
-
-        ( tasks, data ) =
-            if firstEnconter then
-                ( [ Obstetric, Medical, Social ], data_ )
-
-            else
-                ( [ Social ], { data_ | activeTask = Social } )
-
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    historyTaskCompleted assembled task
+
+                iconClass =
                     case task of
                         Obstetric ->
-                            ( "obstetric", isJust assembled.measurements.obstetricHistory && isJust assembled.measurements.obstetricHistoryStep2 )
+                            "obstetric"
 
                         Medical ->
-                            ( "medical", isJust assembled.measurements.medicalHistory )
+                            "medical"
 
                         Social ->
-                            ( "social", isJust assembled.measurements.socialHistory )
+                            "social"
 
-                isActive =
-                    task == data.activeTask
+                        OutsideCare ->
+                            "outside-care"
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveHistoryTask task ]
 
                 attributes =
-                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
-                        :: (if isActive then
-                                []
-
-                            else
-                                [ onClick <| SetActiveHistoryTask task ]
-                           )
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
             in
             div [ class "column" ]
                 [ div attributes
@@ -391,50 +421,85 @@ viewHistoryContent language currentDate assembled data_ =
                     ]
                 ]
 
+        tasks =
+            resolveHistoryTasks assembled
+
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, historyTasksCompletedFromTotal assembled data task )
-                    )
+            List.map
+                (\task ->
+                    case task of
+                        OutsideCare ->
+                            ( OutsideCare
+                            , ( Maybe.Extra.values outsideCareTasks
+                                    |> List.length
+                              , List.length outsideCareTasks
+                              )
+                            )
+
+                        _ ->
+                            ( task, historyTasksCompletedFromTotal assembled data task )
+                )
+                tasks
                 |> Dict.fromList
 
+        activeTask =
+            Maybe.map
+                (\task ->
+                    if List.member task tasks then
+                        Just task
+
+                    else
+                        List.head tasks
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasks)
+
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
+        outsideCareForm =
+            assembled.measurements.outsideCare
+                |> getMeasurementValueFunc
+                |> outsideCareFormWithDefault data.outsideCareForm
+
+        ( outsideCareInputs, outsideCareTasks ) =
+            case data.outsideCareStep of
+                OutsideCareStepDiagnoses ->
+                    ( outsideCareInputsStep1, outsideCareTasksStep1 )
+
+                OutsideCareStepMedications ->
+                    ( outsideCareInputsStep2, outsideCareTasksStep2 )
+
+        ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
+            outsideCareFormInputsAndTasks language OutsideCareStepDiagnoses outsideCareForm
+
+        ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
+            outsideCareFormInputsAndTasks language OutsideCareStepMedications outsideCareForm
+
         viewForm =
-            case data.activeTask of
-                Obstetric ->
+            case activeTask of
+                Just Obstetric ->
                     case data.obstetricHistoryStep of
                         ObstetricHistoryFirstStep ->
-                            let
-                                formStep1_ =
-                                    assembled.measurements.obstetricHistory
-                                        |> getMeasurementValueFunc
-                                        |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-                            in
-                            viewObstetricFormFirstStep language currentDate assembled formStep1_
+                            assembled.measurements.obstetricHistory
+                                |> getMeasurementValueFunc
+                                |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
+                                |> viewObstetricFormFirstStep language currentDate assembled
 
                         ObstetricHistorySecondStep ->
-                            let
-                                formStep2_ =
-                                    assembled.measurements.obstetricHistoryStep2
-                                        |> getMeasurementValueFunc
-                                        |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
-                            in
-                            viewObstetricFormSecondStep language currentDate assembled formStep2_
-
-                Medical ->
-                    let
-                        medicalForm =
-                            assembled.measurements.medicalHistory
+                            assembled.measurements.obstetricHistoryStep2
                                 |> getMeasurementValueFunc
-                                |> medicalHistoryFormWithDefault data.medicalForm
-                    in
-                    viewMedicalForm language currentDate assembled medicalForm
+                                |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
+                                |> viewObstetricFormSecondStep language currentDate assembled
 
-                Social ->
+                Just Medical ->
+                    assembled.measurements.medicalHistory
+                        |> getMeasurementValueFunc
+                        |> medicalHistoryFormWithDefault data.medicalForm
+                        |> viewMedicalForm language currentDate assembled
+
+                Just Social ->
                     let
                         socialForm =
                             assembled.measurements.socialHistory
@@ -471,104 +536,117 @@ viewHistoryContent language currentDate assembled data_ =
                     in
                     viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
 
-        getNextTask currentTask =
-            if not firstEnconter then
-                Nothing
+                Just OutsideCare ->
+                    div [ class "ui form history outside-care" ]
+                        outsideCareInputs
 
-            else
-                case currentTask of
-                    Obstetric ->
-                        case data.obstetricHistoryStep of
-                            ObstetricHistoryFirstStep ->
-                                Nothing
+                Nothing ->
+                    emptyNode
 
-                            ObstetricHistorySecondStep ->
-                                [ Medical, Social ]
-                                    |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                                    |> List.head
-
-                    Medical ->
-                        [ Social, Obstetric ]
-                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                            |> List.head
-
-                    Social ->
-                        [ Obstetric, Medical ]
-                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                            |> List.head
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
 
         actions =
-            let
-                nextTask =
-                    getNextTask data.activeTask
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveButtonActive =
+                                tasksCompleted == totalTasks
 
-                ( buttons, stepIndicationClass ) =
-                    case data.activeTask of
-                        Obstetric ->
-                            case data.obstetricHistoryStep of
-                                ObstetricHistoryFirstStep ->
-                                    ( [ button
-                                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                            , onClick <| SaveOBHistoryStep1 assembled.participant.person assembled.measurements.obstetricHistory
-                                            ]
-                                            [ text <| translate language Translate.SaveAndNext ]
-                                      ]
-                                    , "first"
-                                    )
-
-                                ObstetricHistorySecondStep ->
-                                    ( [ button
-                                            [ class "ui fluid primary button"
-                                            , onClick BackToOBHistoryStep1
-                                            ]
-                                            [ text <| ("< " ++ translate language Translate.Back) ]
-                                      , button
-                                            [ classList
-                                                [ ( "ui fluid primary button", True )
-                                                , ( "disabled", tasksCompleted /= totalTasks )
-                                                , ( "active", tasksCompleted == totalTasks )
+                            buttons =
+                                case task of
+                                    Obstetric ->
+                                        case data.obstetricHistoryStep of
+                                            ObstetricHistoryFirstStep ->
+                                                [ customSaveButton language
+                                                    saveButtonActive
+                                                    (SaveOBHistoryStep1
+                                                        assembled.participant.person
+                                                        assembled.measurements.obstetricHistory
+                                                    )
+                                                    Translate.SaveAndNext
                                                 ]
-                                            , onClick <|
-                                                SaveOBHistoryStep2
-                                                    assembled.participant.person
-                                                    assembled.measurements.obstetricHistoryStep2
-                                                    nextTask
-                                            ]
-                                            [ text <| translate language Translate.Save ]
-                                      ]
-                                    , "second"
-                                    )
 
-                        Medical ->
-                            ( [ button
-                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <|
-                                        SaveMedicalHistory
-                                            assembled.participant.person
-                                            assembled.measurements.medicalHistory
-                                            nextTask
-                                    ]
-                                    [ text <| translate language Translate.Save ]
-                              ]
-                            , ""
-                            )
+                                            ObstetricHistorySecondStep ->
+                                                [ button
+                                                    [ class "ui fluid primary button"
+                                                    , onClick BackToOBHistoryStep1
+                                                    ]
+                                                    [ text <| ("< " ++ translate language Translate.Back) ]
+                                                , saveButton language
+                                                    saveButtonActive
+                                                    (SaveOBHistoryStep2
+                                                        assembled.participant.person
+                                                        assembled.measurements.obstetricHistoryStep2
+                                                        nextTask
+                                                    )
+                                                ]
 
-                        Social ->
-                            ( [ button
-                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <|
-                                        SaveSocialHistory
-                                            assembled.participant.person
-                                            assembled.measurements.socialHistory
-                                            nextTask
-                                    ]
-                                    [ text <| translate language Translate.Save ]
-                              ]
-                            , ""
-                            )
-            in
-            div [ class <| "actions history obstetric " ++ stepIndicationClass ]
-                buttons
+                                    Medical ->
+                                        [ saveButton language
+                                            saveButtonActive
+                                            (SaveMedicalHistory
+                                                assembled.participant.person
+                                                assembled.measurements.medicalHistory
+                                                nextTask
+                                            )
+                                        ]
+
+                                    Social ->
+                                        [ saveButton language
+                                            saveButtonActive
+                                            (SaveSocialHistory
+                                                assembled.participant.person
+                                                assembled.measurements.socialHistory
+                                                nextTask
+                                            )
+                                        ]
+
+                                    OutsideCare ->
+                                        let
+                                            saveAction =
+                                                SaveOutsideCare assembled.participant.person assembled.measurements.outsideCare nextTask
+                                        in
+                                        case data.outsideCareStep of
+                                            OutsideCareStepDiagnoses ->
+                                                let
+                                                    actionMsg =
+                                                        if List.isEmpty outsideCareTasksStep2 then
+                                                            saveAction
+
+                                                        else
+                                                            SetOutsideCareStep OutsideCareStepMedications
+                                                in
+                                                [ saveButton language saveButtonActive actionMsg ]
+
+                                            OutsideCareStepMedications ->
+                                                [ button
+                                                    [ class "ui fluid primary button"
+                                                    , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
+                                                    ]
+                                                    [ text <| ("< " ++ translate language Translate.Back) ]
+                                                , saveButton language saveButtonActive saveAction
+                                                ]
+                        in
+                        div
+                            [ classList
+                                [ ( "actions", True )
+                                , ( "two"
+                                  , (task == Obstetric && data.obstetricHistoryStep == ObstetricHistorySecondStep)
+                                        || (task == OutsideCare && data.outsideCareStep == OutsideCareStepMedications)
+                                  )
+                                ]
+                            ]
+                            buttons
+                    )
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
@@ -591,15 +669,12 @@ viewExaminationContent language currentDate assembled data =
         tasks =
             [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
 
-        firstEnconter =
-            isFirstEncounter assembled
-
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, examinationTasksCompletedFromTotal assembled data firstEnconter task )
-                    )
+            List.map
+                (\task ->
+                    ( task, examinationTasksCompletedFromTotal assembled data task )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -644,6 +719,23 @@ viewExaminationContent language currentDate assembled data =
                     ]
                 ]
 
+        nutritionForm =
+            let
+                form =
+                    assembled.measurements.nutrition
+                        |> getMeasurementValueFunc
+                        |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
+            in
+            if isJust measuredHeight then
+                Maybe.map (\(HeightInCm height) -> { form | height = Just height }) measuredHeight
+                    |> Maybe.withDefault form
+
+            else
+                form
+
+        measuredHeight =
+            resolveMeasuredHeight assembled
+
         viewForm =
             case data.activeTask of
                 Vitals ->
@@ -658,28 +750,9 @@ viewExaminationContent language currentDate assembled data =
                 NutritionAssessment ->
                     let
                         hideHeightInput =
-                            not firstEnconter
-
-                        form_ =
-                            assembled.measurements.nutrition
-                                |> getMeasurementValueFunc
-                                |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
-
-                        form =
-                            if hideHeightInput then
-                                assembled.nursePreviousMeasurementsWithDates
-                                    |> List.head
-                                    |> Maybe.andThen
-                                        (\( _, _, measurements ) ->
-                                            getMotherHeightMeasurement measurements
-                                        )
-                                    |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
-                                    |> Maybe.withDefault form_
-
-                            else
-                                form_
+                            isJust measuredHeight
                     in
-                    viewNutritionAssessmentForm language currentDate assembled form hideHeightInput
+                    viewNutritionAssessmentForm language currentDate assembled nutritionForm hideHeightInput
 
                 CorePhysicalExam ->
                     let
@@ -749,27 +822,10 @@ viewExaminationContent language currentDate assembled data =
                                 nextTask
 
                         NutritionAssessment ->
-                            let
-                                passHeight =
-                                    isFirstEncounter assembled |> not
-
-                                maybeHeight =
-                                    if passHeight then
-                                        assembled.nursePreviousMeasurementsWithDates
-                                            |> List.head
-                                            |> Maybe.andThen
-                                                (\( _, _, measurements ) ->
-                                                    getMotherHeightMeasurement measurements
-                                                )
-                                            |> Maybe.map heightValueFunc
-
-                                    else
-                                        Nothing
-                            in
                             SaveNutritionAssessment
                                 assembled.participant.person
                                 assembled.measurements.nutrition
-                                maybeHeight
+                                (Maybe.map getHeightValue measuredHeight)
                                 nextTask
 
                         CorePhysicalExam ->
@@ -882,45 +938,11 @@ viewMedicationContent language currentDate assembled data =
                 |> List.sum
             , List.length tasks
             )
-
-        receivedIronFolicAcidUpdateFunc value form_ =
-            { form_ | receivedIronFolicAcid = Just value }
-
-        receivedIronFolicAcidQuestion =
-            [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
-            , viewBoolInput
-                language
-                form.receivedIronFolicAcid
-                (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
-                "iron-folic-acid"
-                Nothing
-            ]
-
-        receivedMebendazoleQuestion =
-            if displayMebendazoleQuestion then
-                let
-                    receivedMebendazoleUpdateFunc value form_ =
-                        { form_ | receivedMebendazole = Just value }
-                in
-                [ viewQuestionLabel language Translate.ReceivedMebendazole
-                , viewBoolInput
-                    language
-                    form.receivedMebendazole
-                    (SetMedicationBoolInput receivedMebendazoleUpdateFunc)
-                    "mebendezole"
-                    Nothing
-                ]
-
-            else
-                []
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form medication" ] <|
-                receivedIronFolicAcidQuestion
-                    ++ receivedMebendazoleQuestion
-            ]
+            [ viewPrenatalMedicationForm language currentDate SetMedicationBoolInput assembled form ]
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
@@ -1313,8 +1335,17 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
-                                |> prenatalNonRDTFormWithDefault data.randomBloodSugarTestForm
-                                |> viewPrenatalNonRDTForm language currentDate TaskRandomBloodSugarTest
+                                |> prenatalRandomBloodSugarFormWithDefault data.randomBloodSugarTestForm
+                                |> viewPrenatalRandomBloodSugarForm language currentDate
+
+                        TaskHIVPCRTest ->
+                            measurements.hivPCRTest
+                                |> getMeasurementValueFunc
+                                |> prenatalNonRDTFormWithDefault data.hivPCRTestForm
+                                |> viewPrenatalNonRDTForm language currentDate TaskHIVPCRTest
+
+                        TaskCompletePreviousTests ->
+                            viewLabsHistoryForm language currentDate assembled data.labsHistoryForm
                     )
                 )
                 tasks
@@ -1368,8 +1399,21 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
                                 TaskRandomBloodSugarTest ->
                                     SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
+
+                                TaskHIVPCRTest ->
+                                    SaveHIVPCRTest personId measurements.hivPCRTest nextTask
+
+                                TaskCompletePreviousTests ->
+                                    SaveLabsHistory
+
+                        disableSave =
+                            if task == TaskCompletePreviousTests then
+                                data.labsHistoryForm.completed /= Just True
+
+                            else
+                                tasksCompleted /= totalTasks
                     in
-                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+                    viewSaveAction language saveMsg disableSave
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -1413,7 +1457,7 @@ viewLaboratoryContentForChw language currentDate assembled data =
                         |> List.map
                             (\result ->
                                 option
-                                    [ value (pregnancyTestResultAsString result)
+                                    [ value (pregnancyTestResultToString result)
                                     , selected (form.pregnancyTestResult == Just result)
                                     ]
                                     [ text <| translate language <| Translate.PregnancyTestResult result ]
@@ -1470,6 +1514,207 @@ viewHealthEducationContent language currentDate assembled data =
     ]
 
 
+viewMentalHealthContent : Language -> NominalDate -> AssembledData -> MentalHealthData -> List (Html Msg)
+viewMentalHealthContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.mentalHealth
+                |> getMeasurementValueFunc
+                |> mentalHealthFormWithDefault data.form
+
+        ( input, tasksCompleted ) =
+            case form.step of
+                MentalHealthQuestion question ->
+                    let
+                        value =
+                            Maybe.andThen (Dict.get question) form.signs
+                    in
+                    ( [ viewCustomLabel language (Translate.PrenatalMentalHealthQuestion question) "." "label"
+                      , viewCheckBoxSelectInput language
+                            (getMentalHealtOptionsForQuestion question)
+                            []
+                            value
+                            (SetMentalHealthOptionForQuestion question)
+                            (Translate.PrenatalMentalHealthOptionForQuestion question)
+                      ]
+                    , taskCompleted value
+                    )
+
+                MentalHealthSpecialistQuestion ->
+                    ( [ viewQuestionLabel language Translate.PrenatalMentalHealthSpecialistQuestion
+                      , viewBoolInput language
+                            form.specialistAtHC
+                            SetSpecialistAtHC
+                            "specialist"
+                            Nothing
+                      ]
+                    , taskCompleted form.specialistAtHC
+                    )
+
+        totalTasks =
+            1
+
+        getMentalHealtOptionsForQuestion value =
+            if
+                List.member value
+                    [ MentalHealthQuestion1
+                    , MentalHealthQuestion2
+                    , MentalHealthQuestion4
+                    ]
+            then
+                [ MentalHealthQuestionOption0
+                , MentalHealthQuestionOption1
+                , MentalHealthQuestionOption2
+                , MentalHealthQuestionOption3
+                ]
+
+            else
+                [ MentalHealthQuestionOption3
+                , MentalHealthQuestionOption2
+                , MentalHealthQuestionOption1
+                , MentalHealthQuestionOption0
+                ]
+
+        actions =
+            getPrevStep form.step
+                |> Maybe.map
+                    (\prevStep ->
+                        div [ class "actions two" ]
+                            [ button
+                                [ class "ui fluid primary button"
+                                , onClick <| SetMentalHealthStep prevStep
+                                ]
+                                [ text <| ("< " ++ translate language Translate.Back) ]
+                            , saveButton language saveButtonActive saveAction
+                            ]
+                    )
+                |> Maybe.withDefault
+                    (div [ class "actions" ]
+                        [ saveButton language saveButtonActive saveAction ]
+                    )
+
+        saveButtonActive =
+            tasksCompleted == totalTasks
+
+        saveAction =
+            getNextStep form.step
+                |> Maybe.map SetMentalHealthStep
+                |> Maybe.withDefault
+                    (let
+                        suicideRiskDiagnosed =
+                            Maybe.andThen suicideRiskDiagnosedBySigns form.signs
+                                |> Maybe.withDefault False
+
+                        saveMsg =
+                            SaveMentalHealth assembled.participant.person assembled.measurements.mentalHealth
+                     in
+                     if suicideRiskDiagnosed then
+                        SetMentalHealthWarningPopupState (Just saveMsg)
+
+                     else
+                        saveMsg
+                    )
+
+        getNextStep currentStep =
+            case currentStep of
+                MentalHealthQuestion question ->
+                    case question of
+                        MentalHealthQuestion1 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion2)
+
+                        MentalHealthQuestion2 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion3)
+
+                        MentalHealthQuestion3 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion4)
+
+                        MentalHealthQuestion4 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion5)
+
+                        MentalHealthQuestion5 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion6)
+
+                        MentalHealthQuestion6 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion7)
+
+                        MentalHealthQuestion7 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion8)
+
+                        MentalHealthQuestion8 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion9)
+
+                        MentalHealthQuestion9 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion10)
+
+                        MentalHealthQuestion10 ->
+                            Just MentalHealthSpecialistQuestion
+
+                MentalHealthSpecialistQuestion ->
+                    Nothing
+
+        getPrevStep currentStep =
+            case currentStep of
+                MentalHealthQuestion question ->
+                    case question of
+                        MentalHealthQuestion1 ->
+                            Nothing
+
+                        MentalHealthQuestion2 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion1)
+
+                        MentalHealthQuestion3 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion2)
+
+                        MentalHealthQuestion4 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion3)
+
+                        MentalHealthQuestion5 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion4)
+
+                        MentalHealthQuestion6 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion5)
+
+                        MentalHealthQuestion7 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion6)
+
+                        MentalHealthQuestion8 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion7)
+
+                        MentalHealthQuestion9 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion8)
+
+                        MentalHealthQuestion10 ->
+                            Just (MentalHealthQuestion MentalHealthQuestion9)
+
+                MentalHealthSpecialistQuestion ->
+                    Just (MentalHealthQuestion MentalHealthQuestion10)
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form mental-health" ]
+                input
+            ]
+        , actions
+        ]
+    , viewModal <|
+        mentalHealthWarningPopup language data.warningPopupState
+    ]
+
+
+mentalHealthWarningPopup : Language -> Maybe msg -> Maybe (Html msg)
+mentalHealthWarningPopup language actionMsg =
+    let
+        state =
+            Just
+                ( translate language Translate.PrenatalMentalHealthWarningPopupMessage
+                , translate language Translate.PrenatalMentalHealthWarningPopupInstructions
+                )
+    in
+    Maybe.andThen (\action -> customWarningPopup language action state)
+        actionMsg
+
+
 viewNextStepsContent : Language -> NominalDate -> Bool -> AssembledData -> NextStepsData -> List (Html Msg)
 viewNextStepsContent language currentDate isChw assembled data =
     let
@@ -1496,7 +1741,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                             "next-steps-follow-up"
 
                         NextStepsSendToHC ->
-                            "next-steps-send-to-hc"
+                            "next-steps-referral"
 
                         NextStepsHealthEducation ->
                             "next-steps-health-education"
@@ -1514,7 +1759,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     activeTask == Just task
 
                 isCompleted =
-                    nextStepsMeasurementTaken assembled task
+                    nextStepsTaskCompleted assembled task
 
                 navigationAction =
                     if isActive then
@@ -1551,7 +1796,7 @@ viewNextStepsContent language currentDate isChw assembled data =
             List.member NextStepsWait tasks
                 && -- There's one or less uncompleted task,
                    -- which is the Wait task.
-                   (List.filter (nextStepsMeasurementTaken assembled >> not) tasks
+                   (List.filter (nextStepsTaskCompleted assembled >> not) tasks
                         |> List.length
                         |> (\length -> length < 2)
                    )
@@ -1564,7 +1809,16 @@ viewNextStepsContent language currentDate isChw assembled data =
                 List.filter ((/=) NextStepsWait) tasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasksConsideringShowWaitTask)
+            Maybe.map
+                (\task ->
+                    if List.member task tasksConsideringShowWaitTask then
+                        Just task
+
+                    else
+                        List.head tasksConsideringShowWaitTask
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasksConsideringShowWaitTask)
 
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
@@ -1573,42 +1827,22 @@ viewNextStepsContent language currentDate isChw assembled data =
         viewForm =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
-                    measurements.appointmentConfirmation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.appointmentConfirmation
                         |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
                         |> viewAppointmentConfirmationForm language currentDate assembled
 
                 Just NextStepsFollowUp ->
-                    measurements.followUp
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate assembled
 
                 Just NextStepsSendToHC ->
-                    let
-                        ( viewFormFunc, accompanyConfig ) =
-                            if isChw then
-                                ( viewSendToHealthCenterForm, Just SetAccompanyToHC )
-
-                            else if emergencyReferalRequired assembled || diagnosed DiagnosisMalaria assembled then
-                                ( viewSendToHospitalForm, Nothing )
-
-                            else
-                                ( viewSendToHIVProgramForm, Just SetAccompanyToHC )
-                    in
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
-                        |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewFormFunc language
-                            currentDate
-                            SetReferToHealthCenter
-                            SetReasonForNotSendingToHC
-                            SetHandReferralForm
-                            accompanyConfig
+                    getMeasurementValueFunc measurements.sendToHC
+                        |> referralFormWithDefault data.referralForm
+                        |> viewReferralForm language currentDate assembled
 
                 Just NextStepsHealthEducation ->
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate assembled
 
@@ -1616,8 +1850,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     viewNewbornEnrolmentForm language currentDate assembled
 
                 Just NextStepsMedicationDistribution ->
-                    measurements.medicationDistribution
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
                             currentDate
@@ -1626,6 +1859,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                             SetMedicationDistributionBoolInput
                             SetMedicationDistributionAdministrationNote
                             SetRecommendedTreatmentSign
+                            SetAvoidingGuidanceReason
 
                 Just NextStepsWait ->
                     viewWaitForm language currentDate assembled
@@ -1646,13 +1880,13 @@ viewNextStepsContent language currentDate isChw assembled data =
                         -- due to Malaria, based on saved measurement.
                         referredToHospitalBeforeSave =
                             getMeasurementValueFunc measurements.medicationDistribution
-                                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatementReferToHospital))
+                                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
                                 |> Maybe.withDefault False
 
                         -- We know if patient will be referred to hospital
                         -- due to Malaria, based on edited form.
                         referredToHospitalAfterSave =
-                            Maybe.map (List.member TreatementReferToHospital)
+                            Maybe.map (List.member TreatmentReferToHospital)
                                 medicationDistributionForm.recommendedTreatmentSigns
                                 |> Maybe.withDefault False
                     in
@@ -1767,8 +2001,380 @@ viewNextStepsContent language currentDate isChw assembled data =
     ]
 
 
+viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
+viewSymptomReviewContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.symptomReview
+                |> getMeasurementValueFunc
+                |> symptomReviewFormWithDefault data.form
 
--- Forms
+        ( inputs, tasksCompleted, totalTasks ) =
+            case data.step of
+                SymptomReviewStepSymptoms ->
+                    ( inputsStep1, tasksCompletedStep1, totalTasksStep1 )
+
+                SymptomReviewStepQuestions ->
+                    ( inputsStep2, tasksCompletedStep2, totalTasksStep2 )
+
+        ( inputsStep1, tasksCompletedStep1, totalTasksStep1 ) =
+            symptomReviewFormInputsAndTasks language SymptomReviewStepSymptoms form
+
+        ( inputsStep2, tasksCompletedStep2, totalTasksStep2 ) =
+            symptomReviewFormInputsAndTasks language SymptomReviewStepQuestions form
+
+        actions =
+            let
+                saveAction =
+                    SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview
+
+                saveButtonActive =
+                    tasksCompleted == totalTasks
+            in
+            case data.step of
+                SymptomReviewStepSymptoms ->
+                    let
+                        actionMsg =
+                            if totalTasksStep2 == 0 then
+                                saveAction
+
+                            else
+                                SetSymptomReviewStep SymptomReviewStepQuestions
+                    in
+                    div [ class "actions" ]
+                        [ saveButton language saveButtonActive actionMsg ]
+
+                SymptomReviewStepQuestions ->
+                    div [ class "actions two" ]
+                        [ button
+                            [ class "ui fluid primary button"
+                            , onClick <| SetSymptomReviewStep SymptomReviewStepSymptoms
+                            ]
+                            [ text <| ("< " ++ translate language Translate.Back) ]
+                        , saveButton language saveButtonActive saveAction
+                        ]
+
+        instructionLabel =
+            case data.step of
+                SymptomReviewStepSymptoms ->
+                    emptyNode
+
+                SymptomReviewStepQuestions ->
+                    div [ class "instructions" ]
+                        [ viewLabel language Translate.PrenatalSymptomQuestionsHeader ]
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form symptom-review" ] <|
+                instructionLabel
+                    :: inputs
+            ]
+        , actions
+        ]
+    ]
+
+
+viewTreatmentReviewContent : Language -> NominalDate -> AssembledData -> TreatmentReviewData -> List (Html Msg)
+viewTreatmentReviewContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        moderatePreeclampsiaPrevoiusly =
+            diagnosedModeratePreeclampsiaPrevoiusly assembled
+
+        viewTask task =
+            let
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    treatmentReviewTaskCompleted assembled task
+
+                navigationAction =
+                    if isActive then
+                        []
+
+                    else
+                        [ onClick <| SetActiveTreatmentReviewTask task ]
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: navigationAction
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class "icon-activity-task icon-medication" ] []
+                    , text <| translate language (Translate.TreatmentReviewTask moderatePreeclampsiaPrevoiusly task)
+                    ]
+                ]
+
+        tasks =
+            resolveTreatmentReviewTasks assembled
+
+        tasksCompletedFromTotalDict =
+            List.map
+                (\task ->
+                    ( task, treatmentReviewTasksCompletedFromTotal language currentDate assembled data task )
+                )
+                tasks
+                |> Dict.fromList
+
+        activeTask =
+            Maybe.map
+                (\task ->
+                    if List.member task tasks then
+                        Just task
+
+                    else
+                        List.head tasks
+                )
+                data.activeTask
+                |> Maybe.withDefault (List.head tasks)
+
+        ( tasksCompleted, totalTasks ) =
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
+
+        form =
+            measurements.medication
+                |> getMeasurementValueFunc
+                |> medicationFormWithDefault data.medicationForm
+
+        viewForm =
+            case activeTask of
+                Just TreatmentReviewPrenatalMedication ->
+                    viewPrenatalMedicationForm language currentDate SetMedicationSubActivityBoolInput assembled form
+
+                Just task ->
+                    viewMedicationTreatmentForm language currentDate SetMedicationSubActivityBoolInput assembled form task
+
+                Nothing ->
+                    emptyNode
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            saveMsg =
+                                SaveMedicationSubActivity personId measurements.medication nextTask
+
+                            action =
+                                case task of
+                                    TreatmentReviewSyphilis ->
+                                        if form.syphilisMissedDoses == Just True then
+                                            SetTreatmentReviewWarningPopupState (Just saveMsg)
+
+                                        else
+                                            saveMsg
+
+                                    _ ->
+                                        saveMsg
+                        in
+                        div [ class "actions treatment-review" ]
+                            [ button
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                , onClick action
+                                ]
+                                [ text <| translate language Translate.Save ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ]
+        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    , viewModal <|
+        treatmentReviewWarningPopup language data.warningPopupState
+    ]
+
+
+treatmentReviewWarningPopup : Language -> Maybe msg -> Maybe (Html msg)
+treatmentReviewWarningPopup language actionMsg =
+    let
+        state =
+            Just
+                ( translate language Translate.TreatmentReviewWarningPopupMessage
+                , translate language Translate.TreatmentReviewWarningPopupInstructions
+                )
+    in
+    Maybe.andThen (\action -> customWarningPopup language action state)
+        actionMsg
+
+
+viewImmunisationContent :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ImmunisationData
+    -> List (Html Msg)
+viewImmunisationContent language currentDate assembled data =
+    let
+        personId =
+            assembled.participant.person
+
+        person =
+            assembled.person
+
+        measurements =
+            assembled.measurements
+
+        tasks =
+            List.filter (expectImmunisationTask currentDate assembled) immunisationTasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskTetanus ->
+                            ( "tetanus-vaccine"
+                            , isJust measurements.tetanusImmunisation
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveImmunisationTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalImmunisationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, immunisationTasksCompletedFromTotal language currentDate assembled data task )) tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            activeTask
+                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.withDefault ( 0, 0 )
+
+        ( formForView, fullScreen, allowSave ) =
+            Maybe.map immunisationTaskToVaccineType activeTask
+                |> Maybe.map
+                    (\vaccineType ->
+                        let
+                            vaccinationForm =
+                                case vaccineType of
+                                    VaccineTetanus ->
+                                        measurements.tetanusImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.tetanusForm
+                        in
+                        ( viewVaccinationForm language currentDate assembled vaccineType vaccinationForm
+                        , False
+                        , vaccinationForm.viewMode == ViewModeInitial
+                        )
+                    )
+                |> Maybe.withDefault ( emptyNode, False, False )
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                TaskTetanus ->
+                                    SaveTetanusImmunisation personId measurements.tetanusImmunisation
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+                |> showIf allowSave
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div
+        [ classList
+            [ ( "tasks-count", True )
+            , ( "full-screen", fullScreen )
+            ]
+        ]
+        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div
+        [ classList
+            [ ( "ui full segment", True )
+            , ( "full-screen", fullScreen )
+            ]
+        ]
+        [ div [ class "full content" ]
+            [ formForView
+            , actions
+            ]
+        ]
+    ]
+
+
+viewVaccinationForm : Language -> NominalDate -> AssembledData -> PrenatalVaccineType -> PrenatalVaccinationForm -> Html Msg
+viewVaccinationForm language currentDate assembled vaccineType form =
+    let
+        ( contentByViewMode, _, _ ) =
+            vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form
+    in
+    div [ class "ui form vaccination" ] <|
+        [ h2 [] [ text <| translate language <| Translate.PrenatalImmunisationHeader vaccineType ]
+        , div [ class "instructions" ] <|
+            [ div [ class "header icon-label" ] <|
+                [ i [ class "icon-open-book" ] []
+                , div [ class "description" ] [ text <| translate language <| Translate.PrenatalImmunisationDescription vaccineType ]
+                ]
+            , viewLabel language (Translate.PrenatalImmunisationHistory vaccineType)
+            ]
+                ++ contentByViewMode
+        ]
 
 
 viewObstetricFormFirstStep : Language -> NominalDate -> AssembledData -> ObstetricFormFirstStep -> Html Msg
@@ -2416,7 +3022,7 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
 
         heightPreviousValue =
             resolvePreviousValue assembled .nutrition .height
-                |> Maybe.map heightValueFunc
+                |> Maybe.map getHeightValue
 
         weightPreviousValue =
             resolvePreviousValue assembled .nutrition .weight
@@ -2741,7 +3347,7 @@ viewObstetricalExamForm language currentDate assembled form =
 
         fundalHeightPreviousValue =
             resolvePreviousValue assembled .obstetricalExam .fundalHeight
-                |> Maybe.map heightValueFunc
+                |> Maybe.map getHeightValue
     in
     div [ class "ui form examination obstetrical-exam" ]
         [ div [ class "ui grid" ]
@@ -3196,6 +3802,56 @@ viewPrenatalUrineDipstickForm language currentDate form =
     )
 
 
+viewPrenatalRandomBloodSugarForm : Language -> NominalDate -> PrenatalRandomBloodSugarForm -> ( Html Msg, Int, Int )
+viewPrenatalRandomBloodSugarForm language currentDate form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial language currentDate TaskRandomBloodSugarTest form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.testPerformed == Just True then
+                let
+                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
+                        contentAndTasksForPerformedLaboratoryTest language currentDate TaskRandomBloodSugarTest form
+
+                    ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
+                        ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
+                          , viewBoolInput
+                                language
+                                form.patientFasted
+                                (SetRandomBloodSugarTestFormBoolInput (\value form_ -> { form_ | patientFasted = Just value }))
+                                "patient-fasted"
+                                Nothing
+                          ]
+                        , taskCompleted form.patientFasted
+                        , 1
+                        )
+
+                    testResultSection =
+                        if isNothing form.executionDate then
+                            []
+
+                        else
+                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
+                in
+                ( testPrerequisitesSection ++ performedTestSection ++ testResultSection
+                , performedTestTasksCompleted + testPrerequisitesTasksCompleted
+                , performedTestTasksTotal + testPrerequisitesTasksTotal
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( div [ class "ui form laboratory urine-dipstick" ] <|
+        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
+        ]
+            ++ initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
 viewPrenatalNonRDTFormCheckKnownAsPositive : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( Html Msg, Int, Int )
 viewPrenatalNonRDTFormCheckKnownAsPositive language currentDate task form =
     let
@@ -3267,6 +3923,53 @@ prenatalNonRDTFormInputsAndTasks language currentDate task form =
     )
 
 
+viewLabsHistoryForm : Language -> NominalDate -> AssembledData -> LabsHistoryForm -> ( Html Msg, Int, Int )
+viewLabsHistoryForm language currentDate assembled form =
+    let
+        entries =
+            List.indexedMap (\index ( date, encounterId, lab ) -> viewEntry date encounterId lab index) pendingLabs
+                |> div [ class "history-entries" ]
+
+        input =
+            [ viewQuestionLabel language Translate.PrenatalLabsHistoryCompletedQuestion
+            , viewBoolInput
+                language
+                form.completed
+                SetLabsHistoryCompleted
+                "completed"
+                Nothing
+            ]
+
+        pendingLabs =
+            generatePendingLabsFromPreviousEncounters assembled
+                |> List.map
+                    (\( date, encounterId, labs ) ->
+                        List.map (\lab -> ( date, encounterId, lab )) labs
+                    )
+                |> List.concat
+
+        viewEntry date encounterId lab index =
+            div [ class "history-entry" ]
+                [ div [ class "index" ] [ text <| String.fromInt (index + 1) ]
+                , div [ class "name" ] [ text <| translate language <| Translate.PrenatalLaboratoryTest lab ]
+                , div [ class "date" ] [ text <| formatDDMMYYYY date ]
+                , div
+                    [ class "action"
+                    , onClick <| SetActivePage <| UserPage <| PrenatalLabsHistoryPage assembled.id encounterId lab
+                    ]
+                    [ text <| translate language Translate.Update ]
+                ]
+    in
+    ( div [ class "ui form laboratory labs-history" ] <|
+        [ viewCustomLabel language Translate.PrenatalLabsHistoryLabel "." "label"
+        , viewCustomLabel language Translate.PrenatalLabsHistoryInstructions "." "instructions"
+        ]
+            ++ (entries :: input)
+    , taskCompleted form.completed
+    , 1
+    )
+
+
 contentAndTasksLaboratoryTestKnownAsPositive :
     Language
     -> NominalDate
@@ -3325,6 +4028,14 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
                     always NoOp
 
                 TaskRandomBloodSugarTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+
+                TaskHIVPCRTest ->
+                    -- Known as positive is not applicable for this test.
+                    always NoOp
+
+                TaskCompletePreviousTests ->
                     -- Known as positive is not applicable for this test.
                     always NoOp
     in
@@ -3406,6 +4117,17 @@ contentAndTasksLaboratoryTestInitial language currentDate task form =
                 TaskRandomBloodSugarTest ->
                     { setBoolInputMsg = SetRandomBloodSugarTestFormBoolInput boolInputUpdateFunc
                     , setExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
+                    }
+
+                TaskHIVPCRTest ->
+                    { setBoolInputMsg = SetHIVPCRTestFormBoolInput boolInputUpdateFunc
+                    , setExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                    }
+
+                TaskCompletePreviousTests ->
+                    -- Not in use, as this task got a proprietary form.
+                    { setBoolInputMsg = always NoOp
+                    , setExecutionNoteMsg = always NoOp
                     }
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
@@ -3539,6 +4261,19 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                         , setDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
                         }
 
+                    TaskHIVPCRTest ->
+                        { setBoolInputMsg = SetHIVPCRTestFormBoolInput boolInputUpdateFunc
+                        , setExecutionDateMsg = SetHIVPCRTestExecutionDate
+                        , setDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
+                        }
+
+                    TaskCompletePreviousTests ->
+                        -- Not in use, as this task got a proprietary form.
+                        { setBoolInputMsg = always NoOp
+                        , setExecutionDateMsg = always NoOp
+                        , setDateSelectorStateMsg = always NoOp
+                        }
+
             ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
                 Maybe.map
                     (\testPerformedToday ->
@@ -3560,7 +4295,7 @@ contentAndTasksForPerformedLaboratoryTest language currentDate task form =
                                             in
                                             { select = msgs.setExecutionDateMsg
                                             , close = msgs.setDateSelectorStateMsg Nothing
-                                            , dateFrom = Date.add Days -30 currentDate
+                                            , dateFrom = Date.add Days -35 currentDate
                                             , dateTo = dateTo
                                             , dateDefault = Just dateTo
                                             }
@@ -3638,6 +4373,57 @@ viewWaitForm language currentDate assembled =
         ]
 
 
+viewPrenatalMedicationForm :
+    Language
+    -> NominalDate
+    -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
+    -> AssembledData
+    -> MedicationForm
+    -> Html Msg
+viewPrenatalMedicationForm language currentDate setBoolInputMsg assembled form =
+    let
+        ( inputs, _ ) =
+            resolvePrenatalMedicationFormInputsAndTasks language currentDate setBoolInputMsg assembled form
+    in
+    div [ class "ui form medication" ] inputs
+
+
+viewMedicationTreatmentForm :
+    Language
+    -> NominalDate
+    -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
+    -> AssembledData
+    -> MedicationForm
+    -> TreatmentReviewTask
+    -> Html Msg
+viewMedicationTreatmentForm language currentDate setBoolInputMsg assembled form task =
+    let
+        ( inputs, _ ) =
+            resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task
+    in
+    div [ class "ui form medication" ] inputs
+
+
+viewReferralForm : Language -> NominalDate -> AssembledData -> ReferralForm -> Html Msg
+viewReferralForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            case assembled.encounter.encounterType of
+                NurseEncounter ->
+                    resolveReferralInputsAndTasksForNurse language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
+
+                _ ->
+                    resolveReferralInputsAndTasksForCHW language currentDate assembled form
+    in
+    div [ class "ui form referral" ]
+        inputs
+
+
 
 -- HELPER FUNCITONS
 
@@ -3698,3 +4484,21 @@ viewWarning language maybeMessage =
                 div [ class "five wide column" ]
                     [ text message ]
             )
+
+
+saveButton : Language -> Bool -> Msg -> Html Msg
+saveButton language active msg =
+    customSaveButton language active msg Translate.Save
+
+
+customSaveButton : Language -> Bool -> Msg -> Translate.TranslationId -> Html Msg
+customSaveButton language active msg label =
+    button
+        [ classList
+            [ ( "ui fluid primary button", True )
+            , ( "active", active )
+            , ( "disabled", not active )
+            ]
+        , onClick msg
+        ]
+        [ text <| translate language label ]

@@ -1520,6 +1520,16 @@ div.page-activity.home-visit {
       }
     }
 
+    .actions.two button {
+      width: 50%;
+      float: left;
+      margin: 0;
+
+      &.active {
+        border-left: 1px solid $color-white;
+      }
+    }
+
     .form.history {
 
       .ui.grid + .grid {
@@ -1735,6 +1745,24 @@ div.page-activity.home-visit {
           text-transform: uppercase;
         }
       }
+
+      .form.health-education {
+
+        .label, li {
+          font-weight: 600;
+        }
+
+        .label.header {
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 30px;
+          text-transform: uppercase;
+        }
+
+        .label.paragraph {
+          margin-bottom: 20px;
+        }
+      }
     }
   }
 }
@@ -1745,6 +1773,15 @@ div.page-activity.prenatal {
 
     .full.content {
 
+      .form.medication {
+
+        .label.header {
+          margin-bottom: 35px;
+        }
+      }
+
+      .form.referral,
+      .form.history.outside-care,
       .form.medication-distribution {
 
         .separator:last-of-type {
@@ -1754,6 +1791,35 @@ div.page-activity.prenatal {
         .instructions-warning {
           margin-left: 50px;
           margin-top: 15px;
+        }
+
+        .label {
+
+          .highlight {
+            color: $color-primary;
+          }
+
+          .footer {
+            font-weight: normal;
+            margin-bottom: 0;
+          }
+        }
+
+        .label.overview {
+          font-weight: 600;
+        }
+
+        .warning {
+          display: flex;
+          font-size: 20px;
+          line-height: 25px;
+          padding: 20px;
+
+          img {
+            height: 30px;
+            margin-left: 5px;
+            margin-right: 10px;
+          }
         }
 
         label {
@@ -1768,18 +1834,140 @@ div.page-activity.prenatal {
           .dosage {
             font-size: 22px;
           }
+
+          b {
+            font-size: 22px;
+          }
         }
 
-        .warning {
-          display: flex;
-          font-size: 20px;
-          line-height: 25px;
-          padding: 20px;
+        ul {
+          margin-top: 0;
+        }
+      }
 
-          img {
-            height: 30px;
-            margin-left: 5px;
-            margin-right: 10px;
+      .form.history.outside-care {
+
+        label .treatment {
+            margin-right: 0;
+          }
+
+        .label .diagnosis {
+          color: $color-primary;
+        }
+
+        .checkbox-select-input {
+          margin-bottom: 40px;
+        }
+      }
+
+      .ui.form.vaccination .header.icon-label {
+        align-items: flex-start;
+        font-weight: 500;
+
+        .description,
+        .dosage {
+          margin-bottom: 30px;
+        }
+      }
+
+      .ui.form.vaccination .history {
+        padding: 20px 0;
+
+        .label {
+          font-weight: 500;
+          margin-left: 10px;
+        }
+      }
+
+      .ui.form.vaccination .history .history-entry {
+        align-items: flex-start;
+        display: flex;
+        font-weight: normal;
+        margin-left: 55px;
+
+        .dose {
+          background: $color-primary;
+          border-radius: 5px;
+          color: $color-white;
+          font-size: 17px;
+          padding: 0 10px;
+        }
+
+        .date {
+          margin-bottom: 20px;
+          margin-left: 30px;
+          width: 150px;
+        }
+
+        .update,
+        .delete {
+          border-radius: 3px;
+          color: $color-white;
+          font-size: 17px;
+          padding: 0 20px;
+          text-transform: uppercase;
+        }
+
+        .update {
+          background: $color-primary;
+        }
+
+        .delete {
+          background: $color-velvet;
+        }
+      }
+
+      .ui.form.vaccination .update.actions {
+        display: flex;
+        justify-content: space-evenly;
+        margin-bottom: 40px;
+
+        .button {
+          font-size: 18px;
+          font-weight: 600;
+          padding: 15px;
+          width: 250px;
+        }
+      }
+
+      .ui.form.labs-history {
+
+        .instructions,
+        .completed {
+          font-weight: 600;
+        }
+
+        .history-entries {
+          margin-bottom: 30px;
+        }
+
+        .history-entry {
+          align-items: flex-start;
+          display: flex;
+          font-weight: normal;
+          justify-content: space-around;
+          margin-bottom: 15px;
+
+          .index {
+            background: $color-primary;
+            border-radius: 5px;
+            color: $color-white;
+            font-size: 17px;
+            padding: 0 10px;
+          }
+
+          .name,
+          .date {
+            width: 150px;
+          }
+
+          .action {
+            background: $color-velvet;
+            border-radius: 3px;
+            color: $color-white;
+            font-size: 17px;
+            padding: 0 20px;
+            text-transform: uppercase;
           }
         }
       }
@@ -2203,6 +2391,75 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
+  .chw-activities {
+
+    .heading,
+    .table-row {
+      display: grid;
+      grid-gap: 20px;
+      grid-template-columns: 20% auto;
+    }
+
+    .pane-content {
+      padding-left: 0;
+      padding-bottom: 0;
+    }
+
+    .heading {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .heading .date {
+      margin-left: 40px;
+    }
+
+    .heading .chw-actions {
+      margin-left: 20px;
+    }
+
+    .table-row {
+      padding: 20px 0;
+      border-top: 1px solid $color-text;
+    }
+
+    .table-row .date {
+      margin: auto 0 auto 40px;
+    }
+
+    .table-row ul {
+      display: inline-block;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .table-row ul li {
+      border-radius: 10px;
+      color: #FFFFFF;
+      float: left;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 3px 5px;
+      padding: 0 10px;
+      text-transform: uppercase;
+    }
+
+    .table-row ul li.purple {
+      background: $color-purple;
+    }
+
+    .table-row ul li.velvet {
+      background: $color-velvet;
+    }
+
+    .table-row ul li.cyan {
+      background: $color-cyan;
+    }
+
+  }
+
   .risk-factors > .pane-heading {
 
     img {
@@ -2412,6 +2669,14 @@ div.page-report.clinical .ui.unstackable.items {
   .lab-results,
   .lab-results-history {
 
+    .pane-heading {
+      text-align: center;
+    }
+
+    .pane-content {
+      border-bottom: 1px solid $color-text;
+    }
+
     .heading,
     .entry {
       display: flex;
@@ -2422,6 +2687,7 @@ div.page-report.clinical .ui.unstackable.items {
     }
 
     .entry {
+      border-bottom: 1px solid $color-text;
       font-weight: 500;
       line-height: 60px;
 
@@ -2442,38 +2708,21 @@ div.page-report.clinical .ui.unstackable.items {
         padding: 3px 8px;
         text-transform: uppercase;
       }
-    }
-  }
-
-  .lab-results {
-
-    .heading,
-    .entry {
-
-      .name,
-      .date,
-      .result {
-        width: 215px;
-      }
-    }
-
-    .entry {
-      border-bottom: 1px solid $color-text;
 
       &:last-child {
         border-bottom: none;
       }
-
-      .name {
-        margin-left: 20px;
-      }
     }
 
-    .group-heading {
-      background: $color-primary;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 0 10px;
+    .entry.warning {
+      color: $color-velvet;
+
+      .icon-forward {
+        background: url(#{$img-path}icon-forward-red.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        width: 45px;
+      }
     }
 
     .group-content {
@@ -2484,23 +2733,60 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
+  .lab-results {
+
+    .heading,
+    .entry {
+
+      .name {
+        width: 190px;
+      }
+
+      .date {
+        width: 120px;
+      }
+
+      .result {
+        text-align: center;
+        width:180px;
+      }
+
+      .normal-range {
+        width:160px;
+      }
+    }
+
+    .entry .name {
+      margin-left: 20px;
+    }
+  }
+
   .lab-results-history {
 
     .heading,
     .entry {
 
-      .date,
-      .result {
-        width: 50%;
+      .date{
+        width: 20%;
+      }
+
+      .result,
+      .normal-range {
+        text-align: center;
+        width: 35%;
       }
     }
 
-    .heading {
-      margin-bottom: 10px;
-    }
-
     .entry {
-      border-top: 1px solid $color-text;
+
+      .date {
+        margin-left: 20px;
+      }
+
+      img.icon-warning {
+        height: 46px;
+        margin-top: 6px;
+      }
     }
   }
 
@@ -2872,7 +3158,7 @@ div.page-report.acute-illness {
       }
 
       &.gi {
-        background: $color-blue;
+        background: $color-purple;
       }
     }
 
@@ -3080,7 +3366,7 @@ div.page-activity.patient-record {
     text-transform: uppercase;
 
     &.completed {
-      background: $color-blue;
+      background: $color-purple;
     }
 
     &.behind,
@@ -3501,7 +3787,7 @@ div.page-case-management {
           }
 
           &.this-month {
-            background: $color-blue;
+            background: $color-purple;
           }
 
           &.next-month {
@@ -3581,6 +3867,7 @@ div.page-case-management {
 
 div.page-activity.patient-record {
 
+  // This part is used by child view.
   .ui.full.segment {
     height: 90%;
 
@@ -3616,5 +3903,17 @@ div.page-activity.patient-record {
         transform: rotate(180deg);
       }
     }
+  }
+
+  // This part is used by adult view.
+  .heading.family-planning,
+  .entry.family-planning {
+    display: grid;
+    grid-gap: 20px;
+    grid-template-columns: 25% auto;
+  }
+
+  .entry.family-planning .date {
+    margin: auto 0;
   }
 }

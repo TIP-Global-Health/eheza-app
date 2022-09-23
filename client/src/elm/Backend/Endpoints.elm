@@ -748,7 +748,7 @@ prenatalFollowUpEndpoint =
         |> withValueEncoder (object << encodePrenatalFollowUp)
 
 
-prenatalSendToHcEndpoint : ReadWriteEndPoint Error PrenatalSendToHcId PrenatalSendToHC PrenatalSendToHC ()
+prenatalSendToHcEndpoint : ReadWriteEndPoint Error PrenatalSendToHCId PrenatalSendToHC PrenatalSendToHC ()
 prenatalSendToHcEndpoint =
     swEndpoint "nodes/prenatal_send_to_hc" decodePrenatalSendToHc
         |> withValueEncoder (object << encodePrenatalSendToHC)
@@ -992,3 +992,33 @@ prenatalMedicationDistributionEndpoint : ReadWriteEndPoint Error PrenatalMedicat
 prenatalMedicationDistributionEndpoint =
     swEndpoint "nodes/prenatal_medication_distribution" decodePrenatalMedicationDistribution
         |> withValueEncoder (object << encodePrenatalMedicationDistribution)
+
+
+prenatalSymptomReviewEndpoint : ReadWriteEndPoint Error PrenatalSymptomReviewId PrenatalSymptomReview PrenatalSymptomReview ()
+prenatalSymptomReviewEndpoint =
+    swEndpoint "nodes/prenatal_symptom_review" decodePrenatalSymptomReview
+        |> withValueEncoder (object << encodePrenatalSymptomReview)
+
+
+prenatalOutsideCareEndpoint : ReadWriteEndPoint Error PrenatalOutsideCareId PrenatalOutsideCare PrenatalOutsideCare ()
+prenatalOutsideCareEndpoint =
+    swEndpoint "nodes/prenatal_outside_care" decodePrenatalOutsideCare
+        |> withValueEncoder (object << encodePrenatalOutsideCare)
+
+
+prenatalHIVPCRTestEndpoint : ReadWriteEndPoint Error PrenatalHIVPCRTestId PrenatalHIVPCRTest PrenatalHIVPCRTest ()
+prenatalHIVPCRTestEndpoint =
+    swEndpoint "nodes/prenatal_hiv_pcr_test" decodePrenatalHIVPCRTest
+        |> withValueEncoder (object << encodePrenatalHIVPCRTest)
+
+
+prenatalMentalHealthEndpoint : ReadWriteEndPoint Error PrenatalMentalHealthId PrenatalMentalHealth PrenatalMentalHealth ()
+prenatalMentalHealthEndpoint =
+    swEndpoint "nodes/prenatal_mental_health" decodePrenatalMentalHealth
+        |> withValueEncoder (object << encodePrenatalMentalHealth)
+
+
+prenatalTetanusImmunisationEndpoint : ReadWriteEndPoint Error PrenatalTetanusImmunisationId PrenatalTetanusImmunisation PrenatalTetanusImmunisation ()
+prenatalTetanusImmunisationEndpoint =
+    swEndpoint "nodes/prenatal_tetanus_immunisation" decodePrenatalTetanusImmunisation
+        |> withValueEncoder (object << encodePrenatalTetanusImmunisation)

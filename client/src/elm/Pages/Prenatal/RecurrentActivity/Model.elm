@@ -38,7 +38,6 @@ type Msg
     | SetNitrite String
     | SetUrobilinogen String
     | SetHaemoglobin String
-    | SetSpecificGravity String
     | SetKetone String
     | SetBilirubin String
     | SaveUrineDipstickResult PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
@@ -46,16 +45,20 @@ type Msg
     | SaveHemoglobinResult PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
     | SetRandomBloodSugar String
     | SaveRandomBloodSugarResult PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
+    | SetHIVViralLoadUndetectable Bool
+    | SetHIVViralLoad String
+    | SaveHIVPCRResult PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
-    | SetReferToHealthCenter Bool
-    | SetHandReferralForm Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
-    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHcId, PrenatalSendToHC )) (Maybe NextStepsTask)
+    | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
+    | SetFacilityNonReferralReason (Maybe ReasonForNonReferral) ReferralFacility ReasonForNonReferral
+    | SaveSendToHC PersonId (Maybe ( PrenatalSendToHCId, PrenatalSendToHC )) (Maybe NextStepsTask)
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
+    | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
 
 
 type alias Model =
@@ -97,6 +100,7 @@ type alias LabResultsData =
     , randomBloodSugarTestForm : PrenatalRandomBloodSugarResultForm
     , syphilisTestForm : SyphilisResultForm
     , urineDipstickTestForm : PrenatalUrineDipstickResultForm
+    , hivPCRTestForm : PrenatalHIVPCRResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -109,21 +113,24 @@ emptyLabResultsData =
     , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarResultForm
     , syphilisTestForm = emptySyphilisResultForm
     , urineDipstickTestForm = emptyPrenatalUrineDipstickResultForm
+    , hivPCRTestForm = emptyPrenatalHIVPCRResultForm
     , activeTask = Nothing
     }
 
 
 type alias NextStepsData =
-    { sendToHCForm : SendToHCForm
+    { referralForm : ReferralForm
     , medicationDistributionForm : MedicationDistributionForm
+    , healthEducationForm : HealthEducationForm
     , activeTask : Maybe NextStepsTask
     }
 
 
 emptyNextStepsData : NextStepsData
 emptyNextStepsData =
-    { sendToHCForm = emptySendToHCForm
+    { referralForm = emptyReferralForm
     , medicationDistributionForm = emptyMedicationDistributionForm
+    , healthEducationForm = emptyHealthEducationForm
     , activeTask = Nothing
     }
 
@@ -134,24 +141,26 @@ type alias SyphilisResultForm =
     , testResult : Maybe PrenatalTestResult
     , symptoms : Maybe (List IllnessSymptom)
     , symptomsDirty : Bool
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 emptySyphilisResultForm : SyphilisResultForm
 emptySyphilisResultForm =
-    SyphilisResultForm Nothing Nothing Nothing Nothing False
+    SyphilisResultForm Nothing Nothing Nothing Nothing False Nothing
 
 
 type alias HepatitisBResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe PrenatalTestResult
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 emptyHepatitisBResultForm : HepatitisBResultForm
 emptyHepatitisBResultForm =
-    HepatitisBResultForm Nothing Nothing Nothing
+    HepatitisBResultForm Nothing Nothing Nothing Nothing
 
 
 type alias PrenatalBloodGpRsResultForm =
@@ -159,12 +168,13 @@ type alias PrenatalBloodGpRsResultForm =
     , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 emptyPrenatalBloodGpRsResultForm : PrenatalBloodGpRsResultForm
 emptyPrenatalBloodGpRsResultForm =
-    PrenatalBloodGpRsResultForm Nothing Nothing Nothing Nothing
+    PrenatalBloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias PrenatalUrineDipstickResultForm =
@@ -178,7 +188,6 @@ type alias PrenatalUrineDipstickResultForm =
     , nitrite : Maybe NitriteValue
     , urobilinogen : Maybe UrobilinogenValue
     , haemoglobin : Maybe HaemoglobinValue
-    , specificGravity : Maybe SpecificGravityValue
     , ketone : Maybe KetoneValue
     , bilirubin : Maybe BilirubinValue
     }
@@ -196,7 +205,6 @@ emptyPrenatalUrineDipstickResultForm =
     , nitrite = Nothing
     , urobilinogen = Nothing
     , haemoglobin = Nothing
-    , specificGravity = Nothing
     , ketone = Nothing
     , bilirubin = Nothing
     }
@@ -217,10 +225,25 @@ emptyPrenatalHemoglobinResultForm =
 type alias PrenatalRandomBloodSugarResultForm =
     { executionNote : Maybe PrenatalTestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
+    , originatingEncounter : Maybe PrenatalEncounterId
     }
 
 
 emptyPrenatalRandomBloodSugarResultForm : PrenatalRandomBloodSugarResultForm
 emptyPrenatalRandomBloodSugarResultForm =
-    PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing
+    PrenatalRandomBloodSugarResultForm Nothing Nothing Nothing Nothing Nothing
+
+
+type alias PrenatalHIVPCRResultForm =
+    { executionNote : Maybe PrenatalTestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hivViralLoadStatus : Maybe ViralLoadStatus
+    , hivViralLoad : Maybe Float
+    }
+
+
+emptyPrenatalHIVPCRResultForm : PrenatalHIVPCRResultForm
+emptyPrenatalHIVPCRResultForm =
+    PrenatalHIVPCRResultForm Nothing Nothing Nothing Nothing

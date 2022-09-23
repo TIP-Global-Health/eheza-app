@@ -582,6 +582,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalHIVTest identifier ->
                 viewMeasurement identifier "Prenatal HIV Test"
 
+            BackendAuthorityPrenatalHIVPCRTest identifier ->
+                viewMeasurement identifier "Prenatal HIV PCR Test"
+
             BackendAuthorityPrenatalLabsResults identifier ->
                 viewMeasurement identifier "Prenatal Labs Results"
 
@@ -591,8 +594,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalMedicationDistribution identifier ->
                 viewMeasurement identifier "Prenatal Medication Distribution"
 
+            BackendAuthorityPrenatalMentalHealth identifier ->
+                viewMeasurement identifier "Prenatal Mental Health"
+
             BackendAuthorityPrenatalNutrition identifier ->
                 viewMeasurement identifier "Prenatal Nutrition"
+
+            BackendAuthorityPrenatalOutsideCare identifier ->
+                viewMeasurement identifier "Prenatal Outside Care"
 
             BackendAuthorityPrenatalPhoto identifier ->
                 viewMeasurement identifier "Prenatal Photo"
@@ -603,8 +612,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalSendToHC identifier ->
                 viewMeasurement identifier "Prenatal Send to HC"
 
+            BackendAuthorityPrenatalSymptomReview identifier ->
+                viewMeasurement identifier "Prenatal Symptom Review"
+
             BackendAuthorityPrenatalSyphilisTest identifier ->
                 viewMeasurement identifier "Prenatal Syphilis Test"
+
+            BackendAuthorityPrenatalTetanusImmunisation identifier ->
+                viewMeasurement identifier "Prenatal Tetanus Immunisation"
 
             BackendAuthorityPrenatalUrineDipstickTest identifier ->
                 viewMeasurement identifier "Prenatal Urine Dipstick Test"

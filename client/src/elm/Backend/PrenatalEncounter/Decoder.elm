@@ -1,23 +1,20 @@
-module Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
+module Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounter)
 
 import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
-import Utils.Json exposing (decodeWithFallback)
+import Utils.Json exposing (decodeEverySet, decodeWithFallback)
 
 
 decodePrenatalEncounter : Decoder PrenatalEncounter
 decodePrenatalEncounter =
-    succeed PrenatalEncounter
-        |> required "individual_participant" decodeEntityUuid
-        |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
-        |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
-        |> required "prenatal_encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType)
-        |> optional "prenatal_diagnoses"
-            (map
+    let
+        decodeDiagnoses =
+            map
                 (\items ->
                     if List.isEmpty items then
                         EverySet.singleton NoPrenatalDiagnosis
@@ -25,10 +22,17 @@ decodePrenatalEncounter =
                     else
                         EverySet.fromList items
                 )
-             <|
+            <|
                 list (decodeWithFallback NoPrenatalDiagnosis decodePrenatalDiagnosis)
-            )
-            (EverySet.singleton NoPrenatalDiagnosis)
+    in
+    succeed PrenatalEncounter
+        |> required "individual_participant" decodeEntityUuid
+        |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
+        |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
+        |> required "prenatal_encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType)
+        |> optional "prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
+        |> optional "past_prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
+        |> optional "prenatal_indicators" (decodeEverySet decodePrenatalIndicator) EverySet.empty
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 
@@ -78,23 +82,38 @@ decodePrenatalDiagnosis =
                     "gestational-hypertension-recheck" ->
                         succeed DiagnosisGestationalHypertensionAfterRecheck
 
-                    "moderate-preeclampsia-immediate" ->
-                        succeed DiagnosisModeratePreeclampsiaImmediate
+                    "moderate-preeclampsia-initial" ->
+                        succeed DiagnosisModeratePreeclampsiaInitialPhase
 
-                    "moderate-preeclampsia-recheck" ->
-                        succeed DiagnosisModeratePreeclampsiaAfterRecheck
+                    "moderate-preeclampsia-initial-ega-37+" ->
+                        succeed DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
 
-                    "severe-preeclampsia-immediate" ->
-                        succeed DiagnosisSeverePreeclampsiaImmediate
+                    "moderate-preeclampsia-recurrent" ->
+                        succeed DiagnosisModeratePreeclampsiaRecurrentPhase
 
-                    "severe-preeclampsia-recheck" ->
-                        succeed DiagnosisSeverePreeclampsiaAfterRecheck
+                    "moderate-preeclampsia-recurrent-ega-37+" ->
+                        succeed DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+
+                    "severe-preeclampsia-initial" ->
+                        succeed DiagnosisSeverePreeclampsiaInitialPhase
+
+                    "severe-preeclampsia-initial-ega-37+" ->
+                        succeed DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+
+                    "severe-preeclampsia-recurrent" ->
+                        succeed DiagnosisSeverePreeclampsiaRecurrentPhase
+
+                    "severe-preeclampsia-recurrent-ega-37+" ->
+                        succeed DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
 
                     "eclampsia" ->
                         succeed DiagnosisEclampsia
 
                     "hiv" ->
                         succeed DiagnosisHIV
+
+                    "hiv-detectable-viral-load" ->
+                        succeed DiagnosisHIVDetectableViralLoad
 
                     "partner-hiv" ->
                         succeed DiagnosisDiscordantPartnership
@@ -114,8 +133,14 @@ decodePrenatalDiagnosis =
                     "malaria" ->
                         succeed DiagnosisMalaria
 
+                    "malaria-continued" ->
+                        succeed DiagnosisMalariaMedicatedContinued
+
                     "malaria-anemia" ->
                         succeed DiagnosisMalariaWithAnemia
+
+                    "malaria-anemia-continued" ->
+                        succeed DiagnosisMalariaWithAnemiaMedicatedContinued
 
                     "malaria-severe-anemia" ->
                         succeed DiagnosisMalariaWithSevereAnemia
@@ -162,6 +187,15 @@ decodePrenatalDiagnosis =
                     "hyperemesis-gravidum" ->
                         succeed DiagnosisHyperemesisGravidum
 
+                    "hyperemesis-gravidum-by-symptoms" ->
+                        succeed DiagnosisHyperemesisGravidumBySymptoms
+
+                    "severe-vomiting" ->
+                        succeed DiagnosisSevereVomiting
+
+                    "severe-vomiting-by-symptoms" ->
+                        succeed DiagnosisSevereVomitingBySymptoms
+
                     "maternal-complications" ->
                         succeed DiagnosisMaternalComplications
 
@@ -174,6 +208,75 @@ decodePrenatalDiagnosis =
                     "labor" ->
                         succeed DiagnosisLaborAndDelivery
 
+                    "heartburn" ->
+                        succeed DiagnosisHeartburn
+
+                    "heartburn-persistent" ->
+                        succeed DiagnosisHeartburnPersistent
+
+                    "dvt" ->
+                        succeed DiagnosisDeepVeinThrombosis
+
+                    "pelvic-pain-intense" ->
+                        succeed DiagnosisPelvicPainIntense
+
+                    "pelvic-pain-continued" ->
+                        succeed DiagnosisPelvicPainContinued
+
+                    "urinary-tract-infection" ->
+                        succeed DiagnosisUrinaryTractInfection
+
+                    "urinary-tract-infection-continued" ->
+                        succeed DiagnosisUrinaryTractInfectionContinued
+
+                    "pyelonephritis" ->
+                        succeed DiagnosisPyelonephritis
+
+                    "candidiasis" ->
+                        succeed DiagnosisCandidiasis
+
+                    "candidiasis-continued" ->
+                        succeed DiagnosisCandidiasisContinued
+
+                    "gonorrhea" ->
+                        succeed DiagnosisGonorrhea
+
+                    "trichomonas-or-bv" ->
+                        succeed DiagnosisTrichomonasOrBacterialVaginosis
+
+                    "trichomonas-or-bv-continued" ->
+                        succeed DiagnosisTrichomonasOrBacterialVaginosisContinued
+
+                    "tuberculosis" ->
+                        succeed DiagnosisTuberculosis
+
+                    "diabetes" ->
+                        succeed DiagnosisDiabetes
+
+                    "gestational-diabetes" ->
+                        succeed DiagnosisGestationalDiabetes
+
+                    "rhesus-negative" ->
+                        succeed DiagnosisRhesusNegative
+
+                    "depression-not-likely" ->
+                        succeed DiagnosisDepressionNotLikely
+
+                    "depression-possible" ->
+                        succeed DiagnosisDepressionPossible
+
+                    "depression-highly-possible" ->
+                        succeed DiagnosisDepressionHighlyPossible
+
+                    "depression-probable" ->
+                        succeed DiagnosisDepressionProbable
+
+                    "suicide-risk" ->
+                        succeed DiagnosisSuicideRisk
+
+                    "other" ->
+                        succeed DiagnosisOther
+
                     "none" ->
                         succeed NoPrenatalDiagnosis
 
@@ -181,4 +284,23 @@ decodePrenatalDiagnosis =
                         fail <|
                             diagnosis
                                 ++ " is not a recognized PrenatalDiagnosis"
+            )
+
+
+decodePrenatalIndicator : Decoder PrenatalIndicator
+decodePrenatalIndicator =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "past-labs-completed" ->
+                        succeed IndicatorHistoryLabsCompleted
+
+                    "none" ->
+                        succeed NoPrenatalIndicators
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized PrenatalIndicator"
             )
