@@ -54,7 +54,7 @@ ports:
     onOpen: ignore
     visibility: private
   # Drupal
-  - port: 8888
+  - port: 8080
     onOpen: ignore
     visibility: public
   # Elm
