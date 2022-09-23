@@ -1453,44 +1453,6 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
         |> applyDiagnosesHierarchy
 
 
-applyDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyDiagnosesHierarchy =
-    applyHypertensionlikeDiagnosesHierarchy
-        >> applyMastitisDiagnosesHierarchy
-        >> applyGeneralDiagnosesHierarchy
-
-
-applyMastitisDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyMastitisDiagnosesHierarchy diagnoses =
-    let
-        ( mastitisDiagnoses, others ) =
-            EverySet.toList diagnoses
-                |> List.partition (\diagnosis -> List.member diagnosis hierarchalMastitisDiagnoses)
-
-        topMastitisDiagnosis =
-            List.map hierarchalMastitisDiagnosisToNumber mastitisDiagnoses
-                |> Maybe.Extra.values
-                |> List.maximum
-                |> Maybe.andThen hierarchalMastitisDiagnosisFromNumber
-                |> Maybe.map List.singleton
-                |> Maybe.withDefault []
-    in
-    topMastitisDiagnosis
-        ++ others
-        |> EverySet.fromList
-
-
-applyGeneralDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyGeneralDiagnosesHierarchy diagnoses =
-    -- When Mastitis is diagnosed, we eliminate Fever diagnosis, because
-    -- fever is one of the symptoms for Mastitis.
-    if EverySet.member DiagnosisPostpartumMastitis diagnoses then
-        EverySet.remove DiagnosisPostpartumFever diagnoses
-
-    else
-        diagnoses
-
-
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
 matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
     let
