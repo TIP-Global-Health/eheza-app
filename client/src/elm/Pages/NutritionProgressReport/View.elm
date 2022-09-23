@@ -59,7 +59,7 @@ view language currentDate zscores id isChw db model =
             generateAssembledData id db
                 |> RemoteData.toMaybe
 
-        ( endEnconterData, mandatoryNutritionAssessmentMeasurementsTaken ) =
+        ( bottomActionData, mandatoryNutritionAssessmentMeasurementsTaken ) =
             Maybe.map2
                 (\assembled ( _, child ) ->
                     let
@@ -71,6 +71,7 @@ view language currentDate zscores id isChw db model =
                         , allowEndEcounter = allowEndingEcounter isChw pendingActivities
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
+                        , startEncounterMsg = NoOp
                         }
                     , mandatoryActivitiesCompleted currentDate zscores child isChw assembled db
                     )
@@ -93,7 +94,7 @@ view language currentDate zscores id isChw db model =
             model.diagnosisMode
             SetActivePage
             SetDiagnosisMode
-            endEnconterData
+            bottomActionData
         )
         identity
         childData

@@ -70,7 +70,7 @@ viewClinicList language user healthCenterId model db syncManager =
             [ class "ui basic head segment" ]
             [ h1 [ class "ui header" ]
                 [ text <| translate language titleTransId ]
-            , a
+            , span
                 [ class "link-back"
                 , onClick goBackAction
                 ]
@@ -362,7 +362,7 @@ viewFoundClinic language currentDate nurse postSession clinicId clinic sessions 
         [ h1
             [ class "ui header" ]
             [ text clinic.name ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
             ]

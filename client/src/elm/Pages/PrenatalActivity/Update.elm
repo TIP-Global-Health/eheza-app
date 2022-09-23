@@ -25,6 +25,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalTestResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
+import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -34,7 +35,6 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Types exposing (..)
 import Pages.PrenatalActivity.Utils exposing (..)
-import Pages.PrenatalEncounter.Utils exposing (calculateEDD)
 import Pages.Utils exposing (setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
@@ -209,7 +209,7 @@ update currentDate id db msg model =
                                 , -- We store EDD date on pregnancy, to be able
                                   -- to decide that pregnancy has ended even if end date was
                                   -- not set - that is when we're 3 month past EDD date.
-                                  calculateEDD lastMenstrualPeriodValue.date
+                                  lmpToEDDDate lastMenstrualPeriodValue.date
                                     |> Backend.IndividualEncounterParticipant.Model.SetEddDate
                                     |> Backend.Model.MsgIndividualSession prenatalParticipantId
                                     |> App.Model.MsgIndexedDb

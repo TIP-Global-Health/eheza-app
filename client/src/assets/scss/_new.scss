@@ -887,7 +887,7 @@ div.page-activity.trace-contact {
 
 // Acute Illness Activity page
 div.page-activity.acute-illness,
-div.page-activity.trace-contact {
+div.page-activity.trace-contact  {
 
   .ui.full.segment {
 
@@ -1982,33 +1982,19 @@ div.page-outcome.pregnancy {
 
 div.page-report.clinical,
 div.page-report.demographics {
-  background: $color-light-gray;
   padding: 0 20px 35px 20px;
   height: 100%;
   display: flex;
   flex-direction: column;
 
-  .ui.basic.segment.head {
-    padding: 25px;
-
-    .ui.header {
-      color: $color-text;
-    }
-
-    .icon-back {
-      background: url(#{$img-path}icon-back-dark.svg);
-      background-size: 34px 27px;
-      position: absolute;
-    }
-  }
-
   .ui.unstackable.items {
     overflow-y: auto;
 
     .pane-heading {
-      font-size: 16px;
+      font-size: 20px;
       font-weight: 700;
       padding: 5px 15px;
+      text-align: left;
       text-transform: uppercase;
 
       &.gray {
@@ -2044,9 +2030,10 @@ div.page-report.demographics {
 div.page-report.clinical .ui.unstackable.items {
 
   .header-pane {
-    background: $color-white;
-    margin-bottom: 20px;
-    padding: 40px 20px;
+
+    .pane-heading {
+      text-align: center;
+    }
 
     .mother-details {
       display: grid;
@@ -2057,8 +2044,12 @@ div.page-report.clinical .ui.unstackable.items {
         color: $color-text;
 
         .mother-name, .edd {
-          margin-top: 20px;
           margin-bottom: 10px;
+        }
+
+        .mother-name {
+          color: $color-primary;
+          font-weight: 700;
         }
       }
 
@@ -2077,6 +2068,7 @@ div.page-report.clinical .ui.unstackable.items {
       grid-template-columns: 25% auto;
       line-height: 40px;
       margin-left: 150px;
+      margin-top: -30px;
 
       .label {
         font-weight: bold;
@@ -2118,7 +2110,6 @@ div.page-report.clinical .ui.unstackable.items {
   .medical-diagnosis,
   .obstetric-diagnosis {
     background: $color-white;
-    margin-bottom: 20px;
 
     .pane-content p {
       line-height: 32px;
@@ -2141,7 +2132,6 @@ div.page-report.clinical .ui.unstackable.items {
   }
 
   .patient-progress {
-    margin-bottom: 20px;
 
     .caption {
       font-size: 16px;
@@ -2254,28 +2244,6 @@ div.page-report.clinical .ui.unstackable.items {
               width: 20px;
             }
           }
-        }
-      }
-
-    }
-
-    .photos-section {
-      display: grid;
-      grid-gap: 28px;
-      grid-template-columns: 150px 150px 150px 150px;
-
-      .progress-photo {
-
-        img {
-          height: 150px;
-        }
-
-        .ega {
-          background-color: $color-gray;
-          color: $color-white;
-          font-size: 16px;
-          font-weight: bold;
-          text-align: center;
         }
       }
 
@@ -2444,12 +2412,53 @@ div.page-report.clinical .ui.unstackable.items {
   .ui.unstackable.items .lab-results-history .pane-content {
     padding: 20px;
   }
+
+  .progress-photos .pane-content {
+    display: grid;
+    grid-gap: 28px;
+    grid-template-columns: 150px 150px 150px 150px;
+
+    .progress-photo {
+
+      img {
+        height: 150px;
+      }
+
+      .ega {
+        background-color: $color-gray;
+        color: $color-white;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+      }
+    }
+
+  }
 }
 
-div.page-demographics-report {
+div.page-report.demographics .ui.unstackable.items {
 
-  .patient-information, .family-information, .address-information {
-    margin-bottom: 20px;
+  .pane-content {
+
+    .ui.image {
+      margin-bottom: 25px;
+    }
+
+    p {
+      font-size: 22px;
+      line-height: 30px;
+      margin-bottom: 5px;
+
+      .label {
+        font-weight: bold;
+        width: 50%;
+      }
+
+      .value {
+        float: right;
+        width: 50%;
+      }
+    }
   }
 
   .family-information .children-table {
@@ -2471,7 +2480,7 @@ div.page-demographics-report {
 
     .row {
       border-bottom: 1px solid $color-light-gray;
-      height: 24px;
+      height: 40px;
       width: 95%;
 
       &:last-child {
@@ -2488,26 +2497,8 @@ div.page-demographics-report {
     }
   }
 
-  .pane-content {
-
-    .ui.image {
-      margin-bottom: 15px;
-    }
-
-    p {
-      line-height: 26px;
-      margin-bottom: 5px;
-
-      .label {
-        font-weight: bold;
-        width: 40%;
-      }
-
-      .value {
-        float: right;
-        width: 60%;
-      }
-    }
+  .patient-information .pane-heading {
+    text-align: center;
   }
 }
 
@@ -2662,7 +2653,7 @@ div.page-report.acute-illness {
 
       .pane-heading {
         color: $color-white;
-        font-size: 22px;
+        font-size: 20px;
         font-weight: bold;
         padding: 10px 15px;
         text-transform: uppercase;
@@ -2904,7 +2895,8 @@ div.page-report.acute-illness,
 div.page-encounter.well-child,
 div.page-activity.trace-contact,
 div.page-activity.well-child,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-activity.patient-record {
 
   .details {
     padding-left: 25px;
@@ -2931,7 +2923,8 @@ div.page-report.well-child {
 
 div.page-activity.well-child,
 div.page-report.acute-illness,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-activity.patient-record {
 
   .heading {
     border-bottom: 1px solid $color-text;
@@ -3047,7 +3040,10 @@ div.page-report.well-child {
 }
 
 div.page-report.acute-illness,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-report.clinical,
+div.page-report.demographics,
+div.page-activity.patient-record {
   background: unset;
 
   .pane-heading {
@@ -3131,6 +3127,22 @@ div.page-report.well-child {
       }
     }
 
+    .heading.antenatal {
+
+      .date-start {
+        width: 31%;
+      }
+
+      .status {
+        width: 18%;
+      }
+
+      .date-end {
+        margin-left: 25px;
+        width: 34%;
+      }
+    }
+
     .entry.diagnosis {
 
       .assesment {
@@ -3183,6 +3195,37 @@ div.page-report.well-child {
 
       .date {
         width: 25%;
+      }
+    }
+
+    .entry.antenatal {
+
+      .date-start {
+        width: 31%;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+
+      .status {
+        width: 18%;
+        padding-right: 20px;
+        text-align: center;
+      }
+
+      .date-end {
+        margin-left: 25px;
+        width: 34%;
+      }
+
+      .icon-forward {
+        align-self: center;
+        background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        margin-left: 20px;
+        width: 50px;
       }
     }
 
@@ -3253,12 +3296,13 @@ div.page-report.well-child {
     }
   }
 
-  .ui.report.unstackable.items .actions {
+  .ui.unstackable.items .actions {
     margin: 20px 0 0 0;
   }
 }
 
-div.page-case-management {
+div.page-case-management,
+div.page-activity.patient-record {
 
   .ui.segment.filters {
     background-color: $color-white;
@@ -3283,6 +3327,9 @@ div.page-case-management {
       color: $color-white;
     }
   }
+}
+
+div.page-case-management {
 
   .pane {
     background: $color-primary;
@@ -3432,6 +3479,46 @@ div.page-case-management {
 
     button.stacked:last-child {
       margin-bottom: 0;
+    }
+  }
+}
+
+div.page-activity.patient-record {
+
+  .ui.full.segment {
+    height: 90%;
+
+    p {
+      font-size: 25px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    .label-visit {
+      margin-bottom: 30px;
+      margin-top: 40px;
+    }
+
+    .ui.primary.button {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      width: 100%;
+
+      .button-label {
+        text-align: left;
+
+        .encounter-label {
+          margin-bottom: 15px;
+        }
+      }
+
+      .icon-back {
+        transform: rotate(180deg);
+      }
     }
   }
 }

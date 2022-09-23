@@ -1,4 +1,4 @@
-module Pages.WellChildProgressReport.View exposing (view, viewNutritionSigns, viewPaneHeading, viewPersonInfoPane, viewProgressReport)
+module Pages.WellChildProgressReport.View exposing (diagnosisEntryStatusToString, view, viewAcuteIllnessDiagnosisEntry, viewEntries, viewNutritionSigns, viewPaneHeading, viewPersonInfoPane, viewProgressReport)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -18,7 +18,8 @@ import Backend.NutritionEncounter.Utils
         , sortEncounterTuplesDesc
         , sortTuplesByDateDesc
         )
-import Backend.Person.Model exposing (Person)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
+import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, getHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
 import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
@@ -52,7 +53,7 @@ import Pages.DemographicsReport.View exposing (viewItemHeading)
 import Pages.NutritionActivity.View exposing (translateNutritionAssement)
 import Pages.NutritionEncounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewStartEncounterButton)
 import Pages.WellChildActivity.Types exposing (VaccinationStatus(..))
 import Pages.WellChildActivity.Utils exposing (expectedECDSignsOnMilestone, generateCompletedECDSigns, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChildActivity.View exposing (viewVaccinationOverview)
@@ -106,7 +107,7 @@ view language currentDate zscores id isChw db model =
             generateAssembledData id db
                 |> RemoteData.toMaybe
 
-        ( endEncounterData, mandatoryNutritionAssessmentMeasurementsTaken ) =
+        ( bottomActionData, mandatoryNutritionAssessmentMeasurementsTaken ) =
             Maybe.map
                 (\assembled ->
                     let
@@ -118,6 +119,7 @@ view language currentDate zscores id isChw db model =
                         , allowEndEcounter = allowEndingEcounter pendingActivities
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
+                        , startEncounterMsg = NoOp
                         }
                     , mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db
                     )
@@ -139,7 +141,7 @@ view language currentDate zscores id isChw db model =
             model.diagnosisMode
             SetActivePage
             SetDiagnosisMode
-            endEncounterData
+            bottomActionData
         )
         identity
         childData
@@ -156,10 +158,10 @@ viewProgressReport :
     -> DiagnosisMode
     -> (Page -> msg)
     -> (DiagnosisMode -> msg)
-    -> Maybe (EndEncounterData msg)
+    -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg endEnconterData ( childId, child ) =
+viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg bottomActionData ( childId, child ) =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -282,7 +284,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 ModeCompletedDiagnosis ->
                     []
 
-        ( endEncounterDialog, endEncounterButton ) =
+        ( endEncounterDialog, bottomActionButton ) =
             Maybe.map
                 (\data ->
                     ( if data.showEndEncounterDialog then
@@ -295,10 +297,15 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
 
                       else
                         Nothing
-                    , viewEndEncounterButton language data.allowEndEcounter data.setEndEncounterDialogStateMsg
+                    , case initiator of
+                        Pages.WellChildProgressReport.Model.InitiatorPatientRecord _ _ ->
+                            viewStartEncounterButton language data.startEncounterMsg
+
+                        _ ->
+                            viewEndEncounterButton language data.allowEndEcounter data.setEndEncounterDialogStateMsg
                     )
                 )
-                endEnconterData
+                bottomActionData
                 |> Maybe.withDefault ( Nothing, emptyNode )
     in
     div [ class "page-report well-child" ]
@@ -323,7 +330,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 maybeAssembled
             ]
                 ++ derivedContent
-                ++ [ endEncounterButton ]
+                ++ [ bottomActionButton ]
         , viewModal endEncounterDialog
         ]
 
@@ -331,6 +338,14 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
 viewHeader : Language -> WellChildProgressReportInitiator -> DiagnosisMode -> (Page -> msg) -> (DiagnosisMode -> msg) -> Html msg
 viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg =
     let
+        label =
+            case initiator of
+                Pages.WellChildProgressReport.Model.InitiatorPatientRecord _ _ ->
+                    Translate.PatientRecord
+
+                _ ->
+                    Translate.ProgressReport
+
         goBackAction =
             case diagnosisMode of
                 ModeActiveDiagnosis ->
@@ -345,6 +360,14 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
 
                                 InitiatorNutritionGroup sessionId personId ->
                                     UserPage (SessionPage sessionId (ChildPage personId))
+
+                                Pages.WellChildProgressReport.Model.InitiatorPatientRecord patientRecordInitiator _ ->
+                                    case patientRecordInitiator of
+                                        Backend.PatientRecord.Model.InitiatorParticipantDirectory ->
+                                            UserPage (PersonsPage Nothing ParticipantDirectoryOrigin)
+
+                                        Backend.PatientRecord.Model.InitiatorPatientRecord personId ->
+                                            UserPage (PatientRecordPage Backend.PatientRecord.Model.InitiatorParticipantDirectory personId)
                     in
                     setActivePageMsg targetPage
 
@@ -353,7 +376,7 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
-            [ text <| translate language <| Translate.ProgressReport
+            [ text <| translate language label
             ]
         , span
             [ class "link-back"
@@ -589,6 +612,12 @@ resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutrit
                         , .dateMeasured >> (/=) currentDate
                         )
 
+                    Pages.WellChildProgressReport.Model.InitiatorPatientRecord _ _ ->
+                        ( always True
+                        , always True
+                        , always True
+                        )
+
             lastAssessmentDatePerIndividualNutrition =
                 Maybe.andThen
                     (\participantId ->
@@ -711,7 +740,7 @@ viewAcuteIllnessDiagnosisEntry :
     -> WellChildProgressReportInitiator
     -> ModelIndexedDb
     -> (Page -> msg)
-    -> ( IndividualEncounterParticipantId, DiagnosisEntryStatus )
+    -> ( IndividualEncounterParticipantId, PaneEntryStatus )
     -> Maybe ( NominalDate, Html msg )
 viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( participantId, status ) =
     let
@@ -738,12 +767,15 @@ viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( particip
 
                         InitiatorNutritionGroup sessionId personId ->
                             InitiatorGroupNutritionProgressReport sessionId personId
+
+                        Pages.WellChildProgressReport.Model.InitiatorPatientRecord patientRecordInitiator personId ->
+                            Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord patientRecordInitiator personId
             in
             ( date
             , div [ class "entry diagnosis" ]
                 [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
                 , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
-                    [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
+                    [ text <| translate language <| Translate.EntryStatusDiagnosis status ]
                 , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
                 , div
                     [ class "icon-forward"
@@ -762,7 +794,7 @@ viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( particip
         maybeLastEncounterId
 
 
-diagnosisEntryStatusToString : DiagnosisEntryStatus -> String
+diagnosisEntryStatusToString : PaneEntryStatus -> String
 diagnosisEntryStatusToString status =
     case status of
         StatusOngoing ->
@@ -772,7 +804,7 @@ diagnosisEntryStatusToString status =
             "resolved"
 
 
-viewNutritionAssessmentEntry : Language -> ( NominalDate, ( List NutritionAssessment, DiagnosisEntryStatus ) ) -> ( NominalDate, Html any )
+viewNutritionAssessmentEntry : Language -> ( NominalDate, ( List NutritionAssessment, PaneEntryStatus ) ) -> ( NominalDate, Html any )
 viewNutritionAssessmentEntry language ( date, ( assessments, status ) ) =
     let
         orderedAssessments =
@@ -783,13 +815,13 @@ viewNutritionAssessmentEntry language ( date, ( assessments, status ) ) =
         [ div [ class "cell assesment" ] <|
             List.map (translateNutritionAssement language >> List.singleton >> p []) orderedAssessments
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
-            [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
+            [ text <| translate language <| Translate.EntryStatusDiagnosis status ]
         , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
         ]
     )
 
 
-viewWarningEntry : Language -> ( NominalDate, ( PediatricCareMilestone, EncounterWarning, DiagnosisEntryStatus ) ) -> ( NominalDate, Html any )
+viewWarningEntry : Language -> ( NominalDate, ( PediatricCareMilestone, EncounterWarning, PaneEntryStatus ) ) -> ( NominalDate, Html any )
 viewWarningEntry language ( date, ( milestone, warning, status ) ) =
     let
         milestoneForDaignosisPane =
@@ -799,7 +831,7 @@ viewWarningEntry language ( date, ( milestone, warning, status ) ) =
     , div [ class "entry diagnosis" ]
         [ div [ class "cell assesment" ] [ text <| translate language <| Translate.EncounterWarningForDiagnosisPane warning milestoneForDaignosisPane ]
         , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
-            [ text <| translate language <| Translate.DiagnosisEntryStatus status ]
+            [ text <| translate language <| Translate.EntryStatusDiagnosis status ]
         , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
         ]
     )

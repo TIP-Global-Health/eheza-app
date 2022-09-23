@@ -71,7 +71,7 @@ viewHeader language id activity =
         [ h1
             [ class "ui header" ]
             [ text <| translate language <| Translate.HomeVisitActivityTitle activity ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| HomeVisitEncounterPage id
             ]

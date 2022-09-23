@@ -105,8 +105,7 @@ viewContent language currentDate id isChw initiator model assembled =
     in
     div [ class "page-report acute-illness" ]
         [ viewHeader language id initiator
-        , div
-            [ class "ui report unstackable items" ]
+        , div [ class "ui report unstackable items" ]
             [ viewPersonInfoPane language currentDate assembled.person
             , viewAssessmentPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
             , viewSymptomsPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
@@ -145,6 +144,9 @@ viewHeader language id initiator =
 
                 InitiatorGroupNutritionProgressReport sessionId personId ->
                     SessionPage sessionId (ProgressReportPage personId)
+
+                InitiatorPatientRecord patientRecordInitiator personId ->
+                    PatientRecordPage patientRecordInitiator personId
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]

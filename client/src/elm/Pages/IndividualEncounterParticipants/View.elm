@@ -2,7 +2,7 @@ module Pages.IndividualEncounterParticipants.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
@@ -54,7 +54,7 @@ viewHeader title =
         [ h1
             [ class "ui header" ]
             [ text title ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
             ]
@@ -202,16 +202,16 @@ viewParticipant language currentDate encounterType db id person =
         action =
             case encounterType of
                 AcuteIllnessEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage InitiatorParticipantsPage id ]
 
                 AntenatalEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage id ]
 
                 NutritionEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage InitiatorParticipantsPage id ]
 
                 WellChildEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage InitiatorParticipantsPage id ]
 
                 _ ->
                     []

@@ -52,7 +52,7 @@ viewHeader language initiator id1 =
         [ h1
             [ class "ui header" ]
             [ text <| translate language Translate.CreateRelationship ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage goBackPage
             ]

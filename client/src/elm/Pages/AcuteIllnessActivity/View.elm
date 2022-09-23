@@ -137,7 +137,7 @@ viewHeader language id activity diagnosis =
         [ h1
             [ class "ui header" ]
             [ text title ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
             ]

@@ -29,6 +29,7 @@ import Pages.NutritionEncounter.Fetch
 import Pages.NutritionParticipant.Fetch
 import Pages.NutritionProgressReport.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.PatientRecord.Fetch
 import Pages.People.Fetch
 import Pages.Person.Fetch
 import Pages.PinCode.Fetch
@@ -128,8 +129,8 @@ fetch model =
                 Pages.Person.Fetch.fetchForCreateOrEdit (Just relatedId) model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (DemographicsReportPage prenatalEncounterId) ->
-                Pages.DemographicsReport.Fetch.fetch prenatalEncounterId model.indexedDb
+            UserPage (DemographicsReportPage _ personId) ->
+                Pages.DemographicsReport.Fetch.fetch personId model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (PersonPage id initiator) ->
@@ -145,7 +146,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage (PrenatalParticipantPage personId) ->
+            UserPage (PrenatalParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
@@ -154,7 +155,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage (NutritionParticipantPage personId) ->
+            UserPage (NutritionParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
@@ -163,7 +164,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage (AcuteIllnessParticipantPage personId) ->
+            UserPage (AcuteIllnessParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
@@ -172,7 +173,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage (WellChildParticipantPage personId) ->
+            UserPage (WellChildParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
@@ -278,6 +279,10 @@ fetch model =
 
             UserPage (TraceContactPage id) ->
                 Pages.TraceContact.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (PatientRecordPage _ id) ->
+                Pages.PatientRecord.Fetch.fetch currentDate id model.indexedDb
                     |> List.map MsgIndexedDb
 
 

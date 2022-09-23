@@ -1,6 +1,7 @@
 module Pages.WellChildProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Pages.Page exposing (Page)
 
 
@@ -22,7 +23,7 @@ type DiagnosisMode
     | ModeCompletedDiagnosis
 
 
-type DiagnosisEntryStatus
+type PaneEntryStatus
     = StatusOngoing
     | StatusResolved
 
@@ -38,18 +39,21 @@ type WellChildProgressReportInitiator
     = InitiatorWellChild WellChildEncounterId
     | InitiatorNutritionIndividual NutritionEncounterId
     | InitiatorNutritionGroup SessionId PersonId
+    | InitiatorPatientRecord PatientRecordInitiator PersonId
 
 
-type alias EndEncounterData msg =
+type alias BottomActionData msg =
     { showEndEncounterDialog : Bool
     , allowEndEcounter : Bool
     , closeEncounterMsg : msg
     , setEndEncounterDialogStateMsg : Bool -> msg
+    , startEncounterMsg : msg
     }
 
 
 type Msg
-    = CloseEncounter WellChildEncounterId
+    = NoOp
+    | CloseEncounter WellChildEncounterId
     | SetActivePage Page
     | SetEndEncounterDialogState Bool
     | SetDiagnosisMode DiagnosisMode
