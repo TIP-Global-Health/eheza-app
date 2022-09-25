@@ -409,6 +409,7 @@ type Revision
     | LactationRevision LactationId Lactation
     | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
     | MalariaTestingRevision MalariaTestingId MalariaTesting
+    | MalariaPreventionRevision MalariaPreventionId MalariaPrevention
     | MedicalHistoryRevision MedicalHistoryId MedicalHistory
     | MedicationRevision MedicationId Medication
     | MedicationDistributionRevision MedicationDistributionId MedicationDistribution
@@ -437,16 +438,33 @@ type Revision
     | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
-    | PregnancyTestingRevision PregnancyTestId PregnancyTest
-    | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
-    | PrenatalHealthEducationRevision PrenatalHealthEducationId PrenatalHealthEducation
-    | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp
-    | PrenatalSendToHCRevision PrenatalSendToHcId PrenatalSendToHC
-    | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
+    | PregnancyTestRevision PregnancyTestId PregnancyTest
+    | PrenatalBloodGpRsTestRevision PrenatalBloodGpRsTestId PrenatalBloodGpRsTest
+    | PrenatalBreastfeedingRevision PrenatalBreastfeedingId PrenatalBreastfeeding
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
+    | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
+    | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp
+    | PrenatalGUExamRevision PrenatalGUExamId PrenatalGUExam
+    | PrenatalHealthEducationRevision PrenatalHealthEducationId PrenatalHealthEducation
+    | PrenatalHemoglobinTestRevision PrenatalHemoglobinTestId PrenatalHemoglobinTest
+    | PrenatalHepatitisBTestRevision PrenatalHepatitisBTestId PrenatalHepatitisBTest
+    | PrenatalHIVTestRevision PrenatalHIVTestId PrenatalHIVTest
+    | PrenatalHIVPCRTestRevision PrenatalHIVPCRTestId PrenatalHIVPCRTest
+    | PrenatalLabsResultsRevision PrenatalLabsResultsId PrenatalLabsResults
+    | PrenatalMalariaTestRevision PrenatalMalariaTestId PrenatalMalariaTest
+    | PrenatalMentalHealthRevision PrenatalMentalHealthId PrenatalMentalHealth
+    | PrenatalMedicationDistributionRevision PrenatalMedicationDistributionId PrenatalMedicationDistribution
+    | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
+    | PrenatalOutsideCareRevision PrenatalOutsideCareId PrenatalOutsideCare
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
+    | PrenatalRandomBloodSugarTestRevision PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest
+    | PrenatalSendToHCRevision PrenatalSendToHCId PrenatalSendToHC
+    | PrenatalSpecialityCareRevision PrenatalSpecialityCareId PrenatalSpecialityCare
+    | PrenatalSymptomReviewRevision PrenatalSymptomReviewId PrenatalSymptomReview
+    | PrenatalSyphilisTestRevision PrenatalSyphilisTestId PrenatalSyphilisTest
+    | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation
+    | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest
     | RelationshipRevision RelationshipId Relationship
-    | ResourceRevision ResourceId Resource
     | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory
