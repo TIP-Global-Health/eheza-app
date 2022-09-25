@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Person.Form exposing (PersonForm)
 import Backend.Person.Model exposing (Initiator, ParticipantDirectoryOperation)
 import Date exposing (Date)
-import DateSelector.SelectorPopup exposing (DateSelectorConfig)
+import DateSelector.Model exposing (DateSelectorConfig)
 import Form
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)

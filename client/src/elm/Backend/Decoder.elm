@@ -236,10 +236,16 @@ decodeRevision =
                         decodeWithUuid PhotoRevision decodePhoto
 
                     "pregnancy_testing" ->
-                        decodeWithUuid PregnancyTestingRevision decodePregnancyTesting
+                        decodeWithUuid PregnancyTestRevision decodePregnancyTest
 
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
+
+                    "prenatal_blood_gprs_test" ->
+                        decodeWithUuid PrenatalBloodGpRsTestRevision decodePrenatalBloodGpRsTest
+
+                    "prenatal_breastfeeding" ->
+                        decodeWithUuid PrenatalBreastfeedingRevision decodePrenatalBreastfeeding
 
                     "prenatal_encounter" ->
                         decodeWithUuid PrenatalEncounterRevision decodePrenatalEncounter
@@ -247,26 +253,74 @@ decodeRevision =
                     "prenatal_family_planning" ->
                         decodeWithUuid PrenatalFamilyPlanningRevision decodePrenatalFamilyPlanning
 
+                    "prenatal_follow_up" ->
+                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+
+                    "prenatal_gu_exam" ->
+                        decodeWithUuid PrenatalGUExamRevision decodePrenatalGUExam
+
                     "prenatal_health_education" ->
                         decodeWithUuid PrenatalHealthEducationRevision decodePrenatalHealthEducation
 
-                    "prenatal_follow_up" ->
-                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+                    "prenatal_hemoglobin_test" ->
+                        decodeWithUuid PrenatalHemoglobinTestRevision decodePrenatalHemoglobinTest
+
+                    "prenatal_hepatitis_b_test" ->
+                        decodeWithUuid PrenatalHepatitisBTestRevision decodePrenatalHepatitisBTest
+
+                    "prenatal_hiv_test" ->
+                        decodeWithUuid PrenatalHIVTestRevision decodePrenatalHIVTest
+
+                    "prenatal_hiv_pcr_test" ->
+                        decodeWithUuid PrenatalHIVPCRTestRevision decodePrenatalHIVPCRTest
+
+                    "prenatal_labs_results" ->
+                        decodeWithUuid PrenatalLabsResultsRevision decodePrenatalLabsResults
+
+                    "prenatal_malaria_test" ->
+                        decodeWithUuid PrenatalMalariaTestRevision decodePrenatalMalariaTest
+
+                    "prenatal_mental_health" ->
+                        decodeWithUuid PrenatalMentalHealthRevision decodePrenatalMentalHealth
+
+                    "prenatal_medication_distribution" ->
+                        decodeWithUuid PrenatalMedicationDistributionRevision decodePrenatalMedicationDistribution
 
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
 
+                    "prenatal_outside_care" ->
+                        decodeWithUuid PrenatalOutsideCareRevision decodePrenatalOutsideCare
+
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
 
+                    "prenatal_random_blood_sugar_test" ->
+                        decodeWithUuid PrenatalRandomBloodSugarTestRevision decodePrenatalRandomBloodSugarTest
+
                     "prenatal_send_to_hc" ->
                         decodeWithUuid PrenatalSendToHCRevision decodePrenatalSendToHc
+
+                    "prenatal_speciality_care" ->
+                        decodeWithUuid PrenatalSpecialityCareRevision decodePrenatalSpecialityCare
+
+                    "prenatal_symptom_review" ->
+                        decodeWithUuid PrenatalSymptomReviewRevision decodePrenatalSymptomReview
+
+                    "prenatal_syphilis_test" ->
+                        decodeWithUuid PrenatalSyphilisTestRevision decodePrenatalSyphilisTest
+
+                    "prenatal_tetanus_immunisation" ->
+                        decodeWithUuid PrenatalTetanusImmunisationRevision decodePrenatalTetanusImmunisation
+
+                    "prenatal_urine_dipstick_test" ->
+                        decodeWithUuid PrenatalUrineDipstickTestRevision decodePrenatalUrineDipstickTest
 
                     "relationship" ->
                         decodeWithUuid RelationshipRevision decodeRelationship
 
                     "resource" ->
-                        decodeWithUuid ResourceRevision decodeResource
+                        decodeWithUuid MalariaPreventionRevision decodeMalariaPrevention
 
                     "send_to_hc" ->
                         decodeWithUuid SendToHCRevision decodeSendToHC

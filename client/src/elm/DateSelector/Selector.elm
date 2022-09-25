@@ -78,9 +78,7 @@ viewYearSelectList minimum maximum maybeSelected =
         options =
             if isNothing maybeSelected then
                 option
-                    [ value ""
-                    , selected True
-                    ]
+                    [ value "" ]
                     [ text "" ]
                     :: options_
 

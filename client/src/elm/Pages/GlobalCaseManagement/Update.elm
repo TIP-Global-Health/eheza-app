@@ -11,7 +11,7 @@ import Backend.PrenatalEncounter.Model exposing (emptyPrenatalEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Model exposing (..)
-import Pages.PrenatalEncounter.Utils exposing (generatePostCreateDestination)
+import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination)
 import RemoteData exposing (RemoteData(..))
 
 

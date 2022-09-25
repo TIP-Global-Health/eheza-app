@@ -2,6 +2,7 @@ module Backend.IndividualEncounterParticipant.Model exposing (..)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType)
 import Date exposing (Date)
@@ -34,6 +35,11 @@ type IndividualParticipantExtraData
     | AntenatalData PrenatalEncounterType
     | WellChildData WellChildEncounterType
     | NoIndividualParticipantExtraData
+
+
+type IndividualParticipantInitiator
+    = InitiatorParticipantsPage
+    | InitiatorPatientRecord PatientRecordInitiator PersonId
 
 
 type alias Model =

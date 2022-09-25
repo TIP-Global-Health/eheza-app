@@ -24,7 +24,7 @@ fetch currentDate healthCenterId db =
         --
         nutritionFollowUps =
             followUps
-                |> Maybe.map (generateNutritionFollowUps db)
+                |> Maybe.map (generateNutritionFollowUps currentDate db)
                 |> Maybe.withDefault Dict.empty
 
         peopleForNutrition =
@@ -67,7 +67,7 @@ fetch currentDate healthCenterId db =
 
         acuteIllnessFollowUps =
             followUps
-                |> Maybe.map (generateAcuteIllnessFollowUps db)
+                |> Maybe.map (generateAcuteIllnessFollowUps currentDate db)
                 |> Maybe.withDefault Dict.empty
 
         peopleForAccuteIllness =
@@ -99,7 +99,7 @@ fetch currentDate healthCenterId db =
 
         prenatalFollowUps =
             followUps
-                |> Maybe.map (generatePrenatalFollowUps db)
+                |> Maybe.map (generatePrenatalFollowUps currentDate db)
                 |> Maybe.withDefault Dict.empty
 
         peopleForPrenatal =
@@ -115,6 +115,14 @@ fetch currentDate healthCenterId db =
                 |> Maybe.withDefault []
 
         --
+        --  Prenatal labs results calculations.
+        --
+        peopleForPrenatalLabsResults =
+            Maybe.map (.prenatalLabs >> Dict.values >> List.map .participantId)
+                followUps
+                |> Maybe.withDefault []
+
+        --
         -- People for all types of follow ups.
         --
         people =
@@ -122,6 +130,7 @@ fetch currentDate healthCenterId db =
                 ++ peopleForAccuteIllness
                 ++ peopleForPrenatal
                 ++ traceReporters
+                ++ peopleForPrenatalLabsResults
                 |> EverySet.fromList
                 |> EverySet.toList
     in

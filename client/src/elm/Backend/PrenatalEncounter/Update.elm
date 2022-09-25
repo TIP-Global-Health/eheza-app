@@ -5,7 +5,9 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalEncounter)
 import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Utils exposing (saveMeasurementCmd, sw)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
@@ -17,20 +19,32 @@ import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, with
 update : Maybe NurseId -> Maybe HealthCenterId -> PrenatalEncounterId -> Maybe PrenatalEncounter -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
 update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
     case msg of
-        ClosePrenatalEncounter ->
-            maybeEncounter
-                |> unwrap ( model, Cmd.none )
-                    (\encounter ->
-                        ( { model | closePrenatalEncounter = Loading }
-                        , { encounter | endDate = Just currentDate }
-                            |> sw.patchFull prenatalEncounterEndpoint encounterId
-                            |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalEncounter)
-                        )
-                    )
+        CloseEncounter ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
-        HandleClosedPrenatalEncounter data ->
-            ( { model | closePrenatalEncounter = data }
+        SetPrenatalDiagnoses diagnoses ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnoses = diagnoses }) model
+
+        SetPastPrenatalDiagnoses pastDiagnoses ->
+            updateEncounter currentDate
+                encounterId
+                maybeEncounter
+                (\encounter ->
+                    { encounter
+                        | pastDiagnoses =
+                            -- If previously there were no diagnoses, we remove
+                            -- that indicator.
+                            EverySet.remove NoPrenatalDiagnosis encounter.pastDiagnoses
+                                |> EverySet.union pastDiagnoses
+                    }
+                )
+                model
+
+        SetLabsHistoryCompleted ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | indicators = EverySet.insert IndicatorHistoryLabsCompleted encounter.indicators }) model
+
+        HandleUpdatedPrenatalEncounter data ->
+            ( { model | updatePrenatalEncounter = data }
             , Cmd.none
             )
 
@@ -144,13 +158,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
-        SaveResource personId valueId value ->
-            ( { model | saveResource = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value resourceEndpoint HandleSavedResource
+        SaveMalariaPrevention personId valueId value ->
+            ( { model | saveMalariaPrevention = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value malariaPreventionEndpoint HandleSavedMalariaPrevention
             )
 
-        HandleSavedResource data ->
-            ( { model | saveResource = data }
+        HandleSavedMalariaPrevention data ->
+            ( { model | saveMalariaPrevention = data }
             , Cmd.none
             )
 
@@ -194,13 +208,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
-        SavePregnancyTesting personId valueId value ->
-            ( { model | savePregnancyTesting = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value pregnancyTestingEndpoint HandleSavedPregnancyTesting
+        SavePregnancyTest personId valueId value ->
+            ( { model | savePregnancyTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value pregnancyTestEndpoint HandleSavedPregnancyTest
             )
 
-        HandleSavedPregnancyTesting data ->
-            ( { model | savePregnancyTesting = data }
+        HandleSavedPregnancyTest data ->
+            ( { model | savePregnancyTest = data }
             , Cmd.none
             )
 
@@ -216,10 +230,10 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         SaveFollowUp personId valueId value ->
             ( { model | saveFollowUp = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalFollowUpEndpoint HandleSavedFollowup
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalFollowUpEndpoint HandleSavedFollowUp
             )
 
-        HandleSavedFollowup data ->
+        HandleSavedFollowUp data ->
             ( { model | saveFollowUp = data }
             , Cmd.none
             )
@@ -242,4 +256,198 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
         HandleSavedAppointmentConfirmation data ->
             ( { model | saveAppointmentConfirmation = data }
             , Cmd.none
+            )
+
+        SaveHIVTest personId valueId value ->
+            ( { model | saveHIVTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalHIVTestEndpoint HandleSavedHIVTest
+            )
+
+        HandleSavedHIVTest data ->
+            ( { model | saveHIVTest = data }
+            , Cmd.none
+            )
+
+        SaveSyphilisTest personId valueId value ->
+            ( { model | saveSyphilisTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalSyphilisTestEndpoint HandleSavedSyphilisTest
+            )
+
+        HandleSavedSyphilisTest data ->
+            ( { model | saveSyphilisTest = data }
+            , Cmd.none
+            )
+
+        SaveHepatitisBTest personId valueId value ->
+            ( { model | saveHepatitisBTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalHepatitisBTestEndpoint HandleSavedHepatitisBTest
+            )
+
+        HandleSavedHepatitisBTest data ->
+            ( { model | saveHepatitisBTest = data }
+            , Cmd.none
+            )
+
+        SaveMalariaTest personId valueId value ->
+            ( { model | saveMalariaTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMalariaTestEndpoint HandleSavedMalariaTest
+            )
+
+        HandleSavedMalariaTest data ->
+            ( { model | saveMalariaTest = data }
+            , Cmd.none
+            )
+
+        SaveBloodGpRsTest personId valueId value ->
+            ( { model | saveBloodGpRsTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalBloodGpRsTestEndpoint HandleSavedBloodGpRsTest
+            )
+
+        HandleSavedBloodGpRsTest data ->
+            ( { model | saveBloodGpRsTest = data }
+            , Cmd.none
+            )
+
+        SaveUrineDipstickTest personId valueId value ->
+            ( { model | saveUrineDipstickTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalUrineDipstickTestEndpoint HandleSavedUrineDipstickTest
+            )
+
+        HandleSavedUrineDipstickTest data ->
+            ( { model | saveUrineDipstickTest = data }
+            , Cmd.none
+            )
+
+        SaveHemoglobinTest personId valueId value ->
+            ( { model | saveHemoglobinTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalHemoglobinTestEndpoint HandleSavedHemoglobinTest
+            )
+
+        HandleSavedHemoglobinTest data ->
+            ( { model | saveHemoglobinTest = data }
+            , Cmd.none
+            )
+
+        SaveRandomBloodSugarTest personId valueId value ->
+            ( { model | saveRandomBloodSugarTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalRandomBloodSugarTestEndpoint HandleSavedRandomBloodSugarTest
+            )
+
+        HandleSavedRandomBloodSugarTest data ->
+            ( { model | saveRandomBloodSugarTest = data }
+            , Cmd.none
+            )
+
+        SaveLabsResults personId valueId value ->
+            ( { model | saveLabsResults = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalLabsResultsEndpoint HandleSavedLabsResults
+            )
+
+        HandleSavedLabsResults data ->
+            ( { model | saveLabsResults = data }
+            , Cmd.none
+            )
+
+        SaveMedicationDistribution personId valueId value ->
+            ( { model | saveMedicationDistribution = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMedicationDistributionEndpoint HandleSavedMedicationDistribution
+            )
+
+        HandleSavedMedicationDistribution data ->
+            ( { model | saveMedicationDistribution = data }
+            , Cmd.none
+            )
+
+        SaveSymptomReview personId valueId value ->
+            ( { model | saveSymptomReview = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalSymptomReviewEndpoint HandleSavedSymptomReview
+            )
+
+        HandleSavedSymptomReview data ->
+            ( { model | saveSymptomReview = data }
+            , Cmd.none
+            )
+
+        SaveOutsideCare personId valueId value ->
+            ( { model | saveOutsideCare = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalOutsideCareEndpoint HandleSavedOutsideCare
+            )
+
+        HandleSavedOutsideCare data ->
+            ( { model | saveOutsideCare = data }
+            , Cmd.none
+            )
+
+        SaveHIVPCRTest personId valueId value ->
+            ( { model | saveHIVPCRTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalHIVPCRTestEndpoint HandleSavedHIVPCRTest
+            )
+
+        HandleSavedHIVPCRTest data ->
+            ( { model | saveHIVPCRTest = data }
+            , Cmd.none
+            )
+
+        SaveMentalHealth personId valueId value ->
+            ( { model | saveMentalHealth = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMentalHealthEndpoint HandleSavedMentalHealth
+            )
+
+        HandleSavedMentalHealth data ->
+            ( { model | saveMentalHealth = data }
+            , Cmd.none
+            )
+
+        SaveTetanusImmunisation personId valueId value ->
+            ( { model | saveTetanusImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalTetanusImmunisationEndpoint HandleSavedTetanusImmunisation
+            )
+
+        HandleSavedTetanusImmunisation data ->
+            ( { model | saveTetanusImmunisation = data }
+            , Cmd.none
+            )
+
+        SaveBreastfeeding personId valueId value ->
+            ( { model | saveBreastfeeding = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalBreastfeedingEndpoint HandleSavedBreastfeeding
+            )
+
+        HandleSavedBreastfeeding data ->
+            ( { model | saveBreastfeeding = data }
+            , Cmd.none
+            )
+
+        SaveGUExam personId valueId value ->
+            ( { model | saveGUExam = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalGUExamEndpoint HandleSavedGUExam
+            )
+
+        HandleSavedGUExam data ->
+            ( { model | saveGUExam = data }
+            , Cmd.none
+            )
+
+        SaveSpecialityCare personId valueId value ->
+            ( { model | saveSpecialityCare = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalSpecialityCareEndpoint HandleSavedSpecialityCare
+            )
+
+        HandleSavedSpecialityCare data ->
+            ( { model | saveSpecialityCare = data }
+            , Cmd.none
+            )
+
+
+updateEncounter : NominalDate -> PrenatalEncounterId -> Maybe PrenatalEncounter -> (PrenatalEncounter -> PrenatalEncounter) -> Model -> ( Model, Cmd Msg )
+updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+    maybeEncounter
+        |> unwrap ( model, Cmd.none )
+            (\encounter ->
+                ( { model | updatePrenatalEncounter = Loading }
+                , updateFunc encounter
+                    |> sw.patchFull prenatalEncounterEndpoint encounterId
+                    |> withoutDecoder
+                    |> toCmd (RemoteData.fromResult >> HandleUpdatedPrenatalEncounter)
+                )
             )

@@ -36,7 +36,7 @@ view language device app model =
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.DeviceStatus ]
-            , a
+            , span
                 [ class "link-back"
                 , onClick <| SetActivePage PinCodePage
                 ]

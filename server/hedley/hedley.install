@@ -622,8 +622,15 @@ function hedley_update_7031() {
 }
 
 /**
- * Enable the Views Lite Pager module.
+ * Enable the Hedley Case Management module.
  */
 function hedley_update_7032() {
+  module_enable(['hedley_case_management']);
+}
+
+/**
+ * Enable the Views Lite Pager module.
+ */
+function hedley_update_7033() {
   module_enable(['views_litepager']);
 }

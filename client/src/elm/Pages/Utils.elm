@@ -1,15 +1,25 @@
 module Pages.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (PersonId)
-import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Measurement.Model
+    exposing
+        ( AdministrationNote(..)
+        , MedicationDistributionSign(..)
+        , MedicationDistributionValue
+        , MedicationNonAdministrationSign(..)
+        , PhotoUrl(..)
+        )
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -17,6 +27,81 @@ import Maybe.Extra exposing (isJust, or, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (thumbnailImage)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
+
+
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 120
+    , height = 120
+    }
+
+
+viewPersonDetails : Language -> NominalDate -> Person -> Maybe TranslationId -> List (Html msg)
+viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
+    let
+        isAdult =
+            isPersonAnAdult currentDate person
+                |> Maybe.withDefault True
+
+        isAboveAgeOf2Years =
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age >= 2)
+                |> Maybe.withDefault False
+
+        ( thumbnailClass, maybeAge ) =
+            if isAdult then
+                ( "mother"
+                , ageInYears currentDate person
+                    |> Maybe.map (\age -> translate language <| Translate.YearsOld age)
+                )
+
+            else
+                let
+                    renderAgeFunc =
+                        if isAboveAgeOf2Years then
+                            renderAgeYearsMonths
+
+                        else
+                            renderAgeMonthsDays
+                in
+                ( "child"
+                , person.birthDate
+                    |> Maybe.map
+                        (\birthDate -> renderAgeFunc language birthDate currentDate)
+                )
+    in
+    [ div [ class "ui image" ]
+        [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
+    , div [ class "content person-details" ]
+        [ h2 [ class "ui header" ]
+            [ text person.name ]
+        , maybeAge
+            |> Maybe.map
+                (\age ->
+                    p [ class "age-wrapper" ]
+                        [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ":" ]
+                        , span [] [ text age ]
+                        ]
+                )
+            |> Maybe.withDefault emptyNode
+        , maybeDiagnosisTranslationId
+            |> Maybe.map
+                (\diagnosis ->
+                    div
+                        [ classList
+                            [ ( "diagnosis-wrapper", True )
+                            , ( "covid-19", diagnosis == Translate.AcuteIllnessDiagnosis DiagnosisCovid19Suspect )
+                            ]
+                        ]
+                        [ div [ class "label upper" ] [ text <| translate language Translate.Diagnosis ++ ":" ]
+                        , div [ class "diagnosis" ] [ text <| translate language diagnosis ]
+                        ]
+                )
+            |> Maybe.withDefault emptyNode
+        ]
+    ]
 
 
 calculatePercentage : Int -> Int -> Float
@@ -132,6 +217,97 @@ viewCustomLabel language translationId suffix class_ =
     div [ class class_ ] [ text <| (translate language translationId ++ suffix) ]
 
 
+getCurrentReasonForMedicationNonAdministration :
+    (AdministrationNote -> MedicationNonAdministrationSign)
+    -> { f | nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign) }
+    -> Maybe AdministrationNote
+getCurrentReasonForMedicationNonAdministration reasonToSignFunc form =
+    let
+        nonAdministrationSigns =
+            form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
+    in
+    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
+        |> List.filterMap
+            (\reason ->
+                if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then
+                    Just reason
+
+                else
+                    Nothing
+            )
+        |> List.head
+
+
+nonAdministrationReasonToSign : MedicationDistributionSign -> AdministrationNote -> MedicationNonAdministrationSign
+nonAdministrationReasonToSign sign reason =
+    case sign of
+        Amoxicillin ->
+            MedicationAmoxicillin reason
+
+        Coartem ->
+            MedicationCoartem reason
+
+        ORS ->
+            MedicationORS reason
+
+        Zinc ->
+            MedicationZinc reason
+
+        Paracetamol ->
+            MedicationParacetamol reason
+
+        Mebendezole ->
+            MedicationMebendezole reason
+
+        Tenofovir ->
+            MedicationTenofovir reason
+
+        Lamivudine ->
+            MedicationLamivudine reason
+
+        Dolutegravir ->
+            MedicationDolutegravir reason
+
+        TDF3TC ->
+            MedicationTDF3TC reason
+
+        Iron ->
+            MedicationIron reason
+
+        FolicAcid ->
+            MedicationFolicAcid reason
+
+        Ceftriaxone ->
+            MedicationCeftriaxone reason
+
+        Azithromycin ->
+            MedicationAzithromycin reason
+
+        Metronidazole ->
+            MedicationMetronidazole reason
+
+        VitaminA ->
+            MedicationVitaminA reason
+
+        -- Bellow are not in use, but we specify them explicitly to make
+        -- sure that compile arets if we forget to address new
+        -- MedicationDistributionSign, when added.
+        Albendazole ->
+            NoMedicationNonAdministrationSigns
+
+        LemonJuiceOrHoney ->
+            NoMedicationNonAdministrationSigns
+
+        NoMedicationDistributionSigns ->
+            NoMedicationNonAdministrationSigns
+
+        NoMedicationDistributionSignsInitialPhase ->
+            NoMedicationNonAdministrationSigns
+
+        NoMedicationDistributionSignsRecurrentPhase ->
+            NoMedicationNonAdministrationSigns
+
+
 
 -- Inputs
 
@@ -184,7 +360,20 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
 
             else
                 "four"
+    in
+    viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth
 
+
+viewCustomBoolInput :
+    Language
+    -> Maybe Bool
+    -> (Bool -> msg)
+    -> String
+    -> ( TranslationId, TranslationId )
+    -> String
+    -> Html msg
+viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth =
+    let
         viewInput value =
             let
                 isChecked =
@@ -218,39 +407,31 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
         ]
 
 
-viewNumberInput :
-    Language
-    -> Maybe a
-    -> (a -> String)
-    -> (String -> msg)
-    -> String
-    -> Html msg
-viewNumberInput language maybeCurrentValue toStringFunc setMsg inputClass =
-    let
-        currentValue =
-            maybeCurrentValue
-                |> Maybe.map toStringFunc
-                |> Maybe.withDefault ""
-    in
-    div [ class <| "form-input number " ++ inputClass ]
-        [ input
-            [ type_ "number"
-            , Html.Attributes.min "0"
-            , Html.Attributes.max "21"
-            , onInput setMsg
-            , value currentValue
-            ]
-            []
-        ]
-
-
 viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
 viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg translateFunc =
     let
-        checkedOptions =
-            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
+        viewOptionFunc option =
+            label []
+                [ translateFunc option |> translate language |> text ]
     in
-    viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions Nothing setMsg translateFunc
+    viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc
+
+
+viewCheckBoxSelectInputWithRecommendation : Language -> List a -> List a -> a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
+viewCheckBoxSelectInputWithRecommendation language leftOptions rightOptions recommendedOption currentValue setMsg translateFunc =
+    let
+        viewOptionFunc option =
+            if option == recommendedOption then
+                label [ class "recommendation" ]
+                    [ div [] [ translateFunc option |> translate language |> text ]
+                    , div [ class "marker" ] [ text <| "(" ++ translate language Translate.Recommended ++ ")" ]
+                    ]
+
+            else
+                label []
+                    [ translateFunc option |> translate language |> text ]
+    in
+    viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc
 
 
 viewCheckBoxSelectCustomInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg
@@ -523,6 +704,17 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
         ]
 
 
+viewStartEncounterButton : Language -> msg -> Html msg
+viewStartEncounterButton language action =
+    div [ class "actions" ]
+        [ button
+            [ class "ui fluid primary button"
+            , onClick action
+            ]
+            [ text <| translate language Translate.StartEncounter ]
+        ]
+
+
 viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
 viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
     let
@@ -625,6 +817,14 @@ viewAlert color =
             "assets/images/alert-" ++ color ++ ".png"
     in
     img [ src icon ] []
+
+
+viewInstructionsLabel : String -> Html any -> Html any
+viewInstructionsLabel iconClass message =
+    div [ class "header icon-label" ] <|
+        [ i [ class iconClass ] []
+        , message
+        ]
 
 
 taskCompleted : Maybe a -> Int
@@ -750,3 +950,19 @@ viewSaveAction language saveMsg disabled =
             ]
             [ text <| translate language Translate.Save ]
         ]
+
+
+emptySelectOption : Bool -> Html any
+emptySelectOption isSelected =
+    option
+        [ value ""
+        , selected isSelected
+        ]
+        [ text "" ]
+
+
+insertIntoSet : a -> Maybe (EverySet a) -> Maybe (EverySet a)
+insertIntoSet value set =
+    Maybe.map (EverySet.insert value) set
+        |> Maybe.withDefault (EverySet.singleton value)
+        |> Just

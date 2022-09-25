@@ -29,8 +29,8 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
         ( currentValues
+        , getHeightValue
         , getMeasurementValueFunc
-        , heightValueFunc
         , mapMeasurementData
         , muacIndication
         , muacValueFunc
@@ -41,6 +41,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -161,7 +162,7 @@ heightFormConfig =
     , constraints = getInputConstraintsHeight
     , unit = Translate.CentimeterShorthand
     , inputValue = .height
-    , storedValue = .value >> heightValueFunc
+    , storedValue = .value >> getHeightValue
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
@@ -1092,7 +1093,7 @@ viewSendToHC language currentDate measurement form_ =
             viewSendToHealthCenterForm language
                 currentDate
                 SetReferToHealthCenter
-                SetReasonForNotSendingToHC
+                SetReasonForNonReferral
                 SetHandReferralForm
                 Nothing
                 form
@@ -1142,7 +1143,7 @@ viewSendToHealthCenterForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
@@ -1155,7 +1156,7 @@ viewSendToHospitalForm :
     Language
     -> NominalDate
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
@@ -1169,20 +1170,20 @@ viewSendToFacilityForm :
     -> NominalDate
     -> ReferralFacility
     -> (Bool -> msg)
-    -> (ReasonForNotSendingToHC -> msg)
+    -> (ReasonForNonReferral -> msg)
     -> (Bool -> msg)
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNotSendingToHCMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
         headerHelper =
             case facility of
-                FacilityHealthCenter ->
-                    emptyNode
-
                 FacilityHospital ->
-                    viewCustomLabel language Translate.AcuteIllnessHighRiskCaseHelper "." "instructions"
+                    [ viewCustomLabel language Translate.HighRiskCaseHelper "." "instructions" ]
+
+                _ ->
+                    []
 
         sendToHCSection =
             let
@@ -1195,11 +1196,16 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
                         [ div [ class "why-not" ]
                             [ viewQuestionLabel language Translate.WhyNot
                             , viewCheckBoxSelectInput language
-                                [ ClientRefused, NoAmbulance, ClientUnableToAffordFees, ReasonForNotSendingToHCOther ]
+                                [ ClientRefused
+                                , NoAmbulance
+                                , ClientUnableToAffordFees
+                                , ReasonForNonReferralNotIndicated
+                                , ReasonForNonReferralOther
+                                ]
                                 []
                                 form.reasonForNotSendingToHC
-                                setReasonForNotSendingToHCMsg
-                                Translate.ReasonForNotSendingToHC
+                                setReasonForNonReferralMsg
+                                Translate.ReasonForNonReferral
                             ]
                         ]
 
@@ -1227,28 +1233,28 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
             ]
 
         accompanyToHCSection =
-            setAccompanyToHCMsg
-                |> Maybe.map
-                    (\msg ->
-                        [ viewQuestionLabel language Translate.AccompanyToHCQuestion
-                        , viewBoolInput
-                            language
-                            form.accompanyToHealthCenter
-                            msg
-                            "accompany-to-hc"
-                            Nothing
-                        ]
-                    )
+            Maybe.map
+                (\msg ->
+                    [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion facility
+                    , viewBoolInput
+                        language
+                        form.accompanyToHealthCenter
+                        msg
+                        "accompany-to-hc"
+                        Nothing
+                    ]
+                )
+                setAccompanyToHCMsg
                 |> Maybe.withDefault []
     in
     div [ class "ui form send-to-hc" ] <|
-        [ headerHelper
-        , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
-            , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
-            ]
-        ]
+        headerHelper
+            ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+               , div [ class "instructions" ]
+                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+                    , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
+                    ]
+               ]
             ++ sendToHCSection
             ++ handReferralFormSection
             ++ accompanyToHCSection
@@ -1303,12 +1309,27 @@ viewVitalsForm language currentDate config form =
         bodyTemperatureUpdateFunc value form_ =
             { form_ | bodyTemperature = value, bodyTemperatureDirty = True }
 
+        sysRepeatedUpdateFunc value form_ =
+            { form_ | sysRepeated = value, sysRepeatedDirty = True }
+
+        diaRepeatedUpdateFunc value form_ =
+            { form_ | diaRepeated = value, diaRepeatedDirty = True }
+
         ageInYears =
             Maybe.map
                 (\birthDate -> Gizra.NominalDate.diffYears birthDate currentDate)
                 config.birthDate
 
         bloodPressureSection =
+            viewBloodPressureSection
+                form.sysBloodPressure
+                form.diaBloodPressure
+                sysBloodPressureUpdateFunc
+                diaBloodPressureUpdateFunc
+                config.sysBloodPressurePreviousValue
+                config.diaBloodPressurePreviousValue
+
+        viewBloodPressureSection sys dia sysUpdateFunc diaUpdateFunc sysPrevValue diaPrevValue =
             Maybe.map
                 (\ageYears ->
                     if ageYears < 12 then
@@ -1328,10 +1349,10 @@ viewVitalsForm language currentDate config form =
                                             ( 140, 90 )
                                 in
                                 ( [ [ (<) redAlertHighSys ]
-                                  , [ (>) 110 ]
+                                  , [ (>) 100 ]
                                   ]
                                 , [ [ (<) redAlertHighDia ]
-                                  , [ (>) 70 ]
+                                  , [ (>) 60 ]
                                   ]
                                 )
                         in
@@ -1343,35 +1364,34 @@ viewVitalsForm language currentDate config form =
                             [ div [ class "twelve wide column" ]
                                 [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
                             , div [ class "four wide column" ]
-                                [ viewConditionalAlert form.sysBloodPressure
+                                [ viewConditionalAlert sys
                                     redAlertsSys
                                     []
                                 ]
                             ]
                         , viewMeasurementInput
                             language
-                            form.sysBloodPressure
-                            (config.setFloatInputMsg sysBloodPressureUpdateFunc)
+                            sys
+                            (config.setFloatInputMsg sysUpdateFunc)
                             "sys-blood-pressure"
                             Translate.MMHGUnit
-                        , Pages.Utils.viewPreviousMeasurement language config.sysBloodPressurePreviousValue Translate.MMHGUnit
+                        , Pages.Utils.viewPreviousMeasurement language sysPrevValue Translate.MMHGUnit
                         , div [ class "ui grid" ]
                             [ div [ class "twelve wide column" ]
                                 [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
                             , div [ class "four wide column" ]
-                                [ viewConditionalAlert form.diaBloodPressure
+                                [ viewConditionalAlert dia
                                     redAlertsDia
                                     []
                                 ]
                             ]
                         , viewMeasurementInput
                             language
-                            form.diaBloodPressure
-                            (config.setFloatInputMsg diaBloodPressureUpdateFunc)
+                            dia
+                            (config.setFloatInputMsg diaUpdateFunc)
                             "dia-blood-pressure"
                             Translate.MMHGUnit
-                        , Pages.Utils.viewPreviousMeasurement language config.diaBloodPressurePreviousValue Translate.MMHGUnit
-                        , separator
+                        , Pages.Utils.viewPreviousMeasurement language diaPrevValue Translate.MMHGUnit
                         ]
                 )
                 ageInYears
@@ -1427,7 +1447,6 @@ viewVitalsForm language currentDate config form =
                 "heart-rate"
                 Translate.BeatsPerMinuteUnitLabel
             , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
-            , separator
             ]
 
         respiratoryRateSection =
@@ -1474,7 +1493,6 @@ viewVitalsForm language currentDate config form =
                 "respiratory-rate"
                 Translate.BreathsPerMinuteUnitLabel
             , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
-            , separator
             ]
 
         bodyTemperatureSection =
@@ -1497,18 +1515,32 @@ viewVitalsForm language currentDate config form =
             ]
 
         separator =
-            div [ class "separator" ] []
+            [ div [ class "separator" ] [] ]
 
         content =
             case config.mode of
                 VitalsFormBasic ->
-                    respiratoryRateSection ++ bodyTemperatureSection
+                    respiratoryRateSection
+                        ++ separator
+                        ++ bodyTemperatureSection
 
                 VitalsFormFull ->
                     bloodPressureSection
+                        ++ separator
                         ++ heartRateSection
+                        ++ separator
                         ++ respiratoryRateSection
+                        ++ separator
                         ++ bodyTemperatureSection
+
+                VitalsFormRepeated ->
+                    viewBloodPressureSection
+                        form.sysRepeated
+                        form.diaRepeated
+                        sysRepeatedUpdateFunc
+                        diaRepeatedUpdateFunc
+                        form.sysBloodPressure
+                        form.diaBloodPressure
     in
     div [ class <| "ui form " ++ config.formClass ]
         content
