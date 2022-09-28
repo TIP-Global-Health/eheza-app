@@ -398,6 +398,7 @@ type TranslationId
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
+    | BloodGlucose
     | BloodPressure
     | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
@@ -1345,6 +1346,7 @@ type TranslationId
     | TestVariantUrineDipstickQuestion
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
+    | Time
     | To
     | ToThePatient
     | Training
@@ -2734,6 +2736,11 @@ translationSet trans =
         BeginNewEncounter ->
             { english = "Begin a New Encounter"
             , kinyarwanda = Just "Tangira igikorwa gishya"
+            }
+
+        BloodGlucose ->
+            { english = "Blood Glucose"
+            , kinyarwanda = Nothing
             }
 
         BloodPressure ->
@@ -14820,6 +14827,11 @@ translationSet trans =
         ThisGroupHasNoMothers ->
             { english = "This Group has no mothers assigned to it."
             , kinyarwanda = Just "Iki cyiciro nta mubyeyi cyagenewe."
+            }
+
+        Time ->
+            { english = "Time"
+            , kinyarwanda = Nothing
             }
 
         To ->

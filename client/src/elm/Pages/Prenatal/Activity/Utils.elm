@@ -545,7 +545,7 @@ expectNextStepsTask currentDate assembled task =
                    (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
                 && -- We show Wait activity when there's at least one
                    -- test that was performed, or, 2 hours waiting is
-                   -- required for blood preasure recheck.
+                   -- required for blood pressure recheck.
                    (getMeasurementValueFunc assembled.measurements.labsResults
                         |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
                         |> Maybe.withDefault False
@@ -1439,19 +1439,19 @@ applyDiagnosesHierarchy =
 applyHypertensionlikeDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyHypertensionlikeDiagnosesHierarchy diagnoses =
     let
-        ( bloodPreasureDiagnoses, others ) =
+        ( bloodPressureDiagnoses, others ) =
             EverySet.toList diagnoses
-                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPreasureDiagnoses)
+                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPressureDiagnoses)
 
-        topBloodPreasureDiagnosis =
-            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPreasureDiagnoses
+        topBloodPressureDiagnosis =
+            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPressureDiagnoses
                 |> Maybe.Extra.values
                 |> List.maximum
                 |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in
-    topBloodPreasureDiagnosis
+    topBloodPressureDiagnosis
         ++ others
         |> EverySet.fromList
 
@@ -2370,7 +2370,7 @@ severePreeclampsiaByDangerSigns =
 severePreeclampsiaRecurrentPhase : List DangerSign -> PrenatalMeasurements -> Bool
 severePreeclampsiaRecurrentPhase dangerSigns measurements =
     let
-        byBloodPreasure =
+        byBloodPressure =
             getMeasurementValueFunc measurements.vitals
                 |> Maybe.andThen
                     (\value ->
@@ -2386,7 +2386,7 @@ severePreeclampsiaRecurrentPhase dangerSigns measurements =
                     )
                 |> Maybe.withDefault False
     in
-    byBloodPreasure
+    byBloodPressure
         && highUrineProtein measurements
         && severePreeclampsiaSigns measurements
 

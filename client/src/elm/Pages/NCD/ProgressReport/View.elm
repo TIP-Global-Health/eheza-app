@@ -26,6 +26,7 @@ import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.ProgressReport.Model exposing (..)
+import Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewMarkers)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
@@ -210,11 +211,7 @@ viewContent language currentDate initiator model assembled =
                     in
                     [ viewRiskFactorsPane language currentDate assembled
                     , viewMedicalDiagnosisPane language currentDate assembled
-
-                    -- @todo
-                    -- , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                    -- , viewChwActivityPane language currentDate isChw assembled
-                    -- , viewPatientProgressPane language currentDate isChw assembled
+                    , viewPatientProgressPane language currentDate assembled
                     , viewLabsPane language currentDate SetLabResultsMode
 
                     -- @todo
@@ -383,6 +380,22 @@ viewMedicalDiagnosisPane language currentDate assembled =
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
         , div [ class "pane-content" ] content
+        ]
+
+
+viewPatientProgressPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewPatientProgressPane language currentDate assembled =
+    div [ class "patient-progress" ]
+        [ viewItemHeading language Translate.PatientProgress "blue"
+        , div [ class "pane-content" ]
+            [ viewMarkers
+            , div [ class "blood-pressure" ]
+                [ div [] [ text <| translate language Translate.BloodPressure ]
+                , viewBloodPressureByTime language []
+                , div [] [ text <| translate language Translate.BloodGlucose ]
+                , viewBloodGlucoseByTime language []
+                ]
+            ]
         ]
 
 
