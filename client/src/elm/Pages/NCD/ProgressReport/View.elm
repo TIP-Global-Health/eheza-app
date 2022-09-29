@@ -427,10 +427,12 @@ viewPatientProgressPane language currentDate assembled =
         [ viewItemHeading language Translate.PatientProgress "blue"
         , div [ class "pane-content" ]
             [ viewMarkers
-            , div [ class "blood-pressure" ]
-                [ div [] [ text <| translate language Translate.BloodPressure ]
+            , div [ class "chart-section" ]
+                [ div [ class "heading" ] [ text <| translate language Translate.BloodPressure ]
                 , viewBloodPressureByTime language sysMeasurements diaMeasurements
-                , div [] [ text <| translate language Translate.BloodGlucose ]
+                ]
+            , div [ class "chart-section" ]
+                [ div [ class "heading" ] [ text <| translate language Translate.BloodGlucose ]
                 , viewBloodGlucoseByTime language sugarCountMeasurements
                 ]
             ]

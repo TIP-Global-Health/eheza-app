@@ -2921,6 +2921,21 @@ div.page-report.demographics .ui.unstackable.items {
   }
 }
 
+div.page-report.ncd .ui.unstackable.items {
+
+  .patient-progress {
+
+    .heading {
+      margin-top: -20px;
+    }
+
+    svg {
+      margin-top: -50px;
+    }
+  }
+
+}
+
 div.page-encounter-types {
 
   p {

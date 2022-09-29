@@ -80,6 +80,33 @@ viewBloodPressureByTime language sysPoints diaPoints =
         measurementsSys =
             measurementsByTime verticalMin verticalMax verticalStep horizontalStep sysPoints
 
+        sysHelper =
+            viewHelper "Sys" "red" measurementsSys
+
+        diaHelper =
+            viewHelper "Dia" "green" measurementsDia
+
+        viewHelper label color points =
+            List.reverse points
+                |> List.head
+                |> Maybe.map
+                    (\( left_, top_ ) ->
+                        let
+                            left =
+                                left_ + 10 |> String.fromFloat
+
+                            top =
+                                top_ + 7 |> String.fromFloat
+                        in
+                        [ text_
+                            [ transform <| "matrix(1 0 0 1 " ++ left ++ " " ++ top ++ ")"
+                            , class <| "z-score-semibold chart-helper " ++ color
+                            ]
+                            [ text label ]
+                        ]
+                    )
+                |> Maybe.withDefault []
+
         measurementsDia =
             measurementsByTime verticalMin verticalMax verticalStep horizontalStep diaPoints
     in
@@ -90,10 +117,12 @@ viewBloodPressureByTime language sysPoints diaPoints =
         , viewBox "25 25 841.9 595.3"
         ]
         [ frame
-        , g []
-            [ horizontalLabel language
-            , verticalLabel language Translate.BloodPressure
-            ]
+        , [ horizontalLabel language
+          , verticalLabel language Translate.BloodPressure
+          ]
+            ++ sysHelper
+            ++ diaHelper
+            |> g []
         , g []
             [ drawPolyline measurementsSys "data red"
             , drawPolyline measurementsDia "data green"
@@ -168,7 +197,7 @@ verticalLabel language label =
 horizontalLabel : Language -> Html any
 horizontalLabel language =
     text_
-        [ transform "matrix(1 0 0 1 401 541)"
+        [ transform "matrix(1 0 0 1 401 545)"
         , class "z-score-semibold chart-label"
         ]
         [ text <| translate language Translate.Time ]

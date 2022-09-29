@@ -22,6 +22,18 @@ svg.chart {
     text-transform: uppercase;
   }
 
+  .chart-helper {
+    font-size: 24px;
+  }
+
+  .chart-helper.red {
+    fill: $color-marker-red;
+  }
+
+  .chart-helper.green {
+    fill: $color-marker-green;
+  }
+
   .red-area {
     fill: #FCF1F5;
     stroke: #FCF1F5;
