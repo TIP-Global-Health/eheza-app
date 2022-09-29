@@ -18,18 +18,34 @@ viewMarkers =
         [ defs
             []
             [ marker
-                [ id "dot-marker"
+                [ id "dot-marker-green"
                 , markerWidth "8"
                 , markerHeight "8"
                 , refX "4"
                 , refY "4"
                 , markerUnits "userSpaceOnUse"
-                , class "dot-marker"
                 ]
                 [ circle
                     [ cx "4"
                     , cy "4"
                     , r "3"
+                    , Svg.Attributes.style "fill:#1CBCB2"
+                    ]
+                    []
+                ]
+            , marker
+                [ id "dot-marker-red"
+                , markerWidth "8"
+                , markerHeight "8"
+                , refX "4"
+                , refY "4"
+                , markerUnits "userSpaceOnUse"
+                ]
+                [ circle
+                    [ cx "4"
+                    , cy "4"
+                    , r "3"
+                    , Svg.Attributes.style "fill:#D4145A"
                     ]
                     []
                 ]
@@ -37,24 +53,8 @@ viewMarkers =
         ]
 
 
-dimensionsPx =
-    { left = 110.9
-    , top = 119.9
-    , right = 737.7
-    , bottom = 506.7
-    }
-
-
-widthPx =
-    dimensionsPx.right - dimensionsPx.left
-
-
-heightPx =
-    dimensionsPx.bottom - dimensionsPx.top
-
-
-viewBloodPressureByTime : Language -> List Float -> Html any
-viewBloodPressureByTime language points =
+viewBloodPressureByTime : Language -> List Float -> List Float -> Html any
+viewBloodPressureByTime language sysPoints diaPoints =
     let
         verticalParts =
             14
@@ -77,51 +77,27 @@ viewBloodPressureByTime language points =
         horizontalStep =
             widthPx / toFloat (horizontalMax - horizontalMin)
 
-        -- measurements =
-        --     points
-        --         |> List.filterMap
-        --             (\( egaDays, bmi_ ) ->
-        --                 let
-        --                     ega =
-        --                         toFloat egaDays / 7 - horizontalMin
-        --
-        --                     bmi =
-        --                         bmi_ - verticalMin
-        --                 in
-        --                 if withinRange ega horizontalMin horizontalMax && withinRange bmi verticalMin verticalMax then
-        --                     Just ( dimensionsPx.left + ega * horizontalStep, dimensionsPx.bottom - bmi * verticalStep )
-        --
-        --                 else
-        --                     Nothing
-        --             )
+        measurementsSys =
+            measurementsByTime verticalMin verticalMax verticalStep horizontalStep sysPoints
+
+        measurementsDia =
+            measurementsByTime verticalMin verticalMax verticalStep horizontalStep diaPoints
     in
     svg
-        [ class "z-score boys"
+        [ class "chart"
         , x "0px"
         , y "0px"
         , viewBox "25 25 841.9 595.3"
         ]
         [ frame
         , g []
-            [ text_
-                [ transform "matrix(1 0 0 1 373 541)"
-                , class "z-score-semibold chart-label"
-                ]
-                [ text <| translate language Translate.Time ]
-            , text_
-                [ transform "matrix(0 -1 1 0 70 400)"
-                , class "z-score-semibold chart-label"
-                ]
-                [ text <| translate language Translate.BloodPressure ]
+            [ horizontalLabel language
+            , verticalLabel language Translate.BloodPressure
             ]
-
-        -- , g []
-        --     [ drawPolygon topRedPoints "red-area"
-        --     , drawPolygon yellowPoints "yellow-area"
-        --     , drawPolygon greenPoints "green-area"
-        --     , drawPolygon bottomRedPoints "red-area"
-        --     , drawPolyline measurements "child-data"
-        --     ]
+        , g []
+            [ drawPolyline measurementsSys "data red"
+            , drawPolyline measurementsDia "data green"
+            ]
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.left - 21.5 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.right + 7.5 |> String.fromFloat)
@@ -155,51 +131,22 @@ viewBloodGlucoseByTime language points =
         horizontalStep =
             widthPx / toFloat (horizontalMax - horizontalMin)
 
-        -- measurements =
-        --     points
-        --         |> List.filterMap
-        --             (\( egaDays, bmi_ ) ->
-        --                 let
-        --                     ega =
-        --                         toFloat egaDays / 7 - horizontalMin
-        --
-        --                     bmi =
-        --                         bmi_ - verticalMin
-        --                 in
-        --                 if withinRange ega horizontalMin horizontalMax && withinRange bmi verticalMin verticalMax then
-        --                     Just ( dimensionsPx.left + ega * horizontalStep, dimensionsPx.bottom - bmi * verticalStep )
-        --
-        --                 else
-        --                     Nothing
-        --             )
+        measurements =
+            measurementsByTime verticalMin verticalMax verticalStep horizontalStep points
     in
     svg
-        [ class "z-score boys"
+        [ class "chart"
         , x "0px"
         , y "0px"
         , viewBox "25 25 841.9 595.3"
         ]
         [ frame
         , g []
-            [ text_
-                [ transform "matrix(1 0 0 1 373 541)"
-                , class "z-score-semibold chart-label"
-                ]
-                [ text <| translate language Translate.Time ]
-            , text_
-                [ transform "matrix(0 -1 1 0 70 400)"
-                , class "z-score-semibold chart-label"
-                ]
-                [ text <| translate language Translate.BloodGlucose ]
+            [ horizontalLabel language
+            , verticalLabel language Translate.BloodGlucose
             ]
-
-        -- , g []
-        --     [ drawPolygon topRedPoints "red-area"
-        --     , drawPolygon yellowPoints "yellow-area"
-        --     , drawPolygon greenPoints "green-area"
-        --     , drawPolygon bottomRedPoints "red-area"
-        --     , drawPolyline measurements "child-data"
-        --     ]
+        , g []
+            [ drawPolyline measurements "data red" ]
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.left - 21.5 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.right + 7.5 |> String.fromFloat)
@@ -207,6 +154,24 @@ viewBloodGlucoseByTime language points =
             |> g []
         , referenceHorizontalLines 13 ++ referenceHorizontalNumbers 13 0 1 |> g []
         ]
+
+
+verticalLabel : Language -> TranslationId -> Html any
+verticalLabel language label =
+    text_
+        [ transform "matrix(0 -1 1 0 70 400)"
+        , class "z-score-semibold chart-label"
+        ]
+        [ text <| translate language label ]
+
+
+horizontalLabel : Language -> Html any
+horizontalLabel language =
+    text_
+        [ transform "matrix(1 0 0 1 401 541)"
+        , class "z-score-semibold chart-label"
+        ]
+        [ text <| translate language Translate.Time ]
 
 
 referenceHorizontalLines : Int -> List (Svg any)
@@ -301,6 +266,23 @@ referenceVerticalNumbers parts min gap posX =
             )
 
 
+measurementsByTime : Float -> Float -> Float -> Float -> List Float -> List ( Float, Float )
+measurementsByTime verticalMin verticalMax verticalStep horizontalStep points =
+    List.indexedMap (\index value -> ( toFloat <| index + 1, value )) points
+        |> List.filterMap
+            (\( time, value_ ) ->
+                let
+                    value =
+                        value_ - verticalMin
+                in
+                if withinRange value verticalMin verticalMax then
+                    Just ( dimensionsPx.left + time * horizontalStep, dimensionsPx.bottom - value * verticalStep )
+
+                else
+                    Nothing
+            )
+
+
 drawPolygon : List ( Float, Float ) -> String -> Svg any
 drawPolygon =
     drawPolyshape polygon
@@ -312,11 +294,11 @@ drawPolyline =
 
 
 drawPolyshape shape points_ class_ =
-    points_
-        |> List.map
-            (\( x, y ) ->
-                String.fromFloat x ++ "," ++ String.fromFloat y
-            )
+    List.map
+        (\( x, y ) ->
+            String.fromFloat x ++ "," ++ String.fromFloat y
+        )
+        points_
         |> String.join " "
         |> points
         |> (\pointList ->
@@ -345,6 +327,7 @@ frame =
             , width "626.8"
             , x "110.9"
             , y "119.9"
+            , Svg.Attributes.style "fill:white"
             ]
             []
         ]
@@ -352,8 +335,21 @@ frame =
 
 withinRange : number -> number -> number -> Bool
 withinRange value min max =
-    if value < 0 || value > (max - min) then
-        False
+    (value >= min)
+        && (value <= max)
 
-    else
-        True
+
+widthPx =
+    dimensionsPx.right - dimensionsPx.left
+
+
+heightPx =
+    dimensionsPx.bottom - dimensionsPx.top
+
+
+dimensionsPx =
+    { left = 110.9
+    , top = 119.9
+    , right = 737.7
+    , bottom = 506.7
+    }

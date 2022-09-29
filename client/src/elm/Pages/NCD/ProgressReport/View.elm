@@ -385,15 +385,53 @@ viewMedicalDiagnosisPane language currentDate assembled =
 
 viewPatientProgressPane : Language -> NominalDate -> AssembledData -> Html Msg
 viewPatientProgressPane language currentDate assembled =
+    let
+        allMeasurements =
+            assembled.measurements
+                :: List.map .measurements assembled.previousEncountersData
+
+        sysMeasurements =
+            List.map Tuple.first bloodPressure
+
+        diaMeasurements =
+            List.map Tuple.second bloodPressure
+
+        bloodPressure =
+            List.map
+                (.vitals
+                    >> getMeasurementValueFunc
+                    >> Maybe.andThen
+                        (\value ->
+                            Maybe.map2 (\sys dia -> ( sys, dia ))
+                                value.sys
+                                value.dia
+                        )
+                )
+                allMeasurements
+                |> Maybe.Extra.values
+                |> List.take 12
+                |> List.reverse
+
+        sugarCountMeasurements =
+            List.map
+                (.randomBloodSugarTest
+                    >> getMeasurementValueFunc
+                    >> Maybe.andThen .sugarCount
+                )
+                allMeasurements
+                |> Maybe.Extra.values
+                |> List.take 12
+                |> List.reverse
+    in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
         , div [ class "pane-content" ]
             [ viewMarkers
             , div [ class "blood-pressure" ]
                 [ div [] [ text <| translate language Translate.BloodPressure ]
-                , viewBloodPressureByTime language []
+                , viewBloodPressureByTime language sysMeasurements diaMeasurements
                 , div [] [ text <| translate language Translate.BloodGlucose ]
-                , viewBloodGlucoseByTime language []
+                , viewBloodGlucoseByTime language sugarCountMeasurements
                 ]
             ]
         ]
