@@ -4155,16 +4155,14 @@ encodeCreatinineTestValue value =
                 |> Maybe.withDefault []
 
         result =
-            Maybe.map3
-                (\creatinineResult ureaResult nitorogenResult ->
+            Maybe.map2
+                (\creatinineResult bunResult ->
                     [ ( "creatinine_result", float creatinineResult )
-                    , ( "urea_result", float ureaResult )
-                    , ( "nitorogen_result", float nitorogenResult )
+                    , ( "bun_result", float bunResult )
                     ]
                 )
                 value.creatinineResult
-                value.ureaResult
-                value.nitorogenResult
+                value.bunResult
                 |> Maybe.withDefault []
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )

@@ -40,8 +40,7 @@ type Msg
     | SetRandomBloodSugar String
     | SaveRandomBloodSugarResult PersonId (Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SetCreatinineResult String
-    | SetUreaResult String
-    | SetNitorogenResult String
+    | SetBUNResult String
     | SaveCreatinineResult PersonId (Maybe ( NCDCreatinineTestId, NCDCreatinineTest )) (Maybe LaboratoryTask)
     | SetAltResult String
     | SetAstResult String

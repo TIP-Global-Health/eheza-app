@@ -113,8 +113,9 @@ import Pages.Prenatal.Activity.Types
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
-import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), LabResultsCurrentMode(..), LabResultsHistoryMode(..))
+import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.RecurrentActivity.Types
+import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..))
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
@@ -727,8 +728,7 @@ type TranslationId
     | LabelDocumentPregnancyOutcome
     | LabHistory
     | LaboratoryCreatinineCreatinineResult
-    | LaboratoryCreatinineUreaResult
-    | LaboratoryCreatinineNitorogenResult
+    | LaboratoryCreatinineBUNResult
     | LaboratoryLiverFunctionAltResult
     | LaboratoryLiverFunctionAstResult
     | LaboratoryTask LaboratoryTask
@@ -1080,6 +1080,11 @@ type TranslationId
     | PrenatalLaboratoryRandomBloodSugarTestResult
     | PrenatalLaboratoryHIVPCRTestResult
     | PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
+    | PrenatalLaboratoryCreatinineLabel
+    | PrenatalLaboratoryBUNLabel
+    | PrenatalLaboratoryALTLabel
+    | PrenatalLaboratoryALSLabel
+    | PrenatalLaboratoryPregnancyLabel
     | LaboratoryTest LaboratoryTest
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
@@ -5884,13 +5889,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        LaboratoryCreatinineUreaResult ->
-            { english = "Urea Result"
-            , kinyarwanda = Nothing
-            }
-
-        LaboratoryCreatinineNitorogenResult ->
-            { english = "Nitorogen Result"
+        LaboratoryCreatinineBUNResult ->
+            { english = "BUN Result"
             , kinyarwanda = Nothing
             }
 
@@ -6277,6 +6277,31 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru kuri kizamini cya Rezisi"
                     }
 
+                LabResultsHistoryCreatinine _ ->
+                    { english = "Creatinine Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryBUN _ ->
+                    { english = "BUN Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryALT _ ->
+                    { english = "ALT Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryAST _ ->
+                    { english = "AST Test History"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryPregnancy _ ->
+                    { english = "Pregnancy Test History"
+                    , kinyarwanda = Nothing
+                    }
+
         LabResultsNormalRange mode ->
             case mode of
                 LabResultsHistoryHIV _ ->
@@ -6366,6 +6391,31 @@ translationSet trans =
 
                 LabResultsHistoryRhesus _ ->
                     { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryCreatinine _ ->
+                    { english = "0.5-1.3 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryBUN _ ->
+                    { english = "6-24 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryALT _ ->
+                    { english = "7-56 IU/L"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryAST _ ->
+                    { english = "8-33 IU/L"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryPregnancy _ ->
+                    { english = "Negative"
                     , kinyarwanda = Nothing
                     }
 
@@ -11545,6 +11595,31 @@ translationSet trans =
 
         PrenatalLaboratoryHIVPCRViralLoadStatusQuestion ->
             { english = "Are there less than 20 copies/mm3"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryCreatinineLabel ->
+            { english = "Creatinine"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryBUNLabel ->
+            { english = "BUN"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryALTLabel ->
+            { english = "ALT"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryALSLabel ->
+            { english = "ALS"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalLaboratoryPregnancyLabel ->
+            { english = "Pregnancy"
             , kinyarwanda = Nothing
             }
 

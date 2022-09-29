@@ -63,6 +63,24 @@ function hedley_ncd_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_bun_result'.
+  $field_bases['field_bun_result'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_bun_result',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
   // Exported field_base: 'field_causing_hypertension'.
   $field_bases['field_causing_hypertension'] = array(
     'active' => 1,
@@ -615,24 +633,6 @@ function hedley_ncd_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_nitorogen_result'.
-  $field_bases['field_nitorogen_result'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_id_type' => NULL,
-    'entity_types' => array(),
-    'field_name' => 'field_nitorogen_result',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'number',
-    'settings' => array(
-      'decimal_separator' => '.',
-    ),
-    'translatable' => 0,
-    'type' => 'number_float',
-  );
-
   // Exported field_base: 'field_treating_diabetes'.
   $field_bases['field_treating_diabetes'] = array(
     'active' => 1,
@@ -691,24 +691,6 @@ function hedley_ncd_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
-  );
-
-  // Exported field_base: 'field_urea_result'.
-  $field_bases['field_urea_result'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_id_type' => NULL,
-    'entity_types' => array(),
-    'field_name' => 'field_urea_result',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'number',
-    'settings' => array(
-      'decimal_separator' => '.',
-    ),
-    'translatable' => 0,
-    'type' => 'number_float',
   );
 
   return $field_bases;

@@ -14,7 +14,7 @@ import Backend.Measurement.Model
         , PrenatalAssesment(..)
         , PrenatalLabsResults
         )
-import Backend.Measurement.Utils exposing (prenatalLabExpirationPeriod)
+import Backend.Measurement.Utils exposing (labExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.Person.Model

@@ -356,30 +356,13 @@ update currentDate id db msg model =
             , []
             )
 
-        SetUreaResult value ->
+        SetBUNResult value ->
             let
                 form =
                     model.labResultsData.creatinineTestForm
 
                 updatedForm =
-                    { form | ureaResult = String.toFloat value }
-
-                updatedData =
-                    model.labResultsData
-                        |> (\data -> { data | creatinineTestForm = updatedForm })
-            in
-            ( { model | labResultsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetNitorogenResult value ->
-            let
-                form =
-                    model.labResultsData.creatinineTestForm
-
-                updatedForm =
-                    { form | nitorogenResult = String.toFloat value }
+                    { form | bunResult = String.toFloat value }
 
                 updatedData =
                     model.labResultsData

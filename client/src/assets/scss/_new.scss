@@ -2284,7 +2284,8 @@ div.page-outcome.pregnancy {
 }
 
 div.page-report.clinical,
-div.page-report.demographics {
+div.page-report.demographics,
+div.page-report.ncd {
   padding: 0 20px 35px 20px;
   height: 100%;
   display: flex;
@@ -2326,6 +2327,150 @@ div.page-report.demographics {
       background-size: 45px 50px;
       height: 50px;
       width: 45px;
+    }
+  }
+}
+
+div.page-report.clinical .ui.unstackable.items,
+div.page-report.ncd .ui.unstackable.items {
+
+  .labs {
+
+    .pane-content {
+      padding: 40px;
+      text-align: center;
+
+      .button {
+        font-size: 26px;
+        font-weight: 700;
+        padding: 15px;
+        text-transform: none;
+        width: 80%;
+      }
+    }
+  }
+
+  .lab-results,
+  .lab-results-history {
+
+    .pane-heading {
+      text-align: center;
+    }
+
+    .pane-content {
+      border-bottom: 1px solid $color-text;
+    }
+
+    .heading,
+    .entry {
+      display: flex;
+    }
+
+    .heading {
+      font-weight: 600;
+    }
+
+    .entry {
+      border-bottom: 1px solid $color-text;
+      font-weight: 500;
+      line-height: 60px;
+
+      .result .uncompleted {
+        background: $color-velvet;
+        border-radius: 6px;
+        color: $color-white;
+        font-size: 15px;
+        padding: 3px 8px;
+        text-transform: uppercase;
+      }
+
+      .result .known-positive {
+        background: $color-orange-light;
+        border-radius: 6px;
+        color: $color-white;
+        font-size: 15px;
+        padding: 3px 8px;
+        text-transform: uppercase;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .entry.warning {
+      color: $color-velvet;
+
+      .icon-forward {
+        background: url(#{$img-path}icon-forward-red.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        width: 45px;
+      }
+    }
+
+    .group-content {
+      background: $color-white;
+      color: $color-text;
+      font-size: 18px;
+      padding: 0 20px;
+    }
+  }
+
+  .lab-results {
+
+    .heading,
+    .entry {
+
+      .name {
+        width: 190px;
+      }
+
+      .date {
+        width: 120px;
+      }
+
+      .result {
+        text-align: center;
+        width:180px;
+      }
+
+      .normal-range {
+        width:160px;
+      }
+    }
+
+    .entry .name {
+      margin-left: 20px;
+    }
+  }
+
+  .lab-results-history {
+
+    .heading,
+    .entry {
+
+      .date{
+        width: 20%;
+      }
+
+      .result,
+      .normal-range {
+        text-align: center;
+        width: 35%;
+      }
+    }
+
+    .entry {
+
+      .date {
+        margin-left: 20px;
+      }
+
+      img.icon-warning {
+        height: 46px;
+        margin-top: 6px;
+      }
     }
   }
 }
@@ -2683,150 +2828,6 @@ div.page-report.clinical .ui.unstackable.items {
       }
     }
 
-  }
-
-  .labs {
-
-    .pane-content {
-      padding: 40px;
-      text-align: center;
-
-      .button {
-        font-size: 26px;
-        font-weight: 700;
-        padding: 15px;
-        text-transform: none;
-        width: 80%;
-      }
-    }
-  }
-
-  .lab-results,
-  .lab-results-history {
-
-    .pane-heading {
-      text-align: center;
-    }
-
-    .pane-content {
-      border-bottom: 1px solid $color-text;
-    }
-
-    .heading,
-    .entry {
-      display: flex;
-    }
-
-    .heading {
-      font-weight: 600;
-    }
-
-    .entry {
-      border-bottom: 1px solid $color-text;
-      font-weight: 500;
-      line-height: 60px;
-
-      .result .uncompleted {
-        background: $color-velvet;
-        border-radius: 6px;
-        color: $color-white;
-        font-size: 15px;
-        padding: 3px 8px;
-        text-transform: uppercase;
-      }
-
-      .result .known-positive {
-        background: $color-orange-light;
-        border-radius: 6px;
-        color: $color-white;
-        font-size: 15px;
-        padding: 3px 8px;
-        text-transform: uppercase;
-      }
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-
-    .entry.warning {
-      color: $color-velvet;
-
-      .icon-forward {
-        background: url(#{$img-path}icon-forward-red.svg) center center no-repeat;
-        background-size: 45px 50px;
-        height: 50px;
-        width: 45px;
-      }
-    }
-
-    .group-content {
-      background: $color-white;
-      color: $color-text;
-      font-size: 18px;
-      padding: 0 20px;
-    }
-  }
-
-  .lab-results {
-
-    .heading,
-    .entry {
-
-      .name {
-        width: 190px;
-      }
-
-      .date {
-        width: 120px;
-      }
-
-      .result {
-        text-align: center;
-        width:180px;
-      }
-
-      .normal-range {
-        width:160px;
-      }
-    }
-
-    .entry .name {
-      margin-left: 20px;
-    }
-  }
-
-  .lab-results-history {
-
-    .heading,
-    .entry {
-
-      .date{
-        width: 20%;
-      }
-
-      .result,
-      .normal-range {
-        text-align: center;
-        width: 35%;
-      }
-    }
-
-    .entry {
-
-      .date {
-        margin-left: 20px;
-      }
-
-      img.icon-warning {
-        height: 46px;
-        margin-top: 6px;
-      }
-    }
-  }
-
-  .ui.unstackable.items .lab-results-history .pane-content {
-    padding: 20px;
   }
 
   .progress-photos .pane-content {

@@ -45,7 +45,6 @@ import Measurement.Utils
         )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils exposing (respiratoryRateElevated)
-import Pages.Prenatal.DemographicsReport.View exposing (viewItemHeading)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
 import Pages.Prenatal.Model exposing (AssembledData)
@@ -63,6 +62,7 @@ import Pages.Prenatal.Utils
         , recommendedTreatmentSignsForSyphilis
         , resolvePreviousHypertensionDiagnosis
         )
+import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), TestReport(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -104,106 +104,6 @@ filterNurseMeasurementsWithDatesToDate limitDate nursePreviousMeasurementsWithDa
             Date.compare date limitDate == LT
         )
         nursePreviousMeasurementsWithDates
-
-
-hivResultNormal : PrenatalTestReport -> Bool
-hivResultNormal =
-    prenatalTestReportNormal
-
-
-hivPCRResultNormal : HIVPCRResult -> Bool
-hivPCRResultNormal =
-    (==) ResultSuppressedViralLoad
-
-
-syphilisResultNormal : TestResult -> Bool
-syphilisResultNormal =
-    testResultNormal
-
-
-hepatitisBResultNormal : PrenatalTestReport -> Bool
-hepatitisBResultNormal =
-    prenatalTestReportNormal
-
-
-malariaResultNormal : TestResult -> Bool
-malariaResultNormal =
-    testResultNormal
-
-
-proteinResultNormal : ProteinValue -> Bool
-proteinResultNormal =
-    (==) Protein0
-
-
-phResultNormal : PHValue -> Bool
-phResultNormal value =
-    not <| List.member value [ Ph40, Ph85 ]
-
-
-glucoseResultNormal : GlucoseValue -> Bool
-glucoseResultNormal =
-    (==) Glucose0
-
-
-leukocytesResultNormal : LeukocytesValue -> Bool
-leukocytesResultNormal =
-    (==) LeukocytesNegative
-
-
-nitriteResultNormal : NitriteValue -> Bool
-nitriteResultNormal =
-    (==) NitriteNegative
-
-
-urobilinogenResultNormal : UrobilinogenValue -> Bool
-urobilinogenResultNormal value =
-    List.member value [ Urobilinogen002, Urobilinogen10 ]
-
-
-urineHaemoglobinValueResultNormal : HaemoglobinValue -> Bool
-urineHaemoglobinValueResultNormal =
-    (==) HaemoglobinNegative
-
-
-ketoneResultNormal : KetoneValue -> Bool
-ketoneResultNormal =
-    (==) KetoneNegative
-
-
-bilirubinResultNormal : BilirubinValue -> Bool
-bilirubinResultNormal =
-    (==) BilirubinNegative
-
-
-randomBloodSugarResultNormal : Float -> Bool
-randomBloodSugarResultNormal value =
-    value >= 74 && value <= 110
-
-
-hemoglobinResultNormal : Float -> Bool
-hemoglobinResultNormal value =
-    value >= 11 && value <= 16.5
-
-
-rhesusResultsNormal : Rhesus -> Bool
-rhesusResultsNormal =
-    (==) RhesusPositive
-
-
-prenatalTestReportNormal : PrenatalTestReport -> Bool
-prenatalTestReportNormal report =
-    case report of
-        TestPerformed result ->
-            testResultNormal result
-
-        TestNotPerformedKnownAsPositive ->
-            True
-
-
-testResultNormal : TestResult -> Bool
-testResultNormal =
-    (==) TestNegative
 
 
 diagnosisForProgressReportToString : Language -> PrenatalDiagnosis -> String
