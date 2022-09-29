@@ -183,18 +183,6 @@ viewMainPageContent language currentDate zscores id isChw db assembled model =
                 Reports ->
                     ( [], "" )
 
-        viewReportLink labelTransId redirectPage =
-            div
-                [ class "report-wrapper"
-                , onClick <| SetActivePage redirectPage
-                ]
-                [ div [ class "icon-progress-report" ] []
-                , div [ class "report-text" ]
-                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
-                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
-                    ]
-                ]
-
         innerContent =
             div [ class "full content" ]
                 [ div [ class "wrap-cards" ]

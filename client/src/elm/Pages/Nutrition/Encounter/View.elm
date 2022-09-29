@@ -19,7 +19,7 @@ import Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryA
 import Pages.Nutrition.Encounter.Model exposing (..)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -145,22 +145,15 @@ viewMainPageContent language currentDate zscores id isChw db data model =
                 Reports ->
                     ( [], "" )
 
-        viewReportLink labelTransId redirectPage =
-            div
-                [ class "report-wrapper"
-                , onClick <| SetActivePage redirectPage
-                ]
-                [ div [ class "icon-progress-report" ] []
-                , div [ class "report-text" ]
-                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
-                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
-                    ]
-                ]
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ProgressReport (UserPage <| NutritionProgressReportPage data.id)
+                    [ viewReportLink language
+                        Translate.ProgressReport
+                        (SetActivePage <|
+                            UserPage <|
+                                NutritionProgressReportPage data.id
+                        )
                     ]
 
             else

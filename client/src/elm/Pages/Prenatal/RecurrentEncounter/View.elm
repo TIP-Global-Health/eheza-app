@@ -37,7 +37,7 @@ import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, emergencyReferalRequired, expectActivity)
 import Pages.Prenatal.RecurrentEncounter.Model exposing (..)
 import Pages.Prenatal.RecurrentEncounter.Utils exposing (..)
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -164,23 +164,21 @@ viewMainPageContent language currentDate assembled model =
                 Reports ->
                     ( [], "" )
 
-        viewReportLink labelTransId redirectPage =
-            div
-                [ class "report-wrapper"
-                , onClick <| SetActivePage redirectPage
-                ]
-                [ div [ class "icon-progress-report" ] []
-                , div [ class "report-text" ]
-                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
-                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
-                    ]
-                ]
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.id)
-                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.participant.person)
+                    [ viewReportLink language
+                        Translate.ClinicalProgressReport
+                        (SetActivePage <|
+                            UserPage <|
+                                ClinicalProgressReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.id
+                        )
+                    , viewReportLink language
+                        Translate.DemographicsReport
+                        (SetActivePage <|
+                            UserPage <|
+                                DemographicsReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.participant.person
+                        )
                     ]
 
             else

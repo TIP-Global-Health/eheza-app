@@ -38,6 +38,20 @@ thumbnailDimensions =
     }
 
 
+viewReportLink : Language -> TranslationId -> msg -> Html msg
+viewReportLink language labelTransId action =
+    div
+        [ class "report-wrapper"
+        , onClick action
+        ]
+        [ div [ class "icon-progress-report" ] []
+        , div [ class "report-text" ]
+            [ div [ class "report-label" ] [ text <| translate language labelTransId ]
+            , div [ class "report-link" ] [ text <| translate language Translate.View ]
+            ]
+        ]
+
+
 viewPersonDetails : Language -> NominalDate -> Person -> Maybe TranslationId -> List (Html msg)
 viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
     let

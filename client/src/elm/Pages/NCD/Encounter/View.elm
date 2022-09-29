@@ -8,6 +8,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.NCDActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -20,7 +21,7 @@ import Pages.NCD.Encounter.Model exposing (..)
 import Pages.NCD.Model exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -146,22 +147,15 @@ viewMainPageContent language currentDate db assembled model =
                 Reports ->
                     ( [], "" )
 
-        viewReportLink labelTransId redirectPage =
-            div
-                [ class "report-wrapper"
-                , onClick <| SetActivePage redirectPage
-                ]
-                [ div [ class "icon-progress-report" ] []
-                , div [ class "report-text" ]
-                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
-                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
-                    ]
-                ]
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ProgressReport (UserPage <| NCDProgressReportPage assembled.id)
+                    [ viewReportLink language
+                        Translate.ProgressReport
+                        (SetActivePage <|
+                            UserPage <|
+                                NCDProgressReportPage (InitiatorEncounterPage assembled.id)
+                        )
                     ]
 
             else

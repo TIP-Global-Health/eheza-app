@@ -56,6 +56,7 @@ import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
 import Backend.Measurement.Model exposing (LaboratoryTest)
 import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator)
@@ -191,7 +192,7 @@ type UserPage
     | NCDActivityPage NCDEncounterId NCDActivity -- record NCD activity.
     | NCDRecurrentEncounterPage NCDEncounterId -- NCD recurrent activities index
     | NCDRecurrentActivityPage NCDEncounterId NCDRecurrentActivity -- record NCD recurrent activity
-    | NCDProgressReportPage NCDEncounterId
+    | NCDProgressReportPage NCDProgressReportInitiator
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
 

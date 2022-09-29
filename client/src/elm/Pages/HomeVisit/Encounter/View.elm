@@ -129,18 +129,6 @@ viewMainPageContent language currentDate id isChw db data model =
                 Completed ->
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
 
-        viewReportLink labelTransId redirectPage =
-            div
-                [ class "report-wrapper"
-                , onClick <| SetActivePage redirectPage
-                ]
-                [ div [ class "icon-progress-report" ] []
-                , div [ class "report-text" ]
-                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
-                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
-                    ]
-                ]
-
         innerContent =
             div [ class "full content" ]
                 [ div [ class "wrap-cards" ]
