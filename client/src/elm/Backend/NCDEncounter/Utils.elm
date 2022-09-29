@@ -45,7 +45,7 @@ progressReportInitiatorFromUrlFragment s =
 
 
 progressReportInitiatorToUrlFragmemt : NCDProgressReportInitiator -> String
-progressReportInitiatorToUrlFragmemt initiator =
+progressReportInitiatorToUrlFragment initiator =
     case initiator of
         InitiatorEncounterPage encounterId ->
             "encounter-page-" ++ fromEntityUuid encounterId
