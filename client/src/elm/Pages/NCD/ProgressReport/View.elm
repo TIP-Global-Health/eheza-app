@@ -2,7 +2,14 @@ module Pages.NCD.ProgressReport.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (TestExecutionNote(..), TestVariant(..))
+import Backend.Measurement.Model
+    exposing
+        ( MedicalCondition(..)
+        , NCDFamilyHistorySign(..)
+        , NCDSocialHistorySign(..)
+        , TestExecutionNote(..)
+        , TestVariant(..)
+        )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
@@ -201,13 +208,14 @@ viewContent language currentDate initiator model assembled =
                             --             viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
                             emptyNode
                     in
-                    [ -- @todo
-                      -- viewRiskFactorsPane language currentDate firstEncounterMeasurements
-                      -- , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                      -- , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                      -- , viewChwActivityPane language currentDate isChw assembled
-                      -- , viewPatientProgressPane language currentDate isChw assembled
-                      viewLabsPane language currentDate SetLabResultsMode
+                    [ viewRiskFactorsPane language currentDate assembled
+                    , viewMedicalDiagnosisPane language currentDate assembled
+
+                    -- @todo
+                    -- , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                    -- , viewChwActivityPane language currentDate isChw assembled
+                    -- , viewPatientProgressPane language currentDate isChw assembled
+                    , viewLabsPane language currentDate SetLabResultsMode
 
                     -- @todo
                     -- , viewProgressPhotosPane language currentDate isChw assembled
@@ -232,6 +240,150 @@ viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
     div [ class <| "pane-heading" ]
         [ text <| translate language label ]
+
+
+viewRiskFactorsPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewRiskFactorsPane language currentDate assembled =
+    let
+        allMeasurements =
+            assembled.measurements
+                :: List.map .measurements assembled.previousEncountersData
+
+        content =
+            List.map (Translate.NCDRiskFactor >> translate language >> text >> List.singleton >> li [])
+                riskFactors
+                |> ul []
+                |> List.singleton
+
+        riskFactors =
+            List.map
+                (\measurements ->
+                    let
+                        familyRisks =
+                            getMeasurementValueFunc measurements.familyHistory
+                                |> Maybe.map (.signs >> generateFamilyHistoryRiskFactors)
+                                |> Maybe.withDefault []
+
+                        socialRisks =
+                            getMeasurementValueFunc measurements.socialHistory
+                                |> Maybe.map (.signs >> generateSocialHistoryRiskFactors)
+                                |> Maybe.withDefault []
+                    in
+                    familyRisks ++ socialRisks
+                )
+                allMeasurements
+                |> List.concat
+                |> EverySet.fromList
+                |> EverySet.toList
+    in
+    div [ class "risk-factors" ]
+        [ div [ class <| "pane-heading red" ]
+            [ img [ src "assets/images/exclamation-white-outline.png" ] []
+            , span [] [ text <| translate language Translate.RiskFactors ]
+            ]
+        , div [ class "pane-content" ] content
+        ]
+
+
+generateFamilyHistoryRiskFactors : EverySet NCDFamilyHistorySign -> List NCDRiskFactor
+generateFamilyHistoryRiskFactors signs =
+    List.filter
+        (\riskFactor ->
+            case riskFactor of
+                RiskFactorHypertensionHistory ->
+                    EverySet.member SignHypertensionHistory signs
+
+                RiskFactorHearProblemHistory ->
+                    EverySet.member SignHeartProblemHistory signs
+
+                RiskFactorDiabetesHistory ->
+                    EverySet.member SignDiabetesHistory signs
+
+                _ ->
+                    False
+        )
+        familyHistoryRiskFactors
+
+
+generateSocialHistoryRiskFactors : EverySet NCDSocialHistorySign -> List NCDRiskFactor
+generateSocialHistoryRiskFactors signs =
+    List.filter
+        (\riskFactor ->
+            case riskFactor of
+                RiskFactorSmokeCigarettes ->
+                    EverySet.member SignSmokeCigarettes signs
+
+                RiskFactorConsumeSalt ->
+                    EverySet.member SignConsumeSalt signs
+
+                _ ->
+                    False
+        )
+        socialHistoryRiskFactors
+
+
+familyHistoryRiskFactors : List NCDRiskFactor
+familyHistoryRiskFactors =
+    [ RiskFactorHypertensionHistory
+    , RiskFactorHearProblemHistory
+    , RiskFactorDiabetesHistory
+    ]
+
+
+socialHistoryRiskFactors : List NCDRiskFactor
+socialHistoryRiskFactors =
+    [ RiskFactorSmokeCigarettes
+    , RiskFactorConsumeSalt
+    ]
+
+
+coMorbiditiesMedicalContitions : List MedicalCondition
+coMorbiditiesMedicalContitions =
+    [ MedicalConditionHIV
+    , MedicalConditionDiabetes
+    , MedicalConditionKidneyDisease
+    , MedicalConditionPregnancy
+    , MedicalConditionHypertension
+    , MedicalConditionGestationalDiabetes
+    , MedicalConditionPregnancyRelatedHypertension
+    ]
+
+
+viewMedicalDiagnosisPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewMedicalDiagnosisPane language currentDate assembled =
+    let
+        allMeasurements =
+            assembled.measurements
+                :: List.map .measurements assembled.previousEncountersData
+
+        content =
+            List.map (Translate.MedicalCondition >> translate language >> text >> List.singleton >> li [])
+                coMorbidities
+                |> ul []
+                |> List.singleton
+
+        coMorbidities =
+            List.map
+                (.coMorbidities
+                    >> getMeasurementValueFunc
+                    >> Maybe.map
+                        (EverySet.toList
+                            >> List.filter
+                                (\mdecicalCondition ->
+                                    List.member mdecicalCondition coMorbiditiesMedicalContitions
+                                )
+                        )
+                    >> Maybe.withDefault []
+                )
+                allMeasurements
+                |> List.concat
+                |> EverySet.fromList
+                |> EverySet.toList
+    in
+    div [ class "medical-diagnosis" ]
+        [ viewItemHeading language Translate.MedicalDiagnosis "blue"
+        , div [ class "pane-content" ] content
+        ]
 
 
 generateLabsResultsPaneData :
