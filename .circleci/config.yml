@@ -54,3 +54,6 @@ jobs:
       xcode: 13.4.1
     steps:
       - checkout
+      - run: ci-scripts/install_ddev.sh
+      - run: ci-scripts/install_drupal.sh
+      - run: ddev simpletest
