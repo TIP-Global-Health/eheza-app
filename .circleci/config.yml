@@ -49,7 +49,7 @@ jobs:
       - run: ci-scripts/install_ddev.sh
       - run: ci-scripts/install_drupal.sh
       - run: ddev simpletest
-  test_simpletest_linux:
+  test_simpletest_mac:
     macos:
       xcode: 13.4.1
     steps:
