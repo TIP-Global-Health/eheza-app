@@ -26,8 +26,8 @@ getNCDEncountersForParticipant db participantId =
         |> Maybe.withDefault []
 
 
-progressReportInitiatorFromUrlFragmemt : String -> Maybe NCDProgressReportInitiator
-progressReportInitiatorFromUrlFragmemt s =
+progressReportInitiatorFromUrlFragment : String -> Maybe NCDProgressReportInitiator
+progressReportInitiatorFromUrlFragment s =
     if String.startsWith "encounter-page-" s then
         String.dropLeft (String.length "encounter-page-") s
             |> toEntityUuid
@@ -44,8 +44,8 @@ progressReportInitiatorFromUrlFragmemt s =
         Nothing
 
 
-progressReportInitiatorToUrlFragmemt : NCDProgressReportInitiator -> String
-progressReportInitiatorToUrlFragmemt initiator =
+progressReportInitiatorToUrlFragment : NCDProgressReportInitiator -> String
+progressReportInitiatorToUrlFragment initiator =
     case initiator of
         InitiatorEncounterPage encounterId ->
             "encounter-page-" ++ fromEntityUuid encounterId

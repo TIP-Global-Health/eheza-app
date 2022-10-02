@@ -65,12 +65,12 @@ expectActivity currentDate assembled activity =
             True
 
         NextSteps ->
-            -- mandatoryActivitiesForNextStepsCompleted currentDate assembled
-            --     &&
-            resolveNextStepsTasks currentDate assembled
-                |> List.filter (expectNextStepsTask currentDate assembled)
-                |> List.isEmpty
-                |> not
+            mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                && (resolveNextStepsTasks currentDate assembled
+                        |> List.filter (expectNextStepsTask currentDate assembled)
+                        |> List.isEmpty
+                        |> not
+                   )
 
 
 activityCompleted : NominalDate -> AssembledData -> NCDActivity -> Bool
@@ -115,7 +115,7 @@ expectNextStepsTask : NominalDate -> AssembledData -> Pages.NCD.Activity.Types.N
 expectNextStepsTask currentDate assembled task =
     case task of
         TaskHealthEducation ->
-            -- Diagnosed Stage 1 at curernt encounter.
+            -- Diagnosed Stage 1 at current encounter.
             diagnosed DiagnosisHypertensionStage1 assembled
                 -- Not diagnosed any Hypertension diagnoses at previous encounters.
                 && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled)

@@ -97,12 +97,12 @@ expectActivity currentDate assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.MalariaPrevention ->
-                    assembled.nursePreviousMeasurementsWithDates
+                    assembled.nursePreviousEncountersData
                         |> List.filter
-                            (\( _, _, measurements ) ->
-                                measurements.malariaPrevention
-                                    |> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
-                                    |> Maybe.withDefault False
+                            (.measurements
+                                >> .malariaPrevention
+                                >> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
+                                >> Maybe.withDefault False
                             )
                         |> List.isEmpty
 
@@ -145,11 +145,8 @@ expectActivity currentDate assembled activity =
                                     calculateEGAWeeks currentDate lmpDate
 
                                 performedPreviously =
-                                    assembled.nursePreviousMeasurementsWithDates
-                                        |> List.filter
-                                            (\( _, _, measurements ) ->
-                                                isJust measurements.mentalHealth
-                                            )
+                                    assembled.nursePreviousEncountersData
+                                        |> List.filter (.measurements >> .mentalHealth >> isJust)
                                         |> List.isEmpty
                                         |> not
                             in
@@ -345,7 +342,7 @@ activityCompleted currentDate assembled activity =
 
         NextSteps ->
             resolveNextStepsTasks currentDate assembled
-                |> List.all (nextStepsTaskCompleted assembled)
+                |> List.all (nextStepsTaskCompleted currentDate assembled)
 
         PregnancyOutcome ->
             isJust assembled.participant.dateConcluded
@@ -481,10 +478,29 @@ expectNextStepsTask currentDate assembled task =
         NextStepsNewbornEnrolment ->
             assembled.encounter.encounterType == ChwPostpartumEncounter
 
-        -- Exclusive task for Nurse encounter.
+        -- Exclusive task for Nurse.
         NextStepsMedicationDistribution ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
+                    let
+                        hypertensionlikeDiagnosesCondition =
+                            -- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
+                            (updateHypertensionTreatmentWithMedication assembled
+                                && (-- Hypertension / Moderate Preeclamsia treatment
+                                    -- did not cause an adverse event.
+                                    not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
+                                   )
+                                && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
+                                    -- in referral to hospital.
+                                    not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
+                                   )
+                            )
+                                || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
+                                   -- at current encounter does not indicate a need for hospitalization.
+                                   (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
+                                        && (not <| bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled)
+                                   )
+                    in
                     -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
                         && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
@@ -503,15 +519,16 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisTrichomonasOrBacterialVaginosis
                                     ]
                                     assembled
-                                || (updateHypertensionTreatmentWithMedication assembled
-                                        && (-- Hypertension / Moderate Preeclamsia treatemnt
-                                            -- did not cause an adverse event.
-                                            not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
-                                           )
-                                        && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
-                                            -- in referral to hospital. EGA37 diagnoses are not included, since they
-                                            -- trigger emergency referral.
-                                            not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
+                                || (hypertensionlikeDiagnosesCondition
+                                        && -- If Preeclampsia was diagnosed at current
+                                           -- encounter, there's no need to medicate, because
+                                           -- patient is sent to hospital anyway.
+                                           (not <|
+                                                diagnosedAnyOf
+                                                    [ DiagnosisModeratePreeclampsiaInitialPhase
+                                                    , DiagnosisSeverePreeclampsiaInitialPhase
+                                                    ]
+                                                    assembled
                                            )
                                    )
                            )
@@ -552,8 +569,8 @@ expectNextStepsTask currentDate assembled task =
                    )
 
 
-nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
-nextStepsTaskCompleted assembled task =
+nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted currentDate assembled task =
     case task of
         NextStepsAppointmentConfirmation ->
             isJust assembled.measurements.appointmentConfirmation
@@ -576,6 +593,18 @@ nextStepsTaskCompleted assembled task =
                 allowedSigns =
                     NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
 
+                medicationDistributionRequired =
+                    resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
+                        |> List.isEmpty
+                        |> not
+
+                medicationDistributionCompleted =
+                    if medicationDistributionRequired then
+                        medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+
+                    else
+                        True
+
                 malariaTreatmentCompleted =
                     if diagnosedMalaria assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
@@ -591,7 +620,16 @@ nextStepsTaskCompleted assembled task =
                         True
 
                 hypertensionTreatmentCompleted =
-                    if diagnosedHypertension PrenatalEncounterPhaseInitial assembled then
+                    if
+                        diagnosedHypertension PrenatalEncounterPhaseInitial assembled
+                            || -- Adding this to account for continuous treatment that may be
+                               -- provided for Moderate Preeclampsia.
+                               diagnosedPreviouslyAnyOf
+                                [ DiagnosisModeratePreeclampsiaInitialPhase
+                                , DiagnosisModeratePreeclampsiaRecurrentPhase
+                                ]
+                                assembled
+                    then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
                     else
@@ -618,7 +656,7 @@ nextStepsTaskCompleted assembled task =
                     else
                         True
             in
-            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+            medicationDistributionCompleted
                 && malariaTreatmentCompleted
                 && heartburnTreatmentCompleted
                 && hypertensionTreatmentCompleted
@@ -800,11 +838,11 @@ expectSpecialityCareSignSection : AssembledData -> SpecialityCareSign -> Bool
 expectSpecialityCareSignSection assembled sign =
     case sign of
         EnrolledToARVProgram ->
-            resolveARVReferralDiagnosis assembled.nursePreviousMeasurementsWithDates
+            resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
                 |> isJust
 
         EnrolledToNCDProgram ->
-            resolveNCDReferralDiagnoses assembled.nursePreviousMeasurementsWithDates
+            resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
                 |> List.isEmpty
                 |> not
 
@@ -820,14 +858,14 @@ specialityCareSections =
 referredToHIVProgramPreviously : AssembledData -> Bool
 referredToHIVProgramPreviously assembled =
     List.filterMap
-        (\( _, diagnoses, measurements ) ->
-            if EverySet.member DiagnosisHIV diagnoses then
-                Just measurements
+        (\data ->
+            if EverySet.member DiagnosisHIV data.diagnoses then
+                Just data.measurements
 
             else
                 Nothing
         )
-        assembled.nursePreviousMeasurementsWithDates
+        assembled.nursePreviousEncountersData
         |> List.head
         |> Maybe.map hivProgramAtHC
         |> Maybe.withDefault False
@@ -837,25 +875,26 @@ latestMedicationTreatmentForHIV : AssembledData -> Maybe Translate.TranslationId
 latestMedicationTreatmentForHIV assembled =
     let
         prescribedMedications =
-            List.reverse assembled.nursePreviousMeasurementsWithDates
+            List.reverse assembled.nursePreviousEncountersData
                 |> List.filterMap
-                    (\( _, _, measurements ) ->
-                        getMeasurementValueFunc measurements.medicationDistribution
-                            |> Maybe.andThen
-                                (\value ->
-                                    let
-                                        dolutegravirPrescribed =
-                                            EverySet.member Dolutegravir value.distributionSigns
+                    (.measurements
+                        >> .medicationDistribution
+                        >> getMeasurementValueFunc
+                        >> Maybe.andThen
+                            (\value ->
+                                let
+                                    dolutegravirPrescribed =
+                                        EverySet.member Dolutegravir value.distributionSigns
 
-                                        arvsPrescribed =
-                                            EverySet.member TDF3TC value.distributionSigns
-                                    in
-                                    if dolutegravirPrescribed || arvsPrescribed then
-                                        Just ( dolutegravirPrescribed, arvsPrescribed )
+                                    arvsPrescribed =
+                                        EverySet.member TDF3TC value.distributionSigns
+                                in
+                                if dolutegravirPrescribed || arvsPrescribed then
+                                    Just ( dolutegravirPrescribed, arvsPrescribed )
 
-                                    else
-                                        Nothing
-                                )
+                                else
+                                    Nothing
+                            )
                     )
                 |> List.head
     in
@@ -897,18 +936,19 @@ latestMedicationTreatmentForAnemia : AssembledData -> Maybe Translate.Translatio
 latestMedicationTreatmentForAnemia assembled =
     let
         medicationPrescribed =
-            List.reverse assembled.nursePreviousMeasurementsWithDates
+            List.reverse assembled.nursePreviousEncountersData
                 |> List.filter
-                    (\( _, _, measurements ) ->
-                        getMeasurementValueFunc measurements.medicationDistribution
-                            |> Maybe.map
-                                (\value ->
-                                    List.any (\sign -> EverySet.member sign value.distributionSigns)
-                                        [ Iron
-                                        , FolicAcid
-                                        ]
-                                )
-                            |> Maybe.withDefault False
+                    (.measurements
+                        >> .medicationDistribution
+                        >> getMeasurementValueFunc
+                        >> Maybe.map
+                            (\value ->
+                                List.any (\sign -> EverySet.member sign value.distributionSigns)
+                                    [ Iron
+                                    , FolicAcid
+                                    ]
+                            )
+                        >> Maybe.withDefault False
                     )
                 |> List.isEmpty
                 |> not
@@ -1101,10 +1141,10 @@ symptomRecorded measurements symptom =
 
 symptomRecordedPreviously : AssembledData -> PrenatalSymptom -> Bool
 symptomRecordedPreviously assembled symptom =
-    assembled.nursePreviousMeasurementsWithDates
+    assembled.nursePreviousEncountersData
         |> List.filter
-            (\( _, _, measurements ) ->
-                symptomRecorded measurements symptom
+            (\data ->
+                symptomRecorded data.measurements symptom
             )
         |> List.isEmpty
         |> not
@@ -1126,7 +1166,7 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     let
-        mandatoryActivitiesFoNurseCompleted =
+        mandatoryActivitiesForNurseCompleted =
             -- All activities that will appear at
             -- current encounter are completed, besides
             -- Photo and Next Steps itself.
@@ -1146,11 +1186,11 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
                 || (-- Otherwise, we need all activities that will appear at
                     -- current encounter completed, besides Photo
                     -- and Next Steps itself.
-                    mandatoryActivitiesFoNurseCompleted
+                    mandatoryActivitiesForNurseCompleted
                    )
 
         NursePostpartumEncounter ->
-            mandatoryActivitiesFoNurseCompleted
+            mandatoryActivitiesForNurseCompleted
 
         ChwFirstEncounter ->
             let
@@ -1207,7 +1247,7 @@ expectPrenatalPhoto currentDate assembled =
             [ [ (>) 13 ], [ (>) 28, (<=) 13 ], [ (<=) 28 ] ]
 
         nursePreviousMeasurements =
-            List.map (\( _, _, measurements ) -> measurements) assembled.nursePreviousMeasurementsWithDates
+            List.map .measurements assembled.nursePreviousEncountersData
     in
     assembled.globalLmpDate
         |> Maybe.map
@@ -1229,19 +1269,19 @@ expectPrenatalPhoto currentDate assembled =
                         (\conditions ->
                             -- There should be no encounters that are  within dates range,
                             -- that got a photo measurement.
-                            assembled.nursePreviousMeasurementsWithDates
+                            assembled.nursePreviousEncountersData
                                 |> List.filterMap
-                                    (\( encounterDate, _, measurements ) ->
+                                    (\data ->
                                         let
                                             encounterWeek =
-                                                diffDays lmpDate encounterDate // 7
+                                                diffDays lmpDate data.startDate // 7
                                         in
                                         -- Encounter is within dates range, and it's has a photo measurement.
                                         if
                                             List.all (\condition -> condition encounterWeek == True) conditions
-                                                && isJust measurements.prenatalPhoto
+                                                && isJust data.measurements.prenatalPhoto
                                         then
-                                            Just encounterDate
+                                            Just data.startDate
 
                                         else
                                             Nothing
@@ -1360,11 +1400,8 @@ resolveMeasuredHeight assembled =
                 |> Maybe.map .height
 
         heightMeasuredByNurse =
-            List.filterMap
-                (\( _, _, measurements ) ->
-                    resolveHeight measurements
-                )
-                assembled.nursePreviousMeasurementsWithDates
+            List.filterMap (.measurements >> resolveHeight)
+                assembled.nursePreviousEncountersData
                 |> List.head
 
         heightMeasuredByCHW =
@@ -1427,64 +1464,6 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
         |> EverySet.union diagnosesBySymptoms
         |> EverySet.union diagnosesByMentalHealth
         |> applyDiagnosesHierarchy
-
-
-applyDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyDiagnosesHierarchy =
-    applyHypertensionlikeDiagnosesHierarchy
-        >> applyMastitisDiagnosesHierarchy
-        >> applyGeneralDiagnosesHierarchy
-
-
-applyHypertensionlikeDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyHypertensionlikeDiagnosesHierarchy diagnoses =
-    let
-        ( bloodPressureDiagnoses, others ) =
-            EverySet.toList diagnoses
-                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPressureDiagnoses)
-
-        topBloodPressureDiagnosis =
-            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPressureDiagnoses
-                |> Maybe.Extra.values
-                |> List.maximum
-                |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
-                |> Maybe.map List.singleton
-                |> Maybe.withDefault []
-    in
-    topBloodPressureDiagnosis
-        ++ others
-        |> EverySet.fromList
-
-
-applyMastitisDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyMastitisDiagnosesHierarchy diagnoses =
-    let
-        ( mastitisDiagnoses, others ) =
-            EverySet.toList diagnoses
-                |> List.partition (\diagnosis -> List.member diagnosis hierarchalMastitisDiagnoses)
-
-        topMastitisDiagnosis =
-            List.map hierarchalMastitisDiagnosisToNumber mastitisDiagnoses
-                |> Maybe.Extra.values
-                |> List.maximum
-                |> Maybe.andThen hierarchalMastitisDiagnosisFromNumber
-                |> Maybe.map List.singleton
-                |> Maybe.withDefault []
-    in
-    topMastitisDiagnosis
-        ++ others
-        |> EverySet.fromList
-
-
-applyGeneralDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
-applyGeneralDiagnosesHierarchy diagnoses =
-    -- When Mastitis is diagnosed, we eliminate Fever diagnosis, because
-    -- fever is one of the symptoms for Mastitis.
-    if EverySet.member DiagnosisPostpartumMastitis diagnoses then
-        EverySet.remove DiagnosisPostpartumFever diagnoses
-
-    else
-        diagnoses
 
 
 matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
@@ -2372,17 +2351,24 @@ severePreeclampsiaRecurrentPhase dangerSigns measurements =
     let
         byBloodPressure =
             getMeasurementValueFunc measurements.vitals
-                |> Maybe.andThen
+                |> Maybe.map
                     (\value ->
-                        Maybe.map4
-                            (\dia sys diaRepeated sysRepeated ->
-                                (dia >= 110 && sys >= 160)
-                                    || (diaRepeated >= 110 && sys >= 160)
-                            )
-                            value.dia
-                            value.sys
-                            value.diaRepeated
-                            value.sysRepeated
+                        let
+                            byInital =
+                                Maybe.map2
+                                    (\dia sys -> dia >= 110 && sys >= 160)
+                                    value.dia
+                                    value.sys
+                                    |> Maybe.withDefault False
+
+                            byRecurrent =
+                                Maybe.map2
+                                    (\dia sys -> dia >= 110 && sys >= 160)
+                                    value.diaRepeated
+                                    value.sysRepeated
+                                    |> Maybe.withDefault False
+                        in
+                        byInital || byRecurrent
                     )
                 |> Maybe.withDefault False
     in
@@ -3304,7 +3290,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
         NextStepsWait ->
             let
                 completed =
-                    if nextStepsTaskCompleted assembled NextStepsWait then
+                    if nextStepsTaskCompleted currentDate assembled NextStepsWait then
                         1
 
                     else
@@ -3317,24 +3303,16 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.nursePreviousMeasurementsWithDates
-        |> List.filterMap
-            (\( _, _, measurements ) ->
-                measurementFunc measurements
-                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
-            )
+    assembled.nursePreviousEncountersData
+        |> List.filterMap (.measurements >> measurementFunc >> Maybe.map (Tuple.second >> .value >> valueFunc))
         |> List.reverse
         |> List.head
 
 
 resolvePreviousMaybeValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> Maybe b) -> Maybe b
 resolvePreviousMaybeValue assembled measurementFunc valueFunc =
-    assembled.nursePreviousMeasurementsWithDates
-        |> List.filterMap
-            (\( _, _, measurements ) ->
-                measurementFunc measurements
-                    |> Maybe.andThen (Tuple.second >> .value >> valueFunc)
-            )
+    assembled.nursePreviousEncountersData
+        |> List.filterMap (.measurements >> measurementFunc >> Maybe.andThen (Tuple.second >> .value >> valueFunc))
         |> List.reverse
         |> List.head
 
@@ -4543,12 +4521,12 @@ historyTasksCompletedFromTotal assembled data task =
                         |> socialHistoryFormWithDefault data.socialForm
 
                 showCounselingQuestion =
-                    assembled.nursePreviousMeasurementsWithDates
+                    assembled.nursePreviousEncountersData
                         |> List.filter
-                            (\( _, _, measurements ) ->
-                                measurements.socialHistory
-                                    |> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
-                                    |> Maybe.withDefault False
+                            (.measurements
+                                >> .socialHistory
+                                >> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
+                                >> Maybe.withDefault False
                             )
                         |> List.isEmpty
 
@@ -4560,20 +4538,20 @@ historyTasksCompletedFromTotal assembled data task =
                         []
 
                 showTestingQuestions =
-                    assembled.nursePreviousMeasurementsWithDates
+                    assembled.nursePreviousEncountersData
                         |> List.filter
-                            (\( _, _, measurements ) ->
-                                measurements.socialHistory
-                                    |> Maybe.map
-                                        (\socialHistory ->
-                                            let
-                                                value =
-                                                    Tuple.second socialHistory |> .value
-                                            in
-                                            (value.hivTestingResult == ResultHivPositive)
-                                                || (value.hivTestingResult == ResultHivNegative)
-                                        )
-                                    |> Maybe.withDefault False
+                            (.measurements
+                                >> .socialHistory
+                                >> Maybe.map
+                                    (\socialHistory ->
+                                        let
+                                            value =
+                                                Tuple.second socialHistory |> .value
+                                        in
+                                        (value.hivTestingResult == ResultHivPositive)
+                                            || (value.hivTestingResult == ResultHivNegative)
+                                    )
+                                >> Maybe.withDefault False
                             )
                         |> List.isEmpty
 
@@ -4975,13 +4953,13 @@ expectLaboratoryTask currentDate assembled task =
                 -- in testing for it.
                 isKnownAsPositive getMeasurementFunc =
                     List.filter
-                        (\( _, _, measurements ) ->
-                            getMeasurementFunc measurements
-                                |> getMeasurementValueFunc
-                                |> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
-                                |> Maybe.withDefault False
+                        (.measurements
+                            >> getMeasurementFunc
+                            >> getMeasurementValueFunc
+                            >> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
+                            >> Maybe.withDefault False
                         )
-                        assembled.nursePreviousMeasurementsWithDates
+                        assembled.nursePreviousEncountersData
                         |> List.isEmpty
                         |> not
             in
@@ -5034,13 +5012,13 @@ expectLaboratoryTask currentDate assembled task =
 generatePendingLabsFromPreviousEncounters : AssembledData -> List ( NominalDate, PrenatalEncounterId, List LaboratoryTest )
 generatePendingLabsFromPreviousEncounters assembled =
     List.filterMap
-        (\( date, _, measurements ) ->
-            getMeasurementValueFunc measurements.labsResults
+        (\data ->
+            getMeasurementValueFunc data.measurements.labsResults
                 |> Maybe.andThen
                     (\value ->
                         let
                             encounterId =
-                                Maybe.andThen (Tuple.second >> .encounterId) measurements.labsResults
+                                Maybe.andThen (Tuple.second >> .encounterId) data.measurements.labsResults
 
                             pendingTests =
                                 EverySet.diff value.performedTests value.completedTests
@@ -5054,10 +5032,10 @@ generatePendingLabsFromPreviousEncounters assembled =
                             Nothing
 
                         else
-                            Maybe.map (\id -> ( date, id, pendingTests )) encounterId
+                            Maybe.map (\id -> ( data.startDate, id, pendingTests )) encounterId
                     )
         )
-        assembled.nursePreviousMeasurementsWithDates
+        assembled.nursePreviousEncountersData
 
 
 generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
@@ -5065,10 +5043,10 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     let
         generateTestDates getMeasurementFunc resultsExistFunc resultsValidFunc =
             List.filterMap
-                (\( _, _, measurements ) ->
+                (\data ->
                     let
                         measurement =
-                            getMeasurementFunc measurements
+                            getMeasurementFunc data.measurements
 
                         dateMeasured =
                             -- Date on which test was recorded.
@@ -5104,7 +5082,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
                                     Nothing
                             )
                 )
-                assembled.nursePreviousMeasurementsWithDates
+                assembled.nursePreviousEncountersData
 
         isTestResultValid =
             .testResult
@@ -6329,7 +6307,6 @@ matchRequiredReferralFacility assembled facility =
 
         FacilityNCDProgram ->
             referredToSpecialityCareProgram EnrolledToNCDProgram assembled
-                || diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
 
         FacilityANCServices ->
             -- Explicit NCD facility.

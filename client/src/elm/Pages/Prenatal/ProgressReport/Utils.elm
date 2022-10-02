@@ -12,8 +12,8 @@ import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
-        , allMedicalDiagnosis
-        , allObstetricalDiagnosis
+        , allMedicalDiagnoses
+        , allObstetricalDiagnoses
         , allRiskFactors
         , allTrimesters
         )
@@ -46,15 +46,15 @@ import Measurement.Utils
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils exposing (respiratoryRateElevated)
 import Pages.Prenatal.Encounter.Utils exposing (..)
-import Pages.Prenatal.Encounter.View exposing (viewActionButton)
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
     exposing
-        ( diagnosedMalaria
+        ( applyHypertensionlikeDiagnosesHierarchy
+        , diagnosedMalaria
         , hypertensionDiagnoses
         , outsideCareDiagnoses
         , recommendedTreatmentSignsForHypertension
@@ -83,27 +83,31 @@ updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled fi
     -- We want to be looking at encounters performed
     -- before the encounter we're processing, to be able to locate
     -- previous chronic diagnosis.
-    filterNurseMeasurementsWithDatesToDate encounterDate assembled.nursePreviousMeasurementsWithDates
+    filterNursePreviousEncountersDataToDate encounterDate assembled.nursePreviousEncountersData
         |> resolvePreviousHypertensionDiagnosis
         |> Maybe.map
             (\previousHypertensionDiagnosis ->
                 EverySet.insert previousHypertensionDiagnosis encounterDiagnoses
+                    |> -- Adding this to avoid a situation where we have 2 hypetensionlike diagnoses.
+                       -- For example, if we had chronic Moderate Preeclampsia, and at current
+                       -- encounter we diagnosed Severe Preeclampsia.
+                       applyHypertensionlikeDiagnosesHierarchy
             )
         |> Maybe.withDefault encounterDiagnoses
         |> EverySet.toList
         |> List.filter (\diagnosis -> List.member diagnosis filterList)
 
 
-filterNurseMeasurementsWithDatesToDate :
+filterNursePreviousEncountersDataToDate :
     NominalDate
-    -> List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
-    -> List ( NominalDate, EverySet PrenatalDiagnosis, PrenatalMeasurements )
-filterNurseMeasurementsWithDatesToDate limitDate nursePreviousMeasurementsWithDates =
+    -> List PreviousEncounterData
+    -> List PreviousEncounterData
+filterNursePreviousEncountersDataToDate limitDate nursePreviousEncountersData =
     List.filter
-        (\( date, _, _ ) ->
-            Date.compare date limitDate == LT
+        (\data ->
+            Date.compare data.startDate limitDate == LT
         )
-        nursePreviousMeasurementsWithDates
+        nursePreviousEncountersData
 
 
 diagnosisForProgressReportToString : Language -> PrenatalDiagnosis -> String

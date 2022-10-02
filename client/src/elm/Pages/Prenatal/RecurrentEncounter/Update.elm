@@ -14,16 +14,6 @@ import Pages.Prenatal.RecurrentEncounter.Model exposing (..)
 update : PrenatalEncounterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update id msg model =
     case msg of
-        CloseEncounter ->
-            ( model
-            , Cmd.none
-            , [ Backend.PrenatalEncounter.Model.ClosePrenatalEncounter
-                    |> Backend.Model.MsgPrenatalEncounter id
-                    |> App.Model.MsgIndexedDb
-              , App.Model.SetActivePage PinCodePage
-              ]
-            )
-
         SetActivePage page ->
             let
                 appMsgs =
@@ -44,9 +34,6 @@ update id msg model =
 
         SetAlertsDialogState value ->
             ( { model | showAlertsDialog = value }, Cmd.none, [] )
-
-        SetEndEncounterDialogState value ->
-            ( { model | showEndEncounterDialog = value }, Cmd.none, [] )
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
