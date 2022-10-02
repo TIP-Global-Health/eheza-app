@@ -198,39 +198,40 @@ viewContent language currentDate initiator db model assembled =
                                     (\( _, participant ) ->
                                         participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
                                     )
-
-                        -- @todo
-                        actions =
-                            --     case initiator of
-                            --         InitiatorEncounterPage _ ->
-                            --             let
-                            --                 ( completedActivities, pendingActivities ) =
-                            --                     getAllActivities assembled
-                            --                         |> List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled)
-                            --                         |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
-                            --             in
-                            --             viewActionButton language
-                            --                 pendingActivities
-                            --                 completedActivities
-                            --                 (SetActivePage PinCodePage)
-                            --                 SetEndEncounterDialogState
-                            --                 assembled
-                            --
-                            --         InitiatorRecurrentEncounterPage _ ->
-                            --             let
-                            --                 ( completedActivities, pendingActivities ) =
-                            --                     Pages.NCD.RecurrentEncounter.Utils.allActivities
-                            --                         |> List.filter (Pages.NCD.RecurrentActivity.Utils.expectActivity currentDate assembled)
-                            --                         |> List.partition (Pages.NCD.RecurrentActivity.Utils.activityCompleted currentDate assembled)
-                            --
-                            --                 allowEndEcounter =
-                            --                     List.isEmpty pendingActivities
-                            --             in
-                            --             viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
-                            emptyNode
                     in
                     case model.diagnosisMode of
                         ModeActiveDiagnosis ->
+                            let
+                                -- @todo
+                                actions =
+                                    --     case initiator of
+                                    --         InitiatorEncounterPage _ ->
+                                    --             let
+                                    --                 ( completedActivities, pendingActivities ) =
+                                    --                     getAllActivities assembled
+                                    --                         |> List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled)
+                                    --                         |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
+                                    --             in
+                                    --             viewActionButton language
+                                    --                 pendingActivities
+                                    --                 completedActivities
+                                    --                 (SetActivePage PinCodePage)
+                                    --                 SetEndEncounterDialogState
+                                    --                 assembled
+                                    --
+                                    --         InitiatorRecurrentEncounterPage _ ->
+                                    --             let
+                                    --                 ( completedActivities, pendingActivities ) =
+                                    --                     Pages.NCD.RecurrentEncounter.Utils.allActivities
+                                    --                         |> List.filter (Pages.NCD.RecurrentActivity.Utils.expectActivity currentDate assembled)
+                                    --                         |> List.partition (Pages.NCD.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+                                    --
+                                    --                 allowEndEcounter =
+                                    --                     List.isEmpty pendingActivities
+                                    --             in
+                                    --             viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                                    emptyNode
+                            in
                             [ viewRiskFactorsPane language currentDate assembled
                             , viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db
                             , viewMedicalDiagnosisPane language currentDate assembled
@@ -242,11 +243,7 @@ viewContent language currentDate initiator db model assembled =
                             ]
 
                         ModeCompletedDiagnosis ->
-                            [ viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db
-
-                            -- @todo
-                            -- , actions
-                            ]
+                            [ viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db ]
     in
     div [ class "ui unstackable items" ] <|
         viewPersonInfoPane language currentDate assembled.person
