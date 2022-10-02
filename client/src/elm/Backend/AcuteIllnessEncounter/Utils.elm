@@ -128,7 +128,7 @@ progressReportInitiatorToUrlFragment initiator =
             "patient-record-" ++ fromEntityUuid personId ++ "+++" ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragment patientRecordInitiator
 
         InitiatorNCDProgressReport ncdProgressReportInitiator ->
-            "ncd-progress-report-" ++ Backend.NCDEncounter.Utils.progressReportInitiatorToUrlFragmemt ncdProgressReportInitiator
+            "ncd-progress-report-" ++ Backend.NCDEncounter.Utils.progressReportInitiatorToUrlFragment ncdProgressReportInitiator
 
 
 progressReportInitiatorFromUrlFragment : String -> Maybe AcuteIllnessProgressReportInitiator
@@ -195,7 +195,7 @@ progressReportInitiatorFromUrlFragment s =
 
             else if String.startsWith "ncd-progress-report-" s then
                 String.dropLeft (String.length "ncd-progress-report-") s
-                    |> Backend.NCDEncounter.Utils.progressReportInitiatorFromUrlFragmemt
+                    |> Backend.NCDEncounter.Utils.progressReportInitiatorFromUrlFragment
                     |> Maybe.map InitiatorNCDProgressReport
 
             else

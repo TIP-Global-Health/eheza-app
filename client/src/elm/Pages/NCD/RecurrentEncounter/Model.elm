@@ -7,21 +7,17 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { selectedTab : Tab
-    , showEndEncounterDialog : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
-    , showEndEncounterDialog = False
     }
 
 
 type Msg
-    = CloseEncounter
-    | SetActivePage Page
-    | SetEndEncounterDialogState Bool
+    = SetActivePage Page
     | SetSelectedTab Tab
 
 

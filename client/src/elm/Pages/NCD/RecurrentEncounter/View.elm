@@ -54,23 +54,10 @@ viewHeaderAndContent language currentDate id model assembled =
 
         content =
             viewContent language currentDate assembled model
-
-        endEncounterDialog =
-            if model.showEndEncounterDialog then
-                Just <|
-                    viewEndEncounterDialog language
-                        Translate.EndEncounterQuestion
-                        Translate.OnceYouEndTheEncounter
-                        CloseEncounter
-                        (SetEndEncounterDialogState False)
-
-            else
-                Nothing
     in
     div [ class "page-encounter ncd" ]
         [ header
         , content
-        , viewModal endEncounterDialog
         ]
 
 
@@ -177,13 +164,16 @@ viewMainPageContent language currentDate assembled model =
                         ]
                     ]
 
-        endEncounterButtonEnabled =
-            List.isEmpty pendingActivities
-
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language endEncounterButtonEnabled SetEndEncounterDialogState
+                , div [ class "actions" ]
+                    [ button
+                        [ class "ui fluid primary button"
+                        , onClick (SetActivePage <| UserPage GlobalCaseManagementPage)
+                        ]
+                        [ text <| translate language Translate.LeaveEncounter ]
+                    ]
                 ]
     in
     [ tabs

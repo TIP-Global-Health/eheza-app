@@ -189,10 +189,10 @@ diagnosesCausingHospitalReferralByOtherReasons assembled =
 
             else
                 let
-                    bloodPreasureRequiresHospitalization =
-                        bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled
+                    bloodPressureRequiresHospitalization =
+                        bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled
                 in
-                if moderatePreeclampsiaAsCurrent && bloodPreasureRequiresHospitalization then
+                if moderatePreeclampsiaAsCurrent && bloodPressureRequiresHospitalization then
                     [ DiagnosisModeratePreeclampsiaInitialPhase ]
 
                 else
@@ -214,8 +214,8 @@ moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled =
         |> Maybe.withDefault False
 
 
-bloodPreasureAtHypertensionTreatmentRequiresHospitalization : AssembledData -> Bool
-bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled =
+bloodPressureAtHypertensionTreatmentRequiresHospitalization : AssembledData -> Bool
+bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled =
     getMeasurementValueFunc assembled.measurements.vitals
         |> Maybe.andThen
             (\value ->
@@ -3449,19 +3449,19 @@ applyDiagnosesHierarchy =
 applyHypertensionlikeDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyHypertensionlikeDiagnosesHierarchy diagnoses =
     let
-        ( bloodPreasureDiagnoses, others ) =
+        ( bloodPressureDiagnoses, others ) =
             EverySet.toList diagnoses
-                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPreasureDiagnoses)
+                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPressureDiagnoses)
 
-        topBloodPreasureDiagnosis =
-            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPreasureDiagnoses
+        topBloodPressureDiagnosis =
+            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPressureDiagnoses
                 |> Maybe.Extra.values
                 |> List.maximum
                 |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in
-    topBloodPreasureDiagnosis
+    topBloodPressureDiagnosis
         ++ others
         |> EverySet.fromList
 
