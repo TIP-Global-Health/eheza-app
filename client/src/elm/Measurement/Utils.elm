@@ -3760,7 +3760,7 @@ resultFormHeaderSection language currentDate executionDate task =
             Maybe.map
                 (\date ->
                     [ viewLabel language <| Translate.LaboratoryTaskDate task
-                    , p [ class "test-date" ] [ text <| formatDDMMYYYY date ]
+                    , p [ class "execution-date" ] [ text <| formatDDMMYYYY date ]
                     ]
                 )
                 executionDate

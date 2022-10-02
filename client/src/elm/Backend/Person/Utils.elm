@@ -121,8 +121,8 @@ defaultIconForPerson currentDate person =
         |> Maybe.withDefault "mother"
 
 
-initiatorToUrlFragmemt : Initiator -> String
-initiatorToUrlFragmemt initiator =
+initiatorToUrlFragment : Initiator -> String
+initiatorToUrlFragment initiator =
     case initiator of
         ParticipantDirectoryOrigin ->
             "directory"
@@ -142,8 +142,8 @@ initiatorToUrlFragmemt initiator =
             ""
 
 
-initiatorFromUrlFragmemt : String -> Maybe Initiator
-initiatorFromUrlFragmemt s =
+initiatorFromUrlFragment : String -> Maybe Initiator
+initiatorFromUrlFragment s =
     case s of
         "directory" ->
             Just ParticipantDirectoryOrigin

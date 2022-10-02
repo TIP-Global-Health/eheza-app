@@ -524,7 +524,7 @@ viewNextStepsContent language currentDate assembled data =
                     activeTask == Just task
 
                 isCompleted =
-                    nextStepsTaskCompleted assembled task
+                    nextStepsTaskCompleted currentDate assembled task
 
                 navigationAction =
                     if isActive then

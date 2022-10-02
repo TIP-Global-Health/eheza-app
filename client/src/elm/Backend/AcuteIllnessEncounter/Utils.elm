@@ -109,8 +109,8 @@ acuteIllnessDiagnosisFromString diagnosis =
             Nothing
 
 
-progressReportInitiatorToUrlFragmemt : AcuteIllnessProgressReportInitiator -> String
-progressReportInitiatorToUrlFragmemt initiator =
+progressReportInitiatorToUrlFragment : AcuteIllnessProgressReportInitiator -> String
+progressReportInitiatorToUrlFragment initiator =
     case initiator of
         InitiatorEncounterPage ->
             "encounter-page"
@@ -125,14 +125,14 @@ progressReportInitiatorToUrlFragmemt initiator =
             "progress-report-" ++ fromEntityUuid sessionId ++ "+++" ++ fromEntityUuid personId
 
         InitiatorPatientRecord patientRecordInitiator personId ->
-            "patient-record-" ++ fromEntityUuid personId ++ "+++" ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragmemt patientRecordInitiator
+            "patient-record-" ++ fromEntityUuid personId ++ "+++" ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragment patientRecordInitiator
 
         InitiatorNCDProgressReport ncdProgressReportInitiator ->
             "ncd-progress-report-" ++ Backend.NCDEncounter.Utils.progressReportInitiatorToUrlFragmemt ncdProgressReportInitiator
 
 
-progressReportInitiatorFromUrlFragmemt : String -> Maybe AcuteIllnessProgressReportInitiator
-progressReportInitiatorFromUrlFragmemt s =
+progressReportInitiatorFromUrlFragment : String -> Maybe AcuteIllnessProgressReportInitiator
+progressReportInitiatorFromUrlFragment s =
     case s of
         "encounter-page" ->
             Just InitiatorEncounterPage
@@ -189,7 +189,7 @@ progressReportInitiatorFromUrlFragmemt s =
                         (List.head fragments)
                         (List.drop 1 fragments
                             |> List.head
-                            |> Maybe.andThen Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragmemt
+                            |> Maybe.andThen Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragment
                         )
                         |> Maybe.Extra.join
 
