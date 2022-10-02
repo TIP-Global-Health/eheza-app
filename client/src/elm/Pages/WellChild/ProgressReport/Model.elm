@@ -35,7 +35,7 @@ type WellChildProgressReportInitiator
 
 type alias BottomActionData msg =
     { showEndEncounterDialog : Bool
-    , allowEndEcounter : Bool
+    , allowEndEncounter : Bool
     , closeEncounterMsg : msg
     , setEndEncounterDialogStateMsg : Bool -> msg
     , startEncounterMsg : msg

@@ -91,13 +91,13 @@ viewContent language currentDate id isChw initiator model assembled =
             else
                 Nothing
 
-        allowEndEcounter =
+        allowEndEncounter =
             allowEndingEcounter currentDate isChw assembled pendingActivities
 
         endEncounterButton =
             case initiator of
                 InitiatorEncounterPage ->
-                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                    viewEndEncounterButton language allowEndEncounter SetEndEncounterDialogState
 
                 _ ->
                     emptyNode

@@ -14,6 +14,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NCDActivity.Utils exposing (getAllActivities)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Person)
@@ -35,9 +36,10 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
 import Pages.Report.Utils exposing (..)
 import Pages.Report.View exposing (..)
-import Pages.Utils exposing (viewPersonDetailsExtended)
+import Pages.Utils exposing (viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -53,25 +55,22 @@ view language currentDate id initiator db model =
         content =
             viewWebData language (viewContent language currentDate initiator db model) identity assembled
 
-        -- @todo
-        -- endEncounterDialog =
-        --     if model.showEndEncounterDialog then
-        --         Just <|
-        --             viewEndEncounterDialog language
-        --                 Translate.EndEncounterQuestion
-        --                 Translate.OnceYouEndTheEncounter
-        --                 (CloseEncounter id)
-        --                 (SetEndEncounterDialogState False)
-        --
-        --     else
-        --         Nothing
+        endEncounterDialog =
+            if model.showEndEncounterDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        (CloseEncounter id)
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-report ncd" ] <|
         [ header
         , content
-
-        -- @todo
-        -- , viewModal endEncounterDialog
+        , viewModal endEncounterDialog
         ]
 
 
@@ -202,44 +201,25 @@ viewContent language currentDate initiator db model assembled =
                     case model.diagnosisMode of
                         ModeActiveDiagnosis ->
                             let
-                                -- @todo
                                 actions =
-                                    --     case initiator of
-                                    --         InitiatorEncounterPage _ ->
-                                    --             let
-                                    --                 ( completedActivities, pendingActivities ) =
-                                    --                     getAllActivities assembled
-                                    --                         |> List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled)
-                                    --                         |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
-                                    --             in
-                                    --             viewActionButton language
-                                    --                 pendingActivities
-                                    --                 completedActivities
-                                    --                 (SetActivePage PinCodePage)
-                                    --                 SetEndEncounterDialogState
-                                    --                 assembled
-                                    --
-                                    --         InitiatorRecurrentEncounterPage _ ->
-                                    --             let
-                                    --                 ( completedActivities, pendingActivities ) =
-                                    --                     Pages.NCD.RecurrentEncounter.Utils.allActivities
-                                    --                         |> List.filter (Pages.NCD.RecurrentActivity.Utils.expectActivity currentDate assembled)
-                                    --                         |> List.partition (Pages.NCD.RecurrentActivity.Utils.activityCompleted currentDate assembled)
-                                    --
-                                    --                 allowEndEcounter =
-                                    --                     List.isEmpty pendingActivities
-                                    --             in
-                                    --             viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
-                                    emptyNode
+                                    case initiator of
+                                        Backend.NCDEncounter.Types.InitiatorEncounterPage _ ->
+                                            let
+                                                ( completedActivities, pendingActivities ) =
+                                                    List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled) getAllActivities
+                                                        |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
+                                            in
+                                            viewEndEncounterButton language (List.isEmpty pendingActivities) SetEndEncounterDialogState
+
+                                        Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage _ ->
+                                            viewEncounterActionButton language Translate.LeaveEncounter True (SetActivePage <| UserPage GlobalCaseManagementPage)
                             in
                             [ viewRiskFactorsPane language currentDate assembled
                             , viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db
                             , viewMedicalDiagnosisPane language currentDate assembled
                             , viewPatientProgressPane language currentDate assembled
                             , viewLabsPane language currentDate SetLabResultsMode
-
-                            -- @todo
-                            -- , actions
+                            , actions
                             ]
 
                         ModeCompletedDiagnosis ->

@@ -195,11 +195,11 @@ viewMainPageContent language currentDate zscores id isChw db assembled model =
                     ]
                 ]
 
-        allowEndEcounter =
+        allowEndEncounter =
             allowEndingEcounter pendingActivities
 
         endEcounterButtonAttributes =
-            if allowEndEcounter then
+            if allowEndEncounter then
                 [ class "ui fluid primary button"
                 , onClick <| CloseEncounter id
                 ]

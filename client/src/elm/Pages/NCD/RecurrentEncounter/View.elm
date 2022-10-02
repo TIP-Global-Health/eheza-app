@@ -23,7 +23,7 @@ import Pages.NCD.RecurrentEncounter.Model exposing (..)
 import Pages.NCD.RecurrentEncounter.Utils exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewReportLink)
+import Pages.Utils exposing (viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -167,13 +167,7 @@ viewMainPageContent language currentDate assembled model =
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , div [ class "actions" ]
-                    [ button
-                        [ class "ui fluid primary button"
-                        , onClick (SetActivePage <| UserPage GlobalCaseManagementPage)
-                        ]
-                        [ text <| translate language Translate.LeaveEncounter ]
-                    ]
+                , viewEncounterActionButton language Translate.LeaveEncounter True (SetActivePage <| UserPage GlobalCaseManagementPage)
                 ]
     in
     [ tabs

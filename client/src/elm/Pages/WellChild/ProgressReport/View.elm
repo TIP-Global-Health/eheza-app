@@ -123,7 +123,7 @@ view language currentDate zscores id isChw db model =
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEcounter = allowEndingEcounter pendingActivities
+                        , allowEndEncounter = allowEndingEcounter pendingActivities
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
@@ -309,7 +309,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                             viewStartEncounterButton language data.startEncounterMsg
 
                         _ ->
-                            viewEndEncounterButton language data.allowEndEcounter data.setEndEncounterDialogStateMsg
+                            viewEndEncounterButton language data.allowEndEncounter data.setEndEncounterDialogStateMsg
                     )
                 )
                 bottomActionData
