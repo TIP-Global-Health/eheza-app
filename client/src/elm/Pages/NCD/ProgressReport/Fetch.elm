@@ -3,6 +3,7 @@ module Pages.NCD.ProgressReport.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
+import Pages.AcuteIllness.Participant.Fetch
 import Pages.NCD.Encounter.Fetch
 import RemoteData exposing (RemoteData(..))
 
@@ -10,22 +11,19 @@ import RemoteData exposing (RemoteData(..))
 fetch : NCDEncounterId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
-        encounter =
-            Dict.get id db.ncdEncounters
-                |> Maybe.withDefault NotAsked
-
         fetchCmds =
-            RemoteData.andThen
-                (\encounter_ ->
-                    Dict.get encounter_.participant db.individualParticipants
-                        |> Maybe.withDefault NotAsked
-                )
-                encounter
-                |> RemoteData.map
-                    (\participant ->
-                        [ Backend.Model.FetchRelationshipsForPerson participant.person
-                        ]
+            Dict.get id db.ncdEncounters
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.andThen
+                    (\encounter ->
+                        Dict.get encounter.participant db.individualParticipants
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map
+                                (\participant ->
+                                    Backend.Model.FetchRelationshipsForPerson participant.person
+                                        :: Pages.AcuteIllness.Participant.Fetch.fetch participant.person db
+                                )
                     )
-                |> RemoteData.withDefault []
+                |> Maybe.withDefault []
     in
     Pages.NCD.Encounter.Fetch.fetch id db ++ fetchCmds

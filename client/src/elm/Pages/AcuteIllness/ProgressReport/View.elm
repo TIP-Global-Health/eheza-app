@@ -146,6 +146,9 @@ viewHeader language id initiator =
 
                 InitiatorPatientRecord patientRecordInitiator personId ->
                     PatientRecordPage patientRecordInitiator personId
+
+                InitiatorNCDProgressReport ncdProgressReportInitiator ->
+                    NCDProgressReportPage ncdProgressReportInitiator
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]

@@ -1,7 +1,9 @@
 module Pages.NCD.ProgressReport.View exposing (view)
 
 import AssocList as Dict
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
         ( MedicalCondition(..)
@@ -23,6 +25,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
+import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.ProgressReport.Model exposing (..)
@@ -127,18 +130,18 @@ viewHeader language initiator model =
                         |> Maybe.withDefault defaultAction
             in
             case initiator of
-                InitiatorEncounterPage id ->
+                Backend.NCDEncounter.Types.InitiatorEncounterPage id ->
                     iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| NCDEncounterPage id)
 
-                InitiatorRecurrentEncounterPage id ->
+                Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage id ->
                     iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| NCDRecurrentEncounterPage id)
 
         goBackPage =
             case initiator of
-                InitiatorEncounterPage id ->
+                Backend.NCDEncounter.Types.InitiatorEncounterPage id ->
                     NCDEncounterPage id
 
-                InitiatorRecurrentEncounterPage id ->
+                Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage id ->
                     NCDRecurrentEncounterPage id
     in
     div
@@ -436,6 +439,78 @@ viewPatientProgressPane language currentDate assembled =
                 , viewBloodGlucoseByTime language sugarCountMeasurements
                 ]
             ]
+        ]
+
+
+viewAcuteIllnessPane :
+    Language
+    -> NominalDate
+    -> NCDProgressReportInitiator
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> DiagnosisMode
+    -> ModelIndexedDb
+    -> Html Msg
+viewAcuteIllnessPane language currentDate initiator acuteIllnesses diagnosisMode db =
+    let
+        ( activeIllnesses, completedIllnesses ) =
+            List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
+
+        entriesHeading =
+            div [ class "heading diagnosis" ]
+                [ div [ class "assesment" ] [ text <| translate language Translate.Assessment ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                , div [ class "date" ] [ text <| translate language Translate.DiagnosisDate ]
+                , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
+                ]
+
+        ( label, priorDiagniosisButton ) =
+            case diagnosisMode of
+                ModeActiveDiagnosis ->
+                    ( Translate.ActiveDiagnosis
+                    , div [ class "pane-action" ]
+                        [ button
+                            [ class "ui primary button"
+                            , onClick <| SetDiagnosisMode ModeCompletedDiagnosis
+                            ]
+                            [ text <| translate language Translate.ReviewPriorDiagnosis ]
+                        ]
+                    )
+
+                ModeCompletedDiagnosis ->
+                    ( Translate.PriorDiagnosis
+                    , emptyNode
+                    )
+
+        daignosisEntries =
+            List.map
+                (\( data, _ ) ->
+                    let
+                        acuteIllnessProgressReportInitiator =
+                            InitiatorNCDProgressReport initiator
+                    in
+                    viewAcuteIllnessDiagnosisEntry language acuteIllnessProgressReportInitiator db SetActivePage data
+                )
+                selectedDiagnosisEntries
+                |> Maybe.Extra.values
+
+        selectedDiagnosisEntries =
+            case diagnosisMode of
+                ModeActiveDiagnosis ->
+                    List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activeIllnesses
+
+                ModeCompletedDiagnosis ->
+                    List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedIllnesses
+
+        entries =
+            List.sortWith sortTuplesByDateDesc daignosisEntries
+                |> List.map Tuple.second
+    in
+    div [ class "pane diagnosis" ]
+        [ viewPaneHeading language label
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: viewEntries language entries
+        , priorDiagniosisButton
         ]
 
 

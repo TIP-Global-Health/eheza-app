@@ -3,6 +3,7 @@ module Pages.WellChild.ProgressReport.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Pages.Page exposing (Page)
+import Pages.Report.Model exposing (DiagnosisMode(..))
 
 
 type alias Model =
@@ -16,16 +17,6 @@ emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , showEndEncounterDialog = False
     }
-
-
-type DiagnosisMode
-    = ModeActiveDiagnosis
-    | ModeCompletedDiagnosis
-
-
-type PaneEntryStatus
-    = StatusOngoing
-    | StatusResolved
 
 
 type ECDStatus

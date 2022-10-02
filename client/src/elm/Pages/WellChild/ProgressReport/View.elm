@@ -1,8 +1,5 @@
 module Pages.WellChild.ProgressReport.View exposing
-    ( diagnosisEntryStatusToString
-    , view
-    , viewAcuteIllnessDiagnosisEntry
-    , viewEntries
+    ( view
     , viewNutritionSigns
     , viewPaneHeading
     , viewPersonInfoPane
@@ -51,16 +48,18 @@ import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
-import Pages.AcuteIllness.Encounter.Utils
-    exposing
-        ( getAcuteIllnessDiagnosisForEncounters
-        , getAcuteIllnessDiagnosisForParticipant
-        , getAcuteIllnessEncountersForParticipant
-        )
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Nutrition.Activity.View exposing (translateNutritionAssement)
 import Pages.Nutrition.Encounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Report.Model exposing (DiagnosisMode(..), PaneEntryStatus(..))
+import Pages.Report.Utils
+    exposing
+        ( diagnosisEntryStatusToString
+        , getAcuteIllnessDiagnosisForEncounters
+        , getAcuteIllnessEncountersForParticipant
+        )
+import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewStartEncounterButton)
 import Pages.WellChild.Activity.Types exposing (VaccinationStatus(..))
 import Pages.WellChild.Activity.Utils exposing (expectedECDSignsOnMilestone, generateCompletedECDSigns, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
@@ -509,7 +508,26 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
                 |> List.map Tuple.second
 
         daignosisEntries =
-            List.map (Tuple.first >> viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg) selectedDiagnosisEntries
+            List.map
+                (\( data, _ ) ->
+                    let
+                        acuteIllnessProgressReportInitiator =
+                            case initiator of
+                                InitiatorNutritionIndividual nutritionEncounterId ->
+                                    InitiatorIndividualNutritionProgressReport nutritionEncounterId
+
+                                InitiatorWellChild wellChildEncounterId ->
+                                    InitiatorWellChildProgressReport wellChildEncounterId
+
+                                InitiatorNutritionGroup sessionId personId ->
+                                    InitiatorGroupNutritionProgressReport sessionId personId
+
+                                Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord patientRecordInitiator personId ->
+                                    Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord patientRecordInitiator personId
+                    in
+                    viewAcuteIllnessDiagnosisEntry language acuteIllnessProgressReportInitiator db setActivePageMsg data
+                )
+                selectedDiagnosisEntries
                 |> Maybe.Extra.values
 
         assessmentEntries =
@@ -741,75 +759,6 @@ generatePartitionedWarningEntries db maybeAssembled =
         )
         maybeAssembled
         |> Maybe.withDefault ( [], [] )
-
-
-viewAcuteIllnessDiagnosisEntry :
-    Language
-    -> WellChildProgressReportInitiator
-    -> ModelIndexedDb
-    -> (Page -> msg)
-    -> ( IndividualEncounterParticipantId, PaneEntryStatus )
-    -> Maybe ( NominalDate, Html msg )
-viewAcuteIllnessDiagnosisEntry language initiator db setActivePageMsg ( participantId, status ) =
-    let
-        encounters =
-            getAcuteIllnessEncountersForParticipant db participantId
-
-        maybeLastEncounterId =
-            List.head encounters
-                |> Maybe.map Tuple.first
-
-        diagnosisData =
-            getAcuteIllnessDiagnosisForEncounters encounters
-    in
-    Maybe.map2
-        (\( date, diagnosis ) lastEncounterId ->
-            let
-                acuteIllnessProgressReportInitiator =
-                    case initiator of
-                        InitiatorNutritionIndividual nutritionEncounterId ->
-                            InitiatorIndividualNutritionProgressReport nutritionEncounterId
-
-                        InitiatorWellChild wellChildEncounterId ->
-                            InitiatorWellChildProgressReport wellChildEncounterId
-
-                        InitiatorNutritionGroup sessionId personId ->
-                            InitiatorGroupNutritionProgressReport sessionId personId
-
-                        Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord patientRecordInitiator personId ->
-                            Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord patientRecordInitiator personId
-            in
-            ( date
-            , div [ class "entry diagnosis" ]
-                [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
-                , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
-                    [ text <| translate language <| Translate.EntryStatusDiagnosis status ]
-                , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
-                , div
-                    [ class "icon-forward"
-                    , onClick <|
-                        setActivePageMsg <|
-                            UserPage <|
-                                AcuteIllnessProgressReportPage
-                                    acuteIllnessProgressReportInitiator
-                                    lastEncounterId
-                    ]
-                    []
-                ]
-            )
-        )
-        diagnosisData
-        maybeLastEncounterId
-
-
-diagnosisEntryStatusToString : PaneEntryStatus -> String
-diagnosisEntryStatusToString status =
-    case status of
-        StatusOngoing ->
-            "ongoing"
-
-        StatusResolved ->
-            "resolved"
 
 
 viewNutritionAssessmentEntry : Language -> ( NominalDate, ( List NutritionAssessment, PaneEntryStatus ) ) -> ( NominalDate, Html any )
@@ -1485,12 +1434,3 @@ viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
     div [ class <| "pane-heading" ]
         [ text <| translate language label ]
-
-
-viewEntries : Language -> List (Html any) -> List (Html any)
-viewEntries language entries =
-    if List.isEmpty entries then
-        [ div [ class "entry no-matches" ] [ text <| translate language Translate.NoMatchesFound ] ]
-
-    else
-        entries

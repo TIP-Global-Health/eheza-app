@@ -3,7 +3,7 @@ module Pages.PatientRecord.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Pages.Page exposing (Page)
-import Pages.WellChild.ProgressReport.Model exposing (DiagnosisMode(..))
+import Pages.Report.Model exposing (DiagnosisMode(..))
 
 
 type alias Model =

@@ -1,6 +1,7 @@
 module Pages.PatientRecord.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
@@ -25,6 +26,9 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
+import Pages.Report.Model exposing (PaneEntryStatus(..))
+import Pages.Report.Utils exposing (diagnosisEntryStatusToString)
+import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -38,8 +42,8 @@ import Pages.Utils
         , viewSaveAction
         , viewStartEncounterButton
         )
-import Pages.WellChild.ProgressReport.Model exposing (PaneEntryStatus(..), WellChildProgressReportInitiator(..))
-import Pages.WellChild.ProgressReport.View exposing (diagnosisEntryStatusToString, viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
+import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
+import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage, viewModal)
@@ -407,12 +411,13 @@ viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db =
 
         daignosisEntries =
             List.map
-                (Tuple.first
-                    >> viewAcuteIllnessDiagnosisEntry
+                (\( data, _ ) ->
+                    viewAcuteIllnessDiagnosisEntry
                         language
-                        (Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator personId)
+                        (Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord initiator personId)
                         db
                         SetActivePage
+                        data
                 )
                 entries
                 |> Maybe.Extra.values

@@ -2,6 +2,7 @@ module Backend.AcuteIllnessEncounter.Utils exposing (..)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
+import Backend.NCDEncounter.Utils
 import Backend.PatientRecord.Utils
 import Maybe.Extra
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
@@ -126,6 +127,9 @@ progressReportInitiatorToUrlFragmemt initiator =
         InitiatorPatientRecord patientRecordInitiator personId ->
             "patient-record-" ++ fromEntityUuid personId ++ "+++" ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragmemt patientRecordInitiator
 
+        InitiatorNCDProgressReport ncdProgressReportInitiator ->
+            "ncd-progress-report-" ++ Backend.NCDEncounter.Utils.progressReportInitiatorToUrlFragmemt ncdProgressReportInitiator
+
 
 progressReportInitiatorFromUrlFragmemt : String -> Maybe AcuteIllnessProgressReportInitiator
 progressReportInitiatorFromUrlFragmemt s =
@@ -188,6 +192,11 @@ progressReportInitiatorFromUrlFragmemt s =
                             |> Maybe.andThen Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragmemt
                         )
                         |> Maybe.Extra.join
+
+            else if String.startsWith "ncd-progress-report-" s then
+                String.dropLeft (String.length "ncd-progress-report-") s
+                    |> Backend.NCDEncounter.Utils.progressReportInitiatorFromUrlFragmemt
+                    |> Maybe.map InitiatorNCDProgressReport
 
             else
                 Nothing

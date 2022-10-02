@@ -73,3 +73,13 @@ type LabResultsHistoryMode
 type TestReport
     = TestPerformed TestResult
     | TestNotPerformedKnownAsPositive
+
+
+type DiagnosisMode
+    = ModeActiveDiagnosis
+    | ModeCompletedDiagnosis
+
+
+type PaneEntryStatus
+    = StatusOngoing
+    | StatusResolved

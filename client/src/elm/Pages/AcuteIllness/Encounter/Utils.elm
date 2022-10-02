@@ -14,6 +14,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), ExposureTask(..), NextStepsTask(..), PhysicalExamTask(..))
 import Pages.AcuteIllness.Activity.Utils exposing (resolveAcuteIllnessDiagnosis)
 import Pages.AcuteIllness.Encounter.Model exposing (..)
+import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -172,39 +173,6 @@ generatePreviousMeasurements currentEncounterId participantId db =
         >> List.sortWith compareAcuteIllnessEncounters
 
 
-getAcuteIllnessEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
-getAcuteIllnessEncountersForParticipant db participantId =
-    Dict.get participantId db.acuteIllnessEncountersByParticipant
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.withDefault []
-        |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncountersDesc e1 e2)
-
-
-compareAcuteIllnessEncountersDesc :
-    { a | startDate : NominalDate, sequenceNumber : Int }
-    -> { a | startDate : NominalDate, sequenceNumber : Int }
-    -> Order
-compareAcuteIllnessEncountersDesc data1 data2 =
-    compareAcuteIllnessEncounters data2 data1
-
-
-compareAcuteIllnessEncounters :
-    { a | startDate : NominalDate, sequenceNumber : Int }
-    -> { a | startDate : NominalDate, sequenceNumber : Int }
-    -> Order
-compareAcuteIllnessEncounters data1 data2 =
-    case Date.compare data1.startDate data2.startDate of
-        LT ->
-            LT
-
-        GT ->
-            GT
-
-        EQ ->
-            compare data1.sequenceNumber data2.sequenceNumber
-
-
 getAcuteIllnessDiagnosisByPreviousEncounters :
     AcuteIllnessEncounterId
     -> ModelIndexedDb
@@ -232,19 +200,3 @@ getAcuteIllnessDiagnosisForParticipant : ModelIndexedDb -> IndividualEncounterPa
 getAcuteIllnessDiagnosisForParticipant db participantId =
     getAcuteIllnessEncountersForParticipant db participantId
         |> getAcuteIllnessDiagnosisForEncounters
-
-
-getAcuteIllnessDiagnosisForEncounters : List ( AcuteIllnessEncounterId, AcuteIllnessEncounter ) -> Maybe ( NominalDate, AcuteIllnessDiagnosis )
-getAcuteIllnessDiagnosisForEncounters encounters =
-    List.filterMap
-        (\( _, encounter ) ->
-            if encounter.diagnosis /= NoAcuteIllnessDiagnosis then
-                Just ( encounter.startDate, encounter.diagnosis )
-
-            else
-                Nothing
-        )
-        encounters
-        -- We know that encounters are sorted DESC, so the one at
-        -- head is the most recent.
-        |> List.head
