@@ -2923,9 +2923,74 @@ div.page-report.demographics .ui.unstackable.items {
 
 div.page-report.ncd .ui.unstackable.items {
 
+  .pane.diagnosis {
+
+    .heading {
+      border-bottom: 1px solid $color-text;
+      color: $color-dark-gray;
+      display: flex;
+      font-size: 20px;
+      font-weight: 600;
+      padding: 15px 30px;
+      width: 100%;
+    }
+
+    .pane-content {
+      padding: 0;
+
+      .entry {
+        border-bottom: 1px solid $color-text;
+        color: $color-dark-gray;
+        display: flex;
+        font-size: 22px;
+        padding: 15px 30px;
+        width: 100%;
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+
+      .entry .cell {
+        align-self: center;
+        text-align: left;
+        padding-right: 20px;
+      }
+
+      .entry .cell.status {
+        border-radius: 10px;
+        color: $color-white;
+        font-size: 17px;
+        margin: 3px 5px;
+        padding: 0 10px;
+        text-transform: uppercase;
+
+        &.completed {
+          background: $color-purple;
+        }
+
+        &.ongoing {
+          background: $color-velvet;
+        }
+
+        &.no-status {
+          color: $color-background;
+          background: $color-background;
+        }
+      }
+
+      .entry.no-matches {
+        border-bottom: none;
+        display: block;
+        text-align: center;
+      }
+    }
+  }
+
   .patient-progress {
 
     .heading {
+      border-bottom: unset;
       margin-top: -20px;
     }
 

@@ -51,7 +51,7 @@ view language currentDate id initiator db model =
             viewHeader language initiator model
 
         content =
-            viewWebData language (viewContent language currentDate initiator model) identity assembled
+            viewWebData language (viewContent language currentDate initiator db model) identity assembled
 
         -- @todo
         -- endEncounterDialog =
@@ -103,38 +103,45 @@ viewHeader language initiator model =
                             []
                         ]
 
-                goBackActionByLabResultsState defaultAction =
-                    Maybe.map
-                        (\mode ->
-                            let
-                                backToCurrentMsg targetMode =
-                                    SetLabResultsMode (Just (LabResultsCurrent targetMode))
-                            in
-                            case mode of
-                                LabResultsCurrent currentMode ->
-                                    case currentMode of
-                                        LabResultsCurrentMain ->
-                                            SetLabResultsMode Nothing
+                goBackAction defaultAction =
+                    Maybe.map goBackActionByLabResultsState model.labResultsMode
+                        |> Maybe.withDefault (goBackActionByDiagnosisMode defaultAction)
 
-                                        LabResultsCurrentDipstickShort ->
-                                            backToCurrentMsg LabResultsCurrentMain
+                goBackActionByLabResultsState mode =
+                    let
+                        backToCurrentMsg targetMode =
+                            SetLabResultsMode (Just (LabResultsCurrent targetMode))
+                    in
+                    case mode of
+                        LabResultsCurrent currentMode ->
+                            case currentMode of
+                                LabResultsCurrentMain ->
+                                    SetLabResultsMode Nothing
 
-                                        LabResultsCurrentDipstickLong ->
-                                            backToCurrentMsg LabResultsCurrentMain
+                                LabResultsCurrentDipstickShort ->
+                                    backToCurrentMsg LabResultsCurrentMain
 
-                                LabResultsHistory historyMode ->
-                                    Maybe.withDefault LabResultsCurrentMain model.labResultsHistoryOrigin
-                                        |> backToCurrentMsg
-                        )
-                        model.labResultsMode
-                        |> Maybe.withDefault defaultAction
+                                LabResultsCurrentDipstickLong ->
+                                    backToCurrentMsg LabResultsCurrentMain
+
+                        LabResultsHistory historyMode ->
+                            Maybe.withDefault LabResultsCurrentMain model.labResultsHistoryOrigin
+                                |> backToCurrentMsg
+
+                goBackActionByDiagnosisMode defaultAction =
+                    case model.diagnosisMode of
+                        ModeActiveDiagnosis ->
+                            defaultAction
+
+                        ModeCompletedDiagnosis ->
+                            SetDiagnosisMode ModeActiveDiagnosis
             in
             case initiator of
                 Backend.NCDEncounter.Types.InitiatorEncounterPage id ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| NCDEncounterPage id)
+                    iconForView <| goBackAction (SetActivePage <| UserPage <| NCDEncounterPage id)
 
                 Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage id ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| NCDRecurrentEncounterPage id)
+                    iconForView <| goBackAction (SetActivePage <| UserPage <| NCDRecurrentEncounterPage id)
 
         goBackPage =
             case initiator of
@@ -152,8 +159,8 @@ viewHeader language initiator model =
         ]
 
 
-viewContent : Language -> NominalDate -> NCDProgressReportInitiator -> Model -> AssembledData -> Html Msg
-viewContent language currentDate initiator model assembled =
+viewContent : Language -> NominalDate -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate initiator db model assembled =
     let
         derivedContent =
             case model.labResultsMode of
@@ -182,6 +189,16 @@ viewContent language currentDate initiator model assembled =
 
                 Nothing ->
                     let
+                        acuteIllnesses =
+                            Dict.get assembled.participant.person db.individualParticipantsByPerson
+                                |> Maybe.andThen RemoteData.toMaybe
+                                |> Maybe.map Dict.toList
+                                |> Maybe.withDefault []
+                                |> List.filter
+                                    (\( _, participant ) ->
+                                        participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                                    )
+
                         -- @todo
                         actions =
                             --     case initiator of
@@ -212,15 +229,24 @@ viewContent language currentDate initiator model assembled =
                             --             viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
                             emptyNode
                     in
-                    [ viewRiskFactorsPane language currentDate assembled
-                    , viewMedicalDiagnosisPane language currentDate assembled
-                    , viewPatientProgressPane language currentDate assembled
-                    , viewLabsPane language currentDate SetLabResultsMode
+                    case model.diagnosisMode of
+                        ModeActiveDiagnosis ->
+                            [ viewRiskFactorsPane language currentDate assembled
+                            , viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db
+                            , viewMedicalDiagnosisPane language currentDate assembled
+                            , viewPatientProgressPane language currentDate assembled
+                            , viewLabsPane language currentDate SetLabResultsMode
 
-                    -- @todo
-                    -- , viewProgressPhotosPane language currentDate isChw assembled
-                    -- , actions
-                    ]
+                            -- @todo
+                            -- , actions
+                            ]
+
+                        ModeCompletedDiagnosis ->
+                            [ viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db
+
+                            -- @todo
+                            -- , actions
+                            ]
     in
     div [ class "ui unstackable items" ] <|
         viewPersonInfoPane language currentDate assembled.person
