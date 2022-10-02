@@ -3134,6 +3134,9 @@ update language currentDate id db msg model =
                     [ Backend.PrenatalEncounter.Model.SaveLabsResults personId measurementId updatedValue
                         |> Backend.Model.MsgPrenatalEncounter id
                         |> App.Model.MsgIndexedDb
+                    , Backend.PrenatalEncounter.Model.CloseEncounter
+                        |> Backend.Model.MsgPrenatalEncounter id
+                        |> App.Model.MsgIndexedDb
                     ]
             in
             ( model

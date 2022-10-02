@@ -530,7 +530,7 @@ update language currentDate id db msg model =
                             Dict.get id db.prenatalMeasurements
                                 |> Maybe.andThen RemoteData.toMaybe
                                 |> Maybe.andThen .labsResults
-                                |> Maybe.map
+                                |> Maybe.andThen
                                     (\( labsResultsId, results ) ->
                                         let
                                             ( performedTests, completedTests ) =
@@ -544,18 +544,28 @@ update language currentDate id db msg model =
                                                                 { value | resolutionDate = currentDate }
                                                            )
                                             in
-                                            [ CloseLabsResultsEntry personId labsResultsId updatedValue ]
+                                            Just <| CloseLabsResultsEntry personId labsResultsId updatedValue
 
                                         else
-                                            []
+                                            Nothing
                                     )
-                                |> Maybe.withDefault []
                      in
-                     [ SetActivePage <|
-                        UserPage <|
-                            ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id) id
-                     ]
-                        ++ closeLabsResultsMsg
+                     Maybe.map
+                        (\closeMsg ->
+                            -- We're closing labs results enrty, which means that all results
+                            -- were entered and Next steps are completed.
+                            -- Therefore, we navigate to Progress report page.
+                            [ closeMsg
+                            , SetActivePage <|
+                                UserPage <|
+                                    ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id) id
+                            ]
+                        )
+                        closeLabsResultsMsg
+                        |> Maybe.withDefault
+                            -- Not all labs results are completed, therefore,
+                            -- we navigate to encounter page.
+                            [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
                     )
     in
     case msg of

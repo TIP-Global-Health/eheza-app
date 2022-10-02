@@ -159,7 +159,7 @@ emptyModel =
 
 
 type Msg
-    = ClosePrenatalEncounter
+    = CloseEncounter
     | SetPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetPastPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetLabsHistoryCompleted

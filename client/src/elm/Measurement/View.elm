@@ -1358,10 +1358,10 @@ viewVitalsForm language currentDate config form =
                                             ( 140, 90 )
                                 in
                                 ( [ [ (<) redAlertHighSys ]
-                                  , [ (>) 110 ]
+                                  , [ (>) 100 ]
                                   ]
                                 , [ [ (<) redAlertHighDia ]
-                                  , [ (>) 70 ]
+                                  , [ (>) 60 ]
                                   ]
                                 )
                         in
