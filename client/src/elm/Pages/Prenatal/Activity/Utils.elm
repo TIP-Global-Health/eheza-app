@@ -498,7 +498,7 @@ expectNextStepsTask currentDate assembled task =
                                 || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
                                    -- at current encounter does not indicate a need for hospitalization.
                                    (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
-                                        && (not <| bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled)
+                                        && (not <| bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled)
                                    )
                     in
                     -- Emergency referral is not required.

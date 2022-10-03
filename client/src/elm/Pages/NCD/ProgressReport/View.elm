@@ -1,7 +1,9 @@
 module Pages.NCD.ProgressReport.View exposing (view)
 
 import AssocList as Dict
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
         ( MedicalCondition(..)
@@ -12,6 +14,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NCDActivity.Utils exposing (getAllActivities)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Person)
@@ -23,6 +26,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
+import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.ProgressReport.Model exposing (..)
@@ -32,9 +36,10 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
 import Pages.Report.Utils exposing (..)
 import Pages.Report.View exposing (..)
-import Pages.Utils exposing (viewPersonDetailsExtended)
+import Pages.Utils exposing (viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -48,27 +53,24 @@ view language currentDate id initiator db model =
             viewHeader language initiator model
 
         content =
-            viewWebData language (viewContent language currentDate initiator model) identity assembled
+            viewWebData language (viewContent language currentDate initiator db model) identity assembled
 
-        -- @todo
-        -- endEncounterDialog =
-        --     if model.showEndEncounterDialog then
-        --         Just <|
-        --             viewEndEncounterDialog language
-        --                 Translate.EndEncounterQuestion
-        --                 Translate.OnceYouEndTheEncounter
-        --                 (CloseEncounter id)
-        --                 (SetEndEncounterDialogState False)
-        --
-        --     else
-        --         Nothing
+        endEncounterDialog =
+            if model.showEndEncounterDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        (CloseEncounter id)
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-report ncd" ] <|
         [ header
         , content
-
-        -- @todo
-        -- , viewModal endEncounterDialog
+        , viewModal endEncounterDialog
         ]
 
 
@@ -100,45 +102,52 @@ viewHeader language initiator model =
                             []
                         ]
 
-                goBackActionByLabResultsState defaultAction =
-                    Maybe.map
-                        (\mode ->
-                            let
-                                backToCurrentMsg targetMode =
-                                    SetLabResultsMode (Just (LabResultsCurrent targetMode))
-                            in
-                            case mode of
-                                LabResultsCurrent currentMode ->
-                                    case currentMode of
-                                        LabResultsCurrentMain ->
-                                            SetLabResultsMode Nothing
+                goBackAction defaultAction =
+                    Maybe.map goBackActionByLabResultsState model.labResultsMode
+                        |> Maybe.withDefault (goBackActionByDiagnosisMode defaultAction)
 
-                                        LabResultsCurrentDipstickShort ->
-                                            backToCurrentMsg LabResultsCurrentMain
+                goBackActionByLabResultsState mode =
+                    let
+                        backToCurrentMsg targetMode =
+                            SetLabResultsMode (Just (LabResultsCurrent targetMode))
+                    in
+                    case mode of
+                        LabResultsCurrent currentMode ->
+                            case currentMode of
+                                LabResultsCurrentMain ->
+                                    SetLabResultsMode Nothing
 
-                                        LabResultsCurrentDipstickLong ->
-                                            backToCurrentMsg LabResultsCurrentMain
+                                LabResultsCurrentDipstickShort ->
+                                    backToCurrentMsg LabResultsCurrentMain
 
-                                LabResultsHistory historyMode ->
-                                    Maybe.withDefault LabResultsCurrentMain model.labResultsHistoryOrigin
-                                        |> backToCurrentMsg
-                        )
-                        model.labResultsMode
-                        |> Maybe.withDefault defaultAction
+                                LabResultsCurrentDipstickLong ->
+                                    backToCurrentMsg LabResultsCurrentMain
+
+                        LabResultsHistory historyMode ->
+                            Maybe.withDefault LabResultsCurrentMain model.labResultsHistoryOrigin
+                                |> backToCurrentMsg
+
+                goBackActionByDiagnosisMode defaultAction =
+                    case model.diagnosisMode of
+                        ModeActiveDiagnosis ->
+                            defaultAction
+
+                        ModeCompletedDiagnosis ->
+                            SetDiagnosisMode ModeActiveDiagnosis
             in
             case initiator of
-                InitiatorEncounterPage id ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| NCDEncounterPage id)
+                Backend.NCDEncounter.Types.InitiatorEncounterPage id ->
+                    iconForView <| goBackAction (SetActivePage <| UserPage <| NCDEncounterPage id)
 
-                InitiatorRecurrentEncounterPage id ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| NCDRecurrentEncounterPage id)
+                Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage id ->
+                    iconForView <| goBackAction (SetActivePage <| UserPage <| NCDRecurrentEncounterPage id)
 
         goBackPage =
             case initiator of
-                InitiatorEncounterPage id ->
+                Backend.NCDEncounter.Types.InitiatorEncounterPage id ->
                     NCDEncounterPage id
 
-                InitiatorRecurrentEncounterPage id ->
+                Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage id ->
                     NCDRecurrentEncounterPage id
     in
     div
@@ -149,8 +158,8 @@ viewHeader language initiator model =
         ]
 
 
-viewContent : Language -> NominalDate -> NCDProgressReportInitiator -> Model -> AssembledData -> Html Msg
-viewContent language currentDate initiator model assembled =
+viewContent : Language -> NominalDate -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate initiator db model assembled =
     let
         derivedContent =
             case model.labResultsMode of
@@ -179,45 +188,42 @@ viewContent language currentDate initiator model assembled =
 
                 Nothing ->
                     let
-                        -- @todo
-                        actions =
-                            --     case initiator of
-                            --         InitiatorEncounterPage _ ->
-                            --             let
-                            --                 ( completedActivities, pendingActivities ) =
-                            --                     getAllActivities assembled
-                            --                         |> List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled)
-                            --                         |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
-                            --             in
-                            --             viewActionButton language
-                            --                 pendingActivities
-                            --                 completedActivities
-                            --                 (SetActivePage PinCodePage)
-                            --                 SetEndEncounterDialogState
-                            --                 assembled
-                            --
-                            --         InitiatorRecurrentEncounterPage _ ->
-                            --             let
-                            --                 ( completedActivities, pendingActivities ) =
-                            --                     Pages.NCD.RecurrentEncounter.Utils.allActivities
-                            --                         |> List.filter (Pages.NCD.RecurrentActivity.Utils.expectActivity currentDate assembled)
-                            --                         |> List.partition (Pages.NCD.RecurrentActivity.Utils.activityCompleted currentDate assembled)
-                            --
-                            --                 allowEndEcounter =
-                            --                     List.isEmpty pendingActivities
-                            --             in
-                            --             viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
-                            emptyNode
+                        acuteIllnesses =
+                            Dict.get assembled.participant.person db.individualParticipantsByPerson
+                                |> Maybe.andThen RemoteData.toMaybe
+                                |> Maybe.map Dict.toList
+                                |> Maybe.withDefault []
+                                |> List.filter
+                                    (\( _, participant ) ->
+                                        participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                                    )
                     in
-                    [ viewRiskFactorsPane language currentDate assembled
-                    , viewMedicalDiagnosisPane language currentDate assembled
-                    , viewPatientProgressPane language currentDate assembled
-                    , viewLabsPane language currentDate SetLabResultsMode
+                    case model.diagnosisMode of
+                        ModeActiveDiagnosis ->
+                            let
+                                actions =
+                                    case initiator of
+                                        Backend.NCDEncounter.Types.InitiatorEncounterPage _ ->
+                                            let
+                                                ( completedActivities, pendingActivities ) =
+                                                    List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled) getAllActivities
+                                                        |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
+                                            in
+                                            viewEndEncounterButton language (List.isEmpty pendingActivities) SetEndEncounterDialogState
 
-                    -- @todo
-                    -- , viewProgressPhotosPane language currentDate isChw assembled
-                    -- , actions
-                    ]
+                                        Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage _ ->
+                                            viewEncounterActionButton language Translate.LeaveEncounter True (SetActivePage <| UserPage GlobalCaseManagementPage)
+                            in
+                            [ viewRiskFactorsPane language currentDate assembled
+                            , viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db
+                            , viewMedicalDiagnosisPane language currentDate assembled
+                            , viewPatientProgressPane language currentDate assembled
+                            , viewLabsPane language currentDate SetLabResultsMode
+                            , actions
+                            ]
+
+                        ModeCompletedDiagnosis ->
+                            [ viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db ]
     in
     div [ class "ui unstackable items" ] <|
         viewPersonInfoPane language currentDate assembled.person
@@ -436,6 +442,78 @@ viewPatientProgressPane language currentDate assembled =
                 , viewBloodGlucoseByTime language sugarCountMeasurements
                 ]
             ]
+        ]
+
+
+viewAcuteIllnessPane :
+    Language
+    -> NominalDate
+    -> NCDProgressReportInitiator
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> DiagnosisMode
+    -> ModelIndexedDb
+    -> Html Msg
+viewAcuteIllnessPane language currentDate initiator acuteIllnesses diagnosisMode db =
+    let
+        ( activeIllnesses, completedIllnesses ) =
+            List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
+
+        entriesHeading =
+            div [ class "heading diagnosis" ]
+                [ div [ class "assesment" ] [ text <| translate language Translate.Assessment ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                , div [ class "date" ] [ text <| translate language Translate.DiagnosisDate ]
+                , div [ class "see-more" ] [ text <| translate language Translate.SeeMore ]
+                ]
+
+        ( label, priorDiagniosisButton ) =
+            case diagnosisMode of
+                ModeActiveDiagnosis ->
+                    ( Translate.ActiveDiagnosis
+                    , div [ class "pane-action" ]
+                        [ button
+                            [ class "ui primary button"
+                            , onClick <| SetDiagnosisMode ModeCompletedDiagnosis
+                            ]
+                            [ text <| translate language Translate.ReviewPriorDiagnosis ]
+                        ]
+                    )
+
+                ModeCompletedDiagnosis ->
+                    ( Translate.PriorDiagnosis
+                    , emptyNode
+                    )
+
+        daignosisEntries =
+            List.map
+                (\( data, _ ) ->
+                    let
+                        acuteIllnessProgressReportInitiator =
+                            InitiatorNCDProgressReport initiator
+                    in
+                    viewAcuteIllnessDiagnosisEntry language acuteIllnessProgressReportInitiator db SetActivePage data
+                )
+                selectedDiagnosisEntries
+                |> Maybe.Extra.values
+
+        selectedDiagnosisEntries =
+            case diagnosisMode of
+                ModeActiveDiagnosis ->
+                    List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activeIllnesses
+
+                ModeCompletedDiagnosis ->
+                    List.map (\( participantId, data ) -> ( ( participantId, StatusResolved ), data )) completedIllnesses
+
+        entries =
+            List.sortWith sortTuplesByDateDesc daignosisEntries
+                |> List.map Tuple.second
+    in
+    div [ class "pane diagnosis" ]
+        [ viewPaneHeading language label
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: viewEntries language entries
+        , priorDiagniosisButton
         ]
 
 

@@ -3,6 +3,7 @@ module Backend.AcuteIllnessEncounter.Model exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -124,6 +125,7 @@ type AcuteIllnessProgressReportInitiator
     | InitiatorWellChildProgressReport WellChildEncounterId
     | InitiatorGroupNutritionProgressReport SessionId PersonId
     | InitiatorPatientRecord PatientRecordInitiator PersonId
+    | InitiatorNCDProgressReport NCDProgressReportInitiator
 
 
 type Msg

@@ -266,10 +266,10 @@ viewContent language currentDate isChw initiator model assembled =
                                                 |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
                                                 |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
 
-                                        allowEndEcounter =
+                                        allowEndEncounter =
                                             List.isEmpty pendingActivities
                                     in
-                                    viewEndEncounterButton language allowEndEcounter (always <| SetActivePage PinCodePage)
+                                    viewEndEncounterButton language allowEndEncounter (always <| SetActivePage PinCodePage)
 
                                 InitiatorNewEncounter encounterId ->
                                     div [ class "actions" ]

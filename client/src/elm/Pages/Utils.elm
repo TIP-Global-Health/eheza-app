@@ -819,12 +819,17 @@ viewStartEncounterButton language action =
 
 
 viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
-viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
+viewEndEncounterButton language allowEndEncounter setDialogStateMsgs =
+    viewEncounterActionButton language Translate.EndEncounter allowEndEncounter (setDialogStateMsgs True)
+
+
+viewEncounterActionButton : Language -> TranslationId -> Bool -> msg -> Html msg
+viewEncounterActionButton language label allowAction action =
     let
         attributes =
-            if allowEndEcounter then
+            if allowAction then
                 [ class "ui fluid primary button"
-                , onClick <| setDialogStateMsgs True
+                , onClick action
                 ]
 
             else
@@ -832,7 +837,7 @@ viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
     in
     div [ class "actions" ]
         [ button attributes
-            [ text <| translate language Translate.EndEncounter ]
+            [ text <| translate language label ]
         ]
 
 

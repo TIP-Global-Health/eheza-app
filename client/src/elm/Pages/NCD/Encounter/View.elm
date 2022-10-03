@@ -170,13 +170,13 @@ viewMainPageContent language currentDate db assembled model =
                         ]
                     ]
 
-        allowEndEcounter =
+        allowEndEncounter =
             allowEndingEcounter pendingActivities
 
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                , viewEndEncounterButton language allowEndEncounter SetEndEncounterDialogState
                 ]
     in
     [ tabs

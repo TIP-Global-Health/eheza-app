@@ -91,13 +91,13 @@ viewContent language currentDate id isChw initiator model assembled =
             else
                 Nothing
 
-        allowEndEcounter =
+        allowEndEncounter =
             allowEndingEcounter currentDate isChw assembled pendingActivities
 
         endEncounterButton =
             case initiator of
                 InitiatorEncounterPage ->
-                    viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                    viewEndEncounterButton language allowEndEncounter SetEndEncounterDialogState
 
                 _ ->
                     emptyNode
@@ -146,6 +146,9 @@ viewHeader language id initiator =
 
                 InitiatorPatientRecord patientRecordInitiator personId ->
                     PatientRecordPage patientRecordInitiator personId
+
+                InitiatorNCDProgressReport ncdProgressReportInitiator ->
+                    NCDProgressReportPage ncdProgressReportInitiator
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]

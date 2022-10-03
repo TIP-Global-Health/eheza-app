@@ -1,9 +1,15 @@
 module Pages.Report.Utils exposing (..)
 
+import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Model exposing (ModelIndexedDb)
+import Date
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Report.Model exposing (..)
+import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 
 
@@ -130,3 +136,65 @@ testReportNormal report =
 testResultNormal : TestResult -> Bool
 testResultNormal =
     (==) TestNegative
+
+
+getAcuteIllnessEncountersForParticipant :
+    ModelIndexedDb
+    -> IndividualEncounterParticipantId
+    -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
+getAcuteIllnessEncountersForParticipant db participantId =
+    Dict.get participantId db.acuteIllnessEncountersByParticipant
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map Dict.toList
+        |> Maybe.withDefault []
+        |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncountersDesc e1 e2)
+
+
+getAcuteIllnessDiagnosisForEncounters : List ( AcuteIllnessEncounterId, AcuteIllnessEncounter ) -> Maybe ( NominalDate, AcuteIllnessDiagnosis )
+getAcuteIllnessDiagnosisForEncounters encounters =
+    List.filterMap
+        (\( _, encounter ) ->
+            if encounter.diagnosis /= NoAcuteIllnessDiagnosis then
+                Just ( encounter.startDate, encounter.diagnosis )
+
+            else
+                Nothing
+        )
+        encounters
+        -- We know that encounters are sorted DESC, so the one at
+        -- head is the most recent.
+        |> List.head
+
+
+compareAcuteIllnessEncountersDesc :
+    { a | startDate : NominalDate, sequenceNumber : Int }
+    -> { a | startDate : NominalDate, sequenceNumber : Int }
+    -> Order
+compareAcuteIllnessEncountersDesc data1 data2 =
+    compareAcuteIllnessEncounters data2 data1
+
+
+compareAcuteIllnessEncounters :
+    { a | startDate : NominalDate, sequenceNumber : Int }
+    -> { a | startDate : NominalDate, sequenceNumber : Int }
+    -> Order
+compareAcuteIllnessEncounters data1 data2 =
+    case Date.compare data1.startDate data2.startDate of
+        LT ->
+            LT
+
+        GT ->
+            GT
+
+        EQ ->
+            compare data1.sequenceNumber data2.sequenceNumber
+
+
+diagnosisEntryStatusToString : PaneEntryStatus -> String
+diagnosisEntryStatusToString status =
+    case status of
+        StatusOngoing ->
+            "ongoing"
+
+        StatusResolved ->
+            "resolved"

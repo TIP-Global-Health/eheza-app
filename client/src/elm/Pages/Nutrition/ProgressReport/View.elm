@@ -68,7 +68,7 @@ view language currentDate zscores id isChw db model =
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEcounter = allowEndingEcounter isChw pendingActivities
+                        , allowEndEncounter = allowEndingEcounter isChw pendingActivities
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp

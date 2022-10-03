@@ -1,6 +1,7 @@
 module Pages.Report.View exposing (..)
 
 import AssocList as Dict
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, labExpirationPeriod)
@@ -937,3 +938,56 @@ viewLabResultsHistoryPane language currentDate mode =
         , div [ class "pane-content" ] [ heading ]
         , div [ class "group-content" ] entries
         ]
+
+
+viewAcuteIllnessDiagnosisEntry :
+    Language
+    -> AcuteIllnessProgressReportInitiator
+    -> ModelIndexedDb
+    -> (Page -> msg)
+    -> ( IndividualEncounterParticipantId, PaneEntryStatus )
+    -> Maybe ( NominalDate, Html msg )
+viewAcuteIllnessDiagnosisEntry language acuteIllnessProgressReportInitiator db setActivePageMsg ( participantId, status ) =
+    let
+        encounters =
+            getAcuteIllnessEncountersForParticipant db participantId
+
+        maybeLastEncounterId =
+            List.head encounters
+                |> Maybe.map Tuple.first
+
+        diagnosisData =
+            getAcuteIllnessDiagnosisForEncounters encounters
+    in
+    Maybe.map2
+        (\( date, diagnosis ) lastEncounterId ->
+            ( date
+            , div [ class "entry diagnosis" ]
+                [ div [ class "cell assesment" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+                , div [ class <| "cell status " ++ diagnosisEntryStatusToString status ]
+                    [ text <| translate language <| Translate.EntryStatusDiagnosis status ]
+                , div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
+                , div
+                    [ class "icon-forward"
+                    , onClick <|
+                        setActivePageMsg <|
+                            UserPage <|
+                                AcuteIllnessProgressReportPage
+                                    acuteIllnessProgressReportInitiator
+                                    lastEncounterId
+                    ]
+                    []
+                ]
+            )
+        )
+        diagnosisData
+        maybeLastEncounterId
+
+
+viewEntries : Language -> List (Html any) -> List (Html any)
+viewEntries language entries =
+    if List.isEmpty entries then
+        [ div [ class "entry no-matches" ] [ text <| translate language Translate.NoMatchesFound ] ]
+
+    else
+        entries

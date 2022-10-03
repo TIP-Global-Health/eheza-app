@@ -26,6 +26,9 @@ update msg model =
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
 
+        SetDiagnosisMode mode ->
+            ( { model | diagnosisMode = mode }, Cmd.none, [] )
+
         SetLabResultsMode mode ->
             ( { model | labResultsMode = mode }, Cmd.none, [] )
 

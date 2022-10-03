@@ -2,7 +2,7 @@ module Pages.Nutrition.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Pages.Page exposing (Page)
-import Pages.WellChild.ProgressReport.Model exposing (DiagnosisMode(..))
+import Pages.Report.Model exposing (DiagnosisMode(..))
 
 
 type alias Model =

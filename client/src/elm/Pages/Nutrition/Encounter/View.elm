@@ -168,13 +168,13 @@ viewMainPageContent language currentDate zscores id isChw db data model =
                         ]
                     ]
 
-        allowEndEcounter =
+        allowEndEncounter =
             allowEndingEcounter isChw pendingActivities
 
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                , viewEndEncounterButton language allowEndEncounter SetEndEncounterDialogState
                 ]
     in
     [ tabs

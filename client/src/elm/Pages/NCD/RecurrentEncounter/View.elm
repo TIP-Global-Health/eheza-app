@@ -23,7 +23,7 @@ import Pages.NCD.RecurrentEncounter.Model exposing (..)
 import Pages.NCD.RecurrentEncounter.Utils exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewReportLink)
+import Pages.Utils exposing (viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -54,23 +54,10 @@ viewHeaderAndContent language currentDate id model assembled =
 
         content =
             viewContent language currentDate assembled model
-
-        endEncounterDialog =
-            if model.showEndEncounterDialog then
-                Just <|
-                    viewEndEncounterDialog language
-                        Translate.EndEncounterQuestion
-                        Translate.OnceYouEndTheEncounter
-                        CloseEncounter
-                        (SetEndEncounterDialogState False)
-
-            else
-                Nothing
     in
     div [ class "page-encounter ncd" ]
         [ header
         , content
-        , viewModal endEncounterDialog
         ]
 
 
@@ -177,13 +164,10 @@ viewMainPageContent language currentDate assembled model =
                         ]
                     ]
 
-        endEncounterButtonEnabled =
-            List.isEmpty pendingActivities
-
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language endEncounterButtonEnabled SetEndEncounterDialogState
+                , viewEncounterActionButton language Translate.LeaveEncounter True (SetActivePage <| UserPage GlobalCaseManagementPage)
                 ]
     in
     [ tabs

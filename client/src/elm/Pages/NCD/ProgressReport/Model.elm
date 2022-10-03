@@ -2,11 +2,12 @@ module Pages.NCD.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Pages.Page exposing (Page)
-import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..))
+import Pages.Report.Model exposing (DiagnosisMode(..), LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..))
 
 
 type alias Model =
-    { labResultsMode : Maybe LabResultsMode
+    { diagnosisMode : DiagnosisMode
+    , labResultsMode : Maybe LabResultsMode
     , labResultsHistoryOrigin : Maybe LabResultsCurrentMode
     , showEndEncounterDialog : Bool
     }
@@ -14,7 +15,8 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { labResultsMode = Nothing
+    { diagnosisMode = ModeActiveDiagnosis
+    , labResultsMode = Nothing
     , labResultsHistoryOrigin = Nothing
     , showEndEncounterDialog = False
     }
@@ -32,5 +34,6 @@ type Msg
     = NoOp
     | CloseEncounter NCDEncounterId
     | SetActivePage Page
+    | SetDiagnosisMode DiagnosisMode
     | SetLabResultsMode (Maybe LabResultsMode)
     | SetEndEncounterDialogState Bool

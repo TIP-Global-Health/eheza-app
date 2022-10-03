@@ -141,11 +141,11 @@ viewMainPageContent language currentDate id isChw db data model =
                     ]
                 ]
 
-        allowEndEcounter =
+        allowEndEncounter =
             List.isEmpty pendingActivities
 
         endEcounterButtonAttributes =
-            if allowEndEcounter then
+            if allowEndEncounter then
                 [ class "ui fluid primary button"
                 , onClick <| CloseEncounter id
                 ]
