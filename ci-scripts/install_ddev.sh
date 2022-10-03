@@ -2,7 +2,7 @@
 set -e
 
 echo "Install mkcert."
-wget -nv https://github.com/FiloSottile/mkcert/releases/download/v1.4.0/mkcert-v1.4.0-linux-amd64
+curl -s -L https://github.com/FiloSottile/mkcert/releases/download/v1.4.0/mkcert-v1.4.0-linux-amd64 > mkcert-v1.4.0-linux-amd64
 sudo mv mkcert-v1.4.0-linux-amd64 /usr/bin/mkcert
 chmod +x /usr/bin/mkcert
 mkcert -install
