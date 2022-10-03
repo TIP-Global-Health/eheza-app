@@ -5,8 +5,8 @@ MAC=0
 if ! command -v docker &> /dev/null
 then
     echo "docker could not be found, trying to install it on Mac"
-    brew install docker --silent
-    brew install colima --silent
+    brew install docker
+    brew install colima
     colima start --cpu 2 --memory 2 --dns=1.1.1.1
     MAC=1
 fi
