@@ -1341,3 +1341,27 @@ type alias NCDVitalsId =
 
 type NCDVitalsUuidType
     = NCDVitalsUuidType
+
+
+type alias GroupNCDAId =
+    EntityUuid GroupNCDAUuidType
+
+
+type GroupNCDAUuidType
+    = GroupNCDAUuidType
+
+
+type alias NutritionNCDAId =
+    EntityUuid NutritionNCDAUuidType
+
+
+type NutritionNCDAUuidType
+    = NutritionNCDAUuidType
+
+
+type alias WellChildNCDAId =
+    EntityUuid WellChildNCDAUuidType
+
+
+type WellChildNCDAUuidType
+    = WellChildNCDAUuidType
