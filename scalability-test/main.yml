@@ -1,0 +1,44 @@
+- name: Puppeteer-based stress test
+  hosts: all
+  remote_user: root
+
+  tasks:
+    - name: Update and upgrade apt packages
+      become: true
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400
+
+    - name: NodeJs and Chrome dependencies
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+         - nodejs
+         - npm
+         - libgbm1
+         - libasound2
+
+    - name: Sync the source code of the test
+      copy:
+        src: "."
+        dest: "/root/"
+
+    - name: Install Puppeteer
+      shell: "npm install"
+
+    - name: Start date
+      debug:
+        var=ansible_date_time.iso8601
+
+    - name: Execute
+      shell: 'cd /root && node index.js {{ pairingCode }} {{ pin }}'
+      register: command_output
+
+    - debug:
+        var: command_output.stdout_lines
+
+    - name: End date
+      debug:
+        var=ansible_date_time.iso8601
