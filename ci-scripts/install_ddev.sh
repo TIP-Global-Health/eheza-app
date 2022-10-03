@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-echo "Install mkcert."
-curl -s -L https://github.com/FiloSottile/mkcert/releases/download/v1.4.0/mkcert-v1.4.0-linux-amd64 > mkcert-v1.4.0-linux-amd64
-sudo mv mkcert-v1.4.0-linux-amd64 /usr/bin/mkcert
-chmod +x /usr/bin/mkcert
-mkcert -install
-
 echo "Install ddev."
 curl -s -L https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh | bash
 
