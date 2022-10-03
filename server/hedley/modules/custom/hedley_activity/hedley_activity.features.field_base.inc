@@ -1186,6 +1186,44 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_ncda_signs'.
+  $field_bases['field_ncda_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_ncda_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'born-underweight' => 'Born Underweight',
+        'born-with-birth-defect' => 'Born With Birth Defect',
+        'appropriate-complementary-feeding' => 'Appropriate Complementary Feeding',
+        'ongera-mnp' => 'Ongera Mnp',
+        'five-food-groups' => 'Five Food Groups',
+        'meal-frequency' => 'Meal Frequency',
+        'support-child-with-disability' => 'Support Child With Disability',
+        'conditional-cash-transfer' => 'Conditional Cash Transfer',
+        'conditional-food-items' => 'Conditional Food Items',
+        'has-clean-water' => 'Has Clean Water',
+        'has-handwashing-facility' => 'Has Handwashing Facility',
+        'has-toilets' => 'Has Toilets',
+        'has-kitchen-garden' => 'Has Kitchen Garden',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_neck'.
   $field_bases['field_neck'] = array(
     'active' => 1,

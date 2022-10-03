@@ -3810,6 +3810,315 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-group_ncda-field_date_measured'.
+  $field_instances['node-group_ncda-field_date_measured'] = array(
+    'bundle' => 'group_ncda',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
+    'required' => 1,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-group_ncda-field_ncda_signs'.
+  $field_instances['node-group_ncda-field_ncda_signs'] = array(
+    'bundle' => 'group_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncda_signs',
+    'label' => 'NCDA Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance: 'node-group_ncda-field_nurse'.
+  $field_instances['node-group_ncda-field_nurse'] = array(
+    'bundle' => 'group_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-group_ncda-field_person'.
+  $field_instances['node-group_ncda-field_person'] = array(
+    'bundle' => 'group_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => -3,
+    ),
+  );
+
+  // Exported field_instance: 'node-group_ncda-field_session'.
+  $field_instances['node-group_ncda-field_session'] = array(
+    'bundle' => 'group_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_session',
+    'label' => 'Group Encounter',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-group_ncda-field_shards'.
+  $field_instances['node-group_ncda-field_shards'] = array(
+    'bundle' => 'group_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-group_ncda-field_uuid'.
+  $field_instances['node-group_ncda-field_uuid'] = array(
+    'bundle' => 'group_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 5,
+    ),
+  );
+
   // Exported field_instance: 'node-group_send_to_hc-field_date_measured'.
   $field_instances['node-group_send_to_hc-field_date_measured'] = array(
     'bundle' => 'group_send_to_hc',
@@ -7871,6 +8180,315 @@ function hedley_activity_field_default_field_instances() {
       ),
       'type' => 'text_textfield',
       'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_date_measured'.
+  $field_instances['node-nutrition_ncda-field_date_measured'] = array(
+    'bundle' => 'nutrition_ncda',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
+    'required' => 1,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_ncda_signs'.
+  $field_instances['node-nutrition_ncda-field_ncda_signs'] = array(
+    'bundle' => 'nutrition_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncda_signs',
+    'label' => 'NCDA Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_nurse'.
+  $field_instances['node-nutrition_ncda-field_nurse'] = array(
+    'bundle' => 'nutrition_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_nutrition_encounter'.
+  $field_instances['node-nutrition_ncda-field_nutrition_encounter'] = array(
+    'bundle' => 'nutrition_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nutrition_encounter',
+    'label' => 'Nutrition Encounter',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_person'.
+  $field_instances['node-nutrition_ncda-field_person'] = array(
+    'bundle' => 'nutrition_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => -3,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_shards'.
+  $field_instances['node-nutrition_ncda-field_shards'] = array(
+    'bundle' => 'nutrition_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_uuid'.
+  $field_instances['node-nutrition_ncda-field_uuid'] = array(
+    'bundle' => 'nutrition_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 5,
     ),
   );
 
@@ -14394,8 +15012,8 @@ function hedley_activity_field_default_field_instances() {
   t('Hands');
   t('Has the mother attended for this session?');
   t('Head / hair');
+  t('Health Education Signs_ph2');
   t('Health education signs');
-  t('Health Education signs phase 2');
   t('Heart');
   t('Heart Murmur');
   t('Heart rate');
@@ -14415,6 +15033,7 @@ function hedley_activity_field_default_field_instances() {
   t('Medical History');
   t('Medication');
   t('Mother');
+  t('NCDA Signs');
   t('Neck');
   t('Nurse');
   t('Nutrition Assesment');
