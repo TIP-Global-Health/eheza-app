@@ -151,7 +151,7 @@ viewBMIForEGA language points =
             , drawPolygon yellowPoints "yellow-area"
             , drawPolygon greenPoints "green-area"
             , drawPolygon bottomRedPoints "red-area"
-            , drawPolyline measurements "child-data"
+            , drawPolyline measurements "data"
             ]
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
@@ -271,7 +271,7 @@ viewFundalHeightForEGA language points =
             , drawPolygon greenPoints "green-area"
             , drawPolygon topYellowPoints "yellow-area"
             , drawPolygon topRedPoints "red-area"
-            , drawPolyline measurements "child-data"
+            , drawPolyline measurements "data"
             ]
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)

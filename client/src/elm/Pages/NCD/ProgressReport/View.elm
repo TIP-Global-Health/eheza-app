@@ -26,6 +26,7 @@ import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.ProgressReport.Model exposing (..)
+import Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewMarkers)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
@@ -210,11 +211,7 @@ viewContent language currentDate initiator model assembled =
                     in
                     [ viewRiskFactorsPane language currentDate assembled
                     , viewMedicalDiagnosisPane language currentDate assembled
-
-                    -- @todo
-                    -- , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                    -- , viewChwActivityPane language currentDate isChw assembled
-                    -- , viewPatientProgressPane language currentDate isChw assembled
+                    , viewPatientProgressPane language currentDate assembled
                     , viewLabsPane language currentDate SetLabResultsMode
 
                     -- @todo
@@ -383,6 +380,62 @@ viewMedicalDiagnosisPane language currentDate assembled =
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
         , div [ class "pane-content" ] content
+        ]
+
+
+viewPatientProgressPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewPatientProgressPane language currentDate assembled =
+    let
+        allMeasurements =
+            assembled.measurements
+                :: List.map .measurements assembled.previousEncountersData
+
+        sysMeasurements =
+            List.map Tuple.first bloodPressure
+
+        diaMeasurements =
+            List.map Tuple.second bloodPressure
+
+        bloodPressure =
+            List.map
+                (.vitals
+                    >> getMeasurementValueFunc
+                    >> Maybe.andThen
+                        (\value ->
+                            Maybe.map2 (\sys dia -> ( sys, dia ))
+                                value.sys
+                                value.dia
+                        )
+                )
+                allMeasurements
+                |> Maybe.Extra.values
+                |> List.take 12
+                |> List.reverse
+
+        sugarCountMeasurements =
+            List.map
+                (.randomBloodSugarTest
+                    >> getMeasurementValueFunc
+                    >> Maybe.andThen .sugarCount
+                )
+                allMeasurements
+                |> Maybe.Extra.values
+                |> List.take 12
+                |> List.reverse
+    in
+    div [ class "patient-progress" ]
+        [ viewItemHeading language Translate.PatientProgress "blue"
+        , div [ class "pane-content" ]
+            [ viewMarkers
+            , div [ class "chart-section" ]
+                [ div [ class "heading" ] [ text <| translate language Translate.BloodPressure ]
+                , viewBloodPressureByTime language sysMeasurements diaMeasurements
+                ]
+            , div [ class "chart-section" ]
+                [ div [ class "heading" ] [ text <| translate language Translate.BloodGlucose ]
+                , viewBloodGlucoseByTime language sugarCountMeasurements
+                ]
+            ]
         ]
 
 

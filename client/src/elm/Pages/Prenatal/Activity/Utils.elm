@@ -562,7 +562,7 @@ expectNextStepsTask currentDate assembled task =
                    (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
                 && -- We show Wait activity when there's at least one
                    -- test that was performed, or, 2 hours waiting is
-                   -- required for blood preasure recheck.
+                   -- required for blood pressure recheck.
                    (getMeasurementValueFunc assembled.measurements.labsResults
                         |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
                         |> Maybe.withDefault False
@@ -2349,7 +2349,7 @@ severePreeclampsiaByDangerSigns =
 severePreeclampsiaRecurrentPhase : List DangerSign -> PrenatalMeasurements -> Bool
 severePreeclampsiaRecurrentPhase dangerSigns measurements =
     let
-        byBloodPreasure =
+        byBloodPressure =
             getMeasurementValueFunc measurements.vitals
                 |> Maybe.map
                     (\value ->
@@ -2372,7 +2372,7 @@ severePreeclampsiaRecurrentPhase dangerSigns measurements =
                     )
                 |> Maybe.withDefault False
     in
-    byBloodPreasure
+    byBloodPressure
         && highUrineProtein measurements
         && severePreeclampsiaSigns measurements
 

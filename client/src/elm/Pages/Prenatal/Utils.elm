@@ -310,8 +310,8 @@ emergencyReferralDiagnosesRecurrent =
     ]
 
 
-hierarchalBloodPreasureDiagnoses : List PrenatalDiagnosis
-hierarchalBloodPreasureDiagnoses =
+hierarchalBloodPressureDiagnoses : List PrenatalDiagnosis
+hierarchalBloodPressureDiagnoses =
     [ -- Emergency diagnoses.
       DiagnosisEclampsia
     , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
