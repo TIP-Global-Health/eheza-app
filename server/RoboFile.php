@@ -75,6 +75,8 @@ class RoboFile extends Tasks {
       'pantheon.yml',
       'pantheon.upstream.yml',
       'client',
+      'scalability-test',
+      'infrastructure_setup',
     ];
 
     $rsyncExcludeString = '--exclude=' . implode(' --exclude=', $rsyncExclude);
