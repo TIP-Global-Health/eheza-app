@@ -856,6 +856,7 @@ type TranslationId
     | MyRelatedByQuestion MyRelatedBy
     | Name
     | NationalIdNumber
+    | NCDASignQyestion NCDASign
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
     | NCDDangerSign NCDDangerSign
@@ -7594,6 +7595,78 @@ translationSet trans =
             { english = "National ID Number"
             , kinyarwanda = Just "Numero y'irangamuntu"
             }
+
+        NCDASignQyestion sign ->
+            case sign of
+                NCDABornUnderweight ->
+                    { english = "Was the child born underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDABornWithBirthDefect ->
+                    { english = "Was the child born with a birth defect"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAAppropriateComplementaryFeeding ->
+                    { english = "Appropriate complementary feeding (6-24 months)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAOngeraMNP ->
+                    { english = "Did you receive and use Ongera-MNP"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAFiveFoodGroups ->
+                    { english = "Does the child receive food items from the 5 food groups?"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAMealFrequency ->
+                    { english = "Meal frequency"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDASupportChildWithDisability ->
+                    { english = "Provide support to a child with a disability"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAConditionalCashTransfer ->
+                    { english = "Receipt of conditional cash transfer e.g. NSDS, VUP"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAConditionalFoodItems ->
+                    { english = "Receipt of conditional food items including small livestock"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAHasCleanWater ->
+                    { english = "Does the house have clean water"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAHasHandwashingFacility ->
+                    { english = "Does the house have a handwashing facility"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAHasToilets ->
+                    { english = "Does the household have toilets"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAHasKitchenGarden ->
+                    { english = "Does the house have a kitchen garden"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDASigns ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
 
         NCDActivityTitle activity ->
             case activity of

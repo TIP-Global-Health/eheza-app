@@ -261,7 +261,53 @@ type FollowUpOption
     | ThreeMonths
 
 
+type NCDASign
+    = NCDABornUnderweight
+    | NCDABornWithBirthDefect
+    | NCDAAppropriateComplementaryFeeding
+    | NCDAOngeraMNP
+    | NCDAFiveFoodGroups
+    | NCDAMealFrequency
+    | NCDASupportChildWithDisability
+    | NCDAConditionalCashTransfer
+    | NCDAConditionalFoodItems
+    | NCDAHasCleanWater
+    | NCDAHasHandwashingFacility
+    | NCDAHasToilets
+    | NCDAHasKitchenGarden
+    | NoNCDASigns
 
+
+
+-- BornUnderweight
+-- BornWithBirthDefect
+-- AppropriateComplementaryFeeding
+-- OngeraMNP
+-- FiveFoodGroups
+-- MealFrequency
+-- SupportChildWithDisability
+-- ConditionalCashTransfer
+-- ConditionalFoodItems
+-- HasCleanWater
+-- HasHandwashingFacility
+-- HasToilets
+-- HasKitchenGarden
+-- NoNCDASigns
+--
+-- born-underweight
+-- born-with-birth-defect
+-- appropriate-complementary-feeding
+-- ongera-mnp
+-- five-food-groups
+-- meal-frequency
+-- support-child-with-disability
+-- conditional-cash-transfer
+-- conditional-food-items
+-- has-clean-water
+-- has-handwashing-facility
+-- has-toilets
+-- has-kitchen-garden
+-- none
 -- NUTRITION MEASUREMENTS
 
 
@@ -2616,6 +2662,7 @@ type alias ChildMeasurementList =
     , followUp : Dict FollowUpId FollowUp
     , healthEducation : Dict GroupHealthEducationId GroupHealthEducation
     , sendToHC : Dict GroupSendToHCId GroupSendToHC
+    , ncda : Dict GroupNCDAId NCDAValue
     }
 
 
@@ -2632,6 +2679,7 @@ emptyChildMeasurementList =
     , followUp = Dict.empty
     , healthEducation = Dict.empty
     , sendToHC = Dict.empty
+    , ncda = Dict.empty
     }
 
 
@@ -2756,6 +2804,7 @@ type alias NutritionMeasurements =
     , healthEducation : Maybe ( NutritionHealthEducationId, NutritionHealthEducation )
     , contributingFactors : Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )
     , followUp : Maybe ( NutritionFollowUpId, NutritionFollowUp )
+    , ncda : Maybe ( NutritionNCDAId, NCDAValue )
     }
 
 
@@ -2841,6 +2890,7 @@ type alias WellChildMeasurements =
     , opvImmunisation : Maybe ( WellChildOPVImmunisationId, WellChildOPVImmunisation )
     , pcv13Immunisation : Maybe ( WellChildPCV13ImmunisationId, WellChildPCV13Immunisation )
     , rotarixImmunisation : Maybe ( WellChildRotarixImmunisationId, WellChildRotarixImmunisation )
+    , ncda : Maybe ( WellChildNCDAId, NCDAValue )
     }
 
 
@@ -2889,6 +2939,7 @@ type alias ChildMeasurements =
     , followUp : Maybe ( FollowUpId, FollowUp )
     , healthEducation : Maybe ( GroupHealthEducationId, GroupHealthEducation )
     , sendToHC : Maybe ( GroupSendToHCId, GroupSendToHC )
+    , ncda : Maybe ( GroupNCDAId, NCDAValue )
     }
 
 
@@ -2905,6 +2956,7 @@ emptyChildMeasurements =
     , followUp = Nothing
     , healthEducation = Nothing
     , sendToHC = Nothing
+    , ncda = Nothing
     }
 
 
@@ -2979,3 +3031,7 @@ type alias PreviousMeasurementsSet =
     , weights : List ( NominalDate, Float )
     , headCircumferences : List ( NominalDate, Float )
     }
+
+
+type alias NCDAValue =
+    {}
