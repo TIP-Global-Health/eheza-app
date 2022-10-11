@@ -4507,3 +4507,31 @@ encodeNCDUrineDipstickTest =
 encodeNCDVitals : NCDVitals -> List ( String, Value )
 encodeNCDVitals =
     encodeNCDMeasurement (encodeVitalsValueWithType "ncd_vitals")
+
+
+encodeGroupNCDA : GroupNCDA -> List ( String, Value )
+encodeGroupNCDA =
+    encodeGroupMeasurement (encodeNCDAValueWithType "group_ncda")
+
+
+encodeNutritionNCDA : NutritionNCDA -> List ( String, Value )
+encodeNutritionNCDA =
+    encodeNutritionMeasurement (encodeNCDAValueWithType "nutrition_ncda")
+
+
+encodeWellChildNCDA : WellChildNCDA -> List ( String, Value )
+encodeWellChildNCDA =
+    encodeWellChildMeasurement (encodeNCDAValueWithType "well_child_ncda")
+
+
+encodeNCDAValueWithType : String -> NCDAValue -> List ( String, Value )
+encodeNCDAValueWithType type_ value =
+    [ ( "ncda_signs", encodeEverySet encodeNCDASign value )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
+encodeNCDASign : NCDASign -> Value
+encodeNCDASign =
+    ncdaSignToString >> string
