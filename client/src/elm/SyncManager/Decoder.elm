@@ -456,6 +456,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeGroupHealthEducation
                             BackendAuthorityGroupHealthEducation
 
+                    "group_ncda" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeGroupNCDA
+                            BackendAuthorityGroupNCDA
+
                     "group_send_to_hc" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeGroupSendToHC
@@ -690,6 +695,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionMuac
                             BackendAuthorityNutritionMuac
+
+                    "nutrition_ncda" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionNCDA
+                            BackendAuthorityNutritionNCDA
 
                     "nutrition_nutrition" ->
                         doDecode
@@ -1018,6 +1028,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildMuac
                             BackendAuthorityWellChildMuac
+
+                    "well_child_ncda" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildNCDA
+                            BackendAuthorityWellChildNCDA
 
                     "well_child_next_visit" ->
                         doDecode
