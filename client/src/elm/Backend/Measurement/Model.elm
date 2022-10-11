@@ -278,6 +278,14 @@ type NCDASign
     | NoNCDASigns
 
 
+type alias GroupNCDA =
+    GroupMeasurement NCDAValue
+
+
+type alias NCDAValue =
+    {}
+
+
 
 -- BornUnderweight
 -- BornWithBirthDefect
@@ -463,6 +471,10 @@ type CaringOption
     | CaredByNeighbor
     | CaredByHouseHelper
     | CaredByDaycare
+
+
+type alias NutritionNCDA =
+    NutritionMeasurement NCDAValue
 
 
 
@@ -2320,6 +2332,10 @@ type alias VaccinationValue =
     }
 
 
+type alias WellChildNCDA =
+    WellChildMeasurement NCDAValue
+
+
 
 -- NCD MEASUREMENTS
 
@@ -2662,7 +2678,7 @@ type alias ChildMeasurementList =
     , followUp : Dict FollowUpId FollowUp
     , healthEducation : Dict GroupHealthEducationId GroupHealthEducation
     , sendToHC : Dict GroupSendToHCId GroupSendToHC
-    , ncda : Dict GroupNCDAId NCDAValue
+    , ncda : Dict GroupNCDAId GroupNCDA
     }
 
 
@@ -2890,7 +2906,7 @@ type alias WellChildMeasurements =
     , opvImmunisation : Maybe ( WellChildOPVImmunisationId, WellChildOPVImmunisation )
     , pcv13Immunisation : Maybe ( WellChildPCV13ImmunisationId, WellChildPCV13Immunisation )
     , rotarixImmunisation : Maybe ( WellChildRotarixImmunisationId, WellChildRotarixImmunisation )
-    , ncda : Maybe ( WellChildNCDAId, NCDAValue )
+    , ncda : Maybe ( WellChildNCDAId, WellChildNCDA )
     }
 
 
@@ -2939,7 +2955,7 @@ type alias ChildMeasurements =
     , followUp : Maybe ( FollowUpId, FollowUp )
     , healthEducation : Maybe ( GroupHealthEducationId, GroupHealthEducation )
     , sendToHC : Maybe ( GroupSendToHCId, GroupSendToHC )
-    , ncda : Maybe ( GroupNCDAId, NCDAValue )
+    , ncda : Maybe ( GroupNCDAId, GroupNCDA )
     }
 
 
@@ -3031,7 +3047,3 @@ type alias PreviousMeasurementsSet =
     , weights : List ( NominalDate, Float )
     , headCircumferences : List ( NominalDate, Float )
     }
-
-
-type alias NCDAValue =
-    {}

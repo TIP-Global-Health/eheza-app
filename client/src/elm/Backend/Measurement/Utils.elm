@@ -163,6 +163,9 @@ splitChildMeasurements sessionId =
 
                 sendToHC =
                     getCurrentAndPrevious sessionId list.sendToHC
+
+                ncda =
+                    getCurrentAndPrevious sessionId list.ncda
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
@@ -210,6 +213,10 @@ splitChildMeasurements sessionId =
                     sendToHC.current
                         |> Dict.toList
                         |> List.head
+                , ncda =
+                    ncda.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 { height = height.previous
@@ -223,6 +230,7 @@ splitChildMeasurements sessionId =
                 , followUp = followUp.previous
                 , healthEducation = healthEducation.previous
                 , sendToHC = sendToHC.previous
+                , ncda = ncda.previous
                 }
             }
         )
