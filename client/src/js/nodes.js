@@ -443,6 +443,7 @@
       'family_planning',
       'follow_up',
       'group_health_education',
+      'group_ncda',
       'group_send_to_hc',
       'height',
       'lactation',
