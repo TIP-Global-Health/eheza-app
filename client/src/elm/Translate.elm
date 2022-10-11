@@ -7623,8 +7623,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NCDAMealFrequency ->
-                    { english = "Meal frequency"
+                NCDAMealFrequency6to8Months ->
+                    { english = "Feed your young child complementary foods 2 to 3 times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAMealFrequency9to11Months ->
+                    { english = "Feed your young child complementary foods 3 to 4 times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAMealFrequency12MonthsOrMore ->
+                    { english = "Feed your young child complementary foods at least 5 times a day"
                     , kinyarwanda = Nothing
                     }
 

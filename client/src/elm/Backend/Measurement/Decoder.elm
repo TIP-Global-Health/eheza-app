@@ -96,6 +96,7 @@ decodeChildMeasurementList =
         |> optional "follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeFollowUp)) Dict.empty
         |> optional "group_health_education" (map Dict.fromList <| list (decodeWithEntityUuid decodeGroupHealthEducation)) Dict.empty
         |> optional "group_send_to_hc" (map Dict.fromList <| list (decodeWithEntityUuid decodeGroupSendToHC)) Dict.empty
+        |> optional "group_ncda" (map Dict.fromList <| list (decodeWithEntityUuid decodeGroupNCDA)) Dict.empty
 
 
 decodePrenatalMeasurements : Decoder PrenatalMeasurements
@@ -154,6 +155,7 @@ decodeNutritionMeasurements =
         |> optional "nutrition_health_education" (decodeHead decodeNutritionHealthEducation) Nothing
         |> optional "nutrition_contributing_factors" (decodeHead decodeNutritionContributingFactors) Nothing
         |> optional "nutrition_follow_up" (decodeHead decodeNutritionFollowUp) Nothing
+        |> optional "nutrition_ncda" (decodeHead decodeNutritionNCDA) Nothing
 
 
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
@@ -235,6 +237,7 @@ decodeWellChildMeasurements =
         |> optional "well_child_opv_immunisation" (decodeHead decodeWellChildOPVImmunisation) Nothing
         |> optional "well_child_pcv13_immunisation" (decodeHead decodeWellChildPCV13Immunisation) Nothing
         |> optional "well_child_rotarix_immunisation" (decodeHead decodeWellChildRotarixImmunisation) Nothing
+        |> optional "well_child_ncda" (decodeHead decodeWellChildNCDA) Nothing
 
 
 decodeNCDMeasurements : Decoder NCDMeasurements
@@ -4923,3 +4926,34 @@ decodeNCDUrineDipstickTest =
 decodeNCDVitals : Decoder NCDVitals
 decodeNCDVitals =
     decodeNCDMeasurement decodeVitalsValue
+
+
+decodeNCDAValue : Decoder NCDAValue
+decodeNCDAValue =
+    field "ncda_signs" (decodeEverySet decodeNCDASign)
+
+
+decodeNCDASign : Decoder NCDASign
+decodeNCDASign =
+    string
+        |> andThen
+            (\s ->
+                ncdaSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDASign")
+            )
+
+
+decodeGroupNCDA : Decoder GroupNCDA
+decodeGroupNCDA =
+    decodeGroupMeasurement decodeNCDAValue
+
+
+decodeNutritionNCDA : Decoder NutritionNCDA
+decodeNutritionNCDA =
+    decodeNutritionMeasurement decodeNCDAValue
+
+
+decodeWellChildNCDA : Decoder WellChildNCDA
+decodeWellChildNCDA =
+    decodeWellChildMeasurement decodeNCDAValue

@@ -261,13 +261,23 @@ type FollowUpOption
     | ThreeMonths
 
 
+type alias GroupNCDA =
+    GroupMeasurement NCDAValue
+
+
+type alias NCDAValue =
+    EverySet NCDASign
+
+
 type NCDASign
     = NCDABornUnderweight
     | NCDABornWithBirthDefect
     | NCDAAppropriateComplementaryFeeding
     | NCDAOngeraMNP
     | NCDAFiveFoodGroups
-    | NCDAMealFrequency
+    | NCDAMealFrequency6to8Months
+    | NCDAMealFrequency9to11Months
+    | NCDAMealFrequency12MonthsOrMore
     | NCDASupportChildWithDisability
     | NCDAConditionalCashTransfer
     | NCDAConditionalFoodItems
@@ -278,44 +288,7 @@ type NCDASign
     | NoNCDASigns
 
 
-type alias GroupNCDA =
-    GroupMeasurement NCDAValue
 
-
-type alias NCDAValue =
-    {}
-
-
-
--- BornUnderweight
--- BornWithBirthDefect
--- AppropriateComplementaryFeeding
--- OngeraMNP
--- FiveFoodGroups
--- MealFrequency
--- SupportChildWithDisability
--- ConditionalCashTransfer
--- ConditionalFoodItems
--- HasCleanWater
--- HasHandwashingFacility
--- HasToilets
--- HasKitchenGarden
--- NoNCDASigns
---
--- born-underweight
--- born-with-birth-defect
--- appropriate-complementary-feeding
--- ongera-mnp
--- five-food-groups
--- meal-frequency
--- support-child-with-disability
--- conditional-cash-transfer
--- conditional-food-items
--- has-clean-water
--- has-handwashing-facility
--- has-toilets
--- has-kitchen-garden
--- none
 -- NUTRITION MEASUREMENTS
 
 
@@ -2820,7 +2793,7 @@ type alias NutritionMeasurements =
     , healthEducation : Maybe ( NutritionHealthEducationId, NutritionHealthEducation )
     , contributingFactors : Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )
     , followUp : Maybe ( NutritionFollowUpId, NutritionFollowUp )
-    , ncda : Maybe ( NutritionNCDAId, NCDAValue )
+    , ncda : Maybe ( NutritionNCDAId, NutritionNCDA )
     }
 
 

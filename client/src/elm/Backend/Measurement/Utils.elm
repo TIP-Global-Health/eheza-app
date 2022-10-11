@@ -3529,3 +3529,110 @@ diabetesByUrineGlucose : UrineDipstickTestValue -> Bool
 diabetesByUrineGlucose value =
     Maybe.map (\glucose -> List.member glucose [ GlucosePlus2, GlucosePlus3, GlucosePlus4 ]) value.glucose
         |> Maybe.withDefault False
+
+
+ncdaSignToString : NCDASign -> String
+ncdaSignToString value =
+    case value of
+        NCDABornUnderweight ->
+            "born-underweight"
+
+        NCDABornWithBirthDefect ->
+            "born-with-birth-defect"
+
+        NCDAAppropriateComplementaryFeeding ->
+            "appropriate-complementary-feeding"
+
+        NCDAOngeraMNP ->
+            "ongera-mnp"
+
+        NCDAFiveFoodGroups ->
+            "five-food-groups"
+
+        NCDAMealFrequency6to8Months ->
+            "meal-frequency-6to8m"
+
+        NCDAMealFrequency9to11Months ->
+            "meal-frequency-9to11m"
+
+        NCDAMealFrequency12MonthsOrMore ->
+            "meal-frequency-12+m"
+
+        NCDASupportChildWithDisability ->
+            "support-child-with-disability"
+
+        NCDAConditionalCashTransfer ->
+            "conditional-cash-transfer"
+
+        NCDAConditionalFoodItems ->
+            "conditional-food-items"
+
+        NCDAHasCleanWater ->
+            "has-clean-water"
+
+        NCDAHasHandwashingFacility ->
+            "has-handwashing-facility"
+
+        NCDAHasToilets ->
+            "has-toilets"
+
+        NCDAHasKitchenGarden ->
+            "has-kitchen-garden"
+
+        NoNCDASigns ->
+            "none"
+
+
+ncdaSignFromString : String -> Maybe NCDASign
+ncdaSignFromString value =
+    case value of
+        "born-underweight" ->
+            Just NCDABornUnderweight
+
+        "born-with-birth-defect" ->
+            Just NCDABornWithBirthDefect
+
+        "appropriate-complementary-feeding" ->
+            Just NCDAAppropriateComplementaryFeeding
+
+        "ongera-mnp" ->
+            Just NCDAOngeraMNP
+
+        "five-food-groups" ->
+            Just NCDAFiveFoodGroups
+
+        "meal-frequency-6to8m" ->
+            Just NCDAMealFrequency6to8Months
+
+        "meal-frequency-9to11m" ->
+            Just NCDAMealFrequency9to11Months
+
+        "meal-frequency-12+m" ->
+            Just NCDAMealFrequency12MonthsOrMore
+
+        "support-child-with-disability" ->
+            Just NCDASupportChildWithDisability
+
+        "conditional-cash-transfer" ->
+            Just NCDAConditionalCashTransfer
+
+        "conditional-food-items" ->
+            Just NCDAConditionalFoodItems
+
+        "has-clean-water" ->
+            Just NCDAHasCleanWater
+
+        "has-handwashing-facility" ->
+            Just NCDAHasHandwashingFacility
+
+        "has-toilets" ->
+            Just NCDAHasToilets
+
+        "has-kitchen-garden" ->
+            Just NCDAHasKitchenGarden
+
+        "none" ->
+            Just NoNCDASigns
+
+        _ ->
+            Nothing
