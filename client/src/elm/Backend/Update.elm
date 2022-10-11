@@ -3434,6 +3434,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
+        GroupNCDARevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | ncda = Dict.insert uuid data measurements.ncda })
+                model
+            , True
+            )
+
         GroupSendToHCRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
@@ -3846,6 +3854,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapNutritionMeasurements
                 data.encounterId
                 (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NutritionNCDARevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -4435,6 +4451,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildNCDARevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
                 model
             , recalc
             )

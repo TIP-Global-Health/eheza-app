@@ -119,6 +119,9 @@ decodeRevision =
                     "group_health_education" ->
                         decodeWithUuid GroupHealthEducationRevision decodeGroupHealthEducation
 
+                    "group_ncda" ->
+                        decodeWithUuid GroupNCDARevision decodeGroupNCDA
+
                     "group_send_to_hc" ->
                         decodeWithUuid GroupSendToHCRevision decodeGroupSendToHC
 
@@ -265,6 +268,9 @@ decodeRevision =
 
                     "nutrition_muac" ->
                         decodeWithUuid NutritionMuacRevision decodeNutritionMuac
+
+                    "nutrition_ncda" ->
+                        decodeWithUuid NutritionNCDARevision decodeNutritionNCDA
 
                     "nutrition_nutrition" ->
                         decodeWithUuid NutritionNutritionRevision decodeNutritionNutrition
@@ -469,6 +475,9 @@ decodeRevision =
 
                     "well_child_muac" ->
                         decodeWithUuid WellChildMuacRevision decodeWellChildMuac
+
+                    "well_child_ncda" ->
+                        decodeWithUuid WellChildNCDARevision decodeWellChildNCDA
 
                     "well_child_next_visit" ->
                         decodeWithUuid WellChildNextVisitRevision decodeWellChildNextVisit
