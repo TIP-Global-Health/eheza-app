@@ -1175,3 +1175,21 @@ ncdVitalsEndpoint : ReadWriteEndPoint Error NCDVitalsId NCDVitals NCDVitals ()
 ncdVitalsEndpoint =
     swEndpoint "nodes/ncd_vitals" decodeNCDVitals
         |> withValueEncoder (object << encodeNCDVitals)
+
+
+groupNCDAEndpoint : ReadWriteEndPoint Error GroupNCDAId GroupNCDA GroupNCDA ()
+groupNCDAEndpoint =
+    swEndpoint "nodes/group_ncda" decodeGroupNCDA
+        |> withValueEncoder (object << encodeGroupNCDA)
+
+
+nutritionNCDAEndpoint : ReadWriteEndPoint Error NutritionNCDAId NutritionNCDA NutritionNCDA ()
+nutritionNCDAEndpoint =
+    swEndpoint "nodes/nutrition_ncda" decodeNutritionNCDA
+        |> withValueEncoder (object << encodeNutritionNCDA)
+
+
+wellChildNCDAEndpoint : ReadWriteEndPoint Error WellChildNCDAId WellChildNCDA WellChildNCDA ()
+wellChildNCDAEndpoint =
+    swEndpoint "nodes/well_child_ncda" decodeWellChildNCDA
+        |> withValueEncoder (object << encodeWellChildNCDA)
