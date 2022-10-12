@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
-import Backend.Person.Utils exposing (isAdult)
+import Backend.Person.Utils exposing (ageInMonths, isAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Date
 import EverySet exposing (EverySet)
@@ -3636,3 +3636,11 @@ ncdaSignFromString value =
 
         _ ->
             Nothing
+
+
+expectNCDAActivity : NominalDate -> Person -> Bool
+expectNCDAActivity currentDate person =
+    -- Show for children that are 6 to 24 months old.
+    ageInMonths currentDate person
+        |> Maybe.map (\ageMonths -> ageMonths > 5 && ageMonths < 24)
+        |> Maybe.withDefault False

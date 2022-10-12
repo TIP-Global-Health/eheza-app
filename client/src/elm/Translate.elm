@@ -15558,6 +15558,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ifoto"
                     }
 
+                WellChildNCDA ->
+                    { english = "NCDA"
+                    , kinyarwanda = Nothing
+                    }
+
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChild.Activity.Types.TaskSymptomsReview ->

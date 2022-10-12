@@ -1,25 +1,4 @@
-module Measurement.View exposing
-    ( renderDatePart
-    , viewActionTakenLabel
-    , viewChild
-    , viewColorAlertIndication
-    , viewContributingFactorsForm
-    , viewCorePhysicalExamForm
-    , viewFamilyPlanningForm
-    , viewFamilyPlanningInput
-    , viewFollowUpForm
-    , viewHealthEducationForm
-    , viewMeasurementFloatDiff
-    , viewMother
-    , viewMultipleTreatmentWithDosage
-    , viewReferToProgramForm
-    , viewSendToHealthCenterForm
-    , viewSendToHospitalForm
-    , viewTreatmentOptionWithDosage
-    , viewTreatmentWithDosage
-    , viewVitalsForm
-    , zScoreForHeightOrLength
-    )
+module Measurement.View exposing (..)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -75,6 +54,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
+        , viewSaveAction
         )
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -2298,3 +2278,232 @@ viewTreatmentWithDosage language sign =
     [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
     , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
     ]
+
+
+viewNCDAContent : Language -> NominalDate -> Person -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg) -> msg -> NCDAForm -> List (Html msg)
+viewNCDAContent language currentDate person setMsg saveMsg form =
+    let
+        totalTasks =
+            List.length tasks
+
+        tasksCompleted =
+            List.map taskCompleted tasks
+                |> List.sum
+
+        ( inputs, tasks ) =
+            ncdaFormInputsAndTasks language currentDate person setMsg form
+
+        disabled =
+            tasksCompleted /= totalTasks
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form ncda" ]
+                inputs
+            ]
+        , viewSaveAction language saveMsg disabled
+        ]
+    ]
+
+
+ncdaFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Person
+    -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
+    -> NCDAForm
+    -> ( List (Html msg), List (Maybe Bool) )
+ncdaFormInputsAndTasks language currentDate person setMsg form =
+    let
+        signs =
+            [ NCDABornUnderweight
+            , NCDABornWithBirthDefect
+            , NCDAAppropriateComplementaryFeeding
+            , NCDAOngeraMNP
+            , NCDAFiveFoodGroups
+            ]
+                ++ mealFrequencySign
+                ++ [ NCDASupportChildWithDisability
+                   , NCDAConditionalCashTransfer
+                   , NCDAConditionalFoodItems
+                   , NCDAHasCleanWater
+                   , NCDAHasHandwashingFacility
+                   , NCDAHasToilets
+                   , NCDAHasKitchenGarden
+                   ]
+
+        mealFrequencySign =
+            ageInMonths currentDate person
+                |> Maybe.map
+                    (\ageMonths ->
+                        if ageMonths < 6 then
+                            []
+
+                        else if ageMonths < 9 then
+                            [ NCDAMealFrequency6to8Months ]
+
+                        else if ageMonths < 12 then
+                            [ NCDAMealFrequency9to11Months ]
+
+                        else
+                            [ NCDAMealFrequency12MonthsOrMore ]
+                    )
+                |> Maybe.withDefault []
+
+        inputsAndTasks =
+            List.map inputAndTaskForSign signs
+
+        inputAndTaskForSign sign =
+            case sign of
+                NCDABornUnderweight ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | bornUnderweight = Just value }
+                    in
+                    ( viewNCDAInput NCDABornUnderweight form.bornUnderweight updateFunc
+                    , form.bornUnderweight
+                    )
+
+                NCDABornWithBirthDefect ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | bornWithBirthDefect = Just value }
+                    in
+                    ( viewNCDAInput NCDABornWithBirthDefect form.bornWithBirthDefect updateFunc
+                    , form.bornWithBirthDefect
+                    )
+
+                NCDAAppropriateComplementaryFeeding ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | appropriateComplementaryFeeding = Just value }
+                    in
+                    ( viewNCDAInput NCDAAppropriateComplementaryFeeding form.appropriateComplementaryFeeding updateFunc
+                    , form.appropriateComplementaryFeeding
+                    )
+
+                NCDAOngeraMNP ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | ongeraMNP = Just value }
+                    in
+                    ( viewNCDAInput NCDAOngeraMNP form.ongeraMNP updateFunc
+                    , form.ongeraMNP
+                    )
+
+                NCDAFiveFoodGroups ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | fiveFoodGroups = Just value }
+                    in
+                    ( viewNCDAInput NCDAFiveFoodGroups form.fiveFoodGroups updateFunc
+                    , form.fiveFoodGroups
+                    )
+
+                NCDAMealFrequency6to8Months ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | mealFrequency6to8Months = Just value }
+                    in
+                    ( viewNCDAInput NCDAMealFrequency6to8Months form.mealFrequency6to8Months updateFunc
+                    , form.mealFrequency6to8Months
+                    )
+
+                NCDAMealFrequency9to11Months ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | mealFrequency9to11Months = Just value }
+                    in
+                    ( viewNCDAInput NCDAMealFrequency9to11Months form.mealFrequency9to11Months updateFunc
+                    , form.mealFrequency9to11Months
+                    )
+
+                NCDAMealFrequency12MonthsOrMore ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | mealFrequency12MonthsOrMore = Just value }
+                    in
+                    ( viewNCDAInput NCDAMealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore updateFunc
+                    , form.mealFrequency12MonthsOrMore
+                    )
+
+                NCDASupportChildWithDisability ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | supportChildWithDisability = Just value }
+                    in
+                    ( viewNCDAInput NCDASupportChildWithDisability form.supportChildWithDisability updateFunc
+                    , form.supportChildWithDisability
+                    )
+
+                NCDAConditionalCashTransfer ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | conditionalCashTransfer = Just value }
+                    in
+                    ( viewNCDAInput NCDAConditionalCashTransfer form.conditionalCashTransfer updateFunc
+                    , form.conditionalCashTransfer
+                    )
+
+                NCDAConditionalFoodItems ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | conditionalFoodItems = Just value }
+                    in
+                    ( viewNCDAInput NCDAConditionalFoodItems form.conditionalFoodItems updateFunc
+                    , form.conditionalFoodItems
+                    )
+
+                NCDAHasCleanWater ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | hasCleanWater = Just value }
+                    in
+                    ( viewNCDAInput NCDAHasCleanWater form.hasCleanWater updateFunc
+                    , form.hasCleanWater
+                    )
+
+                NCDAHasHandwashingFacility ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | hasHandwashingFacility = Just value }
+                    in
+                    ( viewNCDAInput NCDAHasHandwashingFacility form.hasHandwashingFacility updateFunc
+                    , form.hasHandwashingFacility
+                    )
+
+                NCDAHasToilets ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | hasToilets = Just value }
+                    in
+                    ( viewNCDAInput NCDAHasToilets form.hasToilets updateFunc
+                    , form.hasToilets
+                    )
+
+                NCDAHasKitchenGarden ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | hasKitchenGarden = Just value }
+                    in
+                    ( viewNCDAInput NCDAHasKitchenGarden form.hasKitchenGarden updateFunc
+                    , form.hasKitchenGarden
+                    )
+
+                NoNCDASigns ->
+                    ( [], Nothing )
+
+        viewNCDAInput sign value updateFunc =
+            [ viewQuestionLabel language <| Translate.NCDASignQuestion sign
+            , viewBoolInput
+                language
+                value
+                (setMsg updateFunc)
+                ""
+                Nothing
+            ]
+    in
+    ( List.map Tuple.first inputsAndTasks |> List.concat
+    , List.map Tuple.second inputsAndTasks
+    )

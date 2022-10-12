@@ -111,16 +111,6 @@ emptyWeightData =
     WeightData emptyWeightForm
 
 
-type alias NCDAData =
-    { form : NCDAForm
-    }
-
-
-emptyNCDAData : NCDAData
-emptyNCDAData =
-    NCDAData emptyNCDAForm
-
-
 type alias NextStepsData =
     { sendToHCForm : SendToHCForm
     , healthEducationForm : HealthEducationForm

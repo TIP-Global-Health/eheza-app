@@ -14,7 +14,7 @@ import Backend.Measurement.Model
         , NutritionMeasurements
         , WeightInKg(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
@@ -69,9 +69,7 @@ expectActivity currentDate zscores isChw assembled db activity =
 
         -- Show for children that are 6 to 24 months old.
         NCDA ->
-            ageInMonths currentDate assembled.person
-                |> Maybe.map (\ageMonths -> ageMonths > 5 && ageMonths < 24)
-                |> Maybe.withDefault False
+            expectNCDAActivity currentDate assembled.person
 
         NextSteps ->
             if mandatoryActivitiesCompleted currentDate zscores assembled.person isChw assembled db then
