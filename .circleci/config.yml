@@ -52,7 +52,6 @@ jobs:
   test_simpletest_mac:
     macos:
       xcode: 13.4.1
-    resource_class: large
     steps:
       - checkout
       - run: ci-scripts/install_ddev.sh
