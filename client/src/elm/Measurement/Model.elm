@@ -948,3 +948,42 @@ type alias LiverFunctionResultForm =
 emptyLiverFunctionResultForm : LiverFunctionResultForm
 emptyLiverFunctionResultForm =
     LiverFunctionResultForm Nothing Nothing Nothing Nothing
+
+
+type alias NCDAForm =
+    { bornUnderweight : Maybe Bool
+    , bornWithBirthDefect : Maybe Bool
+    , appropriateComplementaryFeeding : Maybe Bool
+    , ongeraMNP : Maybe Bool
+    , fiveFoodGroups : Maybe Bool
+    , mealFrequency6to8Months : Maybe Bool
+    , mealFrequency9to11Months : Maybe Bool
+    , mealFrequency12MonthsOrMore : Maybe Bool
+    , supportChildWithDisability : Maybe Bool
+    , conditionalCashTransfer : Maybe Bool
+    , conditionalFoodItems : Maybe Bool
+    , hasCleanWater : Maybe Bool
+    , hasHandwashingFacility : Maybe Bool
+    , hasToilets : Maybe Bool
+    , hasKitchenGarden : Maybe Bool
+    }
+
+
+emptyNCDAForm : NCDAForm
+emptyNCDAForm =
+    { bornUnderweight = Nothing
+    , bornWithBirthDefect = Nothing
+    , appropriateComplementaryFeeding = Nothing
+    , ongeraMNP = Nothing
+    , fiveFoodGroups = Nothing
+    , mealFrequency6to8Months = Nothing
+    , mealFrequency9to11Months = Nothing
+    , mealFrequency12MonthsOrMore = Nothing
+    , supportChildWithDisability = Nothing
+    , conditionalCashTransfer = Nothing
+    , conditionalFoodItems = Nothing
+    , hasCleanWater = Nothing
+    , hasHandwashingFacility = Nothing
+    , hasToilets = Nothing
+    , hasKitchenGarden = Nothing
+    }

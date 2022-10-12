@@ -8578,6 +8578,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
+                Backend.NutritionActivity.Model.NCDA ->
+                    { english = "NCDA"
+                    , kinyarwanda = Nothing
+                    }
+
                 Backend.NutritionActivity.Model.NextSteps ->
                     { english = "Next Steps"
                     , kinyarwanda = Just "Ibikurikiyeho"
@@ -8608,6 +8613,11 @@ translationSet trans =
                 Backend.NutritionActivity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
+                    }
+
+                Backend.NutritionActivity.Model.NCDA ->
+                    { english = "NCDA"
+                    , kinyarwanda = Nothing
                     }
 
                 Backend.NutritionActivity.Model.NextSteps ->

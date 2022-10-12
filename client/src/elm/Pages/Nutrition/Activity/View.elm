@@ -203,6 +203,9 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
         Weight ->
             viewWeightContent language currentDate zscores assembled model.weightData previousValuesSet.weight
 
+        NCDA ->
+            viewNCDAContent language currentDate id assembled db model.ncdaData
+
         NextSteps ->
             viewNextStepsContent language currentDate zscores id assembled db model.nextStepsData
 
@@ -653,6 +656,11 @@ viewWeightForm language currentDate zscores person heightValue previousValue sho
                 ]
             ]
     ]
+
+
+viewNCDAContent : Language -> NominalDate -> NutritionEncounterId -> AssembledData -> ModelIndexedDb -> NCDAData -> List (Html Msg)
+viewNCDAContent language currentDate id assembled db data =
+    [ text "@todo" ]
 
 
 viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
