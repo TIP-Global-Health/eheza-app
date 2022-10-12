@@ -856,7 +856,7 @@ type TranslationId
     | MyRelatedByQuestion MyRelatedBy
     | Name
     | NationalIdNumber
-    | NCDASignQyestion NCDASign
+    | NCDASignQuestion NCDASign
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
     | NCDDangerSign NCDDangerSign
@@ -7596,7 +7596,7 @@ translationSet trans =
             , kinyarwanda = Just "Numero y'irangamuntu"
             }
 
-        NCDASignQyestion sign ->
+        NCDASignQuestion sign ->
             case sign of
                 NCDABornUnderweight ->
                     { english = "Was the child born underweight"
@@ -7619,7 +7619,7 @@ translationSet trans =
                     }
 
                 NCDAFiveFoodGroups ->
-                    { english = "Does the child receive food items from the 5 food groups?"
+                    { english = "Does the child receive food items from the 5 food groups"
                     , kinyarwanda = Nothing
                     }
 

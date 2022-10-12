@@ -1061,12 +1061,7 @@ tasksBarId =
 viewSaveAction : Language -> msg -> Bool -> Html msg
 viewSaveAction language saveMsg disabled =
     div [ class "actions" ]
-        [ button
-            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-            , onClick saveMsg
-            ]
-            [ text <| translate language Translate.Save ]
-        ]
+        [ saveButton language (not disabled) saveMsg ]
 
 
 emptySelectOption : Bool -> Html any

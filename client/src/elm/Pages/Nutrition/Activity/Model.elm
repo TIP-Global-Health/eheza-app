@@ -20,6 +20,8 @@ type Msg
     | SavePhoto PersonId (Maybe NutritionPhotoId) PhotoUrl
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
+    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SaveNCDA PersonId (Maybe ( NutritionNCDAId, NutritionNCDA ))
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool

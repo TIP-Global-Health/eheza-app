@@ -243,6 +243,46 @@ update currentDate id db msg model =
             , appMsgs
             )
 
+        SetNCDABoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ncdaData.form
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveNCDA personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.ncdaData.form
+                        |> toNCDAValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.NutritionEncounter.Model.SaveNCDA personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
         SetActiveNextStepsTask task ->
             let
                 updatedData =

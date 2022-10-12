@@ -140,7 +140,7 @@ allMandatoryActivities isChw =
         [ Muac, Nutrition, Weight ]
 
     else
-        [ Height, Muac, Nutrition, Weight ]
+        [ Height, Muac, Nutrition, Weight, NCDA ]
 
 
 nextStepsTasksCompletedFromTotal : NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
