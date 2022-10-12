@@ -78,14 +78,15 @@ The default method assumes Pantheon as the hosting service provider.
 Prepare `Config.Deploy.elm` based on `Config.elm` that holds the
 infrastructure-related data for Elm. This file is gitignored, and it is
 used during Elm compilation, before the final artifact is pushed to Pantheon.
-The source of truth for this deployment config is in the Pantheon artifact repository,
-can be found under the repository root, so most of the time, you can copy it from there.
+Put it in a private repository, and link that repository using
+`EHEZA_INFRA_REPO_REMOTE`, defined in `.ddev/config.local.yaml.example`.
 
 #### Steps
 
 To propagate a new release, you can do the following:
 ```
 ddev start
+ddev auth ssh
 ddev gulp publish
 ddev robo deploy:pantheon
 ```
