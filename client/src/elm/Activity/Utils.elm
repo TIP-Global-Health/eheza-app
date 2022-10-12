@@ -262,10 +262,18 @@ getAllChildActivitiesWithExclusion offlineSession exclusionList =
         forFbf =
             case offlineSession.session.clinicType of
                 Fbf ->
-                    [ ChildFbf, NCDA ]
+                    [ ChildFbf ]
 
                 Achi ->
                     [ ChildFbf ]
+
+                _ ->
+                    []
+
+        forFbfOptional =
+            case offlineSession.session.clinicType of
+                Fbf ->
+                    [ NCDA ]
 
                 _ ->
                     []
@@ -274,6 +282,7 @@ getAllChildActivitiesWithExclusion offlineSession exclusionList =
         ++ nextStepsActivities
         ++ forFbf
         ++ forAllGroupTypesOptional
+        ++ forFbfOptional
         |> List.filter (\activity -> not <| List.member activity exclusionList)
 
 
