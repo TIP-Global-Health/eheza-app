@@ -3640,7 +3640,7 @@ ncdaSignFromString value =
 
 expectNCDAActivity : NominalDate -> Person -> Bool
 expectNCDAActivity currentDate person =
-    -- Show for children that are 6 to 24 months old.
+    -- Show for children that are younger than 2 years old.
     ageInMonths currentDate person
-        |> Maybe.map (\ageMonths -> ageMonths > 5 && ageMonths < 24)
+        |> Maybe.map (\ageMonths -> ageMonths < 24)
         |> Maybe.withDefault False
