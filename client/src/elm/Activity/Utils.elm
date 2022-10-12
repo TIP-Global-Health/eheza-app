@@ -388,7 +388,7 @@ childActivityCompleted currentDate zscores offlineSession childId isChw db activ
 
 allMandatoryActivities : List ChildActivity
 allMandatoryActivities =
-    [ Muac, NutritionSigns, Weight, NCDA ]
+    [ Muac, NutritionSigns, Weight ]
 
 
 {-| Do we expect this activity to be performed in this session for this mother?
