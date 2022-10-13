@@ -2400,7 +2400,17 @@ ncdaFormInputsAndTasks language currentDate person setMsg form =
                         updateFunc value form_ =
                             { form_ | fiveFoodGroups = Just value }
                     in
-                    ( viewNCDAInput NCDAFiveFoodGroups form.fiveFoodGroups updateFunc
+                    ( [ div [ class "label-with-helper" ]
+                            [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups
+                            , div [ class "label-helper" ] [ img [ src "assets/images/question-mark.svg" ] [] ]
+                            ]
+                      , viewBoolInput
+                            language
+                            form.fiveFoodGroups
+                            (setMsg updateFunc)
+                            ""
+                            Nothing
+                      ]
                     , form.fiveFoodGroups
                     )
 

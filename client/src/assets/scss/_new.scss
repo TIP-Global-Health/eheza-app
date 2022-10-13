@@ -572,6 +572,15 @@ div.page-activity {
       margin-bottom: 10px;
     }
 
+    .label-with-helper {
+      display: flex;
+
+      .label-helper {
+        margin-left: 15px;
+        margin-top: -10px;
+      }
+    }
+
     .form-input {
       margin-bottom: 30px;
 
