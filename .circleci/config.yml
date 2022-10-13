@@ -12,11 +12,6 @@ workflows:
             - lint_phpcs
             - lint_elm
             - lint_shellcheck
-      - test_simpletest_mac:
-          requires:
-            - lint_phpcs
-            - lint_elm
-            - lint_shellcheck
 
 jobs:
   lint_phpcs:
