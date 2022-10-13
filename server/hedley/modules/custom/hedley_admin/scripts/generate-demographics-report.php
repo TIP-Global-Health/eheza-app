@@ -38,7 +38,7 @@ $measurement_types_sql_list = implode(', ', $types);
  * @return int
  *   Amount of patients.
  */
-function classified_count($age, $gender) {
+function classified_count($age, $gender, $region) {
   if ($age === 'all' && $gender === 'all') {
     return db_query("SELECT COUNT(*)
     FROM person_classified
@@ -72,7 +72,7 @@ function classified_count($age, $gender) {
  * @return int
  *   Amount of patients.
  */
-function impacted_count($age, $gender) {
+function impacted_count($age, $gender, $region) {
   if ($age === 'all' && $gender === 'all') {
     return (int) db_query("SELECT COUNT(*)
       FROM person_classified cl
@@ -194,43 +194,43 @@ drush_print("## REGISTERED PATIENTS");
 $registered = [
   [
     '0 - 1M',
-    classified_count('lt1m', 'male'),
-    classified_count('lt1m', 'female'),
+    classified_count('lt1m', 'male', $region),
+    classified_count('lt1m', 'female', $region),
   ],
   [
     '1M - 2Y',
-    classified_count('lt2y', 'male'),
-    classified_count('lt2y', 'female'),
+    classified_count('lt2y', 'male', $region),
+    classified_count('lt2y', 'female', $region),
   ],
   [
     '2Y - 5Y',
-    classified_count('lt5y', 'male'),
-    classified_count('lt5y', 'female'),
+    classified_count('lt5y', 'male', $region),
+    classified_count('lt5y', 'female', $region),
   ],
   [
     '5Y - 10Y',
-    classified_count('lt10y', 'male'),
-    classified_count('lt10y', 'female'),
+    classified_count('lt10y', 'male', $region),
+    classified_count('lt10y', 'female', $region),
   ],
   [
     '10Y - 20Y',
-    classified_count('lt20y', 'male'),
-    classified_count('lt20y', 'female'),
+    classified_count('lt20y', 'male', $region),
+    classified_count('lt20y', 'female', $region),
   ],
   [
     '20Y - 50Y',
-    classified_count('lt50y', 'male'),
-    classified_count('lt50y', 'female'),
+    classified_count('lt50y', 'male', $region),
+    classified_count('lt50y', 'female', $region),
   ],
   [
     '50Y +',
-    classified_count('mt50y', 'male'),
-    classified_count('mt50y', 'female'),
+    classified_count('mt50y', 'male', $region),
+    classified_count('mt50y', 'female', $region),
   ],
   [
     'TOTAL',
     '',
-    classified_count('all', 'all'),
+    classified_count('all', 'all', $region),
   ],
 ];
 $text_table = new HedleyAdminTextTable(['Registered', 'Male', 'Female']);
@@ -241,43 +241,43 @@ drush_print($text_table->render());
 $impacted = [
   [
     '0 - 1M',
-    impacted_count('lt1m', 'male'),
-    impacted_count('lt1m', 'female'),
+    impacted_count('lt1m', 'male', $region),
+    impacted_count('lt1m', 'female', $region),
   ],
   [
     '1M - 2Y',
-    impacted_count('lt2y', 'male'),
-    impacted_count('lt2y', 'female'),
+    impacted_count('lt2y', 'male', $region),
+    impacted_count('lt2y', 'female', $region),
   ],
   [
     '2Y - 5Y',
-    impacted_count('lt5y', 'male'),
-    impacted_count('lt5y', 'female'),
+    impacted_count('lt5y', 'male', $region),
+    impacted_count('lt5y', 'female', $region),
   ],
   [
     '5Y - 10Y',
-    impacted_count('lt10y', 'male'),
-    impacted_count('lt10y', 'female'),
+    impacted_count('lt10y', 'male', $region),
+    impacted_count('lt10y', 'female', $region),
   ],
   [
     '10Y - 20Y',
-    impacted_count('lt20y', 'male'),
-    impacted_count('lt20y', 'female'),
+    impacted_count('lt20y', 'male', $region),
+    impacted_count('lt20y', 'female', $region),
   ],
   [
     '20Y - 50Y',
-    impacted_count('lt50y', 'male'),
-    impacted_count('lt50y', 'female'),
+    impacted_count('lt50y', 'male', $region),
+    impacted_count('lt50y', 'female', $region),
   ],
   [
     '50Y +',
-    impacted_count('mt50y', 'male'),
-    impacted_count('mt50y', 'female'),
+    impacted_count('mt50y', 'male', $region),
+    impacted_count('mt50y', 'female', $region),
   ],
   [
     'TOTAL',
     '',
-    impacted_count('all', 'all'),
+    impacted_count('all', 'all', $region),
   ],
 ];
 $text_table = new HedleyAdminTextTable([
