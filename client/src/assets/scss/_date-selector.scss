@@ -2,6 +2,102 @@
 DateSelector
 */
 
+.date-selector-popup,
+.ui.form .date-selector-popup {
+  background: $color-primary;
+  height: 100%;
+  padding: 40px 70px;
+  width: 100%;
+
+  p {
+    color: $color-white;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 0;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  select {
+    background-color: $color-white;
+    border: 1px solid $color-white;
+    border-radius: 10px;
+    color: $color-text;
+    font-size: 2.5rem;
+    border: 2px solid $color-gray;
+    padding: 0 0.5em;
+    line-height: 0.5;
+    text-align: left;
+    height: 70px;
+    width: 100%;
+  }
+
+  .year {
+    float: left;
+    width: 35%;
+    margin-right: 110px;
+  }
+
+  .month {
+    float: left;
+    width: 45%;
+  }
+
+  .days {
+    padding-top: 120px;
+
+    table {
+      text-align: center;
+      width: 100%;
+
+      th {
+        color: $color-white;
+        text-transform: uppercase;
+      }
+
+      td {
+        background-color: $color-white;
+        border: 10px solid $color-primary;
+        border-radius: 24px;
+        color: $color-text;
+        font-size: 24px;
+        font-weight: bold;
+        height: 80px;
+        width: 80px;
+      }
+
+      td.date-selector--dimmed,
+      td.date-selector--disabled {
+        background-color: $color-lighter-gray;
+        color: $color-white;
+      }
+
+      td.date-selector--selected {
+        background-color: $color-black;
+        color: $color-white;
+
+        p {
+          border: 3px solid $color-white;
+          border-radius: 6px;
+          line-height: 64px;
+        }
+      }
+
+    }
+
+  }
+
+  .ui.button {
+    background: $color-white;
+    border-radius: 5px;
+    color: $color-text;
+    display: block;
+    margin-left: 30px;
+    margin-top: 30px;
+    width: 90%;
+  }
+}
+
 .date-selector { font-size: 1em; width: 27em; height: 20em; line-height: 1em; background: #eeeeee; color: #333333; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
 .date-selector > div { float: left; height: 18em; overflow-y: auto; overflow-x: hidden; padding: 1em 0; border-left: 1px solid rgba(0, 0, 0, 0.1); margin-left: -1px; }

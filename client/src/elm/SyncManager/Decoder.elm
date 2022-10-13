@@ -630,6 +630,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Person.Decoder.decodePerson
                             BackendAuthorityPerson
 
+                    "pmtct_participant" ->
+                        doDecode
+                            Backend.PmtctParticipant.Decoder.decodePmtctParticipant
+                            BackendAuthorityPmtctParticipant
+
                     "photo" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePhoto
@@ -637,56 +642,141 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "pregnancy_testing" ->
                         doDecode
-                            Backend.Measurement.Decoder.decodePregnancyTesting
-                            BackendAuthorityPregnancyTesting
+                            Backend.Measurement.Decoder.decodePregnancyTest
+                            BackendAuthorityPregnancyTest
 
-                    "prenatal_photo" ->
+                    "prenatal_blood_gprs_test" ->
                         doDecode
-                            Backend.Measurement.Decoder.decodePrenatalPhoto
-                            BackendAuthorityPrenatalPhoto
+                            Backend.Measurement.Decoder.decodePrenatalBloodGpRsTest
+                            BackendAuthorityPrenatalBloodGpRsTest
 
-                    "pmtct_participant" ->
+                    "prenatal_breastfeeding" ->
                         doDecode
-                            Backend.PmtctParticipant.Decoder.decodePmtctParticipant
-                            BackendAuthorityPmtctParticipant
-
-                    "prenatal_family_planning" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalFamilyPlanning
-                            BackendAuthorityPrenatalFamilyPlanning
-
-                    "prenatal_health_education" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalHealthEducation
-                            BackendAuthorityPrenatalHealthEducation
-
-                    "prenatal_nutrition" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalNutrition
-                            BackendAuthorityPrenatalNutrition
-
-                    "prenatal_follow_up" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalFollowUp
-                            BackendAuthorityPrenatalFollowUp
-
-                    "prenatal_send_to_hc" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalSendToHc
-                            BackendAuthorityPrenatalSendToHC
+                            Backend.Measurement.Decoder.decodePrenatalBreastfeeding
+                            BackendAuthorityPrenatalBreastfeeding
 
                     "prenatal_encounter" ->
                         doDecode
                             Backend.PrenatalEncounter.Decoder.decodePrenatalEncounter
                             BackendAuthorityPrenatalEncounter
 
+                    "prenatal_family_planning" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalFamilyPlanning
+                            BackendAuthorityPrenatalFamilyPlanning
+
+                    "prenatal_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalFollowUp
+                            BackendAuthorityPrenatalFollowUp
+
+                    "prenatal_gu_exam" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalGUExam
+                            BackendAuthorityPrenatalGUExam
+
+                    "prenatal_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHealthEducation
+                            BackendAuthorityPrenatalHealthEducation
+
+                    "prenatal_hemoglobin_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHemoglobinTest
+                            BackendAuthorityPrenatalHemoglobinTest
+
+                    "prenatal_hepatitis_b_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHepatitisBTest
+                            BackendAuthorityPrenatalHepatitisBTest
+
+                    "prenatal_hiv_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHIVTest
+                            BackendAuthorityPrenatalHIVTest
+
+                    "prenatal_hiv_pcr_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHIVPCRTest
+                            BackendAuthorityPrenatalHIVPCRTest
+
+                    "prenatal_labs_results" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalLabsResults
+                            BackendAuthorityPrenatalLabsResults
+
+                    "prenatal_malaria_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalMalariaTest
+                            BackendAuthorityPrenatalMalariaTest
+
+                    "prenatal_medication_distribution" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalMedicationDistribution
+                            BackendAuthorityPrenatalMedicationDistribution
+
+                    "prenatal_mental_health" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalMentalHealth
+                            BackendAuthorityPrenatalMentalHealth
+
+                    "prenatal_nutrition" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalNutrition
+                            BackendAuthorityPrenatalNutrition
+
+                    "prenatal_outside_care" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalOutsideCare
+                            BackendAuthorityPrenatalOutsideCare
+
+                    "prenatal_photo" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalPhoto
+                            BackendAuthorityPrenatalPhoto
+
+                    "prenatal_random_blood_sugar_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalRandomBloodSugarTest
+                            BackendAuthorityPrenatalRandomBloodSugarTest
+
+                    "prenatal_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSendToHc
+                            BackendAuthorityPrenatalSendToHC
+
+                    "prenatal_speciality_care" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSpecialityCare
+                            BackendAuthorityPrenatalSpecialityCare
+
+                    "prenatal_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSymptomReview
+                            BackendAuthorityPrenatalSymptomReview
+
+                    "prenatal_syphilis_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSyphilisTest
+                            BackendAuthorityPrenatalSyphilisTest
+
+                    "prenatal_tetanus_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalTetanusImmunisation
+                            BackendAuthorityPrenatalTetanusImmunisation
+
+                    "prenatal_urine_dipstick_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalUrineDipstickTest
+                            BackendAuthorityPrenatalUrineDipstickTest
+
                     "relationship" ->
                         doDecode Backend.Relationship.Decoder.decodeRelationship BackendAuthorityRelationship
 
                     "resource" ->
                         doDecode
-                            Backend.Measurement.Decoder.decodeResource
-                            BackendAuthorityResource
+                            Backend.Measurement.Decoder.decodeMalariaPrevention
+                            BackendAuthorityMalariaPrevention
 
                     "send_to_hc" ->
                         doDecode

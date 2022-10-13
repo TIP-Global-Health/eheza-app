@@ -3023,6 +3023,62 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-follow_up-field_date_concluded'.
+  $field_instances['node-follow_up-field_date_concluded'] = array(
+    'bundle' => 'follow_up',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_concluded',
+    'label' => 'Date concluded',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-follow_up-field_date_measured'.
   $field_instances['node-follow_up-field_date_measured'] = array(
     'bundle' => 'follow_up',
@@ -5536,6 +5592,43 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-medication-field_anemia_treatment'.
+  $field_instances['node-medication-field_anemia_treatment'] = array(
+    'bundle' => 'medication',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_anemia_treatment',
+    'label' => 'Anemia Treatment',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-medication-field_date_measured'.
   $field_instances['node-medication-field_date_measured'] = array(
     'bundle' => 'medication',
@@ -5588,7 +5681,118 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 0,
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-medication-field_hiv_treatment'.
+  $field_instances['node-medication-field_hiv_treatment'] = array(
+    'bundle' => 'medication',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_hiv_treatment',
+    'label' => 'HIV Treatment',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance: 'node-medication-field_hypertension_treatment'.
+  $field_instances['node-medication-field_hypertension_treatment'] = array(
+    'bundle' => 'medication',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_hypertension_treatment',
+    'label' => 'Hypertension Treatment',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-medication-field_malaria_treatment'.
+  $field_instances['node-medication-field_malaria_treatment'] = array(
+    'bundle' => 'medication',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_malaria_treatment',
+    'label' => 'Malaria Treatment',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
     ),
   );
 
@@ -5625,7 +5829,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => -2,
+      'weight' => 7,
     ),
   );
 
@@ -5669,7 +5873,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 2,
+      'weight' => 3,
     ),
   );
 
@@ -5713,7 +5917,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -5801,7 +6005,44 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 8,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-medication-field_syphilis_treatment'.
+  $field_instances['node-medication-field_syphilis_treatment'] = array(
+    'bundle' => 'medication',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_syphilis_treatment',
+    'label' => 'Syphilis Treatment',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 12,
     ),
   );
 
@@ -5841,7 +6082,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 6,
+      'weight' => 5,
     ),
   );
 
@@ -11384,6 +11625,44 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_health_education-field_health_education_signs_ph2'.
+  $field_instances['node-prenatal_health_education-field_health_education_signs_ph2'] = array(
+    'bundle' => 'prenatal_health_education',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_health_education_signs_ph2',
+    'label' => 'Health Education Signs_ph2',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_health_education-field_nurse'.
   $field_instances['node-prenatal_health_education-field_nurse'] = array(
     'bundle' => 'prenatal_health_education',
@@ -14082,6 +14361,7 @@ function hedley_activity_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Abdomen');
   t('Abortions');
+  t('Anemia Treatment');
   t('Attended');
   t('BMI');
   t('Birth Plan Signs');
@@ -14098,6 +14378,7 @@ function hedley_activity_field_default_field_instances() {
   t('Currently Pregnant');
   t('Danger Signs');
   t('Date Measured');
+  t('Date concluded');
   t('Dia');
   t('Distributed amount');
   t('Distribution notice');
@@ -14109,14 +14390,17 @@ function hedley_activity_field_default_field_instances() {
   t('Follow up options');
   t('Fundal Height');
   t('Group Encounter');
+  t('HIV Treatment');
   t('Hands');
   t('Has the mother attended for this session?');
   t('Head / hair');
   t('Health education signs');
+  t('Health Education signs phase 2');
   t('Heart');
   t('Heart Murmur');
   t('Heart rate');
   t('Height');
+  t('Hypertension Treatment');
   t('Lactation signs');
   t('Last Menstrual Period');
   t('Leave blank -- it will be entered automatically.');
@@ -14127,6 +14411,7 @@ function hedley_activity_field_default_field_instances() {
   t('Live Children');
   t('Lungs');
   t('MUAC');
+  t('Malaria Treatment');
   t('Medical History');
   t('Medication');
   t('Mother');
@@ -14157,6 +14442,7 @@ function hedley_activity_field_default_field_instances() {
   t('Social History');
   t('Stillbirths PreTerm');
   t('Stillbirths at Term');
+  t('Syphilis Treatment');
   t('Sys');
   t('Term Pregnancy');
   t('This field will be calculated -- you can leave it blank.');

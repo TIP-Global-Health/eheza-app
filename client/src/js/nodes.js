@@ -541,7 +541,14 @@
       'nutrition_follow_up',
       'prenatal_follow_up',
       'well_child_follow_up',
-      'acute_illness_trace_contact'
+      'acute_illness_trace_contact',
+      'prenatal_labs_results'
+    ];
+
+    // Follow Ups that get resolved using date_concluded field.
+    var resolvedFollowUpMeasurementsTypes = [
+      'acute_illness_trace_contact',
+      'prenatal_labs_results'
     ];
 
     function viewFollowUpMeasurements (shard) {
@@ -560,14 +567,23 @@
         return query.toArray().catch(databaseError).then(function (nodes) {
             if (nodes) {
                 var today = new Date();
+                var sixMonthsFromToday = new Date();
+                sixMonthsFromToday.setMonth(today.getMonth() + 6);
 
                 nodes.forEach(function (node) {
-                    if (node.type === 'acute_illness_trace_contact') {
-                      // Do not load resolved items.
-                      var resolutionDate = new Date(node.date_concluded);
-                      if (resolutionDate <= today) {
-                        return;
-                      }
+                    if (node.date_concluded != undefined && typeof node.date_concluded != 'undefined') {
+                        var targetDate = sixMonthsFromToday;
+
+                        if (resolvedFollowUpMeasurementsTypes.includes(node.type)) {
+                          var targetDate = today;
+                        }
+
+                        // Do not load resolved items.
+                        var resolutionDate = new Date(node.date_concluded);
+
+                        if (resolutionDate < targetDate) {
+                          return;
+                        }
                     }
 
                     if (data[node.type]) {

@@ -9,6 +9,8 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
+import Date exposing (Unit(..))
+import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Translate.Model exposing (Language)
@@ -110,12 +112,13 @@ type alias FollowUpForm =
 
     -- We do not display this. Using it when saving.
     , assesment : Maybe (EverySet NutritionAssessment)
+    , resolutionDate : Maybe NominalDate
     }
 
 
 emptyFollowUpForm : FollowUpForm
 emptyFollowUpForm =
-    FollowUpForm Nothing Nothing
+    FollowUpForm Nothing Nothing Nothing
 
 
 type alias HealthEducationForm =
@@ -135,7 +138,7 @@ type alias SendToHCForm =
     , accompanyToHealthCenter : Maybe Bool
     , enrollToNutritionProgram : Maybe Bool
     , referToNutritionProgram : Maybe Bool
-    , reasonForNotSendingToHC : Maybe ReasonForNotSendingToHC
+    , reasonForNotSendingToHC : Maybe ReasonForNonReferral
     }
 
 
@@ -232,7 +235,7 @@ type MsgChild
     | DropZoneComplete DropZoneFile
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SetReasonForNonReferral ReasonForNonReferral
     | SetProvidedEducationForDiagnosis Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetContributingFactorsSign ContributingFactorsSign
@@ -355,6 +358,10 @@ type alias VitalsForm =
     , respiratoryRateDirty : Bool
     , bodyTemperature : Maybe Float
     , bodyTemperatureDirty : Bool
+    , sysRepeated : Maybe Float
+    , sysRepeatedDirty : Bool
+    , diaRepeated : Maybe Float
+    , diaRepeatedDirty : Bool
     }
 
 
@@ -370,6 +377,10 @@ emptyVitalsForm =
     , respiratoryRateDirty = False
     , bodyTemperature = Nothing
     , bodyTemperatureDirty = False
+    , sysRepeated = Nothing
+    , sysRepeatedDirty = False
+    , diaRepeated = Nothing
+    , diaRepeatedDirty = False
     }
 
 
@@ -391,6 +402,7 @@ type alias VitalsFormConfig msg =
 type VitalsFormMode
     = VitalsFormBasic
     | VitalsFormFull
+    | VitalsFormRepeated
 
 
 type InvokationModule
@@ -399,6 +411,61 @@ type InvokationModule
     | InvokationModuleWellChild
 
 
-type ReferralFacility
-    = FacilityHealthCenter
-    | FacilityHospital
+type alias VaccinationForm msg =
+    { administeredDoses : Maybe (EverySet VaccineDose)
+    , administeredDosesDirty : Bool
+    , administrationDates : Maybe (EverySet NominalDate)
+
+    -- This is the note for suggesed dose for encounter.
+    -- There are situations where there will be no suggested dose,
+    -- due to the ability to update previous doses.
+    -- In this case, we'll set 'AdministeredPreviously' value.
+    , administrationNote : Maybe AdministrationNote
+    , administrationNoteDirty : Bool
+
+    -- Form inner functionality inputs
+    , viewMode : VaccinationFormViewMode
+    , updatePreviousVaccines : Maybe Bool
+    , willReceiveVaccineToday : Maybe Bool
+    , vaccinationUpdateDate : Maybe NominalDate
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+type VaccinationFormViewMode
+    = ViewModeInitial
+    | ViewModeVaccinationUpdate VaccineDose
+
+
+emptyVaccinationForm : VaccinationForm msg
+emptyVaccinationForm =
+    { administeredDoses = Nothing
+    , administeredDosesDirty = False
+    , administrationDates = Nothing
+    , administrationNote = Nothing
+    , administrationNoteDirty = False
+    , viewMode = ViewModeInitial
+    , updatePreviousVaccines = Nothing
+    , willReceiveVaccineToday = Nothing
+    , vaccinationUpdateDate = Nothing
+    , dateSelectorPopupState = Nothing
+    }
+
+
+type alias VaccinationFormDynamicContentAndTasksConfig msg =
+    { birthDate : NominalDate
+    , expectedDoses : List VaccineDose
+    , dosesFromPreviousEncountersData : List ( VaccineDose, NominalDate )
+    , dosesFromCurrentEncounterData : List ( VaccineDose, NominalDate )
+    , setVaccinationFormViewModeMsg : VaccinationFormViewMode -> msg
+    , setUpdatePreviousVaccinesMsg : VaccineDose -> Bool -> msg
+    , setWillReceiveVaccineTodayMsg : VaccineDose -> Bool -> msg
+    , setAdministrationNoteMsg : AdministrationNote -> msg
+    , setVaccinationUpdateDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setVaccinationUpdateDateMsg : NominalDate -> msg
+    , saveVaccinationUpdateDateMsg : VaccineDose -> msg
+    , deleteVaccinationUpdateDateMsg : VaccineDose -> NominalDate -> msg
+    , nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+    , getIntervalForVaccine : VaccineDose -> ( Int, Unit )
+    , firstDoseExpectedFrom : NominalDate
+    }

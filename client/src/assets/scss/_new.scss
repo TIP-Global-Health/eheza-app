@@ -101,6 +101,23 @@
           height: 36px;
           width: 52px;
         }
+
+        &.icon-labs {
+          background: url(#{$img-path}icon-laboratory-blue.svg) center center no-repeat;
+          background-size: 36px 50px;
+          height: 50px;
+          margin-right: 20px;
+          width: 65px;
+        }
+
+        &.icon-vitals {
+          background: url(#{$img-path}icon-physical-exam-blue.svg) center center no-repeat;
+          background-size: 40px 54px;
+          height: 50px;
+          margin-right: 18px;
+          width: 80px;
+        }
+
       }
     }
 
@@ -887,7 +904,7 @@ div.page-activity.trace-contact {
 
 // Acute Illness Activity page
 div.page-activity.acute-illness,
-div.page-activity.trace-contact {
+div.page-activity.trace-contact  {
 
   .ui.full.segment {
 
@@ -1100,25 +1117,12 @@ div.page-activity.trace-contact {
           }
 
           &.date {
+            border: 2px solid $color-light-gray;
+            color: $color-text;
             height: 2em;
+            padding: 5px;
+            text-align: center;
             width: 50%;
-
-            .dropdown,
-            .dropdown-open {
-              width: 100%;
-
-              .dropdown--button-container {
-                background: $color-white;
-                border: 2px solid $color-light-gray;
-
-                input {
-                  border: 0;
-                  color: $color-text;
-                  padding: 5px;
-                  text-align: center;
-                }
-              }
-            }
           }
         }
       }
@@ -1312,16 +1316,16 @@ div.page-activity.home-visit {
 
   .ui.full.segment {
 
-      .activity-helper {
-        margin-bottom: 5px;
-      }
+    .activity-helper {
+      margin-bottom: 5px;
+    }
 
-      .range-helper {
-        margin-top: 0;
-      }
+    .range-helper {
+      margin-top: 0;
+    }
 
-      .form-input {
-        margin-bottom: 30px;
+    .form-input {
+      margin-bottom: 30px;
 
       // Pregnanacy Dating Inputs
       &.select {
@@ -1333,23 +1337,12 @@ div.page-activity.home-visit {
       }
 
       &.date {
+        border: 2px solid $color-light-gray;
+        color: $color-text;
         height: 2em;
+        padding: 5px;
+        text-align: center;
         width: 50%;
-
-        .dropdown,
-        .dropdown-open {
-          width: 100%;
-        }
-
-        .dropdown--button-container {
-          background: $color-white;
-          border: 2px solid $color-light-gray;
-
-          input {
-            border: 0;
-            padding: 5px;
-          }
-        }
       }
 
       &.hiv-test-result {
@@ -1457,6 +1450,12 @@ div.page-activity.home-visit {
             width: 24px;
           }
         }
+
+        .recommendation .marker {
+          color: $color-primary;
+          font-size: 22px;
+          margin-top: 5px;
+        }
       }
     }
 
@@ -1521,6 +1520,16 @@ div.page-activity.home-visit {
       }
     }
 
+    .actions.two button {
+      width: 50%;
+      float: left;
+      margin: 0;
+
+      &.active {
+        border-left: 1px solid $color-white;
+      }
+    }
+
     .form.history {
 
       .ui.grid + .grid {
@@ -1563,6 +1572,10 @@ div.page-activity.home-visit {
         &.self-guidance {
           font-size: 25px;
         }
+      }
+
+      .label.question {
+        font-size: 22px;
       }
 
       .ui.grid.systolic img {
@@ -1685,6 +1698,10 @@ div.page-activity.home-visit {
         margin-bottom: 20px;
       }
 
+      .ui.form {
+        min-height: 210px;
+      }
+
       .checkbox-select-input {
         margin-bottom: 20px;
       }
@@ -1710,6 +1727,259 @@ div.page-activity.home-visit {
         font-size: 25px;
         font-weight: 300;
         margin-left: 40px;
+      }
+
+      .form.laboratory {
+
+        .label.header {
+          font-size: 24px;
+          margin-bottom: 30px;
+        }
+
+        .test-date {
+          font-size: 23px;
+        }
+      }
+
+      .form.send-to-hc,
+      .form.referral,
+      .form.medication-distribution,
+      .form.recommended-treatment {
+
+        h2 {
+          text-transform: uppercase;
+        }
+      }
+
+      .form.health-education {
+
+        .label, li {
+          font-weight: 600;
+        }
+
+        .label.header {
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 30px;
+          text-transform: uppercase;
+        }
+
+        .label.paragraph {
+          margin-bottom: 20px;
+        }
+      }
+    }
+  }
+}
+
+div.page-activity.prenatal {
+
+  .ui.full.segment {
+
+    .full.content {
+
+      .form.medication {
+
+        .label.header {
+          margin-bottom: 35px;
+        }
+      }
+
+      .form.referral,
+      .form.history.outside-care,
+      .form.medication-distribution,
+      .form.speciality-care {
+
+        .separator:last-of-type {
+          display: none;
+        }
+
+        .instructions-warning {
+          margin-left: 50px;
+          margin-top: 15px;
+        }
+
+        .label {
+
+          .highlight {
+            color: $color-primary;
+          }
+
+          .footer {
+            font-weight: normal;
+            margin-bottom: 0;
+          }
+        }
+
+        .label.overview {
+          font-weight: 600;
+        }
+
+        .warning {
+          display: flex;
+          font-size: 20px;
+          line-height: 25px;
+          padding: 20px;
+
+          img {
+            height: 30px;
+            margin-left: 5px;
+            margin-right: 10px;
+          }
+        }
+
+        label {
+
+          .treatment {
+            color: $color-primary;
+            font-size: 23px;
+            font-weight: 500;
+            margin-right: 10px;
+          }
+
+          .dosage {
+            font-size: 22px;
+          }
+
+          b {
+            font-size: 22px;
+          }
+        }
+
+        ul {
+          margin-top: 0;
+        }
+      }
+
+      .form.history.outside-care {
+
+        label .treatment {
+            margin-right: 0;
+          }
+
+        .label .diagnosis {
+          color: $color-primary;
+        }
+
+        .checkbox-select-input {
+          margin-bottom: 40px;
+        }
+      }
+
+      .form.speciality-care .label.header {
+        margin-bottom: 20px;
+      }
+
+      .ui.form.vaccination .header.icon-label {
+        align-items: flex-start;
+        font-weight: 500;
+
+        .description,
+        .dosage {
+          margin-bottom: 30px;
+        }
+      }
+
+      .ui.form.vaccination .history {
+        padding: 20px 0;
+
+        .label {
+          font-weight: 500;
+          margin-left: 10px;
+        }
+      }
+
+      .ui.form.vaccination .history .history-entry {
+        align-items: flex-start;
+        display: flex;
+        font-weight: normal;
+        margin-left: 55px;
+
+        .dose {
+          background: $color-primary;
+          border-radius: 5px;
+          color: $color-white;
+          font-size: 17px;
+          padding: 0 10px;
+        }
+
+        .date {
+          margin-bottom: 20px;
+          margin-left: 30px;
+          width: 150px;
+        }
+
+        .update,
+        .delete {
+          border-radius: 3px;
+          color: $color-white;
+          font-size: 17px;
+          padding: 0 20px;
+          text-transform: uppercase;
+        }
+
+        .update {
+          background: $color-primary;
+        }
+
+        .delete {
+          background: $color-velvet;
+        }
+      }
+
+      .ui.form.vaccination .update.actions {
+        display: flex;
+        justify-content: space-evenly;
+        margin-bottom: 40px;
+
+        .button {
+          font-size: 18px;
+          font-weight: 600;
+          padding: 15px;
+          width: 250px;
+        }
+      }
+
+      .ui.form.labs-history {
+
+        .instructions,
+        .completed {
+          font-weight: 600;
+        }
+
+        .history-entries {
+          margin-bottom: 30px;
+        }
+
+        .history-entry {
+          align-items: flex-start;
+          display: flex;
+          font-weight: normal;
+          justify-content: space-around;
+          margin-bottom: 15px;
+
+          .index {
+            background: $color-primary;
+            border-radius: 5px;
+            color: $color-white;
+            font-size: 17px;
+            padding: 0 10px;
+          }
+
+          .name,
+          .date {
+            width: 150px;
+          }
+
+          .action {
+            background: $color-velvet;
+            border-radius: 3px;
+            color: $color-white;
+            font-size: 17px;
+            padding: 0 20px;
+            text-transform: uppercase;
+          }
+        }
       }
     }
   }
@@ -1746,24 +2016,12 @@ div.page-activity.well-child {
         margin-bottom: 30px;
 
         &.date {
+          border: 2px solid $color-light-gray;
+          color: $color-text;
           height: 2em;
+          padding: 5px;
+          text-align: center;
           width: 50%;
-
-          .dropdown,
-          .dropdown-open {
-            width: 100%;
-
-            .dropdown--button-container {
-              background: $color-white;
-              border: 2px solid $color-light-gray;
-
-              input {
-                border: 0;
-                color: $color-text;
-                padding: 5px;
-              }
-            }
-          }
         }
 
         &.date.previous {
@@ -1941,23 +2199,12 @@ div.page-outcome.pregnancy {
       margin-bottom: 30px;
 
       &.date {
+        border: 2px solid $color-light-gray;
+        color: $color-text;
         height: 2em;
+        padding: 5px;
+        text-align: center;
         width: 50%;
-
-        .dropdown,
-        .dropdown-open {
-          width: 100%;
-        }
-
-        .dropdown--button-container {
-          background: $color-white;
-          border: 2px solid $color-light-gray;
-
-          input {
-            border: 0;
-            padding: 5px;
-          }
-        }
       }
 
       &.pregnancy-outcome {
@@ -2011,35 +2258,21 @@ div.page-outcome.pregnancy {
   }
 }
 
-div.page-clinical-progress-report,
-div.page-demographics-report {
-  background: $color-light-gray;
+div.page-report.clinical,
+div.page-report.demographics {
   padding: 0 20px 35px 20px;
   height: 100%;
   display: flex;
   flex-direction: column;
 
-  .ui.basic.segment.head {
-    padding: 25px;
-
-    .ui.header {
-      color: $color-text;
-    }
-
-    .icon-back {
-      background: url(#{$img-path}icon-back-dark.svg);
-      background-size: 34px 27px;
-      position: absolute;
-    }
-  }
-
   .ui.unstackable.items {
     overflow-y: auto;
 
     .pane-heading {
-      font-size: 16px;
+      font-size: 20px;
       font-weight: 700;
       padding: 5px 15px;
+      text-align: left;
       text-transform: uppercase;
 
       &.gray {
@@ -2061,15 +2294,24 @@ div.page-demographics-report {
       font-size: 18px;
       padding: 20px 0 20px 40px;
     }
+
+    .icon-forward {
+      align-self: center;
+      background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+      background-size: 45px 50px;
+      height: 50px;
+      width: 45px;
+    }
   }
 }
 
-div.page-clinical-progress-report {
+div.page-report.clinical .ui.unstackable.items {
 
   .header-pane {
-    background: $color-white;
-    margin-bottom: 20px;
-    padding: 40px 20px;
+
+    .pane-heading {
+      text-align: center;
+    }
 
     .mother-details {
       display: grid;
@@ -2080,8 +2322,12 @@ div.page-clinical-progress-report {
         color: $color-text;
 
         .mother-name, .edd {
-          margin-top: 20px;
           margin-bottom: 10px;
+        }
+
+        .mother-name {
+          color: $color-primary;
+          font-weight: 700;
         }
       }
 
@@ -2100,6 +2346,7 @@ div.page-clinical-progress-report {
       grid-template-columns: 25% auto;
       line-height: 40px;
       margin-left: 150px;
+      margin-top: -30px;
 
       .label {
         font-weight: bold;
@@ -2141,12 +2388,83 @@ div.page-clinical-progress-report {
   .medical-diagnosis,
   .obstetric-diagnosis {
     background: $color-white;
-    margin-bottom: 20px;
 
-    .pane-content p {
-      line-height: 32px;
-      margin-bottom: 5px;
+    .pane-content ul {
+      font-size: 24px;
+      line-height: 35px;
+      margin-bottom: 0;
+      margin-top: 0;
+      padding: 0 20px;
     }
+  }
+
+  .chw-activities {
+
+    .heading,
+    .table-row {
+      display: grid;
+      grid-gap: 20px;
+      grid-template-columns: 20% auto;
+    }
+
+    .pane-content {
+      padding-left: 0;
+      padding-bottom: 0;
+    }
+
+    .heading {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .heading .date {
+      margin-left: 40px;
+    }
+
+    .heading .chw-actions {
+      margin-left: 20px;
+    }
+
+    .table-row {
+      padding: 20px 0;
+      border-top: 1px solid $color-text;
+    }
+
+    .table-row .date {
+      margin: auto 0 auto 40px;
+    }
+
+    .table-row ul {
+      display: inline-block;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .table-row ul li {
+      border-radius: 10px;
+      color: #FFFFFF;
+      float: left;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 3px 5px;
+      padding: 0 10px;
+      text-transform: uppercase;
+    }
+
+    .table-row ul li.purple {
+      background: $color-purple;
+    }
+
+    .table-row ul li.velvet {
+      background: $color-velvet;
+    }
+
+    .table-row ul li.cyan {
+      background: $color-cyan;
+    }
+
   }
 
   .risk-factors > .pane-heading {
@@ -2281,28 +2599,6 @@ div.page-clinical-progress-report {
 
     }
 
-    .photos-section {
-      display: grid;
-      grid-gap: 28px;
-      grid-template-columns: 150px 150px 150px 150px;
-
-      .progress-photo {
-
-        img {
-          height: 150px;
-        }
-
-        .ega {
-          background-color: $color-gray;
-          color: $color-white;
-          font-size: 16px;
-          font-weight: bold;
-          text-align: center;
-        }
-      }
-
-    }
-
     .trends-section {
 
       .chart-heading {
@@ -2360,12 +2656,197 @@ div.page-clinical-progress-report {
     }
 
   }
+
+  .labs {
+
+    .pane-content {
+      padding: 40px;
+      text-align: center;
+
+      .button {
+        font-size: 26px;
+        font-weight: 700;
+        padding: 15px;
+        text-transform: none;
+        width: 80%;
+      }
+    }
+  }
+
+  .lab-results,
+  .lab-results-history {
+
+    .pane-heading {
+      text-align: center;
+    }
+
+    .pane-content {
+      border-bottom: 1px solid $color-text;
+    }
+
+    .heading,
+    .entry {
+      display: flex;
+    }
+
+    .heading {
+      font-weight: 600;
+    }
+
+    .entry {
+      border-bottom: 1px solid $color-text;
+      font-weight: 500;
+      line-height: 60px;
+
+      .result .uncompleted {
+        background: $color-velvet;
+        border-radius: 6px;
+        color: $color-white;
+        font-size: 15px;
+        padding: 3px 8px;
+        text-transform: uppercase;
+      }
+
+      .result .known-positive {
+        background: $color-orange-light;
+        border-radius: 6px;
+        color: $color-white;
+        font-size: 15px;
+        padding: 3px 8px;
+        text-transform: uppercase;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .entry.warning {
+      color: $color-velvet;
+
+      .icon-forward {
+        background: url(#{$img-path}icon-forward-red.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        width: 45px;
+      }
+    }
+
+    .group-content {
+      background: $color-white;
+      color: $color-text;
+      font-size: 18px;
+      padding: 0 20px;
+    }
+  }
+
+  .lab-results {
+
+    .heading,
+    .entry {
+
+      .name {
+        width: 190px;
+      }
+
+      .date {
+        width: 120px;
+      }
+
+      .result {
+        text-align: center;
+        width:180px;
+      }
+
+      .normal-range {
+        width:160px;
+      }
+    }
+
+    .entry .name {
+      margin-left: 20px;
+    }
+  }
+
+  .lab-results-history {
+
+    .heading,
+    .entry {
+
+      .date{
+        width: 20%;
+      }
+
+      .result,
+      .normal-range {
+        text-align: center;
+        width: 35%;
+      }
+    }
+
+    .entry {
+
+      .date {
+        margin-left: 20px;
+      }
+
+      img.icon-warning {
+        height: 46px;
+        margin-top: 6px;
+      }
+    }
+  }
+
+  .ui.unstackable.items .lab-results-history .pane-content {
+    padding: 20px;
+  }
+
+  .progress-photos .pane-content {
+    display: grid;
+    grid-gap: 28px;
+    grid-template-columns: 150px 150px 150px 150px;
+
+    .progress-photo {
+
+      img {
+        height: 150px;
+      }
+
+      .ega {
+        background-color: $color-gray;
+        color: $color-white;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+      }
+    }
+
+  }
 }
 
-div.page-demographics-report {
+div.page-report.demographics .ui.unstackable.items {
 
-  .patient-information, .family-information, .address-information {
-    margin-bottom: 20px;
+  .pane-content {
+
+    .ui.image {
+      margin-bottom: 25px;
+    }
+
+    p {
+      font-size: 22px;
+      line-height: 30px;
+      margin-bottom: 5px;
+
+      .label {
+        font-weight: bold;
+        width: 50%;
+      }
+
+      .value {
+        float: right;
+        width: 50%;
+      }
+    }
   }
 
   .family-information .children-table {
@@ -2387,7 +2868,7 @@ div.page-demographics-report {
 
     .row {
       border-bottom: 1px solid $color-light-gray;
-      height: 24px;
+      height: 40px;
       width: 95%;
 
       &:last-child {
@@ -2404,26 +2885,8 @@ div.page-demographics-report {
     }
   }
 
-  .pane-content {
-
-    .ui.image {
-      margin-bottom: 15px;
-    }
-
-    p {
-      line-height: 26px;
-      margin-bottom: 5px;
-
-      .label {
-        font-weight: bold;
-        width: 40%;
-      }
-
-      .value {
-        float: right;
-        width: 60%;
-      }
-    }
+  .patient-information .pane-heading {
+    text-align: center;
   }
 }
 
@@ -2541,7 +3004,8 @@ div.page-participant.prenatal {
       text-align: left;
 
       .encounter-label {
-        margin-bottom: 15px;
+        line-height: 25px;
+        margin-bottom: 10px;
       }
     }
 
@@ -2578,7 +3042,7 @@ div.page-report.acute-illness {
 
       .pane-heading {
         color: $color-white;
-        font-size: 22px;
+        font-size: 20px;
         font-weight: bold;
         padding: 10px 15px;
         text-transform: uppercase;
@@ -2701,7 +3165,7 @@ div.page-report.acute-illness {
       }
 
       &.gi {
-        background: $color-blue;
+        background: $color-purple;
       }
     }
 
@@ -2820,7 +3284,8 @@ div.page-report.acute-illness,
 div.page-encounter.well-child,
 div.page-activity.trace-contact,
 div.page-activity.well-child,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-activity.patient-record {
 
   .details {
     padding-left: 25px;
@@ -2847,7 +3312,8 @@ div.page-report.well-child {
 
 div.page-activity.well-child,
 div.page-report.acute-illness,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-activity.patient-record {
 
   .heading {
     border-bottom: 1px solid $color-text;
@@ -2907,7 +3373,7 @@ div.page-report.well-child {
     text-transform: uppercase;
 
     &.completed {
-      background: $color-blue;
+      background: $color-purple;
     }
 
     &.behind,
@@ -2963,7 +3429,10 @@ div.page-report.well-child {
 }
 
 div.page-report.acute-illness,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-report.clinical,
+div.page-report.demographics,
+div.page-activity.patient-record {
   background: unset;
 
   .pane-heading {
@@ -3047,6 +3516,22 @@ div.page-report.well-child {
       }
     }
 
+    .heading.antenatal {
+
+      .date-start {
+        width: 31%;
+      }
+
+      .status {
+        width: 18%;
+      }
+
+      .date-end {
+        margin-left: 25px;
+        width: 34%;
+      }
+    }
+
     .entry.diagnosis {
 
       .assesment {
@@ -3099,6 +3584,37 @@ div.page-report.well-child {
 
       .date {
         width: 25%;
+      }
+    }
+
+    .entry.antenatal {
+
+      .date-start {
+        width: 31%;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+
+      .status {
+        width: 18%;
+        padding-right: 20px;
+        text-align: center;
+      }
+
+      .date-end {
+        margin-left: 25px;
+        width: 34%;
+      }
+
+      .icon-forward {
+        align-self: center;
+        background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        margin-left: 20px;
+        width: 50px;
       }
     }
 
@@ -3169,12 +3685,13 @@ div.page-report.well-child {
     }
   }
 
-  .ui.report.unstackable.items .actions {
+  .ui.unstackable.items .actions {
     margin: 20px 0 0 0;
   }
 }
 
-div.page-case-management {
+div.page-case-management,
+div.page-activity.patient-record {
 
   .ui.segment.filters {
     background-color: $color-white;
@@ -3199,6 +3716,9 @@ div.page-case-management {
       color: $color-white;
     }
   }
+}
+
+div.page-case-management {
 
   .pane {
     background: $color-primary;
@@ -3259,7 +3779,7 @@ div.page-case-management {
           margin: 3px 5px;
           padding: 0 10px;
           text-transform: uppercase;
-          width: 130px;
+          width: 135px;
 
           &.overdue {
             background: $color-velvet;
@@ -3274,7 +3794,7 @@ div.page-case-management {
           }
 
           &.this-month {
-            background: $color-blue;
+            background: $color-purple;
           }
 
           &.next-month {
@@ -3288,10 +3808,14 @@ div.page-case-management {
           font-weight: 600;
           margin-left: 20px;
           text-align: left;
-          width: 285px;
+          width: 280px;
 
           p {
             margin-bottom: 0;
+          }
+
+          &.center {
+            text-align: center;
           }
         }
       }
@@ -3345,5 +3869,58 @@ div.page-case-management {
     button.stacked:last-child {
       margin-bottom: 0;
     }
+  }
+}
+
+div.page-activity.patient-record {
+
+  // This part is used by child view.
+  .ui.full.segment {
+    height: 90%;
+
+    p {
+      font-size: 25px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    .label-visit {
+      margin-bottom: 30px;
+      margin-top: 40px;
+    }
+
+    .ui.primary.button {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      width: 100%;
+
+      .button-label {
+        text-align: left;
+
+        .encounter-label {
+          margin-bottom: 15px;
+        }
+      }
+
+      .icon-back {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  // This part is used by adult view.
+  .heading.family-planning,
+  .entry.family-planning {
+    display: grid;
+    grid-gap: 20px;
+    grid-template-columns: 25% auto;
+  }
+
+  .entry.family-planning .date {
+    margin: auto 0;
   }
 }

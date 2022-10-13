@@ -14,7 +14,7 @@ class RoboFile extends Tasks {
    * You need to fill this information for Robo to know what's the name of your
    * site.
    */
-  const PANTHEON_NAME = 'ihangane';
+  const PANTHEON_NAME = 'eheza-app';
 
   /**
    * Deploy to Pantheon.
@@ -75,6 +75,8 @@ class RoboFile extends Tasks {
       'pantheon.yml',
       'pantheon.upstream.yml',
       'client',
+      'scalability-test',
+      'infrastructure_setup',
     ];
 
     $rsyncExcludeString = '--exclude=' . implode(' --exclude=', $rsyncExclude);

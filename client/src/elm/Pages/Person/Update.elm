@@ -133,12 +133,6 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
             , [ App.Model.SetActivePage page ]
             )
 
-        ToggleDateSelector ->
-            ( { model | isDateSelectorOpen = not model.isDateSelectorOpen }
-            , Cmd.none
-            , []
-            )
-
         DateSelected operation initiator date ->
             let
                 dateAsString =
@@ -148,6 +142,12 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
                     Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm operation initiator
             in
             update currentDate selectedHealthCenter maybeVillageId isChw setFieldMsg db model
+
+        SetDateSelectorState state ->
+            ( { model | dateSelectorPopupState = state }
+            , Cmd.none
+            , []
+            )
 
 
 generateMsgsForPersonEdit : NominalDate -> PersonId -> Person -> PersonForm -> ModelIndexedDb -> List App.Model.Msg

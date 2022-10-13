@@ -269,7 +269,7 @@ dbSync.version(17).stores({
  *
  * When creating new DB version, update:
  *
- * 1. dbVersion constant bellow (app.js)
+ * 1. dbVersion constant below (app.js)
  * 2. dbVerno constant at sw.js
  * 3. HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION at hedley_restful.module
  */
@@ -423,7 +423,10 @@ function reportQuota() {
     elmApp.ports.storageQuota.send(quota);
   });
 
-  elmApp.ports.memoryQuota.send(performance.memory);
+  if (!!performance.memory) {
+    // Firefox doesn't have this property.
+    elmApp.ports.memoryQuota.send(performance.memory);
+  };
 }
 
 // Do it right away.
