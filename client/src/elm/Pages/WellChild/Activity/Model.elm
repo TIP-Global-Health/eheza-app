@@ -98,6 +98,7 @@ type Msg
     | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
       -- NCDA
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( WellChildNCDAId, WellChildNCDA ))
 
 

@@ -243,6 +243,7 @@ type MsgChild
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetNCDAHelperState (Maybe NCDASign)
 
 
 type MsgMother
@@ -957,12 +958,15 @@ emptyLiverFunctionResultForm =
 
 type alias NCDAData =
     { form : NCDAForm
+    , helperState : Maybe NCDASign
     }
 
 
 emptyNCDAData : NCDAData
 emptyNCDAData =
-    NCDAData emptyNCDAForm
+    { form = emptyNCDAForm
+    , helperState = Nothing
+    }
 
 
 type alias NCDAForm =

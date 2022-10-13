@@ -1663,6 +1663,17 @@ update currentDate isChw id db msg model =
             , []
             )
 
+        SetNCDAHelperState state ->
+            let
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | helperState = state })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveNCDA personId saved ->
             let
                 measurementId =

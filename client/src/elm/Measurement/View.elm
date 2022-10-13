@@ -2283,8 +2283,17 @@ viewTreatmentWithDosage language sign =
     ]
 
 
-viewNCDAContent : Language -> NominalDate -> Person -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg) -> msg -> NCDAForm -> List (Html msg)
-viewNCDAContent language currentDate person setMsg saveMsg form =
+viewNCDAContent :
+    Language
+    -> NominalDate
+    -> Person
+    -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
+    -> msg
+    -> (Maybe NCDASign -> msg)
+    -> Maybe NCDASign
+    -> NCDAForm
+    -> List (Html msg)
+viewNCDAContent language currentDate person setMsg saveMsg setHelperStateMsg helperState form =
     let
         totalTasks =
             List.length tasks
@@ -2294,7 +2303,7 @@ viewNCDAContent language currentDate person setMsg saveMsg form =
                 |> List.sum
 
         ( inputs, tasks ) =
-            ncdaFormInputsAndTasks language currentDate person setMsg form
+            ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
 
         disabled =
             tasksCompleted /= totalTasks
@@ -2307,6 +2316,8 @@ viewNCDAContent language currentDate person setMsg saveMsg form =
             ]
         , viewSaveAction language saveMsg disabled
         ]
+    , viewModal <|
+        viewNCDAHelperDialog language (setHelperStateMsg Nothing) helperState
     ]
 
 
@@ -2315,9 +2326,10 @@ ncdaFormInputsAndTasks :
     -> NominalDate
     -> Person
     -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
+    -> (Maybe NCDASign -> msg)
     -> NCDAForm
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate person setMsg form =
+ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form =
     let
         signs =
             [ NCDABornUnderweight
@@ -2402,7 +2414,11 @@ ncdaFormInputsAndTasks language currentDate person setMsg form =
                     in
                     ( [ div [ class "label-with-helper" ]
                             [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups
-                            , div [ class "label-helper" ] [ img [ src "assets/images/question-mark.svg" ] [] ]
+                            , div
+                                [ class "label-helper"
+                                , onClick <| setHelperStateMsg (Just NCDAFiveFoodGroups)
+                                ]
+                                [ img [ src "assets/images/question-mark.svg" ] [] ]
                             ]
                       , viewBoolInput
                             language
@@ -2522,6 +2538,36 @@ ncdaFormInputsAndTasks language currentDate person setMsg form =
     )
 
 
+viewNCDAHelperDialog : Language -> msg -> Maybe NCDASign -> Maybe (Html msg)
+viewNCDAHelperDialog language action helperState =
+    Maybe.andThen
+        (\sign ->
+            case sign of
+                NCDAFiveFoodGroups ->
+                    Just <|
+                        div [ class "ui tiny active modal" ]
+                            [ div [ class "header" ]
+                                [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups ]
+                            , div
+                                [ class "content" ]
+                                [ p [] [ text "zaza" ]
+                                ]
+                            , div
+                                [ class "actions" ]
+                                [ button
+                                    [ class "ui fluid button"
+                                    , onClick action
+                                    ]
+                                    [ text <| translate language Translate.Close ]
+                                ]
+                            ]
+
+                _ ->
+                    Nothing
+        )
+        helperState
+
+
 viewNCDA : Language -> NominalDate -> Person -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA )) -> NCDAData -> Html MsgChild
 viewNCDA language currentDate child measurement data =
     let
@@ -2540,5 +2586,5 @@ viewNCDA language currentDate child measurement data =
                 |> Maybe.withDefault NoOp
                 |> SendOutMsgChild
     in
-    viewNCDAContent language currentDate child SetNCDABoolInput saveMsg form
+    viewNCDAContent language currentDate child SetNCDABoolInput saveMsg SetNCDAHelperState data.helperState form
         |> div []
