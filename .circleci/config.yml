@@ -7,7 +7,12 @@ workflows:
       - lint_phpcs
       - lint_elm
       - lint_shellcheck
-      - test:
+      - test_simpletest_linux:
+          requires:
+            - lint_phpcs
+            - lint_elm
+            - lint_shellcheck
+      - test_simpletest_mac:
           requires:
             - lint_phpcs
             - lint_elm
@@ -36,7 +41,7 @@ jobs:
       - checkout
       - run: ci-scripts/install_shell.sh
       - run: ci-scripts/test_shell.sh
-  test:
+  test_simpletest_linux:
     machine:
       image: ubuntu-2004:202111-01
     steps:
@@ -50,3 +55,11 @@ jobs:
           key: drupal
           paths:
             - /tmp/cache
+  test_simpletest_mac:
+    macos:
+      xcode: 13.4.1
+    steps:
+      - checkout
+      - run: ci-scripts/install_ddev.sh
+      - run: ci-scripts/install_drupal.sh
+      - run: ddev simpletest
