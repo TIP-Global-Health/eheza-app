@@ -70,6 +70,7 @@ import Http
 import Measurement.Model
     exposing
         ( FloatInputConstraints
+        , GroupOfFoods(..)
         , LaboratoryTask(..)
         , NextStepsTask(..)
         )
@@ -644,6 +645,7 @@ type TranslationId
     | GroupAssessment
     | Gravida
     | GroupEncounter
+    | GroupOfFoods GroupOfFoods
     | Growth
     | HalfOfDosage String
     | HandedReferralFormQuestion
@@ -4967,6 +4969,48 @@ translationSet trans =
             { english = "Group Encounter"
             , kinyarwanda = Nothing
             }
+
+        GroupOfFoods value ->
+            case value of
+                Staples ->
+                    { english = "Staples (grains, roots and tubers)"
+                    , kinyarwanda = Nothing
+                    }
+
+                Legumes ->
+                    { english = "Legumes (beans, peas, cereals)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DairyProducts ->
+                    { english = "Dairy products"
+                    , kinyarwanda = Nothing
+                    }
+
+                AnimalSourceFoods ->
+                    { english = "Animal-source foods (flesh meats, eggs, fish, small fish (indagara))"
+                    , kinyarwanda = Nothing
+                    }
+
+                Eggs ->
+                    { english = "Eggs"
+                    , kinyarwanda = Nothing
+                    }
+
+                FruitsVegetables ->
+                    { english = "Fruits and vegetables"
+                    , kinyarwanda = Nothing
+                    }
+
+                BreastMilk ->
+                    { english = "Breastfeeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                MealsWithEdibleOil ->
+                    { english = "Meals with added edible oil"
+                    , kinyarwanda = Nothing
+                    }
 
         Growth ->
             { english = "Growth"

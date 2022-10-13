@@ -1268,6 +1268,25 @@ input::placeholder {
     width: 730px;
   }
 
+  &.ncda-helper-popup {
+    margin-left: -300px;
+    width: 600px;
+
+    .header {
+      text-align: left;
+      text-transform: none;
+    }
+
+    .content {
+      color: $color-text;
+      text-align: left;
+    }
+
+    .actions .button {
+      margin-left: 0;
+    }
+  }
+
   &.diagnosis-popup,
   &.open-pregnancy-popup,
   &.danger-signs-popup,

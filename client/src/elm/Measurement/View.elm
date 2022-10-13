@@ -2545,17 +2545,30 @@ viewNCDAHelperDialog language action helperState =
             case sign of
                 NCDAFiveFoodGroups ->
                     Just <|
-                        div [ class "ui tiny active modal" ]
+                        div [ class "ui active modal ncda-helper-popup" ]
                             [ div [ class "header" ]
                                 [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups ]
                             , div
                                 [ class "content" ]
-                                [ p [] [ text "zaza" ]
+                                [ ol [] <|
+                                    List.map
+                                        (\foodGroup ->
+                                            li [] [ text <| translate language <| Translate.GroupOfFoods foodGroup ]
+                                        )
+                                        [ Staples
+                                        , Legumes
+                                        , DairyProducts
+                                        , AnimalSourceFoods
+                                        , Eggs
+                                        , FruitsVegetables
+                                        , BreastMilk
+                                        , MealsWithEdibleOil
+                                        ]
                                 ]
                             , div
                                 [ class "actions" ]
                                 [ button
-                                    [ class "ui fluid button"
+                                    [ class "ui fluid primary button"
                                     , onClick action
                                     ]
                                     [ text <| translate language Translate.Close ]

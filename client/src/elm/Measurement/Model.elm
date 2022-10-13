@@ -1006,3 +1006,14 @@ emptyNCDAForm =
     , hasToilets = Nothing
     , hasKitchenGarden = Nothing
     }
+
+
+type GroupOfFoods
+    = Staples
+    | Legumes
+    | DairyProducts
+    | AnimalSourceFoods
+    | Eggs
+    | FruitsVegetables
+    | BreastMilk
+    | MealsWithEdibleOil
