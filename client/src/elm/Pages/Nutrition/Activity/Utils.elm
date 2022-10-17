@@ -61,10 +61,16 @@ generateNutritionAssessment currentDate zscores db assembled =
 expectActivity : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
 expectActivity currentDate zscores isChw assembled db activity =
     case activity of
-        -- Show for children that are at least 6 month old.
+        -- Show for children that are at least 6 months old.
         Muac ->
             ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
+                |> Maybe.withDefault False
+
+        -- Show for children that are 6 to 24 months old.
+        NCDA ->
+            ageInMonths currentDate assembled.person
+                |> Maybe.map (\ageMonths -> ageMonths > 5 && ageMonths < 24)
                 |> Maybe.withDefault False
 
         NextSteps ->
@@ -105,6 +111,9 @@ activityCompleted currentDate zscores isChw assembled db activity =
 
         Weight ->
             isJust measurements.weight
+
+        NCDA ->
+            isJust measurements.ncda
 
         NextSteps ->
             (not <| expectActivity currentDate zscores isChw assembled db NextSteps)

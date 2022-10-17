@@ -856,7 +856,7 @@ type TranslationId
     | MyRelatedByQuestion MyRelatedBy
     | Name
     | NationalIdNumber
-    | NCDASignQyestion NCDASign
+    | NCDASignQuestion NCDASign
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
     | NCDDangerSign NCDDangerSign
@@ -7596,7 +7596,7 @@ translationSet trans =
             , kinyarwanda = Just "Numero y'irangamuntu"
             }
 
-        NCDASignQyestion sign ->
+        NCDASignQuestion sign ->
             case sign of
                 NCDABornUnderweight ->
                     { english = "Was the child born underweight"
@@ -7619,7 +7619,7 @@ translationSet trans =
                     }
 
                 NCDAFiveFoodGroups ->
-                    { english = "Does the child receive food items from the 5 food groups?"
+                    { english = "Does the child receive food items from the 5 food groups"
                     , kinyarwanda = Nothing
                     }
 
@@ -8578,6 +8578,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
+                Backend.NutritionActivity.Model.NCDA ->
+                    { english = "NCDA"
+                    , kinyarwanda = Nothing
+                    }
+
                 Backend.NutritionActivity.Model.NextSteps ->
                     { english = "Next Steps"
                     , kinyarwanda = Just "Ibikurikiyeho"
@@ -8608,6 +8613,11 @@ translationSet trans =
                 Backend.NutritionActivity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
+                    }
+
+                Backend.NutritionActivity.Model.NCDA ->
+                    { english = "NCDA"
+                    , kinyarwanda = Nothing
                     }
 
                 Backend.NutritionActivity.Model.NextSteps ->

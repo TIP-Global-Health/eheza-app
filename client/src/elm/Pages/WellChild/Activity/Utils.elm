@@ -361,52 +361,6 @@ toSymptomsReviewValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NoWellChildSymptoms) form.symptoms
 
 
-fromWellChildECDValue : Maybe (EverySet ECDSign) -> WellChildECDForm
-fromWellChildECDValue signs =
-    { followMothersEyes = Maybe.map (EverySet.member FollowMothersEyes) signs
-    , moveArmsAndLegs = Maybe.map (EverySet.member MoveArmsAndLegs) signs
-    , raiseHandsUp = Maybe.map (EverySet.member RaiseHandsUp) signs
-    , smile = Maybe.map (EverySet.member Smile) signs
-    , rollSideways = Maybe.map (EverySet.member RollSideways) signs
-    , bringHandsToMouth = Maybe.map (EverySet.member BringHandsToMouth) signs
-    , holdHeadWithoutSupport = Maybe.map (EverySet.member HoldHeadWithoutSupport) signs
-    , holdAndShakeToys = Maybe.map (EverySet.member HoldAndShakeToys) signs
-    , reactToSuddenSounds = Maybe.map (EverySet.member ReactToSuddenSounds) signs
-    , useConsonantSounds = Maybe.map (EverySet.member UseConsonantSounds) signs
-    , respondToSoundWithSound = Maybe.map (EverySet.member RespondToSoundWithSound) signs
-    , turnHeadWhenCalled = Maybe.map (EverySet.member TurnHeadWhenCalled) signs
-    , sitWithoutSupport = Maybe.map (EverySet.member SitWithoutSupport) signs
-    , smileBack = Maybe.map (EverySet.member SmileBack) signs
-    , rollTummyToBack = Maybe.map (EverySet.member RollTummyToBack) signs
-    , reachForToys = Maybe.map (EverySet.member ReachForToys) signs
-    , useSimpleGestures = Maybe.map (EverySet.member UseSimpleGestures) signs
-    , standOnTheirOwn = Maybe.map (EverySet.member StandOnTheirOwn) signs
-    , copyDuringPlay = Maybe.map (EverySet.member CopyDuringPlay) signs
-    , sayMamaDada = Maybe.map (EverySet.member SayMamaDada) signs
-    , canHoldSmallObjects = Maybe.map (EverySet.member CanHoldSmallObjects) signs
-    , looksWhenPointedAt = Maybe.map (EverySet.member LooksWhenPointedAt) signs
-    , useSingleWords = Maybe.map (EverySet.member UseSingleWords) signs
-    , walkWithoutHelp = Maybe.map (EverySet.member WalkWithoutHelp) signs
-    , playPretend = Maybe.map (EverySet.member PlayPretend) signs
-    , pointToThingsOfInterest = Maybe.map (EverySet.member PointToThingsOfInterest) signs
-    , useShortPhrases = Maybe.map (EverySet.member UseShortPhrases) signs
-    , interestedInOtherChildren = Maybe.map (EverySet.member InterestedInOtherChildren) signs
-    , followSimlpeInstructions = Maybe.map (EverySet.member FollowSimpleInstructions) signs
-    , kickBall = Maybe.map (EverySet.member KickBall) signs
-    , pointAtNamedObjects = Maybe.map (EverySet.member PointAtNamedObjects) signs
-    , dressThemselves = Maybe.map (EverySet.member DressThemselves) signs
-    , washHandsGoToToiled = Maybe.map (EverySet.member WashHandsGoToToiled) signs
-    , knowsColorsAndNumbers = Maybe.map (EverySet.member KnowsColorsAndNumbers) signs
-    , useMediumPhrases = Maybe.map (EverySet.member UseMediumPhrases) signs
-    , playMakeBelieve = Maybe.map (EverySet.member PlayMakeBelieve) signs
-    , followThreeStepInstructions = Maybe.map (EverySet.member FollowThreeStepInstructions) signs
-    , standOnOneFootFiveSeconds = Maybe.map (EverySet.member StandOnOneFootFiveSeconds) signs
-    , useLongPhrases = Maybe.map (EverySet.member UseLongPhrases) signs
-    , shareWithOtherChildren = Maybe.map (EverySet.member ShareWithOtherChildren) signs
-    , countToTen = Maybe.map (EverySet.member CountToTen) signs
-    }
-
-
 wellChildECDFormWithDefault : WellChildECDForm -> Maybe (EverySet ECDSign) -> WellChildECDForm
 wellChildECDFormWithDefault form saved =
     saved

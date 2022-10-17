@@ -3805,3 +3805,56 @@ emptyOptionForSelect value =
 
     else
         emptyNode
+
+
+ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
+ncdaFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\signs ->
+                { bornUnderweight = or form.bornUnderweight (EverySet.member NCDABornUnderweight signs |> Just)
+                , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member NCDABornWithBirthDefect signs |> Just)
+                , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member NCDAAppropriateComplementaryFeeding signs |> Just)
+                , ongeraMNP = or form.ongeraMNP (EverySet.member NCDAOngeraMNP signs |> Just)
+                , fiveFoodGroups = or form.fiveFoodGroups (EverySet.member NCDAFiveFoodGroups signs |> Just)
+                , mealFrequency6to8Months = or form.mealFrequency6to8Months (EverySet.member NCDAMealFrequency6to8Months signs |> Just)
+                , mealFrequency9to11Months = or form.mealFrequency9to11Months (EverySet.member NCDAMealFrequency9to11Months signs |> Just)
+                , mealFrequency12MonthsOrMore = or form.mealFrequency12MonthsOrMore (EverySet.member NCDAMealFrequency12MonthsOrMore signs |> Just)
+                , supportChildWithDisability = or form.supportChildWithDisability (EverySet.member NCDASupportChildWithDisability signs |> Just)
+                , conditionalCashTransfer = or form.conditionalCashTransfer (EverySet.member NCDAConditionalCashTransfer signs |> Just)
+                , conditionalFoodItems = or form.conditionalFoodItems (EverySet.member NCDAConditionalFoodItems signs |> Just)
+                , hasCleanWater = or form.hasCleanWater (EverySet.member NCDAHasCleanWater signs |> Just)
+                , hasHandwashingFacility = or form.hasHandwashingFacility (EverySet.member NCDAHasHandwashingFacility signs |> Just)
+                , hasToilets = or form.hasToilets (EverySet.member NCDAHasToilets signs |> Just)
+                , hasKitchenGarden = or form.hasKitchenGarden (EverySet.member NCDAHasKitchenGarden signs |> Just)
+                }
+            )
+
+
+toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
+toNCDAValueWithDefault saved form =
+    ncdaFormWithDefault form saved
+        |> toNCDAValue
+
+
+toNCDAValue : NCDAForm -> Maybe NCDAValue
+toNCDAValue form =
+    [ ifNullableTrue NCDABornUnderweight form.bornUnderweight
+    , ifNullableTrue NCDABornWithBirthDefect form.bornWithBirthDefect
+    , ifNullableTrue NCDAAppropriateComplementaryFeeding form.appropriateComplementaryFeeding
+    , ifNullableTrue NCDAOngeraMNP form.ongeraMNP
+    , ifNullableTrue NCDAFiveFoodGroups form.fiveFoodGroups
+    , ifNullableTrue NCDAMealFrequency6to8Months form.mealFrequency6to8Months
+    , ifNullableTrue NCDAMealFrequency9to11Months form.mealFrequency9to11Months
+    , ifNullableTrue NCDAMealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore
+    , ifNullableTrue NCDASupportChildWithDisability form.supportChildWithDisability
+    , ifNullableTrue NCDAConditionalCashTransfer form.conditionalCashTransfer
+    , ifNullableTrue NCDAConditionalFoodItems form.conditionalFoodItems
+    , ifNullableTrue NCDAHasCleanWater form.hasCleanWater
+    , ifNullableTrue NCDAHasHandwashingFacility form.hasHandwashingFacility
+    , ifNullableTrue NCDAHasToilets form.hasToilets
+    , ifNullableTrue NCDAHasKitchenGarden form.hasKitchenGarden
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
