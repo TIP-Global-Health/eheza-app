@@ -340,18 +340,6 @@ socialHistoryRiskFactors =
     ]
 
 
-coMorbiditiesMedicalContitions : List MedicalCondition
-coMorbiditiesMedicalContitions =
-    [ MedicalConditionHIV
-    , MedicalConditionDiabetes
-    , MedicalConditionKidneyDisease
-    , MedicalConditionPregnancy
-    , MedicalConditionHypertension
-    , MedicalConditionGestationalDiabetes
-    , MedicalConditionPregnancyRelatedHypertension
-    ]
-
-
 viewMedicalDiagnosisPane : Language -> NominalDate -> AssembledData -> Html Msg
 viewMedicalDiagnosisPane language currentDate assembled =
     let
@@ -373,7 +361,15 @@ viewMedicalDiagnosisPane language currentDate assembled =
                         (EverySet.toList
                             >> List.filter
                                 (\mdecicalCondition ->
-                                    List.member mdecicalCondition coMorbiditiesMedicalContitions
+                                    List.member mdecicalCondition
+                                        [ MedicalConditionHIV
+                                        , MedicalConditionDiabetes
+                                        , MedicalConditionKidneyDisease
+                                        , MedicalConditionPregnancy
+                                        , MedicalConditionHypertension
+                                        , MedicalConditionGestationalDiabetes
+                                        , MedicalConditionPregnancyRelatedHypertension
+                                        ]
                                 )
                         )
                     >> Maybe.withDefault []
