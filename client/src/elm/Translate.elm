@@ -1088,7 +1088,7 @@ type TranslationId
     | PrenatalLaboratoryCreatinineLabel
     | PrenatalLaboratoryBUNLabel
     | PrenatalLaboratoryALTLabel
-    | PrenatalLaboratoryALSLabel
+    | PrenatalLaboratoryASTLabel
     | PrenatalLaboratoryPregnancyLabel
     | LaboratoryTest LaboratoryTest
     | PrenatalLabsCaseManagementEntryTypeResults
@@ -11633,8 +11633,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PrenatalLaboratoryALSLabel ->
-            { english = "ALS"
+        PrenatalLaboratoryASTLabel ->
+            { english = "AST"
             , kinyarwanda = Nothing
             }
 
