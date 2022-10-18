@@ -80,6 +80,8 @@ infrastructure-related data for Elm. This file is gitignored, and it is
 used during Elm compilation, before the final artifact is pushed to Pantheon.
 Put it in a private repository, and link that repository using
 `EHEZA_INFRA_REPO_REMOTE`, defined in `.ddev/config.local.yaml.example`.
+The repository does not have a strict structure, but the file should be
+present at the `elm/Config.Deploy.elm` path.
 
 #### Steps
 
