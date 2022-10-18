@@ -67,7 +67,6 @@ expectActivity currentDate assembled activity =
         NextSteps ->
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
                 && (resolveNextStepsTasks currentDate assembled
-                        |> List.filter (expectNextStepsTask currentDate assembled)
                         |> List.isEmpty
                         |> not
                    )
@@ -119,7 +118,7 @@ expectNextStepsTask currentDate assembled task =
             diagnosed DiagnosisHypertensionStage1 assembled
                 -- Not diagnosed any Hypertension diagnoses at previous encounters.
                 && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled)
-                -- Not diagnosed any Hypertension diagnoses at current or previous encounters.
+                -- Not diagnosed any Diaberes / RenalComplications diagnoses at current or previous encounters.
                 && (not <| diagnosedAnyOf [ DiagnosisRenalComplications, DiagnosisDiabetesInitial ] assembled)
                 && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
 
