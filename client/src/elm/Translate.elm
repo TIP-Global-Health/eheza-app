@@ -7042,7 +7042,7 @@ translationSet trans =
                     }
 
         MedicationTreatingDiabetesQuestion ->
-            { english = "Have you ever been diagnosed with any of these conditions"
+            { english = "Has the patient taken or currently take any of the following medications that treat diabetes"
             , kinyarwanda = Nothing
             }
 
@@ -7089,7 +7089,7 @@ translationSet trans =
                     }
 
         MedicationTreatingHypertensionQuestion ->
-            { english = "Have you ever been diagnosed with any of these conditions"
+            { english = "Has the patient taken or currently take any of the following medications that treat hypertension"
             , kinyarwanda = Nothing
             }
 
