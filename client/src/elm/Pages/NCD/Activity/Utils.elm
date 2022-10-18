@@ -140,10 +140,25 @@ nextStepsTaskCompleted assembled task =
 
         TaskMedicationDistribution ->
             let
-                recommendedTreatmentSignsForHypertension =
-                    generateRecommendedTreatmentSignsForHypertension assembled
+                hypertensionTreatmentCompleted =
+                    if medicateForHypertension NCDEncounterPhaseInitial assembled then
+                        let
+                            recommendedTreatmentSignsForHypertension =
+                                generateRecommendedTreatmentSignsForHypertension assembled
+                        in
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+                    else
+                        True
+
+                diabetesTreatmentCompleted =
+                    if medicateForDiabetes NCDEncounterPhaseInitial assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForDiabetes assembled.measurements
+
+                    else
+                        True
             in
-            recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+            hypertensionTreatmentCompleted && diabetesTreatmentCompleted
 
         TaskReferral ->
             isJust assembled.measurements.referral
