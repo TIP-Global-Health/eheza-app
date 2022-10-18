@@ -3,4 +3,4 @@ version: "3.6"
 services:
   web:
     ports:
-      - 3009:3009
+      - 3000:3000
