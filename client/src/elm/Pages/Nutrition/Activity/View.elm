@@ -672,7 +672,14 @@ viewNCDAContent language currentDate id assembled db data =
         saveMsg =
             SaveNCDA assembled.participant.person assembled.measurements.ncda
     in
-    Measurement.View.viewNCDAContent language currentDate assembled.person SetNCDABoolInput saveMsg form
+    Measurement.View.viewNCDAContent language
+        currentDate
+        assembled.person
+        SetNCDABoolInput
+        saveMsg
+        SetNCDAHelperState
+        data.helperState
+        form
 
 
 viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)

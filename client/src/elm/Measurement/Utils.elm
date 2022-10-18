@@ -132,8 +132,8 @@ fromChildMeasurementData data =
         fromData .sendToHC (.value >> Just >> fromSendToHCValue)
             |> Maybe.withDefault emptySendToHCForm
     , ncdaData =
-        fromData .ncda (.value >> Just >> fromNCDAValue >> NCDAData)
-            |> Maybe.withDefault (NCDAData emptyNCDAForm)
+        fromData .ncda (.value >> Just >> fromNCDAValue >> (\form -> NCDAData form Nothing))
+            |> Maybe.withDefault emptyNCDAData
     }
 
 

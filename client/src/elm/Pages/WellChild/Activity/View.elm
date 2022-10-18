@@ -2210,4 +2210,11 @@ viewNCDAContent language currentDate assembled data =
         saveMsg =
             SaveNCDA assembled.participant.person assembled.measurements.ncda
     in
-    Measurement.View.viewNCDAContent language currentDate assembled.person SetNCDABoolInput saveMsg form
+    Measurement.View.viewNCDAContent language
+        currentDate
+        assembled.person
+        SetNCDABoolInput
+        saveMsg
+        SetNCDAHelperState
+        data.helperState
+        form

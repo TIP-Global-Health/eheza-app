@@ -271,6 +271,17 @@ updateChild msg model =
             , Nothing
             )
 
+        SetNCDAHelperState state ->
+            let
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | helperState = state })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
 
 updateMother : MeasurementData MotherMeasurements -> MsgMother -> ModelMother -> ( ModelMother, Cmd MsgMother, Maybe OutMsgMother )
 updateMother measurements msg model =
