@@ -4081,6 +4081,15 @@ div.page-activity.ncd {
 
     .form.laboratory {
 
+      .label {
+        font-weight: 500;
+      }
+
+      .label.header {
+        font-size: 24px;
+        font-weight: 700;
+      }
+
       .form-input.date {
         border: 2px solid $color-light-gray;
         color: $color-text;
