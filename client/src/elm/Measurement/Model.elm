@@ -950,6 +950,16 @@ emptyLiverFunctionResultForm =
     LiverFunctionResultForm Nothing Nothing Nothing Nothing
 
 
+type alias NCDAData =
+    { form : NCDAForm
+    }
+
+
+emptyNCDAData : NCDAData
+emptyNCDAData =
+    NCDAData emptyNCDAForm
+
+
 type alias NCDAForm =
     { bornUnderweight : Maybe Bool
     , bornWithBirthDefect : Maybe Bool

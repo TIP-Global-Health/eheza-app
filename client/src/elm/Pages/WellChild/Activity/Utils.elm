@@ -3,7 +3,7 @@ module Pages.WellChild.Activity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementValueFunc, headCircumferenceValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
@@ -89,6 +89,9 @@ activityCompleted currentDate zscores isChw assembled db activity =
         WellChildPhoto ->
             (not <| activityExpected WellChildPhoto) || isJust measurements.photo
 
+        WellChildNCDA ->
+            (not <| activityExpected WellChildNCDA) || isJust measurements.ncda
+
 
 expectActivity : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
 expectActivity currentDate zscores isChw assembled db activity =
@@ -141,6 +144,9 @@ expectActivity currentDate zscores isChw assembled db activity =
 
         WellChildPhoto ->
             True
+
+        WellChildNCDA ->
+            expectNCDAActivity currentDate assembled.person
 
 
 fromPregnancySummaryValue : Maybe PregnancySummaryValue -> PregnancySummaryForm

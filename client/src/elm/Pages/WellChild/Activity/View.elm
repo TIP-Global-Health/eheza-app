@@ -22,7 +22,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (InvokationModule(..), PhotoForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Model exposing (InvokationModule(..), NCDAData, PhotoForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
@@ -201,6 +201,9 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
 
         WellChildPhoto ->
             viewPhotoContent language currentDate assembled model.photoForm
+
+        WellChildNCDA ->
+            viewNCDAContent language currentDate assembled model.ncdaData
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -2195,3 +2198,16 @@ viewPhotoContent language currentDate assembled form =
             ]
         ]
     ]
+
+
+viewNCDAContent : Language -> NominalDate -> AssembledData -> NCDAData -> List (Html Msg)
+viewNCDAContent language currentDate assembled data =
+    let
+        form =
+            getMeasurementValueFunc assembled.measurements.ncda
+                |> ncdaFormWithDefault data.form
+
+        saveMsg =
+            SaveNCDA assembled.participant.person assembled.measurements.ncda
+    in
+    Measurement.View.viewNCDAContent language currentDate assembled.person SetNCDABoolInput saveMsg form

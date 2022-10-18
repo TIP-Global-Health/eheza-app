@@ -1648,3 +1648,43 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetNCDABoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ncdaData.form
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveNCDA personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.ncdaData.form
+                        |> toNCDAValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.WellChildEncounter.Model.SaveNCDA personId measurementId value
+                                    |> Backend.Model.MsgWellChildEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
