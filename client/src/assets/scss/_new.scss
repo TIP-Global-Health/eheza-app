@@ -539,6 +539,14 @@ div.page-person {
 div.page-participant,
 div.page-activity {
 
+  .tasks-count {
+    background: $color-primary;
+    color: $color-white;
+    padding: 5px 15px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
   .ui.full.segment .content {
 
     .activity-helper {
@@ -756,13 +764,6 @@ div.page-activity {
         width: 131px;
       }
     }
-  }
-
-  .tasks-count {
-    background: $color-primary;
-    padding: 5px 15px;
-    font-size: 18px;
-    font-weight: bold;
   }
 
   .tasks-count.full-screen {

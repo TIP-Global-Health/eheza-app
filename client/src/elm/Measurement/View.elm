@@ -117,6 +117,9 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
         Activity.Model.SendToHC ->
             viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
+        Activity.Model.NCDA ->
+            viewNCDA language currentDate child (mapMeasurementData .ncda measurements) model.ncdaData
+
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
 different types of `Float` inputs.
@@ -2507,3 +2510,25 @@ ncdaFormInputsAndTasks language currentDate person setMsg form =
     ( List.map Tuple.first inputsAndTasks |> List.concat
     , List.map Tuple.second inputsAndTasks
     )
+
+
+viewNCDA : Language -> NominalDate -> Person -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA )) -> NCDAData -> Html MsgChild
+viewNCDA language currentDate child measurement data =
+    let
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        saved =
+            getMeasurementValueFunc measurement.current
+
+        form =
+            ncdaFormWithDefault data.form saved
+
+        saveMsg =
+            toNCDAValueWithDefault saved data.form
+                |> Maybe.map (SaveNCDA existingId)
+                |> Maybe.withDefault NoOp
+                |> SendOutMsgChild
+    in
+    viewNCDAContent language currentDate child SetNCDABoolInput saveMsg form
+        |> div []

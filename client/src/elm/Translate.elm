@@ -2187,6 +2187,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
+                ChildActivity Activity.Model.NCDA ->
+                    { english = "NCDA"
+                    , kinyarwanda = Nothing
+                    }
+
         ActivitiesLabel activity ->
             case activity of
                 MotherActivity Activity.Model.FamilyPlanning ->
@@ -2264,6 +2269,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima:"
                     }
 
+                ChildActivity Activity.Model.NCDA ->
+                    { english = "NCDA:"
+                    , kinyarwanda = Nothing
+                    }
+
         ActivitiesTitle activity ->
             case activity of
                 MotherActivity Activity.Model.FamilyPlanning ->
@@ -2339,6 +2349,11 @@ translationSet trans =
                 ChildActivity Activity.Model.SendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                    }
+
+                ChildActivity Activity.Model.NCDA ->
+                    { english = "NCDA"
+                    , kinyarwanda = Nothing
                     }
 
         ActivitityTitleAchi ->
@@ -2421,6 +2436,11 @@ translationSet trans =
                 ChildActivity Activity.Model.SendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                    }
+
+                ChildActivity Activity.Model.NCDA ->
+                    { english = "NCDA"
+                    , kinyarwanda = Nothing
                     }
 
         ActivitiesToComplete count ->

@@ -257,6 +257,20 @@ updateChild msg model =
             , Nothing
             )
 
+        SetNCDABoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ncdaData.form
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
 
 updateMother : MeasurementData MotherMeasurements -> MsgMother -> ModelMother -> ( ModelMother, Cmd MsgMother, Maybe OutMsgMother )
 updateMother measurements msg model =

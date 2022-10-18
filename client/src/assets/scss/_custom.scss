@@ -403,7 +403,7 @@ h3.ui.header {
 }
 
 .icon-task-history {
-  background-image: url(#{$img-path}icon-task-history.svg);
+  background-image: url(#{$img-path}icon-history-white.svg);
   background-size: 122px 122px;
 }
 
@@ -707,6 +707,11 @@ h3.ui.header {
 .icon-item-fbf {
   background-image: url(#{$img-path}icon-fbf-blue.svg);
   background-size: 168px 168px;
+}
+
+.icon-item-history {
+  background-image: url(#{$img-path}icon-history-blue.svg);
+  background-size: 122px;
 }
 
 // Form
@@ -2734,6 +2739,21 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-family-gray.svg);
+  }
+}
+
+
+.icon-history {
+  .active &:after {
+    background-image: url(#{$img-path}icon-history-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-history-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-history-gray.svg);
   }
 }
 

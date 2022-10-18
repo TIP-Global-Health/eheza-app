@@ -50,6 +50,7 @@ type alias ModelChild =
     , followUpForm : FollowUpForm
     , healthEducationForm : HealthEducationForm
     , sendToHCForm : SendToHCForm
+    , ncdaData : NCDAData
     }
 
 
@@ -74,6 +75,7 @@ emptyModelChild =
     , followUpForm = emptyFollowUpForm
     , healthEducationForm = emptyHealthEducationForm
     , sendToHCForm = emptySendToHCForm
+    , ncdaData = emptyNCDAData
     }
 
 
@@ -240,6 +242,7 @@ type MsgChild
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
+    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
 
 
 type MsgMother
@@ -262,7 +265,8 @@ creating a new one.
 
 -}
 type OutMsgChild
-    = FetchIndividualNutritionData PersonId
+    = NoOp
+    | FetchIndividualNutritionData PersonId
     | SaveHeight (Maybe HeightId) HeightInCm
     | SaveWeight (Maybe WeightId) WeightInKg
     | SaveMuac (Maybe MuacId) MuacInCm
@@ -274,6 +278,7 @@ type OutMsgChild
     | SaveFollowUp (Maybe FollowUpId) FollowUpValue
     | SaveHealthEducation (Maybe GroupHealthEducationId) HealthEducationValue
     | SaveSendToHC (Maybe GroupSendToHCId) SendToHCValue
+    | SaveNCDA (Maybe GroupNCDAId) NCDAValue
 
 
 type OutMsgMother

@@ -1,7 +1,7 @@
 module Measurement.Utils exposing (..)
 
-import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
 import AssocList as Dict exposing (Dict)
+import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
@@ -15,14 +15,15 @@ import Backend.NutritionEncounter.Utils
         , zScoreWeightForAgeModerate
         , zScoreWeightForAgeSevere
         )
-import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
+import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Backend.Session.Model exposing (EditableSession, OfflineSession)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
 import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -130,6 +131,9 @@ fromChildMeasurementData data =
     , sendToHCForm =
         fromData .sendToHC (.value >> Just >> fromSendToHCValue)
             |> Maybe.withDefault emptySendToHCForm
+    , ncdaData =
+        fromData .ncda (.value >> Just >> fromNCDAValue >> NCDAData)
+            |> Maybe.withDefault (NCDAData emptyNCDAForm)
     }
 
 
@@ -3807,6 +3811,26 @@ emptyOptionForSelect value =
         emptyNode
 
 
+fromNCDAValue : Maybe NCDAValue -> NCDAForm
+fromNCDAValue saved =
+    { bornUnderweight = Maybe.map (EverySet.member NCDABornUnderweight) saved
+    , bornWithBirthDefect = Maybe.map (EverySet.member NCDABornWithBirthDefect) saved
+    , appropriateComplementaryFeeding = Maybe.map (EverySet.member NCDAAppropriateComplementaryFeeding) saved
+    , ongeraMNP = Maybe.map (EverySet.member NCDAOngeraMNP) saved
+    , fiveFoodGroups = Maybe.map (EverySet.member NCDAFiveFoodGroups) saved
+    , mealFrequency6to8Months = Maybe.map (EverySet.member NCDAMealFrequency6to8Months) saved
+    , mealFrequency9to11Months = Maybe.map (EverySet.member NCDAMealFrequency9to11Months) saved
+    , mealFrequency12MonthsOrMore = Maybe.map (EverySet.member NCDAMealFrequency12MonthsOrMore) saved
+    , supportChildWithDisability = Maybe.map (EverySet.member NCDASupportChildWithDisability) saved
+    , conditionalCashTransfer = Maybe.map (EverySet.member NCDAConditionalCashTransfer) saved
+    , conditionalFoodItems = Maybe.map (EverySet.member NCDAConditionalFoodItems) saved
+    , hasCleanWater = Maybe.map (EverySet.member NCDAHasCleanWater) saved
+    , hasHandwashingFacility = Maybe.map (EverySet.member NCDAHasHandwashingFacility) saved
+    , hasToilets = Maybe.map (EverySet.member NCDAHasToilets) saved
+    , hasKitchenGarden = Maybe.map (EverySet.member NCDAHasKitchenGarden) saved
+    }
+
+
 ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
 ncdaFormWithDefault form saved =
     saved
@@ -3858,3 +3882,241 @@ toNCDAValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
+
+
+{-| Whether to expect a counseling activity is not just a yes/no question,
+since we'd also like to know **which** sort of counseling activity to expect.
+I suppose we could parameterize the `Counseling` activity by
+`CounselingTiming`. However, that would be awkward in its own way, since we
+also don't want more than one in each session.
+
+So, we'll try it this way for now. We'll return `Nothing` if no kind of
+counseling activity is expected, and `Just CounselingTiming` if one is
+expected.
+
+-}
+expectCounselingActivity : EditableSession -> PersonId -> Maybe CounselingTiming
+expectCounselingActivity session childId =
+    let
+        -- First, we check our current value. If we have a counseling session
+        -- stored in the backend, or we've already got a local edit, then we
+        -- use that.  This has two benefits. First, its a kind of optimization,
+        -- since we're basically caching our conclusion about whether to
+        -- showing the counseling activity or not. Second, it provides some UI
+        -- stability ...  once we show the counseling activity and the user
+        -- checks some boxes, it ensures that we'll definitely keep showing
+        -- that one, and not switch to something else.
+        cachedTiming =
+            getChildMeasurementData childId session
+                |> LocalData.toMaybe
+                |> Maybe.andThen
+                    (mapMeasurementData .counselingSession
+                        >> currentValue
+                        >> Maybe.map (.value >> Tuple.first)
+                    )
+
+        -- All the counseling session records from the past
+        historical =
+            getChildHistoricalMeasurements childId session.offlineSession
+                |> LocalData.map .counselingSessions
+                |> LocalData.withDefault Dict.empty
+
+        -- Have we ever completed a counseling session of the specified type?
+        completed timing =
+            historical
+                |> Dict.toList
+                |> List.any
+                    (\( _, counseling ) -> Tuple.first counseling.value == timing)
+
+        -- How long ago did we complete a session of the specified type?
+        completedDaysAgo timing =
+            historical
+                |> Dict.filter (\_ counseling -> Tuple.first counseling.value == timing)
+                |> Dict.toList
+                |> List.head
+                |> Maybe.map (\( _, counseling ) -> diffDays counseling.dateMeasured session.offlineSession.session.startDate)
+
+        -- How old will the child be as of the scheduled date of the session?
+        -- (All of our date calculations are in days here).
+        --
+        -- It simplifies the rest of the calculation if we avoid making this a
+        -- `Maybe`. We've got bigger problems if the session doesn't actually
+        -- contain the child, so it should be safe to default the age to 0.
+        age =
+            getChild childId session.offlineSession
+                |> Maybe.andThen
+                    (\child ->
+                        Maybe.map
+                            (\birthDate -> diffDays birthDate session.offlineSession.session.startDate)
+                            child.birthDate
+                    )
+                |> Maybe.withDefault 0
+
+        -- We don't necessarily know when the next session will be scheduled,
+        -- so we work on the assumption that it will be no more than 6 weeks
+        -- from this session (so, 42 days).
+        maximumSessionGap =
+            42
+
+        -- For the reminder, which isn't as critical, we apply the normal
+        -- session gap of 32 days. This reduces the frequence of cases where we
+        -- issue the reminder super-early, at the cost of some cases where we
+        -- might issue no reminder (which is less serious).
+        normalSessionGap =
+            32
+
+        -- To compute a two-month gap, we use one normal and one maximum
+        twoMonthGap =
+            normalSessionGap + maximumSessionGap
+
+        -- To compute a three month gap, we use two normals and one maximum
+        threeMonthGap =
+            (normalSessionGap * 2) + maximumSessionGap
+
+        -- In how many days (from the session date) will the child be 2 years
+        -- old?
+        daysUntilTwoYearsOld =
+            (365 * 2) - age
+
+        -- In how many days (from the session date) will the child be 1 year
+        -- old?
+        daysUntilOneYearOld =
+            365 - age
+
+        -- If we don't have a value already, we apply our basic logic, but
+        -- lazily, so we make this a function. Here's a summary of our design
+        -- goals, which end up having a number of parts.
+        --
+        -- - Definitely show the counseling activity before the relevant
+        --   anniversary, using the assumption that the next session will be no
+        --   more than 6 weeks away.
+        --
+        -- - Try to avoid showing counseling activities with no reminders, but
+        --   do it without a reminder if necessary.
+        --
+        -- - Once we show a reminder, always show the counseling activity in
+        --   the next session, even if it now seems a bit early (to avoid double
+        --   reminders).
+        --
+        -- - Always show the entry counseling if it hasn't been done, unless
+        --   we've already reached exit counseling.
+        --
+        -- - Make sure that there is a bit of a delay between entry counseling
+        --   and midpoint counseling (for cases where a baby starts late).
+        checkTiming _ =
+            if completed Exit then
+                -- If exit counseling has been done, then we need no more
+                -- counseling
+                Nothing
+
+            else if completed BeforeExit then
+                -- If we've given the exit reminder, then show the exit
+                -- counseling now, even if it seems a bit early.
+                Just Exit
+
+            else if daysUntilTwoYearsOld < maximumSessionGap then
+                -- If we can't be sure we'll have another session before the
+                -- baby is two, then show the exit counseling
+                Just Exit
+
+            else if not (completed Entry) then
+                -- If we haven't done entry counseling, then we always need to
+                -- do it
+                Just Entry
+
+            else if completed MidPoint then
+                -- If we have already done the MidPoint counseling, then the
+                -- only thing left to consider is whether to show the Exit
+                -- reminder
+                if daysUntilTwoYearsOld < twoMonthGap then
+                    Just BeforeExit
+
+                else
+                    Nothing
+
+            else if completed BeforeMidpoint then
+                -- If we've given the midpoint warning, then show it, even if
+                -- it seems a bit early now.
+                Just MidPoint
+
+            else if daysUntilOneYearOld < maximumSessionGap then
+                -- If we can't be sure we'll have another session before the
+                -- baby is one year old, we show the exit counseling. Except,
+                -- we also check to see whether we've done entry counseling
+                -- recently ...  so that we'll always have a bit of a gap.
+                case completedDaysAgo Entry of
+                    Just daysAgo ->
+                        if daysAgo < threeMonthGap then
+                            -- We're forcing the midpoint counseling to be
+                            -- roungly 3 months after the entry counseling. So,
+                            -- the ideal sequence would be:
+                            --
+                            -- entry -> Nothing -> Rminder MidPoint -> MidPoint
+                            if daysAgo < twoMonthGap then
+                                Nothing
+
+                            else
+                                Just BeforeMidpoint
+
+                        else
+                            Just MidPoint
+
+                    Nothing ->
+                        Just MidPoint
+
+            else if daysUntilOneYearOld < twoMonthGap then
+                -- If we think we'll do the midpoint counseling at the next
+                -- session, show the reminder. Except, again, we try to force a
+                -- bit of separation between Entry and the Midpoint.
+                case completedDaysAgo Entry of
+                    Just daysAgo ->
+                        if daysAgo < twoMonthGap then
+                            -- We're forcing the reminder for midpoint
+                            -- counseling to be roughtly 2 months after the
+                            -- entry counseling.
+                            Nothing
+
+                        else
+                            Just BeforeMidpoint
+
+                    Nothing ->
+                        Just BeforeMidpoint
+
+            else
+                Nothing
+    in
+    cachedTiming
+        |> Maybe.Extra.orElseLazy checkTiming
+
+
+{-| Which participant forms would we expect this mother to consent to in this session?
+-}
+expectParticipantConsent : OfflineSession -> PersonId -> Dict ParticipantFormId ParticipantForm
+expectParticipantConsent session motherId =
+    let
+        previouslyConsented =
+            getMotherHistoricalMeasurements motherId session
+                |> LocalData.map
+                    (.consents
+                        >> Dict.map (\_ consent -> consent.value.formId)
+                        >> Dict.values
+                        >> EverySet.fromList
+                    )
+                |> LocalData.withDefault EverySet.empty
+
+        consentedAtCurrentSession =
+            getMotherMeasurementData2 motherId session
+                |> LocalData.map
+                    (.current
+                        >> .consent
+                        >> Dict.map (\_ consent -> consent.value.formId)
+                        >> Dict.values
+                        >> EverySet.fromList
+                    )
+                |> LocalData.withDefault EverySet.empty
+
+        consentedAtPreviousSessions =
+            EverySet.diff previouslyConsented consentedAtCurrentSession
+    in
+    session.allParticipantForms
+        |> Dict.filter (\id _ -> not (EverySet.member id consentedAtPreviousSessions))
