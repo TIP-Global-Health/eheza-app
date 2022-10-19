@@ -117,10 +117,10 @@ expectNextStepsTask currentDate assembled task =
             -- Diagnosed Stage 1 at current encounter.
             diagnosed DiagnosisHypertensionStage1 assembled
                 -- Not diagnosed any Hypertension diagnoses at previous encounters.
-                && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled)
+                && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled.previousEncountersData)
                 -- Not diagnosed any Diaberes / RenalComplications diagnoses at current or previous encounters.
                 && (not <| diagnosedAnyOf [ DiagnosisRenalComplications, DiagnosisDiabetesInitial ] assembled)
-                && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
+                && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled.previousEncountersData)
 
         TaskMedicationDistribution ->
             medicateForDiabetes NCDEncounterPhaseInitial assembled

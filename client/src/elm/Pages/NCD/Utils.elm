@@ -117,13 +117,7 @@ applyHypertensionDiagnosesLogic assembled diagnoses =
     let
         ( hypertension, others ) =
             List.partition
-                (\diagnosis ->
-                    List.member diagnosis
-                        [ DiagnosisHypertensionStage1
-                        , DiagnosisHypertensionStage2
-                        , DiagnosisHypertensionStage3
-                        ]
-                )
+                (\diagnosis -> List.member diagnosis hypertensionDiagnoses)
                 diagnoses
 
         currentHypertensionCondition =
@@ -189,14 +183,14 @@ filterDiagnosesOfDeterminedConditions assembled =
             diagnosesToFilterForDiabetes ++ diagnosesToFilterForRenalComplications
 
         diagnosesToFilterForDiabetes =
-            if diagnosedPreviouslyWithDiabetes assembled then
+            if diagnosedPreviouslyWithDiabetes assembled.previousEncountersData then
                 diabetesDiagnoses
 
             else
                 []
 
         diagnosesToFilterForRenalComplications =
-            if diagnosedPreviously DiagnosisRenalComplications assembled then
+            if diagnosedPreviously DiagnosisRenalComplications assembled.previousEncountersData then
                 [ DiagnosisRenalComplications ]
 
             else
@@ -306,14 +300,11 @@ renalComplicationsByUrineProtein assembled =
 
 allNCDDiagnoses : List NCDDiagnosis
 allNCDDiagnoses =
-    [ DiagnosisHypertensionStage1
-    , DiagnosisHypertensionStage2
-    , DiagnosisHypertensionStage3
-    , DiagnosisDiabetesInitial
-    , DiagnosisDiabetesRecurrent
-    , DiagnosisRenalComplications
-    , NoNCDDiagnosis
-    ]
+    hypertensionDiagnoses
+        ++ diabetesDiagnoses
+        ++ [ DiagnosisRenalComplications
+           , NoNCDDiagnosis
+           ]
 
 
 hypertensionDiagnoses : List NCDDiagnosis
@@ -365,7 +356,7 @@ resolveHypertensionCondition encountersData =
         |> List.head
 
 
-diagnosedPreviouslyWithDiabetes : AssembledData -> Bool
+diagnosedPreviouslyWithDiabetes : List PreviousEncounterData -> Bool
 diagnosedPreviouslyWithDiabetes =
     diagnosedPreviouslyAnyOf diabetesDiagnoses
 
@@ -380,18 +371,18 @@ diagnosedAnyOf diagnoses assembled =
     List.any (\diagnosis -> EverySet.member diagnosis assembled.encounter.diagnoses) diagnoses
 
 
-diagnosedPreviously : NCDDiagnosis -> AssembledData -> Bool
-diagnosedPreviously diagnosis assembled =
-    diagnosedPreviouslyAnyOf [ diagnosis ] assembled
+diagnosedPreviously : NCDDiagnosis -> List PreviousEncounterData -> Bool
+diagnosedPreviously diagnosis =
+    diagnosedPreviouslyAnyOf [ diagnosis ]
 
 
-diagnosedPreviouslyAnyOf : List NCDDiagnosis -> AssembledData -> Bool
-diagnosedPreviouslyAnyOf diagnoses assembled =
+diagnosedPreviouslyAnyOf : List NCDDiagnosis -> List PreviousEncounterData -> Bool
+diagnosedPreviouslyAnyOf diagnoses previousEncountersData =
     List.filter
         (\data ->
             List.any (\diagnosis -> EverySet.member diagnosis data.diagnoses) diagnoses
         )
-        assembled.previousEncountersData
+        previousEncountersData
         |> List.isEmpty
         |> not
 
@@ -414,21 +405,26 @@ recommendedTreatmentMeasurementTaken allowedSigns measurements =
 
 generateRecommendedTreatmentSignsForHypertension : AssembledData -> List RecommendedTreatmentSign
 generateRecommendedTreatmentSignsForHypertension assembled =
-    if patientIsPregnant assembled then
+    if patientIsPregnant assembled.measurements then
         [ TreatmentMethyldopa2
         , NoTreatmentForHypertension
         ]
 
     else
-        [ TreatmentHydrochlorothiazide
-        , TreatmentAmlodipine
-        , TreatmentNifedipine
-        , TreatmentCaptopril
-        , TreatmentLisinopril
-        , TreatmentAtenlol
-        , TreatmentMethyldopa2
-        , NoTreatmentForHypertension
-        ]
+        allRecommendedTreatmentSignsForHypertension
+
+
+allRecommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
+allRecommendedTreatmentSignsForHypertension =
+    [ TreatmentHydrochlorothiazide
+    , TreatmentAmlodipine
+    , TreatmentNifedipine
+    , TreatmentCaptopril
+    , TreatmentLisinopril
+    , TreatmentAtenlol
+    , TreatmentMethyldopa2
+    , NoTreatmentForHypertension
+    ]
 
 
 recommendedTreatmentSignsForDiabetes : List RecommendedTreatmentSign
@@ -591,7 +587,7 @@ medicateForDiabetes phase assembled =
     case phase of
         NCDEncounterPhaseInitial ->
             diagnosed DiagnosisDiabetesInitial assembled
-                || diagnosedPreviouslyWithDiabetes assembled
+                || diagnosedPreviouslyWithDiabetes assembled.previousEncountersData
 
         NCDEncounterPhaseRecurrent ->
             diagnosed DiagnosisDiabetesRecurrent assembled
@@ -610,9 +606,9 @@ medicateForHypertension phase assembled =
                             -- we do not medicate.
                             DiagnosisHypertensionStage1 ->
                                 -- History of Hypertension.
-                                diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled
+                                diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled.previousEncountersData
                                     || --History of Renal Complications or Diabetes.
-                                       diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled
+                                       diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled.previousEncountersData
                                     || -- Diabetes diagnosed at initial phase of encounter.
                                        -- Note that we do not check for Renal Complications, since
                                        -- it can only be diagnosed at recurrent phase.
@@ -628,9 +624,9 @@ medicateForHypertension phase assembled =
         -- Complications, and Diabetes at initial phase of the encounter.
         NCDEncounterPhaseRecurrent ->
             -- No Hypertension history.
-            (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled)
+            (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled.previousEncountersData)
                 -- No Diabetes or Renal Complication history.
-                && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
+                && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled.previousEncountersData)
                 && -- Diagnosed with Stage 1 Hypertension at curernt encounter.
                    diagnosed DiagnosisHypertensionStage1 assembled
                 && -- Diagnosed with either Diabetes or Renal Complications on
@@ -667,7 +663,7 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate setRecommen
                 |> EverySet.toList
 
         ( header, instructions ) =
-            if patientIsPregnant assembled then
+            if patientIsPregnant assembled.measurements then
                 ( Translate.HypertensionAndPregnantHeader
                 , Translate.InstructionsChooseOneMedication
                 )
@@ -676,7 +672,7 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate setRecommen
                 let
                     renalComplicationsPresent =
                         diagnosed DiagnosisRenalComplications assembled
-                            || diagnosedPreviously DiagnosisRenalComplications assembled
+                            || diagnosedPreviously DiagnosisRenalComplications assembled.previousEncountersData
                 in
                 resolveCurrentHypertensionCondition assembled
                     |> Maybe.map
@@ -828,7 +824,7 @@ resolveReferralInputsAndTasks :
 resolveReferralInputsAndTasks language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
     let
         facility =
-            if referForHypertension phase assembled && patientIsPregnant assembled then
+            if referForHypertension phase assembled && patientIsPregnant assembled.measurements then
                 FacilityANCServices
 
             else
@@ -955,7 +951,7 @@ referForHypertension phase assembled =
                 |> Maybe.map
                     (\condition ->
                         (condition == DiagnosisHypertensionStage3)
-                            || patientIsPregnant assembled
+                            || patientIsPregnant assembled.measurements
                     )
                 |> Maybe.withDefault False
 
@@ -963,9 +959,9 @@ referForHypertension phase assembled =
             False
 
 
-patientIsPregnant : AssembledData -> Bool
-patientIsPregnant assembled =
-    getMeasurementValueFunc assembled.measurements.pregnancyTest
+patientIsPregnant : NCDMeasurements -> Bool
+patientIsPregnant measurements =
+    getMeasurementValueFunc measurements.pregnancyTest
         |> Maybe.map
             (\value ->
                 (value.executionNote == TestNoteKnownAsPositive)
@@ -979,7 +975,7 @@ referForDiabetes phase assembled =
     (isJust <| resolveCurrentHypertensionCondition assembled)
         && (case phase of
                 NCDEncounterPhaseInitial ->
-                    diagnosedPreviouslyWithDiabetes assembled
+                    diagnosedPreviouslyWithDiabetes assembled.previousEncountersData
                         || diagnosed DiagnosisDiabetesInitial assembled
 
                 NCDEncounterPhaseRecurrent ->
@@ -992,10 +988,10 @@ referForRenalComplications phase assembled =
     (isJust <| resolveCurrentHypertensionCondition assembled)
         && (case phase of
                 NCDEncounterPhaseInitial ->
-                    diagnosedPreviously DiagnosisRenalComplications assembled
+                    diagnosedPreviously DiagnosisRenalComplications assembled.previousEncountersData
 
                 NCDEncounterPhaseRecurrent ->
-                    (not <| diagnosedPreviously DiagnosisRenalComplications assembled)
+                    (not <| diagnosedPreviously DiagnosisRenalComplications assembled.previousEncountersData)
                         && diagnosed DiagnosisRenalComplications assembled
            )
 
@@ -1057,3 +1053,61 @@ referralToFacilityCompleted assembled facility =
                 Backend.Measurement.Utils.referralToFacilityCompleted value.referralSigns value.nonReferralReasons facility
             )
         |> Maybe.withDefault False
+
+
+updateChronicDiagnoses : NominalDate -> EverySet NCDDiagnosis -> AssembledData -> List NCDDiagnosis
+updateChronicDiagnoses encounterDate encounterDiagnoses assembled =
+    let
+        previousEncountersData =
+            -- We want to be looking at encounters performed
+            -- before the encounter we're processing, to be able to locate
+            -- previous chronic diagnosis.
+            filterPreviousEncountersDataToDate encounterDate assembled.previousEncountersData
+
+        chronicHypertensionDiagnosis =
+            if List.any (\diagnosis -> EverySet.member diagnosis encounterDiagnoses) hypertensionDiagnoses then
+                -- We already got Hypertension diagnosis ay current encounter, so,
+                -- no need to be looking at previous Hypertension diagnoses.
+                Nothing
+
+            else
+                resolveHypertensionCondition previousEncountersData
+
+        chronicDiabetesDiagnosis =
+            if List.any (\diagnosis -> EverySet.member diagnosis encounterDiagnoses) diabetesDiagnoses then
+                -- We already got Diabetes diagnosis ay current encounter, so,
+                -- no need to be looking at previous Diabetes diagnoses.
+                Nothing
+
+            else if diagnosedPreviouslyWithDiabetes previousEncountersData then
+                Just DiagnosisDiabetesInitial
+
+            else
+                Nothing
+
+        chronicRenalComplicationsDiagnosis =
+            if EverySet.member DiagnosisRenalComplications encounterDiagnoses then
+                -- We already got RenalComplications diagnosis ay current encounter, so,
+                -- no need to be looking at previous RenalComplications diagnoses.
+                Nothing
+
+            else if diagnosedPreviously DiagnosisRenalComplications previousEncountersData then
+                Just DiagnosisRenalComplications
+
+            else
+                Nothing
+    in
+    Maybe.Extra.values [ chronicHypertensionDiagnosis, chronicDiabetesDiagnosis, chronicRenalComplicationsDiagnosis ]
+        ++ EverySet.toList encounterDiagnoses
+
+
+filterPreviousEncountersDataToDate :
+    NominalDate
+    -> List PreviousEncounterData
+    -> List PreviousEncounterData
+filterPreviousEncountersDataToDate limitDate previousEncountersData =
+    List.filter
+        (\data ->
+            Date.compare data.startDate limitDate == LT
+        )
+        previousEncountersData

@@ -658,6 +658,8 @@ type TranslationId
     | HeadHair
     | HealthCenter
     | HealthCenterDetermined
+    | HealthEducationNotProvided
+    | HealthEducationProvided
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
     | Heart
@@ -859,6 +861,7 @@ type TranslationId
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
     | NCDDangerSign NCDDangerSign
+    | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
     | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
     | NCDGuidanceSignQuestion NCDGuidanceSign
@@ -910,6 +913,7 @@ type TranslationId
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
     | NoParticipantsCompletedForThisActivity
+    | NoReferralRecorded
     | Normal
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
@@ -5050,6 +5054,16 @@ translationSet trans =
             , kinyarwanda = Just "Ikigo nderabuzima cyagaragaje ko"
             }
 
+        HealthEducationNotProvided ->
+            { english = "No health education provided"
+            , kinyarwanda = Nothing
+            }
+
+        HealthEducationProvided ->
+            { english = "Health education provided"
+            , kinyarwanda = Nothing
+            }
+
         HealthEducationProvidedQuestion ->
             { english = "Have you provided health education (or anticipatory guidance)"
             , kinyarwanda = Just "Watanze ikiganiro ku buzima (Cyangwa ubujyanama bw'ibanze)"
@@ -7679,6 +7693,76 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        NCDDiagnosisForProgressReport withRenalComplications isPregnant diagnosis ->
+            let
+                hypertensionInPregnancy =
+                    { english = "Hypertension in Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+            in
+            case diagnosis of
+                DiagnosisHypertensionStage1 ->
+                    if isPregnant then
+                        hypertensionInPregnancy
+
+                    else if withRenalComplications then
+                        { english = "Stage One Hypertension with Renal Complications"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Stage One Hypertension"
+                        , kinyarwanda = Nothing
+                        }
+
+                DiagnosisHypertensionStage2 ->
+                    if isPregnant then
+                        hypertensionInPregnancy
+
+                    else if withRenalComplications then
+                        { english = "Stage Two Hypertension with Renal Complications"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Stage Two Hypertension"
+                        , kinyarwanda = Nothing
+                        }
+
+                DiagnosisHypertensionStage3 ->
+                    if isPregnant then
+                        hypertensionInPregnancy
+
+                    else if withRenalComplications then
+                        { english = "Stage Three Hypertension with Renal Complications"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Stage Three Hypertension"
+                        , kinyarwanda = Nothing
+                        }
+
+                DiagnosisDiabetesInitial ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDiabetesRecurrent ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRenalComplications ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDDiagnosis ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         NCDExaminationTask task ->
             case task of
                 TaskCoreExam ->
@@ -8396,6 +8480,11 @@ translationSet trans =
         NoParticipantsCompletedForThisActivity ->
             { english = "No participants have completed this activity yet."
             , kinyarwanda = Just "Ntawaje warangirijwe kukorerwa."
+            }
+
+        NoReferralRecorded ->
+            { english = "No referral recorded"
+            , kinyarwanda = Nothing
             }
 
         NoParticipantsPendingForThisActivity ->
