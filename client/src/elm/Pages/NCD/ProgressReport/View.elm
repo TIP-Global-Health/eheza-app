@@ -8,14 +8,21 @@ import Backend.Measurement.Model
     exposing
         ( MedicalCondition(..)
         , NCDFamilyHistorySign(..)
+        , NCDHealthEducationSign(..)
+        , NCDMeasurements
         , NCDSocialHistorySign(..)
+        , NonReferralSign(..)
+        , ReasonForNonReferral(..)
+        , RecommendedTreatmentSign(..)
+        , ReferToFacilitySign(..)
+        , ReferralFacility(..)
         , TestExecutionNote(..)
         , TestVariant(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Utils exposing (getAllActivities)
-import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..), NCDProgressReportInitiator(..))
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
@@ -31,7 +38,15 @@ import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.ProgressReport.Model exposing (..)
 import Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewMarkers)
-import Pages.NCD.Utils exposing (generateAssembledData)
+import Pages.NCD.Utils
+    exposing
+        ( allRecommendedTreatmentSignsForHypertension
+        , diabetesDiagnoses
+        , generateAssembledData
+        , patientIsPregnant
+        , recommendedTreatmentSignsForDiabetes
+        , updateChronicDiagnoses
+        )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
 import Pages.Report.Utils exposing (..)
@@ -340,53 +355,242 @@ socialHistoryRiskFactors =
     ]
 
 
-coMorbiditiesMedicalContitions : List MedicalCondition
-coMorbiditiesMedicalContitions =
-    [ MedicalConditionHIV
-    , MedicalConditionDiabetes
-    , MedicalConditionKidneyDisease
-    , MedicalConditionPregnancy
-    , MedicalConditionHypertension
-    , MedicalConditionGestationalDiabetes
-    , MedicalConditionPregnancyRelatedHypertension
-    ]
-
-
 viewMedicalDiagnosisPane : Language -> NominalDate -> AssembledData -> Html Msg
 viewMedicalDiagnosisPane language currentDate assembled =
     let
-        allMeasurements =
-            assembled.measurements
-                :: List.map .measurements assembled.previousEncountersData
+        allEncountersData =
+            { id = assembled.id
+            , startDate = assembled.encounter.startDate
+            , diagnoses = assembled.encounter.diagnoses
+            , measurements = assembled.measurements
+            }
+                :: assembled.previousEncountersData
 
         content =
-            List.map (Translate.MedicalCondition >> translate language >> text >> List.singleton >> li [])
-                coMorbidities
+            List.map (Translate.MedicalCondition >> translate language >> text >> List.singleton >> li []) coMorbidities
+                ++ dignoses
                 |> ul []
                 |> List.singleton
 
         coMorbidities =
-            List.map
-                (.coMorbidities
-                    >> getMeasurementValueFunc
-                    >> Maybe.map
-                        (EverySet.toList
-                            >> List.filter
-                                (\mdecicalCondition ->
-                                    List.member mdecicalCondition coMorbiditiesMedicalContitions
-                                )
-                        )
-                    >> Maybe.withDefault []
-                )
-                allMeasurements
+            List.map .measurements allEncountersData
+                |> List.map
+                    (.coMorbidities
+                        >> getMeasurementValueFunc
+                        >> Maybe.map
+                            (EverySet.toList
+                                >> List.filter
+                                    (\mdecicalCondition ->
+                                        List.member mdecicalCondition
+                                            [ MedicalConditionHIV
+                                            , MedicalConditionDiabetes
+                                            , MedicalConditionKidneyDisease
+                                            , MedicalConditionPregnancy
+                                            , MedicalConditionHypertension
+                                            , MedicalConditionGestationalDiabetes
+                                            , MedicalConditionPregnancyRelatedHypertension
+                                            ]
+                                    )
+                            )
+                        >> Maybe.withDefault []
+                    )
                 |> List.concat
                 |> EverySet.fromList
                 |> EverySet.toList
+
+        dignoses =
+            List.map
+                (\data ->
+                    let
+                        diagnosesIncludingChronic =
+                            updateChronicDiagnoses data.startDate data.diagnoses assembled
+
+                        withRenalComplications =
+                            List.member DiagnosisRenalComplications diagnosesIncludingChronic
+
+                        withDiabetes =
+                            List.any (\diagnosis -> List.member diagnosis diagnosesIncludingChronic) diabetesDiagnoses
+                    in
+                    List.map (viewTreatmentForDiagnosis language data.startDate data.measurements withRenalComplications withDiabetes) diagnosesIncludingChronic
+                )
+                allEncountersData
+                |> List.concat
     in
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
         , div [ class "pane-content" ] content
         ]
+
+
+viewTreatmentForDiagnosis :
+    Language
+    -> NominalDate
+    -> NCDMeasurements
+    -> Bool
+    -> Bool
+    -> NCDDiagnosis
+    -> Html any
+viewTreatmentForDiagnosis language date measurements withRenalComplications withDiabetes diagnosis =
+    let
+        diagnosisForProgressReport =
+            translate language <| Translate.NCDDiagnosisForProgressReport withRenalComplications isPregnant diagnosis
+
+        isPregnant =
+            patientIsPregnant measurements
+
+        hypertensionMessage =
+            let
+                treatmentPhrase =
+                    getMeasurementValueFunc measurements.medicationDistribution
+                        |> Maybe.map
+                            (\value ->
+                                let
+                                    recordedTreatmentSignsForHypertension =
+                                        EverySet.toList value.recommendedTreatmentSigns
+                                            |> List.filter (\sign -> List.member sign allRecommendedTreatmentSignsForHypertension)
+                                in
+                                case recordedTreatmentSignsForHypertension of
+                                    [ NoTreatmentForHypertension ] ->
+                                        String.toLower <| translate language Translate.NoTreatmentAdministered
+
+                                    _ ->
+                                        let
+                                            treatment =
+                                                List.map (Translate.RecommendedTreatmentSignLabel >> translate language) recordedTreatmentSignsForHypertension
+                                                    |> List.intersperse (translate language Translate.And)
+                                                    |> String.join ""
+                                        in
+                                        (String.toLower <| translate language Translate.TreatedWith)
+                                            ++ " "
+                                            ++ treatment
+                            )
+                        |> Maybe.withDefault
+                            (getMeasurementValueFunc measurements.healthEducation
+                                |> Maybe.map
+                                    (\signs ->
+                                        case EverySet.toList signs of
+                                            [ NoNCDHealthEducationSigns ] ->
+                                                String.toLower <| translate language Translate.HealthEducationNotProvided
+
+                                            _ ->
+                                                String.toLower <| translate language Translate.HealthEducationProvided
+                                    )
+                                |> Maybe.withDefault (String.toLower <| translate language Translate.NoTreatmentRecorded)
+                            )
+
+                referralPhrase =
+                    if
+                        -- These are conditions when referral is needed, when
+                        -- combined with Hypertension diagnosis.
+                        isPregnant || withRenalComplications || withDiabetes || diagnosis == DiagnosisHypertensionStage3
+                    then
+                        let
+                            phrase =
+                                getMeasurementValueFunc measurements.referral
+                                    |> Maybe.map
+                                        (\value ->
+                                            let
+                                                ( facility, referralSign, nonReferralSign ) =
+                                                    if isPregnant then
+                                                        ( FacilityANCServices, ReferToANCServices, NonReferralReasonANCServices )
+
+                                                    else
+                                                        ( FacilityHospital, ReferToHospital, NonReferralReasonHospital )
+                                            in
+                                            if EverySet.member referralSign value.referralSigns then
+                                                String.toLower <| translate language <| Translate.ReferredToFacility facility
+
+                                            else
+                                                let
+                                                    nonReferralReason =
+                                                        getCurrentReasonForNonReferral nonReferralSign value.nonReferralReasons
+                                                            |> Maybe.map
+                                                                (\reason ->
+                                                                    if reason == NoReasonForNonReferral then
+                                                                        ""
+
+                                                                    else
+                                                                        " - " ++ (String.toLower <| translate language <| Translate.ReasonForNonReferral reason)
+                                                                )
+                                                            |> Maybe.withDefault ""
+                                                in
+                                                (String.toLower <| translate language <| Translate.ReferredToFacilityNot facility) ++ nonReferralReason
+                                        )
+                                    |> Maybe.withDefault (translate language Translate.NoReferralRecorded)
+                        in
+                        (String.toLower <| translate language Translate.And)
+                            ++ " "
+                            ++ phrase
+                            ++ " "
+
+                    else
+                        ""
+            in
+            diagnosisForProgressReport
+                ++ " - "
+                ++ treatmentPhrase
+                ++ " "
+                ++ referralPhrase
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+                |> wrapWithLI
+
+        diabetesMessage =
+            let
+                treatmentPhrase =
+                    getMeasurementValueFunc measurements.medicationDistribution
+                        |> Maybe.andThen
+                            (.recommendedTreatmentSigns
+                                >> EverySet.toList
+                                >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForDiabetes)
+                                >> List.head
+                            )
+                        |> Maybe.map
+                            (\treatmentSign ->
+                                if treatmentSign == NoTreatmentForDiabetes then
+                                    String.toLower <| translate language Translate.NoTreatmentAdministered
+
+                                else
+                                    (String.toLower <| translate language Translate.TreatedWith)
+                                        ++ " "
+                                        ++ (translate language <| Translate.RecommendedTreatmentSignLabel treatmentSign)
+                            )
+                        |> Maybe.withDefault (String.toLower <| translate language Translate.NoTreatmentRecorded)
+            in
+            diagnosisForProgressReport
+                ++ " - "
+                ++ treatmentPhrase
+                ++ " "
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+                |> wrapWithLI
+
+        wrapWithLI =
+            text >> List.singleton >> li []
+    in
+    case diagnosis of
+        DiagnosisHypertensionStage1 ->
+            hypertensionMessage
+
+        DiagnosisHypertensionStage2 ->
+            hypertensionMessage
+
+        DiagnosisHypertensionStage3 ->
+            hypertensionMessage
+
+        DiagnosisDiabetesInitial ->
+            diabetesMessage
+
+        DiagnosisDiabetesRecurrent ->
+            diabetesMessage
+
+        DiagnosisRenalComplications ->
+            emptyNode
+
+        NoNCDDiagnosis ->
+            emptyNode
 
 
 viewPatientProgressPane : Language -> NominalDate -> AssembledData -> Html Msg
