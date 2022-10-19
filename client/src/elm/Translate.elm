@@ -9128,12 +9128,12 @@ translationSet trans =
 
         PatientGotDiabetesByGlucoseHeader fasting value ->
             if fasting then
-                { english = "This patient has Diabetes with fasting glucose levels of " ++ " " ++ String.fromFloat value ++ " mg/dL"
+                { english = "This patient has Diabetes with glucose levels before a meal (fasting) of " ++ " " ++ String.fromFloat value ++ " mg/dL"
                 , kinyarwanda = Nothing
                 }
 
             else
-                { english = "This patient has Diabetes with non-fasting glucose levels of " ++ " " ++ String.fromFloat value ++ " mg/dL"
+                { english = "This patient has Diabetes with glucose levels after a meal (non-fasting) of " ++ " " ++ String.fromFloat value ++ " mg/dL"
                 , kinyarwanda = Nothing
                 }
 
