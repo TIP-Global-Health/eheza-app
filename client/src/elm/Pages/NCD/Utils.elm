@@ -226,23 +226,22 @@ matchNCDDiagnosis currentDate assembled diagnosis =
             reportedAnyOfCoMorbidities assembled [ MedicalConditionDiabetes, MedicalConditionGestationalDiabetes ]
 
         DiagnosisDiabetesRecurrent ->
-            (not <| matchNCDDiagnosis currentDate assembled DiagnosisDiabetesInitial)
-                && (getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
-                        |> Maybe.map
-                            (\value ->
-                                let
-                                    bySugarCount =
-                                        diabetesBySugarCount value
+            if diagnosed DiagnosisDiabetesInitial assembled then
+                False
 
-                                    byUrineGlucose =
-                                        getMeasurementValueFunc assembled.measurements.urineDipstickTest
-                                            |> Maybe.map diabetesByUrineGlucose
-                                            |> Maybe.withDefault False
-                                in
-                                bySugarCount || byUrineGlucose
-                            )
-                        |> Maybe.withDefault False
-                   )
+            else
+                let
+                    bySugarCount =
+                        getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
+                            |> Maybe.map diabetesBySugarCount
+                            |> Maybe.withDefault False
+
+                    byUrineGlucose =
+                        getMeasurementValueFunc assembled.measurements.urineDipstickTest
+                            |> Maybe.map diabetesByUrineGlucose
+                            |> Maybe.withDefault False
+                in
+                bySugarCount || byUrineGlucose
 
         DiagnosisRenalComplications ->
             renalComplicationsByCreatine assembled
@@ -607,7 +606,7 @@ medicateForHypertension phase assembled =
                     (\stage ->
                         case stage of
                             -- Per requirements, if first Hypertension diagosis is stage 1, and
-                            -- there're no other complecations (at previous or current encouters),
+                            -- there're no other complications (at previous or current encouters),
                             -- we do not medicate.
                             DiagnosisHypertensionStage1 ->
                                 -- History of Hypertension.
