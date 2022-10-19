@@ -12097,13 +12097,13 @@ translationSet trans =
                     }
 
                 OutsideCareMedicationMethyldopa3 ->
-                    { english = "1 tablet by mouth three times a day"
-                    , kinyarwanda = Nothing
+                    { english = "by mouth 3x a day"
+                    , kinyarwanda = Just "Mu kanwa inshuro 3 ku munsi"
                     }
 
                 OutsideCareMedicationMethyldopa4 ->
-                    { english = "1 tablet by mouth four times a day"
-                    , kinyarwanda = Nothing
+                    { english = "by mouth 4x a day"
+                    , kinyarwanda = Just "Mu kanwa inshuro 4 ku munsi"
                     }
 
                 OutsideCareMedicationCarvedilol ->
@@ -13076,18 +13076,18 @@ translationSet trans =
                     }
 
                 TreatmentMethyldopa2 ->
-                    { english = "by mouth 2x a day"
-                    , kinyarwanda = Just "mu kanwa inshuro 2 ku munsi"
+                    { english = "1 tablet by mouth twice a day"
+                    , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa3 ->
-                    { english = "by mouth 3x a day"
-                    , kinyarwanda = Just "mu kanwa inshuro 3 ku munsi"
+                    { english = "1 tablet by mouth three times a day"
+                    , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa4 ->
-                    { english = "by mouth 4x a day"
-                    , kinyarwanda = Just "mu kanwa inshuro 4 ku munsi"
+                    { english = "1 tablet by mouth four times a day"
+                    , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
