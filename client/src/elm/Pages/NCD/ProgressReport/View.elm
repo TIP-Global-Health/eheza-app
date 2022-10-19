@@ -559,7 +559,7 @@ viewTreatmentForDiagnosis language date measurements withRenalComplications with
                         |> Maybe.withDefault (String.toLower <| translate language Translate.NoTreatmentRecorded)
             in
             diagnosisForProgressReport
-                ++ " "
+                ++ " - "
                 ++ treatmentPhrase
                 ++ " "
                 ++ (String.toLower <| translate language Translate.On)
