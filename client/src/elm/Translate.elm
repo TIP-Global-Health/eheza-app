@@ -12092,18 +12092,18 @@ translationSet trans =
                     }
 
                 OutsideCareMedicationMethyldopa2 ->
-                    { english = "by mouth 2x a day"
-                    , kinyarwanda = Just "Mu kanwa inshuro 2 ku munsi"
+                    { english = "1 tablet by mouth twice a day"
+                    , kinyarwanda = Nothing
                     }
 
                 OutsideCareMedicationMethyldopa3 ->
-                    { english = "by mouth 3x a day"
-                    , kinyarwanda = Just "Mu kanwa inshuro 3 ku munsi"
+                    { english = "1 tablet by mouth three times a day"
+                    , kinyarwanda = Nothing
                     }
 
                 OutsideCareMedicationMethyldopa4 ->
-                    { english = "by mouth 4x a day"
-                    , kinyarwanda = Just "Mu kanwa inshuro 4 ku munsi"
+                    { english = "1 tablet by mouth four times a day"
+                    , kinyarwanda = Nothing
                     }
 
                 OutsideCareMedicationCarvedilol ->
