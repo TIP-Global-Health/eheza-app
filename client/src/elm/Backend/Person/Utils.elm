@@ -166,6 +166,9 @@ initiatorFromUrlFragment s =
         "well-child" ->
             IndividualEncounterOrigin WellChildEncounter |> Just
 
+        "ncd" ->
+            IndividualEncounterOrigin NCDEncounter |> Just
+
         _ ->
             if String.startsWith "session-" s then
                 String.dropLeft (String.length "session-") s

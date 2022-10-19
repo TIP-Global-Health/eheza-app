@@ -660,6 +660,8 @@ type TranslationId
     | HeadHair
     | HealthCenter
     | HealthCenterDetermined
+    | HealthEducationNotProvided
+    | HealthEducationProvided
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
     | Heart
@@ -862,6 +864,7 @@ type TranslationId
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
     | NCDDangerSign NCDDangerSign
+    | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
     | NCDFamilyHistorySignQuestion NCDFamilyHistorySign
     | NCDGuidanceSignQuestion NCDGuidanceSign
@@ -913,6 +916,7 @@ type TranslationId
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
     | NoParticipantsCompletedForThisActivity
+    | NoReferralRecorded
     | Normal
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
@@ -1091,7 +1095,7 @@ type TranslationId
     | PrenatalLaboratoryCreatinineLabel
     | PrenatalLaboratoryBUNLabel
     | PrenatalLaboratoryALTLabel
-    | PrenatalLaboratoryALSLabel
+    | PrenatalLaboratoryASTLabel
     | PrenatalLaboratoryPregnancyLabel
     | LaboratoryTest LaboratoryTest
     | PrenatalLabsCaseManagementEntryTypeResults
@@ -3295,7 +3299,7 @@ translationSet trans =
                     }
 
                 FacilityANCServices ->
-                    { english = "Complete a ANC services referral form"
+                    { english = "Complete an ANC services referral form"
                     , kinyarwanda = Nothing
                     }
 
@@ -5113,6 +5117,16 @@ translationSet trans =
         HealthCenterDetermined ->
             { english = "Health center determined this is a"
             , kinyarwanda = Just "Ikigo nderabuzima cyagaragaje ko"
+            }
+
+        HealthEducationNotProvided ->
+            { english = "No health education provided"
+            , kinyarwanda = Nothing
+            }
+
+        HealthEducationProvided ->
+            { english = "Health education provided"
+            , kinyarwanda = Nothing
             }
 
         HealthEducationProvidedQuestion ->
@@ -7107,7 +7121,7 @@ translationSet trans =
                     }
 
         MedicationTreatingDiabetesQuestion ->
-            { english = "Have you ever been diagnosed with any of these conditions"
+            { english = "Has the patient taken or currently take any of the following medications that treat diabetes"
             , kinyarwanda = Nothing
             }
 
@@ -7154,7 +7168,7 @@ translationSet trans =
                     }
 
         MedicationTreatingHypertensionQuestion ->
-            { english = "Have you ever been diagnosed with any of these conditions"
+            { english = "Has the patient taken or currently take any of the following medications that treat hypertension"
             , kinyarwanda = Nothing
             }
 
@@ -7823,6 +7837,76 @@ translationSet trans =
 
                 NoNCDDangerSigns ->
                     { english = "None of the Above"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDDiagnosisForProgressReport withRenalComplications isPregnant diagnosis ->
+            let
+                hypertensionInPregnancy =
+                    { english = "Hypertension in Pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+            in
+            case diagnosis of
+                DiagnosisHypertensionStage1 ->
+                    if isPregnant then
+                        hypertensionInPregnancy
+
+                    else if withRenalComplications then
+                        { english = "Stage One Hypertension with Renal Complications"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Stage One Hypertension"
+                        , kinyarwanda = Nothing
+                        }
+
+                DiagnosisHypertensionStage2 ->
+                    if isPregnant then
+                        hypertensionInPregnancy
+
+                    else if withRenalComplications then
+                        { english = "Stage Two Hypertension with Renal Complications"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Stage Two Hypertension"
+                        , kinyarwanda = Nothing
+                        }
+
+                DiagnosisHypertensionStage3 ->
+                    if isPregnant then
+                        hypertensionInPregnancy
+
+                    else if withRenalComplications then
+                        { english = "Stage Three Hypertension with Renal Complications"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = "Stage Three Hypertension"
+                        , kinyarwanda = Nothing
+                        }
+
+                DiagnosisDiabetesInitial ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDiabetesRecurrent ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRenalComplications ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDDiagnosis ->
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -8545,6 +8629,11 @@ translationSet trans =
             , kinyarwanda = Just "Ntawaje warangirijwe kukorerwa."
             }
 
+        NoReferralRecorded ->
+            { english = "No referral recorded"
+            , kinyarwanda = Nothing
+            }
+
         NoParticipantsPendingForThisActivity ->
             { english = "All attending participants have completed this activitity."
             , kinyarwanda = Just "Ababje bose barangirijwe."
@@ -9196,12 +9285,12 @@ translationSet trans =
 
         PatientGotDiabetesByGlucoseHeader fasting value ->
             if fasting then
-                { english = "This patient has Diabetes with fasting glucose levels of " ++ " " ++ String.fromFloat value ++ " mg/dL"
+                { english = "This patient has Diabetes with glucose levels before a meal (fasting) of " ++ String.fromFloat value ++ " mg/dL"
                 , kinyarwanda = Nothing
                 }
 
             else
-                { english = "This patient has Diabetes with non-fasting glucose levels of " ++ " " ++ String.fromFloat value ++ " mg/dL"
+                { english = "This patient has Diabetes with glucose levels after a meal (non-fasting) of " ++ String.fromFloat value ++ " mg/dL"
                 , kinyarwanda = Nothing
                 }
 
@@ -11790,8 +11879,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PrenatalLaboratoryALSLabel ->
-            { english = "ALS"
+        PrenatalLaboratoryASTLabel ->
+            { english = "AST"
             , kinyarwanda = Nothing
             }
 
@@ -12249,8 +12338,8 @@ translationSet trans =
                     }
 
                 OutsideCareMedicationMethyldopa2 ->
-                    { english = "by mouth 2x a day"
-                    , kinyarwanda = Just "Mu kanwa inshuro 2 ku munsi"
+                    { english = "1 tablet by mouth twice a day"
+                    , kinyarwanda = Nothing
                     }
 
                 OutsideCareMedicationMethyldopa3 ->
@@ -13233,18 +13322,18 @@ translationSet trans =
                     }
 
                 TreatmentMethyldopa2 ->
-                    { english = "by mouth 2x a day"
-                    , kinyarwanda = Just "mu kanwa inshuro 2 ku munsi"
+                    { english = "1 tablet by mouth twice a day"
+                    , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa3 ->
-                    { english = "by mouth 3x a day"
-                    , kinyarwanda = Just "mu kanwa inshuro 3 ku munsi"
+                    { english = "1 tablet by mouth three times a day"
+                    , kinyarwanda = Nothing
                     }
 
                 TreatmentMethyldopa4 ->
-                    { english = "by mouth 4x a day"
-                    , kinyarwanda = Just "mu kanwa inshuro 4 ku munsi"
+                    { english = "1 tablet by mouth four times a day"
+                    , kinyarwanda = Nothing
                     }
 
                 TreatmentHypertensionAddCarvedilol ->

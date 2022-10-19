@@ -53,3 +53,5 @@ vendor
 
 package-lock.json
 travis-cache
+
+/eheza-infra

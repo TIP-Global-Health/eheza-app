@@ -369,7 +369,7 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
-                    { label = Translate.PrenatalLaboratoryALSLabel
+                    { label = Translate.PrenatalLaboratoryASTLabel
                     , recentResult = Maybe.map String.fromFloat recentResultValue
                     , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
