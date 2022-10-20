@@ -22,8 +22,13 @@ LEFT JOIN
   field_data_field_scheduled_date da ON
     di.entity_id = da.entity_id AND
     di.bundle = da.bundle
+LEFT JOIN field_data_field_individual_participant ip ON di.entity_id = ip.entity_id
+LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id=hc.entity_id
 WHERE
-  field_scheduled_date_value > DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+  field_scheduled_date_value >= '2022-08-01'
+  AND field_scheduled_date_value < '2022-09-01'
+  AND field_health_center_target_id = '1246786'
 GROUP BY
   field_acute_illness_diagnosis_value;");
 
