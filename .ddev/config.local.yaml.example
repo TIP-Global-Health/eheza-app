@@ -1,3 +1,5 @@
+web_environment:
+  # - EHEZA_INFRA_REPO_REMOTE=git@github.com:organization/project.git
 hooks:
   post-import-db:
     # Sanitize email addresses

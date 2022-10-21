@@ -67,7 +67,6 @@ expectActivity currentDate assembled activity =
         NextSteps ->
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
                 && (resolveNextStepsTasks currentDate assembled
-                        |> List.filter (expectNextStepsTask currentDate assembled)
                         |> List.isEmpty
                         |> not
                    )
@@ -118,10 +117,10 @@ expectNextStepsTask currentDate assembled task =
             -- Diagnosed Stage 1 at current encounter.
             diagnosed DiagnosisHypertensionStage1 assembled
                 -- Not diagnosed any Hypertension diagnoses at previous encounters.
-                && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled)
-                -- Not diagnosed any Hypertension diagnoses at current or previous encounters.
+                && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled.previousEncountersData)
+                -- Not diagnosed any Diaberes / RenalComplications diagnoses at current or previous encounters.
                 && (not <| diagnosedAnyOf [ DiagnosisRenalComplications, DiagnosisDiabetesInitial ] assembled)
-                && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
+                && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled.previousEncountersData)
 
         TaskMedicationDistribution ->
             medicateForDiabetes NCDEncounterPhaseInitial assembled
@@ -141,10 +140,25 @@ nextStepsTaskCompleted assembled task =
 
         TaskMedicationDistribution ->
             let
-                recommendedTreatmentSignsForHypertension =
-                    generateRecommendedTreatmentSignsForHypertension assembled
+                hypertensionTreatmentCompleted =
+                    if medicateForHypertension NCDEncounterPhaseInitial assembled then
+                        let
+                            recommendedTreatmentSignsForHypertension =
+                                generateRecommendedTreatmentSignsForHypertension assembled
+                        in
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+
+                    else
+                        True
+
+                diabetesTreatmentCompleted =
+                    if medicateForDiabetes NCDEncounterPhaseInitial assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForDiabetes assembled.measurements
+
+                    else
+                        True
             in
-            recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
+            hypertensionTreatmentCompleted && diabetesTreatmentCompleted
 
         TaskReferral ->
             isJust assembled.measurements.referral

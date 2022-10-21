@@ -21,7 +21,7 @@ import Backend.NutritionActivity.Utils
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PatientRecord.Utils
 import Backend.Person.Model exposing (Initiator(..))
-import Backend.Person.Utils exposing (initiatorFromUrlFragment, initiatorToUrlFragment)
+import Backend.Person.Utils
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
 import Backend.PrenatalActivity.Utils
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..), RecordPreganancyInitiator(..))
@@ -126,7 +126,7 @@ pageToFragment current =
                 CreatePersonPage relationId initiator ->
                     let
                         fragment =
-                            initiatorToUrlFragment initiator
+                            Backend.Person.Utils.initiatorToUrlFragment initiator
 
                         relation =
                             relationId
@@ -141,14 +141,14 @@ pageToFragment current =
                 PersonPage id initiator ->
                     let
                         fragment =
-                            initiatorToUrlFragment initiator
+                            Backend.Person.Utils.initiatorToUrlFragment initiator
                     in
                     Just ("person/" ++ fromEntityUuid id ++ "/" ++ fragment)
 
                 PersonsPage related initiator ->
                     let
                         fragment =
-                            initiatorToUrlFragment initiator
+                            Backend.Person.Utils.initiatorToUrlFragment initiator
 
                         url =
                             case related of
@@ -181,7 +181,7 @@ pageToFragment current =
                 RelationshipPage id1 id2 initiator ->
                     let
                         fragment =
-                            initiatorToUrlFragment initiator
+                            Backend.Person.Utils.initiatorToUrlFragment initiator
                     in
                     Just
                         ("relationship/"
@@ -469,7 +469,7 @@ parseIndividualEncounterType =
 
 parseOrigin : Parser (Initiator -> c) c
 parseOrigin =
-    custom "Initiator" initiatorFromUrlFragment
+    custom "Initiator" Backend.Person.Utils.initiatorFromUrlFragment
 
 
 parseRecordPreganancyInitiator : Parser (RecordPreganancyInitiator -> c) c
