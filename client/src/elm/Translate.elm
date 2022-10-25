@@ -1554,7 +1554,7 @@ translationSet trans =
 
                 FacilityANCServices ->
                     { english = "Will you accompany the patient to ANC services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzaherekeza umubyeyi muri serivise yita kubuzima bw'umubyeyi utwite"
                     }
 
         AccessDenied ->
@@ -2748,7 +2748,7 @@ translationSet trans =
 
         BloodGlucose ->
             { english = "Blood Glucose"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ingano y'Isukari mu Maraso"
             }
 
         BloodPressure ->
@@ -2955,12 +2955,12 @@ translationSet trans =
 
                 FilterPrenatalLabs ->
                     { english = "ANC Labs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibizamini bikorerwa umubyeyi utwite"
                     }
 
                 FilterNCDLabs ->
                     { english = "NCD Labs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibizamini bikorerwa ufite indwara zitandura"
                     }
 
         CaseManagementPaneHeader encounterType ->
@@ -2987,12 +2987,12 @@ translationSet trans =
 
                 FilterPrenatalLabs ->
                     { english = "ANC Labs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibizamini bikorerwa umubyeyi utwite"
                     }
 
                 FilterNCDLabs ->
                     { english = "NCD Labs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibizamini bikorerwa ufite indwara zitandura"
                     }
 
         CentimeterShorthand ->
@@ -3277,7 +3277,7 @@ translationSet trans =
 
                 FacilityANCServices ->
                     { english = "Complete an ANC services referral form"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi muri service serivise yita kubuzima bw'umubyeyi utwite"
                     }
 
         Contacted114 ->
@@ -4786,17 +4786,17 @@ translationSet trans =
             case group of
                 FoodGroupVegetables ->
                     { english = "Vegetables"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imboga"
                     }
 
                 FoodGroupCarbohydrates ->
                     { english = "Carbohydrates"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinyamasukari"
                     }
 
                 FoodGroupProtein ->
                     { english = "Protein"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibyubakumubiri"
                     }
 
         FollowPostpartumProtocols ->
