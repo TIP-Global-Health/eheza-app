@@ -9138,7 +9138,7 @@ translationSet trans =
                 }
 
         PatientGotDiabetesByUrineDip value ->
-            { english = "This Patient has diabetes with Urine Dip glucose levels of " ++ value
+            { english = "This patient has Diabetes with Urine Dip glucose levels of " ++ value
             , kinyarwanda = Nothing
             }
 
