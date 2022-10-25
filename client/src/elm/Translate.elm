@@ -7815,7 +7815,7 @@ translationSet trans =
             }
 
         NCDHealthEducationInstructions ->
-            { english = "Council patient on lifestyle changes and the root causes of hypertension"
+            { english = "Counsel patient on lifestyle changes and the root causes of hypertension"
             , kinyarwanda = Nothing
             }
 
@@ -9027,7 +9027,7 @@ translationSet trans =
             }
 
         PaleConjuctiva ->
-            { english = "Pale Conjuctiva"
+            { english = "Pale Conjunctiva"
             , kinyarwanda = Just "Ibihenehene byeruruka"
             }
 
@@ -9138,7 +9138,7 @@ translationSet trans =
                 }
 
         PatientGotDiabetesByUrineDip value ->
-            { english = "This patient has Diabetes with a urine dip glucose levels of " ++ value
+            { english = "This patient has Diabetes with Urine Dip glucose levels of " ++ value
             , kinyarwanda = Nothing
             }
 
@@ -13409,7 +13409,7 @@ translationSet trans =
                     }
 
                 TreatmentAtenlol ->
-                    { english = "Atenlol (125mg)"
+                    { english = "Atenlol (12.5mg)"
                     , kinyarwanda = Nothing
                     }
 
