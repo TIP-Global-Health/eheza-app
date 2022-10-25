@@ -3832,7 +3832,9 @@ div.page-report.ncd {
 }
 
 div.page-case-management,
-div.page-activity.patient-record {
+div.page-activity.patient-record,
+div.page-report.well-child {
+  padding-top: 0;
 
   .ui.segment.filters {
     background-color: $color-white;
