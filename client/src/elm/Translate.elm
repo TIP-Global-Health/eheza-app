@@ -5056,12 +5056,12 @@ translationSet trans =
 
         HealthEducationNotProvided ->
             { english = "No health education provided"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nta nyigisho ku buzima zatanzwe"
             }
 
         HealthEducationProvided ->
             { english = "Health education provided"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hatanzwe inyigisho ku buzima"
             }
 
         HealthEducationProvidedQuestion ->
@@ -5353,7 +5353,7 @@ translationSet trans =
 
         HowManyPerWeek ->
             { english = "How many per week"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Unywa imiti y'itabi ingahe ku cyumweru"
             }
 
         Hypertension ->
@@ -5363,7 +5363,7 @@ translationSet trans =
 
         HypertensionAndPregnantHeader ->
             { english = "This patient has Hypertension and is pregnant"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi afite indwara y'umuvuduko w'amaraso kandi aratwite"
             }
 
         HypertensionBeforePregnancy ->
@@ -5446,28 +5446,28 @@ translationSet trans =
                 DiagnosisHypertensionStage1 ->
                     if renalComplications then
                         { english = "This patient has Stage One Hypertension with Renal Complications"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Uyu murwayi afite umuvuduko w'amaraso uri ku rwego rwa mbere n'ibibazo byo kudakora neza kwimpyiko"
                         }
 
                     else
                         { english = "This patient has Stage One Hypertension"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Uyu murwayi afite umuvuduko w'amaraso uri ku rwego rwa mbere"
                         }
 
                 DiagnosisHypertensionStage2 ->
                     if renalComplications then
                         { english = "This patient has Stage Two Hypertension with Renal Complications"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Uyu murwayi afite umuvuduko w'amaraso uri hejuru kurwego rwa Kabiri n'ibibazo byo kudakora neza kwimpyiko"
                         }
 
                     else
                         { english = "This patient has Stage Two Hypertension"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Uyu murwayi afite umuvuduko w'amaraso uri hejuru kurwego rwa Kabiri"
                         }
 
                 DiagnosisHypertensionStage3 ->
                     { english = "This patient has Stage Three Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uyu murwayi afite umuvuduko w'amaraso uri hejuru kurwego rwa Gatatu"
                     }
 
                 -- We should never get here.
@@ -5572,7 +5572,7 @@ translationSet trans =
 
                 NCDEncounter ->
                     { english = "First NCD Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma rya mbere kuburwayi butandura"
                     }
 
         IndividualEncounterLabel encounterType isChw ->
@@ -5615,7 +5615,7 @@ translationSet trans =
 
                 NCDEncounter ->
                     { english = "NCD Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ku Burwayi Butandura"
                     }
 
         IndividualEncounterSelectVisit encounterType isChw ->
@@ -5658,7 +5658,7 @@ translationSet trans =
 
                 NCDEncounter ->
                     { english = "Select NCD Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hitamo Isuzuma Kuburwayi Butandura"
                     }
 
         IndividualEncounterSubsequentVisit encounterType ->
@@ -5695,7 +5695,7 @@ translationSet trans =
 
                 NCDEncounter ->
                     { english = "Subsequent NCD Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma Rikurikiyeho ku Burwayi Butandura"
                     }
 
         IndividualEncounterType encounterType isChw ->
@@ -5738,7 +5738,7 @@ translationSet trans =
 
                 NCDEncounter ->
                     { english = "Noncommunicable Diseases"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara Zitandura"
                     }
 
         IndividualEncounterTypes ->
@@ -5776,12 +5776,12 @@ translationSet trans =
 
         InstructionsChooseOneMedication ->
             { english = "Choose one of the medications from the list to prescribe to the patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umuti umwe ku rutonde uwuhe umurwayi"
             }
 
         InstructionsChooseTwoMedications ->
             { english = "Choose two of the medications from the list to prescribe to the patient"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo imiti ibiri ku rutonde uyihe umurwayi"
             }
 
         IsCurrentlyBreastfeeding ->
@@ -5828,7 +5828,7 @@ translationSet trans =
 
                 TaskPregnancyTest ->
                     { english = "Is this patient known to be pregnant"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uyu murwayi yaba asanzwe azwi ko atwite?"
                     }
 
                 TaskBloodGpRsTest ->
@@ -5924,22 +5924,22 @@ translationSet trans =
 
         LaboratoryCreatinineCreatinineResult ->
             { english = "Creatinine Result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo by'ikizamini cya Keleyatinine"
             }
 
         LaboratoryCreatinineBUNResult ->
             { english = "BUN Result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo by'ibizamini by'impyiko"
             }
 
         LaboratoryLiverFunctionAltResult ->
             { english = "ALT Result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo by'ibizamini by'impyiko"
             }
 
         LaboratoryLiverFunctionAstResult ->
             { english = "AST Result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisubizo by'ibizamini by'umwijima"
             }
 
         LaboratoryTask task ->
@@ -5986,27 +5986,27 @@ translationSet trans =
 
                 TaskHIVPCRTest ->
                     { english = "HIV PCR"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cya PCR gipima ubwandu bwa Virusi itera SIDA"
                     }
 
                 TaskPregnancyTest ->
                     { english = "Pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutwita"
                     }
 
                 TaskCreatinineTest ->
                     { english = "Creatinine"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Keleyatinine"
                     }
 
                 TaskLiverFunctionTest ->
                     { english = "Liver Function"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imikorere y'Umwijima"
                     }
 
                 TaskCompletePreviousTests ->
                     { english = "History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru"
                     }
 
         LaboratoryTaskLabel task ->
@@ -6053,22 +6053,22 @@ translationSet trans =
 
                 TaskHIVPCRTest ->
                     { english = "HIV PCR"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cya PCR gipima ubwandu bwa Virusi itera SIDA"
                     }
 
                 TaskPregnancyTest ->
                     { english = "Pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutwita"
                     }
 
                 TaskCreatinineTest ->
                     { english = "Creatinine"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Keleyatinine"
                     }
 
                 TaskLiverFunctionTest ->
                     { english = "Liver Function"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imikorere y'Umwijima"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -6126,17 +6126,17 @@ translationSet trans =
 
                 TaskPregnancyTest ->
                     { english = "Pregnancy Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki y'ikizamini cyo gutwita"
                     }
 
                 TaskCreatinineTest ->
                     { english = "Creatinine Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki y'ikizamini cya Keleyatinine"
                     }
 
                 TaskLiverFunctionTest ->
                     { english = "Liver Function Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki y'ikizamini cy'imikorere y'Umwijima"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -6194,17 +6194,17 @@ translationSet trans =
 
                 TaskPregnancyTest ->
                     { english = "Pregnancy Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cyo gutwita"
                     }
 
                 TaskCreatinineTest ->
                     { english = "Creatinine Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cya Keleyatinine"
                     }
 
                 TaskLiverFunctionTest ->
                     { english = "Liver Function Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cy'imikorere y'Umwijima"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -6317,27 +6317,27 @@ translationSet trans =
 
                 LabResultsHistoryCreatinine _ ->
                     { english = "Creatinine Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya Keleyatinine"
                     }
 
                 LabResultsHistoryBUN _ ->
                     { english = "BUN Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'Impyiko"
                     }
 
                 LabResultsHistoryALT _ ->
                     { english = "ALT Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'Impyiko"
                     }
 
                 LabResultsHistoryAST _ ->
                     { english = "AST Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cy'Umwijima"
                     }
 
                 LabResultsHistoryPregnancy _ ->
                     { english = "Pregnancy Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cyo Gutwita"
                     }
 
         LabResultsNormalRange mode ->
@@ -6461,17 +6461,17 @@ translationSet trans =
             case mode of
                 LabResultsCurrentMain ->
                     { english = "Lab Results"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
                     }
 
                 LabResultsCurrentDipstickShort ->
                     { english = "Short Dipstick Lab Results"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cy'inkari gitanga ibisubizo bike"
                     }
 
                 LabResultsCurrentDipstickLong ->
                     { english = "Long Dipstick Lab Results"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cy'inkari gitanga ibisubizo byinshi"
                     }
 
         LastChecked ->
@@ -6491,54 +6491,54 @@ translationSet trans =
 
         LeaveEncounter ->
             { english = "Leave Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Reka iki Gikorwa"
             }
 
         Left ->
             { english = "Left"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibumoso"
             }
 
         LegCrampsReliefMethod method ->
             case method of
                 ReliefMethodMuscleStretching ->
                     { english = "Muscle stretching"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kurambura imitsi"
                     }
 
                 ReliefMethodDorsiflexion ->
                     { english = "Dorsiflexion"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imyitozo ngororamubiri inanura amaguru & ibirenge"
                     }
 
                 ReliefMethodRelaxation ->
                     { english = "Relaxation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuruhuka"
                     }
 
                 ReliefMethodSleepWithPillowBetweenLegs ->
                     { english = "Sleep with a pillow between the legs"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ryama ushyize umusego hagati y'amaguru"
                     }
 
                 ReliefMethodHeatTherapy ->
                     { english = "Heat therapy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuvura hakoreshejwe ubushyuhe"
                     }
 
                 ReliefMethodMassage ->
                     { english = "Massage"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubugororangingo"
                     }
 
         LegLeft ->
             { english = "Left leg"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikiguru kw'ibumoso"
             }
 
         LegRight ->
             { english = "Right leg"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ukuguru kw'iburyo"
             }
 
         Legs ->
@@ -6631,7 +6631,7 @@ translationSet trans =
 
         LmpLabel ->
             { english = "Last Menstrual Period"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igihe aherukira mu mihango"
             }
 
         LmpRangeHeader ->
@@ -6844,7 +6844,7 @@ translationSet trans =
 
                 RapidTestUnableToRunAndPregnant ->
                     { english = "Unable to run and Pregnant"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibishoboka gukorwa"
                     }
 
         MalnutritionWithComplications ->
@@ -6908,124 +6908,124 @@ translationSet trans =
             case medication of
                 MedicationOestrogens ->
                     { english = "Oestrogens (Family Planning)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umusemburo wa Estrogene"
                     }
 
                 MedicationSteroids ->
                     { english = "Steroids (Prednisolone)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umusemburo wa iteroyide"
                     }
 
                 MedicationAmitriptyline ->
                     { english = "Amitriptyline"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amitiributiline"
                     }
 
                 MedicationIbuprofen ->
                     { english = "Ibuprofen (Diclofenac)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibiporofene cg Dikolofenake"
                     }
 
                 NoMedicationCausingHypertension ->
                     { english = "None of the Above"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
         MedicationCausingHypertensionQuestion ->
             { english = "Has the patient taken or currently take any of the following hypertension causing medications"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yaba yarafashe cg ari ku miti itera izamuka ry'umuvuduko w'amaraso"
             }
 
         MedicalCondition condition ->
             case condition of
                 MedicalConditionHIV ->
                     { english = "HIV"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Virusi itera SIDA"
                     }
 
                 MedicalConditionDiabetes ->
                     { english = "Diabetes"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Diyabete(Indwara y'Igisukari)"
                     }
 
                 MedicalConditionKidneyDisease ->
                     { english = "Kidney Disease"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'impyiko"
                     }
 
                 MedicalConditionPregnancy ->
                     { english = "Pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutwita"
                     }
 
                 MedicalConditionHypertension ->
                     { english = "Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso"
                     }
 
                 MedicalConditionGestationalDiabetes ->
                     { english = "Gestational Diabetes"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Diyabete iterwa no utwite"
                     }
 
                 MedicalConditionPregnancyRelatedHypertension ->
                     { english = "Pregnancy Related Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuvuduko w'amaraso utewe no gutwita"
                     }
 
                 MedicalConditionNeuropathy ->
                     { english = "Neuropathy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara z'imyakura"
                     }
 
                 MedicalConditionRentalComplications ->
                     { english = "Rental Complications"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibibazo bitewe no kwangirika kw'impyiko"
                     }
 
                 MedicalConditionMalaria ->
                     { english = "Malaria"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Malariya"
                     }
 
                 MedicalConditionTuberculosis ->
                     { english = "Tuberculosis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igituntu"
                     }
 
                 MedicalConditionHepatitisB ->
                     { english = "Hepatitis B"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwijima wo mu bwoko bwa B"
                     }
 
                 MedicalConditionSyphilis ->
                     { english = "Syphilis"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mburugu"
                     }
 
                 MedicalConditionEyeComplications ->
                     { english = "Eye Complications"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibibazo by'amaso"
                     }
 
                 MedicalConditionAnemia ->
                     { english = "Anemia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'amaraso make"
                     }
 
                 MedicalConditionOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     }
 
                 NoMedicalConditions ->
                     { english = "None of the Above"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
         MedicalConditionQuestion ->
             { english = "Have you ever been diagnosed with any of these conditions"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba warigeze urwara imwe muri izi ndwara"
             }
 
         MedicationDistribution ->
@@ -7037,49 +7037,49 @@ translationSet trans =
             case medication of
                 MedicationMetformin ->
                     { english = "Metformin"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Metiforumine"
                     }
 
                 MedicationGlibenclamide ->
                     { english = "Glibenclamide"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Girimbenkalamide"
                     }
 
                 MedicationInsulin ->
                     { english = "Insulin"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Insuline"
                     }
 
                 NoMedicationTreatingDiabetes ->
                     { english = "None of the Above"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "nta na kimwe"
                     }
 
         MedicationTreatingDiabetesQuestion ->
             { english = "Has the patient taken or currently take any of the following medications that treat diabetes"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yaba yarafashe cg ari gufata imwe mu miti ikurikira ivura Diyabete"
             }
 
         MedicationTreatingHypertension medication ->
             case medication of
                 MedicationAceInhibitors ->
                     { english = "Ace-Inhibitors (Example: Captopril)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Caputopili"
                     }
 
                 MedicationARBs ->
                     { english = "Angiotensine Receptor Blockers (ARBs)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Anjiyotensine"
                     }
 
                 MedicationHCTZ ->
                     { english = "HCTZ"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Idolokotiyazide"
                     }
 
                 MedicationCalciumChannelBlockers ->
                     { english = "Calcium Channel Blockers"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kalisiyumu"
                     }
 
                 MedicationMethyldopa ->
@@ -7089,22 +7089,22 @@ translationSet trans =
 
                 MedicationBetaBlockers ->
                     { english = "Beta-Blockers"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Beta boloka"
                     }
 
                 MedicationHydralazine ->
                     { english = "Hydralazine"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Idaralazine"
                     }
 
                 NoMedicationTreatingHypertension ->
                     { english = "None of the Above"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
         MedicationTreatingHypertensionQuestion ->
             { english = "Has the patient taken or currently take any of the following medications that treat hypertension"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yaba yarafashe cg ari gufata imwe mu miti ikurikira ivura umuvuduko w'amaraso"
             }
 
         MedicalDiagnosis ->
@@ -7450,7 +7450,7 @@ translationSet trans =
 
         MiddleName ->
             { english = "Middle Name"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Izina ryo hagati"
             }
 
         MinutesAgo minutes ->
@@ -7555,7 +7555,7 @@ translationSet trans =
 
         MotherDemographicInformation ->
             { english = "Mother Demographic Information"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umwirondoro w'umubyeyi"
             }
 
         MotherName name ->
@@ -7565,12 +7565,12 @@ translationSet trans =
 
         MotherNameLabel ->
             { english = "Mother's Name"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Izina ry'umubyeyi"
             }
 
         MotherNationalId ->
             { english = "Mother's National ID"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'indangamuntu y'umubyeyi"
             }
 
         Mothers ->
@@ -7601,7 +7601,7 @@ translationSet trans =
 
         Name ->
             { english = "Name"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Izina"
             }
 
         NationalIdNumber ->
