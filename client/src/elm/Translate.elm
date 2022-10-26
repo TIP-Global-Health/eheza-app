@@ -399,6 +399,7 @@ type TranslationId
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
+    | BirthDefect
     | BloodGlucose
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -408,6 +409,7 @@ type TranslationId
     | BMIHelper
     | BodyTemperature
     | Born
+    | BornUnderweight
     | BoughtClothesQuestion
     | BowedLegs
     | BpmUnit Int
@@ -2773,6 +2775,11 @@ translationSet trans =
             , kinyarwanda = Just "Tangira igikorwa gishya"
             }
 
+        BirthDefect ->
+            { english = "Birth Defect"
+            , kinyarwanda = Nothing
+            }
+
         BloodGlucose ->
             { english = "Blood Glucose"
             , kinyarwanda = Nothing
@@ -2816,6 +2823,11 @@ translationSet trans =
         Born ->
             { english = "Born"
             , kinyarwanda = Just "Kuvuka/ itariki y'amavuko"
+            }
+
+        BornUnderweight ->
+            { english = "Born Underweight"
+            , kinyarwanda = Nothing
             }
 
         BoughtClothesQuestion ->
