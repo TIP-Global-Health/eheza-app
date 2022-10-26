@@ -3859,6 +3859,18 @@ div.page-report.well-child {
       color: $color-white;
     }
   }
+
+  .pane.child-identification {
+
+    .pane-content {
+      display: flex;
+      justify-content: space-between;
+
+      .column {
+        padding: 10px;
+      }
+    }
+  }
 }
 
 div.page-case-management {
