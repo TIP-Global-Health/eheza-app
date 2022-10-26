@@ -443,9 +443,11 @@ type TranslationId
     | ChildCleanQuestion
     | ChildHmisNumber
     | ChildDemographicInformation
+    | ChildIdentification
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
+    | ChildName
     | Children
     | ChildrenNames
     | ChildrenNationalId
@@ -610,7 +612,8 @@ type TranslationId
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
-    | FatherName
+    | FatherOrCheifId
+    | FatherOrCheifName
     | FatherNationalId
     | FbfDistribution ClinicType
     | FbfToReceive Activity Float
@@ -849,6 +852,7 @@ type TranslationId
     | MonthsOld
     | Mother
     | MotherDemographicInformation
+    | MotherId
     | MotherName String
     | MotherNameLabel
     | MotherNationalId
@@ -3061,6 +3065,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ChildIdentification ->
+            { english = "Child Identification"
+            , kinyarwanda = Nothing
+            }
+
         ChildNutritionSignLabel sign ->
             case sign of
                 AbdominalDistension ->
@@ -3187,6 +3196,11 @@ translationSet trans =
         ChildOf ->
             { english = "Child of"
             , kinyarwanda = Just "Umwana wa"
+            }
+
+        ChildName ->
+            { english = "Child Name"
+            , kinyarwanda = Nothing
             }
 
         Clear ->
@@ -4723,8 +4737,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        FatherName ->
-            { english = "Father's Name"
+        FatherOrCheifId ->
+            { english = "Father or Cheif of Family ID"
+            , kinyarwanda = Nothing
+            }
+
+        FatherOrCheifName ->
+            { english = "Fathers or Cheif of Family Name"
             , kinyarwanda = Nothing
             }
 
@@ -7623,13 +7642,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        MotherId ->
+            { english = "Mother ID"
+            , kinyarwanda = Nothing
+            }
+
         MotherName name ->
             { english = "Mother/Caregiver: " ++ name
             , kinyarwanda = Just <| "Umubyeyi: " ++ name
             }
 
         MotherNameLabel ->
-            { english = "Mother's Name"
+            { english = "Mothers Name"
             , kinyarwanda = Nothing
             }
 

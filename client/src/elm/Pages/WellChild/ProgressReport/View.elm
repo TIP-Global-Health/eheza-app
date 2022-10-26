@@ -30,6 +30,7 @@ import Backend.NutritionEncounter.Utils
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, getHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
+import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
     exposing
@@ -1475,4 +1476,101 @@ viewNCDAScorecard :
     -> ( PersonId, Person )
     -> Html any
 viewNCDAScorecard language currentDate db ( childId, child ) =
-    text "viewNCDAScoreboard"
+    div [ class "ui report unstackable items" ]
+        [ viewChildIdentificationPane language currentDate db ( childId, child ) ]
+
+
+viewChildIdentificationPane :
+    Language
+    -> NominalDate
+    -> ModelIndexedDb
+    -> ( PersonId, Person )
+    -> Html any
+viewChildIdentificationPane language currentDate db ( childId, child ) =
+    let
+        parentsIds =
+            Dict.get childId db.relationshipsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (Dict.values
+                        >> List.filter (.relatedBy >> (==) MyParent)
+                        >> EverySet.fromList
+                        >> EverySet.toList
+                        >> List.map .relatedTo
+                    )
+                |> Maybe.withDefault []
+
+        ( mother, father ) =
+            let
+                parents =
+                    List.filterMap
+                        (\personId ->
+                            Dict.get personId db.people
+                                |> Maybe.andThen RemoteData.toMaybe
+                        )
+                        parentsIds
+            in
+            ( List.filter (.gender >> (==) Female) parents
+                |> List.head
+            , List.filter (.gender >> (==) Male) parents
+                |> List.head
+            )
+
+        dateOfBirthEntry =
+            Maybe.map
+                (\birthDate ->
+                    viewEntry Translate.DateOfBirth (formatDDMMYYYY birthDate)
+                )
+                child.birthDate
+                |> Maybe.withDefault emptyNode
+
+        motherInfoEntry =
+            Maybe.map
+                (\person ->
+                    [ viewEntry Translate.MotherNameLabel person.name
+                    , viewEntry Translate.MotherId (Maybe.withDefault "" person.nationalIdNumber)
+                    ]
+                )
+                mother
+                |> Maybe.withDefault []
+
+        fatherInfoEntry =
+            Maybe.map
+                (\person ->
+                    [ viewEntry Translate.FatherOrCheifName person.name
+                    , viewEntry Translate.FatherOrCheifId (Maybe.withDefault "" person.nationalIdNumber)
+                    ]
+                )
+                father
+                |> Maybe.withDefault []
+
+        childNameEntry =
+            viewEntry Translate.ChildName child.name
+
+        genderEntry =
+            viewEntry Translate.GenderLabel (translate language <| Translate.Gender child.gender)
+
+        ubudeheEntry =
+            Maybe.map (Translate.UbudeheNumber >> translate language >> viewEntry Translate.UbudeheLabel) child.ubudehe
+                |> Maybe.withDefault emptyNode
+
+        viewEntry labelTransId content =
+            p []
+                [ span [ class "label" ] [ text <| translate language labelTransId ++ ": " ]
+                , span [] [ text content ]
+                ]
+    in
+    div [ class "pane child-identification" ]
+        [ viewPaneHeading language Translate.ChildIdentification
+        , div [ class "pane-content" ]
+            [ div [ class "column" ]
+                [ childNameEntry
+                , genderEntry
+                , dateOfBirthEntry
+                , ubudeheEntry
+                ]
+            , div [ class "column" ] <|
+                motherInfoEntry
+                    ++ fatherInfoEntry
+            ]
+        ]
