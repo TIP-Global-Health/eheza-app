@@ -1525,7 +1525,9 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
                 |> Maybe.Extra.values
     in
     div [ class "ui report unstackable items" ]
-        [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child ) ]
+        [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
+        , viewANCNewbornPane language currentDate db childId
+        ]
 
 
 viewChildIdentificationPane :
@@ -1653,5 +1655,54 @@ viewChildIdentificationPane language currentDate ncdaQuestionnaire db ( childId,
             , div [ class "column" ] <|
                 motherInfoEntry
                     ++ fatherInfoEntry
+            ]
+        ]
+
+
+viewANCNewbornPane :
+    Language
+    -> NominalDate
+    -> ModelIndexedDb
+    -> PersonId
+    -> Html any
+viewANCNewbornPane language currentDate db childId =
+    div [ class "pane anc-newborn" ]
+        [ viewPaneHeading language Translate.ANCNewborn
+        , div [ class "pane-content" ]
+            [ viewTableHeader
+            ]
+        ]
+
+
+viewTableHeader : Html any
+viewTableHeader =
+    div [ class "table-header" ]
+        [ div [ class "activity" ] [ text "Activity" ]
+        , div [ class "flex-column" ]
+            [ div [ class "column-heading" ] [ text "Pregnancy (1-9)" ]
+            , List.repeat 9 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        div [ class "month" ] [ text <| String.fromInt <| index + 1 ]
+                    )
+                |> div [ class "months" ]
+            ]
+        , div [ class "flex-column" ]
+            [ div [ class "column-heading" ] [ text "Child (0-5 months)" ]
+            , List.repeat 6 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        div [ class "month" ] [ text <| String.fromInt index ]
+                    )
+                |> div [ class "months" ]
+            ]
+        , div [ class "flex-column" ]
+            [ div [ class "column-heading" ] [ text "Child (6-24 months)" ]
+            , List.repeat 19 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        div [ class "month" ] [ text <| String.fromInt <| index + 6 ]
+                    )
+                |> div [ class "months" ]
             ]
         ]
