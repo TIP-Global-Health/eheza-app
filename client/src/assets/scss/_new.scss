@@ -3860,7 +3860,7 @@ div.page-report.well-child {
     }
   }
 
-  .pane.child-identification {
+  .pane {
 
     .pane-heading {
       text-transform: unset;
@@ -3868,6 +3868,49 @@ div.page-report.well-child {
 
     .pane-content {
       color: $color-text;
+
+      .table-header {
+        display: flex;
+        justify-content: space-between;
+
+        .activity {
+          border: 1px solid $color-text;
+          font-size: 14px;
+          text-align: center;
+          width: 100px;
+        }
+
+        .flex-column {
+          border: 1px solid $color-text;
+          display: flex;
+          flex-direction: column;
+
+          .column-heading {
+            border: 1px solid $color-text;
+            font-size: 14px;
+            text-align: center;
+          }
+
+          .months {
+            border: 1px solid $color-text;
+            display: flex;
+            font-size: 10px;
+            justify-content: space-between;
+
+            .month {
+              border: 1px solid $color-text;
+              line-height: 10px;
+              padding: 3px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .pane.child-identification {
+
+    .pane-content {
       display: flex;
       justify-content: space-between;
       padding: 20px;
