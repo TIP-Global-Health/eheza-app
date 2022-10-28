@@ -3874,35 +3874,46 @@ div.page-report.well-child {
         justify-content: space-between;
 
         .activity {
-          border: 1px solid $color-text;
           font-size: 14px;
+          padding-left: 10px;
+          padding-top: 10px;
           text-align: center;
-          width: 100px;
+          text-align: left;
+          width: 160px;
         }
 
         .flex-column {
-          border: 1px solid $color-text;
           display: flex;
           flex-direction: column;
 
           .column-heading {
-            border: 1px solid $color-text;
+            border-left: 1px solid $color-text;
             font-size: 14px;
             text-align: center;
           }
 
           .months {
-            border: 1px solid $color-text;
+            border-bottom: 1px solid $color-text;
+            border-top: 1px solid $color-text;
             display: flex;
-            font-size: 10px;
+            font-size: 11px;
             justify-content: space-between;
 
             .month {
-              border: 1px solid $color-text;
-              line-height: 10px;
+              border-left: 1px solid $color-text;
+              line-height: 11px;
               padding: 3px;
             }
           }
+        }
+
+        .flex-column.pregnancy {
+          width: 130px;
+        }
+
+        .flex-column.0-5 {
+          font-size: 9px;
+          width: 90px;
         }
       }
     }

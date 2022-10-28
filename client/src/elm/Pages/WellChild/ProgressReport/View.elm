@@ -1678,7 +1678,7 @@ viewTableHeader : Html any
 viewTableHeader =
     div [ class "table-header" ]
         [ div [ class "activity" ] [ text "Activity" ]
-        , div [ class "flex-column" ]
+        , div [ class "flex-column pregnancy" ]
             [ div [ class "column-heading" ] [ text "Pregnancy (1-9)" ]
             , List.repeat 9 ""
                 |> List.indexedMap
@@ -1687,8 +1687,8 @@ viewTableHeader =
                     )
                 |> div [ class "months" ]
             ]
-        , div [ class "flex-column" ]
-            [ div [ class "column-heading" ] [ text "Child (0-5 months)" ]
+        , div [ class "flex-column 0-5" ]
+            [ div [ class "column-heading" ] [ text "Child (0-5)" ]
             , List.repeat 6 ""
                 |> List.indexedMap
                     (\index _ ->
@@ -1696,7 +1696,7 @@ viewTableHeader =
                     )
                 |> div [ class "months" ]
             ]
-        , div [ class "flex-column" ]
+        , div [ class "flex-column 6-24" ]
             [ div [ class "column-heading" ] [ text "Child (6-24 months)" ]
             , List.repeat 19 ""
                 |> List.indexedMap
