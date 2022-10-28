@@ -1670,6 +1670,8 @@ viewANCNewbornPane language currentDate db childId =
         [ viewPaneHeading language Translate.ANCNewborn
         , div [ class "pane-content" ]
             [ viewTableHeader
+            , viewTableRow "Regular prenatal and postpartum checkups"
+            , viewTableRow "Iron during pregnancy"
             ]
         ]
 
@@ -1705,4 +1707,29 @@ viewTableHeader =
                     )
                 |> div [ class "months" ]
             ]
+        ]
+
+
+viewTableRow : String -> Html any
+viewTableRow activity =
+    div [ class "table-row" ]
+        [ div [ class "activity" ] [ text activity ]
+        , List.repeat 9 ""
+            |> List.indexedMap
+                (\index _ ->
+                    div [ class "month" ] [ text <| String.fromInt <| index + 1 ]
+                )
+            |> div [ class "months" ]
+        , List.repeat 6 ""
+            |> List.indexedMap
+                (\index _ ->
+                    div [ class "month" ] [ text <| String.fromInt index ]
+                )
+            |> div [ class "months" ]
+        , List.repeat 19 ""
+            |> List.indexedMap
+                (\index _ ->
+                    div [ class "month" ] [ text <| String.fromInt <| index + 6 ]
+                )
+            |> div [ class "months" ]
         ]
