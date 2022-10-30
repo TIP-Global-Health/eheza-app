@@ -1527,6 +1527,7 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
     div [ class "ui report unstackable items" ]
         [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
         , viewANCNewbornPane language currentDate db childId
+        , viewNutritionBehaviorPane language currentDate db childId
         ]
 
 
@@ -1670,8 +1671,8 @@ viewANCNewbornPane language currentDate db childId =
         [ viewPaneHeading language Translate.ANCNewborn
         , div [ class "pane-content" ]
             [ viewTableHeader
-            , viewTableRow "Regular prenatal and postpartum checkups"
-            , viewTableRow "Iron during pregnancy"
+            , viewTableRow language <| Translate.NCDAANCNewbornItemLabel RegularCheckups
+            , viewTableRow language <| Translate.NCDAANCNewbornItemLabel IronDuringPregnancy
             ]
         ]
 
@@ -1710,10 +1711,10 @@ viewTableHeader =
         ]
 
 
-viewTableRow : String -> Html any
-viewTableRow activity =
+viewTableRow : Language -> TranslationId -> Html any
+viewTableRow language itemTransId =
     div [ class "table-row" ]
-        [ div [ class "activity" ] [ text activity ]
+        [ div [ class "activity" ] [ text <| translate language itemTransId ]
         , List.repeat 9 ""
             |> List.indexedMap
                 (\index _ ->
@@ -1732,4 +1733,23 @@ viewTableRow activity =
                     div [ class "month" ] [ text <| String.fromInt <| index + 6 ]
                 )
             |> div [ class "months" ]
+        ]
+
+
+viewNutritionBehaviorPane :
+    Language
+    -> NominalDate
+    -> ModelIndexedDb
+    -> PersonId
+    -> Html any
+viewNutritionBehaviorPane language currentDate db childId =
+    div [ class "pane nutrition-behavior" ]
+        [ viewPaneHeading language Translate.NutritionBehavior
+        , div [ class "pane-content" ]
+            [ viewTableHeader
+            , viewTableRow language <| Translate.NCDANutritionBehaviorItemLabel BreastfedSixMonth
+            , viewTableRow language <| Translate.NCDANutritionBehaviorItemLabel AppropriateComplementaryFeeding
+            , viewTableRow language <| Translate.NCDANutritionBehaviorItemLabel DiverseDiet
+            , viewTableRow language <| Translate.NCDANutritionBehaviorItemLabel MealsADay
+            ]
         ]
