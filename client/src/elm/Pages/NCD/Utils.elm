@@ -123,7 +123,7 @@ applyHypertensionDiagnosesLogic assembled diagnoses =
         currentHypertensionCondition =
             resolveCurrentHypertensionCondition assembled
     in
-    -- If no hypertension criteria is met, check if we can lower hypertanstion stage.
+    -- If no hypertension criteria is met, check if we can lower hypertension stage.
     if List.isEmpty hypertension && bloodPressureSatisfiesCondition lowerHypertensionStageCondition assembled then
         Maybe.map
             (\current ->
@@ -151,9 +151,9 @@ applyHypertensionDiagnosesLogic assembled diagnoses =
                     new :: others
 
                 else
-                    -- We already diagnosed patient with higher stage, so
-                    -- we can drop current diagnosis.
-                    others
+                    -- We have not diagnosed higher hypertension stage, so
+                    -- we remain at current condition.
+                    current :: others
             )
             (List.head hypertension)
             currentHypertensionCondition
