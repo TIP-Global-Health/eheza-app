@@ -8019,7 +8019,7 @@ translationSet trans =
 
         NCDProgressReport ->
             { english = "NCD Progress Report"
-            , kinyarwanda = Just "Raporo kundwara zitandura"
+            , kinyarwanda = Just "Raporo ku Burwayi Butandura"
             }
 
         NCDRecurrentActivitiesTitle activity ->
@@ -13166,17 +13166,17 @@ translationSet trans =
 
                 TreatmentMethyldopa2 ->
                     { english = "1 tablet by mouth twice a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentMethyldopa3 ->
                     { english = "1 tablet by mouth three times a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa inshuro 3 ku munsi"
                     }
 
                 TreatmentMethyldopa4 ->
                     { english = "1 tablet by mouth four times a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa inshuro 4 ku munsi"
                     }
 
                 TreatmentHypertensionAddCarvedilol ->
@@ -13191,87 +13191,87 @@ translationSet trans =
 
                 TreatmentHydrochlorothiazide ->
                     { english = "1 tablet by mouth daily"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa buri munsi"
                     }
 
                 TreatmentAmlodipine ->
                     { english = "1 tablet by mouth daily"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa buri munsi"
                     }
 
                 TreatmentNifedipine ->
                     { english = "1 tablet by mouth twice a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentCaptopril ->
                     { english = "1 tablet by mouth 3 times a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa inshuro 3 ku munsi"
                     }
 
                 TreatmentLisinopril ->
                     { english = "1 tablet by mouth daily"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa buri munsi"
                     }
 
                 TreatmentAtenlol ->
                     { english = "1 tablet by mouth daily"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa buri munsi"
                     }
 
                 TreatmentCloxacillin ->
                     { english = "2 capsules by mouth 3 times a day for 7 days"
-                    , kinyarwanda = Just "Kunywa ibinini bibiri inshuri 3 ku munsi mu minsi 7"
+                    , kinyarwanda = Just "kunywa ibinini bibiri inshuri 3 ku munsi mu minsi 7"
                     }
 
                 TreatmentMastitisAmoxicillin ->
                     { english = "2 capsules by mouth 3 times a day for 7 days"
-                    , kinyarwanda = Just "Kunywa ibinini bibiri inshuri 3 ku munsi mu minsi 7"
+                    , kinyarwanda = Just "kunywa ibinini bibiri inshuri 3 ku munsi mu minsi 7"
                     }
 
                 TreatmentPenecilinV ->
                     { english = "2 tablets by mouth 3 times a day for 7 days"
-                    , kinyarwanda = Just "Ibinini 2 mu kanwa inshuri 3 ku munsi mu minsi 7"
+                    , kinyarwanda = Just "ibinini 2 mu kanwa inshuri 3 ku munsi mu minsi 7"
                     }
 
                 TreatmentParacetamol ->
                     { english = "1 tablet by mouth 3 times a day for 5 days"
-                    , kinyarwanda = Just "Ikinini 1 mu kanwa inshuri 3 ku munsi mu minsi 5"
+                    , kinyarwanda = Just "ikinini 1 mu kanwa inshuri 3 ku munsi mu minsi 5"
                     }
 
                 TreatmentIbuprofen ->
                     { english = "1 tablet by mouth 3 times a day for 5 days"
-                    , kinyarwanda = Just "Ikinini 1 mu kanwa inshuri 3 ku munsi mu minsi 5"
+                    , kinyarwanda = Just "ikinini 1 mu kanwa inshuri 3 ku munsi mu minsi 5"
                     }
 
                 TreatmentMetformin1m1e ->
                     { english = "1 tablet by mouth twice a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentGlipenclamide1m1e ->
                     { english = "1 tablet by mouth twice a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ikinini kimwe mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentMetformin2m1e ->
                     { english = "2 tablets by mouth in the morning and 1 tablet by mouth in the evening"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ibinini 2 mu kanwa mu gitondo n'ikinini kimwe mu kanwa nijoro"
                     }
 
                 TreatmentGlipenclamide2m1e ->
                     { english = "2 tablets by mouth in the morning and 1 tablet by mouth in the evening"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ibinini 2 mu kanwa mu gitondo n'ikinini kimwe mu kanwa nijoro"
                     }
 
                 TreatmentMetformin2m2e ->
                     { english = "2 tablets by mouth twice a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ibinini bibiri mu kanwa inshuro 2 ku munsi"
                     }
 
                 TreatmentGlipenclamide2m2e ->
                     { english = "2 tablets by mouth twice a day"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "ibinini bibiri mu kanwa inshuro 2 ku munsi"
                     }
 
                 -- Dosage is not applicable for other options.
@@ -13385,7 +13385,7 @@ translationSet trans =
 
                 TreatmentHydrochlorothiazide ->
                     { english = "Hydrochlorothiazide (12.5mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Idirokolotiyazide (12.5mg)"
                     }
 
                 TreatmentAmlodipine ->
@@ -13395,22 +13395,22 @@ translationSet trans =
 
                 TreatmentNifedipine ->
                     { english = "Nifedipine (20mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nifedipine miligarama 20"
                     }
 
                 TreatmentCaptopril ->
                     { english = "Captopril (25mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kabutopulili miligaram 25"
                     }
 
                 TreatmentLisinopril ->
                     { english = "Lisinopril (5mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Lizinopilili miligarama 5"
                     }
 
                 TreatmentAtenlol ->
                     { english = "Atenlol (12.5mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Atenilolo miligarama 12.5"
                     }
 
                 NoTreatmentForHypertension ->
@@ -13420,7 +13420,7 @@ translationSet trans =
 
                 TreatmentAluminiumHydroxide ->
                     { english = "Aluminium Hydroxide (500mg)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Idologiside d'Aluminiyumu miligarama 500"
                     }
 
                 TreatmentHealthEducationForHeartburn ->
@@ -13574,7 +13574,7 @@ translationSet trans =
 
                 FacilityANCServices ->
                     { english = "Have you referred the patient to ANC services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Wohereje umurwayi muri serivise yita kubuzima bw'umubyeyi utwite"
                     }
 
         ReferredToFacility facility ->
@@ -13591,7 +13591,7 @@ translationSet trans =
 
                 FacilityMentalHealthSpecialist ->
                     { english = "Referred to mental health specialist"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yoherejwe ku muganga w'inzobere w'ubuzima bwo mu mutwe"
                     }
 
                 FacilityARVProgram ->
@@ -13606,7 +13606,7 @@ translationSet trans =
 
                 FacilityANCServices ->
                     { english = "Referred to ANC services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yoherejwe muri serivise yita kubuzima bw'umubyeyi utwite"
                     }
 
         ReferredToFacilityNot facility ->
@@ -13638,7 +13638,7 @@ translationSet trans =
 
                 FacilityANCServices ->
                     { english = "Not referred to ANC services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabwo yoherejwe muri serivise yita kubuzima bw'umubyeyi utwite"
                     }
 
         ReferredToFacilityPostpartum facility ->
@@ -13660,12 +13660,12 @@ translationSet trans =
 
         ReferToHospitalForFurtherEvaluation ->
             { english = "Refer patient to hospital for further evaluation"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umurwayi ku bitaro kugirango hakorwe isuzuma ryimbitse"
             }
 
         ReferToProgramAction ->
             { english = "Refer patient to appropriate nutrition program"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ohereza umurwayi muri porogaramu y'imirire yabugenewe "
             }
 
         ReferToProgramQuestion ->
@@ -14919,7 +14919,7 @@ translationSet trans =
 
         Time ->
             { english = "Time"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "igihe"
             }
 
         To ->
@@ -16053,7 +16053,7 @@ translationSet trans =
 
         WhoInFamilyHasCondition ->
             { english = "Who in the family has this condition"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni inde mu muryango ufite iki kibazo"
             }
 
         WhyNot ->
@@ -16300,7 +16300,7 @@ translateActivePage page =
 
                         NCDEncounter ->
                             { english = "NCD Participants"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Abitabiriye muri Serivise y'indwara zitandura"
                             }
 
                 RelationshipPage _ _ _ ->
@@ -16457,32 +16457,32 @@ translateActivePage page =
 
                 NCDParticipantPage _ _ ->
                     { english = "NCD Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ku Burwayi Butandura"
                     }
 
                 NCDEncounterPage _ ->
                     { english = "NCD Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma ku Burwayi Butandura"
                     }
 
                 NCDActivityPage _ _ ->
                     { english = "NCD Activity"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igikorwa ku Burwayi Butandura"
                     }
 
                 NCDRecurrentEncounterPage _ ->
                     { english = "NCD Recurrent Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isuzuma Rigaruka ku Burwayi Butandura"
                     }
 
                 NCDRecurrentActivityPage _ _ ->
                     { english = "NCD Recurrent Activity"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igikorwa Kigaruka ku Burwayi Butandura"
                     }
 
                 NCDProgressReportPage _ ->
                     { english = "NCD Progress Report"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Raporo ku Burwayi Butandura"
                     }
 
                 TraceContactPage _ ->
