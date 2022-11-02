@@ -1523,11 +1523,37 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
             List.map (Tuple.second >> Tuple.second >> .ncda >> Maybe.map Tuple.second)
                 reportData.individualWellChildMeasurementsWithDates
                 |> Maybe.Extra.values
+
+        -- Questionnaire with it's coresponding months.
+        questionnairesByAgeInMonths : Maybe (Dict Int NCDAValue)
+        questionnairesByAgeInMonths =
+            child.birthDate
+                |> Maybe.map
+                    (\birthDate ->
+                        List.foldl
+                            (\( date, value ) accum ->
+                                let
+                                    ageMonths =
+                                        diffMonths birthDate date
+                                in
+                                Dict.get ageMonths accum
+                                    |> Maybe.map
+                                        -- We want to get most recent questionnaire for a month.
+                                        -- Since allNCDAQuestionnaires are sorted DESC by date, we
+                                        -- know that if we already recorded questionnaire for that
+                                        -- month, it's more recent than the one we are checking,
+                                        -- and current questionnaire can be skipped.
+                                        (always accum)
+                                    |> Maybe.withDefault (Dict.insert ageMonths value accum)
+                            )
+                            Dict.empty
+                            allNCDAQuestionnaires
+                    )
     in
     div [ class "ui report unstackable items" ]
         [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
-        , viewANCNewbornPane language currentDate db childId
-        , viewNutritionBehaviorPane language currentDate db childId
+        , viewANCNewbornPane language currentDate db child
+        , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
         ]
 
 
@@ -1664,9 +1690,9 @@ viewANCNewbornPane :
     Language
     -> NominalDate
     -> ModelIndexedDb
-    -> PersonId
+    -> Person
     -> Html any
-viewANCNewbornPane language currentDate db childId =
+viewANCNewbornPane language currentDate db child =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueEmpty
@@ -1778,13 +1804,58 @@ emptyPregnancyValues =
 viewNutritionBehaviorPane :
     Language
     -> NominalDate
-    -> ModelIndexedDb
-    -> PersonId
+    -> Person
+    -> Maybe (Dict Int NCDAValue)
     -> Html any
-viewNutritionBehaviorPane language currentDate db childId =
+viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
+
+        emptyValues =
+            List.repeat 25 NCDACellValueEmpty
+
+        appropriateComplementaryFeedingValues =
+            generateValues (EverySet.member NCDAAppropriateComplementaryFeeding)
+
+        mealsADayValues =
+            generateValues
+                (\questionnaire ->
+                    List.any (\sign -> EverySet.member sign questionnaire)
+                        [ NCDAMealFrequency6to8Months
+                        , NCDAMealFrequency9to11Months
+                        , NCDAMealFrequency12MonthsOrMore
+                        ]
+                )
+
+        diverseDietValues =
+            generateValues (EverySet.member NCDAFiveFoodGroups)
+
+        generateValues resolutionFunc =
+            Maybe.map2
+                (\questionnaires ageMonths ->
+                    List.indexedMap
+                        (\month _ ->
+                            if ageMonths < month then
+                                NCDACellValueEmpty
+
+                            else
+                                Dict.get month questionnaires
+                                    |> Maybe.map
+                                        (\questionnaire ->
+                                            if resolutionFunc questionnaire then
+                                                NCDACellValueV
+
+                                            else
+                                                NCDACellValueX
+                                        )
+                                    |> Maybe.withDefault NCDACellValueDash
+                        )
+                        emptyValues
+                )
+                questionnairesByAgeInMonths
+                (ageInMonths currentDate child)
+                |> Maybe.withDefault emptyValues
 
         zeroToFiveValues =
             List.repeat 6 NCDACellValueV
@@ -1797,8 +1868,20 @@ viewNutritionBehaviorPane language currentDate db childId =
         , div [ class "pane-content" ]
             [ viewTableHeader
             , viewTableRow language (Translate.NCDANutritionBehaviorItemLabel BreastfedSixMonth) pregnancyValues zeroToFiveValues sixToTwentyFourValues
-            , viewTableRow language (Translate.NCDANutritionBehaviorItemLabel AppropriateComplementaryFeeding) pregnancyValues zeroToFiveValues sixToTwentyFourValues
-            , viewTableRow language (Translate.NCDANutritionBehaviorItemLabel DiverseDiet) pregnancyValues zeroToFiveValues sixToTwentyFourValues
-            , viewTableRow language (Translate.NCDANutritionBehaviorItemLabel MealsADay) pregnancyValues zeroToFiveValues sixToTwentyFourValues
+            , viewTableRow language
+                (Translate.NCDANutritionBehaviorItemLabel AppropriateComplementaryFeeding)
+                pregnancyValues
+                (List.take 6 appropriateComplementaryFeedingValues)
+                (List.drop 6 appropriateComplementaryFeedingValues)
+            , viewTableRow language
+                (Translate.NCDANutritionBehaviorItemLabel DiverseDiet)
+                pregnancyValues
+                (List.take 6 diverseDietValues)
+                (List.drop 6 diverseDietValues)
+            , viewTableRow language
+                (Translate.NCDANutritionBehaviorItemLabel MealsADay)
+                pregnancyValues
+                (List.take 6 mealsADayValues)
+                (List.drop 6 mealsADayValues)
             ]
         ]
