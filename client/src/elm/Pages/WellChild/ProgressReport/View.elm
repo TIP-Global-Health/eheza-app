@@ -1667,12 +1667,22 @@ viewANCNewbornPane :
     -> PersonId
     -> Html any
 viewANCNewbornPane language currentDate db childId =
+    let
+        pregnancyValues =
+            List.repeat 9 NCDACellValueEmpty
+
+        zeroToFiveValues =
+            List.repeat 6 NCDACellValueDash
+
+        sixToTwentyFourValues =
+            List.repeat 19 NCDACellValueDash
+    in
     div [ class "pane anc-newborn" ]
         [ viewPaneHeading language Translate.ANCNewborn
         , div [ class "pane-content" ]
             [ viewTableHeader
-            , viewTableRow language <| Translate.NCDAANCNewbornItemLabel RegularCheckups
-            , viewTableRow language <| Translate.NCDAANCNewbornItemLabel IronDuringPregnancy
+            , viewTableRow language (Translate.NCDAANCNewbornItemLabel RegularCheckups) pregnancyValues zeroToFiveValues sixToTwentyFourValues
+            , viewTableRow language (Translate.NCDAANCNewbornItemLabel IronDuringPregnancy) pregnancyValues zeroToFiveValues sixToTwentyFourValues
             ]
         ]
 
@@ -1711,29 +1721,58 @@ viewTableHeader =
         ]
 
 
-viewTableRow : Language -> TranslationId -> Html any
-viewTableRow language itemTransId =
+viewTableRow : Language -> TranslationId -> List NCDACellValue -> List NCDACellValue -> List NCDACellValue -> Html any
+viewTableRow language itemTransId pregnancyValues zeroToFiveValues sixToTwentyFourValues =
+    let
+        viewCellValue cellValue =
+            case cellValue of
+                NCDACellValueV ->
+                    span [ class "green" ] [ text "v" ]
+
+                NCDACellValueX ->
+                    span [ class "red" ] [ text "x" ]
+
+                NCDACellValueDash ->
+                    span [] [ text "-" ]
+
+                NCDACellValueEmpty ->
+                    emptyNode
+    in
     div [ class "table-row" ]
         [ div [ class "activity" ] [ text <| translate language itemTransId ]
-        , List.repeat 9 ""
-            |> List.indexedMap
-                (\index _ ->
-                    div [ class "month" ] [ text <| String.fromInt <| index + 1 ]
-                )
+        , List.indexedMap
+            (\index value ->
+                div [ class "month" ]
+                    [ span [ class "hidden" ] [ text <| String.fromInt <| index + 1 ]
+                    , viewCellValue value
+                    ]
+            )
+            pregnancyValues
             |> div [ class "months" ]
-        , List.repeat 6 ""
-            |> List.indexedMap
-                (\index _ ->
-                    div [ class "month" ] [ text <| String.fromInt index ]
-                )
+        , List.indexedMap
+            (\index value ->
+                div [ class "month" ]
+                    [ span [ class "hidden" ] [ text <| String.fromInt index ]
+                    , viewCellValue value
+                    ]
+            )
+            zeroToFiveValues
             |> div [ class "months" ]
-        , List.repeat 19 ""
-            |> List.indexedMap
-                (\index _ ->
-                    div [ class "month" ] [ text <| String.fromInt <| index + 6 ]
-                )
+        , List.indexedMap
+            (\index value ->
+                div [ class "month" ]
+                    [ span [ class "hidden" ] [ text <| String.fromInt <| index + 6 ]
+                    , viewCellValue value
+                    ]
+            )
+            sixToTwentyFourValues
             |> div [ class "months" ]
         ]
+
+
+emptyPregnancyValues : List NCDACellValue
+emptyPregnancyValues =
+    List.repeat 9 NCDACellValueDash
 
 
 viewNutritionBehaviorPane :
@@ -1743,13 +1782,23 @@ viewNutritionBehaviorPane :
     -> PersonId
     -> Html any
 viewNutritionBehaviorPane language currentDate db childId =
+    let
+        pregnancyValues =
+            List.repeat 9 NCDACellValueDash
+
+        zeroToFiveValues =
+            List.repeat 6 NCDACellValueV
+
+        sixToTwentyFourValues =
+            List.repeat 19 NCDACellValueX
+    in
     div [ class "pane nutrition-behavior" ]
         [ viewPaneHeading language Translate.NutritionBehavior
         , div [ class "pane-content" ]
             [ viewTableHeader
-            , viewTableRow language <| Translate.NCDANutritionBehaviorItemLabel BreastfedSixMonth
-            , viewTableRow language <| Translate.NCDANutritionBehaviorItemLabel AppropriateComplementaryFeeding
-            , viewTableRow language <| Translate.NCDANutritionBehaviorItemLabel DiverseDiet
-            , viewTableRow language <| Translate.NCDANutritionBehaviorItemLabel MealsADay
+            , viewTableRow language (Translate.NCDANutritionBehaviorItemLabel BreastfedSixMonth) pregnancyValues zeroToFiveValues sixToTwentyFourValues
+            , viewTableRow language (Translate.NCDANutritionBehaviorItemLabel AppropriateComplementaryFeeding) pregnancyValues zeroToFiveValues sixToTwentyFourValues
+            , viewTableRow language (Translate.NCDANutritionBehaviorItemLabel DiverseDiet) pregnancyValues zeroToFiveValues sixToTwentyFourValues
+            , viewTableRow language (Translate.NCDANutritionBehaviorItemLabel MealsADay) pregnancyValues zeroToFiveValues sixToTwentyFourValues
             ]
         ]

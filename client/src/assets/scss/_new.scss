@@ -3935,7 +3935,26 @@ div.page-report.well-child {
           border-top: 0;
 
           .month {
-            color: $color-white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            span {
+              text-align: center;
+            }
+
+            .hidden {
+              color: $color-white;
+              height: 0;
+            }
+
+            .green {
+              color: $color-green;
+            }
+
+            .red {
+              color: $color-red;
+            }
           }
         }
       }

@@ -54,6 +54,13 @@ type NCDANutritionBehaviorItem
     | MealsADay
 
 
+type NCDACellValue
+    = NCDACellValueV
+    | NCDACellValueX
+    | NCDACellValueDash
+    | NCDACellValueEmpty
+
+
 type Msg
     = NoOp
     | CloseEncounter WellChildEncounterId
