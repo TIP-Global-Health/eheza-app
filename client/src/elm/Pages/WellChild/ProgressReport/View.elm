@@ -1861,8 +1861,8 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
                 |> Maybe.withDefault emptyValues
 
         -- Here we are interested only at answer given when child was 6 months old.
-        -- Months before that, and after will show dahses, if child has reached
-        -- the age for which value is given.
+        -- For months before that, and after, will show dahses, in case child has
+        -- reached the age for which value is given (empty value otherwise).
         ( breastfedForSixMonthsFirstPeriod, breastfedForSixMonthsSecondPeriod ) =
             let
                 firstPeriod =
@@ -1878,6 +1878,28 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
                         ++ (List.drop 1 generated
                                 |> List.map setDashIfNotEmpty
                            )
+            in
+            ( firstPeriod, secondPeriod )
+
+        -- Here we are interested only at answer given when child has reached
+        -- the age of 7 months.
+        -- For prior period we show dahses, in case child has reached
+        -- the age for which value is given (empty value otherwise).
+        ( appropriateComplementaryFeedingFirstPeriod, appropriateComplementaryFeedingSecondPeriod ) =
+            let
+                firstPeriod =
+                    List.take 6 appropriateComplementaryFeedingValues
+                        |> List.map setDashIfNotEmpty
+
+                secondPeriod =
+                    let
+                        generated =
+                            List.drop 6 appropriateComplementaryFeedingValues
+                    in
+                    (List.take 1 generated
+                        |> List.map setDashIfNotEmpty
+                    )
+                        ++ List.drop 1 generated
             in
             ( firstPeriod, secondPeriod )
 
@@ -1905,8 +1927,8 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
             , viewTableRow language
                 (Translate.NCDANutritionBehaviorItemLabel AppropriateComplementaryFeeding)
                 pregnancyValues
-                (List.take 6 appropriateComplementaryFeedingValues)
-                (List.drop 6 appropriateComplementaryFeedingValues)
+                appropriateComplementaryFeedingFirstPeriod
+                appropriateComplementaryFeedingSecondPeriod
             , viewTableRow language
                 (Translate.NCDANutritionBehaviorItemLabel DiverseDiet)
                 pregnancyValues
