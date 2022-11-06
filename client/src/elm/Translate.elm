@@ -7731,6 +7731,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NCDABreastfedForSixMonths ->
+                    { english = "Breastfed baby for 6 months without interruption"
+                    , kinyarwanda = Nothing
+                    }
+
                 NCDAAppropriateComplementaryFeeding ->
                     { english = "Appropriate complementary feeding (6-24 months)"
                     , kinyarwanda = Nothing

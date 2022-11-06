@@ -272,6 +272,7 @@ type alias NCDAValue =
 type NCDASign
     = NCDABornUnderweight
     | NCDABornWithBirthDefect
+    | NCDABreastfedForSixMonths
     | NCDAAppropriateComplementaryFeeding
     | NCDAOngeraMNP
     | NCDAFiveFoodGroups

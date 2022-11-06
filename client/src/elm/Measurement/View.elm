@@ -2334,10 +2334,11 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
         signs =
             [ NCDABornUnderweight
             , NCDABornWithBirthDefect
-            , NCDAAppropriateComplementaryFeeding
-            , NCDAOngeraMNP
-            , NCDAFiveFoodGroups
             ]
+                ++ feedingSign
+                ++ [ NCDAOngeraMNP
+                   , NCDAFiveFoodGroups
+                   ]
                 ++ mealFrequencySign
                 ++ [ NCDASupportChildWithDisability
                    , NCDAConditionalCashTransfer
@@ -2348,23 +2349,32 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
                    , NCDAHasKitchenGarden
                    ]
 
-        mealFrequencySign =
+        ( feedingSign, mealFrequencySign ) =
             ageInMonths currentDate person
                 |> Maybe.map
                     (\ageMonths ->
-                        if ageMonths < 6 then
+                        ( if ageMonths < 6 then
                             []
 
-                        else if ageMonths < 9 then
+                          else if ageMonths < 9 then
                             [ NCDAMealFrequency6to8Months ]
 
-                        else if ageMonths < 12 then
+                          else if ageMonths < 12 then
                             [ NCDAMealFrequency9to11Months ]
 
-                        else
+                          else
                             [ NCDAMealFrequency12MonthsOrMore ]
+                        , if ageMonths < 6 then
+                            []
+
+                          else if ageMonths < 7 then
+                            [ NCDABreastfedForSixMonths ]
+
+                          else
+                            [ NCDAAppropriateComplementaryFeeding ]
+                        )
                     )
-                |> Maybe.withDefault []
+                |> Maybe.withDefault ( [], [] )
 
         inputsAndTasks =
             List.map inputAndTaskForSign signs
@@ -2387,6 +2397,15 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
                     in
                     ( viewNCDAInput NCDABornWithBirthDefect form.bornWithBirthDefect updateFunc
                     , form.bornWithBirthDefect
+                    )
+
+                NCDABreastfedForSixMonths ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | breastfedForSixMonths = Just value }
+                    in
+                    ( viewNCDAInput NCDABreastfedForSixMonths form.breastfedForSixMonths updateFunc
+                    , form.breastfedForSixMonths
                     )
 
                 NCDAAppropriateComplementaryFeeding ->
