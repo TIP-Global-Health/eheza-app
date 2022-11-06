@@ -2356,6 +2356,14 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
                         ( if ageMonths < 6 then
                             []
 
+                          else if ageMonths < 7 then
+                            [ NCDABreastfedForSixMonths ]
+
+                          else
+                            [ NCDAAppropriateComplementaryFeeding ]
+                        , if ageMonths < 6 then
+                            []
+
                           else if ageMonths < 9 then
                             [ NCDAMealFrequency6to8Months ]
 
@@ -2364,14 +2372,6 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
 
                           else
                             [ NCDAMealFrequency12MonthsOrMore ]
-                        , if ageMonths < 6 then
-                            []
-
-                          else if ageMonths < 7 then
-                            [ NCDABreastfedForSixMonths ]
-
-                          else
-                            [ NCDAAppropriateComplementaryFeeding ]
                         )
                     )
                 |> Maybe.withDefault ( [], [] )
