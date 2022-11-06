@@ -48,7 +48,7 @@ type NCDAANCNewbornItem
 
 
 type NCDANutritionBehaviorItem
-    = BreastfedSixMonth
+    = BreastfedSixMonths
     | AppropriateComplementaryFeeding
     | DiverseDiet
     | MealsADay

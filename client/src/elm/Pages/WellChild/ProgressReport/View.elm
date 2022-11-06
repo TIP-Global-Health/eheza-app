@@ -1815,6 +1815,9 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
         emptyValues =
             List.repeat 25 NCDACellValueEmpty
 
+        breastfedForSixMonthsValues =
+            generateValues (EverySet.member NCDABreastfedForSixMonths)
+
         appropriateComplementaryFeedingValues =
             generateValues (EverySet.member NCDAAppropriateComplementaryFeeding)
 
@@ -1857,17 +1860,48 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
                 (ageInMonths currentDate child)
                 |> Maybe.withDefault emptyValues
 
-        zeroToFiveValues =
-            List.repeat 6 NCDACellValueV
+        -- Here we are interested only at answer given when child was 6 months old.
+        -- Months before that, and after will show dahses, if child has reached
+        -- the age for which value is given.
+        ( breastfedForSixMonthsFirstPeriod, breastfedForSixMonthsSecondPeriod ) =
+            let
+                firstPeriod =
+                    List.take 6 breastfedForSixMonthsValues
+                        |> List.map setDashIfNotEmpty
 
-        sixToTwentyFourValues =
-            List.repeat 19 NCDACellValueX
+                secondPeriod =
+                    let
+                        generated =
+                            List.drop 6 breastfedForSixMonthsValues
+                    in
+                    List.take 1 generated
+                        ++ (List.drop 1 generated
+                                |> List.map setDashIfNotEmpty
+                           )
+            in
+            ( firstPeriod, secondPeriod )
+
+        -- generateValues() may generate values at certain periods that are
+        -- not relevant, which we want to replace them with dashes.
+        -- However, if child has not yeat reach the age of month for which
+        -- value is presented, generateValues() will preperly set
+        -- NCDACellValueEmpty there, and we want to keep it.
+        setDashIfNotEmpty value =
+            if value == NCDACellValueEmpty then
+                value
+
+            else
+                NCDACellValueDash
     in
     div [ class "pane nutrition-behavior" ]
         [ viewPaneHeading language Translate.NutritionBehavior
         , div [ class "pane-content" ]
             [ viewTableHeader
-            , viewTableRow language (Translate.NCDANutritionBehaviorItemLabel BreastfedSixMonth) pregnancyValues zeroToFiveValues sixToTwentyFourValues
+            , viewTableRow language
+                (Translate.NCDANutritionBehaviorItemLabel BreastfedSixMonths)
+                pregnancyValues
+                breastfedForSixMonthsFirstPeriod
+                breastfedForSixMonthsSecondPeriod
             , viewTableRow language
                 (Translate.NCDANutritionBehaviorItemLabel AppropriateComplementaryFeeding)
                 pregnancyValues

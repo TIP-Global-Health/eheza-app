@@ -7862,7 +7862,7 @@ translationSet trans =
 
         NCDANutritionBehaviorItemLabel item ->
             case item of
-                BreastfedSixMonth ->
+                BreastfedSixMonths ->
                     { english = "Breastfed baby for 6 mo without interruption"
                     , kinyarwanda = Nothing
                     }
