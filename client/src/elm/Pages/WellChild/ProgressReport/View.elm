@@ -1554,6 +1554,7 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
         [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
         , viewANCNewbornPane language currentDate db child
         , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
+        , viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths
         , viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths
         ]
 
@@ -1959,6 +1960,49 @@ viewInfrastructureEnvironmentWashPane language currentDate child questionnairesB
                 pregnancyValues
                 (List.take 6 hasKitchenGarden)
                 (List.drop 6 hasKitchenGarden)
+            ]
+        ]
+
+
+viewTargetedInterventionsPane :
+    Language
+    -> NominalDate
+    -> Person
+    -> Maybe (Dict Int NCDAValue)
+    -> Html any
+viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths =
+    let
+        pregnancyValues =
+            List.repeat 9 NCDACellValueDash
+
+        supportChildWithDisabilityValues =
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDASupportChildWithDisability)
+
+        conditionalCashTransferValues =
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAConditionalCashTransfer)
+
+        conditionalFoodItemsalues =
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAConditionalFoodItems)
+    in
+    div [ class "pane targeted-interventions" ]
+        [ viewPaneHeading language Translate.TargetedInterventions
+        , div [ class "pane-content" ]
+            [ viewTableHeader
+            , viewTableRow language
+                (Translate.NCDATargetedInterventionsItemLabel AppropriateComplementaryFeeding)
+                pregnancyValues
+                (List.take 6 supportChildWithDisabilityValues)
+                (List.drop 6 supportChildWithDisabilityValues)
+            , viewTableRow language
+                (Translate.NCDATargetedInterventionsItemLabel DiverseDiet)
+                pregnancyValues
+                (List.take 6 conditionalCashTransferValues)
+                (List.drop 6 conditionalCashTransferValues)
+            , viewTableRow language
+                (Translate.NCDATargetedInterventionsItemLabel MealsADay)
+                pregnancyValues
+                (List.take 6 conditionalFoodItemsalues)
+                (List.drop 6 conditionalFoodItemsalues)
             ]
         ]
 

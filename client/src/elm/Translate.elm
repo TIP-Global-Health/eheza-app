@@ -1362,6 +1362,7 @@ type TranslationId
     | TakenCareOfBy
     | TakingMedicationAsPrescribed Bool
     | TasksCompleted Int Int
+    | TargetedInterventions
     | TelephoneNumber
     | Term
     | TermPregnancy
@@ -15186,6 +15187,11 @@ translationSet trans =
         TasksCompleted completed total ->
             { english = String.fromInt completed ++ "/" ++ String.fromInt total ++ " Tasks Completed"
             , kinyarwanda = Just <| String.fromInt completed ++ "/" ++ String.fromInt total ++ " Ibikorwa byarangiye"
+            }
+
+        TargetedInterventions ->
+            { english = "Targeted Interventions"
+            , kinyarwanda = Nothing
             }
 
         TelephoneNumber ->
