@@ -11,7 +11,7 @@ module Pages.WellChild.ProgressReport.View exposing
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
@@ -1533,6 +1533,7 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
         , viewTargetedInterventionsPane language
             currentDate
             child
+            db
             questionnairesByAgeInMonths
             reportData.groupNutritionMeasurements
             reportData.individualNutritionMeasurementsWithDates
@@ -1951,13 +1952,14 @@ viewTargetedInterventionsPane :
     Language
     -> NominalDate
     -> Person
+    -> ModelIndexedDb
     -> Maybe (Dict Int NCDAValue)
     -> ChildMeasurementList
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> Html any
-viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates acuteIllnesses =
+viewTargetedInterventionsPane language currentDate child db questionnairesByAgeInMonths groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates acuteIllnesses =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
@@ -2047,11 +2049,62 @@ viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMo
                 )
                 measurementsWithDates
 
+        diarrheaTreatmenByAgeInMonths =
+            Maybe.andThen
+                (\birthDate ->
+                    List.filter
+                        (\( participantId, participant ) ->
+                            diffMonths birthDate participant.startDate < 24
+                        )
+                        acuteIllnesses
+                        |> List.map
+                            (\( participantId, participant ) ->
+                                Dict.get participantId db.acuteIllnessEncountersByParticipant
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> Maybe.map
+                                        (Dict.toList
+                                            >> List.filterMap
+                                                (\( encounterId, encounter ) ->
+                                                    -- We need to fetch measurements of encounters where Uncomplicated
+                                                    -- Gastrointestinal Infection was diagnosed, to check if treatment was given.
+                                                    if encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated then
+                                                        Dict.get encounterId db.acuteIllnessMeasurements
+                                                            |> Maybe.andThen RemoteData.toMaybe
+                                                            |> Maybe.andThen
+                                                                (.medicationDistribution
+                                                                    >> getMeasurementValueFunc
+                                                                    >> Maybe.map
+                                                                        (\value ->
+                                                                            if
+                                                                                List.any (\sign -> EverySet.member sign value.distributionSigns)
+                                                                                    [ ORS, Zinc ]
+                                                                            then
+                                                                                ( encounter.startDate, NCDACellValueV )
+
+                                                                            else
+                                                                                ( encounter.startDate, NCDACellValueX )
+                                                                        )
+                                                                )
+
+                                                    else
+                                                        Nothing
+                                                )
+                                        )
+                                    |> Maybe.withDefault []
+                            )
+                        |> List.concat
+                        |> distributeByAgeInMonths child
+                )
+                child.birthDate
+
         fbfValues =
             generateValues currentDate child fbfsByAgeInMonths ((==) NCDACellValueV)
 
         malnutritionTreatmentValues =
             generateValues currentDate child malnutritionTreatmentsByAgeInMonths ((==) NCDACellValueV)
+
+        diarrheaTreatmentValues =
+            generateValues currentDate child diarrheaTreatmenByAgeInMonths ((==) NCDACellValueV)
 
         supportChildWithDisabilityValues =
             generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDASupportChildWithDisability)
@@ -2076,6 +2129,11 @@ viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMo
                 pregnancyValues
                 (List.take 6 malnutritionTreatmentValues)
                 (List.drop 6 malnutritionTreatmentValues)
+            , viewTableRow language
+                (Translate.NCDATargetedInterventionsItemLabel TreatmentForDiarrhea)
+                pregnancyValues
+                (List.take 6 diarrheaTreatmentValues)
+                (List.drop 6 diarrheaTreatmentValues)
             , viewTableRow language
                 (Translate.NCDATargetedInterventionsItemLabel SupportChildWithDisability)
                 pregnancyValues
