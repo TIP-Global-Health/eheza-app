@@ -127,6 +127,7 @@ import Pages.WellChild.ProgressReport.Model
         , NCDAANCNewbornItem(..)
         , NCDAInfrastructureEnvironmentWashItem(..)
         , NCDANutritionBehaviorItem(..)
+        , NCDATargetedInterventionsItem(..)
         )
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -880,6 +881,7 @@ type TranslationId
     | NCDAANCNewbornItemLabel NCDAANCNewbornItem
     | NCDAInfrastructureEnvironmentWashItemLabel NCDAInfrastructureEnvironmentWashItem
     | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
+    | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
@@ -7920,6 +7922,38 @@ translationSet trans =
 
                 MealsADay ->
                     { english = "Number of times a child eats a day"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDATargetedInterventionsItemLabel item ->
+            case item of
+                FBFGiven ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentForAcuteMalnutrition ->
+                    { english = "Treatment for acute malnutrition (severe or moderate)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentForDiarrhea ->
+                    { english = "Treatment of diarrhea (ORS & Zinc)"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupportChildWithDisability ->
+                    { english = "Provide support to a child with a disability "
+                    , kinyarwanda = Nothing
+                    }
+
+                ConditionalCashTransfer ->
+                    { english = "Receipt of conditional cash transfer e.g. NSDS, VUP"
+                    , kinyarwanda = Nothing
+                    }
+
+                ConditionalFoodItems ->
+                    { english = "Receipt of conditional food items including small livestock"
                     , kinyarwanda = Nothing
                     }
 

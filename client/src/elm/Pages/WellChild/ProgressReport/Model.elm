@@ -62,6 +62,15 @@ type NCDAInfrastructureEnvironmentWashItem
     | InsecticideTreatedBedNets
 
 
+type NCDATargetedInterventionsItem
+    = FBFGiven
+    | TreatmentForAcuteMalnutrition
+    | TreatmentForDiarrhea
+    | SupportChildWithDisability
+    | ConditionalCashTransfer
+    | ConditionalFoodItems
+
+
 type NCDACellValue
     = NCDACellValueV
     | NCDACellValueX

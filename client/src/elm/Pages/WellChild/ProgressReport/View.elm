@@ -1524,37 +1524,51 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
                 reportData.individualWellChildMeasurementsWithDates
                 |> Maybe.Extra.values
 
-        -- Questionnaire with it's coresponding months.
-        questionnairesByAgeInMonths : Maybe (Dict Int NCDAValue)
         questionnairesByAgeInMonths =
-            child.birthDate
-                |> Maybe.map
-                    (\birthDate ->
-                        List.foldl
-                            (\( date, value ) accum ->
-                                let
-                                    ageMonths =
-                                        diffMonths birthDate date
-                                in
-                                Dict.get ageMonths accum
-                                    |> Maybe.map
-                                        -- We want to get most recent questionnaire for a month.
-                                        -- Since allNCDAQuestionnaires are sorted DESC by date, we
-                                        -- know that if we already recorded questionnaire for that
-                                        -- month, it's more recent than the one we are checking,
-                                        -- and current questionnaire can be skipped.
-                                        (always accum)
-                                    |> Maybe.withDefault (Dict.insert ageMonths value accum)
-                            )
-                            Dict.empty
-                            allNCDAQuestionnaires
+            distributeByAgeInMonths allNCDAQuestionnaires
+
+        fbfsByAgeInMonths =
+            Dict.values reportData.groupNutritionMeasurements.fbfs
+                |> List.map
+                    (\fbf ->
+                        if fbf.value.distributedAmount > 0 then
+                            ( fbf.dateMeasured, NCDACellValueV )
+
+                        else
+                            ( fbf.dateMeasured, NCDACellValueX )
                     )
+                |> distributeByAgeInMonths
+
+        distributeByAgeInMonths : List ( NominalDate, a ) -> Maybe (Dict Int a)
+        distributeByAgeInMonths values =
+            Maybe.map
+                (\birthDate ->
+                    List.foldl
+                        (\( date, value ) accum ->
+                            let
+                                ageMonths =
+                                    diffMonths birthDate date
+                            in
+                            Dict.get ageMonths accum
+                                |> Maybe.map
+                                    -- We want to get most recent questionnaire for a month.
+                                    -- Since allNCDAQuestionnaires are sorted DESC by date, we
+                                    -- know that if we already recorded questionnaire for that
+                                    -- month, it's more recent than the one we are checking,
+                                    -- and current questionnaire can be skipped.
+                                    (always accum)
+                                |> Maybe.withDefault (Dict.insert ageMonths value accum)
+                        )
+                        Dict.empty
+                        values
+                )
+                child.birthDate
     in
     div [ class "ui report unstackable items" ]
         [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
         , viewANCNewbornPane language currentDate db child
         , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
-        , viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths
+        , viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths fbfsByAgeInMonths
         , viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths
         ]
 
@@ -1969,11 +1983,15 @@ viewTargetedInterventionsPane :
     -> NominalDate
     -> Person
     -> Maybe (Dict Int NCDAValue)
+    -> Maybe (Dict Int NCDACellValue)
     -> Html any
-viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths =
+viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths fbfsByAgeInMonths =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
+
+        fbfValues =
+            generateValues currentDate child fbfsByAgeInMonths ((==) NCDACellValueV)
 
         supportChildWithDisabilityValues =
             generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDASupportChildWithDisability)
@@ -1989,17 +2007,22 @@ viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMo
         , div [ class "pane-content" ]
             [ viewTableHeader
             , viewTableRow language
-                (Translate.NCDATargetedInterventionsItemLabel AppropriateComplementaryFeeding)
+                (Translate.NCDATargetedInterventionsItemLabel FBFGiven)
+                pregnancyValues
+                (List.take 6 fbfValues)
+                (List.drop 6 fbfValues)
+            , viewTableRow language
+                (Translate.NCDATargetedInterventionsItemLabel SupportChildWithDisability)
                 pregnancyValues
                 (List.take 6 supportChildWithDisabilityValues)
                 (List.drop 6 supportChildWithDisabilityValues)
             , viewTableRow language
-                (Translate.NCDATargetedInterventionsItemLabel DiverseDiet)
+                (Translate.NCDATargetedInterventionsItemLabel ConditionalCashTransfer)
                 pregnancyValues
                 (List.take 6 conditionalCashTransferValues)
                 (List.drop 6 conditionalCashTransferValues)
             , viewTableRow language
-                (Translate.NCDATargetedInterventionsItemLabel MealsADay)
+                (Translate.NCDATargetedInterventionsItemLabel ConditionalFoodItems)
                 pregnancyValues
                 (List.take 6 conditionalFoodItemsalues)
                 (List.drop 6 conditionalFoodItemsalues)
@@ -2007,8 +2030,8 @@ viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMo
         ]
 
 
-generateValues : NominalDate -> Person -> Maybe (Dict Int NCDAValue) -> (NCDAValue -> Bool) -> List NCDACellValue
-generateValues currentDate child questionnairesByAgeInMonths resolutionFunc =
+generateValues : NominalDate -> Person -> Maybe (Dict Int a) -> (a -> Bool) -> List NCDACellValue
+generateValues currentDate child valuesByAgeInMonths resolutionFunc =
     let
         emptyValues =
             List.repeat 25 NCDACellValueEmpty
@@ -2034,6 +2057,6 @@ generateValues currentDate child questionnairesByAgeInMonths resolutionFunc =
                 )
                 emptyValues
         )
-        questionnairesByAgeInMonths
+        valuesByAgeInMonths
         (ageInMonths currentDate child)
         |> Maybe.withDefault emptyValues
