@@ -1505,7 +1505,6 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
                         ( ncda.dateMeasured, ncda.value )
                     )
                     wellChildNCDAs
-                |> List.sortWith sortTuplesByDateDesc
 
         recentQuestionnaire =
             List.head allNCDAQuestionnaires
@@ -1525,50 +1524,19 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
                 |> Maybe.Extra.values
 
         questionnairesByAgeInMonths =
-            distributeByAgeInMonths allNCDAQuestionnaires
-
-        fbfsByAgeInMonths =
-            Dict.values reportData.groupNutritionMeasurements.fbfs
-                |> List.map
-                    (\fbf ->
-                        if fbf.value.distributedAmount > 0 then
-                            ( fbf.dateMeasured, NCDACellValueV )
-
-                        else
-                            ( fbf.dateMeasured, NCDACellValueX )
-                    )
-                |> distributeByAgeInMonths
-
-        distributeByAgeInMonths : List ( NominalDate, a ) -> Maybe (Dict Int a)
-        distributeByAgeInMonths values =
-            Maybe.map
-                (\birthDate ->
-                    List.foldl
-                        (\( date, value ) accum ->
-                            let
-                                ageMonths =
-                                    diffMonths birthDate date
-                            in
-                            Dict.get ageMonths accum
-                                |> Maybe.map
-                                    -- We want to get most recent questionnaire for a month.
-                                    -- Since allNCDAQuestionnaires are sorted DESC by date, we
-                                    -- know that if we already recorded questionnaire for that
-                                    -- month, it's more recent than the one we are checking,
-                                    -- and current questionnaire can be skipped.
-                                    (always accum)
-                                |> Maybe.withDefault (Dict.insert ageMonths value accum)
-                        )
-                        Dict.empty
-                        values
-                )
-                child.birthDate
+            distributeByAgeInMonths child allNCDAQuestionnaires
     in
     div [ class "ui report unstackable items" ]
         [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
         , viewANCNewbornPane language currentDate db child
         , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
-        , viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths fbfsByAgeInMonths
+        , viewTargetedInterventionsPane language
+            currentDate
+            child
+            questionnairesByAgeInMonths
+            reportData.groupNutritionMeasurements
+            reportData.individualNutritionMeasurementsWithDates
+            reportData.individualWellChildMeasurementsWithDates
         , viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths
         ]
 
@@ -1983,15 +1951,105 @@ viewTargetedInterventionsPane :
     -> NominalDate
     -> Person
     -> Maybe (Dict Int NCDAValue)
-    -> Maybe (Dict Int NCDACellValue)
+    -> ChildMeasurementList
+    -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
     -> Html any
-viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths fbfsByAgeInMonths =
+viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
 
+        fbfsByAgeInMonths =
+            Dict.values groupNutritionMeasurements.fbfs
+                |> List.map
+                    (\fbf ->
+                        if fbf.value.distributedAmount > 0 then
+                            ( fbf.dateMeasured, NCDACellValueV )
+
+                        else
+                            ( fbf.dateMeasured, NCDACellValueX )
+                    )
+                |> distributeByAgeInMonths child
+
+        malnutritionTreatmentsByAgeInMonths =
+            groupMalnutritionTreatmentData
+                ++ individualMalnutritionTreatmentData
+                |> distributeByAgeInMonths child
+
+        groupMalnutritionTreatmentData =
+            let
+                malnutritionAssessmentDates =
+                    Dict.values groupNutritionMeasurements.nutritions
+                        |> List.filterMap
+                            (\nutrition ->
+                                if
+                                    List.any (\assessment -> EverySet.member assessment nutrition.value.assesment)
+                                        [ AssesmentAcuteMalnutritionModerate
+                                        , AssesmentAcuteMalnutritionSevere
+                                        ]
+                                then
+                                    Just nutrition.dateMeasured
+
+                                else
+                                    Nothing
+                            )
+            in
+            Dict.values groupNutritionMeasurements.sendToHC
+                |> List.filterMap
+                    (\sendToHC ->
+                        if
+                            -- Sent to HC measurement was taken on same day
+                            -- malnutrition assessment was made.
+                            List.member sendToHC.dateMeasured malnutritionAssessmentDates
+                        then
+                            if EverySet.member ReferToHealthCenter sendToHC.value.signs then
+                                Just ( sendToHC.dateMeasured, NCDACellValueV )
+
+                            else
+                                Just ( sendToHC.dateMeasured, NCDACellValueX )
+
+                        else
+                            Nothing
+                    )
+
+        individualMalnutritionTreatmentData =
+            generateIndividualMalnutritionTreatmentData individualNutritionMeasurementsWithDates
+                ++ generateIndividualMalnutritionTreatmentData individualWellChildMeasurementsWithDates
+
+        generateIndividualMalnutritionTreatmentData measurementsWithDates =
+            List.filterMap
+                (\( date, ( _, measurements ) ) ->
+                    getMeasurementValueFunc measurements.nutrition
+                        |> Maybe.andThen
+                            (\nutritionValue ->
+                                if
+                                    List.any (\assessment -> EverySet.member assessment nutritionValue.assesment)
+                                        [ AssesmentAcuteMalnutritionModerate
+                                        , AssesmentAcuteMalnutritionSevere
+                                        ]
+                                then
+                                    getMeasurementValueFunc measurements.sendToHC
+                                        |> Maybe.map
+                                            (\sendToHCValue ->
+                                                if EverySet.member ReferToHealthCenter sendToHCValue.signs then
+                                                    ( date, NCDACellValueV )
+
+                                                else
+                                                    ( date, NCDACellValueX )
+                                            )
+
+                                else
+                                    Nothing
+                            )
+                )
+                measurementsWithDates
+
         fbfValues =
             generateValues currentDate child fbfsByAgeInMonths ((==) NCDACellValueV)
+
+        malnutritionTreatmentValues =
+            generateValues currentDate child malnutritionTreatmentsByAgeInMonths ((==) NCDACellValueV)
 
         supportChildWithDisabilityValues =
             generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDASupportChildWithDisability)
@@ -2012,6 +2070,11 @@ viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMo
                 (List.take 6 fbfValues)
                 (List.drop 6 fbfValues)
             , viewTableRow language
+                (Translate.NCDATargetedInterventionsItemLabel TreatmentForAcuteMalnutrition)
+                pregnancyValues
+                (List.take 6 malnutritionTreatmentValues)
+                (List.drop 6 malnutritionTreatmentValues)
+            , viewTableRow language
                 (Translate.NCDATargetedInterventionsItemLabel SupportChildWithDisability)
                 pregnancyValues
                 (List.take 6 supportChildWithDisabilityValues)
@@ -2028,6 +2091,32 @@ viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMo
                 (List.drop 6 conditionalFoodItemsalues)
             ]
         ]
+
+
+distributeByAgeInMonths : Person -> List ( NominalDate, a ) -> Maybe (Dict Int a)
+distributeByAgeInMonths child values =
+    Maybe.map
+        (\birthDate ->
+            List.sortWith sortTuplesByDateDesc values
+                |> List.foldl
+                    (\( date, value ) accum ->
+                        let
+                            ageMonths =
+                                diffMonths birthDate date
+                        in
+                        Dict.get ageMonths accum
+                            |> Maybe.map
+                                -- We want to get most recent value for a month.
+                                -- Since values are sorted DESC by date, we
+                                -- know that if we already recorded value for that
+                                -- month, it's more recent than the one we are checking,
+                                -- and therefore this value can be skipped.
+                                (always accum)
+                            |> Maybe.withDefault (Dict.insert ageMonths value accum)
+                    )
+                    Dict.empty
+        )
+        child.birthDate
 
 
 generateValues : NominalDate -> Person -> Maybe (Dict Int a) -> (a -> Bool) -> List NCDACellValue
