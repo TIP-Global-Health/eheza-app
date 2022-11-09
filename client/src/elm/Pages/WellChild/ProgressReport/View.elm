@@ -1529,6 +1529,12 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
     div [ class "ui report unstackable items" ]
         [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
         , viewANCNewbornPane language currentDate db child
+        , viewUniversalInterventionsPane language
+            currentDate
+            child
+            db
+            questionnairesByAgeInMonths
+            reportData.individualWellChildMeasurementsWithDates
         , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
         , viewTargetedInterventionsPane language
             currentDate
@@ -2112,7 +2118,7 @@ viewTargetedInterventionsPane language currentDate child db questionnairesByAgeI
         conditionalCashTransferValues =
             generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAConditionalCashTransfer)
 
-        conditionalFoodItemsalues =
+        conditionalFoodItemsValues =
             generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAConditionalFoodItems)
     in
     div [ class "pane targeted-interventions" ]
@@ -2147,8 +2153,37 @@ viewTargetedInterventionsPane language currentDate child db questionnairesByAgeI
             , viewTableRow language
                 (Translate.NCDATargetedInterventionsItemLabel ConditionalFoodItems)
                 pregnancyValues
-                (List.take 6 conditionalFoodItemsalues)
-                (List.drop 6 conditionalFoodItemsalues)
+                (List.take 6 conditionalFoodItemsValues)
+                (List.drop 6 conditionalFoodItemsValues)
+            ]
+        ]
+
+
+viewUniversalInterventionsPane :
+    Language
+    -> NominalDate
+    -> Person
+    -> ModelIndexedDb
+    -> Maybe (Dict Int NCDAValue)
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> Html any
+viewUniversalInterventionsPane language currentDate child db questionnairesByAgeInMonths individualWellChildMeasurementsWithDates =
+    let
+        pregnancyValues =
+            List.repeat 9 NCDACellValueDash
+
+        ongeraMNPValues =
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAOngeraMNP)
+    in
+    div [ class "pane universal-interventions" ]
+        [ viewPaneHeading language Translate.UniversalInterventions
+        , div [ class "pane-content" ]
+            [ viewTableHeader
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel OngeraMNP)
+                pregnancyValues
+                (List.take 6 ongeraMNPValues)
+                (List.drop 6 ongeraMNPValues)
             ]
         ]
 
