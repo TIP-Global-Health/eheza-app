@@ -1537,6 +1537,7 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
             reportData.groupNutritionMeasurements
             reportData.individualNutritionMeasurementsWithDates
             reportData.individualWellChildMeasurementsWithDates
+            reportData.acuteIllnesses
         , viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths
         ]
 
@@ -1954,8 +1955,9 @@ viewTargetedInterventionsPane :
     -> ChildMeasurementList
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> Html any
-viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates =
+viewTargetedInterventionsPane language currentDate child questionnairesByAgeInMonths groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates acuteIllnesses =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
