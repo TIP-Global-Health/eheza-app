@@ -2188,8 +2188,8 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                                 |> List.indexedMap
                                     (\index _ ->
                                         let
-                                            -- This is the date for last day of months
-                                            -- index. For example, for index = 0, this is
+                                            -- This is the date for last day of month
+                                            -- 'index'. For example, for index = 0, this is
                                             -- the last day, before child turns 1 month old.
                                             -- We use it to determine if child was
                                             -- behind on any of vaccines at that month.
