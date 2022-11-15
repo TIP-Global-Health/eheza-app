@@ -1488,10 +1488,11 @@ viewPaneHeading language label =
 viewNCDAScorecard :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> ModelIndexedDb
     -> ( PersonId, Person )
     -> Html any
-viewNCDAScorecard language currentDate db ( childId, child ) =
+viewNCDAScorecard language currentDate zscores db ( childId, child ) =
     let
         reportData =
             assembleProgresReportData childId db
@@ -1553,6 +1554,14 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
             reportData.individualWellChildMeasurementsWithDates
             reportData.acuteIllnesses
         , viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths
+        , viewFillTheBlanksPane language
+            currentDate
+            zscores
+            child
+            db
+            reportData.groupNutritionMeasurements
+            reportData.individualNutritionMeasurementsWithDates
+            reportData.individualWellChildMeasurementsWithDates
         ]
 
 
@@ -2278,6 +2287,110 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                 pregnancyValues
                 (List.take 6 immunizationValues)
                 (List.drop 6 immunizationValues)
+            ]
+        ]
+
+
+type alias FillTheBlanksValuesSet =
+    { height : Maybe HeightInCm
+    , weight : Maybe WeightInKg
+    , muac : Maybe MuacInCm
+    , nutrition : Maybe NutritionValue
+    }
+
+
+viewFillTheBlanksPane :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> ModelIndexedDb
+    -> ChildMeasurementList
+    -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> Html any
+viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates =
+    let
+        pregnancyValues =
+            List.repeat 9 NCDACellValueDash
+
+        allValuesSets =
+            nutritionValuesSets ++ wellChildValuesSets ++ groupsValuesSets
+
+        nutritionValuesSets =
+            List.map
+                (\( date, ( _, measurements ) ) ->
+                    generateIndividualValuesSet date measurements
+                )
+                individualNutritionMeasurementsWithDates
+
+        wellChildValuesSets =
+            List.map
+                (\( date, ( _, measurements ) ) ->
+                    generateIndividualValuesSet date measurements
+                )
+                individualWellChildMeasurementsWithDates
+
+        generateIndividualValuesSet date measurements =
+            ( date
+            , { height = getMeasurementValueFunc measurements.height
+              , weight = getMeasurementValueFunc measurements.weight
+              , muac = getMeasurementValueFunc measurements.muac
+              , nutrition = getMeasurementValueFunc measurements.nutrition
+              }
+            )
+
+        groupsValuesSets =
+            List.map
+                (\date ->
+                    ( date
+                    , { height = Dict.get date groupHeightsByDate
+                      , weight = Dict.get date groupWeightsByDate
+                      , muac = Dict.get date groupMuacsByDate
+                      , nutrition = Dict.get date groupNutritionsByDate
+                      }
+                    )
+                )
+                groupEncounterDates
+
+        groupEncounterDates =
+            Dict.keys groupHeightsByDate
+                ++ Dict.keys groupWeightsByDate
+                ++ Dict.keys groupMuacsByDate
+                ++ Dict.keys groupNutritionsByDate
+                |> EverySet.fromList
+                |> EverySet.toList
+
+        groupHeightsByDate =
+            Dict.values groupNutritionMeasurements.heights
+                |> List.map (\height -> ( height.dateMeasured, height.value ))
+                |> Dict.fromList
+
+        groupWeightsByDate =
+            Dict.values groupNutritionMeasurements.weights
+                |> List.map (\weight -> ( weight.dateMeasured, weight.value ))
+                |> Dict.fromList
+
+        groupMuacsByDate =
+            Dict.values groupNutritionMeasurements.muacs
+                |> List.map (\muac -> ( muac.dateMeasured, muac.value ))
+                |> Dict.fromList
+
+        groupNutritionsByDate =
+            Dict.values groupNutritionMeasurements.nutritions
+                |> List.map (\nutrition -> ( nutrition.dateMeasured, nutrition.value ))
+                |> Dict.fromList
+    in
+    div [ class "pane fill-the-blanks" ]
+        [ viewPaneHeading language Translate.FillTheBlanks
+        , div [ class "pane-content" ]
+            [ viewTableHeader
+
+            -- , viewTableRow language
+            --     (Translate.NCDAFillTheBlanksItemLabel FBFGiven)
+            --     pregnancyValues
+            --     (List.take 6 fbfValues)
+            --     (List.drop 6 fbfValues)
             ]
         ]
 

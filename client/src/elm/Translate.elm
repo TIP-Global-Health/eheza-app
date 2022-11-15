@@ -633,6 +633,7 @@ type TranslationId
     | FetalPresentationLabel
     | FetalPresentation FetalPresentation
     | Fetch
+    | FillTheBlanks
     | FilterByName
     | Finish
     | FirstAntenatalVisit
@@ -4832,6 +4833,11 @@ translationSet trans =
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
+            }
+
+        FillTheBlanks ->
+            { english = "Fill in the Blanks: Cyatsi, Hondo, Tuku & Ibipimo"
+            , kinyarwanda = Nothing
             }
 
         FilterByName ->
