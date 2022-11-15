@@ -125,6 +125,7 @@ import Pages.WellChild.ProgressReport.Model
     exposing
         ( ECDStatus(..)
         , NCDAANCNewbornItem(..)
+        , NCDAFillTheBlanksItem(..)
         , NCDAInfrastructureEnvironmentWashItem(..)
         , NCDANutritionBehaviorItem(..)
         , NCDATargetedInterventionsItem(..)
@@ -885,6 +886,7 @@ type TranslationId
     | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionsItemLabel NCDAUniversalInterventionsItem
+    | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
@@ -7990,6 +7992,28 @@ translationSet trans =
 
                 ECDServices ->
                     { english = "ECD services provided to child"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDAFillTheBlanksItemLabel item ->
+            case item of
+                HeightToAge ->
+                    { english = "Level of stuning using child length mat"
+                    , kinyarwanda = Nothing
+                    }
+
+                WeightToAge ->
+                    { english = "Weight"
+                    , kinyarwanda = Nothing
+                    }
+
+                MuacValue ->
+                    { english = "MUAC"
+                    , kinyarwanda = Nothing
+                    }
+
+                EdemaPresent ->
+                    { english = "Edema"
                     , kinyarwanda = Nothing
                     }
 

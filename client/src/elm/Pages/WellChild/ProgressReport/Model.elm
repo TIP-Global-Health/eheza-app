@@ -79,10 +79,20 @@ type NCDAUniversalInterventionsItem
     | ECDServices
 
 
+type NCDAFillTheBlanksItem
+    = HeightToAge
+    | WeightToAge
+    | MuacValue
+    | EdemaPresent
+
+
 type NCDACellValue
     = NCDACellValueV
     | NCDACellValueX
     | NCDACellValueDash
+    | NCDACellValueC
+    | NCDACellValueH
+    | NCDACellValueT
     | NCDACellValueEmpty
 
 
