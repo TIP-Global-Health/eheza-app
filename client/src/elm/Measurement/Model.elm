@@ -986,6 +986,10 @@ type alias NCDAForm =
     , hasHandwashingFacility : Maybe Bool
     , hasToilets : Maybe Bool
     , hasKitchenGarden : Maybe Bool
+    , regularPrenatalVisits : Maybe Bool
+    , ironSupplementsDuringPregnancy : Maybe Bool
+    , insecticideTreatedBednetsDuringPregnancy : Maybe Bool
+    , birthWeight : Maybe WeightInKg
     }
 
 
@@ -1007,6 +1011,10 @@ emptyNCDAForm =
     , hasHandwashingFacility = Nothing
     , hasToilets = Nothing
     , hasKitchenGarden = Nothing
+    , regularPrenatalVisits = Nothing
+    , ironSupplementsDuringPregnancy = Nothing
+    , insecticideTreatedBednetsDuringPregnancy = Nothing
+    , birthWeight = Nothing
     }
 
 
