@@ -1638,7 +1638,8 @@ viewChildIdentificationPane language currentDate ncdaQuestionnaire db ( childId,
                 (\questionnaire ->
                     let
                         bornUnderweight =
-                            EverySet.member NCDABornUnderweight questionnaire
+                            --@todo
+                            False
 
                         bornUnderweightAnswer =
                             if bornUnderweight then
@@ -1648,7 +1649,7 @@ viewChildIdentificationPane language currentDate ncdaQuestionnaire db ( childId,
                                 Translate.No
 
                         birthDefect =
-                            EverySet.member NCDABornWithBirthDefect questionnaire
+                            EverySet.member NCDABornWithBirthDefect questionnaire.signs
 
                         birthDefectAnswer =
                             if birthDefect then
@@ -1825,17 +1826,17 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
             List.repeat 9 NCDACellValueDash
 
         breastfedForSixMonthsValues =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDABreastfedForSixMonths)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDABreastfedForSixMonths)
 
         appropriateComplementaryFeedingValues =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAAppropriateComplementaryFeeding)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAAppropriateComplementaryFeeding)
 
         mealsADayValues =
             generateValues currentDate
                 child
                 questionnairesByAgeInMonths
                 (\questionnaire ->
-                    List.any (\sign -> EverySet.member sign questionnaire)
+                    List.any (\sign -> EverySet.member sign questionnaire.signs)
                         [ NCDAMealFrequency6to8Months
                         , NCDAMealFrequency9to11Months
                         , NCDAMealFrequency12MonthsOrMore
@@ -1843,7 +1844,7 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
                 )
 
         diverseDietValues =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAFiveFoodGroups)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAFiveFoodGroups)
 
         -- Here we are interested only at answer given when child was 6 months old.
         -- For months before that, and after, will show dahses, in case child has
@@ -1940,16 +1941,16 @@ viewInfrastructureEnvironmentWashPane language currentDate child questionnairesB
             List.repeat 9 NCDACellValueDash
 
         hasToilets =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAHasToilets)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasToilets)
 
         hasCleanWater =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAHasCleanWater)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasCleanWater)
 
         hasHandwashingFacility =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAHasHandwashingFacility)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasHandwashingFacility)
 
         hasKitchenGarden =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAHasKitchenGarden)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasKitchenGarden)
     in
     div [ class "pane infrastructure-environment-wash" ]
         [ viewPaneHeading language Translate.InfrastructureEnvironmentWash
@@ -2138,13 +2139,13 @@ viewTargetedInterventionsPane language currentDate child db questionnairesByAgeI
             generateValues currentDate child diarrheaTreatmenByAgeInMonths ((==) NCDACellValueV)
 
         supportChildWithDisabilityValues =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDASupportChildWithDisability)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDASupportChildWithDisability)
 
         conditionalCashTransferValues =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAConditionalCashTransfer)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAConditionalCashTransfer)
 
         conditionalFoodItemsValues =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAConditionalFoodItems)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAConditionalFoodItems)
     in
     div [ class "pane targeted-interventions" ]
         [ viewPaneHeading language Translate.TargetedInterventions
@@ -2280,7 +2281,7 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
             Debug.log "immunizationByAgeInMonths" immunizationByAgeInMonths
 
         ongeraMNPValues =
-            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAOngeraMNP)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAOngeraMNP)
     in
     div [ class "pane universal-interventions" ]
         [ viewPaneHeading language Translate.UniversalInterventions

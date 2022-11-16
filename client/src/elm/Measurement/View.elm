@@ -2332,9 +2332,7 @@ ncdaFormInputsAndTasks :
 ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form =
     let
         signs =
-            [ NCDABornUnderweight
-            , NCDABornWithBirthDefect
-            ]
+            [ NCDABornWithBirthDefect ]
                 ++ feedingSign
                 ++ [ NCDAOngeraMNP
                    , NCDAFiveFoodGroups
@@ -2381,15 +2379,6 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
 
         inputAndTaskForSign sign =
             case sign of
-                NCDABornUnderweight ->
-                    let
-                        updateFunc value form_ =
-                            { form_ | bornUnderweight = Just value }
-                    in
-                    ( viewNCDAInput NCDABornUnderweight form.bornUnderweight updateFunc
-                    , form.bornUnderweight
-                    )
-
                 NCDABornWithBirthDefect ->
                     let
                         updateFunc value form_ =
@@ -2537,6 +2526,33 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
                     in
                     ( viewNCDAInput NCDAHasKitchenGarden form.hasKitchenGarden updateFunc
                     , form.hasKitchenGarden
+                    )
+
+                NCDARegularPrenatalVisits ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | regularPrenatalVisits = Just value }
+                    in
+                    ( viewNCDAInput NCDARegularPrenatalVisits form.regularPrenatalVisits updateFunc
+                    , form.regularPrenatalVisits
+                    )
+
+                NCDAIronSupplementsDuringPregnancy ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | ironSupplementsDuringPregnancy = Just value }
+                    in
+                    ( viewNCDAInput NCDAIronSupplementsDuringPregnancy form.ironSupplementsDuringPregnancy updateFunc
+                    , form.ironSupplementsDuringPregnancy
+                    )
+
+                NCDAInsecticideTreatedBednetsDuringPregnancy ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | insecticideTreatedBednetsDuringPregnancy = Just value }
+                    in
+                    ( viewNCDAInput NCDAInsecticideTreatedBednetsDuringPregnancy form.insecticideTreatedBednetsDuringPregnancy updateFunc
+                    , form.insecticideTreatedBednetsDuringPregnancy
                     )
 
                 NoNCDASigns ->
