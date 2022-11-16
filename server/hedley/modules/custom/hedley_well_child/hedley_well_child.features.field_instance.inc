@@ -5736,6 +5736,52 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_ncda-field_weight'.
+  $field_instances['node-well_child_ncda-field_weight'] = array(
+    'bundle' => 'well_child_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_weight',
+    'label' => 'Birth Weight',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_ncda-field_well_child_encounter'.
   $field_instances['node-well_child_ncda-field_well_child_encounter'] = array(
     'bundle' => 'well_child_ncda',
@@ -10275,6 +10321,7 @@ function hedley_well_child_field_default_field_instances() {
   t('Administration Dates');
   t('Administration Note');
   t('BMI');
+  t('Birth Weight');
   t('Body temperature');
   t('Contributing Factors Signs');
   t('Date Measured');
