@@ -4528,7 +4528,7 @@ encodeNCDAValueWithType : String -> NCDAValue -> List ( String, Value )
 encodeNCDAValueWithType type_ value =
     let
         birthWeight =
-            Maybe.map (\weight -> [ ( "weight", float weight ) ])
+            Maybe.map (\(WeightInKg weight) -> [ ( "weight", float weight ) ])
                 value.birthWeight
                 |> Maybe.withDefault []
     in
