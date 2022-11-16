@@ -3534,9 +3534,6 @@ diabetesByUrineGlucose value =
 ncdaSignToString : NCDASign -> String
 ncdaSignToString value =
     case value of
-        NCDABornUnderweight ->
-            "born-underweight"
-
         NCDABornWithBirthDefect ->
             "born-with-birth-defect"
 
@@ -3582,6 +3579,15 @@ ncdaSignToString value =
         NCDAHasKitchenGarden ->
             "has-kitchen-garden"
 
+        NCDARegularPrenatalVisits ->
+            "regular-prenatal-visits"
+
+        NCDAIronSupplementsDuringPregnancy ->
+            "ron-supplements-during-pregnancy"
+
+        NCDAInsecticideTreatedBednetsDuringPregnancy ->
+            "insecticide-treated-bednets-during-pregnancy"
+
         NoNCDASigns ->
             "none"
 
@@ -3589,9 +3595,6 @@ ncdaSignToString value =
 ncdaSignFromString : String -> Maybe NCDASign
 ncdaSignFromString value =
     case value of
-        "born-underweight" ->
-            Just NCDABornUnderweight
-
         "born-with-birth-defect" ->
             Just NCDABornWithBirthDefect
 
@@ -3636,6 +3639,15 @@ ncdaSignFromString value =
 
         "has-kitchen-garden" ->
             Just NCDAHasKitchenGarden
+
+        "regular-prenatal-visits" ->
+            Just NCDARegularPrenatalVisits
+
+        "ron-supplements-during-pregnancy" ->
+            Just NCDAIronSupplementsDuringPregnancy
+
+        "insecticide-treated-bednets-during-pregnancy" ->
+            Just NCDAInsecticideTreatedBednetsDuringPregnancy
 
         "none" ->
             Just NoNCDASigns

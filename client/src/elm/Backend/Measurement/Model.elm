@@ -270,8 +270,7 @@ type alias NCDAValue =
 
 
 type NCDASign
-    = NCDABornUnderweight
-    | NCDABornWithBirthDefect
+    = NCDABornWithBirthDefect
     | NCDABreastfedForSixMonths
     | NCDAAppropriateComplementaryFeeding
     | NCDAOngeraMNP
@@ -286,6 +285,9 @@ type NCDASign
     | NCDAHasHandwashingFacility
     | NCDAHasToilets
     | NCDAHasKitchenGarden
+    | NCDARegularPrenatalVisits
+    | NCDAIronSupplementsDuringPregnancy
+    | NCDAInsecticideTreatedBednetsDuringPregnancy
     | NoNCDASigns
 
 
