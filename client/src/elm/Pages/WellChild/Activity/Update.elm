@@ -1663,6 +1663,25 @@ update currentDate isChw id db msg model =
             , []
             )
 
+        SetBirthWeightMsg string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | birthWeight = String.toFloat string |> Maybe.map WeightInKg
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetNCDAHelperState state ->
             let
                 updatedData =

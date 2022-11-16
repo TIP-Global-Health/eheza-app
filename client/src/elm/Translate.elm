@@ -659,6 +659,7 @@ type TranslationId
     | Glass String
     | GoHome
     | GroupAssessment
+    | Grams
     | Gravida
     | GroupEncounter
     | GroupOfFoods GroupOfFoods
@@ -878,7 +879,7 @@ type TranslationId
     | MyRelatedByQuestion MyRelatedBy
     | Name
     | NationalIdNumber
-    | NCDABornUnderweight
+    | NCDABirthweightQuestion
     | NCDASignQuestion NCDASign
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
@@ -5032,6 +5033,11 @@ translationSet trans =
             , kinyarwanda = Just "Gukorera itsinda"
             }
 
+        Grams ->
+            { english = "grams"
+            , kinyarwanda = Nothing
+            }
+
         GroupEncounter ->
             { english = "Group Encounter"
             , kinyarwanda = Nothing
@@ -7747,8 +7753,8 @@ translationSet trans =
             , kinyarwanda = Just "Numero y'irangamuntu"
             }
 
-        NCDABornUnderweight ->
-            { english = "Was the child born underweight"
+        NCDABirthweightQuestion ->
+            { english = "What was the childs birthweight"
             , kinyarwanda = Nothing
             }
 

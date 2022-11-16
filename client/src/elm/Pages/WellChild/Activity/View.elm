@@ -2214,6 +2214,7 @@ viewNCDAContent language currentDate assembled data =
         currentDate
         assembled.person
         SetNCDABoolInput
+        SetBirthWeightMsg
         saveMsg
         SetNCDAHelperState
         data.helperState

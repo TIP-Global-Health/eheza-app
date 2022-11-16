@@ -42,7 +42,8 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( taskCompleted
+        ( maybeToBoolTask
+        , taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
@@ -2288,12 +2289,13 @@ viewNCDAContent :
     -> NominalDate
     -> Person
     -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
+    -> (String -> msg)
     -> msg
     -> (Maybe NCDASign -> msg)
     -> Maybe NCDASign
     -> NCDAForm
     -> List (Html msg)
-viewNCDAContent language currentDate person setMsg saveMsg setHelperStateMsg helperState form =
+viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg saveMsg setHelperStateMsg helperState form =
     let
         totalTasks =
             List.length tasks
@@ -2303,7 +2305,7 @@ viewNCDAContent language currentDate person setMsg saveMsg setHelperStateMsg hel
                 |> List.sum
 
         ( inputs, tasks ) =
-            ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
+            ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeightMsg setHelperStateMsg form
 
         disabled =
             tasksCompleted /= totalTasks
@@ -2326,10 +2328,11 @@ ncdaFormInputsAndTasks :
     -> NominalDate
     -> Person
     -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
+    -> (String -> msg)
     -> (Maybe NCDASign -> msg)
     -> NCDAForm
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form =
+ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeightMsg setHelperStateMsg form =
     let
         signs =
             [ NCDARegularPrenatalVisits
@@ -2350,6 +2353,17 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
                    , NCDAHasToilets
                    , NCDAHasKitchenGarden
                    ]
+
+        ( birthWeightSection, birthWeightTask ) =
+            ( [ viewQuestionLabel language Translate.NCDABirthweightQuestion
+              , viewMeasurementInput language birthWeightAsFloat setBirthWeightMsg "birth-weight" Translate.Grams
+              ]
+            , form.birthWeight
+            )
+
+        birthWeightAsFloat =
+            Maybe.map (\(WeightInKg weight) -> weight)
+                form.birthWeight
 
         ( feedingSign, mealFrequencySign ) =
             ageInMonths currentDate person
@@ -2435,7 +2449,7 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
                       , viewBoolInput
                             language
                             form.fiveFoodGroups
-                            (setMsg updateFunc)
+                            (setBoolInputMsg updateFunc)
                             ""
                             Nothing
                       ]
@@ -2567,13 +2581,15 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
             , viewBoolInput
                 language
                 value
-                (setMsg updateFunc)
+                (setBoolInputMsg updateFunc)
                 ""
                 Nothing
             ]
     in
-    ( List.map Tuple.first inputsAndTasks |> List.concat
-    , List.map Tuple.second inputsAndTasks
+    ( List.map Tuple.first inputsAndTasks
+        |> List.concat
+        |> List.append birthWeightSection
+    , maybeToBoolTask birthWeightTask :: List.map Tuple.second inputsAndTasks
     )
 
 
@@ -2638,5 +2654,5 @@ viewNCDA language currentDate child measurement data =
                 |> Maybe.withDefault NoOp
                 |> SendOutMsgChild
     in
-    viewNCDAContent language currentDate child SetNCDABoolInput saveMsg SetNCDAHelperState data.helperState form
+    viewNCDAContent language currentDate child SetNCDABoolInput SetBirthWeightMsg saveMsg SetNCDAHelperState data.helperState form
         |> div []

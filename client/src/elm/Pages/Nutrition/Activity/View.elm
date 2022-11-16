@@ -676,6 +676,7 @@ viewNCDAContent language currentDate id assembled db data =
         currentDate
         assembled.person
         SetNCDABoolInput
+        SetBirthWeightMsg
         saveMsg
         SetNCDAHelperState
         data.helperState

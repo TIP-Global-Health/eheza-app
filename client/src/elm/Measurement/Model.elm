@@ -243,6 +243,7 @@ type MsgChild
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetBirthWeightMsg String
     | SetNCDAHelperState (Maybe NCDASign)
 
 
