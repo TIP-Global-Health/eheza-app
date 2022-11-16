@@ -4930,7 +4930,9 @@ decodeNCDVitals =
 
 decodeNCDAValue : Decoder NCDAValue
 decodeNCDAValue =
-    field "ncda_signs" (decodeEverySet decodeNCDASign)
+    succeed NCDAValue
+        |> required "ncda_signs" (decodeEverySet decodeNCDASign)
+        |> optional "weight" (nullable (map WeightInKg decodeFloat)) Nothing
 
 
 decodeNCDASign : Decoder NCDASign

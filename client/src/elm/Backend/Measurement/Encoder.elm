@@ -4526,10 +4526,17 @@ encodeWellChildNCDA =
 
 encodeNCDAValueWithType : String -> NCDAValue -> List ( String, Value )
 encodeNCDAValueWithType type_ value =
-    [ ( "ncda_signs", encodeEverySet encodeNCDASign value )
+    let
+        birthWeight =
+            Maybe.map (\weight -> [ ( "weight", float weight ) ])
+                value.birthWeight
+                |> Maybe.withDefault []
+    in
+    [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
+        ++ birthWeight
 
 
 encodeNCDASign : NCDASign -> Value

@@ -266,7 +266,9 @@ type alias GroupNCDA =
 
 
 type alias NCDAValue =
-    EverySet NCDASign
+    { signs : EverySet NCDASign
+    , birthWeight : Maybe WeightInKg
+    }
 
 
 type NCDASign
