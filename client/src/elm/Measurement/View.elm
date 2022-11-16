@@ -2332,7 +2332,11 @@ ncdaFormInputsAndTasks :
 ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form =
     let
         signs =
-            [ NCDABornWithBirthDefect ]
+            [ NCDARegularPrenatalVisits
+            , NCDAIronSupplementsDuringPregnancy
+            , NCDAInsecticideTreatedBednetsDuringPregnancy
+            , NCDABornWithBirthDefect
+            ]
                 ++ feedingSign
                 ++ [ NCDAOngeraMNP
                    , NCDAFiveFoodGroups
