@@ -31,6 +31,7 @@ $base_query = base_query_for_bundle('person');
 
 $six_years_ago = date('Ymd', strtotime('-6 years'));
 $base_query->fieldCondition('field_birth_date', 'value', $six_years_ago, '>');
+$base_query->fieldCondition('field_district', 'value', 'Bugesera', '=');
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
