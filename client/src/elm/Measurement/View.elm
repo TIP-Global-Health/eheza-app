@@ -2337,16 +2337,16 @@ ncdaFormInputsAndTasks :
     -> ( List (Html msg), List (Maybe Bool) )
 ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeightMsg setHelperStateMsg form previousNCDAValues =
     let
-        firstNCDAQuestinnaire =
-            -- If we do not have record of any questinnaires filled
+        firstNCDAQuestionnaire =
+            -- If we do not have record of any questionnaires filled
             -- before, we know this is first time patient fills the
-            -- questinnaire.
+            -- questionnaire.
             List.isEmpty previousNCDAValues
 
         signsAskedOnce =
             -- There are questions that should be asked once,
-            -- so we show them only when first questinnaire is filled.
-            if firstNCDAQuestinnaire then
+            -- so we show them only when first questionnaire is filled.
+            if firstNCDAQuestionnaire then
                 [ NCDARegularPrenatalVisits
                 , NCDAIronSupplementsDuringPregnancy
                 , NCDAInsecticideTreatedBednetsDuringPregnancy
@@ -2373,7 +2373,7 @@ ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeigh
                    ]
 
         ( birthWeightSection, birthWeightTasks ) =
-            if firstNCDAQuestinnaire then
+            if firstNCDAQuestionnaire then
                 let
                     colorAlertIndication =
                         Maybe.map
