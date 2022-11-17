@@ -2355,8 +2355,31 @@ ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeigh
                    ]
 
         ( birthWeightSection, birthWeightTask ) =
+            let
+                colorAlertIndication =
+                    Maybe.map
+                        (\weight ->
+                            if weight < 2500 then
+                                div
+                                    [ class "four wide column" ]
+                                    [ viewColorAlertIndication language ColorAlertRed ]
+
+                            else
+                                emptyNode
+                        )
+                        birthWeightAsFloat
+            in
             ( [ viewQuestionLabel language Translate.NCDABirthweightQuestion
-              , viewMeasurementInput language birthWeightAsFloat setBirthWeightMsg "birth-weight" Translate.Grams
+              , div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewMeasurementInput language
+                            birthWeightAsFloat
+                            setBirthWeightMsg
+                            "birth-weight"
+                            Translate.Grams
+                        ]
+                    , showMaybe colorAlertIndication
+                    ]
               ]
             , form.birthWeight
             )
