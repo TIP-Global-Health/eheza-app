@@ -302,8 +302,7 @@ resolvePreviousMeasurementsSetForChild childId db =
 
         groupMeasurements =
             Dict.get childId db.childMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
 
         groupHeights =
             groupMeasurements
@@ -337,6 +336,50 @@ resolvePreviousMeasurementsSetForChild childId db =
     , weights = nutritionWeights ++ wellChildWeights ++ groupWeights |> List.sortWith sortTuplesByDateDesc
     , headCircumferences = wellChildHeadCircumferences
     }
+
+
+resolvePreviousNCDAValuesForChild :
+    NominalDate
+    -> PersonId
+    -> ModelIndexedDb
+    -> List ( NominalDate, NCDAValue )
+resolvePreviousNCDAValuesForChild currentDate childId db =
+    resolveNCDAValuesForChild childId db
+        |> List.filter (\( date, _ ) -> Date.compare date currentDate == LT)
+
+
+resolveNCDAValuesForChild :
+    PersonId
+    -> ModelIndexedDb
+    -> List ( NominalDate, NCDAValue )
+resolveNCDAValuesForChild childId db =
+    let
+        individualNutritionMeasurements =
+            generateIndividualNutritionMeasurementsForChild childId db
+
+        nutritionNCDAs =
+            resolveIndividualNutritionValues individualNutritionMeasurements .ncda identity
+
+        individualWellChildMeasurements =
+            generateIndividualWellChildMeasurementsForChild childId db
+
+        wellChildNCDAs =
+            resolveIndividualWellChildValues individualWellChildMeasurements .ncda identity
+
+        groupMeasurements =
+            Dict.get childId db.childMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+
+        groupNCDAs =
+            groupMeasurements
+                |> Maybe.map
+                    (.ncda
+                        >> Dict.values
+                        >> List.map (\measurement -> ( measurement.dateMeasured, measurement.value ))
+                    )
+                |> Maybe.withDefault []
+    in
+    nutritionNCDAs ++ wellChildNCDAs ++ groupNCDAs
 
 
 resolvePreviousValuesSetForChild :

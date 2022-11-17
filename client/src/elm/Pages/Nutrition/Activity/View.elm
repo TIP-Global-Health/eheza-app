@@ -17,7 +17,13 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicati
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
-import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, nutritionAssessmentForBackend, resolvePreviousValuesSetForChild)
+import Backend.NutritionEncounter.Utils
+    exposing
+        ( calculateZScoreWeightForAge
+        , nutritionAssessmentForBackend
+        , resolvePreviousNCDAValuesForChild
+        , resolvePreviousValuesSetForChild
+        )
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import EverySet
@@ -208,7 +214,8 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewWeightContent language currentDate zscores assembled model.weightData previousValuesSet.weight
 
         NCDA ->
-            viewNCDAContent language currentDate id assembled db model.ncdaData
+            resolvePreviousNCDAValuesForChild currentDate assembled.participant.person db
+                |> viewNCDAContent language currentDate id assembled db model.ncdaData
 
         NextSteps ->
             viewNextStepsContent language currentDate zscores id assembled db model.nextStepsData
@@ -662,8 +669,16 @@ viewWeightForm language currentDate zscores person heightValue previousValue sho
     ]
 
 
-viewNCDAContent : Language -> NominalDate -> NutritionEncounterId -> AssembledData -> ModelIndexedDb -> NCDAData -> List (Html Msg)
-viewNCDAContent language currentDate id assembled db data =
+viewNCDAContent :
+    Language
+    -> NominalDate
+    -> NutritionEncounterId
+    -> AssembledData
+    -> ModelIndexedDb
+    -> NCDAData
+    -> List ( NominalDate, NCDAValue )
+    -> List (Html Msg)
+viewNCDAContent language currentDate id assembled db data previousNCDAValues =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -681,6 +696,7 @@ viewNCDAContent language currentDate id assembled db data =
         SetNCDAHelperState
         data.helperState
         form
+        previousNCDAValues
 
 
 viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)

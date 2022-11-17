@@ -6,7 +6,12 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceIndication)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend, resolvePreviousValuesSetForChild)
+import Backend.NutritionEncounter.Utils
+    exposing
+        ( nutritionAssessmentForBackend
+        , resolvePreviousNCDAValuesForChild
+        , resolvePreviousValuesSetForChild
+        )
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
@@ -203,7 +208,8 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
             viewPhotoContent language currentDate assembled model.photoForm
 
         WellChildNCDA ->
-            viewNCDAContent language currentDate assembled model.ncdaData
+            resolvePreviousNCDAValuesForChild currentDate assembled.participant.person db
+                |> viewNCDAContent language currentDate assembled model.ncdaData
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -2200,8 +2206,14 @@ viewPhotoContent language currentDate assembled form =
     ]
 
 
-viewNCDAContent : Language -> NominalDate -> AssembledData -> NCDAData -> List (Html Msg)
-viewNCDAContent language currentDate assembled data =
+viewNCDAContent :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> NCDAData
+    -> List ( NominalDate, NCDAValue )
+    -> List (Html Msg)
+viewNCDAContent language currentDate assembled data previousNCDAValues =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -2219,3 +2231,4 @@ viewNCDAContent language currentDate assembled data =
         SetNCDAHelperState
         data.helperState
         form
+        previousNCDAValues
