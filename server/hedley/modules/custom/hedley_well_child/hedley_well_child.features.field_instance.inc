@@ -7699,6 +7699,138 @@ function hedley_well_child_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-well_child_pregnancy_summary-field_apgar_five_min'.
+  $field_instances['node-well_child_pregnancy_summary-field_apgar_five_min'] = array(
+    'bundle' => 'well_child_pregnancy_summary',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 14,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_apgar_five_min',
+    'label' => 'Apgar Five Min',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 12,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-well_child_pregnancy_summary-field_apgar_one_min'.
+  $field_instances['node-well_child_pregnancy_summary-field_apgar_one_min'] = array(
+    'bundle' => 'well_child_pregnancy_summary',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 13,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_apgar_one_min',
+    'label' => 'Apgar One Min',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-well_child_pregnancy_summary-field_birth_defects'.
+  $field_instances['node-well_child_pregnancy_summary-field_birth_defects'] = array(
+    'bundle' => 'well_child_pregnancy_summary',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_birth_defects',
+    'label' => 'Birth Defects',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-well_child_pregnancy_summary-field_date_measured'.
   $field_instances['node-well_child_pregnancy_summary-field_date_measured'] = array(
     'bundle' => 'well_child_pregnancy_summary',
@@ -7751,7 +7883,7 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -7789,7 +7921,7 @@ function hedley_well_child_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 14,
+      'weight' => 9,
     ),
   );
 
@@ -7846,7 +7978,53 @@ function hedley_well_child_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 9,
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_pregnancy_summary-field_height'.
+  $field_instances['node-well_child_pregnancy_summary-field_height'] = array(
+    'bundle' => 'well_child_pregnancy_summary',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 16,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_height',
+    'label' => 'Birth Height',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 16,
     ),
   );
 
@@ -7890,7 +8068,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -7934,7 +8112,45 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-well_child_pregnancy_summary-field_pregnancy_summary_signs'.
+  $field_instances['node-well_child_pregnancy_summary-field_pregnancy_summary_signs'] = array(
+    'bundle' => 'well_child_pregnancy_summary',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_pregnancy_summary_signs',
+    'label' => 'Pregnancy Summary Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 8,
     ),
   );
 
@@ -7978,7 +8194,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -8019,6 +8235,52 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'text_textfield',
       'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_pregnancy_summary-field_weight'.
+  $field_instances['node-well_child_pregnancy_summary-field_weight'] = array(
+    'bundle' => 'well_child_pregnancy_summary',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 15,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_weight',
+    'label' => 'Birth Weight',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 14,
     ),
   );
 
@@ -8063,7 +8325,7 @@ function hedley_well_child_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -10320,7 +10582,11 @@ function hedley_well_child_field_default_field_instances() {
   t('Administered Doses');
   t('Administration Dates');
   t('Administration Note');
+  t('Apgar Five Min');
+  t('Apgar One Min');
   t('BMI');
+  t('Birth Defects');
+  t('Birth Height');
   t('Birth Weight');
   t('Body temperature');
   t('Contributing Factors Signs');
@@ -10346,6 +10612,7 @@ function hedley_well_child_field_default_field_instances() {
   t('Pediatric Visit Date');
   t('Person');
   t('Photo');
+  t('Pregnancy Summary Signs');
   t('Reason For Not Providing Education');
   t('Reason for Not Sending to HC');
   t('Respiratory rate');
