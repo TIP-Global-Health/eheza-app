@@ -2274,7 +2274,7 @@ type DeliveryComplication
     | NoDeliveryComplications
 
 
-type BirthDefects
+type BirthDefect
     = DefectBirthInjury
     | DefectCleftLipWithCleftPalate
     | DefectCleftPalate

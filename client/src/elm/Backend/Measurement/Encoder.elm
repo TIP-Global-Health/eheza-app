@@ -3970,7 +3970,7 @@ encodeDeliveryComplication complication =
 
 
 encodePregnancySummarySign : PregnancySummarySign -> Value
-encodePregnancySummarySign =
+encodePregnancySummarySign sign =
     string <|
         case sign of
             ApgarScores ->
@@ -3987,7 +3987,7 @@ encodePregnancySummarySign =
 
 
 encodeBirthDefect : BirthDefect -> Value
-encodeBirthDefect =
+encodeBirthDefect defect =
     string <|
         case defect of
             DefectBirthInjury ->

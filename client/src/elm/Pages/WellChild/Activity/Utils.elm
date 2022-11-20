@@ -165,21 +165,21 @@ fromPregnancySummaryValue saved =
             Maybe.map (listNotEmptyWithException NoBirthDefects) birthDefects
 
         signs =
-            Maybe.map .signs saved
+            Maybe.map (.signs >> EverySet.toList) saved
     in
     { expectedDateConcluded = Maybe.map .expectedDateConcluded saved
     , dateSelectorPopupState = Nothing
     , deliveryComplicationsPresent = deliveryComplicationsPresent
     , deliveryComplications = deliveryComplications
     , signs = signs
-    , apgarScoresAvailable = Maybe.map (EverySet.member ApgarScores) signs
+    , apgarScoresAvailable = Maybe.map (List.member ApgarScores) signs
     , apgarOneMin = Maybe.andThen .apgarOneMin saved
     , apgarFiveMin = Maybe.andThen .apgarFiveMin saved
     , apgarDirty = False
-    , birthWeightAvailable = Maybe.map (EverySet.member BirthWeight) signs
+    , birthWeightAvailable = Maybe.map (List.member BirthWeight) signs
     , birthWeight = Maybe.andThen .birthWeight saved
     , birthWeightDirty = False
-    , birthLengthAvailable = Maybe.map (EverySet.member BirthLength) signs
+    , birthLengthAvailable = Maybe.map (List.member BirthLength) signs
     , birthLength = Maybe.andThen .birthLength saved
     , birthLengthDirty = False
     , birthDefectsPresent = birthDefectsPresent
@@ -251,7 +251,7 @@ toPregnancySummaryValue form =
 
         signs =
             Maybe.map EverySet.fromList form.signs
-                |> Maybe.withDefault (EverySet.singleton PregnancySummarySign)
+                |> Maybe.withDefault (EverySet.singleton NoPregnancySummarySigns)
 
         birthDefects =
             Maybe.map EverySet.fromList form.birthDefects
@@ -260,24 +260,23 @@ toPregnancySummaryValue form =
     Maybe.map PregnancySummaryValue form.expectedDateConcluded
         |> andMap (Just deliveryComplications)
         |> andMap (Just signs)
-        |> andMap form.apgarOneMin
-        |> andMap form.apgarFiveMin
-        |> andMap from.birthWeight
-        |> andMap from.birthLength
+        |> andMap (Just form.apgarOneMin)
+        |> andMap (Just form.apgarFiveMin)
+        |> andMap (Just form.birthWeight)
+        |> andMap (Just form.birthLength)
         |> andMap (Just birthDefects)
 
 
 listNotEmptyWithException : a -> List a -> Bool
 listNotEmptyWithException exception list =
-    case list of
-        [] ->
-            False
+    if List.isEmpty list then
+        False
 
-        [ exception ] ->
-            False
+    else if list == [ exception ] then
+        False
 
-        _ ->
-            True
+    else
+        True
 
 
 nutritionAssessmentTaskCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool

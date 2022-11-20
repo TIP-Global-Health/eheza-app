@@ -4393,12 +4393,20 @@ decodePregnancySummaryValue =
     succeed PregnancySummaryValue
         |> required "expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
         |> required "delivery_complications" (decodeEverySet decodeDeliveryComplication)
-        |> required "pregnancy_summary_signs" (decodeWithFallback (EverySet.singleton NoPregnancySummarySigns) (decodeEverySet decodePregnancySummarySign))
+        |> required "pregnancy_summary_signs"
+            (decodeWithFallback
+                (EverySet.singleton NoPregnancySummarySigns)
+                (decodeEverySet decodePregnancySummarySign)
+            )
         |> required "apgar_one_min" (nullable decodeFloat)
         |> required "apgar_five_min" (nullable decodeFloat)
-        |> required "height" (nullable (map HeightInCm decodeFloat))
         |> required "weight" (nullable (map WeightInKg decodeFloat))
-        |> required "birth_defects" (decodeWithFallback (EverySet.singleton NoBirthDefects) (decodeEverySet decodeBirthDefect))
+        |> required "height" (nullable (map HeightInCm decodeFloat))
+        |> required "birth_defects"
+            (decodeWithFallback
+                (EverySet.singleton NoBirthDefects)
+                (decodeEverySet decodeBirthDefect)
+            )
 
 
 decodeDeliveryComplication : Decoder DeliveryComplication
@@ -4455,7 +4463,7 @@ decodePregnancySummarySign =
                         succeed NoPregnancySummarySigns
 
                     _ ->
-                        fail <| complication ++ " is not a recognized PregnancySummarySign"
+                        fail <| sign ++ " is not a recognized PregnancySummarySign"
             )
 
 
@@ -4515,6 +4523,9 @@ decodeBirthDefect =
 
                     "none" ->
                         succeed NoBirthDefects
+
+                    _ ->
+                        fail <| defect ++ " is not a recognized BirthDefect"
             )
 
 
