@@ -2252,7 +2252,7 @@ type alias PregnancySummaryValue =
     , apgarFiveMin : Maybe Float
     , birthWeight : Maybe WeightInKg
     , birthLength : Maybe HeightInCm
-    , birthDefects : EverySet BirthDefects
+    , birthDefects : EverySet BirthDefect
     }
 
 

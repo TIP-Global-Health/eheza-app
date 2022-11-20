@@ -143,6 +143,19 @@ type alias PregnancySummaryForm =
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     , deliveryComplicationsPresent : Maybe Bool
     , deliveryComplications : Maybe (List DeliveryComplication)
+    , signs : Maybe (List PregnancySummarySign)
+    , apgarScoresAvailable : Maybe Bool
+    , apgarOneMin : Maybe Float
+    , apgarFiveMin : Maybe Float
+    , apgarDirty : Bool
+    , birthWeightAvailable : Maybe Bool
+    , birthWeight : Maybe WeightInKg
+    , birthWeightDirty : Bool
+    , birthLengthAvailable : Maybe Bool
+    , birthLength : Maybe HeightInCm
+    , birthLengthDirty : Bool
+    , birthDefectsPresent : Maybe Bool
+    , birthDefects : Maybe (List BirthDefect)
     }
 
 
@@ -152,6 +165,19 @@ emptyPregnancySummaryForm =
     , dateSelectorPopupState = Nothing
     , deliveryComplicationsPresent = Nothing
     , deliveryComplications = Nothing
+    , signs = Nothing
+    , apgarScoresAvailable = Nothing
+    , apgarOneMin = Nothing
+    , apgarFiveMin = Nothing
+    , apgarDirty = False
+    , birthWeightAvailable = Nothing
+    , birthWeight = Nothing
+    , birthWeightDirty = False
+    , birthLengthAvailable = Nothing
+    , birthLength = Nothing
+    , birthLengthDirty = False
+    , birthDefectsPresent = Nothing
+    , birthDefects = Nothing
     }
 
 
