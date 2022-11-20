@@ -15958,8 +15958,8 @@ translationSet trans =
                     }
 
                 WellChildPregnancySummary ->
-                    { english = "History"
-                    , kinyarwanda = Just "Amateka y'ibyamubayeho"
+                    { english = "Birth History"
+                    , kinyarwanda = Nothing
                     }
 
                 WellChildImmunisation ->
