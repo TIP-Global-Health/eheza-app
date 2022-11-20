@@ -3969,6 +3969,79 @@ encodeDeliveryComplication complication =
                 "none"
 
 
+encodePregnancySummarySign : PregnancySummarySign -> Value
+encodePregnancySummarySign =
+    string <|
+        case sign of
+            ApgarScores ->
+                "apgar-scores"
+
+            BirthWeight ->
+                "birth-weight"
+
+            BirthLength ->
+                "birth-length"
+
+            NoPregnancySummarySigns ->
+                "none"
+
+
+encodeBirthDefect : BirthDefect -> Value
+encodeBirthDefect =
+    string <|
+        case defect of
+            DefectBirthInjury ->
+                "birth-injury"
+
+            DefectCleftLipWithCleftPalate ->
+                "cleft-lip-with-cleft-palate"
+
+            DefectCleftPalate ->
+                "cleft-palate"
+
+            DefectClubFoot ->
+                "club-foot"
+
+            DefectMacrocephaly ->
+                "macrocephaly"
+
+            DefectGastroschisis ->
+                "gastroschisis"
+
+            DefectHearingLoss ->
+                "hearing-loss"
+
+            DefectUndescendedTestes ->
+                "undescended-testes"
+
+            DefectHypospadias ->
+                "hypospadias"
+
+            DefectInguinalHernia ->
+                "inguinal-hernia"
+
+            DefectMicrocephaly ->
+                "microcephaly"
+
+            DefectNueralTubes ->
+                "nueral-tubes"
+
+            DefectDownSyndrome ->
+                "down-syndrome"
+
+            DefectCongenitalHeart ->
+                "congenital-heart"
+
+            DefectVentricalSeptal ->
+                "ventrical-septal"
+
+            DefectPulmonaryValveAtresiaAndStenosis ->
+                "pulmonary-valve-atresia-and-stenosis"
+
+            NoBirthDefects ->
+                "none"
+
+
 encodeWellChildNextVisit : WellChildNextVisit -> List ( String, Value )
 encodeWellChildNextVisit =
     encodeWellChildMeasurement encodeNextVisitValue

@@ -2246,12 +2246,12 @@ type alias WellChildPregnancySummary =
 
 type alias PregnancySummaryValue =
     { expectedDateConcluded : NominalDate
+    , deliveryComplications : EverySet DeliveryComplication
     , signs : EverySet PregnancySummarySign
     , apgarOneMin : Maybe Float
     , apgarFiveMin : Maybe Float
     , birthWeight : Maybe WeightInKg
     , birthLength : Maybe HeightInCm
-    , deliveryComplications : EverySet DeliveryComplication
     , birthDefects : EverySet BirthDefects
     }
 
@@ -2260,6 +2260,7 @@ type PregnancySummarySign
     = ApgarScores
     | BirthWeight
     | BirthLength
+    | NoPregnancySummarySigns
 
 
 type DeliveryComplication
