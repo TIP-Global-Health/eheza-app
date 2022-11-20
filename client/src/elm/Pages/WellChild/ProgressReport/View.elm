@@ -2258,9 +2258,6 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
         immunizationValues =
             generateValues currentDate child immunizationByAgeInMonths ((==) NCDACellValueV)
 
-        _ =
-            Debug.log "immunizationByAgeInMonths" immunizationByAgeInMonths
-
         ongeraMNPValues =
             generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAOngeraMNP)
     in
