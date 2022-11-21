@@ -614,8 +614,8 @@ type TranslationId
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
-    | FatherOrCheifId
-    | FatherOrCheifName
+    | FatherOrChiefId
+    | FatherOrChiefName
     | FatherNationalId
     | FbfDistribution ClinicType
     | FbfToReceive Activity Float
@@ -4749,13 +4749,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        FatherOrCheifId ->
-            { english = "Father or Cheif of Family ID"
+        FatherOrChiefId ->
+            { english = "Father or Chief of Family ID"
             , kinyarwanda = Nothing
             }
 
-        FatherOrCheifName ->
-            { english = "Fathers or Cheif of Family Name"
+        FatherOrChiefName ->
+            { english = "Fathers or Chief of Family Name"
             , kinyarwanda = Nothing
             }
 

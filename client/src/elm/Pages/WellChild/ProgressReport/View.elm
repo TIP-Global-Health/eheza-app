@@ -1586,8 +1586,8 @@ viewChildIdentificationPane language currentDate ncdaQuestionnaire db ( childId,
         fatherInfoEntry =
             Maybe.map
                 (\person ->
-                    [ viewEntry Translate.FatherOrCheifName person.name
-                    , viewEntry Translate.FatherOrCheifId (Maybe.withDefault "" person.nationalIdNumber)
+                    [ viewEntry Translate.FatherOrChiefName person.name
+                    , viewEntry Translate.FatherOrChiefId (Maybe.withDefault "" person.nationalIdNumber)
                     ]
                 )
                 father
