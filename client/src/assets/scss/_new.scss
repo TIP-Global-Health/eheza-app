@@ -3948,12 +3948,18 @@ div.page-report.well-child {
             }
 
             .green,
+            .orange,
             .red {
-              font-size: 12px;
+              font-size: 11px;
+              text-transform: uppercase;
             }
 
             .green {
               color: $color-green;
+            }
+
+            .orange {
+              color: $color-orange;
             }
 
             .red {
@@ -3982,7 +3988,8 @@ div.page-report.well-child {
     }
   }
 
-  .pane.nutrition-behavior {
+  .pane.nutrition-behavior,
+  .pane.fill-the-blanks {
 
     .pane-heading {
       background-color: $color-orange-light;

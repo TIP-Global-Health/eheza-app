@@ -125,6 +125,7 @@ import Pages.WellChild.ProgressReport.Model
     exposing
         ( ECDStatus(..)
         , NCDAANCNewbornItem(..)
+        , NCDAFillTheBlanksItem(..)
         , NCDAInfrastructureEnvironmentWashItem(..)
         , NCDANutritionBehaviorItem(..)
         , NCDATargetedInterventionsItem(..)
@@ -633,6 +634,7 @@ type TranslationId
     | FetalPresentationLabel
     | FetalPresentation FetalPresentation
     | Fetch
+    | FillTheBlanks
     | FilterByName
     | Finish
     | FirstAntenatalVisit
@@ -884,6 +886,7 @@ type TranslationId
     | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionsItemLabel NCDAUniversalInterventionsItem
+    | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
@@ -4834,6 +4837,11 @@ translationSet trans =
             , kinyarwanda = Just "Gushakisha"
             }
 
+        FillTheBlanks ->
+            { english = "Fill in the Blanks: Cyatsi, Hondo, Tuku & Ibipimo"
+            , kinyarwanda = Nothing
+            }
+
         FilterByName ->
             { english = "Filter by name"
             , kinyarwanda = Just "Hitamo izina ryuwo ushaka"
@@ -7984,6 +7992,28 @@ translationSet trans =
 
                 ECDServices ->
                     { english = "ECD services provided to child"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDAFillTheBlanksItemLabel item ->
+            case item of
+                HeightToAge ->
+                    { english = "Level of stuning using child length mat"
+                    , kinyarwanda = Nothing
+                    }
+
+                WeightToAge ->
+                    { english = "Weight"
+                    , kinyarwanda = Nothing
+                    }
+
+                MuacValue ->
+                    { english = "MUAC"
+                    , kinyarwanda = Nothing
+                    }
+
+                EdemaPresent ->
+                    { english = "Edema"
                     , kinyarwanda = Nothing
                     }
 

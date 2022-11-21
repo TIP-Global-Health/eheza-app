@@ -1488,10 +1488,11 @@ viewPaneHeading language label =
 viewNCDAScorecard :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> ModelIndexedDb
     -> ( PersonId, Person )
     -> Html any
-viewNCDAScorecard language currentDate db ( childId, child ) =
+viewNCDAScorecard language currentDate zscores db ( childId, child ) =
     let
         reportData =
             assembleProgresReportData childId db
@@ -1553,6 +1554,14 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
             reportData.individualWellChildMeasurementsWithDates
             reportData.acuteIllnesses
         , viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths
+        , viewFillTheBlanksPane language
+            currentDate
+            zscores
+            child
+            db
+            reportData.groupNutritionMeasurements
+            reportData.individualNutritionMeasurementsWithDates
+            reportData.individualWellChildMeasurementsWithDates
         ]
 
 
@@ -1759,6 +1768,15 @@ viewTableRow language itemTransId pregnancyValues zeroToFiveValues sixToTwentyFo
 
                 NCDACellValueDash ->
                     span [] [ text "-" ]
+
+                NCDACellValueC ->
+                    span [ class "green" ] [ text "c" ]
+
+                NCDACellValueH ->
+                    span [ class "orange" ] [ text "h" ]
+
+                NCDACellValueT ->
+                    span [ class "red" ] [ text "t" ]
 
                 NCDACellValueEmpty ->
                     emptyNode
@@ -2275,6 +2293,245 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                 pregnancyValues
                 (List.take 6 immunizationValues)
                 (List.drop 6 immunizationValues)
+            ]
+        ]
+
+
+viewFillTheBlanksPane :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> ModelIndexedDb
+    -> ChildMeasurementList
+    -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> Html any
+viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates =
+    let
+        pregnancyValues =
+            List.repeat 9 NCDACellValueDash
+
+        maybeAgeInDays =
+            Maybe.map
+                (\birthDate -> diffDays birthDate currentDate)
+                child.birthDate
+
+        heightsValues =
+            generateFillTheBlanksValues heightsByAgeInMonths
+
+        weightsValues =
+            generateFillTheBlanksValues weightsByAgeInMonths
+
+        muacsValues =
+            generateFillTheBlanksValues muacsByAgeInMonths
+
+        nutritionsValues =
+            generateFillTheBlanksValues nutritionsByAgeInMonths
+
+        generateFillTheBlanksValues valuesByAgeInMonths =
+            let
+                emptyValues =
+                    List.repeat 25 NCDACellValueEmpty
+            in
+            Maybe.map2
+                (\values ageMonths ->
+                    List.indexedMap
+                        (\month _ ->
+                            if ageMonths < month then
+                                NCDACellValueEmpty
+
+                            else
+                                Dict.get month values
+                                    |> Maybe.withDefault NCDACellValueDash
+                        )
+                        emptyValues
+                )
+                valuesByAgeInMonths
+                (ageInMonths currentDate child)
+                |> Maybe.withDefault emptyValues
+
+        heightsByAgeInMonths =
+            Maybe.map
+                (\ageInDays ->
+                    List.filterMap
+                        (\( date, set ) ->
+                            Maybe.andThen
+                                (\(HeightInCm height) ->
+                                    zScoreLengthHeightForAge zscores ageInDays child.gender (Centimetres height)
+                                        |> Maybe.map (\zscore -> ( date, cellValueByZscore zscore ))
+                                )
+                                set.height
+                        )
+                        allValuesSets
+                )
+                maybeAgeInDays
+                |> Maybe.withDefault []
+                |> distributeByAgeInMonths child
+
+        weightsByAgeInMonths =
+            Maybe.map
+                (\ageInDays ->
+                    List.filterMap
+                        (\( date, set ) ->
+                            Maybe.andThen
+                                (\(WeightInKg weight) ->
+                                    zScoreWeightForAge zscores ageInDays child.gender (Kilograms weight)
+                                        |> Maybe.map (\zscore -> ( date, cellValueByZscore zscore ))
+                                )
+                                set.weight
+                        )
+                        allValuesSets
+                )
+                maybeAgeInDays
+                |> Maybe.withDefault []
+                |> distributeByAgeInMonths child
+
+        cellValueByZscore zscore =
+            if zscore < -3 then
+                NCDACellValueT
+
+            else if zscore < -2 then
+                NCDACellValueH
+
+            else
+                NCDACellValueC
+
+        muacsByAgeInMonths =
+            List.filterMap
+                (\( date, set ) ->
+                    Maybe.map
+                        (\value ->
+                            let
+                                cellValue =
+                                    case muacIndication value of
+                                        ColorAlertRed ->
+                                            NCDACellValueT
+
+                                        ColorAlertYellow ->
+                                            NCDACellValueH
+
+                                        ColorAlertGreen ->
+                                            NCDACellValueC
+                            in
+                            ( date, cellValue )
+                        )
+                        set.muac
+                )
+                allValuesSets
+                |> distributeByAgeInMonths child
+
+        nutritionsByAgeInMonths =
+            List.filterMap
+                (\( date, set ) ->
+                    Maybe.map
+                        (\value ->
+                            let
+                                cellValue =
+                                    if EverySet.member Edema value.signs then
+                                        NCDACellValueT
+
+                                    else
+                                        NCDACellValueC
+                            in
+                            ( date, cellValue )
+                        )
+                        set.nutrition
+                )
+                allValuesSets
+                |> distributeByAgeInMonths child
+
+        allValuesSets =
+            nutritionValuesSets ++ wellChildValuesSets ++ groupsValuesSets
+
+        nutritionValuesSets =
+            List.map
+                (\( date, ( _, measurements ) ) ->
+                    generateIndividualValuesSet date measurements
+                )
+                individualNutritionMeasurementsWithDates
+
+        wellChildValuesSets =
+            List.map
+                (\( date, ( _, measurements ) ) ->
+                    generateIndividualValuesSet date measurements
+                )
+                individualWellChildMeasurementsWithDates
+
+        generateIndividualValuesSet date measurements =
+            ( date
+            , { height = getMeasurementValueFunc measurements.height
+              , weight = getMeasurementValueFunc measurements.weight
+              , muac = getMeasurementValueFunc measurements.muac
+              , nutrition = getMeasurementValueFunc measurements.nutrition
+              }
+            )
+
+        groupsValuesSets =
+            List.map
+                (\date ->
+                    ( date
+                    , { height = Dict.get date groupHeightsByDate
+                      , weight = Dict.get date groupWeightsByDate
+                      , muac = Dict.get date groupMuacsByDate
+                      , nutrition = Dict.get date groupNutritionsByDate
+                      }
+                    )
+                )
+                groupEncounterDates
+
+        groupEncounterDates =
+            Dict.keys groupHeightsByDate
+                ++ Dict.keys groupWeightsByDate
+                ++ Dict.keys groupMuacsByDate
+                ++ Dict.keys groupNutritionsByDate
+                |> EverySet.fromList
+                |> EverySet.toList
+
+        groupHeightsByDate =
+            Dict.values groupNutritionMeasurements.heights
+                |> List.map (\height -> ( height.dateMeasured, height.value ))
+                |> Dict.fromList
+
+        groupWeightsByDate =
+            Dict.values groupNutritionMeasurements.weights
+                |> List.map (\weight -> ( weight.dateMeasured, weight.value ))
+                |> Dict.fromList
+
+        groupMuacsByDate =
+            Dict.values groupNutritionMeasurements.muacs
+                |> List.map (\muac -> ( muac.dateMeasured, muac.value ))
+                |> Dict.fromList
+
+        groupNutritionsByDate =
+            Dict.values groupNutritionMeasurements.nutritions
+                |> List.map (\nutrition -> ( nutrition.dateMeasured, nutrition.value ))
+                |> Dict.fromList
+    in
+    div [ class "pane fill-the-blanks" ]
+        [ viewPaneHeading language Translate.FillTheBlanks
+        , div [ class "pane-content" ]
+            [ viewTableHeader
+            , viewTableRow language
+                (Translate.NCDAFillTheBlanksItemLabel HeightToAge)
+                pregnancyValues
+                (List.take 6 heightsValues)
+                (List.drop 6 heightsValues)
+            , viewTableRow language
+                (Translate.NCDAFillTheBlanksItemLabel WeightToAge)
+                pregnancyValues
+                (List.take 6 weightsValues)
+                (List.drop 6 weightsValues)
+            , viewTableRow language
+                (Translate.NCDAFillTheBlanksItemLabel MuacValue)
+                pregnancyValues
+                (List.take 6 muacsValues)
+                (List.drop 6 muacsValues)
+            , viewTableRow language
+                (Translate.NCDAFillTheBlanksItemLabel EdemaPresent)
+                pregnancyValues
+                (List.take 6 nutritionsValues)
+                (List.drop 6 nutritionsValues)
             ]
         ]
 

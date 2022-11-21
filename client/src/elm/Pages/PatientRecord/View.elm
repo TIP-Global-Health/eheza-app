@@ -194,7 +194,7 @@ viewContentForChild language currentDate zscores childId child isChw initiator d
                 FilterNCDAScoreboard ->
                     ( "page-activity patient-record"
                     , viewHeader language model
-                    , viewNCDAScorecard language currentDate db ( childId, child )
+                    , viewNCDAScorecard language currentDate zscores db ( childId, child )
                     )
 
                 _ ->
