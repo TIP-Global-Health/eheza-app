@@ -20,8 +20,9 @@ type Msg
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
     | SetExpectedDateConcludedSelectorState (Maybe (DateSelectorConfig Msg))
-    | SetDeliveryComplicationsPresent Bool
+    | SavePregnancySummaryBoolInput (Bool -> PregnancySummaryForm -> PregnancySummaryForm) Bool
     | SetDeliveryComplication DeliveryComplication
+    | SetBirthDefect BirthDefect
     | SavePregnancySummary PersonId (Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary ))
       -- DANGER SIGNS
     | SetActiveDangerSignsTask DangerSignsTask

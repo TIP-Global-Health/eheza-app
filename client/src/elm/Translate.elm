@@ -409,7 +409,10 @@ type TranslationId
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
-    | BirthDefect
+    | BirthDefect BirthDefect
+    | BirthDefectLabel
+    | BirthDefectsPresentQuestion
+    | BirthDefectsSelectionLabel
     | BloodGlucose
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -2803,8 +2806,105 @@ translationSet trans =
             , kinyarwanda = Just "Tangira igikorwa gishya"
             }
 
-        BirthDefect ->
+        BirthDefect defect ->
+            case defect of
+                DefectBirthInjury ->
+                    { english = "Birth Injury"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectCleftLipWithCleftPalate ->
+                    { english = "Cleft Lip with Cleft Palate"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectCleftPalate ->
+                    { english = "Cleft Palate"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectClubFoot ->
+                    { english = "ClubFoot"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectMacrocephaly ->
+                    { english = "Macrocephaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectGastroschisis ->
+                    { english = "Gastroschisis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectHearingLoss ->
+                    { english = "Hearing Loss"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectUndescendedTestes ->
+                    { english = "Undescended Testes"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectHypospadias ->
+                    { english = "Hypospadias"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectInguinalHernia ->
+                    { english = "Inguinal Hernia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectMicrocephaly ->
+                    { english = "Microcephaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectNueralTubes ->
+                    { english = "Nueral Tubes Defects"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectDownSyndrome ->
+                    { english = "Down Syndrome"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectCongenitalHeart ->
+                    { english = "CongenitalHeart Defects (CHD)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectVentricalSeptal ->
+                    { english = "Ventrical Septal Defect"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectPulmonaryValveAtresiaAndStenosis ->
+                    { english = "Pulmonary Valve Atresia and Stenosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoBirthDefects ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
+
+        BirthDefectLabel ->
             { english = "Birth Defect"
+            , kinyarwanda = Nothing
+            }
+
+        BirthDefectsPresentQuestion ->
+            { english = "Does the child have any birth defects"
+            , kinyarwanda = Nothing
+            }
+
+        BirthDefectsSelectionLabel ->
+            { english = "Which of the following"
             , kinyarwanda = Nothing
             }
 

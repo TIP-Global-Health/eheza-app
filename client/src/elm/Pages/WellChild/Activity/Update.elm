@@ -42,6 +42,9 @@ import Result exposing (Result)
 update : NominalDate -> Bool -> WellChildEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate isChw id db msg model =
     let
+        pregnancySummaryForm =
+            resolveFormWithDefaults .pregnancySummary pregnancySummaryFormWithDefault model.pregnancySummaryForm
+
         resolveFormWithDefaults getMeasurementFunc formWithDefaultsFunc form =
             Dict.get id db.wellChildMeasurements
                 |> Maybe.withDefault NotAsked
@@ -129,11 +132,10 @@ update currentDate isChw id db msg model =
             , [ focusOnCalendarMsg ]
             )
 
-        SetDeliveryComplicationsPresent value ->
+        SavePregnancySummaryBoolInput updateFunc value ->
             let
                 updatedForm =
-                    model.pregnancySummaryForm
-                        |> (\form -> { form | deliveryComplicationsPresent = Just value, deliveryComplications = Nothing })
+                    updateFunc value model.pregnancySummaryForm
             in
             ( { model | pregnancySummaryForm = updatedForm }
             , Cmd.none
@@ -142,15 +144,26 @@ update currentDate isChw id db msg model =
 
         SetDeliveryComplication complication ->
             let
-                form =
-                    resolveFormWithDefaults .pregnancySummary pregnancySummaryFormWithDefault model.pregnancySummaryForm
-
                 updatedForm =
                     setMultiSelectInputValue .deliveryComplications
-                        (\complications -> { form | deliveryComplications = complications })
+                        (\complications -> { pregnancySummaryForm | deliveryComplications = complications })
                         NoDeliveryComplications
                         complication
-                        form
+                        pregnancySummaryForm
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetBirthDefect defect ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .birthDefects
+                        (\defects -> { pregnancySummaryForm | birthDefects = defects })
+                        NoBirthDefects
+                        defect
+                        pregnancySummaryForm
             in
             ( { model | pregnancySummaryForm = updatedForm }
             , Cmd.none

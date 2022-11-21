@@ -1659,7 +1659,7 @@ viewChildIdentificationPane language currentDate ncdaQuestionnaire db ( childId,
                                 Translate.No
                     in
                     [ viewEntry Translate.BornUnderweight (translate language bornUnderweightAnswer)
-                    , viewEntry Translate.BirthDefect (translate language birthDefectAnswer)
+                    , viewEntry Translate.BirthDefectLabel (translate language birthDefectAnswer)
                     ]
                 )
                 ncdaQuestionnaire

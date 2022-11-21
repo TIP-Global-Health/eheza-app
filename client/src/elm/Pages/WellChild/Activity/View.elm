@@ -47,6 +47,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , maybeToBoolTask
         , taskCompleted
         , taskCompletedWithException
         , tasksBarId
@@ -220,99 +221,177 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 |> getMeasurementValueFunc
                 |> pregnancySummaryFormWithDefault form_
 
-        ( deliveryComplicationsCompleted, deliveryComplicationsActive ) =
-            if form.deliveryComplicationsPresent == Just True then
-                ( taskCompleted form.deliveryComplications, 1 )
+        ( estimatedDueDateSection, estimatedDueDateTasks ) =
+            let
+                dateSelectorConfig =
+                    { select = SetExpectedDateConcluded
+                    , close = SetExpectedDateConcludedSelectorState Nothing
+                    , dateFrom = Date.add Months -3 currentDate
+                    , dateTo = Date.add Months 4 currentDate
+                    , dateDefault = Nothing
+                    }
 
-            else
-                ( 0, 0 )
+                expectedDateConcludedForView =
+                    Maybe.map formatDDMMYYYY form.expectedDateConcluded
+                        |> Maybe.withDefault ""
 
-        ( tasksCompleted, totalTasks ) =
-            ( taskCompleted form.expectedDateConcluded
-                + taskCompleted form.deliveryComplicationsPresent
-                + deliveryComplicationsCompleted
-            , 2 + deliveryComplicationsActive
+                viewDatesDiff =
+                    Maybe.map2
+                        (\expected actual ->
+                            let
+                                diffMonths =
+                                    Date.diff Months expected actual
+
+                                expectedAdjustedMonths =
+                                    Date.add Months diffMonths expected
+
+                                diffWeeks =
+                                    Date.diff Weeks expectedAdjustedMonths actual
+
+                                diffDays =
+                                    Date.diff Days (Date.add Weeks diffWeeks expectedAdjustedMonths) actual
+
+                                parts =
+                                    [ ( diffMonths, Translate.MonthSinglePlural ), ( diffWeeks, Translate.WeekSinglePlural ), ( diffDays, Translate.DaySinglePlural ) ]
+                                        |> List.filter (Tuple.first >> (/=) 0)
+
+                                viewPart ( value, transId ) =
+                                    translate language <| transId (abs value)
+
+                                viewDiff =
+                                    case parts of
+                                        [ single ] ->
+                                            viewPart single
+
+                                        [ first, second ] ->
+                                            viewPart first ++ " " ++ translate language Translate.And ++ " " ++ viewPart second
+
+                                        [ first, second, third ] ->
+                                            viewPart first ++ ", " ++ viewPart second ++ " " ++ translate language Translate.And ++ " " ++ viewPart third
+
+                                        _ ->
+                                            viewPart ( 0, Translate.DaySinglePlural )
+                            in
+                            [ viewLabel language Translate.DifferenceBetweenDueAndDeliveryDates
+                            , div [ class "form-input" ] [ text viewDiff ]
+                            ]
+                        )
+                        form.expectedDateConcluded
+                        assembled.person.birthDate
+                        |> Maybe.withDefault []
+            in
+            ( [ viewQuestionLabel language Translate.DateConcludedEstimatedQuestion
+              , div
+                    [ class "form-input date"
+                    , onClick <| SetExpectedDateConcludedSelectorState (Just dateSelectorConfig)
+                    ]
+                    [ text expectedDateConcludedForView ]
+              , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.expectedDateConcluded
+              ]
+                ++ viewDatesDiff
+            , [ maybeToBoolTask form.expectedDateConcluded ]
             )
 
-        expectedDateConcludedForView =
-            Maybe.map formatDDMMYYYY form.expectedDateConcluded
-                |> Maybe.withDefault ""
+        ( deliveryComplicationsSection, deliveryComplicationsTasks ) =
+            let
+                ( selectComplicationsHtml, selectComplicationsTasks ) =
+                    if form.deliveryComplicationsPresent == Just True then
+                        ( [ viewLabel language Translate.DeliveryComplicationsSelectionLabel
+                          , viewCheckBoxMultipleSelectInput language
+                                [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreclampsia, ComplicationOther ]
+                                [ ComplicationMaternalHemmorhage, ComplicationHiv, ComplicationMaternalDeath ]
+                                (form.deliveryComplications |> Maybe.withDefault [])
+                                Nothing
+                                SetDeliveryComplication
+                                Translate.DeliveryComplication
+                          ]
+                        , [ maybeToBoolTask form.deliveryComplications ]
+                        )
 
-        dateSelectorConfig =
-            { select = SetExpectedDateConcluded
-            , close = SetExpectedDateConcludedSelectorState Nothing
-            , dateFrom = Date.add Months -3 currentDate
-            , dateTo = Date.add Months 4 currentDate
-            , dateDefault = Nothing
-            }
-
-        viewDatesDiff =
-            Maybe.map2
-                (\expected actual ->
-                    let
-                        diffMonths =
-                            Date.diff Months expected actual
-
-                        expectedAdjustedMonths =
-                            Date.add Months diffMonths expected
-
-                        diffWeeks =
-                            Date.diff Weeks expectedAdjustedMonths actual
-
-                        diffDays =
-                            Date.diff Days (Date.add Weeks diffWeeks expectedAdjustedMonths) actual
-
-                        parts =
-                            [ ( diffMonths, Translate.MonthSinglePlural ), ( diffWeeks, Translate.WeekSinglePlural ), ( diffDays, Translate.DaySinglePlural ) ]
-                                |> List.filter (Tuple.first >> (/=) 0)
-
-                        viewPart ( value, transId ) =
-                            translate language <| transId (abs value)
-
-                        viewDiff =
-                            case parts of
-                                [ single ] ->
-                                    viewPart single
-
-                                [ first, second ] ->
-                                    viewPart first ++ " " ++ translate language Translate.And ++ " " ++ viewPart second
-
-                                [ first, second, third ] ->
-                                    viewPart first ++ ", " ++ viewPart second ++ " " ++ translate language Translate.And ++ " " ++ viewPart third
-
-                                _ ->
-                                    viewPart ( 0, Translate.DaySinglePlural )
-                    in
-                    [ viewLabel language Translate.DifferenceBetweenDueAndDeliveryDates
-                    , div [ class "form-input" ] [ text viewDiff ]
-                    ]
-                )
-                form.expectedDateConcluded
-                assembled.person.birthDate
-                |> Maybe.withDefault []
-
-        deliveryComplicationsPresentInput =
-            viewBoolInput
-                language
-                form.deliveryComplicationsPresent
-                SetDeliveryComplicationsPresent
-                ""
-                Nothing
-
-        deliveryComplicationsSection =
-            if form.deliveryComplicationsPresent == Just True then
-                [ viewLabel language Translate.DeliveryComplicationsSelectionLabel
-                , viewCheckBoxMultipleSelectInput language
-                    [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreclampsia, ComplicationOther ]
-                    [ ComplicationMaternalHemmorhage, ComplicationHiv, ComplicationMaternalDeath ]
-                    (form.deliveryComplications |> Maybe.withDefault [])
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
+              , viewBoolInput
+                    language
+                    form.deliveryComplicationsPresent
+                    (SavePregnancySummaryBoolInput
+                        (\value pregnancySummaryForm ->
+                            { pregnancySummaryForm
+                                | deliveryComplicationsPresent = Just value
+                                , deliveryComplications = Nothing
+                            }
+                        )
+                    )
+                    ""
                     Nothing
-                    SetDeliveryComplication
-                    Translate.DeliveryComplication
-                ]
+              ]
+                ++ selectComplicationsHtml
+            , form.deliveryComplicationsPresent :: selectComplicationsTasks
+            )
 
-            else
-                []
+        ( birthDefectsSection, birthDefectsTasks ) =
+            let
+                ( selectDefectsHtml, selectDefectsTasks ) =
+                    if form.birthDefectsPresent == Just True then
+                        ( [ viewLabel language Translate.BirthDefectsSelectionLabel
+                          , viewCheckBoxMultipleSelectInput language
+                                [ DefectBirthInjury
+                                , DefectCleftLipWithCleftPalate
+                                , DefectCleftPalate
+                                , DefectClubFoot
+                                , DefectMacrocephaly
+                                , DefectGastroschisis
+                                , DefectHearingLoss
+                                , DefectUndescendedTestes
+                                ]
+                                [ DefectHypospadias
+                                , DefectInguinalHernia
+                                , DefectMicrocephaly
+                                , DefectNueralTubes
+                                , DefectDownSyndrome
+                                , DefectCongenitalHeart
+                                , DefectVentricalSeptal
+                                , DefectPulmonaryValveAtresiaAndStenosis
+                                ]
+                                (form.birthDefects |> Maybe.withDefault [])
+                                Nothing
+                                SetBirthDefect
+                                Translate.BirthDefect
+                          ]
+                        , [ maybeToBoolTask form.birthDefects ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language Translate.BirthDefectsPresentQuestion
+              , viewBoolInput
+                    language
+                    form.birthDefectsPresent
+                    (SavePregnancySummaryBoolInput
+                        (\value pregnancySummaryForm ->
+                            { pregnancySummaryForm
+                                | birthDefectsPresent = Just value
+                                , birthDefects = Nothing
+                            }
+                        )
+                    )
+                    ""
+                    Nothing
+              ]
+                ++ selectDefectsHtml
+            , form.birthDefectsPresent :: selectDefectsTasks
+            )
+
+        tasks =
+            estimatedDueDateTasks ++ deliveryComplicationsTasks ++ birthDefectsTasks
+
+        ( tasksCompleted, totalTasks ) =
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
 
         disabled =
             tasksCompleted /= totalTasks
@@ -321,21 +400,13 @@ viewPregnancySummaryForm language currentDate assembled form_ =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form pregnancy-summary" ] <|
-                [ viewQuestionLabel language Translate.DateConcludedEstimatedQuestion
-                , div
-                    [ class "form-input date"
-                    , onClick <| SetExpectedDateConcludedSelectorState (Just dateSelectorConfig)
-                    ]
-                    [ text expectedDateConcludedForView ]
-                , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.expectedDateConcluded
-                ]
-                    ++ viewDatesDiff
-                    ++ [ viewQuestionLabel language Translate.DeliveryComplicationsPresentQuestion
-                       , deliveryComplicationsPresentInput
-                       ]
+                estimatedDueDateSection
                     ++ deliveryComplicationsSection
+                    ++ birthDefectsSection
             ]
-        , viewSaveAction language (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary) disabled
+        , viewSaveAction language
+            (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary)
+            disabled
         ]
     ]
 
