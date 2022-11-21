@@ -7864,7 +7864,7 @@ translationSet trans =
         NCDAANCNewbornItemLabel item ->
             case item of
                 RegularCheckups ->
-                    { english = "Regular prenatal and postpartum checkups "
+                    { english = "Regular prenatal and postpartum checkups"
                     , kinyarwanda = Nothing
                     }
 
@@ -7886,7 +7886,7 @@ translationSet trans =
                     }
 
                 HasHandwashingFacility ->
-                    { english = "Household has handwashing facility  "
+                    { english = "Household has handwashing facility"
                     , kinyarwanda = Nothing
                     }
 
