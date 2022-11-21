@@ -121,7 +121,13 @@ import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistory
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChild.ProgressReport.Model exposing (ECDStatus(..), NCDAANCNewbornItem(..), NCDANutritionBehaviorItem(..))
+import Pages.WellChild.ProgressReport.Model
+    exposing
+        ( ECDStatus(..)
+        , NCDAANCNewbornItem(..)
+        , NCDAInfrastructureEnvironmentWashItem(..)
+        , NCDANutritionBehaviorItem(..)
+        )
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -723,6 +729,7 @@ type TranslationId
     | IndividualEncounterSubsequentVisit IndividualEncounterType
     | IndividualEncounterType IndividualEncounterType Bool
     | IndividualEncounterTypes
+    | InfrastructureEnvironmentWash
     | InitialResultsDisplay InitialResultsDisplay
     | IntractableVomiting Bool
     | IntractableVomitingQuestion
@@ -871,6 +878,7 @@ type TranslationId
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
     | NCDAANCNewbornItemLabel NCDAANCNewbornItem
+    | NCDAInfrastructureEnvironmentWashItemLabel NCDAInfrastructureEnvironmentWashItem
     | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
@@ -5851,6 +5859,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        InfrastructureEnvironmentWash ->
+            { english = "Infrastructure, Environment & Wash"
+            , kinyarwanda = Nothing
+            }
+
         InitialResultsDisplay display ->
             case display of
                 InitialResultsHidden ->
@@ -7851,12 +7864,39 @@ translationSet trans =
         NCDAANCNewbornItemLabel item ->
             case item of
                 RegularCheckups ->
-                    { english = "Regular prenatal and postpartum checkups "
+                    { english = "Regular prenatal and postpartum checkups"
                     , kinyarwanda = Nothing
                     }
 
                 IronDuringPregnancy ->
                     { english = "Iron during pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDAInfrastructureEnvironmentWashItemLabel item ->
+            case item of
+                HasToilets ->
+                    { english = "Household has toilets"
+                    , kinyarwanda = Nothing
+                    }
+
+                HasCleanWater ->
+                    { english = "Household has clean water"
+                    , kinyarwanda = Nothing
+                    }
+
+                HasHandwashingFacility ->
+                    { english = "Household has handwashing facility"
+                    , kinyarwanda = Nothing
+                    }
+
+                HasKitchenGarden ->
+                    { english = "Household has kitchen garden"
+                    , kinyarwanda = Nothing
+                    }
+
+                InsecticideTreatedBedNets ->
+                    { english = "Insecticide treated bed nets"
                     , kinyarwanda = Nothing
                     }
 

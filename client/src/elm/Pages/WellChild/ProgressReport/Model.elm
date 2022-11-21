@@ -54,6 +54,14 @@ type NCDANutritionBehaviorItem
     | MealsADay
 
 
+type NCDAInfrastructureEnvironmentWashItem
+    = HasToilets
+    | HasCleanWater
+    | HasHandwashingFacility
+    | HasKitchenGarden
+    | InsecticideTreatedBedNets
+
+
 type NCDACellValue
     = NCDACellValueV
     | NCDACellValueX

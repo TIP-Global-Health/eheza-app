@@ -1554,6 +1554,7 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
         [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
         , viewANCNewbornPane language currentDate db child
         , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
+        , viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths
         ]
 
 
@@ -1796,11 +1797,6 @@ viewTableRow language itemTransId pregnancyValues zeroToFiveValues sixToTwentyFo
         ]
 
 
-emptyPregnancyValues : List NCDACellValue
-emptyPregnancyValues =
-    List.repeat 9 NCDACellValueDash
-
-
 viewNutritionBehaviorPane :
     Language
     -> NominalDate
@@ -1812,17 +1808,16 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
 
-        emptyValues =
-            List.repeat 25 NCDACellValueEmpty
-
         breastfedForSixMonthsValues =
-            generateValues (EverySet.member NCDABreastfedForSixMonths)
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDABreastfedForSixMonths)
 
         appropriateComplementaryFeedingValues =
-            generateValues (EverySet.member NCDAAppropriateComplementaryFeeding)
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAAppropriateComplementaryFeeding)
 
         mealsADayValues =
-            generateValues
+            generateValues currentDate
+                child
+                questionnairesByAgeInMonths
                 (\questionnaire ->
                     List.any (\sign -> EverySet.member sign questionnaire)
                         [ NCDAMealFrequency6to8Months
@@ -1832,33 +1827,7 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
                 )
 
         diverseDietValues =
-            generateValues (EverySet.member NCDAFiveFoodGroups)
-
-        generateValues resolutionFunc =
-            Maybe.map2
-                (\questionnaires ageMonths ->
-                    List.indexedMap
-                        (\month _ ->
-                            if ageMonths < month then
-                                NCDACellValueEmpty
-
-                            else
-                                Dict.get month questionnaires
-                                    |> Maybe.map
-                                        (\questionnaire ->
-                                            if resolutionFunc questionnaire then
-                                                NCDACellValueV
-
-                                            else
-                                                NCDACellValueX
-                                        )
-                                    |> Maybe.withDefault NCDACellValueDash
-                        )
-                        emptyValues
-                )
-                questionnairesByAgeInMonths
-                (ageInMonths currentDate child)
-                |> Maybe.withDefault emptyValues
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAFiveFoodGroups)
 
         -- Here we are interested only at answer given when child was 6 months old.
         -- For months before that, and after, will show dahses, in case child has
@@ -1941,3 +1910,86 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
                 (List.drop 6 mealsADayValues)
             ]
         ]
+
+
+viewInfrastructureEnvironmentWashPane :
+    Language
+    -> NominalDate
+    -> Person
+    -> Maybe (Dict Int NCDAValue)
+    -> Html any
+viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths =
+    let
+        pregnancyValues =
+            List.repeat 9 NCDACellValueDash
+
+        hasToilets =
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAHasToilets)
+
+        hasCleanWater =
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAHasCleanWater)
+
+        hasHandwashingFacility =
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAHasHandwashingFacility)
+
+        hasKitchenGarden =
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAHasKitchenGarden)
+    in
+    div [ class "pane infrastructure-environment-wash" ]
+        [ viewPaneHeading language Translate.InfrastructureEnvironmentWash
+        , div [ class "pane-content" ]
+            [ viewTableHeader
+            , viewTableRow language
+                (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasToilets)
+                pregnancyValues
+                (List.take 6 hasToilets)
+                (List.drop 6 hasToilets)
+            , viewTableRow language
+                (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasCleanWater)
+                pregnancyValues
+                (List.take 6 hasCleanWater)
+                (List.drop 6 hasCleanWater)
+            , viewTableRow language
+                (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasHandwashingFacility)
+                pregnancyValues
+                (List.take 6 hasHandwashingFacility)
+                (List.drop 6 hasHandwashingFacility)
+            , viewTableRow language
+                (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasKitchenGarden)
+                pregnancyValues
+                (List.take 6 hasKitchenGarden)
+                (List.drop 6 hasKitchenGarden)
+            ]
+        ]
+
+
+generateValues : NominalDate -> Person -> Maybe (Dict Int NCDAValue) -> (NCDAValue -> Bool) -> List NCDACellValue
+generateValues currentDate child questionnairesByAgeInMonths resolutionFunc =
+    let
+        emptyValues =
+            List.repeat 25 NCDACellValueEmpty
+    in
+    Maybe.map2
+        (\questionnaires ageMonths ->
+            List.indexedMap
+                (\month _ ->
+                    if ageMonths < month then
+                        NCDACellValueEmpty
+
+                    else
+                        Dict.get month questionnaires
+                            |> Maybe.map
+                                (\questionnaire ->
+                                    if resolutionFunc questionnaire then
+                                        NCDACellValueV
+
+                                    else
+                                        NCDACellValueX
+                                )
+                            |> Maybe.withDefault NCDACellValueDash
+                )
+                emptyValues
+        )
+        questionnairesByAgeInMonths
+        (ageInMonths currentDate child)
+        |> Maybe.withDefault emptyValues
