@@ -132,7 +132,17 @@ update currentDate isChw id db msg model =
             , [ focusOnCalendarMsg ]
             )
 
-        SavePregnancySummaryBoolInput updateFunc value ->
+        SetPregnancySummaryBoolInput updateFunc value ->
+            let
+                updatedForm =
+                    updateFunc value model.pregnancySummaryForm
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetPregnancySummaryNumberInput updateFunc value ->
             let
                 updatedForm =
                     updateFunc value model.pregnancySummaryForm
@@ -1676,7 +1686,7 @@ update currentDate isChw id db msg model =
             , []
             )
 
-        SetBirthWeightMsg string ->
+        SetBirthWeight string ->
             let
                 updatedForm =
                     model.ncdaData.form

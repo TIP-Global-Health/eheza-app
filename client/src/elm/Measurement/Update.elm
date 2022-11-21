@@ -272,7 +272,7 @@ updateChild msg model =
             , Nothing
             )
 
-        SetBirthWeightMsg string ->
+        SetBirthWeight string ->
             let
                 updatedForm =
                     model.ncdaData.form

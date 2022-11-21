@@ -31,7 +31,8 @@ import Measurement.Model exposing (InvokationModule(..), NCDAData, PhotoForm, Va
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
-        ( renderDatePart
+        ( birthWeightInputsAndTasks
+        , renderDatePart
         , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
@@ -221,6 +222,123 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 |> getMeasurementValueFunc
                 |> pregnancySummaryFormWithDefault form_
 
+        ( apgarScoresSection, apgarScoresTasks ) =
+            let
+                ( apgarMeasurementsSection, apgarMeasurementsTasks ) =
+                    if form.apgarScoresAvailable == Just True then
+                        ( [ viewLabel language <| Translate.Minutes 1
+                          , viewMeasurementInput language
+                                form.apgarOneMin
+                                (SetPregnancySummaryNumberInput
+                                    (\value pregnancySummaryForm ->
+                                        { pregnancySummaryForm
+                                            | apgarOneMin = String.toFloat value
+                                            , apgarDirty = True
+                                        }
+                                    )
+                                )
+                                "apgar-one-min"
+                                Translate.EmptyString
+                          , viewLabel language <| Translate.Minutes 5
+                          , viewMeasurementInput language
+                                form.apgarFiveMin
+                                (SetPregnancySummaryNumberInput
+                                    (\value pregnancySummaryForm ->
+                                        { pregnancySummaryForm
+                                            | apgarFiveMin = String.toFloat value
+                                            , apgarDirty = True
+                                        }
+                                    )
+                                )
+                                "apgar-five-min"
+                                Translate.EmptyString
+                          ]
+                        , [ maybeToBoolTask form.apgarOneMin, maybeToBoolTask form.apgarFiveMin ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language <| Translate.PregnancySummarySignQuestion ApgarScores
+              , viewBoolInput
+                    language
+                    form.apgarScoresAvailable
+                    (SetPregnancySummaryBoolInput
+                        (\value pregnancySummaryForm ->
+                            { pregnancySummaryForm
+                                | apgarScoresAvailable = Just value
+                                , apgarOneMin = Nothing
+                                , apgarFiveMin = Nothing
+                                , apgarDirty = True
+                            }
+                        )
+                    )
+                    ""
+                    Nothing
+              ]
+                ++ apgarMeasurementsSection
+            , form.apgarScoresAvailable :: apgarMeasurementsTasks
+            )
+
+        ( birthWeightSection, birthWeightTasks ) =
+            birthWeightInputsAndTasks language
+                form.birthWeight
+                (SetPregnancySummaryNumberInput
+                    (\value pregnancySummaryForm ->
+                        { pregnancySummaryForm
+                            | birthWeight = String.toFloat value |> Maybe.map WeightInKg
+                        }
+                    )
+                )
+
+        ( birthLengthSection, birthLengthTasks ) =
+            let
+                ( lengthMeasurementSection, lengthMeasurementTasks ) =
+                    if form.birthLengthAvailable == Just True then
+                        let
+                            birthLengthAsFloat =
+                                Maybe.map (\(HeightInCm length) -> length)
+                                    form.birthLength
+                        in
+                        ( [ viewMeasurementInput language
+                                birthLengthAsFloat
+                                (SetPregnancySummaryNumberInput
+                                    (\value pregnancySummaryForm ->
+                                        { pregnancySummaryForm
+                                            | birthLength = String.toFloat value |> Maybe.map HeightInCm
+                                            , birthLengthDirty = True
+                                        }
+                                    )
+                                )
+                                "birth-length"
+                                Translate.CentimeterShorthand
+                          ]
+                        , [ maybeToBoolTask form.birthLength ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language <| Translate.PregnancySummarySignQuestion BirthLength
+              , viewBoolInput
+                    language
+                    form.birthLengthAvailable
+                    (SetPregnancySummaryBoolInput
+                        (\value pregnancySummaryForm ->
+                            { pregnancySummaryForm
+                                | birthLengthAvailable = Just value
+                                , birthLength = Nothing
+                                , birthLengthDirty = True
+                            }
+                        )
+                    )
+                    ""
+                    Nothing
+              ]
+                ++ lengthMeasurementSection
+            , form.birthLengthAvailable :: lengthMeasurementTasks
+            )
+
         ( estimatedDueDateSection, estimatedDueDateTasks ) =
             let
                 dateSelectorConfig =
@@ -315,7 +433,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
               , viewBoolInput
                     language
                     form.deliveryComplicationsPresent
-                    (SavePregnancySummaryBoolInput
+                    (SetPregnancySummaryBoolInput
                         (\value pregnancySummaryForm ->
                             { pregnancySummaryForm
                                 | deliveryComplicationsPresent = Just value
@@ -354,7 +472,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                                 , DefectVentricalSeptal
                                 , DefectPulmonaryValveAtresiaAndStenosis
                                 ]
-                                (form.birthDefects |> Maybe.withDefault [])
+                                (Maybe.withDefault [] form.birthDefects)
                                 Nothing
                                 SetBirthDefect
                                 Translate.BirthDefect
@@ -369,7 +487,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
               , viewBoolInput
                     language
                     form.birthDefectsPresent
-                    (SavePregnancySummaryBoolInput
+                    (SetPregnancySummaryBoolInput
                         (\value pregnancySummaryForm ->
                             { pregnancySummaryForm
                                 | birthDefectsPresent = Just value
@@ -385,7 +503,12 @@ viewPregnancySummaryForm language currentDate assembled form_ =
             )
 
         tasks =
-            estimatedDueDateTasks ++ deliveryComplicationsTasks ++ birthDefectsTasks
+            estimatedDueDateTasks
+                ++ apgarScoresTasks
+                ++ birthWeightTasks
+                ++ birthLengthTasks
+                ++ deliveryComplicationsTasks
+                ++ birthDefectsTasks
 
         ( tasksCompleted, totalTasks ) =
             ( Maybe.Extra.values tasks
@@ -401,6 +524,9 @@ viewPregnancySummaryForm language currentDate assembled form_ =
         [ div [ class "full content" ]
             [ div [ class "ui form pregnancy-summary" ] <|
                 estimatedDueDateSection
+                    ++ apgarScoresSection
+                    ++ birthWeightSection
+                    ++ birthLengthSection
                     ++ deliveryComplicationsSection
                     ++ birthDefectsSection
             ]
@@ -2297,7 +2423,7 @@ viewNCDAContent language currentDate assembled data previousNCDAValues =
         currentDate
         assembled.person
         SetNCDABoolInput
-        SetBirthWeightMsg
+        SetBirthWeight
         saveMsg
         SetNCDAHelperState
         data.helperState

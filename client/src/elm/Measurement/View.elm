@@ -2374,41 +2374,10 @@ ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeigh
 
         ( birthWeightSection, birthWeightTasks ) =
             if firstNCDAQuestionnaire then
-                let
-                    colorAlertIndication =
-                        Maybe.map
-                            (\weight ->
-                                if weight < 2500 then
-                                    div
-                                        [ class "four wide column" ]
-                                        [ viewColorAlertIndication language ColorAlertRed ]
-
-                                else
-                                    emptyNode
-                            )
-                            birthWeightAsFloat
-                in
-                ( [ viewQuestionLabel language Translate.NCDABirthweightQuestion
-                  , div [ class "ui grid" ]
-                        [ div [ class "twelve wide column" ]
-                            [ viewMeasurementInput language
-                                birthWeightAsFloat
-                                setBirthWeightMsg
-                                "birth-weight"
-                                Translate.Grams
-                            ]
-                        , showMaybe colorAlertIndication
-                        ]
-                  ]
-                , [ maybeToBoolTask form.birthWeight ]
-                )
+                birthWeightInputsAndTasks language form.birthWeight setBirthWeightMsg
 
             else
                 ( [], [] )
-
-        birthWeightAsFloat =
-            Maybe.map (\(WeightInKg weight) -> weight)
-                form.birthWeight
 
         ( feedingSign, mealFrequencySign ) =
             ageInMonths currentDate person
@@ -2639,6 +2608,42 @@ ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeigh
     )
 
 
+birthWeightInputsAndTasks : Language -> Maybe WeightInKg -> (String -> msg) -> ( List (Html msg), List (Maybe Bool) )
+birthWeightInputsAndTasks language birthWeight setBirthWeightMsg =
+    let
+        colorAlertIndication =
+            Maybe.map
+                (\weight ->
+                    if weight < 2500 then
+                        div
+                            [ class "four wide column" ]
+                            [ viewColorAlertIndication language ColorAlertRed ]
+
+                    else
+                        emptyNode
+                )
+                birthWeightAsFloat
+
+        birthWeightAsFloat =
+            Maybe.map (\(WeightInKg weight) -> weight)
+                birthWeight
+    in
+    ( [ viewQuestionLabel language Translate.NCDABirthweightQuestion
+      , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewMeasurementInput language
+                    birthWeightAsFloat
+                    setBirthWeightMsg
+                    "birth-weight"
+                    Translate.Grams
+                ]
+            , showMaybe colorAlertIndication
+            ]
+      ]
+    , [ maybeToBoolTask birthWeight ]
+    )
+
+
 viewNCDAHelperDialog : Language -> msg -> Maybe NCDASign -> Maybe (Html msg)
 viewNCDAHelperDialog language action helperState =
     Maybe.andThen
@@ -2711,7 +2716,7 @@ viewNCDA language currentDate child measurement data previousNCDAValues =
         currentDate
         child
         SetNCDABoolInput
-        SetBirthWeightMsg
+        SetBirthWeight
         saveMsg
         SetNCDAHelperState
         data.helperState

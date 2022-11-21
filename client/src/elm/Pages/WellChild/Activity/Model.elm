@@ -20,7 +20,8 @@ type Msg
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
     | SetExpectedDateConcludedSelectorState (Maybe (DateSelectorConfig Msg))
-    | SavePregnancySummaryBoolInput (Bool -> PregnancySummaryForm -> PregnancySummaryForm) Bool
+    | SetPregnancySummaryBoolInput (Bool -> PregnancySummaryForm -> PregnancySummaryForm) Bool
+    | SetPregnancySummaryNumberInput (String -> PregnancySummaryForm -> PregnancySummaryForm) String
     | SetDeliveryComplication DeliveryComplication
     | SetBirthDefect BirthDefect
     | SavePregnancySummary PersonId (Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary ))
@@ -99,7 +100,7 @@ type Msg
     | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
       -- NCDA
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
-    | SetBirthWeightMsg String
+    | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( WellChildNCDAId, WellChildNCDA ))
 

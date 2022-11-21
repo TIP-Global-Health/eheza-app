@@ -257,7 +257,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SetBirthWeightMsg string ->
+        SetBirthWeight string ->
             let
                 updatedForm =
                     model.ncdaData.form

@@ -858,6 +858,7 @@ type TranslationId
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
     | MiddleName
+    | Minutes Int
     | MinutesAgo Int
     | MissedDosesOfMedicatgion Int
     | ModeOfDelivery ModeOfDelivery
@@ -1050,6 +1051,7 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PregnancyConclusion
     | PregnancyStart
+    | PregnancySummarySignQuestion PregnancySummarySign
     | PregnancyTestResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
     | PregnancyUrineTest
@@ -7692,6 +7694,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Minutes minutes ->
+            { english =
+                if minutes == 1 then
+                    "1 Minute"
+
+                else
+                    String.fromInt minutes ++ " Minutes"
+            , kinyarwanda = Nothing
+            }
+
         MinutesAgo minutes ->
             { english =
                 if minutes == 0 then
@@ -10050,6 +10062,28 @@ translationSet trans =
             { english = "Pregnancy Start"
             , kinyarwanda = Just "Itangira ryo Gutwita"
             }
+
+        PregnancySummarySignQuestion sign ->
+            case sign of
+                ApgarScores ->
+                    { english = "Are APGAR scores available for this patient"
+                    , kinyarwanda = Nothing
+                    }
+
+                BirthWeight ->
+                    { english = "What was the childs birthweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                BirthLength ->
+                    { english = "Is birth length available"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPregnancySummarySigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         PregnancyTestResult result ->
             case result of
