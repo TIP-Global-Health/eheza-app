@@ -9352,6 +9352,16 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro"
                     }
 
+                FilterSPVReport ->
+                    { english = "Standard Pediatric Report"
+                    , kinyarwanda = Nothing
+                    }
+
+                FilterNCDAScoreboard ->
+                    { english = "NCDA Scorecard"
+                    , kinyarwanda = Nothing
+                    }
+
         PauseEncounter ->
             { english = "Pause Encounter"
             , kinyarwanda = Just "Igikorwa cyahagaritswe"

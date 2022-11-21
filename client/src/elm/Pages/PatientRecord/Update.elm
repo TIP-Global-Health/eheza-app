@@ -34,7 +34,7 @@ update currentDate id msg model =
                 update currentDate id (SetActivePage <| UserPage <| DemographicsReportPage (InitiatorPatientRecord id) id) model
 
             else
-                ( { model | filter = filter }
+                ( { model | filter = Just filter }
                 , Cmd.none
                 , []
                 )

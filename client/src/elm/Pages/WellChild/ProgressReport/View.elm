@@ -1,5 +1,8 @@
 module Pages.WellChild.ProgressReport.View exposing
     ( view
+    , viewContent
+    , viewHeader
+    , viewNCDAScorecard
     , viewNutritionSigns
     , viewPaneHeading
     , viewPersonInfoPane
@@ -169,6 +172,91 @@ viewProgressReport :
     -> ( PersonId, Person )
     -> Html msg
 viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg bottomActionData ( childId, child ) =
+    div [ class "page-report well-child" ]
+        [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
+        , viewContent language
+            currentDate
+            zscores
+            isChw
+            initiator
+            mandatoryNutritionAssessmentMeasurementsTaken
+            db
+            diagnosisMode
+            setActivePageMsg
+            setDiagnosisModeMsg
+            bottomActionData
+            ( childId, child )
+        ]
+
+
+viewHeader : Language -> WellChildProgressReportInitiator -> DiagnosisMode -> (Page -> msg) -> (DiagnosisMode -> msg) -> Html msg
+viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg =
+    let
+        label =
+            case initiator of
+                Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord _ _ ->
+                    Translate.PatientRecord
+
+                _ ->
+                    Translate.ProgressReport
+
+        goBackAction =
+            case diagnosisMode of
+                ModeActiveDiagnosis ->
+                    let
+                        targetPage =
+                            case initiator of
+                                InitiatorNutritionIndividual nutritionEncounterId ->
+                                    UserPage (NutritionEncounterPage nutritionEncounterId)
+
+                                InitiatorWellChild wellChildEncounterId ->
+                                    UserPage (WellChildEncounterPage wellChildEncounterId)
+
+                                InitiatorNutritionGroup sessionId personId ->
+                                    UserPage (SessionPage sessionId (ChildPage personId))
+
+                                Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord patientRecordInitiator _ ->
+                                    case patientRecordInitiator of
+                                        Backend.PatientRecord.Model.InitiatorParticipantDirectory ->
+                                            UserPage (PersonsPage Nothing ParticipantDirectoryOrigin)
+
+                                        Backend.PatientRecord.Model.InitiatorPatientRecord personId ->
+                                            UserPage (PatientRecordPage Backend.PatientRecord.Model.InitiatorParticipantDirectory personId)
+                    in
+                    setActivePageMsg targetPage
+
+                ModeCompletedDiagnosis ->
+                    setDiagnosisModeMsg ModeActiveDiagnosis
+    in
+    div [ class "ui basic segment head" ]
+        [ h1 [ class "ui header" ]
+            [ text <| translate language label
+            ]
+        , span
+            [ class "link-back"
+            , onClick goBackAction
+            ]
+            [ span [ class "icon-back" ] []
+            , span [] []
+            ]
+        ]
+
+
+viewContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Bool
+    -> WellChildProgressReportInitiator
+    -> Bool
+    -> ModelIndexedDb
+    -> DiagnosisMode
+    -> (Page -> msg)
+    -> (DiagnosisMode -> msg)
+    -> Maybe (BottomActionData msg)
+    -> ( PersonId, Person )
+    -> Html msg
+viewContent language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg bottomActionData ( childId, child ) =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -315,84 +403,28 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 bottomActionData
                 |> Maybe.withDefault ( Nothing, emptyNode )
     in
-    div [ class "page-report well-child" ]
-        [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
-        , div [ class "ui report unstackable items" ] <|
-            [ viewPersonInfoPane language currentDate child
-            , viewDiagnosisPane language
-                currentDate
-                isChw
-                initiator
-                mandatoryNutritionAssessmentMeasurementsTaken
-                acuteIllnesses
-                individualNutritionParticipantId
-                wellChildEncounters
-                groupNutritionMeasurements
-                (getPreviousMeasurements individualNutritionMeasurementsWithDates)
-                individualWellChildMeasurements
-                db
-                diagnosisMode
-                setActivePageMsg
-                setDiagnosisModeMsg
-                maybeAssembled
-            ]
-                ++ derivedContent
-                ++ [ bottomActionButton ]
+    div [ class "ui report unstackable items" ] <|
+        [ viewPersonInfoPane language currentDate child
+        , viewDiagnosisPane language
+            currentDate
+            isChw
+            initiator
+            mandatoryNutritionAssessmentMeasurementsTaken
+            acuteIllnesses
+            individualNutritionParticipantId
+            wellChildEncounters
+            groupNutritionMeasurements
+            (getPreviousMeasurements individualNutritionMeasurementsWithDates)
+            individualWellChildMeasurements
+            db
+            diagnosisMode
+            setActivePageMsg
+            setDiagnosisModeMsg
+            maybeAssembled
         , viewModal endEncounterDialog
         ]
-
-
-viewHeader : Language -> WellChildProgressReportInitiator -> DiagnosisMode -> (Page -> msg) -> (DiagnosisMode -> msg) -> Html msg
-viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg =
-    let
-        label =
-            case initiator of
-                Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord _ _ ->
-                    Translate.PatientRecord
-
-                _ ->
-                    Translate.ProgressReport
-
-        goBackAction =
-            case diagnosisMode of
-                ModeActiveDiagnosis ->
-                    let
-                        targetPage =
-                            case initiator of
-                                InitiatorNutritionIndividual nutritionEncounterId ->
-                                    UserPage (NutritionEncounterPage nutritionEncounterId)
-
-                                InitiatorWellChild wellChildEncounterId ->
-                                    UserPage (WellChildEncounterPage wellChildEncounterId)
-
-                                InitiatorNutritionGroup sessionId personId ->
-                                    UserPage (SessionPage sessionId (ChildPage personId))
-
-                                Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord patientRecordInitiator _ ->
-                                    case patientRecordInitiator of
-                                        Backend.PatientRecord.Model.InitiatorParticipantDirectory ->
-                                            UserPage (PersonsPage Nothing ParticipantDirectoryOrigin)
-
-                                        Backend.PatientRecord.Model.InitiatorPatientRecord personId ->
-                                            UserPage (PatientRecordPage Backend.PatientRecord.Model.InitiatorParticipantDirectory personId)
-                    in
-                    setActivePageMsg targetPage
-
-                ModeCompletedDiagnosis ->
-                    setDiagnosisModeMsg ModeActiveDiagnosis
-    in
-    div [ class "ui basic segment head" ]
-        [ h1 [ class "ui header" ]
-            [ text <| translate language label
-            ]
-        , span
-            [ class "link-back"
-            , onClick goBackAction
-            ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
-        ]
+            ++ derivedContent
+            ++ [ bottomActionButton ]
 
 
 viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
@@ -1434,3 +1466,13 @@ viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
     div [ class <| "pane-heading" ]
         [ text <| translate language label ]
+
+
+viewNCDAScorecard :
+    Language
+    -> NominalDate
+    -> ModelIndexedDb
+    -> ( PersonId, Person )
+    -> Html any
+viewNCDAScorecard language currentDate db ( childId, child ) =
+    text "viewNCDAScoreboard"

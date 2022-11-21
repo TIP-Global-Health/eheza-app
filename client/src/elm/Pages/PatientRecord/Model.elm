@@ -9,7 +9,7 @@ import Pages.Report.Model exposing (DiagnosisMode(..))
 type alias Model =
     { diagnosisMode : DiagnosisMode
     , viewMode : ViewMode
-    , filter : PatientRecordFilter
+    , filter : Maybe PatientRecordFilter
     }
 
 
@@ -17,7 +17,7 @@ emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , viewMode = ViewPatientRecord
-    , filter = FilterAcuteIllness
+    , filter = Nothing
     }
 
 
@@ -45,3 +45,5 @@ type PatientRecordFilter
     | FilterAntenatal
     | FilterFamilyPlanning
     | FilterDemographics
+    | FilterSPVReport
+    | FilterNCDAScoreboard

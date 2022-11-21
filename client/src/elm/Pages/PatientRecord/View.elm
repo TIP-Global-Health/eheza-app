@@ -43,7 +43,7 @@ import Pages.Utils
         , viewStartEncounterButton
         )
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
-import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading, viewProgressReport)
+import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage, viewModal)
@@ -152,27 +152,59 @@ viewStartEncounterPage language currentDate isChw personId person patientType in
 viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
 viewContentForChild language currentDate zscores childId child isChw initiator db model =
     let
-        bottomActionData =
-            Just <|
-                { showEndEncounterDialog = False
-                , allowEndEncounter = False
-                , closeEncounterMsg = NoOp
-                , setEndEncounterDialogStateMsg = always NoOp
-                , startEncounterMsg = SetViewMode ViewStartEncounter
-                }
+        activeFilter =
+            resolveActiveFilter PatientChild model
+
+        ( containerClass, header, content ) =
+            case activeFilter of
+                FilterSPVReport ->
+                    let
+                        wellChildReportInitiator =
+                            Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId
+
+                        bottomActionData =
+                            Just <|
+                                { showEndEncounterDialog = False
+                                , allowEndEncounter = False
+                                , closeEncounterMsg = NoOp
+                                , setEndEncounterDialogStateMsg = always NoOp
+                                , startEncounterMsg = SetViewMode ViewStartEncounter
+                                }
+                    in
+                    ( "page-report well-child"
+                    , Pages.WellChild.ProgressReport.View.viewHeader language
+                        wellChildReportInitiator
+                        model.diagnosisMode
+                        SetActivePage
+                        SetDiagnosisMode
+                    , Pages.WellChild.ProgressReport.View.viewContent language
+                        currentDate
+                        zscores
+                        isChw
+                        wellChildReportInitiator
+                        False
+                        db
+                        model.diagnosisMode
+                        SetActivePage
+                        SetDiagnosisMode
+                        bottomActionData
+                        ( childId, child )
+                    )
+
+                FilterNCDAScoreboard ->
+                    ( "page-activity patient-record"
+                    , viewHeader language model
+                    , viewNCDAScorecard language currentDate db ( childId, child )
+                    )
+
+                _ ->
+                    ( "", emptyNode, emptyNode )
     in
-    viewProgressReport language
-        currentDate
-        zscores
-        isChw
-        (Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId)
-        False
-        db
-        model.diagnosisMode
-        SetActivePage
-        SetDiagnosisMode
-        bottomActionData
-        ( childId, child )
+    div [ class containerClass ]
+        [ header
+        , viewFilters language child PatientChild model
+        , content
+        ]
 
 
 viewContentForOther : Language -> NominalDate -> Bool -> PersonId -> Person -> PatientType -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
@@ -198,8 +230,11 @@ viewContentForOther language currentDate isChw personId person patientType initi
                 )
                 individualParticipants
 
+        activeFilter =
+            resolveActiveFilter patientType model
+
         selectedPane =
-            case model.filter of
+            case activeFilter of
                 FilterAcuteIllness ->
                     viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db
 
@@ -209,7 +244,7 @@ viewContentForOther language currentDate isChw personId person patientType initi
                 FilterFamilyPlanning ->
                     viewFamilyPlanningPane language currentDate personId (List.map Tuple.first pregnancies) db
 
-                FilterDemographics ->
+                _ ->
                     emptyNode
     in
     div [ class "page-activity patient-record" ]
@@ -350,10 +385,13 @@ thumbnailDimensions =
 viewFilters : Language -> Person -> PatientType -> Model -> Html Msg
 viewFilters language person patientType model =
     let
+        activeFilter =
+            resolveActiveFilter patientType model
+
         renderButton filter =
             button
                 [ classList
-                    [ ( "active", model.filter == filter )
+                    [ ( "active", activeFilter == filter )
                     , ( "primary ui button", True )
                     ]
                 , onClick <| SetFilter filter
@@ -361,27 +399,44 @@ viewFilters language person patientType model =
                 [ translateText language <| Translate.PatientRecordFilter filter ]
 
         patientRecordFilters =
-            case person.gender of
-                Male ->
+            case patientType of
+                PatientChild ->
+                    [ FilterSPVReport, FilterNCDAScoreboard ]
+
+                PatientAdult ->
+                    case person.gender of
+                        Male ->
+                            [ FilterAcuteIllness
+                            , FilterDemographics
+                            ]
+
+                        Female ->
+                            [ FilterAcuteIllness
+                            , FilterAntenatal
+                            , FilterFamilyPlanning
+                            , FilterDemographics
+                            ]
+
+                PatientUnknown ->
                     [ FilterAcuteIllness
                     , FilterDemographics
                     ]
-
-                Female ->
-                    if patientType == PatientAdult then
-                        [ FilterAcuteIllness
-                        , FilterAntenatal
-                        , FilterFamilyPlanning
-                        , FilterDemographics
-                        ]
-
-                    else
-                        [ FilterAcuteIllness
-                        , FilterDemographics
-                        ]
     in
     List.map renderButton patientRecordFilters
         |> div [ class "ui segment filters" ]
+
+
+resolveActiveFilter : PatientType -> Model -> PatientRecordFilter
+resolveActiveFilter patientType model =
+    Maybe.withDefault
+        (case patientType of
+            PatientChild ->
+                FilterSPVReport
+
+            _ ->
+                FilterAcuteIllness
+        )
+        model.filter
 
 
 viewAcuteIllnessPane :
