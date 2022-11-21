@@ -3860,7 +3860,7 @@ div.page-report.well-child {
     }
   }
 
-  .pane.child-identification {
+  .pane {
 
     .pane-heading {
       text-transform: unset;
@@ -3868,6 +3868,83 @@ div.page-report.well-child {
 
     .pane-content {
       color: $color-text;
+
+      .table-header,
+      .table-row {
+        display: flex;
+        justify-content: space-between;
+
+        .activity {
+          border-bottom: 1px solid $color-text;
+          font-size: 14px;
+          padding-left: 10px;
+          padding-top: 10px;
+          text-align: center;
+          text-align: left;
+          width: 180px;
+        }
+
+        .months {
+          border-bottom: 1px solid $color-text;
+          border-top: 1px solid $color-text;
+          display: flex;
+          font-size: 11px;
+          justify-content: space-between;
+
+          .month {
+            border-left: 1px solid $color-text;
+            line-height: 11px;
+            padding: 3px;
+          }
+        }
+      }
+
+      .table-header {
+
+        .flex-column {
+          display: flex;
+          flex-direction: column;
+
+          .column-heading {
+            border-left: 1px solid $color-text;
+            font-size: 14px;
+            text-align: center;
+          }
+        }
+
+        .flex-column.pregnancy {
+          width: 130px;
+        }
+
+        .flex-column.0-5 {
+          font-size: 9px;
+          width: 90px;
+        }
+      }
+
+      .table-row {
+
+        .activity {
+          line-height: 18px;
+          padding-bottom: 5px;
+          padding-top: 5px;
+
+        }
+
+        .months {
+          border-top: 0;
+
+          .month {
+            color: $color-white;
+          }
+        }
+      }
+    }
+  }
+
+  .pane.child-identification {
+
+    .pane-content {
       display: flex;
       justify-content: space-between;
       padding: 20px;
