@@ -5,14 +5,30 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant)
+import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
+import EverySet exposing (EverySet)
 import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 
 fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
+    let
+        fetchParentsMsgs =
+            Dict.get id db.relationshipsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (Dict.values
+                        >> List.filter (.relatedBy >> (==) MyParent)
+                        >> EverySet.fromList
+                        >> EverySet.toList
+                        >> List.map (.relatedTo >> FetchPerson)
+                    )
+                |> Maybe.withDefault []
+    in
     [ FetchPerson id
+    , FetchRelationshipsForPerson id
 
     -- We need this, so we can resolve the individual participants of child.
     , FetchIndividualEncounterParticipantsForPerson id
@@ -22,6 +38,7 @@ fetch id db =
     ]
         ++ fetchForNutrition id db
         ++ fetchForWellChild id db
+        ++ fetchParentsMsgs
 
 
 fetchForNutrition : PersonId -> ModelIndexedDb -> List MsgIndexedDb

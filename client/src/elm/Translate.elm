@@ -379,6 +379,7 @@ type TranslationId
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
+    | ANCNewborn
     | And
     | AndSentence
     | AntenatalProgressReport
@@ -399,6 +400,7 @@ type TranslationId
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
+    | BirthDefect
     | BloodGlucose
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -408,6 +410,7 @@ type TranslationId
     | BMIHelper
     | BodyTemperature
     | Born
+    | BornUnderweight
     | BoughtClothesQuestion
     | BowedLegs
     | BpmUnit Int
@@ -443,9 +446,11 @@ type TranslationId
     | ChildCleanQuestion
     | ChildHmisNumber
     | ChildDemographicInformation
+    | ChildIdentification
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
+    | ChildName
     | Children
     | ChildrenNames
     | ChildrenNationalId
@@ -610,7 +615,8 @@ type TranslationId
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
-    | FatherName
+    | FatherOrChiefId
+    | FatherOrChiefName
     | FatherNationalId
     | FbfDistribution ClinicType
     | FbfToReceive Activity Float
@@ -849,6 +855,7 @@ type TranslationId
     | MonthsOld
     | Mother
     | MotherDemographicInformation
+    | MotherId
     | MotherName String
     | MotherNameLabel
     | MotherNationalId
@@ -2615,6 +2622,11 @@ translationSet trans =
             , kinyarwanda = Just "Bitwara igihe kingana gute ngo imbangukiragutabara ihagere"
             }
 
+        ANCNewborn ->
+            { english = "ANC & Newborn"
+            , kinyarwanda = Nothing
+            }
+
         AgeSingleMonthWithoutDay month ->
             { english = String.fromInt month ++ " month"
             , kinyarwanda = Just <| String.fromInt month ++ " Ukwezi"
@@ -2769,6 +2781,11 @@ translationSet trans =
             , kinyarwanda = Just "Tangira igikorwa gishya"
             }
 
+        BirthDefect ->
+            { english = "Birth Defect"
+            , kinyarwanda = Nothing
+            }
+
         BloodGlucose ->
             { english = "Blood Glucose"
             , kinyarwanda = Nothing
@@ -2812,6 +2829,11 @@ translationSet trans =
         Born ->
             { english = "Born"
             , kinyarwanda = Just "Kuvuka/ itariki y'amavuko"
+            }
+
+        BornUnderweight ->
+            { english = "Born Underweight"
+            , kinyarwanda = Nothing
             }
 
         BoughtClothesQuestion ->
@@ -3061,6 +3083,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ChildIdentification ->
+            { english = "Child Identification"
+            , kinyarwanda = Nothing
+            }
+
         ChildNutritionSignLabel sign ->
             case sign of
                 AbdominalDistension ->
@@ -3187,6 +3214,11 @@ translationSet trans =
         ChildOf ->
             { english = "Child of"
             , kinyarwanda = Just "Umwana wa"
+            }
+
+        ChildName ->
+            { english = "Child Name"
+            , kinyarwanda = Nothing
             }
 
         Clear ->
@@ -4723,8 +4755,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        FatherName ->
-            { english = "Father's Name"
+        FatherOrChiefId ->
+            { english = "Father or Chief of Family ID"
+            , kinyarwanda = Nothing
+            }
+
+        FatherOrChiefName ->
+            { english = "Fathers or Chief of Family Name"
             , kinyarwanda = Nothing
             }
 
@@ -7623,13 +7660,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        MotherId ->
+            { english = "Mother ID"
+            , kinyarwanda = Nothing
+            }
+
         MotherName name ->
             { english = "Mother/Caregiver: " ++ name
             , kinyarwanda = Just <| "Umubyeyi: " ++ name
             }
 
         MotherNameLabel ->
-            { english = "Mother's Name"
+            { english = "Mothers Name"
             , kinyarwanda = Nothing
             }
 
