@@ -2193,18 +2193,18 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                                             -- the last day, before child turns 1 month old.
                                             -- We use it to determine if child was
                                             -- behind on any of vaccines at that month.
-                                            referrenceDate =
+                                            referenceDate =
                                                 Date.add Date.Months (index + 1) birthDate
                                                     |> Date.add Date.Days -1
 
                                             -- Filter out vaccinations that were performed
-                                            -- after the referrence date.
+                                            -- after the reference date.
                                             vaccinationProgressOnReferrenceDate =
                                                 Dict.map
                                                     (\vaccineType dosesDict ->
                                                         Dict.filter
                                                             (\dose administeredDate ->
-                                                                Date.compare administeredDate referrenceDate == LT
+                                                                Date.compare administeredDate referenceDate == LT
                                                             )
                                                             dosesDict
                                                     )
@@ -2220,20 +2220,20 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                                         in
                                         Maybe.map
                                             (\closestDate ->
-                                                if Date.compare closestDate referrenceDate == GT then
+                                                if Date.compare closestDate referenceDate == GT then
                                                     -- Closest date when vaccine is required is after
                                                     -- current month, which means that att current month
                                                     -- we're not behind on vaccination.
-                                                    ( referrenceDate, NCDACellValueV )
+                                                    ( referenceDate, NCDACellValueV )
 
                                                 else
-                                                    ( referrenceDate, NCDACellValueX )
+                                                    ( referenceDate, NCDACellValueX )
                                             )
                                             closestDateForVaccination
                                             |> Maybe.withDefault
                                                 -- This indicates that there're no future vaccinations to be
                                                 -- done, and therefore, we're on track at current month.
-                                                ( referrenceDate, NCDACellValueV )
+                                                ( referenceDate, NCDACellValueV )
                                     )
                         )
                         maybeAssembled
