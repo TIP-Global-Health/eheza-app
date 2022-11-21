@@ -379,6 +379,7 @@ type TranslationId
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
+    | ANCNewborn
     | And
     | AndSentence
     | AntenatalProgressReport
@@ -2619,6 +2620,11 @@ translationSet trans =
         AmbulancArrivalPeriodQuestion ->
             { english = "How long did it take the ambulance to arrive"
             , kinyarwanda = Just "Bitwara igihe kingana gute ngo imbangukiragutabara ihagere"
+            }
+
+        ANCNewborn ->
+            { english = "ANC & Newborn"
+            , kinyarwanda = Nothing
             }
 
         AgeSingleMonthWithoutDay month ->
