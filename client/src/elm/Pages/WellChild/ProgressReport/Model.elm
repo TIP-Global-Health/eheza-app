@@ -42,6 +42,25 @@ type alias BottomActionData msg =
     }
 
 
+type NCDAANCNewbornItem
+    = RegularCheckups
+    | IronDuringPregnancy
+
+
+type NCDANutritionBehaviorItem
+    = BreastfedSixMonths
+    | AppropriateComplementaryFeeding
+    | DiverseDiet
+    | MealsADay
+
+
+type NCDACellValue
+    = NCDACellValueV
+    | NCDACellValueX
+    | NCDACellValueDash
+    | NCDACellValueEmpty
+
+
 type Msg
     = NoOp
     | CloseEncounter WellChildEncounterId

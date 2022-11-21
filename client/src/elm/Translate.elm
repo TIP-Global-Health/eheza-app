@@ -121,7 +121,7 @@ import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistory
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChild.ProgressReport.Model exposing (ECDStatus(..))
+import Pages.WellChild.ProgressReport.Model exposing (ECDStatus(..), NCDAANCNewbornItem(..), NCDANutritionBehaviorItem(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -870,6 +870,8 @@ type TranslationId
     | NCDASignQuestion NCDASign
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
+    | NCDAANCNewbornItemLabel NCDAANCNewbornItem
+    | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
@@ -941,6 +943,7 @@ type TranslationId
     | NutritionActivityTitle NutritionActivity
     | NutritionAssessment NutritionAssessment
     | NutritionAssessmentTask NutritionAssessmentTask
+    | NutritionBehavior
     | NutritionCaringOption CaringOption
     | NutritionFeedingSignQuestion NutritionFeedingSign
     | NutritionFoodSecuritySignQuestion NutritionFoodSecuritySign
@@ -7728,6 +7731,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                NCDABreastfedForSixMonths ->
+                    { english = "Breastfed baby for 6 months without interruption"
+                    , kinyarwanda = Nothing
+                    }
+
                 NCDAAppropriateComplementaryFeeding ->
                     { english = "Appropriate complementary feeding (6-24 months)"
                     , kinyarwanda = Nothing
@@ -7839,6 +7847,40 @@ translationSet trans =
             { english = "Refer patient to ANC services for further management of hypertension during pregnancy"
             , kinyarwanda = Nothing
             }
+
+        NCDAANCNewbornItemLabel item ->
+            case item of
+                RegularCheckups ->
+                    { english = "Regular prenatal and postpartum checkups "
+                    , kinyarwanda = Nothing
+                    }
+
+                IronDuringPregnancy ->
+                    { english = "Iron during pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDANutritionBehaviorItemLabel item ->
+            case item of
+                BreastfedSixMonths ->
+                    { english = "Breastfed baby for 6 mo without interruption"
+                    , kinyarwanda = Nothing
+                    }
+
+                AppropriateComplementaryFeeding ->
+                    { english = "Appropriate complementary feeding (6-24 mo)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiverseDiet ->
+                    { english = "Does the child have a diverse diet?"
+                    , kinyarwanda = Nothing
+                    }
+
+                MealsADay ->
+                    { english = "Number of times a child eats a day"
+                    , kinyarwanda = Nothing
+                    }
 
         NCDDangerSign sign ->
             case sign of
@@ -8893,6 +8935,11 @@ translationSet trans =
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
                     }
+
+        NutritionBehavior ->
+            { english = "Nutrition Behavior"
+            , kinyarwanda = Nothing
+            }
 
         NutritionCaringOption option ->
             case option of

@@ -1523,10 +1523,37 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
             List.map (Tuple.second >> Tuple.second >> .ncda >> Maybe.map Tuple.second)
                 reportData.individualWellChildMeasurementsWithDates
                 |> Maybe.Extra.values
+
+        -- Questionnaire with it's coresponding months.
+        questionnairesByAgeInMonths : Maybe (Dict Int NCDAValue)
+        questionnairesByAgeInMonths =
+            child.birthDate
+                |> Maybe.map
+                    (\birthDate ->
+                        List.foldl
+                            (\( date, value ) accum ->
+                                let
+                                    ageMonths =
+                                        diffMonths birthDate date
+                                in
+                                Dict.get ageMonths accum
+                                    |> Maybe.map
+                                        -- We want to get most recent questionnaire for a month.
+                                        -- Since allNCDAQuestionnaires are sorted DESC by date, we
+                                        -- know that if we already recorded questionnaire for that
+                                        -- month, it's more recent than the one we are checking,
+                                        -- and current questionnaire can be skipped.
+                                        (always accum)
+                                    |> Maybe.withDefault (Dict.insert ageMonths value accum)
+                            )
+                            Dict.empty
+                            allNCDAQuestionnaires
+                    )
     in
     div [ class "ui report unstackable items" ]
         [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
-        , viewANCNewbornPane language currentDate db childId
+        , viewANCNewbornPane language currentDate db child
+        , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
         ]
 
 
@@ -1663,15 +1690,25 @@ viewANCNewbornPane :
     Language
     -> NominalDate
     -> ModelIndexedDb
-    -> PersonId
+    -> Person
     -> Html any
-viewANCNewbornPane language currentDate db childId =
+viewANCNewbornPane language currentDate db child =
+    let
+        pregnancyValues =
+            List.repeat 9 NCDACellValueEmpty
+
+        zeroToFiveValues =
+            List.repeat 6 NCDACellValueDash
+
+        sixToTwentyFourValues =
+            List.repeat 19 NCDACellValueDash
+    in
     div [ class "pane anc-newborn" ]
         [ viewPaneHeading language Translate.ANCNewborn
         , div [ class "pane-content" ]
             [ viewTableHeader
-            , viewTableRow "Regular prenatal and postpartum checkups"
-            , viewTableRow "Iron during pregnancy"
+            , viewTableRow language (Translate.NCDAANCNewbornItemLabel RegularCheckups) pregnancyValues zeroToFiveValues sixToTwentyFourValues
+            , viewTableRow language (Translate.NCDAANCNewbornItemLabel IronDuringPregnancy) pregnancyValues zeroToFiveValues sixToTwentyFourValues
             ]
         ]
 
@@ -1710,26 +1747,197 @@ viewTableHeader =
         ]
 
 
-viewTableRow : String -> Html any
-viewTableRow activity =
+viewTableRow : Language -> TranslationId -> List NCDACellValue -> List NCDACellValue -> List NCDACellValue -> Html any
+viewTableRow language itemTransId pregnancyValues zeroToFiveValues sixToTwentyFourValues =
+    let
+        viewCellValue cellValue =
+            case cellValue of
+                NCDACellValueV ->
+                    span [ class "green" ] [ text "v" ]
+
+                NCDACellValueX ->
+                    span [ class "red" ] [ text "x" ]
+
+                NCDACellValueDash ->
+                    span [] [ text "-" ]
+
+                NCDACellValueEmpty ->
+                    emptyNode
+    in
     div [ class "table-row" ]
-        [ div [ class "activity" ] [ text activity ]
-        , List.repeat 9 ""
-            |> List.indexedMap
-                (\index _ ->
-                    div [ class "month" ] [ text <| String.fromInt <| index + 1 ]
-                )
+        [ div [ class "activity" ] [ text <| translate language itemTransId ]
+        , List.indexedMap
+            (\index value ->
+                div [ class "month" ]
+                    [ span [ class "hidden" ] [ text <| String.fromInt <| index + 1 ]
+                    , viewCellValue value
+                    ]
+            )
+            pregnancyValues
             |> div [ class "months" ]
-        , List.repeat 6 ""
-            |> List.indexedMap
-                (\index _ ->
-                    div [ class "month" ] [ text <| String.fromInt index ]
-                )
+        , List.indexedMap
+            (\index value ->
+                div [ class "month" ]
+                    [ span [ class "hidden" ] [ text <| String.fromInt index ]
+                    , viewCellValue value
+                    ]
+            )
+            zeroToFiveValues
             |> div [ class "months" ]
-        , List.repeat 19 ""
-            |> List.indexedMap
-                (\index _ ->
-                    div [ class "month" ] [ text <| String.fromInt <| index + 6 ]
-                )
+        , List.indexedMap
+            (\index value ->
+                div [ class "month" ]
+                    [ span [ class "hidden" ] [ text <| String.fromInt <| index + 6 ]
+                    , viewCellValue value
+                    ]
+            )
+            sixToTwentyFourValues
             |> div [ class "months" ]
+        ]
+
+
+emptyPregnancyValues : List NCDACellValue
+emptyPregnancyValues =
+    List.repeat 9 NCDACellValueDash
+
+
+viewNutritionBehaviorPane :
+    Language
+    -> NominalDate
+    -> Person
+    -> Maybe (Dict Int NCDAValue)
+    -> Html any
+viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths =
+    let
+        pregnancyValues =
+            List.repeat 9 NCDACellValueDash
+
+        emptyValues =
+            List.repeat 25 NCDACellValueEmpty
+
+        breastfedForSixMonthsValues =
+            generateValues (EverySet.member NCDABreastfedForSixMonths)
+
+        appropriateComplementaryFeedingValues =
+            generateValues (EverySet.member NCDAAppropriateComplementaryFeeding)
+
+        mealsADayValues =
+            generateValues
+                (\questionnaire ->
+                    List.any (\sign -> EverySet.member sign questionnaire)
+                        [ NCDAMealFrequency6to8Months
+                        , NCDAMealFrequency9to11Months
+                        , NCDAMealFrequency12MonthsOrMore
+                        ]
+                )
+
+        diverseDietValues =
+            generateValues (EverySet.member NCDAFiveFoodGroups)
+
+        generateValues resolutionFunc =
+            Maybe.map2
+                (\questionnaires ageMonths ->
+                    List.indexedMap
+                        (\month _ ->
+                            if ageMonths < month then
+                                NCDACellValueEmpty
+
+                            else
+                                Dict.get month questionnaires
+                                    |> Maybe.map
+                                        (\questionnaire ->
+                                            if resolutionFunc questionnaire then
+                                                NCDACellValueV
+
+                                            else
+                                                NCDACellValueX
+                                        )
+                                    |> Maybe.withDefault NCDACellValueDash
+                        )
+                        emptyValues
+                )
+                questionnairesByAgeInMonths
+                (ageInMonths currentDate child)
+                |> Maybe.withDefault emptyValues
+
+        -- Here we are interested only at answer given when child was 6 months old.
+        -- For months before that, and after, will show dahses, in case child has
+        -- reached the age for which value is given (empty value otherwise).
+        ( breastfedForSixMonthsFirstPeriod, breastfedForSixMonthsSecondPeriod ) =
+            let
+                firstPeriod =
+                    List.take 6 breastfedForSixMonthsValues
+                        |> List.map setDashIfNotEmpty
+
+                secondPeriod =
+                    let
+                        generated =
+                            List.drop 6 breastfedForSixMonthsValues
+                    in
+                    List.take 1 generated
+                        ++ (List.drop 1 generated
+                                |> List.map setDashIfNotEmpty
+                           )
+            in
+            ( firstPeriod, secondPeriod )
+
+        -- Here we are interested only at answer given when child has reached
+        -- the age of 7 months.
+        -- For prior period we show dahses, in case child has reached
+        -- the age for which value is given (empty value otherwise).
+        ( appropriateComplementaryFeedingFirstPeriod, appropriateComplementaryFeedingSecondPeriod ) =
+            let
+                firstPeriod =
+                    List.take 6 appropriateComplementaryFeedingValues
+                        |> List.map setDashIfNotEmpty
+
+                secondPeriod =
+                    let
+                        generated =
+                            List.drop 6 appropriateComplementaryFeedingValues
+                    in
+                    (List.take 1 generated
+                        |> List.map setDashIfNotEmpty
+                    )
+                        ++ List.drop 1 generated
+            in
+            ( firstPeriod, secondPeriod )
+
+        -- generateValues() may generate values at certain periods that are
+        -- not relevant, which we want to replace them with dashes.
+        -- However, if child has not yeat reach the age of month for which
+        -- value is presented, generateValues() will preperly set
+        -- NCDACellValueEmpty there, and we want to keep it.
+        setDashIfNotEmpty value =
+            if value == NCDACellValueEmpty then
+                value
+
+            else
+                NCDACellValueDash
+    in
+    div [ class "pane nutrition-behavior" ]
+        [ viewPaneHeading language Translate.NutritionBehavior
+        , div [ class "pane-content" ]
+            [ viewTableHeader
+            , viewTableRow language
+                (Translate.NCDANutritionBehaviorItemLabel BreastfedSixMonths)
+                pregnancyValues
+                breastfedForSixMonthsFirstPeriod
+                breastfedForSixMonthsSecondPeriod
+            , viewTableRow language
+                (Translate.NCDANutritionBehaviorItemLabel AppropriateComplementaryFeeding)
+                pregnancyValues
+                appropriateComplementaryFeedingFirstPeriod
+                appropriateComplementaryFeedingSecondPeriod
+            , viewTableRow language
+                (Translate.NCDANutritionBehaviorItemLabel DiverseDiet)
+                pregnancyValues
+                (List.take 6 diverseDietValues)
+                (List.drop 6 diverseDietValues)
+            , viewTableRow language
+                (Translate.NCDANutritionBehaviorItemLabel MealsADay)
+                pregnancyValues
+                (List.take 6 mealsADayValues)
+                (List.drop 6 mealsADayValues)
+            ]
         ]

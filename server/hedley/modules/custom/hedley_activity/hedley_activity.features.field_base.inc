@@ -1205,6 +1205,7 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'born-underweight' => 'Born Underweight',
         'born-with-birth-defect' => 'Born With Birth Defect',
+        'breastfed-for-six-months' => 'Breastfed for six months',
         'appropriate-complementary-feeding' => 'Appropriate Complementary Feeding',
         'ongera-mnp' => 'Ongera Mnp',
         'five-food-groups' => 'Five Food Groups',

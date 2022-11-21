@@ -972,6 +972,7 @@ emptyNCDAData =
 type alias NCDAForm =
     { bornUnderweight : Maybe Bool
     , bornWithBirthDefect : Maybe Bool
+    , breastfedForSixMonths : Maybe Bool
     , appropriateComplementaryFeeding : Maybe Bool
     , ongeraMNP : Maybe Bool
     , fiveFoodGroups : Maybe Bool
@@ -992,6 +993,7 @@ emptyNCDAForm : NCDAForm
 emptyNCDAForm =
     { bornUnderweight = Nothing
     , bornWithBirthDefect = Nothing
+    , breastfedForSixMonths = Nothing
     , appropriateComplementaryFeeding = Nothing
     , ongeraMNP = Nothing
     , fiveFoodGroups = Nothing

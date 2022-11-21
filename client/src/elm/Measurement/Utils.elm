@@ -3815,6 +3815,7 @@ fromNCDAValue : Maybe NCDAValue -> NCDAForm
 fromNCDAValue saved =
     { bornUnderweight = Maybe.map (EverySet.member NCDABornUnderweight) saved
     , bornWithBirthDefect = Maybe.map (EverySet.member NCDABornWithBirthDefect) saved
+    , breastfedForSixMonths = Maybe.map (EverySet.member NCDABreastfedForSixMonths) saved
     , appropriateComplementaryFeeding = Maybe.map (EverySet.member NCDAAppropriateComplementaryFeeding) saved
     , ongeraMNP = Maybe.map (EverySet.member NCDAOngeraMNP) saved
     , fiveFoodGroups = Maybe.map (EverySet.member NCDAFiveFoodGroups) saved
@@ -3839,6 +3840,7 @@ ncdaFormWithDefault form saved =
             (\signs ->
                 { bornUnderweight = or form.bornUnderweight (EverySet.member NCDABornUnderweight signs |> Just)
                 , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member NCDABornWithBirthDefect signs |> Just)
+                , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member NCDABreastfedForSixMonths signs |> Just)
                 , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member NCDAAppropriateComplementaryFeeding signs |> Just)
                 , ongeraMNP = or form.ongeraMNP (EverySet.member NCDAOngeraMNP signs |> Just)
                 , fiveFoodGroups = or form.fiveFoodGroups (EverySet.member NCDAFiveFoodGroups signs |> Just)
@@ -3866,6 +3868,7 @@ toNCDAValue : NCDAForm -> Maybe NCDAValue
 toNCDAValue form =
     [ ifNullableTrue NCDABornUnderweight form.bornUnderweight
     , ifNullableTrue NCDABornWithBirthDefect form.bornWithBirthDefect
+    , ifNullableTrue NCDABreastfedForSixMonths form.breastfedForSixMonths
     , ifNullableTrue NCDAAppropriateComplementaryFeeding form.appropriateComplementaryFeeding
     , ifNullableTrue NCDAOngeraMNP form.ongeraMNP
     , ifNullableTrue NCDAFiveFoodGroups form.fiveFoodGroups

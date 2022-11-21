@@ -3540,6 +3540,9 @@ ncdaSignToString value =
         NCDABornWithBirthDefect ->
             "born-with-birth-defect"
 
+        NCDABreastfedForSixMonths ->
+            "breastfed-for-six-months"
+
         NCDAAppropriateComplementaryFeeding ->
             "appropriate-complementary-feeding"
 
@@ -3591,6 +3594,9 @@ ncdaSignFromString value =
 
         "born-with-birth-defect" ->
             Just NCDABornWithBirthDefect
+
+        "breastfed-for-six-months" ->
+            Just NCDABreastfedForSixMonths
 
         "appropriate-complementary-feeding" ->
             Just NCDAAppropriateComplementaryFeeding
