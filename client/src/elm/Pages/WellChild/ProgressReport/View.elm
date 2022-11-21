@@ -66,7 +66,14 @@ import Pages.Report.Utils
 import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewStartEncounterButton)
 import Pages.WellChild.Activity.Types exposing (VaccinationStatus(..))
-import Pages.WellChild.Activity.Utils exposing (expectedECDSignsOnMilestone, generateCompletedECDSigns, getPreviousMeasurements, mandatoryNutritionAssessmentTasksCompleted)
+import Pages.WellChild.Activity.Utils
+    exposing
+        ( expectedECDSignsOnMilestone
+        , generateCompletedECDSigns
+        , generateFutureVaccinationsData
+        , getPreviousMeasurements
+        , mandatoryNutritionAssessmentTasksCompleted
+        )
 import Pages.WellChild.Activity.View exposing (viewVaccinationOverview)
 import Pages.WellChild.Encounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChild.Encounter.Utils
@@ -1529,6 +1536,12 @@ viewNCDAScorecard language currentDate db ( childId, child ) =
     div [ class "ui report unstackable items" ]
         [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
         , viewANCNewbornPane language currentDate db child
+        , viewUniversalInterventionsPane language
+            currentDate
+            child
+            db
+            questionnairesByAgeInMonths
+            reportData.maybeAssembled
         , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
         , viewTargetedInterventionsPane language
             currentDate
@@ -2112,7 +2125,7 @@ viewTargetedInterventionsPane language currentDate child db questionnairesByAgeI
         conditionalCashTransferValues =
             generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAConditionalCashTransfer)
 
-        conditionalFoodItemsalues =
+        conditionalFoodItemsValues =
             generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAConditionalFoodItems)
     in
     div [ class "pane targeted-interventions" ]
@@ -2147,8 +2160,121 @@ viewTargetedInterventionsPane language currentDate child db questionnairesByAgeI
             , viewTableRow language
                 (Translate.NCDATargetedInterventionsItemLabel ConditionalFoodItems)
                 pregnancyValues
-                (List.take 6 conditionalFoodItemsalues)
-                (List.drop 6 conditionalFoodItemsalues)
+                (List.take 6 conditionalFoodItemsValues)
+                (List.drop 6 conditionalFoodItemsValues)
+            ]
+        ]
+
+
+viewUniversalInterventionsPane :
+    Language
+    -> NominalDate
+    -> Person
+    -> ModelIndexedDb
+    -> Maybe (Dict Int NCDAValue)
+    -> Maybe AssembledData
+    -> Html any
+viewUniversalInterventionsPane language currentDate child db questionnairesByAgeInMonths maybeAssembled =
+    let
+        pregnancyValues =
+            List.repeat 9 NCDACellValueDash
+
+        immunizationByAgeInMonths =
+            Maybe.andThen
+                (\birthDate ->
+                    Maybe.map
+                        (\assembled ->
+                            List.repeat 25 ""
+                                |> List.indexedMap
+                                    (\index _ ->
+                                        let
+                                            -- This is the date for last day of month
+                                            -- 'index'. For example, for index = 0, this is
+                                            -- the last day, before child turns 1 month old.
+                                            -- We use it to determine if child was
+                                            -- behind on any of vaccines at that month.
+                                            referenceDate =
+                                                Date.add Date.Months (index + 1) birthDate
+                                                    |> Date.add Date.Days -1
+
+                                            -- Filter out vaccinations that were performed
+                                            -- after the reference date.
+                                            vaccinationProgressOnReferrenceDate =
+                                                Dict.map
+                                                    (\vaccineType dosesDict ->
+                                                        Dict.filter
+                                                            (\dose administeredDate ->
+                                                                Date.compare administeredDate referenceDate == LT
+                                                            )
+                                                            dosesDict
+                                                    )
+                                                    assembled.vaccinationProgress
+
+                                            futureVaccinations =
+                                                generateFutureVaccinationsData currentDate child False vaccinationProgressOnReferrenceDate
+
+                                            closestDateForVaccination =
+                                                List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
+                                                    |> List.sortWith Date.compare
+                                                    |> List.head
+                                        in
+                                        Maybe.map
+                                            (\closestDate ->
+                                                if Date.compare closestDate referenceDate == GT then
+                                                    -- Closest date when vaccine is required is after
+                                                    -- current month, which means that att current month
+                                                    -- we're not behind on vaccination.
+                                                    ( referenceDate, NCDACellValueV )
+
+                                                else
+                                                    ( referenceDate, NCDACellValueX )
+                                            )
+                                            closestDateForVaccination
+                                            |> Maybe.withDefault
+                                                -- This indicates that there're no future vaccinations to be
+                                                -- done, and therefore, we're on track at current month.
+                                                ( referenceDate, NCDACellValueV )
+                                    )
+                        )
+                        maybeAssembled
+                        |> Maybe.withDefault
+                            -- We get here if there were no SPV encounters performed,
+                            -- which means that no vaccinations were recorded.
+                            -- Therefore, we're for sure behind on vaccinations
+                            -- for any given month.
+                            (List.repeat 25 ""
+                                |> List.indexedMap
+                                    (\index _ ->
+                                        ( Date.add Date.Months (index + 1) birthDate
+                                            |> Date.add Date.Days -1
+                                        , NCDACellValueX
+                                        )
+                                    )
+                            )
+                        |> distributeByAgeInMonths child
+                )
+                child.birthDate
+
+        immunizationValues =
+            generateValues currentDate child immunizationByAgeInMonths ((==) NCDACellValueV)
+
+        ongeraMNPValues =
+            generateValues currentDate child questionnairesByAgeInMonths (EverySet.member NCDAOngeraMNP)
+    in
+    div [ class "pane universal-interventions" ]
+        [ viewPaneHeading language Translate.UniversalInterventions
+        , div [ class "pane-content" ]
+            [ viewTableHeader
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel OngeraMNP)
+                pregnancyValues
+                (List.take 6 ongeraMNPValues)
+                (List.drop 6 ongeraMNPValues)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Immunization)
+                pregnancyValues
+                (List.take 6 immunizationValues)
+                (List.drop 6 immunizationValues)
             ]
         ]
 
@@ -2186,17 +2312,17 @@ generateValues currentDate child valuesByAgeInMonths resolutionFunc =
             List.repeat 25 NCDACellValueEmpty
     in
     Maybe.map2
-        (\questionnaires ageMonths ->
+        (\values ageMonths ->
             List.indexedMap
                 (\month _ ->
                     if ageMonths < month then
                         NCDACellValueEmpty
 
                     else
-                        Dict.get month questionnaires
+                        Dict.get month values
                             |> Maybe.map
-                                (\questionnaire ->
-                                    if resolutionFunc questionnaire then
+                                (\value ->
+                                    if resolutionFunc value then
                                         NCDACellValueV
 
                                     else

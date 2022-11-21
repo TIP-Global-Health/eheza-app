@@ -71,6 +71,14 @@ type NCDATargetedInterventionsItem
     | ConditionalFoodItems
 
 
+type NCDAUniversalInterventionsItem
+    = Immunization
+    | VitaminA
+    | Deworming
+    | OngeraMNP
+    | ECDServices
+
+
 type NCDACellValue
     = NCDACellValueV
     | NCDACellValueX

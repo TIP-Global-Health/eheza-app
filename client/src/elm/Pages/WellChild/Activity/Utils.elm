@@ -706,7 +706,12 @@ generateSuggestedVaccinations currentDate isChw assembled =
 {-| For each type of vaccine, we generate next dose and administration date.
 If there's no need for future vaccination, Nothing is returned.
 -}
-generateFutureVaccinationsData : NominalDate -> Person -> Bool -> VaccinationProgressDict -> List ( WellChildVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData :
+    NominalDate
+    -> Person
+    -> Bool
+    -> VaccinationProgressDict
+    -> List ( WellChildVaccineType, Maybe ( VaccineDose, NominalDate ) )
 generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vaccinationProgress =
     let
         initialOpvAdministered =

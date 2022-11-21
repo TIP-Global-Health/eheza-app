@@ -128,6 +128,7 @@ import Pages.WellChild.ProgressReport.Model
         , NCDAInfrastructureEnvironmentWashItem(..)
         , NCDANutritionBehaviorItem(..)
         , NCDATargetedInterventionsItem(..)
+        , NCDAUniversalInterventionsItem(..)
         )
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -882,6 +883,7 @@ type TranslationId
     | NCDAInfrastructureEnvironmentWashItemLabel NCDAInfrastructureEnvironmentWashItem
     | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
+    | NCDAUniversalInterventionsItemLabel NCDAUniversalInterventionsItem
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
@@ -1419,6 +1421,7 @@ type TranslationId
     | UnitGramsPerDeciliter
     | UnitInternationalUnitsPerLiter
     | UnitMilliGramsPerDeciliter
+    | UniversalInterventions
     | Unknown
     | Update
     | UpdateError
@@ -7395,7 +7398,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                VitaminA ->
+                Backend.Measurement.Model.VitaminA ->
                     -- Names of Medication, therefore,
                     -- no translation is needed.
                     { english = "Vitamin A"
@@ -7954,6 +7957,33 @@ translationSet trans =
 
                 ConditionalFoodItems ->
                     { english = "Receipt of conditional food items including small livestock"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDAUniversalInterventionsItemLabel item ->
+            case item of
+                Immunization ->
+                    { english = "Immunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChild.ProgressReport.Model.VitaminA ->
+                    { english = "Vitamin A"
+                    , kinyarwanda = Nothing
+                    }
+
+                Deworming ->
+                    { english = "Deworming"
+                    , kinyarwanda = Nothing
+                    }
+
+                OngeraMNP ->
+                    { english = "Use additional nutrients (Ongera)"
+                    , kinyarwanda = Nothing
+                    }
+
+                ECDServices ->
+                    { english = "ECD services provided to child"
                     , kinyarwanda = Nothing
                     }
 
@@ -15601,6 +15631,11 @@ translationSet trans =
 
         UnitMilliGramsPerDeciliter ->
             { english = "mg/dL"
+            , kinyarwanda = Nothing
+            }
+
+        UniversalInterventions ->
+            { english = "Universal Interventions"
             , kinyarwanda = Nothing
             }
 
