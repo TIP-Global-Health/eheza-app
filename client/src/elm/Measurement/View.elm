@@ -23,7 +23,7 @@ import Backend.Measurement.Utils
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
+import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend, resolvePreviousNCDAValuesForChild)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -42,7 +42,8 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( taskCompleted
+        ( maybeToBoolTask
+        , taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
@@ -118,7 +119,8 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
         Activity.Model.NCDA ->
-            viewNCDA language currentDate child (mapMeasurementData .ncda measurements) model.ncdaData
+            resolvePreviousNCDAValuesForChild currentDate childId db
+                |> viewNCDA language currentDate child (mapMeasurementData .ncda measurements) model.ncdaData
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -2288,12 +2290,14 @@ viewNCDAContent :
     -> NominalDate
     -> Person
     -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
+    -> (String -> msg)
     -> msg
     -> (Maybe NCDASign -> msg)
     -> Maybe NCDASign
     -> NCDAForm
+    -> List ( NominalDate, NCDAValue )
     -> List (Html msg)
-viewNCDAContent language currentDate person setMsg saveMsg setHelperStateMsg helperState form =
+viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg saveMsg setHelperStateMsg helperState form previousNCDAValues =
     let
         totalTasks =
             List.length tasks
@@ -2303,7 +2307,7 @@ viewNCDAContent language currentDate person setMsg saveMsg setHelperStateMsg hel
                 |> List.sum
 
         ( inputs, tasks ) =
-            ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
+            ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeightMsg setHelperStateMsg form previousNCDAValues
 
         disabled =
             tasksCompleted /= totalTasks
@@ -2326,15 +2330,34 @@ ncdaFormInputsAndTasks :
     -> NominalDate
     -> Person
     -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
+    -> (String -> msg)
     -> (Maybe NCDASign -> msg)
     -> NCDAForm
+    -> List ( NominalDate, NCDAValue )
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form =
+ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeightMsg setHelperStateMsg form previousNCDAValues =
     let
+        firstNCDAQuestionnaire =
+            -- If we do not have record of any questionnaires filled
+            -- before, we know this is first time patient fills the
+            -- questionnaire.
+            List.isEmpty previousNCDAValues
+
+        signsAskedOnce =
+            -- There are questions that should be asked once,
+            -- so we show them only when first questionnaire is filled.
+            if firstNCDAQuestionnaire then
+                [ NCDARegularPrenatalVisits
+                , NCDAIronSupplementsDuringPregnancy
+                , NCDAInsecticideTreatedBednetsDuringPregnancy
+                , NCDABornWithBirthDefect
+                ]
+
+            else
+                []
+
         signs =
-            [ NCDABornUnderweight
-            , NCDABornWithBirthDefect
-            ]
+            signsAskedOnce
                 ++ feedingSign
                 ++ [ NCDAOngeraMNP
                    , NCDAFiveFoodGroups
@@ -2348,6 +2371,44 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
                    , NCDAHasToilets
                    , NCDAHasKitchenGarden
                    ]
+
+        ( birthWeightSection, birthWeightTasks ) =
+            if firstNCDAQuestionnaire then
+                let
+                    colorAlertIndication =
+                        Maybe.map
+                            (\weight ->
+                                if weight < 2500 then
+                                    div
+                                        [ class "four wide column" ]
+                                        [ viewColorAlertIndication language ColorAlertRed ]
+
+                                else
+                                    emptyNode
+                            )
+                            birthWeightAsFloat
+                in
+                ( [ viewQuestionLabel language Translate.NCDABirthweightQuestion
+                  , div [ class "ui grid" ]
+                        [ div [ class "twelve wide column" ]
+                            [ viewMeasurementInput language
+                                birthWeightAsFloat
+                                setBirthWeightMsg
+                                "birth-weight"
+                                Translate.Grams
+                            ]
+                        , showMaybe colorAlertIndication
+                        ]
+                  ]
+                , [ maybeToBoolTask form.birthWeight ]
+                )
+
+            else
+                ( [], [] )
+
+        birthWeightAsFloat =
+            Maybe.map (\(WeightInKg weight) -> weight)
+                form.birthWeight
 
         ( feedingSign, mealFrequencySign ) =
             ageInMonths currentDate person
@@ -2381,15 +2442,6 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
 
         inputAndTaskForSign sign =
             case sign of
-                NCDABornUnderweight ->
-                    let
-                        updateFunc value form_ =
-                            { form_ | bornUnderweight = Just value }
-                    in
-                    ( viewNCDAInput NCDABornUnderweight form.bornUnderweight updateFunc
-                    , form.bornUnderweight
-                    )
-
                 NCDABornWithBirthDefect ->
                     let
                         updateFunc value form_ =
@@ -2442,7 +2494,7 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
                       , viewBoolInput
                             language
                             form.fiveFoodGroups
-                            (setMsg updateFunc)
+                            (setBoolInputMsg updateFunc)
                             ""
                             Nothing
                       ]
@@ -2539,6 +2591,33 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
                     , form.hasKitchenGarden
                     )
 
+                NCDARegularPrenatalVisits ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | regularPrenatalVisits = Just value }
+                    in
+                    ( viewNCDAInput NCDARegularPrenatalVisits form.regularPrenatalVisits updateFunc
+                    , form.regularPrenatalVisits
+                    )
+
+                NCDAIronSupplementsDuringPregnancy ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | ironSupplementsDuringPregnancy = Just value }
+                    in
+                    ( viewNCDAInput NCDAIronSupplementsDuringPregnancy form.ironSupplementsDuringPregnancy updateFunc
+                    , form.ironSupplementsDuringPregnancy
+                    )
+
+                NCDAInsecticideTreatedBednetsDuringPregnancy ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | insecticideTreatedBednetsDuringPregnancy = Just value }
+                    in
+                    ( viewNCDAInput NCDAInsecticideTreatedBednetsDuringPregnancy form.insecticideTreatedBednetsDuringPregnancy updateFunc
+                    , form.insecticideTreatedBednetsDuringPregnancy
+                    )
+
                 NoNCDASigns ->
                     ( [], Nothing )
 
@@ -2547,13 +2626,16 @@ ncdaFormInputsAndTasks language currentDate person setMsg setHelperStateMsg form
             , viewBoolInput
                 language
                 value
-                (setMsg updateFunc)
+                (setBoolInputMsg updateFunc)
                 ""
                 Nothing
             ]
     in
-    ( List.map Tuple.first inputsAndTasks |> List.concat
+    ( List.map Tuple.first inputsAndTasks
+        |> List.concat
+        |> List.append birthWeightSection
     , List.map Tuple.second inputsAndTasks
+        |> List.append birthWeightTasks
     )
 
 
@@ -2600,8 +2682,15 @@ viewNCDAHelperDialog language action helperState =
         helperState
 
 
-viewNCDA : Language -> NominalDate -> Person -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA )) -> NCDAData -> Html MsgChild
-viewNCDA language currentDate child measurement data =
+viewNCDA :
+    Language
+    -> NominalDate
+    -> Person
+    -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
+    -> NCDAData
+    -> List ( NominalDate, NCDAValue )
+    -> Html MsgChild
+viewNCDA language currentDate child measurement data previousNCDAValues =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -2618,5 +2707,14 @@ viewNCDA language currentDate child measurement data =
                 |> Maybe.withDefault NoOp
                 |> SendOutMsgChild
     in
-    viewNCDAContent language currentDate child SetNCDABoolInput saveMsg SetNCDAHelperState data.helperState form
+    viewNCDAContent language
+        currentDate
+        child
+        SetNCDABoolInput
+        SetBirthWeightMsg
+        saveMsg
+        SetNCDAHelperState
+        data.helperState
+        form
+        previousNCDAValues
         |> div []

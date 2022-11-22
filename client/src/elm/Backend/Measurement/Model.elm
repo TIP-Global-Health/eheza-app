@@ -266,12 +266,13 @@ type alias GroupNCDA =
 
 
 type alias NCDAValue =
-    EverySet NCDASign
+    { signs : EverySet NCDASign
+    , birthWeight : Maybe WeightInKg
+    }
 
 
 type NCDASign
-    = NCDABornUnderweight
-    | NCDABornWithBirthDefect
+    = NCDABornWithBirthDefect
     | NCDABreastfedForSixMonths
     | NCDAAppropriateComplementaryFeeding
     | NCDAOngeraMNP
@@ -286,6 +287,9 @@ type NCDASign
     | NCDAHasHandwashingFacility
     | NCDAHasToilets
     | NCDAHasKitchenGarden
+    | NCDARegularPrenatalVisits
+    | NCDAIronSupplementsDuringPregnancy
+    | NCDAInsecticideTreatedBednetsDuringPregnancy
     | NoNCDASigns
 
 

@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         , MeasurementData
         , MotherMeasurements
         , PhotoUrl(..)
+        , WeightInKg(..)
         )
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet exposing (EverySet)
@@ -261,6 +262,25 @@ updateChild msg model =
             let
                 updatedForm =
                     formUpdateFunc value model.ncdaData.form
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetBirthWeightMsg string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | birthWeight = String.toFloat string |> Maybe.map WeightInKg
+                                }
+                           )
 
                 updatedData =
                     model.ncdaData

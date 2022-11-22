@@ -659,6 +659,7 @@ type TranslationId
     | Glass String
     | GoHome
     | GroupAssessment
+    | Grams
     | Gravida
     | GroupEncounter
     | GroupOfFoods GroupOfFoods
@@ -878,6 +879,7 @@ type TranslationId
     | MyRelatedByQuestion MyRelatedBy
     | Name
     | NationalIdNumber
+    | NCDABirthweightQuestion
     | NCDASignQuestion NCDASign
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
@@ -5031,6 +5033,11 @@ translationSet trans =
             , kinyarwanda = Just "Gukorera itsinda"
             }
 
+        Grams ->
+            { english = "grams"
+            , kinyarwanda = Nothing
+            }
+
         GroupEncounter ->
             { english = "Group Encounter"
             , kinyarwanda = Nothing
@@ -7746,13 +7753,13 @@ translationSet trans =
             , kinyarwanda = Just "Numero y'irangamuntu"
             }
 
+        NCDABirthweightQuestion ->
+            { english = "What was the childs birthweight"
+            , kinyarwanda = Nothing
+            }
+
         NCDASignQuestion sign ->
             case sign of
-                NCDABornUnderweight ->
-                    { english = "Was the child born underweight"
-                    , kinyarwanda = Nothing
-                    }
-
                 NCDABornWithBirthDefect ->
                     { english = "Was the child born with a birth defect"
                     , kinyarwanda = Nothing
@@ -7825,6 +7832,21 @@ translationSet trans =
 
                 NCDAHasKitchenGarden ->
                     { english = "Does the house have a kitchen garden"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDARegularPrenatalVisits ->
+                    { english = "Did the mother receive regular prenatal and post-partum visits"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAIronSupplementsDuringPregnancy ->
+                    { english = "Did the mother receive iron supplements during pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAInsecticideTreatedBednetsDuringPregnancy ->
+                    { english = "Did the mother receive insecticide-treated bednets during pregnancy"
                     , kinyarwanda = Nothing
                     }
 

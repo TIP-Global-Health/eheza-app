@@ -243,6 +243,7 @@ type MsgChild
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetBirthWeightMsg String
     | SetNCDAHelperState (Maybe NCDASign)
 
 
@@ -970,8 +971,7 @@ emptyNCDAData =
 
 
 type alias NCDAForm =
-    { bornUnderweight : Maybe Bool
-    , bornWithBirthDefect : Maybe Bool
+    { bornWithBirthDefect : Maybe Bool
     , breastfedForSixMonths : Maybe Bool
     , appropriateComplementaryFeeding : Maybe Bool
     , ongeraMNP : Maybe Bool
@@ -986,13 +986,16 @@ type alias NCDAForm =
     , hasHandwashingFacility : Maybe Bool
     , hasToilets : Maybe Bool
     , hasKitchenGarden : Maybe Bool
+    , regularPrenatalVisits : Maybe Bool
+    , ironSupplementsDuringPregnancy : Maybe Bool
+    , insecticideTreatedBednetsDuringPregnancy : Maybe Bool
+    , birthWeight : Maybe WeightInKg
     }
 
 
 emptyNCDAForm : NCDAForm
 emptyNCDAForm =
-    { bornUnderweight = Nothing
-    , bornWithBirthDefect = Nothing
+    { bornWithBirthDefect = Nothing
     , breastfedForSixMonths = Nothing
     , appropriateComplementaryFeeding = Nothing
     , ongeraMNP = Nothing
@@ -1007,6 +1010,10 @@ emptyNCDAForm =
     , hasHandwashingFacility = Nothing
     , hasToilets = Nothing
     , hasKitchenGarden = Nothing
+    , regularPrenatalVisits = Nothing
+    , ironSupplementsDuringPregnancy = Nothing
+    , insecticideTreatedBednetsDuringPregnancy = Nothing
+    , birthWeight = Nothing
     }
 
 

@@ -1203,7 +1203,6 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'born-underweight' => 'Born Underweight',
         'born-with-birth-defect' => 'Born With Birth Defect',
         'breastfed-for-six-months' => 'Breastfed for six months',
         'appropriate-complementary-feeding' => 'Appropriate Complementary Feeding',
@@ -1219,6 +1218,9 @@ function hedley_activity_field_default_field_bases() {
         'has-handwashing-facility' => 'Has Handwashing Facility',
         'has-toilets' => 'Has Toilets',
         'has-kitchen-garden' => 'Has Kitchen Garden',
+        'regular-prenatal-visits' => 'Regular Prenatal Visits',
+        'ron-supplements-during-pregnancy' => 'Iron Supplements During Pregnancy',
+        'insecticide-treated-bednets-during-pregnancy' => 'Insecticide Treated Bednets During Pregnancy',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
