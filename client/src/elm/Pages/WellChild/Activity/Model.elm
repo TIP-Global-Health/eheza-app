@@ -150,9 +150,7 @@ type alias PregnancySummaryForm =
     , apgarOneMin : Maybe Float
     , apgarFiveMin : Maybe Float
     , apgarDirty : Bool
-    , birthWeightAvailable : Maybe Bool
     , birthWeight : Maybe WeightInKg
-    , birthWeightDirty : Bool
     , birthLengthAvailable : Maybe Bool
     , birthLength : Maybe HeightInCm
     , birthLengthDirty : Bool
@@ -172,9 +170,7 @@ emptyPregnancySummaryForm =
     , apgarOneMin = Nothing
     , apgarFiveMin = Nothing
     , apgarDirty = False
-    , birthWeightAvailable = Nothing
     , birthWeight = Nothing
-    , birthWeightDirty = False
     , birthLengthAvailable = Nothing
     , birthLength = Nothing
     , birthLengthDirty = False

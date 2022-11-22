@@ -378,7 +378,6 @@ function hedley_well_child_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'apgar-scores' => 'Apgar Scores',
-        'birth-weight' => 'Birth Weight',
         'birth-length' => 'Birth Length',
         'none' => 'None',
       ),

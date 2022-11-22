@@ -10070,11 +10070,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                BirthWeight ->
-                    { english = "What was the childs birthweight"
-                    , kinyarwanda = Nothing
-                    }
-
                 BirthLength ->
                     { english = "Is birth length available"
                     , kinyarwanda = Nothing

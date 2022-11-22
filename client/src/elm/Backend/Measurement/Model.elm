@@ -2258,7 +2258,6 @@ type alias PregnancySummaryValue =
 
 type PregnancySummarySign
     = ApgarScores
-    | BirthWeight
     | BirthLength
     | NoPregnancySummarySigns
 

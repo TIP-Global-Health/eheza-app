@@ -4453,9 +4453,6 @@ decodePregnancySummarySign =
                     "apgar-scores" ->
                         succeed ApgarScores
 
-                    "birth-weight" ->
-                        succeed BirthWeight
-
                     "birth-length" ->
                         succeed BirthLength
 

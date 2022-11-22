@@ -3976,9 +3976,6 @@ encodePregnancySummarySign sign =
             ApgarScores ->
                 "apgar-scores"
 
-            BirthWeight ->
-                "birth-weight"
-
             BirthLength ->
                 "birth-length"
 
