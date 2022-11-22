@@ -145,7 +145,6 @@ type alias PregnancySummaryForm =
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     , deliveryComplicationsPresent : Maybe Bool
     , deliveryComplications : Maybe (List DeliveryComplication)
-    , signs : Maybe (List PregnancySummarySign)
     , apgarScoresAvailable : Maybe Bool
     , apgarOneMin : Maybe Float
     , apgarFiveMin : Maybe Float
@@ -165,7 +164,6 @@ emptyPregnancySummaryForm =
     , dateSelectorPopupState = Nothing
     , deliveryComplicationsPresent = Nothing
     , deliveryComplications = Nothing
-    , signs = Nothing
     , apgarScoresAvailable = Nothing
     , apgarOneMin = Nothing
     , apgarFiveMin = Nothing

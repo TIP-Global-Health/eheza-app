@@ -171,7 +171,6 @@ fromPregnancySummaryValue saved =
     , dateSelectorPopupState = Nothing
     , deliveryComplicationsPresent = deliveryComplicationsPresent
     , deliveryComplications = deliveryComplications
-    , signs = signs
     , apgarScoresAvailable = Maybe.map (List.member ApgarScores) signs
     , apgarOneMin = Maybe.andThen .apgarOneMin saved
     , apgarFiveMin = Maybe.andThen .apgarFiveMin saved
@@ -215,7 +214,6 @@ pregnancySummaryFormWithDefault form saved =
                     or form.deliveryComplicationsPresent
                         (listNotEmptyWithException NoDeliveryComplications deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
-                , signs = or form.signs (Just signsFromValue)
                 , apgarScoresAvailable = or form.apgarScoresAvailable (List.member ApgarScores signsFromValue |> Just)
                 , apgarOneMin = Maybe.andThen .apgarOneMin saved
                 , apgarFiveMin = Maybe.andThen .apgarFiveMin saved
@@ -246,8 +244,11 @@ toPregnancySummaryValue form =
                 |> Maybe.withDefault (EverySet.singleton NoDeliveryComplications)
 
         signs =
-            Maybe.map EverySet.fromList form.signs
-                |> Maybe.withDefault (EverySet.singleton NoPregnancySummarySigns)
+            [ ifNullableTrue ApgarScores form.apgarScoresAvailable
+            , ifNullableTrue BirthLength form.birthLengthAvailable
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPregnancySummarySigns)
 
         birthDefects =
             Maybe.map EverySet.fromList form.birthDefects
@@ -255,7 +256,7 @@ toPregnancySummaryValue form =
     in
     Maybe.map PregnancySummaryValue form.expectedDateConcluded
         |> andMap (Just deliveryComplications)
-        |> andMap (Just signs)
+        |> andMap signs
         |> andMap (Just form.apgarOneMin)
         |> andMap (Just form.apgarFiveMin)
         |> andMap (Just form.birthWeight)
