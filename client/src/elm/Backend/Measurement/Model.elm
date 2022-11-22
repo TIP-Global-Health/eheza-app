@@ -2247,7 +2247,19 @@ type alias WellChildPregnancySummary =
 type alias PregnancySummaryValue =
     { expectedDateConcluded : NominalDate
     , deliveryComplications : EverySet DeliveryComplication
+    , signs : EverySet PregnancySummarySign
+    , apgarOneMin : Maybe Float
+    , apgarFiveMin : Maybe Float
+    , birthWeight : Maybe WeightInKg
+    , birthLength : Maybe HeightInCm
+    , birthDefects : EverySet BirthDefect
     }
+
+
+type PregnancySummarySign
+    = ApgarScores
+    | BirthLength
+    | NoPregnancySummarySigns
 
 
 type DeliveryComplication
@@ -2259,6 +2271,26 @@ type DeliveryComplication
     | ComplicationMaternalDeath
     | ComplicationOther
     | NoDeliveryComplications
+
+
+type BirthDefect
+    = DefectBirthInjury
+    | DefectCleftLipWithCleftPalate
+    | DefectCleftPalate
+    | DefectClubFoot
+    | DefectMacrocephaly
+    | DefectGastroschisis
+    | DefectHearingLoss
+    | DefectUndescendedTestes
+    | DefectHypospadias
+    | DefectInguinalHernia
+    | DefectMicrocephaly
+    | DefectNeuralTubes
+    | DefectDownSyndrome
+    | DefectCongenitalHeart
+    | DefectVentricalSeptal
+    | DefectPulmonaryValveAtresiaAndStenosis
+    | NoBirthDefects
 
 
 type alias WellChildNextVisit =

@@ -3933,11 +3933,44 @@ encodeWellChildPregnancySummary =
 
 encodePregnancySummaryValue : PregnancySummaryValue -> List ( String, Value )
 encodePregnancySummaryValue value =
+    let
+        apgar =
+            Maybe.map2
+                (\apgarOneMin apgarFiveMin ->
+                    [ ( "apgar_one_min", float apgarOneMin )
+                    , ( "apgar_five_min", float apgarFiveMin )
+                    ]
+                )
+                value.apgarOneMin
+                value.apgarFiveMin
+                |> Maybe.withDefault []
+
+        birthWeight =
+            Maybe.map
+                (\(WeightInKg weight) ->
+                    [ ( "weight", float weight ) ]
+                )
+                value.birthWeight
+                |> Maybe.withDefault []
+
+        birthLength =
+            Maybe.map
+                (\(HeightInCm length) ->
+                    [ ( "height", float length ) ]
+                )
+                value.birthLength
+                |> Maybe.withDefault []
+    in
     [ ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.expectedDateConcluded )
     , ( "delivery_complications", encodeEverySet encodeDeliveryComplication value.deliveryComplications )
+    , ( "pregnancy_summary_signs", encodeEverySet encodePregnancySummarySign value.signs )
+    , ( "birth_defects", encodeEverySet encodeBirthDefect value.birthDefects )
     , ( "deleted", bool False )
     , ( "type", string "well_child_pregnancy_summary" )
     ]
+        ++ apgar
+        ++ birthWeight
+        ++ birthLength
 
 
 encodeDeliveryComplication : DeliveryComplication -> Value
@@ -3966,6 +3999,76 @@ encodeDeliveryComplication complication =
                 "other"
 
             NoDeliveryComplications ->
+                "none"
+
+
+encodePregnancySummarySign : PregnancySummarySign -> Value
+encodePregnancySummarySign sign =
+    string <|
+        case sign of
+            ApgarScores ->
+                "apgar-scores"
+
+            BirthLength ->
+                "birth-length"
+
+            NoPregnancySummarySigns ->
+                "none"
+
+
+encodeBirthDefect : BirthDefect -> Value
+encodeBirthDefect defect =
+    string <|
+        case defect of
+            DefectBirthInjury ->
+                "birth-injury"
+
+            DefectCleftLipWithCleftPalate ->
+                "cleft-lip-with-cleft-palate"
+
+            DefectCleftPalate ->
+                "cleft-palate"
+
+            DefectClubFoot ->
+                "club-foot"
+
+            DefectMacrocephaly ->
+                "macrocephaly"
+
+            DefectGastroschisis ->
+                "gastroschisis"
+
+            DefectHearingLoss ->
+                "hearing-loss"
+
+            DefectUndescendedTestes ->
+                "undescended-testes"
+
+            DefectHypospadias ->
+                "hypospadias"
+
+            DefectInguinalHernia ->
+                "inguinal-hernia"
+
+            DefectMicrocephaly ->
+                "microcephaly"
+
+            DefectNeuralTubes ->
+                "neural-tubes"
+
+            DefectDownSyndrome ->
+                "down-syndrome"
+
+            DefectCongenitalHeart ->
+                "congenital-heart"
+
+            DefectVentricalSeptal ->
+                "ventrical-septal"
+
+            DefectPulmonaryValveAtresiaAndStenosis ->
+                "pulmonary-valve-atresia-and-stenosis"
+
+            NoBirthDefects ->
                 "none"
 
 

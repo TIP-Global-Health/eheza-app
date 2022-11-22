@@ -4393,6 +4393,20 @@ decodePregnancySummaryValue =
     succeed PregnancySummaryValue
         |> required "expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
         |> required "delivery_complications" (decodeEverySet decodeDeliveryComplication)
+        |> required "pregnancy_summary_signs"
+            (decodeWithFallback
+                (EverySet.singleton NoPregnancySummarySigns)
+                (decodeEverySet decodePregnancySummarySign)
+            )
+        |> required "apgar_one_min" (nullable decodeFloat)
+        |> required "apgar_five_min" (nullable decodeFloat)
+        |> required "weight" (nullable (map WeightInKg decodeFloat))
+        |> required "height" (nullable (map HeightInCm decodeFloat))
+        |> required "birth_defects"
+            (decodeWithFallback
+                (EverySet.singleton NoBirthDefects)
+                (decodeEverySet decodeBirthDefect)
+            )
 
 
 decodeDeliveryComplication : Decoder DeliveryComplication
@@ -4427,6 +4441,88 @@ decodeDeliveryComplication =
 
                     _ ->
                         fail <| complication ++ " is not a recognized DeliveryComplication"
+            )
+
+
+decodePregnancySummarySign : Decoder PregnancySummarySign
+decodePregnancySummarySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "apgar-scores" ->
+                        succeed ApgarScores
+
+                    "birth-length" ->
+                        succeed BirthLength
+
+                    "none" ->
+                        succeed NoPregnancySummarySigns
+
+                    _ ->
+                        fail <| sign ++ " is not a recognized PregnancySummarySign"
+            )
+
+
+decodeBirthDefect : Decoder BirthDefect
+decodeBirthDefect =
+    string
+        |> andThen
+            (\defect ->
+                case defect of
+                    "birth-injury" ->
+                        succeed DefectBirthInjury
+
+                    "cleft-lip-with-cleft-palate" ->
+                        succeed DefectCleftLipWithCleftPalate
+
+                    "cleft-palate" ->
+                        succeed DefectCleftPalate
+
+                    "club-foot" ->
+                        succeed DefectClubFoot
+
+                    "macrocephaly" ->
+                        succeed DefectMacrocephaly
+
+                    "gastroschisis" ->
+                        succeed DefectGastroschisis
+
+                    "hearing-loss" ->
+                        succeed DefectHearingLoss
+
+                    "undescended-testes" ->
+                        succeed DefectUndescendedTestes
+
+                    "hypospadias" ->
+                        succeed DefectHypospadias
+
+                    "inguinal-hernia" ->
+                        succeed DefectInguinalHernia
+
+                    "microcephaly" ->
+                        succeed DefectMicrocephaly
+
+                    "neural-tubes" ->
+                        succeed DefectNeuralTubes
+
+                    "down-syndrome" ->
+                        succeed DefectDownSyndrome
+
+                    "congenital-heart" ->
+                        succeed DefectCongenitalHeart
+
+                    "ventrical-septal" ->
+                        succeed DefectVentricalSeptal
+
+                    "pulmonary-valve-atresia-and-stenosis" ->
+                        succeed DefectPulmonaryValveAtresiaAndStenosis
+
+                    "none" ->
+                        succeed NoBirthDefects
+
+                    _ ->
+                        fail <| defect ++ " is not a recognized BirthDefect"
             )
 
 

@@ -20,8 +20,10 @@ type Msg
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
     | SetExpectedDateConcludedSelectorState (Maybe (DateSelectorConfig Msg))
-    | SetDeliveryComplicationsPresent Bool
+    | SetPregnancySummaryBoolInput (Bool -> PregnancySummaryForm -> PregnancySummaryForm) Bool
+    | SetPregnancySummaryNumberInput (String -> PregnancySummaryForm -> PregnancySummaryForm) String
     | SetDeliveryComplication DeliveryComplication
+    | SetBirthDefect BirthDefect
     | SavePregnancySummary PersonId (Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary ))
       -- DANGER SIGNS
     | SetActiveDangerSignsTask DangerSignsTask
@@ -98,7 +100,7 @@ type Msg
     | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
       -- NCDA
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
-    | SetBirthWeightMsg String
+    | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( WellChildNCDAId, WellChildNCDA ))
 
@@ -143,6 +145,16 @@ type alias PregnancySummaryForm =
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     , deliveryComplicationsPresent : Maybe Bool
     , deliveryComplications : Maybe (List DeliveryComplication)
+    , apgarScoresAvailable : Maybe Bool
+    , apgarOneMin : Maybe Float
+    , apgarFiveMin : Maybe Float
+    , apgarDirty : Bool
+    , birthWeight : Maybe WeightInKg
+    , birthLengthAvailable : Maybe Bool
+    , birthLength : Maybe HeightInCm
+    , birthLengthDirty : Bool
+    , birthDefectsPresent : Maybe Bool
+    , birthDefects : Maybe (List BirthDefect)
     }
 
 
@@ -152,6 +164,16 @@ emptyPregnancySummaryForm =
     , dateSelectorPopupState = Nothing
     , deliveryComplicationsPresent = Nothing
     , deliveryComplications = Nothing
+    , apgarScoresAvailable = Nothing
+    , apgarOneMin = Nothing
+    , apgarFiveMin = Nothing
+    , apgarDirty = False
+    , birthWeight = Nothing
+    , birthLengthAvailable = Nothing
+    , birthLength = Nothing
+    , birthLengthDirty = False
+    , birthDefectsPresent = Nothing
+    , birthDefects = Nothing
     }
 
 

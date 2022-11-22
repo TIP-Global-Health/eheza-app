@@ -156,12 +156,31 @@ fromPregnancySummaryValue saved =
             Maybe.map (.deliveryComplications >> EverySet.toList) saved
 
         deliveryComplicationsPresent =
-            Maybe.map complicationsPresent deliveryComplications
+            Maybe.map (listNotEmptyWithException NoDeliveryComplications) deliveryComplications
+
+        birthDefects =
+            Maybe.map (.birthDefects >> EverySet.toList) saved
+
+        birthDefectsPresent =
+            Maybe.map (listNotEmptyWithException NoBirthDefects) birthDefects
+
+        signs =
+            Maybe.map (.signs >> EverySet.toList) saved
     in
     { expectedDateConcluded = Maybe.map .expectedDateConcluded saved
     , dateSelectorPopupState = Nothing
     , deliveryComplicationsPresent = deliveryComplicationsPresent
     , deliveryComplications = deliveryComplications
+    , apgarScoresAvailable = Maybe.map (List.member ApgarScores) signs
+    , apgarOneMin = Maybe.andThen .apgarOneMin saved
+    , apgarFiveMin = Maybe.andThen .apgarFiveMin saved
+    , apgarDirty = False
+    , birthWeight = Maybe.andThen .birthWeight saved
+    , birthLengthAvailable = Maybe.map (List.member BirthLength) signs
+    , birthLength = Maybe.andThen .birthLength saved
+    , birthLengthDirty = False
+    , birthDefectsPresent = birthDefectsPresent
+    , birthDefects = birthDefects
     }
 
 
@@ -178,11 +197,35 @@ pregnancySummaryFormWithDefault form saved =
 
                         else
                             EverySet.toList value.deliveryComplications
+
+                    birthDefects =
+                        if form.birthDefectsPresent == Just False then
+                            [ NoBirthDefects ]
+
+                        else
+                            EverySet.toList value.birthDefects
+
+                    signsFromValue =
+                        EverySet.toList value.signs
                 in
                 { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
                 , dateSelectorPopupState = form.dateSelectorPopupState
-                , deliveryComplicationsPresent = or form.deliveryComplicationsPresent (complicationsPresent deliveryComplications |> Just)
+                , deliveryComplicationsPresent =
+                    or form.deliveryComplicationsPresent
+                        (listNotEmptyWithException NoDeliveryComplications deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
+                , apgarScoresAvailable = or form.apgarScoresAvailable (List.member ApgarScores signsFromValue |> Just)
+                , apgarOneMin = Maybe.andThen .apgarOneMin saved
+                , apgarFiveMin = Maybe.andThen .apgarFiveMin saved
+                , apgarDirty = form.apgarDirty
+                , birthWeight = Maybe.andThen .birthWeight saved
+                , birthLengthAvailable = or form.birthLengthAvailable (List.member BirthLength signsFromValue |> Just)
+                , birthLength = Maybe.andThen .birthLength saved
+                , birthLengthDirty = form.birthLengthDirty
+                , birthDefectsPresent =
+                    or form.birthDefectsPresent
+                        (listNotEmptyWithException NoBirthDefects birthDefects |> Just)
+                , birthDefects = or form.birthDefects (Just birthDefects)
                 }
             )
 
@@ -197,25 +240,40 @@ toPregnancySummaryValue : PregnancySummaryForm -> Maybe PregnancySummaryValue
 toPregnancySummaryValue form =
     let
         deliveryComplications =
-            form.deliveryComplications
-                |> Maybe.map EverySet.fromList
+            Maybe.map EverySet.fromList form.deliveryComplications
                 |> Maybe.withDefault (EverySet.singleton NoDeliveryComplications)
+
+        signs =
+            [ ifNullableTrue ApgarScores form.apgarScoresAvailable
+            , ifNullableTrue BirthLength form.birthLengthAvailable
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPregnancySummarySigns)
+
+        birthDefects =
+            Maybe.map EverySet.fromList form.birthDefects
+                |> Maybe.withDefault (EverySet.singleton NoBirthDefects)
     in
     Maybe.map PregnancySummaryValue form.expectedDateConcluded
         |> andMap (Just deliveryComplications)
+        |> andMap signs
+        |> andMap (Just form.apgarOneMin)
+        |> andMap (Just form.apgarFiveMin)
+        |> andMap (Just form.birthWeight)
+        |> andMap (Just form.birthLength)
+        |> andMap (Just birthDefects)
 
 
-complicationsPresent : List DeliveryComplication -> Bool
-complicationsPresent complications =
-    case complications of
-        [] ->
-            False
+listNotEmptyWithException : a -> List a -> Bool
+listNotEmptyWithException exception list =
+    if List.isEmpty list then
+        False
 
-        [ NoDeliveryComplications ] ->
-            False
+    else if list == [ exception ] then
+        False
 
-        _ ->
-            True
+    else
+        True
 
 
 nutritionAssessmentTaskCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool

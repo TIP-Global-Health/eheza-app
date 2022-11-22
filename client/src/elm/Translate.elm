@@ -409,7 +409,10 @@ type TranslationId
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
-    | BirthDefect
+    | BirthDefect BirthDefect
+    | BirthDefectLabel
+    | BirthDefectsPresentQuestion
+    | BirthDefectsSelectionLabel
     | BloodGlucose
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -855,6 +858,7 @@ type TranslationId
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
     | MiddleName
+    | Minutes Int
     | MinutesAgo Int
     | MissedDosesOfMedicatgion Int
     | ModeOfDelivery ModeOfDelivery
@@ -1047,6 +1051,7 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PregnancyConclusion
     | PregnancyStart
+    | PregnancySummarySignQuestion PregnancySummarySign
     | PregnancyTestResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
     | PregnancyUrineTest
@@ -2803,8 +2808,105 @@ translationSet trans =
             , kinyarwanda = Just "Tangira igikorwa gishya"
             }
 
-        BirthDefect ->
+        BirthDefect defect ->
+            case defect of
+                DefectBirthInjury ->
+                    { english = "Birth Injury"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectCleftLipWithCleftPalate ->
+                    { english = "Cleft Lip with Cleft Palate"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectCleftPalate ->
+                    { english = "Cleft Palate"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectClubFoot ->
+                    { english = "ClubFoot"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectMacrocephaly ->
+                    { english = "Macrocephaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectGastroschisis ->
+                    { english = "Gastroschisis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectHearingLoss ->
+                    { english = "Hearing Loss"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectUndescendedTestes ->
+                    { english = "Undescended Testes"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectHypospadias ->
+                    { english = "Hypospadias"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectInguinalHernia ->
+                    { english = "Inguinal Hernia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectMicrocephaly ->
+                    { english = "Microcephaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectNeuralTubes ->
+                    { english = "Neural Tubes Defects"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectDownSyndrome ->
+                    { english = "Down Syndrome"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectCongenitalHeart ->
+                    { english = "CongenitalHeart Defects (CHD)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectVentricalSeptal ->
+                    { english = "Ventrical Septal Defect"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectPulmonaryValveAtresiaAndStenosis ->
+                    { english = "Pulmonary Valve Atresia and Stenosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoBirthDefects ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
+
+        BirthDefectLabel ->
             { english = "Birth Defect"
+            , kinyarwanda = Nothing
+            }
+
+        BirthDefectsPresentQuestion ->
+            { english = "Does the child have any birth defects"
+            , kinyarwanda = Nothing
+            }
+
+        BirthDefectsSelectionLabel ->
+            { english = "Which of the following"
             , kinyarwanda = Nothing
             }
 
@@ -7592,6 +7694,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Minutes minutes ->
+            { english =
+                if minutes == 1 then
+                    "1 Minute"
+
+                else
+                    String.fromInt minutes ++ " Minutes"
+            , kinyarwanda = Nothing
+            }
+
         MinutesAgo minutes ->
             { english =
                 if minutes == 0 then
@@ -9950,6 +10062,23 @@ translationSet trans =
             { english = "Pregnancy Start"
             , kinyarwanda = Just "Itangira ryo Gutwita"
             }
+
+        PregnancySummarySignQuestion sign ->
+            case sign of
+                ApgarScores ->
+                    { english = "Are APGAR scores available for this patient"
+                    , kinyarwanda = Nothing
+                    }
+
+                BirthLength ->
+                    { english = "Is birth length available"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPregnancySummarySigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         PregnancyTestResult result ->
             case result of
@@ -15958,8 +16087,8 @@ translationSet trans =
                     }
 
                 WellChildPregnancySummary ->
-                    { english = "History"
-                    , kinyarwanda = Just "Amateka y'ibyamubayeho"
+                    { english = "Birth History"
+                    , kinyarwanda = Nothing
                     }
 
                 WellChildImmunisation ->

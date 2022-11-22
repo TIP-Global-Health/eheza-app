@@ -2088,6 +2088,39 @@ div.page-activity.well-child {
         }
       }
 
+      .why-not {
+        margin-bottom: 30px;
+        margin-left: 20px;
+      }
+
+      .future-vaccinations {
+        border-top: 2px solid $color-gray;
+        padding-top: 30px;
+
+        .next-vaccination {
+          margin-bottom: 10px;
+          margin-top: 15px;
+
+          .name {
+            float: left;
+            font-weight: 500;
+            height: 2em;
+            width: 80%;
+          }
+
+          .due-date {
+            float: left;
+            font-weight: 500;
+            height: 2em;
+            width: 18%;
+          }
+        }
+      }
+
+      .button.review-history {
+        margin-bottom: 30px;
+      }
+
       .ui.form.vaccination .header.icon-label {
         align-items: flex-start;
         font-weight: 500;
@@ -2161,37 +2194,22 @@ div.page-activity.well-child {
         margin-bottom: 0;
       }
 
-      .why-not {
-        margin-bottom: 30px;
-        margin-left: 20px;
-      }
+      .ui.form.pregnancy-summary {
 
-      .future-vaccinations {
-        border-top: 2px solid $color-gray;
-        padding-top: 30px;
-
-        .next-vaccination {
-          margin-bottom: 10px;
-          margin-top: 15px;
-
-          .name {
-            float: left;
-            font-weight: 500;
-            height: 2em;
-            width: 80%;
-          }
-
-          .due-date {
-            float: left;
-            font-weight: 500;
-            height: 2em;
-            width: 18%;
-          }
+        .form-input.date {
+          border: 2px solid #D9D9D9;
+          width: 61%;
         }
-      }
 
-      .button.review-history {
-        margin-bottom: 30px;
+        .form-input.measurement.apgar,
+        .form-input.measurement.birth-weight,
+        .form-input.measurement.birth-length {
+          margin-bottom: 35px;
+        }
+
+        .form-input.measurement.birth-weight input {
+          width: 81%;
+        }
       }
     }
   }
