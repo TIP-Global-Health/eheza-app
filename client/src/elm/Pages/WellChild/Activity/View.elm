@@ -237,7 +237,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                                         }
                                     )
                                 )
-                                "apgar-one-min"
+                                "apgar one-min"
                                 Translate.EmptyString
                           , viewLabel language <| Translate.Minutes 5
                           , viewMeasurementInput language
@@ -250,7 +250,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                                         }
                                     )
                                 )
-                                "apgar-five-min"
+                                "apgar five-min"
                                 Translate.EmptyString
                           ]
                         , [ maybeToBoolTask form.apgarOneMin, maybeToBoolTask form.apgarFiveMin ]
