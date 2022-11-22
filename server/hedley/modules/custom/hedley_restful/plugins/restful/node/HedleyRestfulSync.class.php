@@ -319,10 +319,17 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $cached_hash = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
     if (empty($cached_hash)) {
       // There's no cached data for health center - trigger statistics
-      // calculation by adding an AQ item.
-      hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_id, [
-        'health_center_nid' => $health_center_id,
-      ]);
+      // calculation, unless health center is member of exclusion list.
+      $excluded_health_centers = variable_get('hedley_statistics_excluded_health_centers', '');
+      $excluded_health_centers = explode(',', $excluded_health_centers);
+      if (array_search($health_center_id, $excluded_health_centers) === FALSE) {
+        // This health center is not excluded - trigger statistics calculation
+        // by adding an AQ item.
+        hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_id, [
+          'health_center_nid' => $health_center_id,
+        ]);
+      }
+
       return $return;
     }
 

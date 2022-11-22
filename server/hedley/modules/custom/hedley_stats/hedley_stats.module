@@ -335,9 +335,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   // Get all clinics of type 'FBF' for the HC.
   $fbf_clinics = hedley_health_center_get_clinics_by_health_center($health_center_id, 'fbf');
   // Calculate statistics that are provided for FBF clinics only.
-  if (!empty($fbf_clinics)) {
-    hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
-  }
+  hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
 
   $villages_with_residents = hedley_stats_get_villages_with_residents($health_center_id);
 
