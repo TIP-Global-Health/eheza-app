@@ -168,7 +168,7 @@ function hedley_well_child_field_default_field_bases() {
         'hypospadias' => 'Hypospadias',
         'inguinal-hernia' => 'Inguinal Hernia',
         'microcephaly' => 'Microcephaly',
-        'nueral-tubes' => 'Nueral Tubes',
+        'neural-tubes' => 'Neural Tubes',
         'down-syndrome' => 'Down Syndrome',
         'congenital-heart' => 'Congenital Heart',
         'ventrical-septal' => 'Ventrical Septal',

@@ -4503,8 +4503,8 @@ decodeBirthDefect =
                     "microcephaly" ->
                         succeed DefectMicrocephaly
 
-                    "nueral-tubes" ->
-                        succeed DefectNueralTubes
+                    "neural-tubes" ->
+                        succeed DefectNeuralTubes
 
                     "down-syndrome" ->
                         succeed DefectDownSyndrome

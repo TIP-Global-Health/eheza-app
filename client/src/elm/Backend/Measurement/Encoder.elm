@@ -4053,8 +4053,8 @@ encodeBirthDefect defect =
             DefectMicrocephaly ->
                 "microcephaly"
 
-            DefectNueralTubes ->
-                "nueral-tubes"
+            DefectNeuralTubes ->
+                "neural-tubes"
 
             DefectDownSyndrome ->
                 "down-syndrome"

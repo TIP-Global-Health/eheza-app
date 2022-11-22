@@ -466,7 +466,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                                 [ DefectHypospadias
                                 , DefectInguinalHernia
                                 , DefectMicrocephaly
-                                , DefectNueralTubes
+                                , DefectNeuralTubes
                                 , DefectDownSyndrome
                                 , DefectCongenitalHeart
                                 , DefectVentricalSeptal

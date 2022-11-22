@@ -2285,7 +2285,7 @@ type BirthDefect
     | DefectHypospadias
     | DefectInguinalHernia
     | DefectMicrocephaly
-    | DefectNueralTubes
+    | DefectNeuralTubes
     | DefectDownSyndrome
     | DefectCongenitalHeart
     | DefectVentricalSeptal

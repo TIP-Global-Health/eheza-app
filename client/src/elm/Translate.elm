@@ -2865,8 +2865,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DefectNueralTubes ->
-                    { english = "Nueral Tubes Defects"
+                DefectNeuralTubes ->
+                    { english = "Neural Tubes Defects"
                     , kinyarwanda = Nothing
                     }
 
