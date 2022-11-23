@@ -1119,6 +1119,9 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
         }
       }
     }
+
+    // Free up memory.
+    drupal_static_reset();
   }
 
   // Set the cache.
@@ -1157,6 +1160,9 @@ function hedley_stats_get_total_encounters($health_center_id, $villages_with_res
   foreach ($villages_with_residents as $village_uuid => $residents_ids) {
     $result['villages'][$village_uuid] = hedley_stats_get_total_encounters_for_residents($health_center_id, $residents_ids);
   }
+
+  // Free up memory.
+  drupal_static_reset();
 
   // Set the cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $health_center_id, NULL, $result);
