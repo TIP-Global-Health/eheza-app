@@ -89,13 +89,12 @@ function hedley_stats_trigger_stats_recalculation($node) {
     return;
   }
 
-
   foreach ($health_centers as $health_center_id) {
     // Reset statistics cache for health center, because
     // content affecting its statistics has been added / changed.
     hedley_stats_clear_caches_for_health_center($health_center_id, $cache_type_for_recalculation);
 
-    // Schedule recalculation of statistics by add
+    // Schedule recalculation of statistics by add.
     hedley_stats_schedule_statistics_calculation_for_health_center($health_center_id);
   }
 }
