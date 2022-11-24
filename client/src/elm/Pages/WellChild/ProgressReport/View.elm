@@ -1536,7 +1536,7 @@ viewNCDAScorecard language currentDate zscores db ( childId, child ) =
     in
     div [ class "ui report unstackable items" ]
         [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
-        , viewANCNewbornPane language currentDate db child
+        , viewANCNewbornPane language currentDate db child allNCDAQuestionnaires
         , viewUniversalInterventionsPane language
             currentDate
             child
@@ -1700,11 +1700,27 @@ viewANCNewbornPane :
     -> NominalDate
     -> ModelIndexedDb
     -> Person
+    -> List ( NominalDate, NCDAValue )
     -> Html any
-viewANCNewbornPane language currentDate db child =
+viewANCNewbornPane language currentDate db child allNCDAQuestionnaires =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueEmpty
+
+        pregnancyValuesForANCSign sign =
+            if List.isEmpty allNCDAQuestionnaires then
+                List.repeat 9 NCDACellValueDash
+
+            else
+                let
+                    signConfirmed =
+                        List.any (\( _, value ) -> EverySet.member sign value.signs) allNCDAQuestionnaires
+                in
+                if signConfirmed then
+                    List.repeat 9 NCDACellValueV
+
+                else
+                    List.repeat 9 NCDACellValueX
 
         zeroToFiveValues =
             List.repeat 6 NCDACellValueDash
@@ -1716,8 +1732,16 @@ viewANCNewbornPane language currentDate db child =
         [ viewPaneHeading language Translate.ANCNewborn
         , div [ class "pane-content" ]
             [ viewTableHeader
-            , viewTableRow language (Translate.NCDAANCNewbornItemLabel RegularCheckups) pregnancyValues zeroToFiveValues sixToTwentyFourValues
-            , viewTableRow language (Translate.NCDAANCNewbornItemLabel IronDuringPregnancy) pregnancyValues zeroToFiveValues sixToTwentyFourValues
+            , viewTableRow language
+                (Translate.NCDAANCNewbornItemLabel RegularCheckups)
+                (pregnancyValuesForANCSign NCDARegularPrenatalVisits)
+                zeroToFiveValues
+                sixToTwentyFourValues
+            , viewTableRow language
+                (Translate.NCDAANCNewbornItemLabel IronDuringPregnancy)
+                (pregnancyValuesForANCSign NCDAIronSupplementsDuringPregnancy)
+                zeroToFiveValues
+                sixToTwentyFourValues
             ]
         ]
 
