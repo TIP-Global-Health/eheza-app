@@ -89,16 +89,37 @@ function hedley_stats_trigger_stats_recalculation($node) {
     return;
   }
 
-  // Reset statistics cache of each health center, because
-  // content affecting its statistics has been added / changed.
-  foreach ($health_centers as $health_center) {
-    hedley_stats_clear_caches_for_health_center($health_center, $cache_type_for_recalculation);
+  foreach ($health_centers as $health_center_id) {
+    // Reset statistics cache for health center, because
+    // content affecting its statistics has been added / changed.
+    hedley_stats_clear_caches_for_health_center($health_center_id, $cache_type_for_recalculation);
 
-    // Add an AQ item to re-calculate all the statistics offline.
-    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center, [
-      'health_center_nid' => $health_center,
-    ]);
+    // Schedule recalculation of statistics.
+    hedley_stats_schedule_statistics_calculation_for_health_center($health_center_id);
   }
+}
+
+/**
+ * Schedules statistics calculation.
+ *
+ * AQ task is added for statistics calculation, unless health center
+ * is member of exclusion list.
+ *
+ * @param int $health_center_id
+ *   The node ID of health center, which statistics are calculated.
+ */
+function hedley_stats_schedule_statistics_calculation_for_health_center($health_center_id) {
+  $excluded_health_centers = variable_get('hedley_statistics_excluded_health_centers', '');
+  $excluded_health_centers = explode(',', $excluded_health_centers);
+  if (array_search($health_center_id, $excluded_health_centers) !== FALSE) {
+    // Health center is member of the exclusion list.
+    return;
+  }
+  // This health center is not excluded - schedule statistics
+  // calculation by adding an AQ task.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_id, [
+    'health_center_nid' => $health_center_id,
+  ]);
 }
 
 /**
@@ -1106,7 +1127,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
           $measurements = hedley_activity_get_person_measurements_by_period($child_id, $measurements_types, $period, 1);
           if (empty($measurements)) {
             // This person missed the session because they don't have any
-            // measurements found for that session on this date so we add it to
+            // measurements found for that session on this date, so we add it to
             // the list of dates, to be able to filter it in the frontend.
             $expected_person['expected_date'] = hedley_stats_convert_timestamp_to_nominal($session_start_date);
             $missed_session[] = $expected_person;
@@ -1119,6 +1140,9 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
         }
       }
     }
+
+    // Free up memory.
+    drupal_static_reset();
   }
 
   // Set the cache.
@@ -1157,6 +1181,9 @@ function hedley_stats_get_total_encounters($health_center_id, $villages_with_res
   foreach ($villages_with_residents as $village_uuid => $residents_ids) {
     $result['villages'][$village_uuid] = hedley_stats_get_total_encounters_for_residents($health_center_id, $residents_ids);
   }
+
+  // Free up memory.
+  drupal_static_reset();
 
   // Set the cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $health_center_id, NULL, $result);
