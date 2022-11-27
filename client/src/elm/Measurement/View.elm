@@ -23,7 +23,12 @@ import Backend.Measurement.Utils
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend, resolvePreviousNCDAValuesForChild)
+import Backend.NutritionEncounter.Utils
+    exposing
+        ( getNewbornExamPregnancySummary
+        , nutritionAssessmentForBackend
+        , resolvePreviousNCDAValuesForChild
+        )
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -119,8 +124,12 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
         Activity.Model.NCDA ->
+            let
+                newbornExamPregnancySummary =
+                    getNewbornExamPregnancySummary childId db
+            in
             resolvePreviousNCDAValuesForChild currentDate childId db
-                |> viewNCDA language currentDate child (mapMeasurementData .ncda measurements) model.ncdaData
+                |> viewNCDA language currentDate child (mapMeasurementData .ncda measurements) model.ncdaData newbornExamPregnancySummary
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -2295,9 +2304,10 @@ viewNCDAContent :
     -> (Maybe NCDASign -> msg)
     -> Maybe NCDASign
     -> NCDAForm
+    -> Maybe PregnancySummaryValue
     -> List ( NominalDate, NCDAValue )
     -> List (Html msg)
-viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg saveMsg setHelperStateMsg helperState form previousNCDAValues =
+viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg saveMsg setHelperStateMsg helperState form newbornExamPregnancySummary previousNCDAValues =
     let
         totalTasks =
             List.length tasks
@@ -2693,9 +2703,10 @@ viewNCDA :
     -> Person
     -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
     -> NCDAData
+    -> Maybe PregnancySummaryValue
     -> List ( NominalDate, NCDAValue )
     -> Html MsgChild
-viewNCDA language currentDate child measurement data previousNCDAValues =
+viewNCDA language currentDate child measurement data newbornExamPregnancySummary previousNCDAValues =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -2721,5 +2732,6 @@ viewNCDA language currentDate child measurement data previousNCDAValues =
         SetNCDAHelperState
         data.helperState
         form
+        newbornExamPregnancySummary
         previousNCDAValues
         |> div []

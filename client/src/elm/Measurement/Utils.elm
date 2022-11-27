@@ -3813,7 +3813,8 @@ emptyOptionForSelect value =
 
 fromNCDAValue : Maybe NCDAValue -> NCDAForm
 fromNCDAValue saved =
-    { bornWithBirthDefect = Maybe.map (.signs >> EverySet.member NCDABornWithBirthDefect) saved
+    { ncdaStep = Nothing
+    , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member NCDABornWithBirthDefect) saved
     , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member NCDABreastfedForSixMonths) saved
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member NCDAAppropriateComplementaryFeeding) saved
     , ongeraMNP = Maybe.map (.signs >> EverySet.member NCDAOngeraMNP) saved
@@ -3841,7 +3842,8 @@ ncdaFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member NCDABornWithBirthDefect value.signs |> Just)
+                { ncdaStep = form.ncdaStep
+                , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member NCDABornWithBirthDefect value.signs |> Just)
                 , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member NCDABreastfedForSixMonths value.signs |> Just)
                 , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member NCDAAppropriateComplementaryFeeding value.signs |> Just)
                 , ongeraMNP = or form.ongeraMNP (EverySet.member NCDAOngeraMNP value.signs |> Just)

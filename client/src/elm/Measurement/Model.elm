@@ -971,7 +971,8 @@ emptyNCDAData =
 
 
 type alias NCDAForm =
-    { bornWithBirthDefect : Maybe Bool
+    { ncdaStep : Maybe NCDAStep
+    , bornWithBirthDefect : Maybe Bool
     , breastfedForSixMonths : Maybe Bool
     , appropriateComplementaryFeeding : Maybe Bool
     , ongeraMNP : Maybe Bool
@@ -995,7 +996,8 @@ type alias NCDAForm =
 
 emptyNCDAForm : NCDAForm
 emptyNCDAForm =
-    { bornWithBirthDefect = Nothing
+    { ncdaStep = Nothing
+    , bornWithBirthDefect = Nothing
     , breastfedForSixMonths = Nothing
     , appropriateComplementaryFeeding = Nothing
     , ongeraMNP = Nothing
@@ -1015,6 +1017,12 @@ emptyNCDAForm =
     , insecticideTreatedBednetsDuringPregnancy = Nothing
     , birthWeight = Nothing
     }
+
+
+type NCDAStep
+    = NCDAStepQuestionsAskedOnce
+    | NCDAStepPermanentQuestions1
+    | NCDAStepPermanentQuestions2
 
 
 type GroupOfFoods
