@@ -41,7 +41,7 @@ import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput)
 import Html.Parser.Util exposing (toVirtualDom)
 import Json.Decode
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
@@ -2317,7 +2317,7 @@ viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg sa
                 |> List.sum
 
         ( inputs, tasks ) =
-            ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeightMsg setHelperStateMsg form previousNCDAValues
+            ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeightMsg setHelperStateMsg form newbornExamPregnancySummary previousNCDAValues
 
         disabled =
             tasksCompleted /= totalTasks
@@ -2343,82 +2343,11 @@ ncdaFormInputsAndTasks :
     -> (String -> msg)
     -> (Maybe NCDASign -> msg)
     -> NCDAForm
+    -> Maybe PregnancySummaryValue
     -> List ( NominalDate, NCDAValue )
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeightMsg setHelperStateMsg form previousNCDAValues =
+ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeightMsg setHelperStateMsg form newbornExamPregnancySummary previousNCDAValues =
     let
-        firstNCDAQuestionnaire =
-            -- If we do not have record of any questionnaires filled
-            -- before, we know this is first time patient fills the
-            -- questionnaire.
-            List.isEmpty previousNCDAValues
-
-        signsAskedOnce =
-            -- There are questions that should be asked once,
-            -- so we show them only when first questionnaire is filled.
-            if firstNCDAQuestionnaire then
-                [ NCDARegularPrenatalVisits
-                , NCDAIronSupplementsDuringPregnancy
-                , NCDAInsecticideTreatedBednetsDuringPregnancy
-                , NCDABornWithBirthDefect
-                ]
-
-            else
-                []
-
-        signs =
-            signsAskedOnce
-                ++ feedingSign
-                ++ [ NCDAOngeraMNP
-                   , NCDAFiveFoodGroups
-                   ]
-                ++ mealFrequencySign
-                ++ [ NCDASupportChildWithDisability
-                   , NCDAConditionalCashTransfer
-                   , NCDAConditionalFoodItems
-                   , NCDAHasCleanWater
-                   , NCDAHasHandwashingFacility
-                   , NCDAHasToilets
-                   , NCDAHasKitchenGarden
-                   ]
-
-        ( birthWeightSection, birthWeightTasks ) =
-            if firstNCDAQuestionnaire then
-                birthWeightInputsAndTasks language form.birthWeight setBirthWeightMsg
-
-            else
-                ( [], [] )
-
-        ( feedingSign, mealFrequencySign ) =
-            ageInMonths currentDate person
-                |> Maybe.map
-                    (\ageMonths ->
-                        ( if ageMonths < 6 then
-                            []
-
-                          else if ageMonths < 7 then
-                            [ NCDABreastfedForSixMonths ]
-
-                          else
-                            [ NCDAAppropriateComplementaryFeeding ]
-                        , if ageMonths < 6 then
-                            []
-
-                          else if ageMonths < 9 then
-                            [ NCDAMealFrequency6to8Months ]
-
-                          else if ageMonths < 12 then
-                            [ NCDAMealFrequency9to11Months ]
-
-                          else
-                            [ NCDAMealFrequency12MonthsOrMore ]
-                        )
-                    )
-                |> Maybe.withDefault ( [], [] )
-
-        inputsAndTasks =
-            List.map inputAndTaskForSign signs
-
         inputAndTaskForSign sign =
             case sign of
                 NCDABornWithBirthDefect ->
@@ -2610,12 +2539,116 @@ ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeigh
                 Nothing
             ]
     in
-    ( List.map Tuple.first inputsAndTasks
-        |> List.concat
-        |> List.append birthWeightSection
-    , List.map Tuple.second inputsAndTasks
-        |> List.append birthWeightTasks
-    )
+    case getNCDAFormStep newbornExamPregnancySummary previousNCDAValues form of
+        NCDAStepQuestionsAskedOnce ->
+            let
+                ancSignsInputsAndTasks =
+                    if List.isEmpty previousNCDAValues then
+                        List.map inputAndTaskForSign
+                            [ NCDARegularPrenatalVisits
+                            , NCDAIronSupplementsDuringPregnancy
+                            , NCDAInsecticideTreatedBednetsDuringPregnancy
+                            ]
+
+                    else
+                        []
+
+                ( newbornExamSection, newbornExamTasks ) =
+                    if isNothing newbornExamPregnancySummary then
+                        let
+                            ( birthWeightSection, birthWeightTasks ) =
+                                birthWeightInputsAndTasks language form.birthWeight setBirthWeightMsg
+
+                            ( birthDefectSection, birthDefectTask ) =
+                                inputAndTaskForSign NCDABornWithBirthDefect
+                        in
+                        ( birthWeightSection ++ birthDefectSection
+                        , birthDefectTask :: birthWeightTasks
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( (List.map Tuple.first ancSignsInputsAndTasks |> List.concat)
+                ++ newbornExamSection
+            , List.map Tuple.second ancSignsInputsAndTasks
+                ++ newbornExamTasks
+            )
+
+        NCDAStepPermanentQuestions1 ->
+            let
+                signs =
+                    feedingSign
+                        ++ [ NCDAOngeraMNP
+                           , NCDAFiveFoodGroups
+                           ]
+                        ++ mealFrequencySign
+                        ++ [ NCDAConditionalCashTransfer
+                           , NCDAConditionalFoodItems
+                           ]
+
+                ( feedingSign, mealFrequencySign ) =
+                    ageInMonths currentDate person
+                        |> Maybe.map
+                            (\ageMonths ->
+                                ( if ageMonths < 6 then
+                                    []
+
+                                  else if ageMonths < 7 then
+                                    [ NCDABreastfedForSixMonths ]
+
+                                  else
+                                    [ NCDAAppropriateComplementaryFeeding ]
+                                , if ageMonths < 6 then
+                                    []
+
+                                  else if ageMonths < 9 then
+                                    [ NCDAMealFrequency6to8Months ]
+
+                                  else if ageMonths < 12 then
+                                    [ NCDAMealFrequency9to11Months ]
+
+                                  else
+                                    [ NCDAMealFrequency12MonthsOrMore ]
+                                )
+                            )
+                        |> Maybe.withDefault ( [], [] )
+
+                inputsAndTasks =
+                    List.map inputAndTaskForSign signs
+            in
+            ( List.map Tuple.first inputsAndTasks
+                |> List.concat
+            , List.map Tuple.second inputsAndTasks
+            )
+
+        NCDAStepPermanentQuestions2 ->
+            let
+                inputsAndTasks =
+                    List.map inputAndTaskForSign
+                        [ NCDAHasCleanWater
+                        , NCDAHasHandwashingFacility
+                        , NCDAHasToilets
+                        , NCDAHasKitchenGarden
+                        , NCDASupportChildWithDisability
+                        ]
+            in
+            ( List.map Tuple.first inputsAndTasks
+                |> List.concat
+            , List.map Tuple.second inputsAndTasks
+            )
+
+
+getNCDAFormStep : Maybe PregnancySummaryValue -> List ( NominalDate, NCDAValue ) -> NCDAForm -> NCDAStep
+getNCDAFormStep newbornExamPregnancySummary previousNCDAValues form =
+    Maybe.withDefault
+        (if isNothing newbornExamPregnancySummary || List.isEmpty previousNCDAValues then
+            NCDAStepQuestionsAskedOnce
+
+         else
+            NCDAStepPermanentQuestions1
+        )
+        form.step
 
 
 birthWeightInputsAndTasks : Language -> Maybe WeightInKg -> (String -> msg) -> ( List (Html msg), List (Maybe Bool) )
