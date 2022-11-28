@@ -101,6 +101,7 @@ type Msg
       -- NCDA
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
+    | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( WellChildNCDAId, WellChildNCDA ))
 

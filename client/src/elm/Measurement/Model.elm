@@ -245,6 +245,7 @@ type MsgChild
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
+    | SetNCDAFormStep NCDAStep
 
 
 type MsgMother

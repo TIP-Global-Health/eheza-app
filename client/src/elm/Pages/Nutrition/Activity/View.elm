@@ -698,6 +698,7 @@ viewNCDAContent language currentDate id assembled db data newbornExamPregnancySu
         assembled.person
         SetNCDABoolInput
         SetBirthWeight
+        SetNCDAFormStep
         saveMsg
         SetNCDAHelperState
         data.helperState
