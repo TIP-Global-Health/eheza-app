@@ -2007,6 +2007,41 @@ viewInfrastructureEnvironmentWashPane language currentDate child questionnairesB
 
         hasKitchenGarden =
             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasKitchenGarden)
+
+        insecticideTreatedBedNets =
+            let
+                byMonths =
+                    generateValues currentDate
+                        child
+                        questionnairesByAgeInMonths
+                        (.signs >> EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy)
+
+                answer =
+                    List.foldl
+                        (\cellValue answerSoFar ->
+                            if List.member cellValue [ NCDACellValueV, NCDACellValueX ] then
+                                Just cellValue
+
+                            else
+                                answerSoFar
+                        )
+                        Nothing
+                        byMonths
+            in
+            Maybe.map
+                (\answer_ ->
+                    List.map
+                        (\monthValue ->
+                            if monthValue /= NCDACellValueEmpty then
+                                answer_
+
+                            else
+                                NCDACellValueEmpty
+                        )
+                        byMonths
+                )
+                answer
+                |> Maybe.withDefault byMonths
     in
     div [ class "pane infrastructure-environment-wash" ]
         [ viewPaneHeading language Translate.InfrastructureEnvironmentWash
@@ -2027,6 +2062,11 @@ viewInfrastructureEnvironmentWashPane language currentDate child questionnairesB
                 pregnancyValues
                 (List.take 6 hasHandwashingFacility)
                 (List.drop 6 hasHandwashingFacility)
+            , viewTableRow language
+                (Translate.NCDAInfrastructureEnvironmentWashItemLabel InsecticideTreatedBedNets)
+                pregnancyValues
+                (List.take 6 insecticideTreatedBedNets)
+                (List.drop 6 insecticideTreatedBedNets)
             , viewTableRow language
                 (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasKitchenGarden)
                 pregnancyValues
