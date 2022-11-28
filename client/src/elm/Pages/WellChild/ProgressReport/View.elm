@@ -19,7 +19,8 @@ import Backend.Measurement.Utils exposing (getMeasurementDateMeasuredFunc, getMe
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( getNutritionEncountersForParticipant
+        ( getNewbornExamPregnancySummary
+        , getNutritionEncountersForParticipant
         , getWellChildEncountersForParticipant
         , sortByDate
         , sortByDateDesc
@@ -1514,10 +1515,6 @@ viewNCDAScorecard language currentDate zscores db ( childId, child ) =
                     )
                     wellChildNCDAs
 
-        recentQuestionnaire =
-            List.head allNCDAQuestionnaires
-                |> Maybe.map Tuple.second
-
         groupNCDAs =
             Dict.values reportData.groupNutritionMeasurements.ncda
 
@@ -1535,7 +1532,7 @@ viewNCDAScorecard language currentDate zscores db ( childId, child ) =
             distributeByAgeInMonths child allNCDAQuestionnaires
     in
     div [ class "ui report unstackable items" ]
-        [ viewChildIdentificationPane language currentDate recentQuestionnaire db ( childId, child )
+        [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
         , viewANCNewbornPane language currentDate db child allNCDAQuestionnaires
         , viewUniversalInterventionsPane language
             currentDate
@@ -1568,11 +1565,11 @@ viewNCDAScorecard language currentDate zscores db ( childId, child ) =
 viewChildIdentificationPane :
     Language
     -> NominalDate
-    -> Maybe NCDAValue
+    -> List ( NominalDate, NCDAValue )
     -> ModelIndexedDb
     -> ( PersonId, Person )
     -> Html any
-viewChildIdentificationPane language currentDate ncdaQuestionnaire db ( childId, child ) =
+viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child ) =
     let
         parentsIds =
             Dict.get childId db.relationshipsByPerson
@@ -1633,36 +1630,70 @@ viewChildIdentificationPane language currentDate ncdaQuestionnaire db ( childId,
         childNameEntry =
             viewEntry Translate.ChildName child.name
 
-        questionnaireEntries =
+        bornUnderweightByNewbornExam =
+            Maybe.andThen (\value -> Maybe.map (\(WeightInGrm birthWeight) -> birthWeight < 2500) value.birthWeight)
+                newbornExamPregnancySummary
+
+        birthDefectByNewbornExam =
             Maybe.map
-                (\questionnaire ->
-                    let
-                        bornUnderweight =
-                            --@todo
-                            False
-
-                        bornUnderweightAnswer =
-                            if bornUnderweight then
-                                Translate.Yes
-
-                            else
-                                Translate.No
-
-                        birthDefect =
-                            EverySet.member NCDABornWithBirthDefect questionnaire.signs
-
-                        birthDefectAnswer =
-                            if birthDefect then
-                                Translate.Yes
-
-                            else
-                                Translate.No
-                    in
-                    [ viewEntry Translate.BornUnderweight (translate language bornUnderweightAnswer)
-                    , viewEntry Translate.BirthDefectLabel (translate language birthDefectAnswer)
-                    ]
+                (\value ->
+                    (not <| EverySet.isEmpty value.birthDefects)
+                        && (not <| value.birthDefects == EverySet.singleton NoBirthDefects)
                 )
-                ncdaQuestionnaire
+                newbornExamPregnancySummary
+
+        newbornExamPregnancySummary =
+            getNewbornExamPregnancySummary childId db
+
+        bornUnderweightByNCDA =
+            List.filterMap
+                (\( _, value ) ->
+                    Maybe.map (\(WeightInGrm birthWeight) -> birthWeight) value.birthWeight
+                )
+                allNCDAQuestionnaires
+                |> List.head
+                |> Maybe.map (\weight -> weight < 2500)
+
+        birthDefectByNCDA =
+            if List.isEmpty allNCDAQuestionnaires then
+                Nothing
+
+            else
+                List.any
+                    (\( _, value ) -> EverySet.member NCDABornWithBirthDefect value.signs)
+                    allNCDAQuestionnaires
+                    |> Just
+
+        bornUnderweighEntry =
+            Maybe.Extra.or bornUnderweightByNewbornExam bornUnderweightByNCDA
+                |> Maybe.map
+                    (\confirmed ->
+                        let
+                            answer =
+                                if confirmed then
+                                    Translate.Yes
+
+                                else
+                                    Translate.No
+                        in
+                        [ viewEntry Translate.BornUnderweight (translate language answer) ]
+                    )
+                |> Maybe.withDefault []
+
+        birthDefectEntry =
+            Maybe.Extra.or birthDefectByNewbornExam birthDefectByNCDA
+                |> Maybe.map
+                    (\confirmed ->
+                        let
+                            answer =
+                                if confirmed then
+                                    Translate.Yes
+
+                                else
+                                    Translate.No
+                        in
+                        [ viewEntry Translate.BirthDefectLabel (translate language answer) ]
+                    )
                 |> Maybe.withDefault []
 
         genderEntry =
@@ -1686,7 +1717,8 @@ viewChildIdentificationPane language currentDate ncdaQuestionnaire db ( childId,
                 , genderEntry
                 , dateOfBirthEntry
                 ]
-                    ++ questionnaireEntries
+                    ++ bornUnderweighEntry
+                    ++ birthDefectEntry
                     ++ [ ubudeheEntry ]
             , div [ class "column" ] <|
                 motherInfoEntry

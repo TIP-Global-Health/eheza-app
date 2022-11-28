@@ -4400,7 +4400,7 @@ decodePregnancySummaryValue =
             )
         |> required "apgar_one_min" (nullable decodeFloat)
         |> required "apgar_five_min" (nullable decodeFloat)
-        |> required "weight" (nullable (map WeightInKg decodeFloat))
+        |> required "weight" (nullable (map WeightInGrm decodeFloat))
         |> required "height" (nullable (map HeightInCm decodeFloat))
         |> required "birth_defects"
             (decodeWithFallback
@@ -5028,7 +5028,7 @@ decodeNCDAValue : Decoder NCDAValue
 decodeNCDAValue =
     succeed NCDAValue
         |> required "ncda_signs" (decodeEverySet decodeNCDASign)
-        |> optional "weight" (nullable (map WeightInKg decodeFloat)) Nothing
+        |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
 
 
 decodeNCDASign : Decoder NCDASign

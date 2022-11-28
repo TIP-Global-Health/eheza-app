@@ -2701,7 +2701,7 @@ resolveNCDAFormInitialStep newbornExamPregnancySummary previousNCDAValues =
         NCDAStepPermanentQuestions1
 
 
-birthWeightInputsAndTasks : Language -> Maybe WeightInKg -> (String -> msg) -> ( List (Html msg), List (Maybe Bool) )
+birthWeightInputsAndTasks : Language -> Maybe WeightInGrm -> (String -> msg) -> ( List (Html msg), List (Maybe Bool) )
 birthWeightInputsAndTasks language birthWeight setBirthWeightMsg =
     let
         colorAlertIndication =
@@ -2718,7 +2718,7 @@ birthWeightInputsAndTasks language birthWeight setBirthWeightMsg =
                 birthWeightAsFloat
 
         birthWeightAsFloat =
-            Maybe.map (\(WeightInKg weight) -> weight)
+            Maybe.map (\(WeightInGrm weight) -> weight)
                 birthWeight
     in
     ( [ viewQuestionLabel language Translate.NCDABirthweightQuestion
