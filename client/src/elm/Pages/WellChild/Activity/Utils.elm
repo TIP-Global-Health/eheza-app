@@ -215,12 +215,12 @@ pregnancySummaryFormWithDefault form saved =
                         (listNotEmptyWithException NoDeliveryComplications deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
                 , apgarScoresAvailable = or form.apgarScoresAvailable (List.member ApgarScores signsFromValue |> Just)
-                , apgarOneMin = Maybe.andThen .apgarOneMin saved
-                , apgarFiveMin = Maybe.andThen .apgarFiveMin saved
+                , apgarOneMin = or form.apgarOneMin (Maybe.andThen .apgarOneMin saved)
+                , apgarFiveMin = or form.apgarFiveMin (Maybe.andThen .apgarFiveMin saved)
                 , apgarDirty = form.apgarDirty
-                , birthWeight = Maybe.andThen .birthWeight saved
+                , birthWeight = or form.birthWeight (Maybe.andThen .birthWeight saved)
                 , birthLengthAvailable = or form.birthLengthAvailable (List.member BirthLength signsFromValue |> Just)
-                , birthLength = Maybe.andThen .birthLength saved
+                , birthLength = or form.birthLength (Maybe.andThen .birthLength saved)
                 , birthLengthDirty = form.birthLengthDirty
                 , birthDefectsPresent =
                     or form.birthDefectsPresent

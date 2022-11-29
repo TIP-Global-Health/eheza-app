@@ -2597,7 +2597,7 @@ ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeigh
                         ]
 
                 ( newbornExamSection, newbornExamTasks ) =
-                    if isNothing newbornExamPregnancySummary then
+                    if showNCDAQuestionsByNewbornExam newbornExamPregnancySummary then
                         let
                             ( birthWeightSection, birthWeightTasks ) =
                                 birthWeightInputsAndTasks language form.birthWeight setBirthWeightMsg
@@ -2694,11 +2694,36 @@ resolveNCDAFormInitialStep :
     -> List ( NominalDate, NCDAValue )
     -> NCDAStep
 resolveNCDAFormInitialStep newbornExamPregnancySummary previousNCDAValues =
-    if List.isEmpty previousNCDAValues && isNothing newbornExamPregnancySummary then
+    let
+        showANCQuestions =
+            -- If NCDA was filled before, for sure it included answers to
+            -- needed questions.
+            List.isEmpty previousNCDAValues
+
+        showNewbornExamQuestions =
+            (-- If NCDA was filled before, for sure it included answers to
+             -- needed questions.
+             List.isEmpty previousNCDAValues
+            )
+                && showNCDAQuestionsByNewbornExam newbornExamPregnancySummary
+    in
+    if showANCQuestions || showNewbornExamQuestions then
         NCDAStepQuestionsAskedOnce
 
     else
         NCDAStepPermanentQuestions1
+
+
+showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool
+showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
+    -- Verify that NCDA related questions were not answered at Neborn exam.
+    -- This can happen, because needed questions were added after
+    -- Newborn exam was launched, so, it could have been filled
+    -- without them.
+    -- It's enough to check if one of the questions was answered,
+    -- because both answres are required to save the form.
+    Maybe.map (.birthWeight >> isNothing) newbornExamPregnancySummary
+        |> Maybe.withDefault True
 
 
 birthWeightInputsAndTasks : Language -> Maybe WeightInGrm -> (String -> msg) -> ( List (Html msg), List (Maybe Bool) )

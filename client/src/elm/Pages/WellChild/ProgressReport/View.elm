@@ -2028,6 +2028,8 @@ viewInfrastructureEnvironmentWashPane language currentDate child questionnairesB
                         Nothing
                         byMonths
             in
+            -- This question is asked once. If answer was given,
+            -- we display it throughout the whole period.
             Maybe.map
                 (\answer_ ->
                     List.map
