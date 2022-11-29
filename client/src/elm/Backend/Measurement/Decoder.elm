@@ -4398,10 +4398,10 @@ decodePregnancySummaryValue =
                 (EverySet.singleton NoPregnancySummarySigns)
                 (decodeEverySet decodePregnancySummarySign)
             )
-        |> required "apgar_one_min" (nullable decodeFloat)
-        |> required "apgar_five_min" (nullable decodeFloat)
-        |> required "weight" (nullable (map WeightInGrm decodeFloat))
-        |> required "height" (nullable (map HeightInCm decodeFloat))
+        |> optional "apgar_one_min" (nullable decodeFloat) Nothing
+        |> optional "apgar_five_min" (nullable decodeFloat) Nothing
+        |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
+        |> optional "height" (nullable (map HeightInCm decodeFloat)) Nothing
         |> required "birth_defects"
             (decodeWithFallback
                 (EverySet.singleton NoBirthDefects)
