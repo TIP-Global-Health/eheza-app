@@ -2305,14 +2305,10 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                                 |> List.indexedMap
                                     (\index _ ->
                                         let
-                                            -- This is the date for last day of month
-                                            -- 'index'. For example, for index = 0, this is
-                                            -- the last day, before child turns 1 month old.
-                                            -- We use it to determine if child was
-                                            -- behind on any of vaccines at that month.
                                             referenceDate =
-                                                Date.add Date.Months (index + 1) birthDate
-                                                    |> Date.add Date.Days -1
+                                                -- We use it to determine if child was
+                                                -- behind on any of vaccines at that month.
+                                                resolveLastDayForMonthX (index + 1) birthDate
 
                                             -- Filter out vaccinations that were performed
                                             -- after the reference date.
@@ -2362,8 +2358,7 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                             (List.repeat 25 ""
                                 |> List.indexedMap
                                     (\index _ ->
-                                        ( Date.add Date.Months (index + 1) birthDate
-                                            |> Date.add Date.Days -1
+                                        ( resolveLastDayForMonthX (index + 1) birthDate
                                         , NCDACellValueX
                                         )
                                     )
@@ -2372,8 +2367,114 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                 )
                 child.birthDate
 
+        resolveLastDayForMonthX monthX childBirthDate =
+            -- This is the date for last day of month X.
+            -- For example, for X = 0, this is
+            -- the last day, before child turns 1 month old.
+            Date.add Date.Months monthX childBirthDate
+                |> Date.add Date.Days -1
+
+        vitaminAByAgeInMonths =
+            Maybe.andThen Tuple.first medicineByAgeInMonths
+
+        dewormerByAgeInMonths =
+            Maybe.andThen Tuple.second medicineByAgeInMonths
+
+        medicineByAgeInMonths =
+            Maybe.map
+                (\assembled ->
+                    let
+                        generateMeasurementValues measurementFunc =
+                            List.filterMap
+                                (measurementFunc
+                                    >> Maybe.map
+                                        (\( _, measurement ) ->
+                                            ( measurement.dateMeasured, measurement.value )
+                                        )
+                                )
+                                allMeasurements
+
+                        allMeasurements =
+                            assembled.measurements
+                                :: List.map (Tuple.second >> Tuple.second)
+                                    assembled.previousMeasurementsWithDates
+                    in
+                    ( generateMeasurementValues .vitaminA
+                        |> distributeByAgeInMonths child
+                    , generateMeasurementValues .mebendezole
+                        |> distributeByAgeInMonths child
+                    )
+                )
+                maybeAssembled
+
         immunizationValues =
             generateValues currentDate child immunizationByAgeInMonths ((==) NCDACellValueV)
+
+        vitaminAValues =
+            let
+                administeredMonths =
+                    List.indexedMap
+                        (\index value ->
+                            if value == NCDACellValueV then
+                                Just index
+
+                            else
+                                Nothing
+                        )
+                        rawValues
+                        |> Maybe.Extra.values
+
+                rawValues =
+                    generateValues currentDate child vitaminAByAgeInMonths ((==) AdministeredToday)
+            in
+            List.indexedMap
+                -- Vitamin A is not administered before age of 6 months.
+                (postProcessMedicineRawValue 6 administeredMonths)
+                rawValues
+
+        dewormerValues =
+            let
+                administeredMonths =
+                    List.indexedMap
+                        (\index value ->
+                            if value == NCDACellValueV then
+                                Just index
+
+                            else
+                                Nothing
+                        )
+                        rawValues
+                        |> Maybe.Extra.values
+
+                rawValues =
+                    generateValues currentDate child dewormerByAgeInMonths ((==) AdministeredToday)
+            in
+            List.indexedMap
+                -- Dewormer is not administered before age of 12 months.
+                (postProcessMedicineRawValue 12 administeredMonths)
+                rawValues
+
+        postProcessMedicineRawValue startingMonth administeredMonths processingMonth value =
+            if value == NCDACellValueEmpty then
+                -- This means that child did not reach this age yet.
+                value
+
+            else if processingMonth < startingMonth then
+                -- Medicine is not administered yet.
+                NCDACellValueDash
+
+            else if
+                List.any
+                    (\administeredMonth ->
+                        -- Child was given medicine within past 6 months
+                        processingMonth >= administeredMonth && processingMonth - administeredMonth < 6
+                    )
+                    administeredMonths
+            then
+                NCDACellValueV
+
+            else
+                NCDACellValueX
 
         ongeraMNPValues =
             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAOngeraMNP)
@@ -2383,15 +2484,25 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
         , div [ class "pane-content" ]
             [ viewTableHeader
             , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel OngeraMNP)
-                pregnancyValues
-                (List.take 6 ongeraMNPValues)
-                (List.drop 6 ongeraMNPValues)
-            , viewTableRow language
                 (Translate.NCDAUniversalInterventionsItemLabel Immunization)
                 pregnancyValues
                 (List.take 6 immunizationValues)
                 (List.drop 6 immunizationValues)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.VitaminA)
+                pregnancyValues
+                (List.take 6 vitaminAValues)
+                (List.drop 6 vitaminAValues)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Deworming)
+                pregnancyValues
+                (List.take 6 dewormerValues)
+                (List.drop 6 dewormerValues)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel OngeraMNP)
+                pregnancyValues
+                (List.take 6 ongeraMNPValues)
+                (List.drop 6 ongeraMNPValues)
             ]
         ]
 
