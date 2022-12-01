@@ -2519,11 +2519,15 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                         milestoneWithStatusToCellValues ( milestone, status ) =
                             let
                                 cellValue =
-                                    if status == StatusOnTrack then
-                                        NCDACellValueV
+                                    case status of
+                                        StatusOnTrack ->
+                                            NCDACellValueV
 
-                                    else
-                                        NCDACellValueX
+                                        NoECDStatus ->
+                                            NCDACellValueEmpty
+
+                                        _ ->
+                                            NCDACellValueX
                             in
                             case milestone of
                                 -- Covers age of 2 and 3 months.
@@ -2581,12 +2585,10 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                     NCDACellValueDash
                         :: (List.map
                                 (\milestone ->
-                                    let
-                                        status =
-                                            Dict.get milestone milestonesToCurrentDateWithStatus
-                                                |> Maybe.withDefault NoECDStatus
-                                    in
-                                    ( milestone, status )
+                                    ( milestone
+                                    , Dict.get milestone milestonesToCurrentDateWithStatus
+                                        |> Maybe.withDefault NoECDStatus
+                                    )
                                 )
                                 allMilestones
                                 |> List.map milestoneWithStatusToCellValues
