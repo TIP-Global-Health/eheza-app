@@ -656,6 +656,16 @@ div.page-activity {
       }
     }
   }
+
+  .ui.full.segment .actions.two button {
+    width: 50%;
+    float: left;
+    margin: 0;
+
+    &.active {
+      border-left: 1px solid $color-white;
+    }
+  }
 }
 
 .sync-status {

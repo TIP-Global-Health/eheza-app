@@ -8,7 +8,8 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumfe
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( nutritionAssessmentForBackend
+        ( getNewbornExamPregnancySummary
+        , nutritionAssessmentForBackend
         , resolvePreviousNCDAValuesForChild
         , resolvePreviousValuesSetForChild
         )
@@ -210,8 +211,12 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
             viewPhotoContent language currentDate assembled model.photoForm
 
         WellChildNCDA ->
+            let
+                newbornExamPregnancySummary =
+                    getNewbornExamPregnancySummary assembled.participant.person db
+            in
             resolvePreviousNCDAValuesForChild currentDate assembled.participant.person db
-                |> viewNCDAContent language currentDate assembled model.ncdaData
+                |> viewNCDAContent language currentDate assembled model.ncdaData newbornExamPregnancySummary
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -2408,9 +2413,10 @@ viewNCDAContent :
     -> NominalDate
     -> AssembledData
     -> NCDAData
+    -> Maybe PregnancySummaryValue
     -> List ( NominalDate, NCDAValue )
     -> List (Html Msg)
-viewNCDAContent language currentDate assembled data previousNCDAValues =
+viewNCDAContent language currentDate assembled data newbornExamPregnancySummary previousNCDAValues =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -2424,8 +2430,10 @@ viewNCDAContent language currentDate assembled data previousNCDAValues =
         assembled.person
         SetNCDABoolInput
         SetBirthWeight
+        SetNCDAFormStep
         saveMsg
         SetNCDAHelperState
         data.helperState
         form
+        newbornExamPregnancySummary
         previousNCDAValues

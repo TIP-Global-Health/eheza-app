@@ -245,6 +245,7 @@ type MsgChild
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
+    | SetNCDAFormStep NCDAStep
 
 
 type MsgMother
@@ -971,7 +972,8 @@ emptyNCDAData =
 
 
 type alias NCDAForm =
-    { bornWithBirthDefect : Maybe Bool
+    { step : Maybe NCDAStep
+    , bornWithBirthDefect : Maybe Bool
     , breastfedForSixMonths : Maybe Bool
     , appropriateComplementaryFeeding : Maybe Bool
     , ongeraMNP : Maybe Bool
@@ -995,7 +997,8 @@ type alias NCDAForm =
 
 emptyNCDAForm : NCDAForm
 emptyNCDAForm =
-    { bornWithBirthDefect = Nothing
+    { step = Nothing
+    , bornWithBirthDefect = Nothing
     , breastfedForSixMonths = Nothing
     , appropriateComplementaryFeeding = Nothing
     , ongeraMNP = Nothing
@@ -1015,6 +1018,12 @@ emptyNCDAForm =
     , insecticideTreatedBednetsDuringPregnancy = Nothing
     , birthWeight = Nothing
     }
+
+
+type NCDAStep
+    = NCDAStepQuestionsAskedOnce
+    | NCDAStepPermanentQuestions1
+    | NCDAStepPermanentQuestions2
 
 
 type GroupOfFoods

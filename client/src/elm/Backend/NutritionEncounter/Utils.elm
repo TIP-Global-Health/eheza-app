@@ -7,6 +7,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
         ( getHeightValue
+        , getMeasurementValueFunc
         , headCircumferenceValueFunc
         , muacIndication
         , muacValueFunc
@@ -239,7 +240,10 @@ getNutritionEncountersForParticipant db participantId =
         |> Maybe.withDefault []
 
 
-generateIndividualWellChildMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+generateIndividualWellChildMeasurementsForChild :
+    PersonId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
 generateIndividualWellChildMeasurementsForChild childId db =
     resolveIndividualParticipantForPerson childId Backend.IndividualEncounterParticipant.Model.WellChildEncounter db
         |> Maybe.map
@@ -257,6 +261,21 @@ generateIndividualWellChildMeasurementsForChild childId db =
                 >> List.sortWith sortTuplesByDateDesc
             )
         |> Maybe.withDefault []
+
+
+getNewbornExamPregnancySummary :
+    PersonId
+    -> ModelIndexedDb
+    -> Maybe PregnancySummaryValue
+getNewbornExamPregnancySummary childId db =
+    generateIndividualWellChildMeasurementsForChild childId db
+        |> List.filterMap
+            (Tuple.second
+                >> Tuple.second
+                >> .pregnancySummary
+                >> getMeasurementValueFunc
+            )
+        |> List.head
 
 
 getWellChildEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( WellChildEncounterId, WellChildEncounter )
