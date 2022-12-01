@@ -1490,10 +1490,11 @@ viewNCDAScorecard :
     Language
     -> NominalDate
     -> ZScore.Model.Model
-    -> ModelIndexedDb
     -> ( PersonId, Person )
-    -> Html any
-viewNCDAScorecard language currentDate zscores db ( childId, child ) =
+    -> Maybe msg
+    -> ModelIndexedDb
+    -> Html msg
+viewNCDAScorecard language currentDate zscores ( childId, child ) startEncounterMsg db =
     let
         reportData =
             assembleProgresReportData childId db
@@ -1530,8 +1531,12 @@ viewNCDAScorecard language currentDate zscores db ( childId, child ) =
 
         questionnairesByAgeInMonths =
             distributeByAgeInMonths child allNCDAQuestionnaires
+
+        action =
+            Maybe.map (viewStartEncounterButton language) startEncounterMsg
+                |> Maybe.withDefault emptyNode
     in
-    div [ class "ui report unstackable items" ]
+    div [ class "ui report unstackable items" ] <|
         [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
         , viewANCNewbornPane language currentDate db child allNCDAQuestionnaires
         , viewUniversalInterventionsPane language
@@ -1559,6 +1564,7 @@ viewNCDAScorecard language currentDate zscores db ( childId, child ) =
             reportData.groupNutritionMeasurements
             reportData.individualNutritionMeasurementsWithDates
             reportData.individualWellChildMeasurementsWithDates
+        , action
         ]
 
 
