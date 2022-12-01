@@ -865,6 +865,57 @@ viewECDPane language currentDate child wellChildEncounters individualWellChildMe
     Maybe.map
         (\birthDate ->
             let
+                milestonesToCurrentDateWithStatus =
+                    generateECDMilestonesWithStatus currentDate child wellChildEncounters individualWellChildMeasurementsWithDates
+
+                viewMilestone ( milestone, status ) =
+                    let
+                        statusClass =
+                            case status of
+                                StatusOnTrack ->
+                                    "on-track"
+
+                                StatusECDBehind ->
+                                    "ecd-behind"
+
+                                StatusOffTrack ->
+                                    "off-track"
+
+                                NoECDStatus ->
+                                    "no-status"
+                    in
+                    div [ class "milestone" ]
+                        [ div [ class <| "status " ++ statusClass ]
+                            [ text <| translate language <| Translate.ECDStatus status ]
+                        , div [ class "description" ]
+                            [ text <| translate language <| Translate.PediatricCareMilestone milestone ]
+                        ]
+
+                entries =
+                    List.map viewMilestone milestonesToCurrentDateWithStatus
+            in
+            div [ class "pane ecd" ] <|
+                [ viewPaneHeading language Translate.EarlyChildhoodDevelopment
+                , div [ class "pane-content overflow" ]
+                    [ div [ class "ecd-milestones" ] <|
+                        viewEntries language entries
+                    ]
+                ]
+        )
+        child.birthDate
+        |> Maybe.withDefault emptyNode
+
+
+generateECDMilestonesWithStatus :
+    NominalDate
+    -> Person
+    -> List ( WellChildEncounterId, WellChildEncounter )
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> List ( PediatricCareMilestone, ECDStatus )
+generateECDMilestonesWithStatus currentDate child wellChildEncounters individualWellChildMeasurementsWithDates =
+    Maybe.map
+        (\birthDate ->
+            let
                 milestoneForCurrentDateAsComparable =
                     resolvePediatricCareMilestoneOnDate currentDate birthDate
                         |> Maybe.map pediatricCareMilestoneToComparable
@@ -905,55 +956,20 @@ viewECDPane language currentDate child wellChildEncounters individualWellChildMe
                         )
                         wellChildEncounters
                         |> Dict.fromList
-
-                milestonesToCurrentDateWithStatus =
-                    List.map
-                        (\milestone ->
-                            let
-                                status =
-                                    Dict.get milestone performedMilestonesWithStatus
-                                        |> Maybe.withDefault (genrateDefaultECDStatus birthDate milestone individualWellChildMeasurementsWithDates)
-                            in
-                            ( milestone, status )
-                        )
-                        milestonesToCurrentDate
-
-                viewMilestone ( milestone, status ) =
-                    let
-                        statusClass =
-                            case status of
-                                StatusOnTrack ->
-                                    "on-track"
-
-                                StatusECDBehind ->
-                                    "ecd-behind"
-
-                                StatusOffTrack ->
-                                    "off-track"
-
-                                NoECDStatus ->
-                                    "no-status"
-                    in
-                    div [ class "milestone" ]
-                        [ div [ class <| "status " ++ statusClass ]
-                            [ text <| translate language <| Translate.ECDStatus status ]
-                        , div [ class "description" ]
-                            [ text <| translate language <| Translate.PediatricCareMilestone milestone ]
-                        ]
-
-                entries =
-                    List.map viewMilestone milestonesToCurrentDateWithStatus
             in
-            div [ class "pane ecd" ] <|
-                [ viewPaneHeading language Translate.EarlyChildhoodDevelopment
-                , div [ class "pane-content overflow" ]
-                    [ div [ class "ecd-milestones" ] <|
-                        viewEntries language entries
-                    ]
-                ]
+            List.map
+                (\milestone ->
+                    let
+                        status =
+                            Dict.get milestone performedMilestonesWithStatus
+                                |> Maybe.withDefault (genrateDefaultECDStatus birthDate milestone individualWellChildMeasurementsWithDates)
+                    in
+                    ( milestone, status )
+                )
+                milestonesToCurrentDate
         )
         child.birthDate
-        |> Maybe.withDefault emptyNode
+        |> Maybe.withDefault []
 
 
 genrateDefaultECDStatus :
@@ -1545,6 +1561,8 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) startEncounter
             db
             questionnairesByAgeInMonths
             reportData.maybeAssembled
+            reportData.wellChildEncounters
+            reportData.individualWellChildMeasurementsWithDates
         , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
         , viewTargetedInterventionsPane language
             currentDate
@@ -2296,8 +2314,10 @@ viewUniversalInterventionsPane :
     -> ModelIndexedDb
     -> Maybe (Dict Int NCDAValue)
     -> Maybe AssembledData
+    -> List ( WellChildEncounterId, WellChildEncounter )
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
     -> Html any
-viewUniversalInterventionsPane language currentDate child db questionnairesByAgeInMonths maybeAssembled =
+viewUniversalInterventionsPane language currentDate child db questionnairesByAgeInMonths maybeAssembled wellChildEncounters individualWellChildMeasurementsWithDates =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
@@ -2484,6 +2504,106 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
 
         ongeraMNPValues =
             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAOngeraMNP)
+
+        ecdValues =
+            Maybe.map2
+                (\assembled ageMonths ->
+                    let
+                        milestonesToCurrentDateWithStatus =
+                            generateECDMilestonesWithStatus currentDate
+                                child
+                                wellChildEncounters
+                                individualWellChildMeasurementsWithDates
+                                |> Dict.fromList
+
+                        milestoneWithStatusToCellValues ( milestone, status ) =
+                            let
+                                cellValue =
+                                    if status == StatusOnTrack then
+                                        NCDACellValueV
+
+                                    else
+                                        NCDACellValueX
+                            in
+                            case milestone of
+                                -- Covers age of 2 and 3 months.
+                                Milestone6Weeks ->
+                                    List.repeat 2 cellValue
+
+                                -- Covers age of 4 and 5 months.
+                                Milestone14Weeks ->
+                                    List.repeat 2 cellValue
+
+                                -- Covers age of 6, 7 and 8 months.
+                                Milestone6Months ->
+                                    List.repeat 3 cellValue
+
+                                -- Covers age of 9, 10 and 11 months.
+                                Milestone9Months ->
+                                    List.repeat 3 cellValue
+
+                                -- Covers age of 12, 13 and 14 months.
+                                Milestone12Months ->
+                                    List.repeat 3 cellValue
+
+                                --    Covers age of 15, 16 and 17 months.
+                                Milestone15Months ->
+                                    List.repeat 3 cellValue
+
+                                --    Covers age of 18 to 23 months.
+                                Milestone18Months ->
+                                    List.repeat 6 cellValue
+
+                                --    Covers age of 24 and 25 months.
+                                Milestone2Years ->
+                                    List.repeat 2 cellValue
+
+                                -- Not in range.
+                                Milestone3Years ->
+                                    []
+
+                                -- Not in range.
+                                Milestone4Years ->
+                                    []
+
+                        allMilestones =
+                            [ Milestone6Weeks
+                            , Milestone14Weeks
+                            , Milestone6Months
+                            , Milestone9Months
+                            , Milestone12Months
+                            , Milestone15Months
+                            , Milestone18Months
+                            , Milestone2Years
+                            ]
+                    in
+                    -- For first month, there's no ECD milestone.
+                    NCDACellValueDash
+                        :: (List.map
+                                (\milestone ->
+                                    let
+                                        status =
+                                            Dict.get milestone milestonesToCurrentDateWithStatus
+                                                |> Maybe.withDefault NoECDStatus
+                                    in
+                                    ( milestone, status )
+                                )
+                                allMilestones
+                                |> List.map milestoneWithStatusToCellValues
+                                |> List.concat
+                           )
+                        |> List.indexedMap
+                            (\month value ->
+                                if ageMonths < month then
+                                    NCDACellValueEmpty
+
+                                else
+                                    value
+                            )
+                )
+                maybeAssembled
+                (ageInMonths currentDate child)
+                |> Maybe.withDefault emptyNCDAValuesForChild
     in
     div [ class "pane universal-interventions" ]
         [ viewPaneHeading language Translate.UniversalInterventions
@@ -2509,6 +2629,11 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                 pregnancyValues
                 (List.take 6 ongeraMNPValues)
                 (List.drop 6 ongeraMNPValues)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel ECDServices)
+                pregnancyValues
+                (List.take 6 ecdValues)
+                (List.drop 6 ecdValues)
             ]
         ]
 
@@ -2546,10 +2671,6 @@ viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasur
             generateFillTheBlanksValues nutritionsByAgeInMonths
 
         generateFillTheBlanksValues valuesByAgeInMonths =
-            let
-                emptyValues =
-                    List.repeat 25 NCDACellValueEmpty
-            in
             Maybe.map2
                 (\values ageMonths ->
                     List.indexedMap
@@ -2561,11 +2682,11 @@ viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasur
                                 Dict.get month values
                                     |> Maybe.withDefault NCDACellValueDash
                         )
-                        emptyValues
+                        emptyNCDAValuesForChild
                 )
                 valuesByAgeInMonths
                 (ageInMonths currentDate child)
-                |> Maybe.withDefault emptyValues
+                |> Maybe.withDefault emptyNCDAValuesForChild
 
         heightsByAgeInMonths =
             Maybe.map
@@ -2780,10 +2901,6 @@ distributeByAgeInMonths child values =
 
 generateValues : NominalDate -> Person -> Maybe (Dict Int a) -> (a -> Bool) -> List NCDACellValue
 generateValues currentDate child valuesByAgeInMonths resolutionFunc =
-    let
-        emptyValues =
-            List.repeat 25 NCDACellValueEmpty
-    in
     Maybe.map2
         (\values ageMonths ->
             List.indexedMap
@@ -2803,8 +2920,13 @@ generateValues currentDate child valuesByAgeInMonths resolutionFunc =
                                 )
                             |> Maybe.withDefault NCDACellValueDash
                 )
-                emptyValues
+                emptyNCDAValuesForChild
         )
         valuesByAgeInMonths
         (ageInMonths currentDate child)
-        |> Maybe.withDefault emptyValues
+        |> Maybe.withDefault emptyNCDAValuesForChild
+
+
+emptyNCDAValuesForChild : List NCDACellValue
+emptyNCDAValuesForChild =
+    List.repeat 25 NCDACellValueEmpty
