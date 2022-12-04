@@ -141,6 +141,9 @@ viewActivity language currentDate activity assembled db model =
         SymptomReview ->
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
+        OutsideCare ->
+            [ text "viewSymptomReviewContent" ]
+
         NextSteps ->
             viewNextStepsContent language currentDate assembled model.nextStepsData
 

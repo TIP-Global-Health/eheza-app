@@ -984,6 +984,7 @@ type TranslationId
     | OngoingTreatmentTask OngoingTreatmentTask
     | OnlySickChild
     | Or
+    | OutsideCareLabel
     | PackagesPerMonth
     | Page
     | Page404
@@ -5460,10 +5461,8 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru y'uwo bashakanye (umugabo)"
                     }
 
-                OutsideCare ->
-                    { english = "Outside Care"
-                    , kinyarwanda = Just "Kuvurirwa ku rindi vuriro"
-                    }
+                Pages.Prenatal.Activity.Types.OutsideCare ->
+                    translationSet OutsideCareLabel
 
         HIV ->
             { english = "HIV"
@@ -8004,6 +8003,9 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
 
+                Backend.NCDActivity.Model.OutsideCare ->
+                    translationSet OutsideCareLabel
+
         NCDANCServicesInstructions ->
             { english = "Refer patient to ANC services for further management of hypertension during pregnancy"
             , kinyarwanda = Nothing
@@ -9499,6 +9501,11 @@ translationSet trans =
         Or ->
             { english = "or"
             , kinyarwanda = Just "cyangwa"
+            }
+
+        OutsideCareLabel ->
+            { english = "Outside Care"
+            , kinyarwanda = Nothing
             }
 
         PackagesPerMonth ->

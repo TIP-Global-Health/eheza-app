@@ -59,10 +59,15 @@ expectActivity currentDate assembled activity =
             isPersonAFertileWoman currentDate assembled.person
 
         MedicalHistory ->
-            True
+            -- Only for first encounter.
+            List.isEmpty assembled.previousEncountersData
 
         Laboratory ->
             True
+
+        OutsideCare ->
+            -- For subsequent encounters.
+            not <| List.isEmpty assembled.previousEncountersData
 
         NextSteps ->
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
@@ -98,6 +103,9 @@ activityCompleted currentDate assembled activity =
 
         Laboratory ->
             List.all (laboratoryTaskCompleted currentDate assembled) laboratoryTasks
+
+        OutsideCare ->
+            isJust assembled.measurements.outsideCare
 
         NextSteps ->
             resolveNextStepsTasks currentDate assembled
