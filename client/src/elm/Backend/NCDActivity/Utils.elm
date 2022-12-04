@@ -102,6 +102,7 @@ getAllActivities =
     [ DangerSigns
     , SymptomReview
     , MedicalHistory
+    , OutsideCare
     , Examination
     , Laboratory
     , FamilyPlanning
