@@ -595,7 +595,7 @@ viewHistoryContent language currentDate assembled data =
                 |> outsideCareFormWithDefault data.outsideCareForm
 
         ( outsideCareInputs, outsideCareTasks ) =
-            case data.outsideCareStep of
+            case outsideCareForm.step of
                 OutsideCareStepDiagnoses ->
                     ( outsideCareInputsStep1, outsideCareTasksStep1 )
 
@@ -779,7 +779,7 @@ viewHistoryContent language currentDate assembled data =
                                             saveAction =
                                                 SaveOutsideCare assembled.participant.person assembled.measurements.outsideCare nextTask
                                         in
-                                        case data.outsideCareStep of
+                                        case outsideCareForm.step of
                                             OutsideCareStepDiagnoses ->
                                                 let
                                                     actionMsg =
@@ -805,7 +805,7 @@ viewHistoryContent language currentDate assembled data =
                                 [ ( "actions", True )
                                 , ( "two"
                                   , (task == Obstetric && data.obstetricHistoryStep == ObstetricHistorySecondStep)
-                                        || (task == OutsideCare && data.outsideCareStep == OutsideCareStepMedications)
+                                        || (task == OutsideCare && outsideCareForm.step == OutsideCareStepMedications)
                                   )
                                 ]
                             ]

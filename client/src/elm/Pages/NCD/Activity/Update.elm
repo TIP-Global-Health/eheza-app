@@ -903,9 +903,13 @@ update currentDate id db msg model =
 
         SetOutsideCareStep step ->
             let
+                updatedForm =
+                    model.medicalHistoryData.outsideCareForm
+                        |> (\form -> { form | step = step })
+
                 updatedData =
                     model.medicalHistoryData
-                        |> (\data -> { data | outsideCareStep = step })
+                        |> (\data -> { data | outsideCareForm = updatedForm })
             in
             ( { model | medicalHistoryData = updatedData }
             , Cmd.none

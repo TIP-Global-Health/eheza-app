@@ -23,6 +23,7 @@ import Measurement.Model
         , CorePhysicalExamForm
         , InvokationModule(..)
         , LaboratoryTask(..)
+        , OutsideCareForm
         , OutsideCareStep(..)
         , VitalsForm
         , VitalsFormMode(..)
@@ -142,7 +143,7 @@ viewActivity language currentDate activity assembled db model =
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
         OutsideCare ->
-            [ text "viewSymptomReviewContent" ]
+            viewOutsideCareContent language currentDate assembled model.medicalHistoryData.outsideCareForm
 
         NextSteps ->
             viewNextStepsContent language currentDate assembled model.nextStepsData
@@ -552,36 +553,12 @@ viewMedicalHistoryContent language currentDate assembled data =
                 |> outsideCareFormWithDefault data.outsideCareForm
 
         ( outsideCareInputs, outsideCareTasks ) =
-            case data.outsideCareStep of
+            case outsideCareForm.step of
                 OutsideCareStepDiagnoses ->
                     ( outsideCareInputsStep1, outsideCareTasksStep1 )
 
                 OutsideCareStepMedications ->
                     ( outsideCareInputsStep2, outsideCareTasksStep2 )
-
-        outsideCareConfig =
-            { setBoolInputMsg = SetOutsideCareSignBoolInput
-            , setDiagnosisMsg = SetOutsideCareDiagnosis
-            , setMalariaMedicationMsg = SetOutsideCareMalariaMedication
-            , setHypertensionMedicationMsg = SetOutsideCareHypertensionMedication
-            , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
-            , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
-            , setHIVMedicationMsg = SetOutsideCareHIVMedication
-            , malariaDiagnoses = [ MedicalConditionMalaria ]
-            , hypertensionDiagnoses = [ MedicalConditionHypertension ]
-            , syphilisDiagnoses = [ MedicalConditionSyphilis ]
-            , anemiaDiagnoses = [ MedicalConditionAnemia ]
-            , hivDiagnoses = [ MedicalConditionHIV ]
-            , malariaHeaderTransId = Translate.MedicalCondition MedicalConditionMalaria
-            , resolveHypertensionHeaderTransId = always (Translate.MedicalCondition MedicalConditionHypertension)
-            , syphilisHeaderTransId = Translate.MedicalCondition MedicalConditionSyphilis
-            , anemiaHeaderTransId = Translate.MedicalCondition MedicalConditionAnemia
-            , hivHeaderTransId = Translate.MedicalCondition MedicalConditionHIV
-            , diagnosesLeftColumn = outsideCareDiagnosesLeftColumn
-            , diagnosesRightColumn = outsideCareDiagnosesRightColumn
-            , otherDiagnosis = MedicalConditionOther
-            , diagnosisTransId = Translate.MedicalCondition
-            }
 
         ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
             outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
@@ -665,7 +642,7 @@ viewMedicalHistoryContent language currentDate assembled data =
                                         saveAction =
                                             SaveOutsideCare personId measurements.outsideCare nextTask
                                     in
-                                    case data.outsideCareStep of
+                                    case outsideCareForm.step of
                                         OutsideCareStepDiagnoses ->
                                             let
                                                 actionMsg =
@@ -689,7 +666,7 @@ viewMedicalHistoryContent language currentDate assembled data =
                     div
                         [ classList
                             [ ( "actions", True )
-                            , ( "two", task == TaskOutsideCare && data.outsideCareStep == OutsideCareStepMedications )
+                            , ( "two", task == TaskOutsideCare && outsideCareForm.step == OutsideCareStepMedications )
                             ]
                         ]
                         buttons
@@ -709,6 +686,102 @@ viewMedicalHistoryContent language currentDate assembled data =
             ]
         ]
     ]
+
+
+viewOutsideCareContent : Language -> NominalDate -> AssembledData -> OutsideCareForm MedicalCondition -> List (Html Msg)
+viewOutsideCareContent language currentDate assembled form =
+    let
+        outsideCareForm =
+            assembled.measurements.outsideCare
+                |> getMeasurementValueFunc
+                |> outsideCareFormWithDefault form
+
+        ( outsideCareInputs, outsideCareTasks ) =
+            case outsideCareForm.step of
+                OutsideCareStepDiagnoses ->
+                    ( outsideCareInputsStep1, outsideCareTasksStep1 )
+
+                OutsideCareStepMedications ->
+                    ( outsideCareInputsStep2, outsideCareTasksStep2 )
+
+        ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
+            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
+
+        ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
+            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepMedications outsideCareForm
+
+        totalTasks =
+            List.length outsideCareTasks
+
+        tasksCompleted =
+            Maybe.Extra.values outsideCareTasks
+                |> List.length
+
+        actions =
+            let
+                saveAction =
+                    SaveOutsideCare assembled.participant.person assembled.measurements.outsideCare Nothing
+
+                saveButtonActive =
+                    tasksCompleted == totalTasks
+            in
+            case form.step of
+                OutsideCareStepDiagnoses ->
+                    let
+                        actionMsg =
+                            if List.isEmpty outsideCareTasksStep2 then
+                                saveAction
+
+                            else
+                                SetOutsideCareStep OutsideCareStepMedications
+                    in
+                    div [ class "actions" ]
+                        [ saveButton language saveButtonActive actionMsg ]
+
+                OutsideCareStepMedications ->
+                    div [ class "actions two" ]
+                        [ button
+                            [ class "ui fluid primary button"
+                            , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
+                            ]
+                            [ text <| ("< " ++ translate language Translate.Back) ]
+                        , saveButton language saveButtonActive saveAction
+                        ]
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form history outside-care" ]
+                outsideCareInputs
+            ]
+        , actions
+        ]
+    ]
+
+
+outsideCareConfig =
+    { setBoolInputMsg = SetOutsideCareSignBoolInput
+    , setDiagnosisMsg = SetOutsideCareDiagnosis
+    , setMalariaMedicationMsg = SetOutsideCareMalariaMedication
+    , setHypertensionMedicationMsg = SetOutsideCareHypertensionMedication
+    , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
+    , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
+    , setHIVMedicationMsg = SetOutsideCareHIVMedication
+    , malariaDiagnoses = [ MedicalConditionMalaria ]
+    , hypertensionDiagnoses = [ MedicalConditionHypertension ]
+    , syphilisDiagnoses = [ MedicalConditionSyphilis ]
+    , anemiaDiagnoses = [ MedicalConditionAnemia ]
+    , hivDiagnoses = [ MedicalConditionHIV ]
+    , malariaHeaderTransId = Translate.MedicalCondition MedicalConditionMalaria
+    , resolveHypertensionHeaderTransId = always (Translate.MedicalCondition MedicalConditionHypertension)
+    , syphilisHeaderTransId = Translate.MedicalCondition MedicalConditionSyphilis
+    , anemiaHeaderTransId = Translate.MedicalCondition MedicalConditionAnemia
+    , hivHeaderTransId = Translate.MedicalCondition MedicalConditionHIV
+    , diagnosesLeftColumn = outsideCareDiagnosesLeftColumn
+    , diagnosesRightColumn = outsideCareDiagnosesRightColumn
+    , otherDiagnosis = MedicalConditionOther
+    , diagnosisTransId = Translate.MedicalCondition
+    }
 
 
 viewCoMorbiditiesForm : Language -> NominalDate -> CoMorbiditiesForm -> Html Msg

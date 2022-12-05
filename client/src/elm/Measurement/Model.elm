@@ -529,7 +529,8 @@ emptyFamilyPlanningForm =
 
 
 type alias OutsideCareForm diagnosis =
-    { seenAtAnotherFacility : Maybe Bool
+    { step : OutsideCareStep
+    , seenAtAnotherFacility : Maybe Bool
     , givenNewDiagnosis : Maybe Bool
     , givenMedicine : Maybe Bool
     , plannedFollowUp : Maybe Bool
@@ -545,7 +546,8 @@ type alias OutsideCareForm diagnosis =
 
 emptyOutsideCareForm : OutsideCareForm diagnosis
 emptyOutsideCareForm =
-    { seenAtAnotherFacility = Nothing
+    { step = OutsideCareStepDiagnoses
+    , seenAtAnotherFacility = Nothing
     , givenNewDiagnosis = Nothing
     , givenMedicine = Nothing
     , plannedFollowUp = Nothing
