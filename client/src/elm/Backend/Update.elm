@@ -2273,6 +2273,21 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ NCDLipidPanelTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestLipidPanel
+                                data.value.executionNote
+                                (isJust data.value.totalCholesterolResult)
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults
+                    )
+
                 _ ->
                     let
                         ( newModel, recalculateEditableSessions ) =

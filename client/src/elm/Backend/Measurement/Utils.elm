@@ -3367,6 +3367,9 @@ laboratoryTestToString value =
         TestLiverFunction ->
             "liver-function"
 
+        TestLipidPanel ->
+            "lipid-panel"
+
 
 laboratoryTestFromString : String -> Maybe LaboratoryTest
 laboratoryTestFromString value =

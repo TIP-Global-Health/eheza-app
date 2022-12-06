@@ -12333,6 +12333,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TestLipidPanel ->
+                    { english = "Lipid Panel"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
             , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe ku mugore utwite"

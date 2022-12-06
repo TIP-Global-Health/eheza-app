@@ -1255,6 +1255,7 @@ type LaboratoryTest
     | TestHIVPCR
     | TestCreatinine
     | TestLiverFunction
+    | TestLipidPanel
 
 
 type alias PrenatalMedicationDistribution =
