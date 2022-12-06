@@ -529,6 +529,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityNCDLabsResults identifier ->
             getIdentifier identifier "ncd_labs_results"
 
+        BackendAuthorityNCDLipidPanelTest identifier ->
+            getIdentifier identifier "ncd_lipid_panel_test"
+
         BackendAuthorityNCDLiverFunctionTest identifier ->
             getIdentifier identifier "ncd_liver_function_test"
 
@@ -1183,6 +1186,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityNCDLabsResults identifier ->
             encode Backend.Measurement.Encoder.encodeNCDLabsResults identifier
 
+        BackendAuthorityNCDLipidPanelTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDLipidPanelTest identifier
+
         BackendAuthorityNCDLiverFunctionTest identifier ->
             encode Backend.Measurement.Encoder.encodeNCDLiverFunctionTest identifier
 
@@ -1799,6 +1805,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityNCDLabsResults identifier ->
             NCDLabsResultsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDLipidPanelTest identifier ->
+            NCDLipidPanelTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNCDLiverFunctionTest identifier ->
             NCDLiverFunctionTestRevision (toEntityUuid identifier.uuid) identifier.entity

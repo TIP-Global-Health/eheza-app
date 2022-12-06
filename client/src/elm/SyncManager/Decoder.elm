@@ -586,6 +586,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeNCDLabsResults
                             BackendAuthorityNCDLabsResults
 
+                    "ncd_lipid_panel_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDLipidPanelTest
+                            BackendAuthorityNCDLipidPanelTest
+
                     "ncd_liver_function_test" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNCDLiverFunctionTest
