@@ -926,7 +926,7 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                             )
                         |> Maybe.withDefault ( emptyNode, emptyNode )
 
-                ( derrivedInput, derrivedCompleted, derrivedActive ) =
+                ( derivedInput, derivedCompleted, derivedActive ) =
                     Maybe.map
                         (\recommendedTreatmentSigns ->
                             if not <| List.member recommendedMedication recommendedTreatmentSigns then
@@ -960,10 +960,10 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
               , newTreatmentLabel
               ]
                 ++ input
-                ++ derrivedInput
+                ++ derivedInput
                 ++ [ div [ class "separator" ] [] ]
-            , completed + derrivedCompleted
-            , active + derrivedActive
+            , completed + derivedCompleted
+            , active + derivedActive
             )
         )
         (hypertensionTreatementUpdateRecommendationByBP assembled)
@@ -2037,7 +2037,7 @@ resolveMebendezoleDistributionInputsAndTasks language currentDate person setMedi
         updateFunc value form_ =
             { form_ | mebendezole = Just value, nonAdministrationSigns = updateNonAdministrationSigns Mebendezole MedicationMebendezole value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.mebendezole == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Mebendezole MedicationMebendezole setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2058,8 +2058,8 @@ resolveMebendezoleDistributionInputsAndTasks language currentDate person setMedi
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.mebendezole + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.mebendezole + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2087,7 +2087,7 @@ resolveTenofovirDistributionInputsAndTasks language currentDate person setMedica
         updateFunc value form_ =
             { form_ | tenofovir = Just value, nonAdministrationSigns = updateNonAdministrationSigns Tenofovir MedicationTenofovir value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.tenofovir == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Tenofovir MedicationTenofovir setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2108,8 +2108,8 @@ resolveTenofovirDistributionInputsAndTasks language currentDate person setMedica
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.tenofovir + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.tenofovir + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2137,7 +2137,7 @@ resolveLamivudineDistributionInputsAndTasks language currentDate person setMedic
         updateFunc value form_ =
             { form_ | lamivudine = Just value, nonAdministrationSigns = updateNonAdministrationSigns Lamivudine MedicationLamivudine value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.lamivudine == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Lamivudine MedicationLamivudine setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2158,8 +2158,8 @@ resolveLamivudineDistributionInputsAndTasks language currentDate person setMedic
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.lamivudine + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.lamivudine + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2187,7 +2187,7 @@ resolveDolutegravirDistributionInputsAndTasks language currentDate person setMed
         updateFunc value form_ =
             { form_ | dolutegravir = Just value, nonAdministrationSigns = updateNonAdministrationSigns Dolutegravir MedicationDolutegravir value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.dolutegravir == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Dolutegravir MedicationDolutegravir setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2208,8 +2208,8 @@ resolveDolutegravirDistributionInputsAndTasks language currentDate person setMed
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.dolutegravir + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.dolutegravir + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2232,7 +2232,7 @@ resolveTDF3TCDistributionInputsAndTasks language currentDate person setMedicatio
         updateFunc value form_ =
             { form_ | tdf3tc = Just value, nonAdministrationSigns = updateNonAdministrationSigns TDF3TC MedicationTDF3TC value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.tdf3tc == Just False then
                 ( viewMedicationDistributionDerivedQuestion language TDF3TC MedicationTDF3TC setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2253,8 +2253,8 @@ resolveTDF3TCDistributionInputsAndTasks language currentDate person setMedicatio
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.tdf3tc + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.tdf3tc + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2282,7 +2282,7 @@ resolveIronDistributionInputsAndTasks language currentDate person setMedicationD
         updateFunc value form_ =
             { form_ | iron = Just value, nonAdministrationSigns = updateNonAdministrationSigns Iron MedicationIron value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.iron == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Iron MedicationIron setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2303,8 +2303,8 @@ resolveIronDistributionInputsAndTasks language currentDate person setMedicationD
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.iron + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.iron + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2332,7 +2332,7 @@ resolveFolicAcidDistributionInputsAndTasks language currentDate person setMedica
         updateFunc value form_ =
             { form_ | folicAcid = Just value, nonAdministrationSigns = updateNonAdministrationSigns FolicAcid MedicationFolicAcid value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.folicAcid == Just False then
                 ( viewMedicationDistributionDerivedQuestion language FolicAcid MedicationFolicAcid setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2353,8 +2353,8 @@ resolveFolicAcidDistributionInputsAndTasks language currentDate person setMedica
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.folicAcid + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.folicAcid + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2382,7 +2382,7 @@ resolveCeftriaxoneDistributionInputsAndTasks language currentDate person setMedi
         updateFunc value form_ =
             { form_ | ceftriaxone = Just value, nonAdministrationSigns = updateNonAdministrationSigns Ceftriaxone MedicationCeftriaxone value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.ceftriaxone == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Ceftriaxone MedicationCeftriaxone setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2403,8 +2403,8 @@ resolveCeftriaxoneDistributionInputsAndTasks language currentDate person setMedi
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.ceftriaxone + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.ceftriaxone + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2432,7 +2432,7 @@ resolveAzithromycinDistributionInputsAndTasks language currentDate person setMed
         updateFunc value form_ =
             { form_ | azithromycin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Azithromycin MedicationAzithromycin value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.azithromycin == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Azithromycin MedicationAzithromycin setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2453,8 +2453,8 @@ resolveAzithromycinDistributionInputsAndTasks language currentDate person setMed
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.azithromycin + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.azithromycin + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2482,7 +2482,7 @@ resolveMetronidazoleDistributionInputsAndTasks language currentDate person setMe
         updateFunc value form_ =
             { form_ | metronidazole = Just value, nonAdministrationSigns = updateNonAdministrationSigns Metronidazole MedicationMetronidazole value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.metronidazole == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Metronidazole MedicationMetronidazole setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2503,8 +2503,8 @@ resolveMetronidazoleDistributionInputsAndTasks language currentDate person setMe
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.metronidazole + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.metronidazole + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2532,7 +2532,7 @@ resolveVitaminADistributionInputsAndTasks language currentDate person setMedicat
         updateFunc value form_ =
             { form_ | vitaminA = Just value, nonAdministrationSigns = updateNonAdministrationSigns VitaminA MedicationVitaminA value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.vitaminA == Just False then
                 ( viewMedicationDistributionDerivedQuestion language VitaminA MedicationVitaminA setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2553,8 +2553,8 @@ resolveVitaminADistributionInputsAndTasks language currentDate person setMedicat
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.vitaminA + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.vitaminA + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2582,7 +2582,7 @@ resolveParacetamolDistributionInputsAndTasks language currentDate person setMedi
         updateFunc value form_ =
             { form_ | paracetamol = Just value, nonAdministrationSigns = updateNonAdministrationSigns Paracetamol MedicationParacetamol value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.paracetamol == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Paracetamol MedicationParacetamol setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2603,8 +2603,8 @@ resolveParacetamolDistributionInputsAndTasks language currentDate person setMedi
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.paracetamol + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.paracetamol + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 

@@ -40,6 +40,7 @@ import Measurement.Utils
         , toCreatinineTestValueWithEmptyResults
         , toFamilyPlanningValueWithDefault
         , toHIVTestValueWithDefault
+        , toLipidPanelTestValueWithEmptyResults
         , toLiverFunctionTestValueWithEmptyResults
         , toNonRDTValueWithDefault
         , toOutsideCareValueWithDefault
@@ -1719,6 +1720,105 @@ update currentDate id db msg model =
                         |> toNonRDTValueWithDefault measurement toLiverFunctionTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveLiverFunctionTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetLipidPanelTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.lipidPanelTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLipidPanelTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.lipidPanelTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLipidPanelTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.lipidPanelTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLipidPanelTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.lipidPanelTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveLipidPanelTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.lipidPanelTestForm
+                        |> toNonRDTValueWithDefault measurement toLipidPanelTestValueWithEmptyResults
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveLipidPanelTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

@@ -283,7 +283,7 @@ update language currentDate id db msg model =
         SetLmpRange value ->
             let
                 range =
-                    decodeLmpRange value
+                    lmpRangeFromString value
 
                 updatedForm =
                     model.pregnancyDatingData.form

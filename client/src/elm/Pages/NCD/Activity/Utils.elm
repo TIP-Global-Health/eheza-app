@@ -847,6 +847,9 @@ expectLaboratoryTask currentDate assembled task =
         TaskLiverFunctionTest ->
             yearlyTestRequired TaskLiverFunctionTest
 
+        TaskLipidPanelTest ->
+            yearlyTestRequired TaskLiverFunctionTest
+
         -- Others are not in use at NCD.
         _ ->
             False
@@ -901,6 +904,9 @@ laboratoryTaskCompleted currentDate assembled task =
         TaskLiverFunctionTest ->
             (not <| taskExpected TaskLiverFunctionTest) || isJust measurements.liverFunctionTest
 
+        TaskLipidPanelTest ->
+            (not <| taskExpected TaskLipidPanelTest) || isJust measurements.lipidPanelTest
+
         -- Others are not in use at NCD.
         _ ->
             False
@@ -914,6 +920,7 @@ laboratoryTasks =
     , TaskHIVTest
     , TaskPregnancyTest
     , TaskLiverFunctionTest
+    , TaskLipidPanelTest
     ]
 
 

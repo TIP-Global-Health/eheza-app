@@ -389,7 +389,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                         |> List.map
                             (\range ->
                                 option
-                                    [ value (encodeLmpRange range)
+                                    [ value (lmpRangeToString range)
                                     , selected (form.lmpRange == Just range)
                                     ]
                                     [ text <| translate language <| Translate.LmpRange range ]

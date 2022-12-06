@@ -24,6 +24,8 @@ import Measurement.Utils
         ( creatinineResultFormAndTasks
         , creatinineResultFormWithDefault
         , laboratoryTaskIconClass
+        , lipidPanelResultFormAndTasks
+        , lipidPanelResultFormWithDefault
         , liverFunctionResultFormAndTasks
         , liverFunctionResultFormWithDefault
         , randomBloodSugarResultFormAndTasks
@@ -198,7 +200,22 @@ viewLabResultsContent language currentDate assembled model =
                             measurements.liverFunctionTest
                                 |> getMeasurementValueFunc
                                 |> liverFunctionResultFormWithDefault model.labResultsData.liverFunctionTestForm
-                                |> liverFunctionResultFormAndTasks language currentDate SetAltResult SetAstResult
+                                |> liverFunctionResultFormAndTasks language
+                                    currentDate
+                                    SetAltResult
+                                    SetAstResult
+
+                        TaskLipidPanelTest ->
+                            measurements.lipidPanelTest
+                                |> getMeasurementValueFunc
+                                |> lipidPanelResultFormWithDefault model.labResultsData.lipidPanelTestForm
+                                |> lipidPanelResultFormAndTasks language
+                                    currentDate
+                                    SetUnitOfMeasurement
+                                    SetTotalCholesterolResult
+                                    SetLDLCholesterolResult
+                                    SetHDLCholesterolResult
+                                    SetTriglyceridesResult
 
                         -- Others are not in use for NCD.
                         _ ->
@@ -244,6 +261,9 @@ viewLabResultsContent language currentDate assembled model =
 
                                 TaskLiverFunctionTest ->
                                     SaveLiverFunctionResult personId measurements.liverFunctionTest nextTask |> Just
+
+                                TaskLipidPanelTest ->
+                                    SaveLipidPanelResult personId measurements.lipidPanelTest nextTask |> Just
 
                                 -- Others are not in use for NCD.
                                 _ ->

@@ -4062,7 +4062,7 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         config.latestMedicationTreatment
                         |> Maybe.withDefault emptyNode
 
-                ( derrivedInput, derrivedTask ) =
+                ( derivedInput, derivedTask ) =
                     if config.adverseEventsFormValue == Just True then
                         ( [ viewQuestionLabel language Translate.TreatmentReviewQuestionAdverseEventsHospitalization
                           , viewBoolInput
@@ -4108,12 +4108,12 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                     "adverse-events"
                     Nothing
               ]
-                ++ derrivedInput
+                ++ derivedInput
             , [ config.stillTakingFormValue
               , config.missedDosesFormValue
               , config.adverseEventsFormValue
               ]
-                ++ derrivedTask
+                ++ derivedTask
             )
         )
         configForTask

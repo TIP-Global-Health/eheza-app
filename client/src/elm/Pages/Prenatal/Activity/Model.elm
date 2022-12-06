@@ -851,8 +851,8 @@ emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing Nothing
 
 
-encodeLmpRange : LmpRange -> String
-encodeLmpRange range =
+lmpRangeToString : LmpRange -> String
+lmpRangeToString range =
     case range of
         OneMonth ->
             "one-month"
@@ -864,8 +864,8 @@ encodeLmpRange range =
             "six-month"
 
 
-decodeLmpRange : String -> Maybe LmpRange
-decodeLmpRange s =
+lmpRangeFromString : String -> Maybe LmpRange
+lmpRangeFromString s =
     case s of
         "one-month" ->
             Just OneMonth

@@ -196,6 +196,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SaveLipidPanelTest personId valueId value ->
+            ( { model | saveLipidPanelTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdLipidPanelTestEndpoint HandleSavedLipidPanelTest
+            )
+
+        HandleSavedLipidPanelTest data ->
+            ( { model | saveLipidPanelTest = data }
+            , Cmd.none
+            )
+
         SaveHealthEducation personId valueId value ->
             ( { model | saveHealthEducation = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value ncdHealthEducationEndpoint HandleSavedHealthEducation

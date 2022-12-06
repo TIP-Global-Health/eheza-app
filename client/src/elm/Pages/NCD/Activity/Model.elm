@@ -124,6 +124,11 @@ type Msg
     | SetLiverFunctionTestExecutionDate NominalDate
     | SetLiverFunctionTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveLiverFunctionTest PersonId (Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )) (Maybe LaboratoryTask)
+    | SetLipidPanelTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetLipidPanelTestExecutionNote TestExecutionNote
+    | SetLipidPanelTestExecutionDate NominalDate
+    | SetLipidPanelTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveLipidPanelTest PersonId (Maybe ( NCDLipidPanelTestId, NCDLipidPanelTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool

@@ -199,6 +199,9 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskLiverFunctionTest ->
             (not <| taskExpected TaskLiverFunctionTest) || testResultsCompleted .liverFunctionTest .altResult
 
+        TaskLipidPanelTest ->
+            (not <| taskExpected TaskLipidPanelTest) || testResultsCompleted .lipidPanelTest .totalCholesterolResult
+
         -- Others are not in use for NCD.
         _ ->
             False
@@ -234,6 +237,9 @@ expectLaboratoryResultTask currentDate assembled task =
 
         TaskLiverFunctionTest ->
             wasTestPerformed .liverFunctionTest
+
+        TaskLipidPanelTest ->
+            wasTestPerformed .lipidPanelTest
 
         -- Others are not in use for NCD.
         _ ->

@@ -15,6 +15,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
     exposing
         ( toCreatinineResultsValueWithDefault
+        , toLipidPanelResultsValueWithDefault
         , toLiverFunctionResultsValueWithDefault
         , toRandomBloodSugarResultsValueWithDefault
         , toSendToHCValueWithDefault
@@ -449,6 +450,118 @@ update currentDate id db msg model =
                     toLiverFunctionResultsValueWithDefault measurement model.labResultsData.liverFunctionTestForm
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveLiverFunctionTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetUnitOfMeasurement value ->
+            let
+                form =
+                    model.labResultsData.lipidPanelTestForm
+
+                updatedForm =
+                    { form | unitOfMeasurement = unitOfMeasurementFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetTotalCholesterolResult value ->
+            let
+                form =
+                    model.labResultsData.lipidPanelTestForm
+
+                updatedForm =
+                    { form | totalCholesterolResult = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLDLCholesterolResult value ->
+            let
+                form =
+                    model.labResultsData.lipidPanelTestForm
+
+                updatedForm =
+                    { form | ldlCholesterolResult = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHDLCholesterolResult value ->
+            let
+                form =
+                    model.labResultsData.lipidPanelTestForm
+
+                updatedForm =
+                    { form | hdlCholesterolResult = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetTriglyceridesResult value ->
+            let
+                form =
+                    model.labResultsData.lipidPanelTestForm
+
+                updatedForm =
+                    { form | triglyceridesResult = String.toFloat value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveLipidPanelResult personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLabResultsMsgs nextTask
+
+                appMsgs =
+                    toLipidPanelResultsValueWithDefault measurement model.labResultsData.lipidPanelTestForm
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveLipidPanelTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
