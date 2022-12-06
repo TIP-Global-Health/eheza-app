@@ -2649,6 +2649,26 @@ type alias NCDLabsResults =
     NCDMeasurement LabsResultsValue
 
 
+type alias NCDLipidPanelTest =
+    NCDMeasurement LipidPanelValue
+
+
+type alias LipidPanelValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , unitOfMeasurement : Maybe UnitOfMeasurement
+    , totalCholesterolResult : Maybe Float
+    , ldlCholesterolResult : Maybe Float
+    , hdlCholesterolResult : Maybe Float
+    , triglyceridesResult : Maybe Float
+    }
+
+
+type UnitOfMeasurement
+    = UnitMmolL
+    | UnitMgdL
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -2936,6 +2956,7 @@ type alias NCDMeasurements =
     , healthEducation : Maybe ( NCDHealthEducationId, NCDHealthEducation )
     , hivTest : Maybe ( NCDHIVTestId, NCDHIVTest )
     , labsResults : Maybe ( NCDLabsResultsId, NCDLabsResults )
+    , lipidPanelTest : Maybe ( NCDLipidPanelTestId, NCDLipidPanelTest )
     , liverFunctionTest : Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )
     , medicationDistribution : Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )
     , medicationHistory : Maybe ( NCDMedicationHistoryId, NCDMedicationHistory )
