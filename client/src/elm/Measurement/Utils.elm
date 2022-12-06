@@ -1990,6 +1990,11 @@ toLiverFunctionTestValueWithEmptyResults note date =
     LiverFunctionTestValue note date Nothing Nothing
 
 
+toLipidPanelTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> LipidPanelTestValue
+toLipidPanelTestValueWithEmptyResults note date =
+    LipidPanelTestValue note date Nothing Nothing Nothing Nothing Nothing
+
+
 viewHIVTestForm :
     Language
     -> NominalDate
@@ -3290,6 +3295,45 @@ toLiverFunctionResultsValue form =
             , executionDate = form.executionDate
             , altResult = form.altResult
             , astResult = form.astResult
+            }
+        )
+        form.executionNote
+
+
+lipidPanelResultFormWithDefault : LipidPanelResultForm -> Maybe LipidPanelTestValue -> LipidPanelResultForm
+lipidPanelResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , unitOfMeasurement = or form.unitOfMeasurement value.unitOfMeasurement
+                , totalCholesterolResult = or form.totalCholesterolResult value.totalCholesterolResult
+                , ldlCholesterolResult = or form.ldlCholesterolResult value.ldlCholesterolResult
+                , hdlCholesterolResult = or form.hdlCholesterolResult value.hdlCholesterolResult
+                , triglyceridesResult = or form.triglyceridesResult value.triglyceridesResult
+                }
+            )
+
+
+toLipidPanelResultsValueWithDefault : Maybe LipidPanelTestValue -> LipidPanelResultForm -> Maybe LipidPanelTestValue
+toLipidPanelResultsValueWithDefault saved form =
+    lipidPanelResultFormWithDefault form saved
+        |> toLipidPanelResultsValue
+
+
+toLipidPanelResultsValue : LipidPanelResultForm -> Maybe LipidPanelTestValue
+toLipidPanelResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , unitOfMeasurement = form.unitOfMeasurement
+            , totalCholesterolResult = form.totalCholesterolResult
+            , ldlCholesterolResult = form.ldlCholesterolResult
+            , hdlCholesterolResult = form.hdlCholesterolResult
+            , triglyceridesResult = form.triglyceridesResult
             }
         )
         form.executionNote
