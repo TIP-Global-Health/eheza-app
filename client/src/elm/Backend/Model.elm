@@ -446,6 +446,7 @@ type Revision
     | NCDHealthEducationRevision NCDHealthEducationId NCDHealthEducation
     | NCDHIVTestRevision NCDHIVTestId NCDHIVTest
     | NCDLabsResultsRevision NCDLabsResultsId NCDLabsResults
+    | NCDLipidPanelTestRevision NCDLipidPanelTestId NCDLipidPanelTest
     | NCDLiverFunctionTestRevision NCDLiverFunctionTestId NCDLiverFunctionTest
     | NCDMedicationDistributionRevision NCDMedicationDistributionId NCDMedicationDistribution
     | NCDMedicationHistoryRevision NCDMedicationHistoryId NCDMedicationHistory

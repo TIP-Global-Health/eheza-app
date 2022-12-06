@@ -3672,6 +3672,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        NCDLipidPanelTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | lipidPanelTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NCDLiverFunctionTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
