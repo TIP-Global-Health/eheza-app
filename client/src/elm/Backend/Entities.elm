@@ -1365,3 +1365,11 @@ type alias WellChildNCDAId =
 
 type WellChildNCDAUuidType
     = WellChildNCDAUuidType
+
+
+type alias NCDLipidPanelId =
+    EntityUuid NCDLipidPanelUuidType
+
+
+type NCDLipidPanelUuidType
+    = NCDLipidPanelUuidType
