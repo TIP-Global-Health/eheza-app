@@ -16,7 +16,6 @@ class HedleyRestfulNCDLipidPanelTest extends HedleyRestfulNCDActivityBase {
   protected $fields = [
     'field_test_execution_note',
     'field_execution_date',
-    'field_sugar_count',
     'field_unit_of_measurement',
     'field_total_cholesterol',
     'field_ldl_cholesterol',
