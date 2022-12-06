@@ -338,6 +338,7 @@ type alias LaboratoryData =
     , pregnancyTestForm : PregnancyTestForm Msg
     , creatinineTestForm : NonRDTForm Msg
     , liverFunctionTestForm : NonRDTForm Msg
+    , lipidPanelTestForm : NonRDTForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -350,6 +351,7 @@ emptyLaboratoryData =
     , pregnancyTestForm = emptyPregnancyTestForm
     , creatinineTestForm = emptyNonRDTForm
     , liverFunctionTestForm = emptyNonRDTForm
+    , lipidPanelTestForm = emptyNonRDTForm
     , activeTask = Nothing
     }
 

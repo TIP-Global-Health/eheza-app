@@ -9,10 +9,12 @@ import Measurement.Model
     exposing
         ( CreatinineResultForm
         , LaboratoryTask
+        , LipidPanelResultForm
         , LiverFunctionResultForm
         , RandomBloodSugarResultForm
         , UrineDipstickResultForm
         , emptyCreatinineResultForm
+        , emptyLipidPanelResultForm
         , emptyLiverFunctionResultForm
         , emptyRandomBloodSugarResultForm
         , emptyUrineDipstickResultForm
@@ -75,6 +77,7 @@ type alias LabResultsData =
     , urineDipstickTestForm : UrineDipstickResultForm
     , creatinineTestForm : CreatinineResultForm
     , liverFunctionTestForm : LiverFunctionResultForm
+    , lipidPanelTestForm : LipidPanelResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -85,6 +88,7 @@ emptyLabResultsData =
     , urineDipstickTestForm = emptyUrineDipstickResultForm
     , creatinineTestForm = emptyCreatinineResultForm
     , liverFunctionTestForm = emptyLiverFunctionResultForm
+    , lipidPanelTestForm = emptyLipidPanelResultForm
     , activeTask = Nothing
     }
 

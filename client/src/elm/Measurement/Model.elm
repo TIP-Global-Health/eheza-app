@@ -1037,3 +1037,26 @@ type GroupOfFoods
     | FruitsVegetables
     | BreastMilk
     | MealsWithEdibleOil
+
+
+type alias LipidPanelResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , unitOfMeasurement : Maybe UnitOfMeasurement
+    , totalCholesterolResult : Maybe Float
+    , ldlCholesterolResult : Maybe Float
+    , hdlCholesterolResult : Maybe Float
+    , triglyceridesResult : Maybe Float
+    }
+
+
+emptyLipidPanelResultForm : LipidPanelResultForm
+emptyLipidPanelResultForm =
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , unitOfMeasurement = Nothing
+    , totalCholesterolResult = Nothing
+    , ldlCholesterolResult = Nothing
+    , hdlCholesterolResult = Nothing
+    , triglyceridesResult = Nothing
+    }
