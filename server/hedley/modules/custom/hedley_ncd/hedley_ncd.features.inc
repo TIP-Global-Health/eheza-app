@@ -91,6 +91,14 @@ function hedley_ncd_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'ncd_lipid_panel_test' => array(
+      'name' => t('NCD Lipid Panel Test'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'ncd_liver_function_test' => array(
       'name' => t('NCD Liver Function Test'),
       'base' => 'node_content',
