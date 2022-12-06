@@ -252,6 +252,7 @@ decodeNCDMeasurements =
         |> optional "ncd_health_education" (decodeHead decodeNCDHealthEducation) Nothing
         |> optional "ncd_hiv_test" (decodeHead decodeNCDHIVTest) Nothing
         |> optional "ncd_labs_results" (decodeHead decodeNCDLabsResults) Nothing
+        |> optional "ncd_lipid_panel_test" (decodeHead decodeNCDLipidPanelTest) Nothing
         |> optional "ncd_liver_function_test" (decodeHead decodeNCDLiverFunctionTest) Nothing
         |> optional "ncd_medication_distribution" (decodeHead decodeNCDMedicationDistribution) Nothing
         |> optional "ncd_medication_history" (decodeHead decodeNCDMedicationHistory) Nothing
@@ -5055,3 +5056,31 @@ decodeNutritionNCDA =
 decodeWellChildNCDA : Decoder WellChildNCDA
 decodeWellChildNCDA =
     decodeWellChildMeasurement decodeNCDAValue
+
+
+decodeNCDLipidPanelTest : Decoder NCDLipidPanelTest
+decodeNCDLipidPanelTest =
+    decodeNCDMeasurement decodeLipidPanelTestValue
+
+
+decodeLipidPanelTestValue : Decoder LipidPanelTestValue
+decodeLipidPanelTestValue =
+    succeed LipidPanelTestValue
+        |> required "test_execution_note" decodeTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "unit_of_measurement" (nullable decodeUnitOfMeasurement) Nothing
+        |> optional "total_cholesterol" (nullable decodeFloat) Nothing
+        |> optional "ldl_cholesterol" (nullable decodeFloat) Nothing
+        |> optional "hdl_cholesterol" (nullable decodeFloat) Nothing
+        |> optional "triglycerides" (nullable decodeFloat) Nothing
+
+
+decodeUnitOfMeasurement : Decoder UnitOfMeasurement
+decodeUnitOfMeasurement =
+    string
+        |> andThen
+            (\s ->
+                unitOfMeasurementFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized UnitOfMeasurement")
+            )

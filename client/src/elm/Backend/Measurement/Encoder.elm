@@ -4645,3 +4645,47 @@ encodeNCDAValueWithType type_ value =
 encodeNCDASign : NCDASign -> Value
 encodeNCDASign =
     ncdaSignToString >> string
+
+
+encodeNCDLipidPanelTest : NCDLipidPanelTest -> List ( String, Value )
+encodeNCDLipidPanelTest =
+    encodeNCDMeasurement encodeLipidPanelTestValue
+
+
+encodeLipidPanelTestValue : LipidPanelTestValue -> List ( String, Value )
+encodeLipidPanelTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map5
+                (\unitOfMeasurement totalCholesterolResult ldlCholesterolResult hdlCholesterolResult triglycerides ->
+                    [ ( "unit_of_measurement", encodeUnitOfMeasurement unitOfMeasurement )
+                    , ( "total_cholesterol", float totalCholesterolResult )
+                    , ( "ldl_cholesterol", float ldlCholesterolResult )
+                    , ( "hdl_cholesterol", float hdlCholesterolResult )
+                    , ( "triglycerides", float triglycerides )
+                    ]
+                )
+                value.unitOfMeasurement
+                value.totalCholesterolResult
+                value.ldlCholesterolResult
+                value.hdlCholesterolResult
+                value.triglyceridesResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_lipid_panel_test" )
+           ]
+
+
+encodeUnitOfMeasurement : UnitOfMeasurement -> Value
+encodeUnitOfMeasurement =
+    unitOfMeasurementToString >> string

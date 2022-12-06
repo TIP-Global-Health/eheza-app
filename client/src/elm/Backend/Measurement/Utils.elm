@@ -3531,6 +3531,29 @@ diabetesByUrineGlucose value =
         |> Maybe.withDefault False
 
 
+unitOfMeasurementToString : UnitOfMeasurement -> String
+unitOfMeasurementToString value =
+    case value of
+        UnitMmolL ->
+            "mmol-L"
+
+        UnitMgdL ->
+            "mg-dL"
+
+
+unitOfMeasurementFromString : String -> Maybe UnitOfMeasurement
+unitOfMeasurementFromString value =
+    case value of
+        "mmol-L" ->
+            Just UnitMmolL
+
+        "mg-dL" ->
+            Just UnitMgdL
+
+        _ ->
+            Nothing
+
+
 ncdaSignToString : NCDASign -> String
 ncdaSignToString value =
     case value of

@@ -2650,10 +2650,10 @@ type alias NCDLabsResults =
 
 
 type alias NCDLipidPanelTest =
-    NCDMeasurement LipidPanelValue
+    NCDMeasurement LipidPanelTestValue
 
 
-type alias LipidPanelValue =
+type alias LipidPanelTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , unitOfMeasurement : Maybe UnitOfMeasurement
