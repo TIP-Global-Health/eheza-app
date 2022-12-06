@@ -92,6 +92,7 @@ var tableForType = {
     ncd_health_education: 'shards',
     ncd_hiv_test: 'shards',
     ncd_labs_results: 'shards',
+    ncd_lipid_panel_test: 'shards',
     ncd_liver_function_test : 'shards',
     ncd_medication_distribution: 'shards',
     ncd_medication_history: 'shards',
