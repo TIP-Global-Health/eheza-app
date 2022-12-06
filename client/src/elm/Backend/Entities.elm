@@ -1367,9 +1367,9 @@ type WellChildNCDAUuidType
     = WellChildNCDAUuidType
 
 
-type alias NCDLipidPanelId =
-    EntityUuid NCDLipidPanelUuidType
+type alias NCDLipidPanelTestId =
+    EntityUuid NCDLipidPanelTestUuidType
 
 
-type NCDLipidPanelUuidType
-    = NCDLipidPanelUuidType
+type NCDLipidPanelTestUuidType
+    = NCDLipidPanelTestUuidType
