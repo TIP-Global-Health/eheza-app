@@ -252,4 +252,5 @@ laboratoryResultTasks =
     , TaskLiverFunctionTest
     , TaskUrineDipstickTest
     , TaskCreatinineTest
+    , TaskLipidPanelTest
     ]
