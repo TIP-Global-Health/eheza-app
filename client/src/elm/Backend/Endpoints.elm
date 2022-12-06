@@ -1193,3 +1193,9 @@ wellChildNCDAEndpoint : ReadWriteEndPoint Error WellChildNCDAId WellChildNCDA We
 wellChildNCDAEndpoint =
     swEndpoint "nodes/well_child_ncda" decodeWellChildNCDA
         |> withValueEncoder (object << encodeWellChildNCDA)
+
+
+ncdLipidPanelTestEndpoint : ReadWriteEndPoint Error NCDLipidPanelTestId NCDLipidPanelTest NCDLipidPanelTest ()
+ncdLipidPanelTestEndpoint =
+    swEndpoint "nodes/ncd_lipid_panel_test" decodeNCDLipidPanelTest
+        |> withValueEncoder (object << encodeNCDLipidPanelTest)
