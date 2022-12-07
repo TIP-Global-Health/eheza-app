@@ -231,6 +231,24 @@ function hedley_ncd_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_hba1c_result'.
+  $field_bases['field_hba1c_result'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_hba1c_result',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
   // Exported field_base: 'field_hdl_cholesterol'.
   $field_bases['field_hdl_cholesterol'] = array(
     'active' => 1,
