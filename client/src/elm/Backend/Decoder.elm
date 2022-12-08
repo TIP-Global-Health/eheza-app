@@ -191,6 +191,9 @@ decodeRevision =
                     "ncd_family_planning" ->
                         decodeWithUuid NCDFamilyPlanningRevision decodeNCDFamilyPlanning
 
+                    "ncd_hba1c_test" ->
+                        decodeWithUuid NCDHbA1cTestRevision decodeNCDHbA1cTest
+
                     "ncd_health_education" ->
                         decodeWithUuid NCDHealthEducationRevision decodeNCDHealthEducation
 
