@@ -98,6 +98,7 @@ type BackendAuthorityEntity
     | BackendAuthorityNCDEncounter (BackendEntity NCDEncounter)
     | BackendAuthorityNCDFamilyHistory (BackendEntity NCDFamilyHistory)
     | BackendAuthorityNCDFamilyPlanning (BackendEntity NCDFamilyPlanning)
+    | BackendAuthorityNCDHbA1cTest (BackendEntity NCDHbA1cTest)
     | BackendAuthorityNCDHealthEducation (BackendEntity NCDHealthEducation)
     | BackendAuthorityNCDHIVTest (BackendEntity NCDHIVTest)
     | BackendAuthorityNCDLabsResults (BackendEntity NCDLabsResults)

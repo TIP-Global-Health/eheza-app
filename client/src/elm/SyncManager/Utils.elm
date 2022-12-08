@@ -520,6 +520,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityNCDFamilyPlanning identifier ->
             getIdentifier identifier "ncd_family_planning"
 
+        BackendAuthorityNCDHbA1cTest identifier ->
+            getIdentifier identifier "ncd_hba1c_test"
+
         BackendAuthorityNCDHealthEducation identifier ->
             getIdentifier identifier "ncd_health_education"
 
@@ -1177,6 +1180,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityNCDFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodeNCDFamilyPlanning identifier
 
+        BackendAuthorityNCDHbA1cTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDHbA1cTest identifier
+
         BackendAuthorityNCDHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodeNCDHealthEducation identifier
 
@@ -1796,6 +1802,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityNCDFamilyPlanning identifier ->
             NCDFamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDHbA1cTest identifier ->
+            NCDHbA1cTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNCDHealthEducation identifier ->
             NCDHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity

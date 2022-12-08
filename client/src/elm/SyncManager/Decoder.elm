@@ -571,6 +571,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeNCDFamilyPlanning
                             BackendAuthorityNCDFamilyPlanning
 
+                    "ncd_hba1c_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDHbA1cTest
+                            BackendAuthorityNCDHbA1cTest
+
                     "ncd_health_education" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNCDHealthEducation
