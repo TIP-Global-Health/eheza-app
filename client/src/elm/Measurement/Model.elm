@@ -1066,3 +1066,28 @@ emptyLipidPanelResultForm =
     , hdlCholesterolResult = Nothing
     , triglyceridesResult = Nothing
     }
+
+
+type alias HbA1cTestForm msg =
+    { gotResultsPreviously : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    , hba1cResult : Maybe Float
+    , hba1cResultDirty : Maybe Bool
+    }
+
+
+emptyHbA1cTestForm : HbA1cTestForm msg
+emptyHbA1cTestForm =
+    { gotResultsPreviously = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , dateSelectorPopupState = Nothing
+    , hba1cResult = Nothing
+    , hba1cResultDirty = Nothing
+    }

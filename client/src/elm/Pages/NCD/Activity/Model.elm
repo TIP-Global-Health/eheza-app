@@ -10,6 +10,7 @@ import Measurement.Model
         ( CorePhysicalExamForm
         , FamilyPlanningForm
         , HIVTestForm
+        , HbA1cTestForm
         , LaboratoryTask
         , MalariaTestForm
         , NonRDTForm
@@ -22,6 +23,7 @@ import Measurement.Model
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
         , emptyHIVTestForm
+        , emptyHbA1cTestForm
         , emptyNonRDTForm
         , emptyOutsideCareForm
         , emptyPregnancyTestForm
@@ -344,6 +346,7 @@ type alias LaboratoryData =
     , creatinineTestForm : NonRDTForm Msg
     , liverFunctionTestForm : NonRDTForm Msg
     , lipidPanelTestForm : NonRDTForm Msg
+    , hba1cTestForm : HbA1cTestForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -357,6 +360,7 @@ emptyLaboratoryData =
     , creatinineTestForm = emptyNonRDTForm
     , liverFunctionTestForm = emptyNonRDTForm
     , lipidPanelTestForm = emptyNonRDTForm
+    , hba1cTestForm = emptyHbA1cTestForm
     , activeTask = Nothing
     }
 
