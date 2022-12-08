@@ -1199,3 +1199,9 @@ ncdLipidPanelTestEndpoint : ReadWriteEndPoint Error NCDLipidPanelTestId NCDLipid
 ncdLipidPanelTestEndpoint =
     swEndpoint "nodes/ncd_lipid_panel_test" decodeNCDLipidPanelTest
         |> withValueEncoder (object << encodeNCDLipidPanelTest)
+
+
+ncdHbA1cTestEndpoint : ReadWriteEndPoint Error NCDHbA1cTestId NCDHbA1cTest NCDHbA1cTest ()
+ncdHbA1cTestEndpoint =
+    swEndpoint "nodes/ncd_hba1c_test" decodeNCDHbA1cTest
+        |> withValueEncoder (object << encodeNCDHbA1cTest)
