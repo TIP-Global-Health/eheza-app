@@ -1087,6 +1087,7 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setLiverFunctionTestExecutionNoteMsg = SetLiverFunctionTestExecutionNote
                     , setLipidPanelTestFormBoolInputMsg = SetLipidPanelTestFormBoolInput
                     , setLipidPanelTestExecutionNoteMsg = SetLipidPanelTestExecutionNote
+                    , setHbA1cTestFormBoolInputMsg = SetHbA1cTestFormBoolInput
                 }
            )
 

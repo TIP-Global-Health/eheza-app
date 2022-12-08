@@ -796,6 +796,9 @@ decodeTestExecutionNote =
                     "known-as-positive" ->
                         succeed TestNoteKnownAsPositive
 
+                    "to-be-done-at-hospital" ->
+                        succeed TestNoteToBeDoneAtHospital
+
                     _ ->
                         fail <|
                             note

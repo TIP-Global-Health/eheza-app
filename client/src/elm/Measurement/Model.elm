@@ -580,6 +580,7 @@ type LaboratoryTask
     | TaskCreatinineTest
     | TaskLiverFunctionTest
     | TaskLipidPanelTest
+    | TaskHbA1cTest
     | TaskCompletePreviousTests
 
 
@@ -614,6 +615,8 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setLiverFunctionTestExecutionNoteMsg : TestExecutionNote -> msg
     , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
+    , setHbA1cTestExecutionNoteMsg : TestExecutionNote -> msg
     , noOpMsg : msg
     }
 
@@ -1076,7 +1079,7 @@ type alias HbA1cTestForm msg =
     , executionDateDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
     , hba1cResult : Maybe Float
-    , hba1cResultDirty : Maybe Bool
+    , hba1cResultDirty : Bool
     }
 
 
@@ -1089,5 +1092,5 @@ emptyHbA1cTestForm =
     , executionDateDirty = False
     , dateSelectorPopupState = Nothing
     , hba1cResult = Nothing
-    , hba1cResultDirty = Nothing
+    , hba1cResultDirty = False
     }

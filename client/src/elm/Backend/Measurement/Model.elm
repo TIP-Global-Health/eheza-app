@@ -993,6 +993,7 @@ type TestExecutionNote
     | TestNoteBrokenEquipment
     | TestNoteNotIndicated
     | TestNoteKnownAsPositive
+    | TestNoteToBeDoneAtHospital
 
 
 type TestResult

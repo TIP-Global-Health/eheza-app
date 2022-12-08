@@ -661,6 +661,7 @@ type TranslationId
     | GestationalDiabetesPreviousPregnancy
     | Glass String
     | GoHome
+    | GotResultsPreviouslyQuestion
     | GroupAssessment
     | Grams
     | Gravida
@@ -5138,6 +5139,11 @@ translationSet trans =
             , kinyarwanda = Just "Kujya ahabanza"
             }
 
+        GotResultsPreviouslyQuestion ->
+            { english = "Has patiend perviously performed HBA1C test and got results"
+            , kinyarwanda = Nothing
+            }
+
         GroupAssessment ->
             { english = "Group Encounter"
             , kinyarwanda = Just "Gukorera itsinda"
@@ -6136,6 +6142,13 @@ translationSet trans =
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
+                TaskHbA1cTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -6288,6 +6301,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskHbA1cTest ->
+                    { english = "HbA1c"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskCompletePreviousTests ->
                     { english = "History"
                     , kinyarwanda = Nothing
@@ -6357,6 +6375,11 @@ translationSet trans =
 
                 TaskLipidPanelTest ->
                     { english = "Lipid Panel"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskHbA1cTest ->
+                    { english = "HbA1c"
                     , kinyarwanda = Nothing
                     }
 
@@ -6433,6 +6456,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskHbA1cTest ->
+                    { english = "HbA1c Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -6503,6 +6531,11 @@ translationSet trans =
 
                 TaskLipidPanelTest ->
                     { english = "Lipid Panel Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskHbA1cTest ->
+                    { english = "HbA1c Test Result"
                     , kinyarwanda = Nothing
                     }
 
@@ -13200,6 +13233,11 @@ translationSet trans =
                 TestNoteKnownAsPositive ->
                     { english = "Known as Positive"
                     , kinyarwanda = Just "Asanzwe afite ubwandu"
+                    }
+
+                TestNoteToBeDoneAtHospital ->
+                    { english = "To be Done at Hospital"
+                    , kinyarwanda = Nothing
                     }
 
         TestResult result ->

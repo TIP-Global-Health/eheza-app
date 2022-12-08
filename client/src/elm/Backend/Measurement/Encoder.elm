@@ -789,6 +789,9 @@ encodeTestExecutionNote value =
             TestNoteKnownAsPositive ->
                 "known-as-positive"
 
+            TestNoteToBeDoneAtHospital ->
+                "to-be-done-at-hospital"
+
 
 encodeTestResult : TestResult -> Value
 encodeTestResult =

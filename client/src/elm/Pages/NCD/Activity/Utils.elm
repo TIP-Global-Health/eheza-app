@@ -921,6 +921,7 @@ laboratoryTasks =
     , TaskPregnancyTest
     , TaskLiverFunctionTest
     , TaskLipidPanelTest
+    , TaskHbA1cTest
     ]
 
 
