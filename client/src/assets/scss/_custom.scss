@@ -2172,7 +2172,8 @@ input::placeholder {
   }
 }
 
-.icon-laboratory-blood-sugar {
+.icon-laboratory-blood-sugar,
+.icon-hba1c {
   .active &:after {
     background-image: url(#{$img-path}icon-blood-sugar-white-blue.svg);
   }
