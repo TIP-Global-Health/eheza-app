@@ -40,6 +40,7 @@ import Measurement.Utils
         , toCreatinineTestValueWithEmptyResults
         , toFamilyPlanningValueWithDefault
         , toHIVTestValueWithDefault
+        , toHbA1cTestValueWithDefault
         , toLipidPanelTestValueWithEmptyResults
         , toLiverFunctionTestValueWithEmptyResults
         , toNonRDTValueWithDefault
@@ -1819,6 +1820,88 @@ update currentDate id db msg model =
                         |> toNonRDTValueWithDefault measurement toLipidPanelTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveLipidPanelTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetHbA1cTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.hba1cTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hba1cTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHbA1cTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.hba1cTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hba1cTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHbA1cTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.hba1cTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hba1cTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHbA1cTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.hba1cTestForm
+                        |> toHbA1cTestValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveHbA1cTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

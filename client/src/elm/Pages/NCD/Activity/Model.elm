@@ -131,6 +131,10 @@ type Msg
     | SetLipidPanelTestExecutionDate NominalDate
     | SetLipidPanelTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveLipidPanelTest PersonId (Maybe ( NCDLipidPanelTestId, NCDLipidPanelTest )) (Maybe LaboratoryTask)
+    | SetHbA1cTestFormBoolInput (Bool -> HbA1cTestForm Msg -> HbA1cTestForm Msg) Bool
+    | SetHbA1cTestExecutionDate NominalDate
+    | SetHbA1cTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveHbA1cTest PersonId (Maybe ( NCDHbA1cTestId, NCDHbA1cTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool

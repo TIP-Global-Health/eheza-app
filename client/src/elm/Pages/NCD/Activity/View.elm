@@ -34,6 +34,7 @@ import Measurement.Utils
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
         , emptyContentAndTasksLaboratoryTestInitialConfig
         , familyPlanningFormWithDefault
+        , hba1cTestFormWithDefault
         , hivTestFormWithDefault
         , laboratoryTaskIconClass
         , nonRDTFormWithDefault
@@ -43,6 +44,7 @@ import Measurement.Utils
         , randomBloodSugarFormWithDefault
         , urineDipstickFormWithDefault
         , viewHIVTestForm
+        , viewHbA1cTestForm
         , viewNonRDTForm
         , viewPregnancyTestForm
         , viewRandomBloodSugarForm
@@ -990,6 +992,15 @@ viewLaboratoryContent language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     TaskLipidPanelTest
 
+                        TaskHbA1cTest ->
+                            measurements.hba1cTest
+                                |> getMeasurementValueFunc
+                                |> hba1cTestFormWithDefault data.hba1cTestForm
+                                |> viewHbA1cTestForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+
                         -- Others do not participate at NCD.
                         _ ->
                             ( emptyNode, 0, 0 )
@@ -1043,6 +1054,9 @@ viewLaboratoryContent language currentDate assembled data =
 
                                 TaskLipidPanelTest ->
                                     SaveLipidPanelTest personId measurements.lipidPanelTest nextTask
+
+                                TaskHbA1cTest ->
+                                    SaveHbA1cTest personId measurements.hba1cTest nextTask
 
                                 -- Others do not participate at NCD.
                                 _ ->

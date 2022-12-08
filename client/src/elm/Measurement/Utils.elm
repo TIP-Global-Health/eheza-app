@@ -2749,11 +2749,6 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     , setExecutionNoteMsg = config.setLipidPanelTestExecutionNoteMsg
                     }
 
-                TaskLipidPanelTest ->
-                    { setBoolInputMsg = config.setLipidPanelTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setLipidPanelTestExecutionNoteMsg
-                    }
-
                 TaskHbA1cTest ->
                     -- Not in use, as this task got a proprietary form.
                     { setBoolInputMsg = always config.noOpMsg
@@ -2926,6 +2921,13 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                         { setBoolInputMsg = config.setLipidPanelTestFormBoolInputMsg boolInputUpdateFunc
                         , setExecutionDateMsg = config.setLipidPanelTestExecutionDateMsg
                         , setDateSelectorStateMsg = config.setLipidPanelTestDateSelectorStateMsg
+                        }
+
+                    TaskHbA1cTest ->
+                        -- Not in use, as this task got a proprietary form.
+                        { setBoolInputMsg = always config.noOpMsg
+                        , setExecutionDateMsg = always config.noOpMsg
+                        , setDateSelectorStateMsg = always config.noOpMsg
                         }
 
                     TaskCompletePreviousTests ->
@@ -3185,6 +3187,9 @@ laboratoryTaskIconClass task =
 
         TaskLipidPanelTest ->
             "lipid-panel"
+
+        TaskHbA1cTest ->
+            "hba1c"
 
 
 hepatitisBResultFormWithDefault : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId
