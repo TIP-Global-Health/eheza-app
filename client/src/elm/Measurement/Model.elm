@@ -991,7 +991,7 @@ type alias NCDAForm =
     , regularPrenatalVisits : Maybe Bool
     , ironSupplementsDuringPregnancy : Maybe Bool
     , insecticideTreatedBednetsDuringPregnancy : Maybe Bool
-    , birthWeight : Maybe WeightInKg
+    , birthWeight : Maybe WeightInGrm
     }
 
 

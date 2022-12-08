@@ -291,7 +291,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 (SetPregnancySummaryNumberInput
                     (\value pregnancySummaryForm ->
                         { pregnancySummaryForm
-                            | birthWeight = String.toFloat value |> Maybe.map WeightInKg
+                            | birthWeight = String.toFloat value |> Maybe.map WeightInGrm
                         }
                     )
                 )

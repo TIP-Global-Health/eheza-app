@@ -108,6 +108,10 @@ type WeightInKg
     = WeightInKg Float
 
 
+type WeightInGrm
+    = WeightInGrm Float
+
+
 type alias Weight =
     GroupMeasurement WeightInKg
 
@@ -267,7 +271,7 @@ type alias GroupNCDA =
 
 type alias NCDAValue =
     { signs : EverySet NCDASign
-    , birthWeight : Maybe WeightInKg
+    , birthWeight : Maybe WeightInGrm
     }
 
 
@@ -2250,7 +2254,7 @@ type alias PregnancySummaryValue =
     , signs : EverySet PregnancySummarySign
     , apgarOneMin : Maybe Float
     , apgarFiveMin : Maybe Float
-    , birthWeight : Maybe WeightInKg
+    , birthWeight : Maybe WeightInGrm
     , birthLength : Maybe HeightInCm
     , birthDefects : EverySet BirthDefect
     }
