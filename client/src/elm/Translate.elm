@@ -6302,7 +6302,7 @@ translationSet trans =
                     }
 
                 TaskHbA1cTest ->
-                    { english = "HbA1c"
+                    { english = "HBA1C"
                     , kinyarwanda = Nothing
                     }
 
@@ -6379,7 +6379,7 @@ translationSet trans =
                     }
 
                 TaskHbA1cTest ->
-                    { english = "HbA1c"
+                    { english = "HBA1C"
                     , kinyarwanda = Nothing
                     }
 
@@ -6457,7 +6457,7 @@ translationSet trans =
                     }
 
                 TaskHbA1cTest ->
-                    { english = "HbA1c Test Date"
+                    { english = "HBA1C Test Date"
                     , kinyarwanda = Nothing
                     }
 
@@ -6535,7 +6535,7 @@ translationSet trans =
                     }
 
                 TaskHbA1cTest ->
-                    { english = "HbA1c Test Result"
+                    { english = "HBA1C Test Result"
                     , kinyarwanda = Nothing
                     }
 
