@@ -632,6 +632,23 @@ viewPatientProgressPane language currentDate assembled =
                 |> Maybe.Extra.values
                 |> List.take 12
                 |> List.reverse
+
+        hba1cMeasurements =
+            List.map
+                (.hba1cTest >> getMeasurementValueFunc)
+                allMeasurements
+                |> Maybe.Extra.values
+                |> List.filterMap
+                    (\value ->
+                        Maybe.map2 Tuple.pair
+                            value.executionDate
+                            value.hba1cResult
+                    )
+                -- We do this to have a unique value for each date.
+                |> Dict.fromList
+                |> Dict.values
+                |> List.take 12
+                |> List.reverse
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
