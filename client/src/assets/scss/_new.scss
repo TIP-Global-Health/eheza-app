@@ -4307,6 +4307,19 @@ div.page-activity.ncd {
       }
     }
 
+    .form.laboratory.hba1c {
+
+      .label.instruction {
+        margin-bottom: 20px;
+      }
+
+      .label.referral {
+        color: $color-red-alert;
+        font-size: 28px;
+        font-weight: bold;
+      }
+    }
+
     .form.referral,
     .form.medication-distribution {
 
