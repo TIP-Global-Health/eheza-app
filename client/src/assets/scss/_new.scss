@@ -3868,6 +3868,7 @@ div.page-activity.patient-record,
 div.page-report.well-child {
   padding: 0 30px 30px 30px;
 
+  .ui.segment.tabs,
   .ui.segment.filters {
     background-color: $color-white;
     display: flex;
