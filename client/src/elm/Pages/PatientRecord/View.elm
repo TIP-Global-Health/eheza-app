@@ -213,7 +213,7 @@ viewContentForOther language currentDate isChw personId person patientType initi
                     viewFamilyPlanningPane language currentDate personId (List.map Tuple.first pregnancies) db
 
                 FilterDemographics ->
-                    -- Demographic report got dedicated page.
+                    -- Demographics report got dedicated page.
                     emptyNode
     in
     div [ class "page-activity patient-record" ]
