@@ -37,7 +37,7 @@ import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.ProgressReport.Model exposing (..)
-import Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewMarkers)
+import Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewHbA1cByTime, viewMarkers)
 import Pages.NCD.Utils
     exposing
         ( allRecommendedTreatmentSignsForHypertension
@@ -661,6 +661,10 @@ viewPatientProgressPane language currentDate assembled =
             , div [ class "chart-section" ]
                 [ div [ class "heading" ] [ text <| translate language Translate.BloodGlucose ]
                 , viewBloodGlucoseByTime language sugarCountMeasurements
+                ]
+            , div [ class "chart-section" ]
+                [ div [ class "heading" ] [ text <| translate language Translate.HbA1c ]
+                , viewHbA1cByTime language hba1cMeasurements
                 ]
             ]
         ]
