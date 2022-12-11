@@ -1,7 +1,6 @@
 module Pages.PatientRecord.Fetch exposing (fetch)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -35,7 +34,6 @@ fetch currentDate personId db =
     , FetchRelationshipsForPerson personId
     ]
         ++ msgsByAge
-        ++ fetchForNCDAScoreboard personId db
 
 
 fetchForAdult : PersonId -> ModelIndexedDb -> List MsgIndexedDb
@@ -77,39 +75,3 @@ fetchForAdult personId db =
         ++ fetchPrenatalEncountersMsgs
         ++ fetchPrenatalMeasurementsMsgs
         ++ fetchChildrenMsgs
-
-
-fetchForNCDAScoreboard : PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetchForNCDAScoreboard personId db =
-    let
-        fetchEncountersDataMsgs =
-            resolveIndividualParticipantsForPerson personId AcuteIllnessEncounter db
-                |> List.map
-                    (\participantId ->
-                        let
-                            fetchMeasurementsMsgs =
-                                Dict.get participantId db.acuteIllnessEncountersByParticipant
-                                    |> Maybe.andThen RemoteData.toMaybe
-                                    |> Maybe.map
-                                        (Dict.toList
-                                            >> List.filterMap
-                                                (\( encounterId, encounter ) ->
-                                                    -- We need to fetch measurements of encounters where Uncomplicated
-                                                    -- Gastrointestinal Infection was diagnosed, to check if treatment was given.
-                                                    if encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated then
-                                                        Just <| FetchAcuteIllnessMeasurements encounterId
-
-                                                    else
-                                                        Nothing
-                                                )
-                                        )
-                                    |> Maybe.withDefault []
-                        in
-                        FetchAcuteIllnessEncountersForParticipant participantId :: fetchMeasurementsMsgs
-                    )
-                |> List.concat
-    in
-    [ FetchPerson personId
-    , FetchIndividualEncounterParticipantsForPerson personId
-    ]
-        ++ fetchEncountersDataMsgs

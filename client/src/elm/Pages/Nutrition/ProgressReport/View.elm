@@ -92,7 +92,9 @@ view language currentDate zscores id isChw db model =
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
+            model.reportTab
             SetActivePage
+            SetReportTab
             SetDiagnosisMode
             bottomActionData
         )

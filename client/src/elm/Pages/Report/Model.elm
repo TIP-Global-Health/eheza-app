@@ -80,6 +80,11 @@ type DiagnosisMode
     | ModeCompletedDiagnosis
 
 
+type ReportTab
+    = TabSPVReport
+    | TabNCDAScoreboard
+
+
 type PaneEntryStatus
     = StatusOngoing
     | StatusResolved

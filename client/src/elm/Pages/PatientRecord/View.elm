@@ -152,59 +152,32 @@ viewStartEncounterPage language currentDate isChw personId person patientType in
 viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
 viewContentForChild language currentDate zscores childId child isChw initiator db model =
     let
-        activeFilter =
-            resolveActiveFilter PatientChild model
+        wellChildReportInitiator =
+            Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId
 
-        ( containerClass, header, content ) =
-            case activeFilter of
-                FilterSPVReport ->
-                    let
-                        wellChildReportInitiator =
-                            Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId
-
-                        bottomActionData =
-                            Just <|
-                                { showEndEncounterDialog = False
-                                , allowEndEncounter = False
-                                , closeEncounterMsg = NoOp
-                                , setEndEncounterDialogStateMsg = always NoOp
-                                , startEncounterMsg = SetViewMode ViewStartEncounter
-                                }
-                    in
-                    ( "page-report well-child"
-                    , Pages.WellChild.ProgressReport.View.viewHeader language
-                        wellChildReportInitiator
-                        model.diagnosisMode
-                        SetActivePage
-                        SetDiagnosisMode
-                    , Pages.WellChild.ProgressReport.View.viewContent language
-                        currentDate
-                        zscores
-                        isChw
-                        wellChildReportInitiator
-                        False
-                        db
-                        model.diagnosisMode
-                        SetActivePage
-                        SetDiagnosisMode
-                        bottomActionData
-                        ( childId, child )
-                    )
-
-                FilterNCDAScoreboard ->
-                    ( "page-activity patient-record"
-                    , viewHeader language model
-                    , viewNCDAScorecard language currentDate zscores ( childId, child ) (Just (SetViewMode ViewStartEncounter)) db
-                    )
-
-                _ ->
-                    ( "", emptyNode, emptyNode )
+        bottomActionData =
+            Just <|
+                { showEndEncounterDialog = False
+                , allowEndEncounter = False
+                , closeEncounterMsg = NoOp
+                , setEndEncounterDialogStateMsg = always NoOp
+                , startEncounterMsg = SetViewMode ViewStartEncounter
+                }
     in
-    div [ class containerClass ]
-        [ header
-        , viewFilters language child PatientChild model
-        , content
-        ]
+    Pages.WellChild.ProgressReport.View.viewProgressReport language
+        currentDate
+        zscores
+        isChw
+        wellChildReportInitiator
+        False
+        db
+        model.diagnosisMode
+        model.spvReportTab
+        SetActivePage
+        SetSPVReportTab
+        SetDiagnosisMode
+        bottomActionData
+        ( childId, child )
 
 
 viewContentForOther : Language -> NominalDate -> Bool -> PersonId -> Person -> PatientType -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
@@ -230,11 +203,8 @@ viewContentForOther language currentDate isChw personId person patientType initi
                 )
                 individualParticipants
 
-        activeFilter =
-            resolveActiveFilter patientType model
-
         selectedPane =
-            case activeFilter of
+            case model.filter of
                 FilterAcuteIllness ->
                     viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db
 
@@ -244,7 +214,8 @@ viewContentForOther language currentDate isChw personId person patientType initi
                 FilterFamilyPlanning ->
                     viewFamilyPlanningPane language currentDate personId (List.map Tuple.first pregnancies) db
 
-                _ ->
+                FilterDemographics ->
+                    -- Demographic report got dedicated page.
                     emptyNode
     in
     div [ class "page-activity patient-record" ]
@@ -385,13 +356,10 @@ thumbnailDimensions =
 viewFilters : Language -> Person -> PatientType -> Model -> Html Msg
 viewFilters language person patientType model =
     let
-        activeFilter =
-            resolveActiveFilter patientType model
-
         renderButton filter =
             button
                 [ classList
-                    [ ( "active", activeFilter == filter )
+                    [ ( "active", filter == model.filter )
                     , ( "primary ui button", True )
                     ]
                 , onClick <| SetFilter filter
@@ -401,7 +369,7 @@ viewFilters language person patientType model =
         patientRecordFilters =
             case patientType of
                 PatientChild ->
-                    [ FilterSPVReport, FilterNCDAScoreboard ]
+                    []
 
                 PatientAdult ->
                     case person.gender of
@@ -424,19 +392,6 @@ viewFilters language person patientType model =
     in
     List.map renderButton patientRecordFilters
         |> div [ class "ui segment filters" ]
-
-
-resolveActiveFilter : PatientType -> Model -> PatientRecordFilter
-resolveActiveFilter patientType model =
-    Maybe.withDefault
-        (case patientType of
-            PatientChild ->
-                FilterSPVReport
-
-            _ ->
-                FilterAcuteIllness
-        )
-        model.filter
 
 
 viewAcuteIllnessPane :

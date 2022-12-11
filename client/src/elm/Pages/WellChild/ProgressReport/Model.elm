@@ -3,11 +3,12 @@ module Pages.WellChild.ProgressReport.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Pages.Page exposing (Page)
-import Pages.Report.Model exposing (DiagnosisMode(..))
+import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
 
 
 type alias Model =
     { diagnosisMode : DiagnosisMode
+    , activeTab : ReportTab
     , showEndEncounterDialog : Bool
     }
 
@@ -15,6 +16,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
+    , activeTab = TabSPVReport
     , showEndEncounterDialog = False
     }
 
@@ -102,3 +104,4 @@ type Msg
     | SetActivePage Page
     | SetEndEncounterDialogState Bool
     | SetDiagnosisMode DiagnosisMode
+    | SetActiveTab ReportTab
