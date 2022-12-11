@@ -673,6 +673,7 @@ type TranslationId
     | HandPallor
     | Hands
     | HandsCPESign HandsCPESign
+    | HbA1cMostRecentTestResultInstruction
     | HCRecommendation HCRecommendation
     | HCResponseQuestion
     | HCResponsePeriodQuestion
@@ -1032,6 +1033,7 @@ type TranslationId
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
     | People
+    | Percentage
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
@@ -1223,6 +1225,7 @@ type TranslationId
     | ReferredToFacilityNot ReferralFacility
     | ReferredToFacilityPostpartum ReferralFacility
     | ReferToHospitalForFurtherEvaluation
+    | ReferToHospitalForTesting
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -5241,6 +5244,11 @@ translationSet trans =
 
                 NormalHands ->
                     translationSet Normal
+
+        HbA1cMostRecentTestResultInstruction ->
+            { english = "Please input the most recent HBA1C test result"
+            , kinyarwanda = Nothing
+            }
 
         HCRecommendation recommendation ->
             case recommendation of
@@ -9891,6 +9899,11 @@ translationSet trans =
             , kinyarwanda = Just "Abantu"
             }
 
+        Percentage ->
+            { english = "%"
+            , kinyarwanda = Nothing
+            }
+
         PersistentStorage authorized ->
             if authorized then
                 { english = "Persistent storage has been authorized. The browser will not delete locally cached data without your approval."
@@ -14311,6 +14324,11 @@ translationSet trans =
 
         ReferToHospitalForFurtherEvaluation ->
             { english = "Refer patient to hospital for further evaluation"
+            , kinyarwanda = Nothing
+            }
+
+        ReferToHospitalForTesting ->
+            { english = "Refer patient to hospital for testing"
             , kinyarwanda = Nothing
             }
 

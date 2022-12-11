@@ -2448,167 +2448,137 @@ viewHbA1cTestForm :
     -> NominalDate
     -> ContentAndTasksLaboratoryTestInitialConfig msg
     -> ContentAndTasksForPerformedLaboratoryTestConfig msg
+    -> List NominalDate
     -> HbA1cTestForm msg
     -> ( Html msg, Int, Int )
-viewHbA1cTestForm language currentDate configInitial configPerformed form =
+viewHbA1cTestForm language currentDate configInitial configPerformed previousTestsDates form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            let
-                updateFunc =
-                    \gotResultsPreviously form_ ->
+            if List.isEmpty previousTestsDates then
+                let
+                    updateFunc =
+                        \gotResultsPreviously form_ ->
+                            let
+                                executionNote =
+                                    if not gotResultsPreviously then
+                                        Just TestNoteToBeDoneAtHospital
+
+                                    else
+                                        Nothing
+                            in
+                            { form_
+                                | gotResultsPreviously = Just gotResultsPreviously
+                                , executionNote = executionNote
+                                , executionNoteDirty = True
+                                , executionDate = Nothing
+                                , executionDateDirty = True
+                                , hba1cResult = Nothing
+                                , hba1cResultDirty = True
+                            }
+
+                    referral =
+                        if form.gotResultsPreviously == Just False then
+                            referralMessage
+
+                        else
+                            []
+                in
+                ( [ viewQuestionLabel language Translate.GotResultsPreviouslyQuestion
+                  , viewBoolInput
+                        language
+                        form.gotResultsPreviously
+                        (configPerformed.setHbA1cTestFormBoolInputMsg updateFunc)
+                        "got-results-previously"
+                        Nothing
+                  ]
+                    ++ referral
+                , taskCompleted form.gotResultsPreviously
+                , 1
+                )
+
+            else
+                emptySection
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if (not <| List.isEmpty previousTestsDates) || form.gotResultsPreviously == Just True then
+                let
+                    ( executionDateSection, executionDateTasksCompleted, executionDateTasksTotal ) =
                         let
-                            executionNote =
-                                if not gotResultsPreviously then
-                                    Just TestNoteToBeDoneAtHospital
+                            executionDateForView =
+                                Maybe.map formatDDMMYYYY form.executionDate
+                                    |> Maybe.withDefault ""
+
+                            dateSelectorConfig =
+                                let
+                                    dateTo =
+                                        Date.add Days -1 currentDate
+                                in
+                                { select = configPerformed.setHbA1cTestExecutionDateMsg
+                                , close = configPerformed.setHbA1cTestDateSelectorStateMsg Nothing
+                                , dateFrom = Date.add Years -5 currentDate
+                                , dateTo = dateTo
+                                , dateDefault = Just dateTo
+                                }
+                        in
+                        ( [ viewCustomLabel language Translate.HbA1cMostRecentTestResultInstruction "." "label instruction"
+                          , viewLabel language <| Translate.LaboratoryTaskDate TaskHbA1cTest
+                          , div
+                                [ class "form-input date"
+                                , onClick <| configPerformed.setHbA1cTestDateSelectorStateMsg (Just dateSelectorConfig)
+                                ]
+                                [ text executionDateForView
+                                ]
+                          , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.executionDate
+                          ]
+                        , taskCompleted form.executionDate
+                        , 1
+                        )
+
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                        if isNothing form.executionDate then
+                            emptySection
+
+                        else
+                            ( [ viewLabel language <| Translate.LaboratoryTaskResult TaskHbA1cTest
+                              , viewMeasurementInput language
+                                    form.hba1cResult
+                                    configPerformed.setHbA1cTestResultMsg
+                                    "hba1c-result"
+                                    Translate.Percentage
+                              ]
+                            , taskCompleted form.hba1cResult
+                            , 1
+                            )
+
+                    referral =
+                        Maybe.map2
+                            (\executionDate _ ->
+                                if Date.diff Months executionDate currentDate >= 6 then
+                                    referralMessage
 
                                 else
-                                    Nothing
-                        in
-                        { form_
-                            | gotResultsPreviously = Just gotResultsPreviously
-                            , executionNote = executionNote
-                            , executionNoteDirty = True
-                            , executionDate = Nothing
-                            , executionDateDirty = True
-                        }
-            in
-            ( [ viewQuestionLabel language Translate.GotResultsPreviouslyQuestion
-              , viewBoolInput
-                    language
-                    form.gotResultsPreviously
-                    (configInitial.setHbA1cTestFormBoolInputMsg updateFunc)
-                    "got-results-previously"
-                    Nothing
-              ]
-            , taskCompleted form.gotResultsPreviously
-            , 1
-            )
+                                    []
+                            )
+                            form.executionDate
+                            form.hba1cResult
+                            |> Maybe.withDefault []
+                in
+                ( executionDateSection ++ testResultSection ++ referral
+                , executionDateTasksCompleted + testResultTasksCompleted
+                , executionDateTasksTotal + testResultTasksTotal
+                )
+
+            else
+                emptySection
+
+        referralMessage =
+            [ viewCustomLabel language Translate.ReferToHospitalForTesting "." "label referral" ]
 
         emptySection =
             ( [], 0, 0 )
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.gotResultsPreviously == Just False then
-                emptySection
-
-            else
-                -- let
-                --     ( rdtSection, rdtTasksCompleted, rdtTasksTotal ) =
-                --         prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed TaskHIVTest form
-                --
-                --     ( hivSignsSection, hivSignsTasksCompleted, hivSignsTasksTotal ) =
-                --         Maybe.map
-                --             (\testResult ->
-                --                 case testResult of
-                --                     TestPositive ->
-                --                         let
-                --                             updateFunc =
-                --                                 \value form_ ->
-                --                                     { form_ | hivProgramHC = Just value, hivProgramHCDirty = True }
-                --                         in
-                --                         ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion HIVProgramHC
-                --                           , viewBoolInput
-                --                                 language
-                --                                 form.hivProgramHC
-                --                                 (configInitial.setHIVTestFormBoolInputMsg updateFunc)
-                --                                 "hiv-program"
-                --                                 Nothing
-                --                           ]
-                --                         , taskCompleted form.hivProgramHC
-                --                         , 1
-                --                         )
-                --
-                --                     TestNegative ->
-                --                         let
-                --                             partnerHIVPositiveUpdateFunc =
-                --                                 \value form_ ->
-                --                                     { form_
-                --                                         | partnerHIVPositive = Just value
-                --                                         , partnerHIVPositiveDirty = True
-                --                                         , partnerTakingARV = Nothing
-                --                                         , partnerTakingARVDirty = True
-                --                                         , partnerSurpressedViralLoad = Nothing
-                --                                         , partnerSurpressedViralLoadDirty = True
-                --                                     }
-                --
-                --                             ( partnerHivStatusSection, partnerHivStatusTasksCompleted, partnerHivStatusTasksTotal ) =
-                --                                 if form.partnerHIVPositive == Just True then
-                --                                     let
-                --                                         partnerTakingARVUpdateFunc =
-                --                                             \value form_ ->
-                --                                                 { form_
-                --                                                     | partnerTakingARV = Just value
-                --                                                     , partnerTakingARVDirty = True
-                --                                                     , partnerSurpressedViralLoad = Nothing
-                --                                                     , partnerSurpressedViralLoadDirty = True
-                --                                                 }
-                --
-                --                                         ( partnerARVSection, partnerARVTasksCompleted, partnerARVTasksTotal ) =
-                --                                             if form.partnerTakingARV == Just True then
-                --                                                 let
-                --                                                     partnerSurpressedViralLoadUpdateFunc =
-                --                                                         \value form_ ->
-                --                                                             { form_ | partnerSurpressedViralLoad = Just value, partnerSurpressedViralLoadDirty = True }
-                --                                                 in
-                --                                                 ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerSurpressedViralLoad
-                --                                                   , viewBoolInput
-                --                                                         language
-                --                                                         form.partnerSurpressedViralLoad
-                --                                                         (configInitial.setHIVTestFormBoolInputMsg partnerSurpressedViralLoadUpdateFunc)
-                --                                                         "partner-surpressed-viral-load"
-                --                                                         Nothing
-                --                                                   ]
-                --                                                 , taskCompleted form.partnerSurpressedViralLoad
-                --                                                 , 1
-                --                                                 )
-                --
-                --                                             else
-                --                                                 emptySection
-                --                                     in
-                --                                     ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerTakingARV
-                --                                       , viewBoolInput
-                --                                             language
-                --                                             form.partnerTakingARV
-                --                                             (configInitial.setHIVTestFormBoolInputMsg partnerTakingARVUpdateFunc)
-                --                                             "partner-taking-arv"
-                --                                             Nothing
-                --                                       ]
-                --                                         ++ partnerARVSection
-                --                                     , taskCompleted form.partnerTakingARV + partnerARVTasksCompleted
-                --                                     , 1 + partnerARVTasksTotal
-                --                                     )
-                --
-                --                                 else
-                --                                     emptySection
-                --                         in
-                --                         ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerHIVPositive
-                --                           , viewBoolInput
-                --                                 language
-                --                                 form.partnerHIVPositive
-                --                                 (configInitial.setHIVTestFormBoolInputMsg partnerHIVPositiveUpdateFunc)
-                --                                 "partner-hiv-positive"
-                --                                 Nothing
-                --                           ]
-                --                             ++ partnerHivStatusSection
-                --                         , taskCompleted form.partnerHIVPositive + partnerHivStatusTasksCompleted
-                --                         , 1 + partnerHivStatusTasksTotal
-                --                         )
-                --
-                --                     TestIndeterminate ->
-                --                         emptySection
-                --             )
-                --             form.testResult
-                --             |> Maybe.withDefault emptySection
-                -- in
-                -- ( rdtSection ++ hivSignsSection
-                -- , rdtTasksCompleted + hivSignsTasksCompleted
-                -- , rdtTasksTotal + hivSignsTasksTotal
-                -- )
-                emptySection
     in
     ( div [ class "ui form laboratory hba1c" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHbA1cTest) "" "label header"
-        ]
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHbA1cTest) "" "label header" ]
             ++ initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
@@ -3139,6 +3109,10 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
     , setLipidPanelTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setLipidPanelTestExecutionDateMsg = always noOpMsg
     , setLipidPanelTestDateSelectorStateMsg = always noOpMsg
+    , setHbA1cTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHbA1cTestExecutionDateMsg = always noOpMsg
+    , setHbA1cTestDateSelectorStateMsg = always noOpMsg
+    , setHbA1cTestResultMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 

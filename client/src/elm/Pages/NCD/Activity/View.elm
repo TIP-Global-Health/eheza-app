@@ -993,6 +993,12 @@ viewLaboratoryContent language currentDate assembled data =
                                     TaskLipidPanelTest
 
                         TaskHbA1cTest ->
+                            let
+                                previousTestsDates =
+                                    generatePreviousLaboratoryTestsDatesDict currentDate assembled
+                                        |> Dict.get TaskHbA1cTest
+                                        |> Maybe.withDefault []
+                            in
                             measurements.hba1cTest
                                 |> getMeasurementValueFunc
                                 |> hba1cTestFormWithDefault data.hba1cTestForm
@@ -1000,6 +1006,7 @@ viewLaboratoryContent language currentDate assembled data =
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
+                                    previousTestsDates
 
                         -- Others do not participate at NCD.
                         _ ->
@@ -1101,7 +1108,6 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setLiverFunctionTestExecutionNoteMsg = SetLiverFunctionTestExecutionNote
                     , setLipidPanelTestFormBoolInputMsg = SetLipidPanelTestFormBoolInput
                     , setLipidPanelTestExecutionNoteMsg = SetLipidPanelTestExecutionNote
-                    , setHbA1cTestFormBoolInputMsg = SetHbA1cTestFormBoolInput
                 }
            )
 
@@ -1132,6 +1138,10 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setLipidPanelTestFormBoolInputMsg = SetLipidPanelTestFormBoolInput
                     , setLipidPanelTestExecutionDateMsg = SetLipidPanelTestExecutionDate
                     , setLipidPanelTestDateSelectorStateMsg = SetLipidPanelTestDateSelectorState
+                    , setHbA1cTestFormBoolInputMsg = SetHbA1cTestFormBoolInput
+                    , setHbA1cTestExecutionDateMsg = SetHbA1cTestExecutionDate
+                    , setHbA1cTestDateSelectorStateMsg = SetHbA1cTestDateSelectorState
+                    , setHbA1cTestResultMsg = SetHbA1cTestResult
                 }
            )
 

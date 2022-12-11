@@ -134,6 +134,7 @@ type Msg
     | SetHbA1cTestFormBoolInput (Bool -> HbA1cTestForm Msg -> HbA1cTestForm Msg) Bool
     | SetHbA1cTestExecutionDate NominalDate
     | SetHbA1cTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetHbA1cTestResult String
     | SaveHbA1cTest PersonId (Maybe ( NCDHbA1cTestId, NCDHbA1cTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask

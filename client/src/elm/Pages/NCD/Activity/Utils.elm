@@ -806,13 +806,13 @@ expectLaboratoryTask currentDate assembled task =
                 |> Maybe.map List.isEmpty
                 |> Maybe.withDefault True
 
-        yearlyTestRequired test =
+        recurrentTestRequired period test =
             Dict.get test testsDates
                 |> Maybe.andThen
                     (List.sortWith Date.compare
                         >> List.reverse
                         >> List.head
-                        >> Maybe.map (\lastTestDate -> diffMonths lastTestDate currentDate >= 12)
+                        >> Maybe.map (\lastTestDate -> diffMonths lastTestDate currentDate >= period)
                     )
                 |> Maybe.withDefault True
     in
@@ -821,7 +821,7 @@ expectLaboratoryTask currentDate assembled task =
             True
 
         TaskUrineDipstickTest ->
-            yearlyTestRequired TaskUrineDipstickTest
+            recurrentTestRequired 12 TaskUrineDipstickTest
 
         TaskHIVTest ->
             let
@@ -842,16 +842,16 @@ expectLaboratoryTask currentDate assembled task =
             initialTestRequired TaskPregnancyTest
 
         TaskCreatinineTest ->
-            yearlyTestRequired TaskCreatinineTest
+            recurrentTestRequired 12 TaskCreatinineTest
 
         TaskLiverFunctionTest ->
-            yearlyTestRequired TaskLiverFunctionTest
+            recurrentTestRequired 12 TaskLiverFunctionTest
 
         TaskLipidPanelTest ->
-            yearlyTestRequired TaskLiverFunctionTest
+            recurrentTestRequired 12 TaskLiverFunctionTest
 
         TaskHbA1cTest ->
-            yearlyTestRequired TaskHbA1cTest
+            recurrentTestRequired 6 TaskHbA1cTest
 
         -- Others are not in use at NCD.
         _ ->
@@ -875,6 +875,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     , ( TaskPregnancyTest, generateTestDates .pregnancyTest (.testResult >> isJust) isTestResultValid )
     , ( TaskCreatinineTest, generateTestDates .creatinineTest (.creatinineResult >> isJust) (always True) )
     , ( TaskLiverFunctionTest, generateTestDates .liverFunctionTest (.altResult >> isJust) (always True) )
+    , ( TaskHbA1cTest, generateTestDates .hba1cTest (.hba1cResult >> isJust) (always True) )
     ]
         |> Dict.fromList
 

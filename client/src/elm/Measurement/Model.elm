@@ -661,6 +661,10 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setLipidPanelTestExecutionDateMsg : NominalDate -> msg
     , setLipidPanelTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
+    , setHbA1cTestExecutionDateMsg : NominalDate -> msg
+    , setHbA1cTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHbA1cTestResultMsg : String -> msg
     , noOpMsg : msg
     }
 

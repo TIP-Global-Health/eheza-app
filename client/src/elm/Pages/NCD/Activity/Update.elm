@@ -23,6 +23,7 @@ import Backend.Measurement.Model
         , NeckCPESign(..)
         , OutsideCareMedication(..)
         , Predecessor(..)
+        , TestExecutionNote(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, nonReferralReasonToSign, testResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
@@ -1855,7 +1856,7 @@ update currentDate id db msg model =
                     model.laboratoryData.hba1cTestForm
 
                 updatedForm =
-                    { form | executionDate = Just value }
+                    { form | executionDate = Just value, executionNote = Just TestNoteRunPreviously }
 
                 updatedData =
                     model.laboratoryData
@@ -1876,6 +1877,23 @@ update currentDate id db msg model =
 
                 updatedForm =
                     { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hba1cTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHbA1cTestResult value ->
+            let
+                form =
+                    model.laboratoryData.hba1cTestForm
+
+                updatedForm =
+                    { form | hba1cResult = String.toFloat value }
 
                 updatedData =
                     model.laboratoryData
