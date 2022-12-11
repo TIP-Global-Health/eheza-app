@@ -186,11 +186,10 @@ viewProgressReport :
     -> Html msg
 viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg bottomActionData ( childId, child ) =
     let
-        ( containerClass, content ) =
+        content =
             case activeTab of
                 TabSPVReport ->
-                    ( "page-report well-child"
-                    , viewContent language
+                    viewContent language
                         currentDate
                         zscores
                         isChw
@@ -201,14 +200,11 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         setActivePageMsg
                         setDiagnosisModeMsg
                         ( childId, child )
-                    )
 
                 TabNCDAScoreboard ->
-                    ( "page-activity patient-record"
-                    , viewNCDAScorecard language currentDate zscores ( childId, child ) db
-                    )
+                    viewNCDAScorecard language currentDate zscores ( childId, child ) db
     in
-    div [ class containerClass ]
+    div [ class "page-report well-child" ]
         [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
         , viewTabs language setActiveTabMsg activeTab
         , div [ class "ui report unstackable items" ] <|

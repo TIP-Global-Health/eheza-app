@@ -103,9 +103,7 @@ viewHeader language model =
             [ class "link-back"
             , onClick backAction
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 
