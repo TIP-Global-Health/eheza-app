@@ -394,6 +394,21 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                             |> Maybe.withDefault True
                     }
 
+                LabResultsHbA1c assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
+                    { label = Translate.HbA1c
+                    , recentResult = Maybe.map String.fromFloat recentResultValue
+                    , knownAsPositive = False
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
+                    , recentResultNormal =
+                        Maybe.map hba1cResultNormal recentResultValue
+                            |> Maybe.withDefault True
+                    }
+
         dateCell =
             Maybe.map (formatDDMMYYYY >> text) config.recentResultDate
                 |> Maybe.withDefault (text "")
@@ -629,6 +644,9 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
         pregnancyTestResults =
             getTestResultsKnownAsPositive .pregnancy .testResult
 
+        hba1cResults =
+            getTestResults .hba1c .hba1cResult
+
         content =
             case mode of
                 LabResultsCurrentMain ->
@@ -660,6 +678,8 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                         |> showIf displayConfig.liverFunction
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryPregnancy pregnancyTestResults)
                         |> showIf displayConfig.pregnancy
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHbA1c hba1cResults)
+                        |> showIf displayConfig.hba1c
                     ]
 
                 LabResultsCurrentDipstickShort ->
@@ -908,6 +928,9 @@ viewLabResultsHistoryPane language currentDate mode =
 
                 LabResultsHistoryPregnancy assembled ->
                     List.map (viewEntry (translateTestReport language) pregnancyResultNormal) assembled
+
+                LabResultsHbA1c assembled ->
+                    List.map (viewEntry String.fromFloat hba1cResultNormal) assembled
 
         viewEntry resultToStringFunc resultNormalFunc ( date, maybeResult ) =
             let

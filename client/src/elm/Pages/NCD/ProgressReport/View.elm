@@ -192,6 +192,7 @@ viewContent language currentDate initiator db model assembled =
                                     , creatinine = True
                                     , liverFunction = True
                                     , pregnancy = expectLaboratoryTask currentDate assembled TaskPregnancyTest
+                                    , hba1c = True
                                     }
                             in
                             [ generateLabsResultsPaneData currentDate assembled
@@ -768,4 +769,5 @@ generateLabsResultsPaneData currentDate assembled =
     , creatinine = extractValues .creatinineTest
     , liverFunction = extractValues .liverFunctionTest
     , pregnancy = extractValues .pregnancyTest
+    , hba1c = extractValues .hba1cTest
     }

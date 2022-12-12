@@ -123,6 +123,11 @@ pregnancyResultNormal =
     testReportNormal
 
 
+hba1cResultNormal : Float -> Bool
+hba1cResultNormal value =
+    value < 6
+
+
 testReportNormal : TestReport -> Bool
 testReportNormal report =
     case report of

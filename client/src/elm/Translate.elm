@@ -6692,6 +6692,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                LabResultsHbA1c _ ->
+                    { english = "HBA1C"
+                    , kinyarwanda = Nothing
+                    }
+
         LabResultsNormalRange mode ->
             case mode of
                 LabResultsHistoryHIV _ ->
@@ -6807,6 +6812,11 @@ translationSet trans =
                 LabResultsHistoryPregnancy _ ->
                     { english = "Negative"
                     , kinyarwanda = Just "Nta bwandu afite"
+                    }
+
+                LabResultsHbA1c _ ->
+                    { english = "Bellow 6%"
+                    , kinyarwanda = Nothing
                     }
 
         LabResultsPaneHeader mode ->
