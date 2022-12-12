@@ -23,6 +23,12 @@ update currentDate id msg model =
             , []
             )
 
+        SetSPVReportTab tab ->
+            ( { model | spvReportTab = tab }
+            , Cmd.none
+            , []
+            )
+
         SetViewMode mode ->
             ( { model | viewMode = mode }
             , Cmd.none
@@ -34,7 +40,7 @@ update currentDate id msg model =
                 update currentDate id (SetActivePage <| UserPage <| DemographicsReportPage (InitiatorPatientRecord id) id) model
 
             else
-                ( { model | filter = Just filter }
+                ( { model | filter = filter }
                 , Cmd.none
                 , []
                 )

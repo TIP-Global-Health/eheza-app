@@ -57,7 +57,7 @@ import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Nutrition.Activity.View exposing (translateNutritionAssement)
 import Pages.Nutrition.Encounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Report.Model exposing (DiagnosisMode(..), PaneEntryStatus(..))
+import Pages.Report.Model exposing (DiagnosisMode(..), PaneEntryStatus(..), ReportTab(..))
 import Pages.Report.Utils
     exposing
         ( diagnosisEntryStatusToString
@@ -88,7 +88,7 @@ import Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionAc
 import Pages.WellChild.ProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, TranslationId, translate, translateText)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays)
@@ -158,7 +158,9 @@ view language currentDate zscores id isChw db model =
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
+            model.activeTab
             SetActivePage
+            SetActiveTab
             SetDiagnosisMode
             bottomActionData
         )
@@ -175,26 +177,39 @@ viewProgressReport :
     -> Bool
     -> ModelIndexedDb
     -> DiagnosisMode
+    -> ReportTab
     -> (Page -> msg)
+    -> (ReportTab -> msg)
     -> (DiagnosisMode -> msg)
     -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg bottomActionData ( childId, child ) =
+viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg bottomActionData ( childId, child ) =
+    let
+        content =
+            case activeTab of
+                TabSPVReport ->
+                    viewContent language
+                        currentDate
+                        zscores
+                        isChw
+                        initiator
+                        mandatoryNutritionAssessmentMeasurementsTaken
+                        db
+                        diagnosisMode
+                        setActivePageMsg
+                        setDiagnosisModeMsg
+                        ( childId, child )
+
+                TabNCDAScoreboard ->
+                    viewNCDAScorecard language currentDate zscores ( childId, child ) db
+    in
     div [ class "page-report well-child" ]
         [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
-        , viewContent language
-            currentDate
-            zscores
-            isChw
-            initiator
-            mandatoryNutritionAssessmentMeasurementsTaken
-            db
-            diagnosisMode
-            setActivePageMsg
-            setDiagnosisModeMsg
-            bottomActionData
-            ( childId, child )
+        , viewTabs language setActiveTabMsg activeTab
+        , div [ class "ui report unstackable items" ] <|
+            content
+                ++ viewActions language initiator bottomActionData
         ]
 
 
@@ -210,45 +225,58 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
                     Translate.ProgressReport
 
         goBackAction =
-            case diagnosisMode of
-                ModeActiveDiagnosis ->
-                    let
-                        targetPage =
-                            case initiator of
-                                InitiatorNutritionIndividual nutritionEncounterId ->
-                                    UserPage (NutritionEncounterPage nutritionEncounterId)
+            if diagnosisMode == ModeCompletedDiagnosis then
+                setDiagnosisModeMsg ModeActiveDiagnosis
 
-                                InitiatorWellChild wellChildEncounterId ->
-                                    UserPage (WellChildEncounterPage wellChildEncounterId)
+            else
+                let
+                    targetPage =
+                        case initiator of
+                            InitiatorNutritionIndividual nutritionEncounterId ->
+                                UserPage (NutritionEncounterPage nutritionEncounterId)
 
-                                InitiatorNutritionGroup sessionId personId ->
-                                    UserPage (SessionPage sessionId (ChildPage personId))
+                            InitiatorWellChild wellChildEncounterId ->
+                                UserPage (WellChildEncounterPage wellChildEncounterId)
 
-                                Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord patientRecordInitiator _ ->
-                                    case patientRecordInitiator of
-                                        Backend.PatientRecord.Model.InitiatorParticipantDirectory ->
-                                            UserPage (PersonsPage Nothing ParticipantDirectoryOrigin)
+                            InitiatorNutritionGroup sessionId personId ->
+                                UserPage (SessionPage sessionId (ChildPage personId))
 
-                                        Backend.PatientRecord.Model.InitiatorPatientRecord personId ->
-                                            UserPage (PatientRecordPage Backend.PatientRecord.Model.InitiatorParticipantDirectory personId)
-                    in
-                    setActivePageMsg targetPage
+                            Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord patientRecordInitiator _ ->
+                                case patientRecordInitiator of
+                                    Backend.PatientRecord.Model.InitiatorParticipantDirectory ->
+                                        UserPage (PersonsPage Nothing ParticipantDirectoryOrigin)
 
-                ModeCompletedDiagnosis ->
-                    setDiagnosisModeMsg ModeActiveDiagnosis
+                                    Backend.PatientRecord.Model.InitiatorPatientRecord personId ->
+                                        UserPage (PatientRecordPage Backend.PatientRecord.Model.InitiatorParticipantDirectory personId)
+                in
+                setActivePageMsg targetPage
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
-            [ text <| translate language label
-            ]
+            [ translateText language label ]
         , span
             [ class "link-back"
             , onClick goBackAction
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
+
+
+viewTabs : Language -> (ReportTab -> msg) -> ReportTab -> Html msg
+viewTabs language setActiveTabMsg activeTab =
+    let
+        renderButton tab =
+            button
+                [ classList
+                    [ ( "active", tab == activeTab )
+                    , ( "primary ui button", True )
+                    ]
+                , onClick <| setActiveTabMsg tab
+                ]
+                [ translateText language <| Translate.ReportTab tab ]
+    in
+    List.map renderButton [ TabSPVReport, TabNCDAScoreboard ]
+        |> div [ class "ui segment tabs" ]
 
 
 assembleProgresReportData childId db =
@@ -347,10 +375,9 @@ viewContent :
     -> DiagnosisMode
     -> (Page -> msg)
     -> (DiagnosisMode -> msg)
-    -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
-    -> Html msg
-viewContent language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg bottomActionData ( childId, child ) =
+    -> List (Html msg)
+viewContent language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode setActivePageMsg setDiagnosisModeMsg ( childId, child ) =
     let
         reportData =
             assembleProgresReportData childId db
@@ -396,11 +423,43 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
 
                 ModeCompletedDiagnosis ->
                     []
+    in
+    [ viewPersonInfoPane language currentDate child
+    , viewDiagnosisPane language
+        currentDate
+        isChw
+        initiator
+        mandatoryNutritionAssessmentMeasurementsTaken
+        reportData.acuteIllnesses
+        reportData.individualNutritionParticipantId
+        reportData.wellChildEncounters
+        reportData.groupNutritionMeasurements
+        individualNutritionMeasurements
+        individualWellChildMeasurements
+        db
+        diagnosisMode
+        setActivePageMsg
+        setDiagnosisModeMsg
+        reportData.maybeAssembled
+    ]
+        ++ derivedContent
 
-        ( endEncounterDialog, bottomActionButton ) =
-            Maybe.map
-                (\data ->
-                    ( if data.showEndEncounterDialog then
+
+viewActions : Language -> WellChildProgressReportInitiator -> Maybe (BottomActionData msg) -> List (Html msg)
+viewActions language initiator bottomActionData =
+    Maybe.map
+        (\data ->
+            let
+                bottomActionButton =
+                    case initiator of
+                        Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord _ _ ->
+                            viewStartEncounterButton language data.startEncounterMsg
+
+                        _ ->
+                            viewEndEncounterButton language data.allowEndEncounter data.setEndEncounterDialogStateMsg
+
+                endEncounterDialog =
+                    if data.showEndEncounterDialog then
                         Just <|
                             viewEndEncounterDialog language
                                 Translate.EndEncounterQuestion
@@ -408,41 +467,15 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
                                 data.closeEncounterMsg
                                 (data.setEndEncounterDialogStateMsg False)
 
-                      else
+                    else
                         Nothing
-                    , case initiator of
-                        Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord _ _ ->
-                            viewStartEncounterButton language data.startEncounterMsg
-
-                        _ ->
-                            viewEndEncounterButton language data.allowEndEncounter data.setEndEncounterDialogStateMsg
-                    )
-                )
-                bottomActionData
-                |> Maybe.withDefault ( Nothing, emptyNode )
-    in
-    div [ class "ui report unstackable items" ] <|
-        [ viewPersonInfoPane language currentDate child
-        , viewDiagnosisPane language
-            currentDate
-            isChw
-            initiator
-            mandatoryNutritionAssessmentMeasurementsTaken
-            reportData.acuteIllnesses
-            reportData.individualNutritionParticipantId
-            reportData.wellChildEncounters
-            reportData.groupNutritionMeasurements
-            individualNutritionMeasurements
-            individualWellChildMeasurements
-            db
-            diagnosisMode
-            setActivePageMsg
-            setDiagnosisModeMsg
-            reportData.maybeAssembled
-        , viewModal endEncounterDialog
-        ]
-            ++ derivedContent
-            ++ [ bottomActionButton ]
+            in
+            [ bottomActionButton
+            , viewModal endEncounterDialog
+            ]
+        )
+        bottomActionData
+        |> Maybe.withDefault []
 
 
 viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
@@ -1507,10 +1540,9 @@ viewNCDAScorecard :
     -> NominalDate
     -> ZScore.Model.Model
     -> ( PersonId, Person )
-    -> Maybe msg
     -> ModelIndexedDb
-    -> Html msg
-viewNCDAScorecard language currentDate zscores ( childId, child ) startEncounterMsg db =
+    -> List (Html msg)
+viewNCDAScorecard language currentDate zscores ( childId, child ) db =
     let
         reportData =
             assembleProgresReportData childId db
@@ -1547,43 +1579,37 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) startEncounter
 
         questionnairesByAgeInMonths =
             distributeByAgeInMonths child allNCDAQuestionnaires
-
-        action =
-            Maybe.map (viewStartEncounterButton language) startEncounterMsg
-                |> Maybe.withDefault emptyNode
     in
-    div [ class "ui report unstackable items" ] <|
-        [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
-        , viewANCNewbornPane language currentDate db child allNCDAQuestionnaires
-        , viewUniversalInterventionsPane language
-            currentDate
-            child
-            db
-            questionnairesByAgeInMonths
-            reportData.maybeAssembled
-            reportData.wellChildEncounters
-            reportData.individualWellChildMeasurementsWithDates
-        , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
-        , viewTargetedInterventionsPane language
-            currentDate
-            child
-            db
-            questionnairesByAgeInMonths
-            reportData.groupNutritionMeasurements
-            reportData.individualNutritionMeasurementsWithDates
-            reportData.individualWellChildMeasurementsWithDates
-            reportData.acuteIllnesses
-        , viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths
-        , viewFillTheBlanksPane language
-            currentDate
-            zscores
-            child
-            db
-            reportData.groupNutritionMeasurements
-            reportData.individualNutritionMeasurementsWithDates
-            reportData.individualWellChildMeasurementsWithDates
-        , action
-        ]
+    [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
+    , viewANCNewbornPane language currentDate db child allNCDAQuestionnaires
+    , viewUniversalInterventionsPane language
+        currentDate
+        child
+        db
+        questionnairesByAgeInMonths
+        reportData.maybeAssembled
+        reportData.wellChildEncounters
+        reportData.individualWellChildMeasurementsWithDates
+    , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
+    , viewTargetedInterventionsPane language
+        currentDate
+        child
+        db
+        questionnairesByAgeInMonths
+        reportData.groupNutritionMeasurements
+        reportData.individualNutritionMeasurementsWithDates
+        reportData.individualWellChildMeasurementsWithDates
+        reportData.acuteIllnesses
+    , viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths
+    , viewFillTheBlanksPane language
+        currentDate
+        zscores
+        child
+        db
+        reportData.groupNutritionMeasurements
+        reportData.individualNutritionMeasurementsWithDates
+        reportData.individualWellChildMeasurementsWithDates
+    ]
 
 
 viewChildIdentificationPane :

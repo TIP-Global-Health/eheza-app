@@ -43,7 +43,9 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
+            model.reportTab
             SetActivePage
+            SetReportTab
             SetDiagnosisMode
             Nothing
         )

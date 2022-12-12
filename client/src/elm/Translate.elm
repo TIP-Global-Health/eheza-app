@@ -117,7 +117,13 @@ import Pages.Prenatal.Activity.Types
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.RecurrentActivity.Types
-import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), PaneEntryStatus(..))
+import Pages.Report.Model
+    exposing
+        ( LabResultsCurrentMode(..)
+        , LabResultsHistoryMode(..)
+        , PaneEntryStatus(..)
+        , ReportTab(..)
+        )
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
@@ -1240,6 +1246,7 @@ type TranslationId
     | ReportRemaining Int
     | ReportResultsOfContactsSearch Int
     | ReportResultsOfParticipantsSearch Int
+    | ReportTab ReportTab
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
@@ -9710,16 +9717,6 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro"
                     }
 
-                FilterSPVReport ->
-                    { english = "Standard Pediatric Report"
-                    , kinyarwanda = Nothing
-                    }
-
-                FilterNCDAScoreboard ->
-                    { english = "NCDA Scorecard"
-                    , kinyarwanda = Nothing
-                    }
-
         PauseEncounter ->
             { english = "Pause Encounter"
             , kinyarwanda = Just "Igikorwa cyahagaritswe"
@@ -14337,6 +14334,18 @@ translationSet trans =
                 _ ->
                     { english = "There are " ++ String.fromInt total ++ " participants that match your search."
                     , kinyarwanda = Just <| "Hari abagenerwabikorwa " ++ String.fromInt total ++ " bahuye nuwo ushaka mu ishakiro"
+                    }
+
+        ReportTab tab ->
+            case tab of
+                TabSPVReport ->
+                    { english = "Standard Pediatric Report"
+                    , kinyarwanda = Nothing
+                    }
+
+                TabNCDAScoreboard ->
+                    { english = "NCDA Scorecard"
+                    , kinyarwanda = Nothing
                     }
 
         Reports ->

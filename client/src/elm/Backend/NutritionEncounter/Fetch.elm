@@ -1,12 +1,13 @@
 module Backend.NutritionEncounter.Fetch exposing (fetch)
 
 import AssocList as Dict
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Backend.Utils exposing (resolveIndividualParticipantForPerson)
+import Backend.Utils exposing (resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson)
 import EverySet exposing (EverySet)
 import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
@@ -38,6 +39,7 @@ fetch id db =
     ]
         ++ fetchForNutrition id db
         ++ fetchForWellChild id db
+        ++ fetchForNCDAScoreboard id db
         ++ fetchParentsMsgs
 
 
@@ -99,3 +101,32 @@ fetchForWellChild id db =
         ]
         ++ fetchEncounters
         ++ fetchMeasurements
+
+
+fetchForNCDAScoreboard : PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetchForNCDAScoreboard id db =
+    resolveIndividualParticipantsForPerson id AcuteIllnessEncounter db
+        |> List.map
+            (\participantId ->
+                let
+                    fetchMeasurementsMsgs =
+                        Dict.get participantId db.acuteIllnessEncountersByParticipant
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map
+                                (Dict.toList
+                                    >> List.filterMap
+                                        (\( encounterId, encounter ) ->
+                                            -- We need to fetch measurements of encounters where Uncomplicated
+                                            -- Gastrointestinal Infection was diagnosed, to check if treatment was given.
+                                            if encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated then
+                                                Just <| FetchAcuteIllnessMeasurements encounterId
+
+                                            else
+                                                Nothing
+                                        )
+                                )
+                            |> Maybe.withDefault []
+                in
+                FetchAcuteIllnessEncountersForParticipant participantId :: fetchMeasurementsMsgs
+            )
+        |> List.concat
