@@ -48,6 +48,7 @@ type alias Model =
     , savePregnancyTest : WebData ()
     , saveCreatinineTest : WebData ()
     , saveLiverFunctionTest : WebData ()
+    , saveLipidPanelTest : WebData ()
     , saveLabsResults : WebData ()
     , saveHealthEducation : WebData ()
     , saveMedicationDistribution : WebData ()
@@ -74,6 +75,7 @@ emptyModel =
     , savePregnancyTest = NotAsked
     , saveCreatinineTest = NotAsked
     , saveLiverFunctionTest = NotAsked
+    , saveLipidPanelTest = NotAsked
     , saveLabsResults = NotAsked
     , saveHealthEducation = NotAsked
     , saveMedicationDistribution = NotAsked
@@ -119,6 +121,8 @@ type Msg
     | HandleSavedCreatinineTest (WebData ())
     | SaveLiverFunctionTest PersonId (Maybe NCDLiverFunctionTestId) LiverFunctionTestValue
     | HandleSavedLiverFunctionTest (WebData ())
+    | SaveLipidPanelTest PersonId (Maybe NCDLipidPanelTestId) LipidPanelTestValue
+    | HandleSavedLipidPanelTest (WebData ())
     | SaveHealthEducation PersonId (Maybe NCDHealthEducationId) NCDHealthEducationValue
     | HandleSavedHealthEducation (WebData ())
     | SaveMedicationDistribution PersonId (Maybe NCDMedicationDistributionId) NCDMedicationDistributionValue

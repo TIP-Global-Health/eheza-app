@@ -1990,6 +1990,11 @@ toLiverFunctionTestValueWithEmptyResults note date =
     LiverFunctionTestValue note date Nothing Nothing
 
 
+toLipidPanelTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> LipidPanelTestValue
+toLipidPanelTestValueWithEmptyResults note date =
+    LipidPanelTestValue note date Nothing Nothing Nothing Nothing Nothing
+
+
 viewHIVTestForm :
     Language
     -> NominalDate
@@ -2566,6 +2571,11 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     , setExecutionNoteMsg = config.setLiverFunctionTestExecutionNoteMsg
                     }
 
+                TaskLipidPanelTest ->
+                    { setBoolInputMsg = config.setLipidPanelTestFormBoolInputMsg boolInputUpdateFunc
+                    , setExecutionNoteMsg = config.setLipidPanelTestExecutionNoteMsg
+                    }
+
                 TaskCompletePreviousTests ->
                     -- Not in use, as this task got a proprietary form.
                     { setBoolInputMsg = always config.noOpMsg
@@ -2728,6 +2738,12 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                         , setDateSelectorStateMsg = config.setLiverFunctionTestDateSelectorStateMsg
                         }
 
+                    TaskLipidPanelTest ->
+                        { setBoolInputMsg = config.setLipidPanelTestFormBoolInputMsg boolInputUpdateFunc
+                        , setExecutionDateMsg = config.setLipidPanelTestExecutionDateMsg
+                        , setDateSelectorStateMsg = config.setLipidPanelTestDateSelectorStateMsg
+                        }
+
                     TaskCompletePreviousTests ->
                         -- Not in use, as this task got a proprietary form.
                         { setBoolInputMsg = always config.noOpMsg
@@ -2888,6 +2904,8 @@ emptyContentAndTasksLaboratoryTestInitialConfig noOpMsg =
     , setCreatinineTestExecutionNoteMsg = always noOpMsg
     , setLiverFunctionTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setLiverFunctionTestExecutionNoteMsg = always noOpMsg
+    , setLipidPanelTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setLipidPanelTestExecutionNoteMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -2930,6 +2948,9 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
     , setLiverFunctionTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setLiverFunctionTestExecutionDateMsg = always noOpMsg
     , setLiverFunctionTestDateSelectorStateMsg = always noOpMsg
+    , setLipidPanelTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setLipidPanelTestExecutionDateMsg = always noOpMsg
+    , setLipidPanelTestDateSelectorStateMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -2975,6 +2996,9 @@ laboratoryTaskIconClass task =
 
         TaskLiverFunctionTest ->
             "liver-function"
+
+        TaskLipidPanelTest ->
+            "lipid-panel"
 
 
 hepatitisBResultFormWithDefault : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId
@@ -3290,6 +3314,45 @@ toLiverFunctionResultsValue form =
             , executionDate = form.executionDate
             , altResult = form.altResult
             , astResult = form.astResult
+            }
+        )
+        form.executionNote
+
+
+lipidPanelResultFormWithDefault : LipidPanelResultForm -> Maybe LipidPanelTestValue -> LipidPanelResultForm
+lipidPanelResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , unitOfMeasurement = or form.unitOfMeasurement value.unitOfMeasurement
+                , totalCholesterolResult = or form.totalCholesterolResult value.totalCholesterolResult
+                , ldlCholesterolResult = or form.ldlCholesterolResult value.ldlCholesterolResult
+                , hdlCholesterolResult = or form.hdlCholesterolResult value.hdlCholesterolResult
+                , triglyceridesResult = or form.triglyceridesResult value.triglyceridesResult
+                }
+            )
+
+
+toLipidPanelResultsValueWithDefault : Maybe LipidPanelTestValue -> LipidPanelResultForm -> Maybe LipidPanelTestValue
+toLipidPanelResultsValueWithDefault saved form =
+    lipidPanelResultFormWithDefault form saved
+        |> toLipidPanelResultsValue
+
+
+toLipidPanelResultsValue : LipidPanelResultForm -> Maybe LipidPanelTestValue
+toLipidPanelResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , unitOfMeasurement = form.unitOfMeasurement
+            , totalCholesterolResult = form.totalCholesterolResult
+            , ldlCholesterolResult = form.ldlCholesterolResult
+            , hdlCholesterolResult = form.hdlCholesterolResult
+            , triglyceridesResult = form.triglyceridesResult
             }
         )
         form.executionNote
@@ -3652,7 +3715,7 @@ hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoad
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             let
-                ( derrivedSection, derrivedTasksCompleted, derrivedTasksTotal ) =
+                ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
                     if form.hivViralLoadStatus == Just ViralLoadDetectable then
                         ( [ viewLabel language Translate.PrenatalLaboratoryHIVPCRTestResult
                           , viewMeasurementInput language
@@ -3675,9 +3738,9 @@ hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoad
                     "hiv-level-undetectable"
                     Nothing
               ]
-                ++ derrivedSection
-            , taskCompleted form.hivViralLoadStatus + derrivedTasksCompleted
-            , 1 + derrivedTasksTotal
+                ++ derivedSection
+            , taskCompleted form.hivViralLoadStatus + derivedTasksCompleted
+            , 1 + derivedTasksTotal
             )
     in
     ( div [ class "ui form laboratory hiv-prc-result" ] <|
@@ -3752,6 +3815,89 @@ liverFunctionResultFormAndTasks language currentDate setAltResultMsg setAstResul
     in
     ( div [ class "ui form laboratory liver-function-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskLiverFunctionTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+lipidPanelResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> LipidPanelResultForm
+    -> ( Html msg, Int, Int )
+lipidPanelResultFormAndTasks language currentDate setUnitOfMeasurementMsg setTotalCholesterolResultMsg setLDLCholesterolResultMsg setHDLCholesterolResultMsg setTriglyceridesResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            let
+                ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+                    Maybe.map
+                        (\unitOfMeasurement ->
+                            ( [ viewLabel language Translate.LaboratoryLipidPanelTotalCholesterolResult
+                              , viewMeasurementInput language
+                                    form.totalCholesterolResult
+                                    setTotalCholesterolResultMsg
+                                    "total-cholesterol"
+                                    (Translate.UnitOfMeasurement unitOfMeasurement)
+                              , viewLabel language Translate.LaboratoryLipidPanelLDLCholesterolResult
+                              , viewMeasurementInput language
+                                    form.ldlCholesterolResult
+                                    setLDLCholesterolResultMsg
+                                    "ldl"
+                                    (Translate.UnitOfMeasurement unitOfMeasurement)
+                              , viewLabel language Translate.LaboratoryLipidPanelHDLCholesterolResult
+                              , viewMeasurementInput language
+                                    form.hdlCholesterolResult
+                                    setHDLCholesterolResultMsg
+                                    "hdl"
+                                    (Translate.UnitOfMeasurement unitOfMeasurement)
+                              , viewLabel language Translate.LaboratoryLipidPanelTriglyceridesResult
+                              , viewMeasurementInput language
+                                    form.triglyceridesResult
+                                    setTriglyceridesResultMsg
+                                    "triglycerides"
+                                    (Translate.UnitOfMeasurement unitOfMeasurement)
+                              ]
+                            , taskCompleted form.totalCholesterolResult
+                                + taskCompleted form.ldlCholesterolResult
+                                + taskCompleted form.hdlCholesterolResult
+                                + taskCompleted form.triglyceridesResult
+                            , 4
+                            )
+                        )
+                        form.unitOfMeasurement
+                        |> Maybe.withDefault ( [], 0, 0 )
+            in
+            ( [ viewQuestionLabel language Translate.LaboratoryLipidPanelUnitOfMeasurementQuestion
+              , option
+                    [ value ""
+                    , selected (form.unitOfMeasurement == Nothing)
+                    ]
+                    [ text "" ]
+                    :: ([ UnitMmolL, UnitMgdL ]
+                            |> List.map
+                                (\unit ->
+                                    option
+                                        [ value (unitOfMeasurementToString unit)
+                                        , selected (form.unitOfMeasurement == Just unit)
+                                        ]
+                                        [ text <| translate language <| Translate.UnitOfMeasurement unit ]
+                                )
+                       )
+                    |> select [ onInput setUnitOfMeasurementMsg, class "form-input select unit-of-measurement" ]
+              ]
+                ++ derivedSection
+            , taskCompleted form.unitOfMeasurement + derivedTasksCompleted
+            , 1 + derivedTasksTotal
+            )
+    in
+    ( div [ class "ui form laboratory lipid-panel-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskLipidPanelTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal

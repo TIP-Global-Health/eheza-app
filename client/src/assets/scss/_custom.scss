@@ -2229,6 +2229,20 @@ input::placeholder {
   }
 }
 
+.icon-lipid-panel {
+  .active &:after {
+    background-image: url(#{$img-path}icon-lipid-panel-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-lipid-panel-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-lipid-panel-gray.svg);
+  }
+}
+
 .icon-laboratory-hiv {
   .active &:after {
     background-image: url(#{$img-path}icon-hiv-white.svg);

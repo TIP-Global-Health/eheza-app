@@ -25,8 +25,6 @@ import Measurement.Model
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
-        , emptyContentAndTasksForPerformedLaboratoryTestConfig
-        , emptyContentAndTasksLaboratoryTestInitialConfig
         , familyPlanningFormWithDefault
         , hivTestFormWithDefault
         , laboratoryTaskIconClass

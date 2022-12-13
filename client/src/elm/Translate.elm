@@ -763,6 +763,11 @@ type TranslationId
     | LabHistory
     | LaboratoryCreatinineCreatinineResult
     | LaboratoryCreatinineBUNResult
+    | LaboratoryLipidPanelUnitOfMeasurementQuestion
+    | LaboratoryLipidPanelTotalCholesterolResult
+    | LaboratoryLipidPanelLDLCholesterolResult
+    | LaboratoryLipidPanelHDLCholesterolResult
+    | LaboratoryLipidPanelTriglyceridesResult
     | LaboratoryLiverFunctionAltResult
     | LaboratoryLiverFunctionAstResult
     | LaboratoryTask LaboratoryTask
@@ -1439,6 +1444,8 @@ type TranslationId
     | UnitGramsPerDeciliter
     | UnitInternationalUnitsPerLiter
     | UnitMilliGramsPerDeciliter
+    | UnitMillimolesPerLiter
+    | UnitOfMeasurement UnitOfMeasurement
     | UniversalInterventions
     | Unknown
     | Update
@@ -6129,6 +6136,13 @@ translationSet trans =
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
+                TaskLipidPanelTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -6176,6 +6190,31 @@ translationSet trans =
 
         LaboratoryCreatinineBUNResult ->
             { english = "BUN Result"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLipidPanelUnitOfMeasurementQuestion ->
+            { english = "What units are the test results in"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLipidPanelTotalCholesterolResult ->
+            { english = "Total Cholesterol"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLipidPanelLDLCholesterolResult ->
+            { english = "LDL"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLipidPanelHDLCholesterolResult ->
+            { english = "HDL"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLipidPanelTriglyceridesResult ->
+            { english = "Triglycerides"
             , kinyarwanda = Nothing
             }
 
@@ -6251,6 +6290,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskLipidPanelTest ->
+                    { english = "Lipid Panel"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskCompletePreviousTests ->
                     { english = "History"
                     , kinyarwanda = Nothing
@@ -6315,6 +6359,11 @@ translationSet trans =
 
                 TaskLiverFunctionTest ->
                     { english = "Liver Function"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLipidPanelTest ->
+                    { english = "Lipid Panel"
                     , kinyarwanda = Nothing
                     }
 
@@ -6386,6 +6435,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskLipidPanelTest ->
+                    { english = "Lipid Panel Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -6451,6 +6505,11 @@ translationSet trans =
 
                 TaskLiverFunctionTest ->
                     { english = "Liver Function Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLipidPanelTest ->
+                    { english = "Lipid Panel Test Result"
                     , kinyarwanda = Nothing
                     }
 
@@ -12330,6 +12389,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TestLipidPanel ->
+                    { english = "Lipid Panel"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
             , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe ku mugore utwite"
@@ -15830,6 +15894,19 @@ translationSet trans =
             { english = "mg/dL"
             , kinyarwanda = Nothing
             }
+
+        UnitMillimolesPerLiter ->
+            { english = "mmol/L"
+            , kinyarwanda = Nothing
+            }
+
+        UnitOfMeasurement unit ->
+            case unit of
+                UnitMmolL ->
+                    translationSet UnitMillimolesPerLiter
+
+                UnitMgdL ->
+                    translationSet UnitMilliGramsPerDeciliter
 
         UniversalInterventions ->
             { english = "Universal Interventions"

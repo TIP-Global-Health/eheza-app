@@ -101,6 +101,7 @@ type BackendAuthorityEntity
     | BackendAuthorityNCDHealthEducation (BackendEntity NCDHealthEducation)
     | BackendAuthorityNCDHIVTest (BackendEntity NCDHIVTest)
     | BackendAuthorityNCDLabsResults (BackendEntity NCDLabsResults)
+    | BackendAuthorityNCDLipidPanelTest (BackendEntity NCDLipidPanelTest)
     | BackendAuthorityNCDLiverFunctionTest (BackendEntity NCDLiverFunctionTest)
     | BackendAuthorityNCDMedicationDistribution (BackendEntity NCDMedicationDistribution)
     | BackendAuthorityNCDMedicationHistory (BackendEntity NCDMedicationHistory)

@@ -3367,6 +3367,9 @@ laboratoryTestToString value =
         TestLiverFunction ->
             "liver-function"
 
+        TestLipidPanel ->
+            "lipid-panel"
+
 
 laboratoryTestFromString : String -> Maybe LaboratoryTest
 laboratoryTestFromString value =
@@ -3529,6 +3532,29 @@ diabetesByUrineGlucose : UrineDipstickTestValue -> Bool
 diabetesByUrineGlucose value =
     Maybe.map (\glucose -> List.member glucose [ GlucosePlus2, GlucosePlus3, GlucosePlus4 ]) value.glucose
         |> Maybe.withDefault False
+
+
+unitOfMeasurementToString : UnitOfMeasurement -> String
+unitOfMeasurementToString value =
+    case value of
+        UnitMmolL ->
+            "mmol-L"
+
+        UnitMgdL ->
+            "mg-dL"
+
+
+unitOfMeasurementFromString : String -> Maybe UnitOfMeasurement
+unitOfMeasurementFromString value =
+    case value of
+        "mmol-L" ->
+            Just UnitMmolL
+
+        "mg-dL" ->
+            Just UnitMgdL
+
+        _ ->
+            Nothing
 
 
 ncdaSignToString : NCDASign -> String

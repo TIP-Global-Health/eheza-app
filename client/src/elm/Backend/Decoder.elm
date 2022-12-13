@@ -200,6 +200,9 @@ decodeRevision =
                     "ncd_labs_results" ->
                         decodeWithUuid NCDLabsResultsRevision decodeNCDLabsResults
 
+                    "ncd_lipid_panel_test" ->
+                        decodeWithUuid NCDLipidPanelTestRevision decodeNCDLipidPanelTest
+
                     "ncd_liver_function_test" ->
                         decodeWithUuid NCDLiverFunctionTestRevision decodeNCDLiverFunctionTest
 

@@ -522,6 +522,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityNCDLabsResults identifier ->
                 viewMeasurement identifier "NCDLabsResults"
 
+            BackendAuthorityNCDLipidPanelTest identifier ->
+                viewMeasurement identifier "NCDLipidPanelTest"
+
             BackendAuthorityNCDLiverFunctionTest identifier ->
                 viewMeasurement identifier "NCDLiverFunctionTest"
 

@@ -91,6 +91,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'ncd_health_education' => 'ncd-health-education',
   'ncd_hiv_test' => 'ncd-hiv-test',
   'ncd_labs_results' => 'ncd-labs-results',
+  'ncd_lipid_panel_test' => 'ncd-lipid-panel-test',
   'ncd_liver_function_test' => 'ncd-liver-function-test',
   'ncd_medication_distribution' => 'ncd-medication-distribution',
   'ncd_medication_history' => 'ncd-medication-history',

@@ -980,6 +980,16 @@ viewLaboratoryContent language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     TaskLiverFunctionTest
 
+                        TaskLipidPanelTest ->
+                            measurements.lipidPanelTest
+                                |> getMeasurementValueFunc
+                                |> nonRDTFormWithDefault data.lipidPanelTestForm
+                                |> viewNonRDTForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    TaskLipidPanelTest
+
                         -- Others do not participate at NCD.
                         _ ->
                             ( emptyNode, 0, 0 )
@@ -1031,6 +1041,9 @@ viewLaboratoryContent language currentDate assembled data =
                                 TaskLiverFunctionTest ->
                                     SaveLiverFunctionTest personId measurements.liverFunctionTest nextTask
 
+                                TaskLipidPanelTest ->
+                                    SaveLipidPanelTest personId measurements.lipidPanelTest nextTask
+
                                 -- Others do not participate at NCD.
                                 _ ->
                                     NoOp
@@ -1072,6 +1085,8 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setCreatinineTestExecutionNoteMsg = SetCreatinineTestExecutionNote
                     , setLiverFunctionTestFormBoolInputMsg = SetLiverFunctionTestFormBoolInput
                     , setLiverFunctionTestExecutionNoteMsg = SetLiverFunctionTestExecutionNote
+                    , setLipidPanelTestFormBoolInputMsg = SetLipidPanelTestFormBoolInput
+                    , setLipidPanelTestExecutionNoteMsg = SetLipidPanelTestExecutionNote
                 }
            )
 
@@ -1099,6 +1114,9 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setLiverFunctionTestFormBoolInputMsg = SetLiverFunctionTestFormBoolInput
                     , setLiverFunctionTestExecutionDateMsg = SetLiverFunctionTestExecutionDate
                     , setLiverFunctionTestDateSelectorStateMsg = SetLiverFunctionTestDateSelectorState
+                    , setLipidPanelTestFormBoolInputMsg = SetLipidPanelTestFormBoolInput
+                    , setLipidPanelTestExecutionDateMsg = SetLipidPanelTestExecutionDate
+                    , setLipidPanelTestDateSelectorStateMsg = SetLipidPanelTestDateSelectorState
                 }
            )
 

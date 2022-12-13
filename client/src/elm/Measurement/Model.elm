@@ -579,6 +579,7 @@ type LaboratoryTask
     | TaskPregnancyTest
     | TaskCreatinineTest
     | TaskLiverFunctionTest
+    | TaskLipidPanelTest
     | TaskCompletePreviousTests
 
 
@@ -611,6 +612,8 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setCreatinineTestExecutionNoteMsg : TestExecutionNote -> msg
     , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setLiverFunctionTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
     , noOpMsg : msg
     }
 
@@ -652,6 +655,9 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setLiverFunctionTestExecutionDateMsg : NominalDate -> msg
     , setLiverFunctionTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLipidPanelTestExecutionDateMsg : NominalDate -> msg
+    , setLipidPanelTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , noOpMsg : msg
     }
 
@@ -1037,3 +1043,26 @@ type GroupOfFoods
     | FruitsVegetables
     | BreastMilk
     | MealsWithEdibleOil
+
+
+type alias LipidPanelResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , unitOfMeasurement : Maybe UnitOfMeasurement
+    , totalCholesterolResult : Maybe Float
+    , ldlCholesterolResult : Maybe Float
+    , hdlCholesterolResult : Maybe Float
+    , triglyceridesResult : Maybe Float
+    }
+
+
+emptyLipidPanelResultForm : LipidPanelResultForm
+emptyLipidPanelResultForm =
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , unitOfMeasurement = Nothing
+    , totalCholesterolResult = Nothing
+    , ldlCholesterolResult = Nothing
+    , hdlCholesterolResult = Nothing
+    , triglyceridesResult = Nothing
+    }
