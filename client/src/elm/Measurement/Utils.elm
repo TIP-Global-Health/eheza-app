@@ -4139,3 +4139,63 @@ expectParticipantConsent session motherId =
     in
     session.allParticipantForms
         |> Dict.filter (\id _ -> not (EverySet.member id consentedAtPreviousSessions))
+
+
+resolveLabTestDate :
+    NominalDate
+    -> ({ v | executionNote : TestExecutionNote, executionDate : Maybe NominalDate } -> Bool)
+    -> ({ v | executionNote : TestExecutionNote, executionDate : Maybe NominalDate } -> Bool)
+    ->
+        Maybe
+            ( id
+            , { m
+                | dateMeasured : NominalDate
+                , value : { v | executionNote : TestExecutionNote, executionDate : Maybe NominalDate }
+              }
+            )
+    -> Maybe NominalDate
+resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
+    let
+        dateMeasured =
+            -- Date on which test was recorded.
+            -- Note that this is not the date when test was performed,
+            -- because it's possible to set past date for that.
+            -- We need the recorded date, because the logic says that
+            -- test that will not have results set for over 35 days is expired.
+            -- Can default to current date, because we use it only when there's
+            -- measurement value, and this means that there must be dateMeasured set.
+            Maybe.map (Tuple.second >> .dateMeasured) measurement
+                |> Maybe.withDefault currentDate
+    in
+    getMeasurementValueFunc measurement
+        |> Maybe.andThen
+            (\value ->
+                if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                    if resultsExistFunc value && (not <| resultsValidFunc value) then
+                        -- Entered result is not valid, therefore,
+                        -- we treat the test as if it was not performed.
+                        Nothing
+
+                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
+                        -- No results were entered for more than 35 days since the
+                        -- day on which measurement was taken.
+                        -- Test is considered expired, and is being ignored
+                        -- (as if it was never performed).
+                        Nothing
+
+                    else
+                        value.executionDate
+
+                else
+                    Nothing
+            )
+
+
+isTestResultValid : { a | testResult : Maybe TestResult } -> Bool
+isTestResultValid =
+    .testResult
+        >> Maybe.map ((/=) TestIndeterminate)
+        >> -- In case test result was not set yet, we consider
+           -- it to be valid, because results for some test are
+           -- updated after few hours, or even days.
+           Maybe.withDefault True

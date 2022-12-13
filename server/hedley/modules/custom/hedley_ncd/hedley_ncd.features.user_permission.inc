@@ -101,6 +101,16 @@ function hedley_ncd_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create ncd_lipid_panel_test content'.
+  $permissions['create ncd_lipid_panel_test content'] = array(
+    'name' => 'create ncd_lipid_panel_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create ncd_liver_function_test content'.
   $permissions['create ncd_liver_function_test content'] = array(
     'name' => 'create ncd_liver_function_test content',
@@ -292,6 +302,15 @@ function hedley_ncd_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any ncd_lipid_panel_test content'.
+  $permissions['delete any ncd_lipid_panel_test content'] = array(
+    'name' => 'delete any ncd_lipid_panel_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any ncd_liver_function_test content'.
   $permissions['delete any ncd_liver_function_test content'] = array(
     'name' => 'delete any ncd_liver_function_test content',
@@ -466,6 +485,15 @@ function hedley_ncd_user_default_permissions() {
   // Exported permission: 'delete own ncd_labs_results content'.
   $permissions['delete own ncd_labs_results content'] = array(
     'name' => 'delete own ncd_labs_results content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own ncd_lipid_panel_test content'.
+  $permissions['delete own ncd_lipid_panel_test content'] = array(
+    'name' => 'delete own ncd_lipid_panel_test content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -654,6 +682,16 @@ function hedley_ncd_user_default_permissions() {
   // Exported permission: 'edit any ncd_labs_results content'.
   $permissions['edit any ncd_labs_results content'] = array(
     'name' => 'edit any ncd_labs_results content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any ncd_lipid_panel_test content'.
+  $permissions['edit any ncd_lipid_panel_test content'] = array(
+    'name' => 'edit any ncd_lipid_panel_test content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -854,6 +892,16 @@ function hedley_ncd_user_default_permissions() {
   // Exported permission: 'edit own ncd_labs_results content'.
   $permissions['edit own ncd_labs_results content'] = array(
     'name' => 'edit own ncd_labs_results content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own ncd_lipid_panel_test content'.
+  $permissions['edit own ncd_lipid_panel_test content'] = array(
+    'name' => 'edit own ncd_lipid_panel_test content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

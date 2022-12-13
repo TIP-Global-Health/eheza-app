@@ -10,15 +10,22 @@ import Backend.NCDActivity.Utils exposing (getAllActivities)
 import Backend.NCDEncounter.Types exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
+import Date
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
-import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils
+    exposing
+        ( corePhysicalExamFormWithDefault
+        , isTestResultValid
+        , resolveLabTestDate
+        , vitalsFormWithDefault
+        )
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Model exposing (..)
@@ -790,28 +797,80 @@ outsideCareDiagnosesRightColumn =
 
 expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
 expectLaboratoryTask currentDate assembled task =
+    let
+        testsDates =
+            generatePreviousLaboratoryTestsDatesDict currentDate assembled
+
+        initialTestRequired test =
+            Dict.get test testsDates
+                |> Maybe.map List.isEmpty
+                |> Maybe.withDefault True
+
+        yearlyTestRequired test =
+            Dict.get test testsDates
+                |> Maybe.andThen
+                    (List.sortWith Date.compare
+                        >> List.reverse
+                        >> List.head
+                        >> Maybe.map (\lastTestDate -> diffMonths lastTestDate currentDate >= 12)
+                    )
+                |> Maybe.withDefault True
+    in
     case task of
         TaskRandomBloodSugarTest ->
             True
 
         TaskUrineDipstickTest ->
-            True
+            yearlyTestRequired TaskUrineDipstickTest
 
         TaskHIVTest ->
-            True
+            let
+                notKnownAsPositive =
+                    List.filter
+                        (.measurements
+                            >> .hivTest
+                            >> getMeasurementValueFunc
+                            >> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
+                            >> Maybe.withDefault False
+                        )
+                        assembled.previousEncountersData
+                        |> List.isEmpty
+            in
+            notKnownAsPositive && initialTestRequired TaskHIVTest
 
         TaskPregnancyTest ->
-            isPersonAFertileWoman currentDate assembled.person
+            initialTestRequired TaskPregnancyTest
 
         TaskCreatinineTest ->
-            True
+            yearlyTestRequired TaskCreatinineTest
 
         TaskLiverFunctionTest ->
-            True
+            yearlyTestRequired TaskLiverFunctionTest
 
         -- Others are not in use at NCD.
         _ ->
             False
+
+
+generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
+generatePreviousLaboratoryTestsDatesDict currentDate assembled =
+    let
+        generateTestDates getMeasurementFunc resultsExistFunc resultsValidFunc =
+            List.filterMap
+                (.measurements
+                    >> getMeasurementFunc
+                    >> resolveLabTestDate currentDate resultsExistFunc resultsValidFunc
+                )
+                assembled.previousEncountersData
+    in
+    [ ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) (always True) )
+    , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) (always True) )
+    , ( TaskHIVTest, generateTestDates .hivTest (always True) isTestResultValid )
+    , ( TaskPregnancyTest, generateTestDates .pregnancyTest (.testResult >> isJust) isTestResultValid )
+    , ( TaskCreatinineTest, generateTestDates .creatinineTest (.creatinineResult >> isJust) (always True) )
+    , ( TaskLiverFunctionTest, generateTestDates .liverFunctionTest (.altResult >> isJust) (always True) )
+    ]
+        |> Dict.fromList
 
 
 laboratoryTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool
