@@ -122,6 +122,7 @@ a {
 }
 
 .actions {
+  height: 63px;
   margin: 2.5rem -3rem -2.5rem -3rem;
 }
 
@@ -407,7 +408,8 @@ h3.ui.header {
   background-size: 122px 122px;
 }
 
-.icon-task-patient-provisions {
+.icon-task-patient-provisions,
+.icon-task-outside-care {
   background-image: url(#{$img-path}icon-task-patient-provisions.svg);
   background-size: 122px 122px;
 }

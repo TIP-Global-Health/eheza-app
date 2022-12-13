@@ -144,6 +144,7 @@ type alias Model =
     , familyPlanningData : FamilyPlanningData
     , medicalHistoryData : MedicalHistoryData
     , laboratoryData : LaboratoryData
+    , outsideCareData : OutsideCareData
     , nextStepsData : NextStepsData
     }
 
@@ -156,6 +157,7 @@ emptyModel =
     , familyPlanningData = emptyFamilyPlanningData
     , medicalHistoryData = emptyMedicalHistoryData
     , laboratoryData = emptyLaboratoryData
+    , outsideCareData = emptyOutsideCareData
     , nextStepsData = emptyNextStepsData
     }
 
@@ -236,7 +238,6 @@ type alias MedicalHistoryData =
     , medicationHistoryForm : MedicationHistoryForm
     , socialHistoryForm : SocialHistoryForm
     , outsideCareForm : OutsideCareForm MedicalCondition
-    , outsideCareStep : OutsideCareStep
     , activeTask : Maybe MedicalHistoryTask
     }
 
@@ -248,7 +249,6 @@ emptyMedicalHistoryData =
     , medicationHistoryForm = emptyMedicationHistoryForm
     , socialHistoryForm = emptySocialHistoryForm
     , outsideCareForm = emptyOutsideCareForm
-    , outsideCareStep = OutsideCareStepDiagnoses
     , activeTask = Nothing
     }
 
@@ -378,3 +378,16 @@ type alias HealthEducationForm =
 emptyHealthEducationForm : HealthEducationForm
 emptyHealthEducationForm =
     { hypertension = Nothing }
+
+
+type alias OutsideCareData =
+    { form : OutsideCareForm MedicalCondition
+    , step : OutsideCareStep
+    }
+
+
+emptyOutsideCareData : OutsideCareData
+emptyOutsideCareData =
+    { form = emptyOutsideCareForm
+    , step = OutsideCareStepDiagnoses
+    }

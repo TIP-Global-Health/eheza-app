@@ -1212,6 +1212,7 @@ outsideCareFormWithDefault form saved =
                 , syphilisMedications = or form.syphilisMedications syphilisMedications
                 , hivMedications = or form.hivMedications hivMedications
                 , anemiaMedications = or form.anemiaMedications anemiaMedications
+                , step = form.step
                 }
             )
 

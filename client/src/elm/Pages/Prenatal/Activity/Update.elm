@@ -642,9 +642,13 @@ update language currentDate id db msg model =
 
         SetOutsideCareStep step ->
             let
+                updatedForm =
+                    model.historyData.outsideCareForm
+                        |> (\form -> { form | step = step })
+
                 updatedData =
                     model.historyData
-                        |> (\data -> { data | outsideCareStep = step })
+                        |> (\data -> { data | outsideCareForm = updatedForm })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
