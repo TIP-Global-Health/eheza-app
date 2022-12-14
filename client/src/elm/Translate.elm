@@ -5143,7 +5143,7 @@ translationSet trans =
             }
 
         GotResultsPreviouslyQuestion ->
-            { english = "Has patiend perviously performed HBA1C test and got results"
+            { english = "Has patient previously performed HBA1C test and got results"
             , kinyarwanda = Nothing
             }
 
