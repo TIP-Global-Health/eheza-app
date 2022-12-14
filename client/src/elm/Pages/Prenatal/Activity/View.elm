@@ -3702,7 +3702,7 @@ viewLabsHistoryForm language currentDate assembled form =
                 |> div [ class "history-entries" ]
 
         input =
-            [ viewQuestionLabel language Translate.PrenatalLabsHistoryCompletedQuestion
+            [ viewQuestionLabel language Translate.LabsHistoryCompletedQuestion
             , viewBoolInput
                 language
                 form.completed
@@ -3732,8 +3732,8 @@ viewLabsHistoryForm language currentDate assembled form =
                 ]
     in
     ( div [ class "ui form laboratory labs-history" ] <|
-        [ viewCustomLabel language Translate.PrenatalLabsHistoryLabel "." "label"
-        , viewCustomLabel language Translate.PrenatalLabsHistoryInstructions "." "instructions"
+        [ viewCustomLabel language Translate.LabsHistoryCompletedQuestion "." "label"
+        , viewCustomLabel language Translate.LabsHistoryCompletedQuestion "." "instructions"
         ]
             ++ (entries :: input)
     , taskCompleted form.completed

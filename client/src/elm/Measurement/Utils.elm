@@ -3722,16 +3722,16 @@ bloodGpRsResultFormAndTasks language currentDate setBloodGroupMsg setRhesusMsg f
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             ( viewSelectInput language
-                Translate.PrenatalLaboratoryBloodGroupTestResult
+                Translate.LaboratoryBloodGroupTestResult
                 form.bloodGroup
-                Translate.PrenatalLaboratoryBloodGroup
+                Translate.LaboratoryBloodGroup
                 bloodGroupToString
                 [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
                 setBloodGroupMsg
                 ++ viewSelectInput language
-                    Translate.PrenatalLaboratoryRhesusTestResult
+                    Translate.LaboratoryRhesusTestResult
                     form.rhesus
-                    Translate.PrenatalLaboratoryRhesus
+                    Translate.LaboratoryRhesus
                     rhesusToString
                     [ RhesusPositive, RhesusNegative ]
                     setRhesusMsg
@@ -3769,9 +3769,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                     let
                         ( commonSection, commonTasksCompleted, commonTasksTotal ) =
                             ( viewSelectInput language
-                                Translate.PrenatalLaboratoryProteinTestResult
+                                Translate.LaboratoryProteinTestResult
                                 form.protein
-                                Translate.PrenatalLaboratoryProteinValue
+                                Translate.LaboratoryProteinValue
                                 proteinValueToString
                                 [ Protein0
                                 , ProteinPlus1
@@ -3781,9 +3781,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                 ]
                                 setProteinMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryPHTestResult
+                                    Translate.LaboratoryPHTestResult
                                     form.ph
-                                    Translate.PrenatalLaboratoryPHValue
+                                    Translate.LaboratoryPHValue
                                     phValueToString
                                     [ Ph40
                                     , Ph45
@@ -3797,9 +3797,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setPHMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryGlucoseTestResult
+                                    Translate.LaboratoryGlucoseTestResult
                                     form.glucose
-                                    Translate.PrenatalLaboratoryGlucoseValue
+                                    Translate.LaboratoryGlucoseValue
                                     glucoseValueToString
                                     [ Glucose0
                                     , GlucosePlus1
@@ -3819,9 +3819,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                         VariantLongTest ->
                             ( commonSection
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryLeukocytesTestResult
+                                    Translate.LaboratoryLeukocytesTestResult
                                     form.leukocytes
-                                    Translate.PrenatalLaboratoryLeukocytesValue
+                                    Translate.LaboratoryLeukocytesValue
                                     leukocytesValueToString
                                     [ LeukocytesNegative
                                     , LeukocytesSmall
@@ -3830,9 +3830,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setLeukocytesMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryNitriteTestResult
+                                    Translate.LaboratoryNitriteTestResult
                                     form.nitrite
-                                    Translate.PrenatalLaboratoryNitriteValue
+                                    Translate.LaboratoryNitriteValue
                                     nitriteValueToString
                                     [ NitriteNegative
                                     , NitritePlus
@@ -3840,9 +3840,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setNitriteMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryUrobilinogenTestResult
+                                    Translate.LaboratoryUrobilinogenTestResult
                                     form.urobilinogen
-                                    Translate.PrenatalLaboratoryUrobilinogenValue
+                                    Translate.LaboratoryUrobilinogenValue
                                     urobilinogenValueToString
                                     [ Urobilinogen002
                                     , Urobilinogen10
@@ -3852,9 +3852,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setUrobilinogenMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryHaemoglobinTestResult
+                                    Translate.LaboratoryHaemoglobinTestResult
                                     form.haemoglobin
-                                    Translate.PrenatalLaboratoryHaemoglobinValue
+                                    Translate.LaboratoryHaemoglobinValue
                                     haemoglobinValueToString
                                     [ HaemoglobinNegative
                                     , HaemoglobinNonHemolyzedTrace
@@ -3866,9 +3866,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setHaemoglobinMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryKetoneTestResult
+                                    Translate.LaboratoryKetoneTestResult
                                     form.ketone
-                                    Translate.PrenatalLaboratoryKetoneValue
+                                    Translate.LaboratoryKetoneValue
                                     ketoneValueToString
                                     [ KetoneNegative
                                     , Ketone5
@@ -3880,9 +3880,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setKetoneMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryBilirubinTestResult
+                                    Translate.LaboratoryBilirubinTestResult
                                     form.bilirubin
-                                    Translate.PrenatalLaboratoryBilirubinValue
+                                    Translate.LaboratoryBilirubinValue
                                     bilirubinValueToString
                                     [ BilirubinNegative
                                     , BilirubinSmall
@@ -3920,7 +3920,7 @@ hemoglobinResultFormAndTasks :
 hemoglobinResultFormAndTasks language currentDate setHemoglobinMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.PrenatalLaboratoryHemoglobinTestResult
+            ( [ viewLabel language Translate.LaboratoryHemoglobinTestResult
               , viewMeasurementInput language
                     form.hemoglobinCount
                     setHemoglobinMsg
@@ -3948,7 +3948,7 @@ randomBloodSugarResultFormAndTasks :
 randomBloodSugarResultFormAndTasks language currentDate setRandomBloodSugarMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.PrenatalLaboratoryRandomBloodSugarTestResult
+            ( [ viewLabel language Translate.LaboratoryRandomBloodSugarTestResult
               , viewMeasurementInput language
                     form.sugarCount
                     setRandomBloodSugarMsg
@@ -3980,7 +3980,7 @@ hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoad
             let
                 ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
                     if form.hivViralLoadStatus == Just ViralLoadDetectable then
-                        ( [ viewLabel language Translate.PrenatalLaboratoryHIVPCRTestResult
+                        ( [ viewLabel language Translate.LaboratoryHIVPCRTestResult
                           , viewMeasurementInput language
                                 form.hivViralLoad
                                 setHIVViralLoadMsg
@@ -3994,7 +3994,7 @@ hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoad
                     else
                         ( [], 0, 0 )
             in
-            ( [ viewQuestionLabel language Translate.PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
+            ( [ viewQuestionLabel language Translate.LaboratoryHIVPCRViralLoadStatusQuestion
               , viewBoolInput language
                     (Maybe.map ((==) ViralLoadUndetectable) form.hivViralLoadStatus)
                     setHIVViralLoadUndetectableMsg
