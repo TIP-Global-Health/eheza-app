@@ -1104,6 +1104,7 @@ type alias RandomBloodSugarTestValue encounterId =
 
 type TestPrerequisite
     = PrerequisiteFastFor12h
+    | PrerequisiteImmediateResult
     | NoTestPrerequisites
 
 

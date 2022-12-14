@@ -580,6 +580,9 @@ encodeTestPrerequisite value =
             PrerequisiteFastFor12h ->
                 "fasting-12h"
 
+            PrerequisiteImmediateResult ->
+                "immediate-result"
+
             NoTestPrerequisites ->
                 "none"
 

@@ -758,6 +758,7 @@ type alias RandomBloodSugarForm msg =
     { testPerformed : Maybe Bool
     , testPerformedDirty : Bool
     , patientFasted : Maybe Bool
+    , immediateResult : Maybe Bool
     , testPerformedToday : Maybe Bool
     , testPerformedTodayDirty : Bool
     , executionNote : Maybe TestExecutionNote
@@ -773,6 +774,7 @@ emptyRandomBloodSugarForm =
     { testPerformed = Nothing
     , testPerformedDirty = False
     , patientFasted = Nothing
+    , immediateResult = Nothing
     , testPerformedToday = Nothing
     , testPerformedTodayDirty = False
     , executionNote = Nothing

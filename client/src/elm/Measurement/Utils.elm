@@ -1813,10 +1813,15 @@ randomBloodSugarFormWithDefault form saved =
                     patientFastedValue =
                         Maybe.map (EverySet.member PrerequisiteFastFor12h)
                             value.testPrerequisites
+
+                    immediateResultValue =
+                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                            value.testPrerequisites
                 in
                 { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
                 , patientFasted = or form.patientFasted patientFastedValue
+                , immediateResult = or form.immediateResult immediateResultValue
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -1840,15 +1845,23 @@ toRandomBloodSugarTestValue form =
         (\executionNote ->
             let
                 testPrerequisites =
-                    Maybe.map
-                        (\patientFasted ->
-                            if patientFasted then
-                                EverySet.singleton PrerequisiteFastFor12h
+                    Maybe.map2
+                        (\patientFasted immediateResult ->
+                            case ( patientFasted, immediateResult ) of
+                                ( True, True ) ->
+                                    EverySet.fromList [ PrerequisiteFastFor12h, PrerequisiteImmediateResult ]
 
-                            else
-                                EverySet.singleton NoTestPrerequisites
+                                ( True, False ) ->
+                                    EverySet.singleton PrerequisiteFastFor12h
+
+                                ( False, True ) ->
+                                    EverySet.singleton PrerequisiteImmediateResult
+
+                                ( False, False ) ->
+                                    EverySet.singleton NoTestPrerequisites
                         )
                         form.patientFasted
+                        form.immediateResult
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
@@ -2355,16 +2368,27 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
                         contentAndTasksForPerformedLaboratoryTest language currentDate configPerformed TaskRandomBloodSugarTest form
 
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
+                        ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteImmediateResult
+                          , viewBoolInput
+                                language
+                                form.immediateResult
+                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg
+                                    (\value form_ -> { form_ | immediateResult = Just value })
+                                )
+                                "immediate-result"
+                                (Just ( Translate.PointOfCare, Translate.Lab ))
+                          , viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
                           , viewBoolInput
                                 language
                                 form.patientFasted
-                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg (\value form_ -> { form_ | patientFasted = Just value }))
+                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg
+                                    (\value form_ -> { form_ | patientFasted = Just value })
+                                )
                                 "patient-fasted"
                                 Nothing
                           ]
-                        , taskCompleted form.patientFasted
-                        , 1
+                        , taskCompleted form.patientFasted + taskCompleted form.immediateResult
+                        , 2
                         )
 
                     testResultSection =

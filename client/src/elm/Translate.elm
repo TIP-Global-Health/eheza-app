@@ -764,6 +764,7 @@ type TranslationId
     | LabelOnePregnancyEpisodeOpen
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
+    | Lab
     | LabHistory
     | LaboratoryBloodGroupLabel
     | LaboratoryBloodGroupTestResult
@@ -1106,6 +1107,7 @@ type TranslationId
     | PleaseContact
     | PleaseSelectGroup
     | PleaseSync
+    | PointOfCare
     | PositiveLabel
     | PostpartumEncounter
     | PostpartumHealingProblem PostpartumHealingProblem
@@ -6212,6 +6214,11 @@ translationSet trans =
             , kinyarwanda = Just "Ntabwo iherezo ry'inda ryanditswe"
             }
 
+        Lab ->
+            { english = "Lab"
+            , kinyarwanda = Nothing
+            }
+
         LabHistory ->
             { english = "Lab History"
             , kinyarwanda = Just "Amakuru ku bizamini byakozwe"
@@ -10622,6 +10629,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PointOfCare ->
+            { english = "Point of Care"
+            , kinyarwanda = Nothing
+            }
+
         PositiveLabel ->
             { english = "Positive"
             , kinyarwanda = Just "Afite ubwandu"
@@ -13507,6 +13519,11 @@ translationSet trans =
                 PrerequisiteFastFor12h ->
                     { english = "Was this test performed before a meal"
                     , kinyarwanda = Just "Umurwayi yafatiwe iki kizamini mbere yo kurya"
+                    }
+
+                PrerequisiteImmediateResult ->
+                    { english = "Where is this test performed"
+                    , kinyarwanda = Nothing
                     }
 
                 NoTestPrerequisites ->
