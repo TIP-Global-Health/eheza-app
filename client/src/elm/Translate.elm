@@ -6815,7 +6815,7 @@ translationSet trans =
                     }
 
                 LabResultsHbA1c _ ->
-                    { english = "Bellow 6%"
+                    { english = "Below 6%"
                     , kinyarwanda = Nothing
                     }
 
