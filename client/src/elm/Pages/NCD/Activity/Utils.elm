@@ -848,8 +848,7 @@ expectLaboratoryTask currentDate assembled task =
             recurrentTestRequired 12 TaskLiverFunctionTest
 
         TaskLipidPanelTest ->
-            -- recurrentTestRequired 12 TaskLiverFunctionTest
-            True
+            recurrentTestRequired 12 TaskLiverFunctionTest
 
         TaskHbA1cTest ->
             recurrentTestRequired 6 TaskHbA1cTest
