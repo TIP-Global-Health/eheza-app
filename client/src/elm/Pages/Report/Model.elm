@@ -14,6 +14,7 @@ type alias LabsResultsDisplayConfig =
     , creatinine : Bool
     , liverFunction : Bool
     , pregnancy : Bool
+    , hba1c : Bool
     }
 
 
@@ -30,6 +31,7 @@ type alias LabsResultsValues encounterId =
     , creatinine : List Backend.Measurement.Model.CreatinineTestValue
     , liverFunction : List Backend.Measurement.Model.LiverFunctionTestValue
     , pregnancy : List Backend.Measurement.Model.PregnancyTestValue
+    , hba1c : List Backend.Measurement.Model.HbA1cTestValue
     }
 
 
@@ -68,6 +70,7 @@ type LabResultsHistoryMode
     | LabResultsHistoryALT (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryAST (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryPregnancy (List ( NominalDate, Maybe TestReport ))
+    | LabResultsHbA1c (List ( NominalDate, Maybe Float ))
 
 
 type TestReport

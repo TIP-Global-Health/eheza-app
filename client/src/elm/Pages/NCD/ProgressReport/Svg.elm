@@ -1,4 +1,4 @@
-module Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewMarkers)
+module Pages.NCD.ProgressReport.Svg exposing (..)
 
 import Html exposing (Html)
 import Svg exposing (..)
@@ -179,6 +179,55 @@ viewBloodGlucoseByTime language points =
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.left - 21.5 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.right + 7.5 |> String.fromFloat)
+          )
+            |> g []
+        , referenceHorizontalLines 13 ++ referenceHorizontalNumbers 13 0 1 |> g []
+        ]
+
+
+viewHbA1cByTime : Language -> List Float -> Html any
+viewHbA1cByTime language points =
+    let
+        verticalParts =
+            14
+
+        verticalMin =
+            0
+
+        verticalMax =
+            14
+
+        verticalStep =
+            heightPx / toFloat (verticalMax - verticalMin)
+
+        horizontalMin =
+            0
+
+        horizontalMax =
+            13
+
+        horizontalStep =
+            widthPx / toFloat (horizontalMax - horizontalMin)
+
+        measurements =
+            measurementsByTime verticalMin verticalMax verticalStep horizontalStep points
+    in
+    svg
+        [ class "chart"
+        , x "0px"
+        , y "0px"
+        , viewBox "25 25 841.9 595.3"
+        ]
+        [ frame
+        , g []
+            [ horizontalLabel language
+            , verticalLabel language Translate.HbA1cPercentage
+            ]
+        , g []
+            [ drawPolyline measurements "data red" ]
+        , (referenceVerticalLines verticalParts
+            ++ referenceVerticalNumbers verticalParts verticalMin 1 (dimensionsPx.left - 21.5 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 1 (dimensionsPx.right + 7.5 |> String.fromFloat)
           )
             |> g []
         , referenceHorizontalLines 13 ++ referenceHorizontalNumbers 13 0 1 |> g []

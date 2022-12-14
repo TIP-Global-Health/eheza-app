@@ -37,7 +37,7 @@ import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
 import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.ProgressReport.Model exposing (..)
-import Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewMarkers)
+import Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewHbA1cByTime, viewMarkers)
 import Pages.NCD.Utils
     exposing
         ( allRecommendedTreatmentSignsForHypertension
@@ -192,6 +192,7 @@ viewContent language currentDate initiator db model assembled =
                                     , creatinine = True
                                     , liverFunction = True
                                     , pregnancy = expectLaboratoryTask currentDate assembled TaskPregnancyTest
+                                    , hba1c = True
                                     }
                             in
                             [ generateLabsResultsPaneData currentDate assembled
@@ -632,6 +633,23 @@ viewPatientProgressPane language currentDate assembled =
                 |> Maybe.Extra.values
                 |> List.take 12
                 |> List.reverse
+
+        hba1cMeasurements =
+            List.map
+                (.hba1cTest >> getMeasurementValueFunc)
+                allMeasurements
+                |> Maybe.Extra.values
+                |> List.filterMap
+                    (\value ->
+                        Maybe.map2 Tuple.pair
+                            value.executionDate
+                            value.hba1cResult
+                    )
+                -- We do this to have a unique value for each date.
+                |> Dict.fromList
+                |> Dict.values
+                |> List.take 12
+                |> List.reverse
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -644,6 +662,10 @@ viewPatientProgressPane language currentDate assembled =
             , div [ class "chart-section" ]
                 [ div [ class "heading" ] [ text <| translate language Translate.BloodGlucose ]
                 , viewBloodGlucoseByTime language sugarCountMeasurements
+                ]
+            , div [ class "chart-section" ]
+                [ div [ class "heading" ] [ text <| translate language Translate.HbA1c ]
+                , viewHbA1cByTime language hba1cMeasurements
                 ]
             ]
         ]
@@ -747,4 +769,5 @@ generateLabsResultsPaneData currentDate assembled =
     , creatinine = extractValues .creatinineTest
     , liverFunction = extractValues .liverFunctionTest
     , pregnancy = extractValues .pregnancyTest
+    , hba1c = extractValues .hba1cTest
     }

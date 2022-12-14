@@ -373,7 +373,7 @@ nonAdministrationReasonToSign sign reason =
         VitaminA ->
             MedicationVitaminA reason
 
-        -- Bellow are not in use, but we specify them explicitly to make
+        -- Below are not in use, but we specify them explicitly to make
         -- sure that compile arets if we forget to address new
         -- MedicationDistributionSign, when added.
         Albendazole ->

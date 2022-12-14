@@ -679,6 +679,8 @@ type TranslationId
     | HandPallor
     | Hands
     | HandsCPESign HandsCPESign
+    | HbA1c
+    | HbA1cPercentage
     | HbA1cMostRecentTestResultInstruction
     | HCRecommendation HCRecommendation
     | HCResponseQuestion
@@ -5252,6 +5254,16 @@ translationSet trans =
                 NormalHands ->
                     translationSet Normal
 
+        HbA1c ->
+            { english = "HBA1c"
+            , kinyarwanda = Nothing
+            }
+
+        HbA1cPercentage ->
+            { english = "Percentage (%)"
+            , kinyarwanda = Nothing
+            }
+
         HbA1cMostRecentTestResultInstruction ->
             { english = "Please input the most recent HBA1C test result"
             , kinyarwanda = Nothing
@@ -6687,6 +6699,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                LabResultsHbA1c _ ->
+                    { english = "HBA1C"
+                    , kinyarwanda = Nothing
+                    }
+
         LabResultsNormalRange mode ->
             case mode of
                 LabResultsHistoryHIV _ ->
@@ -6802,6 +6819,11 @@ translationSet trans =
                 LabResultsHistoryPregnancy _ ->
                     { english = "Negative"
                     , kinyarwanda = Just "Nta bwandu afite"
+                    }
+
+                LabResultsHbA1c _ ->
+                    { english = "Below 6%"
+                    , kinyarwanda = Nothing
                     }
 
         LabResultsPaneHeader mode ->
