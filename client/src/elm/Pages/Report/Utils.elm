@@ -128,6 +128,26 @@ hba1cResultNormal value =
     value < 6
 
 
+totalCholesterolResultNormal : Float -> Bool
+totalCholesterolResultNormal value =
+    value < 200
+
+
+ldlCholesterolResultNormal : Float -> Bool
+ldlCholesterolResultNormal value =
+    value >= 130 && value <= 160
+
+
+hdlCholesterolResultNormal : Float -> Bool
+hdlCholesterolResultNormal value =
+    value >= 40 && value <= 60
+
+
+triglyceridesResultNormal : Float -> Bool
+triglyceridesResultNormal value =
+    value >= 54 && value <= 150
+
+
 testReportNormal : TestReport -> Bool
 testReportNormal report =
     case report of

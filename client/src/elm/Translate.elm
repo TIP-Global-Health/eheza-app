@@ -6699,8 +6699,28 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                LabResultsHbA1c _ ->
+                LabResultsHistoryHbA1c _ ->
                     { english = "HBA1C"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryTotalCholesterol _ ->
+                    { english = "Total Cholesterol"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryLDLCholesterol _ ->
+                    { english = "LDL Cholesterol"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHDLCholesterol _ ->
+                    { english = "HDL Cholesterol"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryTriglycerides _ ->
+                    { english = "Triglycerides"
                     , kinyarwanda = Nothing
                     }
 
@@ -6821,8 +6841,28 @@ translationSet trans =
                     , kinyarwanda = Just "Nta bwandu afite"
                     }
 
-                LabResultsHbA1c _ ->
+                LabResultsHistoryHbA1c _ ->
                     { english = "Below 6%"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryTotalCholesterol _ ->
+                    { english = "Below 200 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryLDLCholesterol _ ->
+                    { english = "130-160 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHDLCholesterol _ ->
+                    { english = "40-60 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryTriglycerides _ ->
+                    { english = "54-150 mg/dL"
                     , kinyarwanda = Nothing
                     }
 

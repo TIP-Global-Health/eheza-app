@@ -227,6 +227,7 @@ viewContent language currentDate isChw initiator model assembled =
                                     , liverFunction = False
                                     , pregnancy = False
                                     , hba1c = False
+                                    , lipidPanel = False
                                     }
                             in
                             [ generateLabsResultsPaneData currentDate assembled
@@ -1368,6 +1369,7 @@ generateLabsResultsPaneData currentDate assembled =
     , liverFunction = []
     , pregnancy = []
     , hba1c = []
+    , lipidPanel = []
     }
 
 

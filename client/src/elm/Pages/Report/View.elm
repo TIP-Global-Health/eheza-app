@@ -394,7 +394,7 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                             |> Maybe.withDefault True
                     }
 
-                LabResultsHbA1c assembled ->
+                LabResultsHistoryHbA1c assembled ->
                     let
                         recentResultValue =
                             List.head assembled |> Maybe.andThen Tuple.second
@@ -678,7 +678,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                         |> showIf displayConfig.liverFunction
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryPregnancy pregnancyTestResults)
                         |> showIf displayConfig.pregnancy
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHbA1c hba1cResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHbA1c hba1cResults)
                         |> showIf displayConfig.hba1c
                     ]
 
@@ -929,7 +929,7 @@ viewLabResultsHistoryPane language currentDate mode =
                 LabResultsHistoryPregnancy assembled ->
                     List.map (viewEntry (translateTestReport language) pregnancyResultNormal) assembled
 
-                LabResultsHbA1c assembled ->
+                LabResultsHistoryHbA1c assembled ->
                     List.map (viewEntry String.fromFloat hba1cResultNormal) assembled
 
         viewEntry resultToStringFunc resultNormalFunc ( date, maybeResult ) =
