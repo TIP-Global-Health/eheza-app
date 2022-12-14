@@ -2551,6 +2551,23 @@ update language currentDate id db msg model =
             , []
             )
 
+        SetRandomBloodSugarResult value ->
+            let
+                form =
+                    model.laboratoryData.randomBloodSugarTestForm
+
+                updatedForm =
+                    { form | sugarCount = String.toFloat value, sugarCountDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveRandomBloodSugarTest personId saved nextTask ->
             let
                 measurementId =

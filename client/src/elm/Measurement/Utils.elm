@@ -1829,6 +1829,8 @@ randomBloodSugarFormWithDefault form saved =
                 , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
                 , executionDateDirty = form.executionDateDirty
                 , dateSelectorPopupState = form.dateSelectorPopupState
+                , sugarCount = maybeValueConsideringIsDirtyField form.sugarCountDirty form.sugarCount value.sugarCount
+                , sugarCountDirty = form.sugarCountDirty
                 }
             )
 
@@ -1866,7 +1868,7 @@ toRandomBloodSugarTestValue form =
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisites
-            , sugarCount = Nothing
+            , sugarCount = form.sugarCount
             , originatingEncounter = Nothing
             }
         )
@@ -2373,7 +2375,13 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
                                 language
                                 form.immediateResult
                                 (configInitial.setRandomBloodSugarTestFormBoolInputMsg
-                                    (\value form_ -> { form_ | immediateResult = Just value })
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , sugarCount = Nothing
+                                            , sugarCountDirty = True
+                                        }
+                                    )
                                 )
                                 "immediate-result"
                                 (Just ( Translate.PointOfCare, Translate.Lab ))
@@ -2391,20 +2399,31 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
                         , 2
                         )
 
-                    testResultSection =
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
-                            []
+                            emptySection
+
+                        else if form.immediateResult == Just True then
+                            randomBloodSugarResultInputAndTask language
+                                configPerformed.setRandomBloodSugarResultMsg
+                                form.sugarCount
 
                         else
-                            [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                            ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                            , 0
+                            , 0
+                            )
                 in
                 ( testPrerequisitesSection ++ performedTestSection ++ testResultSection
-                , performedTestTasksCompleted + testPrerequisitesTasksCompleted
-                , performedTestTasksTotal + testPrerequisitesTasksTotal
+                , performedTestTasksCompleted + testPrerequisitesTasksCompleted + testResultTasksCompleted
+                , performedTestTasksTotal + testPrerequisitesTasksTotal + testResultTasksTotal
                 )
 
             else
-                ( [], 0, 0 )
+                emptySection
+
+        emptySection =
+            ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
         [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
@@ -2715,7 +2734,25 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     }
 
                 TaskRandomBloodSugarTest ->
-                    { setBoolInputMsg = config.setRandomBloodSugarTestFormBoolInputMsg boolInputUpdateFunc
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedDirty = True
+                                    , testPerformedToday = Nothing
+                                    , testPerformedTodayDirty = True
+                                    , patientFasted = Nothing
+                                    , immediateResult = Nothing
+                                    , executionNote = Nothing
+                                    , executionNoteDirty = True
+                                    , executionDate = Nothing
+                                    , executionDateDirty = True
+                                    , sugarCount = Nothing
+                                    , sugarCountDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setRandomBloodSugarTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setRandomBloodSugarTestExecutionNoteMsg
                     }
 
@@ -3119,6 +3156,7 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
     , setRandomBloodSugarTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setRandomBloodSugarTestExecutionDateMsg = always noOpMsg
     , setRandomBloodSugarTestDateSelectorStateMsg = always noOpMsg
+    , setRandomBloodSugarResultMsg = always noOpMsg
     , setHIVPCRTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setHIVPCRTestExecutionDateMsg = always noOpMsg
     , setHIVPCRTestDateSelectorStateMsg = always noOpMsg
@@ -3972,22 +4010,31 @@ randomBloodSugarResultFormAndTasks :
 randomBloodSugarResultFormAndTasks language currentDate setRandomBloodSugarMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.LaboratoryRandomBloodSugarTestResult
-              , viewMeasurementInput language
-                    form.sugarCount
-                    setRandomBloodSugarMsg
-                    "sugar-count"
-                    Translate.UnitMilliGramsPerDeciliter
-              ]
-            , taskCompleted form.sugarCount
-            , 1
-            )
+            randomBloodSugarResultInputAndTask language setRandomBloodSugarMsg form.sugarCount
     in
     ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal
+    )
+
+
+randomBloodSugarResultInputAndTask :
+    Language
+    -> (String -> msg)
+    -> Maybe Float
+    -> ( List (Html msg), Int, Int )
+randomBloodSugarResultInputAndTask language setRandomBloodSugarMsg sugarCount =
+    ( [ viewLabel language Translate.LaboratoryRandomBloodSugarTestResult
+      , viewMeasurementInput language
+            sugarCount
+            setRandomBloodSugarMsg
+            "sugar-count"
+            Translate.UnitMilliGramsPerDeciliter
+      ]
+    , taskCompleted sugarCount
+    , 1
     )
 
 

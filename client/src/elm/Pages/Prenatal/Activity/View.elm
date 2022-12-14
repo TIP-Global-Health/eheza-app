@@ -3687,6 +3687,7 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
                     , setRandomBloodSugarTestExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
                     , setRandomBloodSugarTestDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                    , setRandomBloodSugarResultMsg = SetRandomBloodSugarResult
                     , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
                     , setHIVPCRTestExecutionDateMsg = SetHIVPCRTestExecutionDate
                     , setHIVPCRTestDateSelectorStateMsg = SetHIVPCRTestDateSelectorState

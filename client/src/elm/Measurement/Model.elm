@@ -646,6 +646,7 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
     , setRandomBloodSugarTestExecutionDateMsg : NominalDate -> msg
     , setRandomBloodSugarTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setRandomBloodSugarResultMsg : String -> msg
     , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setHIVPCRTestExecutionDateMsg : NominalDate -> msg
     , setHIVPCRTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
@@ -766,6 +767,8 @@ type alias RandomBloodSugarForm msg =
     , executionDate : Maybe NominalDate
     , executionDateDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    , sugarCount : Maybe Float
+    , sugarCountDirty : Bool
     }
 
 
@@ -782,6 +785,11 @@ emptyRandomBloodSugarForm =
     , executionDate = Nothing
     , executionDateDirty = False
     , dateSelectorPopupState = Nothing
+
+    -- We need this, since RandomBloodSugar result can be
+    -- entered both  immediately, and from case management.
+    , sugarCount = Nothing
+    , sugarCountDirty = False
     }
 
 
