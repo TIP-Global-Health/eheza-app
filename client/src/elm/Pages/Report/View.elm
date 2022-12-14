@@ -845,13 +845,13 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                                 else
                                     translate language Translate.Abnormal
                         in
-                        viewConsolidatedEntry (Translate.PrenatalUrineDipstickTestLabel VariantShortTest)
+                        viewConsolidatedEntry (Translate.UrineDipstickTestLabel VariantShortTest)
                             (formatDDMMYYYY date)
                             result
                             (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickShort)
                             resultsNormal
                     )
-                |> Maybe.withDefault (emptyConsolidatedEntry (Translate.PrenatalUrineDipstickTestLabel VariantShortTest))
+                |> Maybe.withDefault (emptyConsolidatedEntry (Translate.UrineDipstickTestLabel VariantShortTest))
 
         dipstickLongEntry =
             List.head leukocytesResults
@@ -911,13 +911,13 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                                 else
                                     translate language Translate.Abnormal
                         in
-                        viewConsolidatedEntry (Translate.PrenatalUrineDipstickTestLabel VariantLongTest)
+                        viewConsolidatedEntry (Translate.UrineDipstickTestLabel VariantLongTest)
                             (formatDDMMYYYY date)
                             result
                             (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickLong)
                             resultsNormal
                     )
-                |> Maybe.withDefault (emptyConsolidatedEntry (Translate.PrenatalUrineDipstickTestLabel VariantLongTest))
+                |> Maybe.withDefault (emptyConsolidatedEntry (Translate.UrineDipstickTestLabel VariantLongTest))
 
         lipidPanelEntry =
             List.head totalCholesterolResults

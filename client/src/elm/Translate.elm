@@ -1174,8 +1174,6 @@ type TranslationId
     | PrenatalSymptomQuestionsHeader
     | TestExecutionNote TestExecutionNote
     | TestResult TestResult
-    | PrenatalUrineDipstickTestLabel TestVariant
-    | PrenatalUrineDipstickTestVariant TestVariant
     | PrenatalVaccineLabel PrenatalVaccineType
     | PreTerm
     | PregnancyConcludedLabel
@@ -1458,6 +1456,8 @@ type TranslationId
     | Update
     | UpdateError
     | Uploading
+    | UrineDipstickTestLabel TestVariant
+    | UrineDipstickTestVariant TestVariant
     | UrinaryTractInfectionRecommendedTreatmentHeader
     | UrinaryTractInfectionRecommendedTreatmentHelper
     | UrinaryTractInfectionRecommendedTreatmentInstructions
@@ -13334,30 +13334,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ntibisobanutse"
                     }
 
-        PrenatalUrineDipstickTestLabel variant ->
-            case variant of
-                VariantShortTest ->
-                    { english = "Urine Dipstick Short"
-                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo bike"
-                    }
-
-                VariantLongTest ->
-                    { english = "Urine Dipstick Long"
-                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo byinshi"
-                    }
-
-        PrenatalUrineDipstickTestVariant variant ->
-            case variant of
-                VariantShortTest ->
-                    { english = "Short Dip"
-                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo bike"
-                    }
-
-                VariantLongTest ->
-                    { english = "Long Dip"
-                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo byinshi"
-                    }
-
         PrenatalVaccineLabel value ->
             case value of
                 VaccineTetanus ->
@@ -16055,6 +16031,30 @@ translationSet trans =
             { english = "Uploading"
             , kinyarwanda = Nothing
             }
+
+        UrineDipstickTestLabel variant ->
+            case variant of
+                VariantShortTest ->
+                    { english = "Urine Dipstick Short"
+                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo bike"
+                    }
+
+                VariantLongTest ->
+                    { english = "Urine Dipstick Long"
+                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo byinshi"
+                    }
+
+        UrineDipstickTestVariant variant ->
+            case variant of
+                VariantShortTest ->
+                    { english = "Short Dip"
+                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo bike"
+                    }
+
+                VariantLongTest ->
+                    { english = "Long Dip"
+                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo byinshi"
+                    }
 
         UrinaryTractInfectionRecommendedTreatmentHeader ->
             { english = "This patient shows signs of Urinary Tract Infection"

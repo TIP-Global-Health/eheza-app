@@ -2305,7 +2305,7 @@ viewUrineDipstickForm language currentDate configInitial configPerformed form =
                                 [ VariantLongTest ]
                                 form.testVariant
                                 configInitial.setUrineDipstickTestVariantMsg
-                                Translate.PrenatalUrineDipstickTestVariant
+                                Translate.UrineDipstickTestVariant
                           ]
                         , taskCompleted form.testVariant
                         , 1
