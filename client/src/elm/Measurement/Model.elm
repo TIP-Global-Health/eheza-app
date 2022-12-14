@@ -1057,9 +1057,13 @@ type alias LipidPanelResultForm =
     , executionDate : Maybe NominalDate
     , unitOfMeasurement : Maybe UnitOfMeasurement
     , totalCholesterolResult : Maybe Float
+    , totalCholesterolResultDirty : Bool
     , ldlCholesterolResult : Maybe Float
+    , ldlCholesterolResultDirty : Bool
     , hdlCholesterolResult : Maybe Float
+    , hdlCholesterolResultDirty : Bool
     , triglyceridesResult : Maybe Float
+    , triglyceridesResultDirty : Bool
     }
 
 
@@ -1069,9 +1073,13 @@ emptyLipidPanelResultForm =
     , executionDate = Nothing
     , unitOfMeasurement = Nothing
     , totalCholesterolResult = Nothing
+    , totalCholesterolResultDirty = False
     , ldlCholesterolResult = Nothing
+    , ldlCholesterolResultDirty = False
     , hdlCholesterolResult = Nothing
+    , hdlCholesterolResultDirty = False
     , triglyceridesResult = Nothing
+    , triglyceridesResultDirty = False
     }
 
 

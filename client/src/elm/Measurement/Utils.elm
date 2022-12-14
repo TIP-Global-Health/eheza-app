@@ -52,6 +52,7 @@ import Pages.Utils
         , viewMeasurementInput
         , viewQuestionLabel
         )
+import Round
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
@@ -3490,13 +3491,46 @@ lipidPanelResultFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    unitOfMeasurement =
+                        or form.unitOfMeasurement value.unitOfMeasurement
+
+                    resultByValue ratio maybeResult =
+                        Maybe.map2
+                            (\result unit ->
+                                case unit of
+                                    UnitMmolL ->
+                                        Round.roundNum 2 (result / ratio)
+
+                                    UnitMgdL ->
+                                        Round.roundNum 0 result
+                            )
+                            maybeResult
+                            unitOfMeasurement
+                in
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
-                , unitOfMeasurement = or form.unitOfMeasurement value.unitOfMeasurement
-                , totalCholesterolResult = or form.totalCholesterolResult value.totalCholesterolResult
-                , ldlCholesterolResult = or form.ldlCholesterolResult value.ldlCholesterolResult
-                , hdlCholesterolResult = or form.hdlCholesterolResult value.hdlCholesterolResult
-                , triglyceridesResult = or form.triglyceridesResult value.triglyceridesResult
+                , unitOfMeasurement = unitOfMeasurement
+                , totalCholesterolResult =
+                    maybeValueConsideringIsDirtyField form.totalCholesterolResultDirty
+                        form.totalCholesterolResult
+                        (resultByValue cholesterolMmolLToMgdLRatio value.totalCholesterolResult)
+                , totalCholesterolResultDirty = form.totalCholesterolResultDirty
+                , ldlCholesterolResult =
+                    maybeValueConsideringIsDirtyField form.ldlCholesterolResultDirty
+                        form.ldlCholesterolResult
+                        (resultByValue cholesterolMmolLToMgdLRatio value.ldlCholesterolResult)
+                , ldlCholesterolResultDirty = form.ldlCholesterolResultDirty
+                , hdlCholesterolResult =
+                    maybeValueConsideringIsDirtyField form.hdlCholesterolResultDirty
+                        form.hdlCholesterolResult
+                        (resultByValue cholesterolMmolLToMgdLRatio value.hdlCholesterolResult)
+                , hdlCholesterolResultDirty = form.hdlCholesterolResultDirty
+                , triglyceridesResult =
+                    maybeValueConsideringIsDirtyField form.triglyceridesResultDirty
+                        form.triglyceridesResult
+                        (resultByValue triglyceridesMmolLToMgdLRatio value.triglyceridesResult)
+                , triglyceridesResultDirty = form.triglyceridesResultDirty
                 }
             )
 
@@ -3511,16 +3545,40 @@ toLipidPanelResultsValue : LipidPanelResultForm -> Maybe LipidPanelTestValue
 toLipidPanelResultsValue form =
     Maybe.map
         (\executionNote ->
+            let
+                resultForBackend ratio maybeResult =
+                    Maybe.map2
+                        (\unitOfMeasurement result ->
+                            case unitOfMeasurement of
+                                UnitMmolL ->
+                                    Round.roundNum 0 (result * ratio)
+
+                                UnitMgdL ->
+                                    result
+                        )
+                        form.unitOfMeasurement
+                        maybeResult
+            in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , unitOfMeasurement = form.unitOfMeasurement
-            , totalCholesterolResult = form.totalCholesterolResult
-            , ldlCholesterolResult = form.ldlCholesterolResult
-            , hdlCholesterolResult = form.hdlCholesterolResult
-            , triglyceridesResult = form.triglyceridesResult
+            , totalCholesterolResult = resultForBackend cholesterolMmolLToMgdLRatio form.totalCholesterolResult
+            , ldlCholesterolResult = resultForBackend cholesterolMmolLToMgdLRatio form.ldlCholesterolResult
+            , hdlCholesterolResult = resultForBackend cholesterolMmolLToMgdLRatio form.hdlCholesterolResult
+            , triglyceridesResult = resultForBackend triglyceridesMmolLToMgdLRatio form.triglyceridesResult
             }
         )
         form.executionNote
+
+
+cholesterolMmolLToMgdLRatio : Float
+cholesterolMmolLToMgdLRatio =
+    33.67
+
+
+triglyceridesMmolLToMgdLRatio : Float
+triglyceridesMmolLToMgdLRatio =
+    88.57
 
 
 hba1cTestFormWithDefault : HbA1cTestForm msg -> Maybe HbA1cTestValue -> HbA1cTestForm msg

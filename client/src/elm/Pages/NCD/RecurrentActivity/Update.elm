@@ -468,7 +468,17 @@ update currentDate id db msg model =
                     model.labResultsData.lipidPanelTestForm
 
                 updatedForm =
-                    { form | unitOfMeasurement = unitOfMeasurementFromString value }
+                    { form
+                        | unitOfMeasurement = unitOfMeasurementFromString value
+                        , totalCholesterolResult = Nothing
+                        , totalCholesterolResultDirty = True
+                        , ldlCholesterolResult = Nothing
+                        , ldlCholesterolResultDirty = True
+                        , hdlCholesterolResult = Nothing
+                        , hdlCholesterolResultDirty = True
+                        , triglyceridesResult = Nothing
+                        , triglyceridesResultDirty = True
+                    }
 
                 updatedData =
                     model.labResultsData
@@ -485,7 +495,7 @@ update currentDate id db msg model =
                     model.labResultsData.lipidPanelTestForm
 
                 updatedForm =
-                    { form | totalCholesterolResult = String.toFloat value }
+                    { form | totalCholesterolResult = String.toFloat value, totalCholesterolResultDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -502,7 +512,7 @@ update currentDate id db msg model =
                     model.labResultsData.lipidPanelTestForm
 
                 updatedForm =
-                    { form | ldlCholesterolResult = String.toFloat value }
+                    { form | ldlCholesterolResult = String.toFloat value, ldlCholesterolResultDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -519,7 +529,7 @@ update currentDate id db msg model =
                     model.labResultsData.lipidPanelTestForm
 
                 updatedForm =
-                    { form | hdlCholesterolResult = String.toFloat value }
+                    { form | hdlCholesterolResult = String.toFloat value, hdlCholesterolResultDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -536,7 +546,7 @@ update currentDate id db msg model =
                     model.labResultsData.lipidPanelTestForm
 
                 updatedForm =
-                    { form | triglyceridesResult = String.toFloat value }
+                    { form | triglyceridesResult = String.toFloat value, triglyceridesResultDirty = True }
 
                 updatedData =
                     model.labResultsData
