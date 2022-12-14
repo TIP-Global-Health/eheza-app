@@ -138,9 +138,11 @@ viewHeader language initiator model =
                                 LabResultsCurrentDipstickLong ->
                                     backToCurrentMsg LabResultsCurrentMain
 
+                                LabResultsCurrentLipidPanel ->
+                                    backToCurrentMsg LabResultsCurrentMain
+
                         LabResultsHistory historyMode ->
-                            Maybe.withDefault LabResultsCurrentMain model.labResultsHistoryOrigin
-                                |> backToCurrentMsg
+                            SetLabResultsMode model.labResultsHistoryOrigin
 
                 goBackActionByDiagnosisMode defaultAction =
                     case model.diagnosisMode of

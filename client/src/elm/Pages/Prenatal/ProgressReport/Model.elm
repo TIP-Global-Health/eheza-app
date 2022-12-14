@@ -10,7 +10,7 @@ import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistory
 
 type alias Model =
     { labResultsMode : Maybe LabResultsMode
-    , labResultsHistoryOrigin : Maybe LabResultsCurrentMode
+    , labResultsHistoryOrigin : Maybe LabResultsMode
     , showEndEncounterDialog : Bool
     }
 

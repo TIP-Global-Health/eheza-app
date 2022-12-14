@@ -4101,25 +4101,25 @@ lipidPanelResultFormAndTasks language currentDate setUnitOfMeasurementMsg setTot
                 ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
                     Maybe.map
                         (\unitOfMeasurement ->
-                            ( [ viewLabel language Translate.LaboratoryLipidPanelTotalCholesterolResult
+                            ( [ viewLabel language Translate.LaboratoryLipidPanelTotalCholesterolLabel
                               , viewMeasurementInput language
                                     form.totalCholesterolResult
                                     setTotalCholesterolResultMsg
                                     "total-cholesterol"
                                     (Translate.UnitOfMeasurement unitOfMeasurement)
-                              , viewLabel language Translate.LaboratoryLipidPanelLDLCholesterolResult
+                              , viewLabel language Translate.LaboratoryLipidPanelLDLCholesterolLabel
                               , viewMeasurementInput language
                                     form.ldlCholesterolResult
                                     setLDLCholesterolResultMsg
                                     "ldl"
                                     (Translate.UnitOfMeasurement unitOfMeasurement)
-                              , viewLabel language Translate.LaboratoryLipidPanelHDLCholesterolResult
+                              , viewLabel language Translate.LaboratoryLipidPanelHDLCholesterolLabel
                               , viewMeasurementInput language
                                     form.hdlCholesterolResult
                                     setHDLCholesterolResultMsg
                                     "hdl"
                                     (Translate.UnitOfMeasurement unitOfMeasurement)
-                              , viewLabel language Translate.LaboratoryLipidPanelTriglyceridesResult
+                              , viewLabel language Translate.LaboratoryLipidPanelTriglyceridesLabel
                               , viewMeasurementInput language
                                     form.triglyceridesResult
                                     setTriglyceridesResultMsg

@@ -815,10 +815,10 @@ type TranslationId
     | LaboratoryCreatinineCreatinineResult
     | LaboratoryCreatinineBUNResult
     | LaboratoryLipidPanelUnitOfMeasurementQuestion
-    | LaboratoryLipidPanelTotalCholesterolResult
-    | LaboratoryLipidPanelLDLCholesterolResult
-    | LaboratoryLipidPanelHDLCholesterolResult
-    | LaboratoryLipidPanelTriglyceridesResult
+    | LaboratoryLipidPanelTotalCholesterolLabel
+    | LaboratoryLipidPanelLDLCholesterolLabel
+    | LaboratoryLipidPanelHDLCholesterolLabel
+    | LaboratoryLipidPanelTriglyceridesLabel
     | LaboratoryLiverFunctionAltResult
     | LaboratoryLiverFunctionAstResult
     | LaboratoryTask LaboratoryTask
@@ -843,6 +843,7 @@ type TranslationId
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LinkToMother
+    | LipidPanel
     | LiveChildren
     | LmpDateConfirmationLabel
     | LmpDateConfirmationQuestion
@@ -6721,9 +6722,7 @@ translationSet trans =
                     }
 
                 TestLipidPanel ->
-                    { english = "Lipid Panel"
-                    , kinyarwanda = Nothing
-                    }
+                    translationSet LipidPanel
 
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
@@ -6777,22 +6776,22 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        LaboratoryLipidPanelTotalCholesterolResult ->
+        LaboratoryLipidPanelTotalCholesterolLabel ->
             { english = "Total Cholesterol"
             , kinyarwanda = Nothing
             }
 
-        LaboratoryLipidPanelLDLCholesterolResult ->
+        LaboratoryLipidPanelLDLCholesterolLabel ->
             { english = "LDL"
             , kinyarwanda = Nothing
             }
 
-        LaboratoryLipidPanelHDLCholesterolResult ->
+        LaboratoryLipidPanelHDLCholesterolLabel ->
             { english = "HDL"
             , kinyarwanda = Nothing
             }
 
-        LaboratoryLipidPanelTriglyceridesResult ->
+        LaboratoryLipidPanelTriglyceridesLabel ->
             { english = "Triglycerides"
             , kinyarwanda = Nothing
             }
@@ -6870,9 +6869,7 @@ translationSet trans =
                     }
 
                 TaskLipidPanelTest ->
-                    { english = "Lipid Panel"
-                    , kinyarwanda = Nothing
-                    }
+                    translationSet LipidPanel
 
                 TaskHbA1cTest ->
                     { english = "HBA1C"
@@ -6947,9 +6944,7 @@ translationSet trans =
                     }
 
                 TaskLipidPanelTest ->
-                    { english = "Lipid Panel"
-                    , kinyarwanda = Nothing
-                    }
+                    translationSet LipidPanel
 
                 TaskHbA1cTest ->
                     { english = "HBA1C"
@@ -7429,6 +7424,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                LabResultsCurrentLipidPanel ->
+                    { english = "Lipid Panel Results"
+                    , kinyarwanda = Nothing
+                    }
+
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"
@@ -7557,6 +7557,11 @@ translationSet trans =
         LinkToMother ->
             { english = "Link to mother"
             , kinyarwanda = Just "Guhuza n'amakuru y'umubyeyi"
+            }
+
+        LipidPanel ->
+            { english = "Lipid Panel"
+            , kinyarwanda = Nothing
             }
 
         LiveChildren ->

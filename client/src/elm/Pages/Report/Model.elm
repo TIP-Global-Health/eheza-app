@@ -46,6 +46,7 @@ type LabResultsCurrentMode
     = LabResultsCurrentMain
     | LabResultsCurrentDipstickShort
     | LabResultsCurrentDipstickLong
+    | LabResultsCurrentLipidPanel
 
 
 type LabResultsHistoryMode

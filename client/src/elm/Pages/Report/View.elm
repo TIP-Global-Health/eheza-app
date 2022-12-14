@@ -409,6 +409,66 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                             |> Maybe.withDefault True
                     }
 
+                LabResultsHistoryTotalCholesterol assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
+                    { label = Translate.LaboratoryLipidPanelTotalCholesterolLabel
+                    , recentResult = Maybe.map String.fromFloat recentResultValue
+                    , knownAsPositive = False
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
+                    , recentResultNormal =
+                        Maybe.map totalCholesterolResultNormal recentResultValue
+                            |> Maybe.withDefault True
+                    }
+
+                LabResultsHistoryLDLCholesterol assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
+                    { label = Translate.LaboratoryLipidPanelLDLCholesterolLabel
+                    , recentResult = Maybe.map String.fromFloat recentResultValue
+                    , knownAsPositive = False
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
+                    , recentResultNormal =
+                        Maybe.map ldlCholesterolResultNormal recentResultValue
+                            |> Maybe.withDefault True
+                    }
+
+                LabResultsHistoryHDLCholesterol assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
+                    { label = Translate.LaboratoryLipidPanelHDLCholesterolLabel
+                    , recentResult = Maybe.map String.fromFloat recentResultValue
+                    , knownAsPositive = False
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
+                    , recentResultNormal =
+                        Maybe.map hdlCholesterolResultNormal recentResultValue
+                            |> Maybe.withDefault True
+                    }
+
+                LabResultsHistoryTriglycerides assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
+                    { label = Translate.LaboratoryLipidPanelTriglyceridesLabel
+                    , recentResult = Maybe.map String.fromFloat recentResultValue
+                    , knownAsPositive = False
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
+                    , recentResultNormal =
+                        Maybe.map triglyceridesResultNormal recentResultValue
+                            |> Maybe.withDefault True
+                    }
+
         dateCell =
             Maybe.map (formatDDMMYYYY >> text) config.recentResultDate
                 |> Maybe.withDefault (text "")
@@ -647,6 +707,40 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
         hba1cResults =
             getTestResults .hba1c .hba1cResult
 
+        lipidPanelTestResults =
+            List.filterMap
+                (\value ->
+                    if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                        Maybe.map
+                            (\executionDate ->
+                                ( executionDate
+                                , { totalCholesterol = value.totalCholesterolResult
+                                  , ldlCholesterol = value.ldlCholesterolResult
+                                  , hdlCholesterol = value.hdlCholesterolResult
+                                  , triglycerides = value.triglyceridesResult
+                                  }
+                                )
+                            )
+                            value.executionDate
+
+                    else
+                        Nothing
+                )
+                data.lipidPanel
+                |> List.sortWith sortTuplesByDateDesc
+
+        totalCholesterolResults =
+            List.map (Tuple.mapSecond .totalCholesterol) lipidPanelTestResults
+
+        ldlCholesterolResults =
+            List.map (Tuple.mapSecond .ldlCholesterol) lipidPanelTestResults
+
+        hdlCholesterolResults =
+            List.map (Tuple.mapSecond .hdlCholesterol) lipidPanelTestResults
+
+        triglyceridesResults =
+            List.map (Tuple.mapSecond .triglycerides) lipidPanelTestResults
+
         content =
             case mode of
                 LabResultsCurrentMain ->
@@ -680,6 +774,8 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                         |> showIf displayConfig.pregnancy
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHbA1c hba1cResults)
                         |> showIf displayConfig.hba1c
+                    , lipidPanelEntry
+                        |> showIf displayConfig.lipidPanel
                     ]
 
                 LabResultsCurrentDipstickShort ->
@@ -698,6 +794,13 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHaemoglobin haemoglobinResults)
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryKetone ketoneResults)
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryBilirubin bilirubinResults)
+                    ]
+
+                LabResultsCurrentLipidPanel ->
+                    [ viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryTotalCholesterol totalCholesterolResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryLDLCholesterol ldlCholesterolResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHDLCholesterol hdlCholesterolResults)
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryTriglycerides triglyceridesResults)
                     ]
 
         proteinEntry =
@@ -742,13 +845,13 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                                 else
                                     translate language Translate.Abnormal
                         in
-                        viewDipstickEntry (Translate.PrenatalUrineDipstickTestLabel VariantShortTest)
+                        viewConsolidatedEntry (Translate.PrenatalUrineDipstickTestLabel VariantShortTest)
                             (formatDDMMYYYY date)
                             result
                             (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickShort)
                             resultsNormal
                     )
-                |> Maybe.withDefault (emptyDipstickEntry (Translate.PrenatalUrineDipstickTestLabel VariantShortTest))
+                |> Maybe.withDefault (emptyConsolidatedEntry (Translate.PrenatalUrineDipstickTestLabel VariantShortTest))
 
         dipstickLongEntry =
             List.head leukocytesResults
@@ -808,18 +911,62 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                                 else
                                     translate language Translate.Abnormal
                         in
-                        viewDipstickEntry (Translate.PrenatalUrineDipstickTestLabel VariantLongTest)
+                        viewConsolidatedEntry (Translate.PrenatalUrineDipstickTestLabel VariantLongTest)
                             (formatDDMMYYYY date)
                             result
                             (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickLong)
                             resultsNormal
                     )
-                |> Maybe.withDefault (emptyDipstickEntry (Translate.PrenatalUrineDipstickTestLabel VariantLongTest))
+                |> Maybe.withDefault (emptyConsolidatedEntry (Translate.PrenatalUrineDipstickTestLabel VariantLongTest))
 
-        emptyDipstickEntry label =
-            viewDipstickEntry label "--/--/----" "---" Nothing True
+        lipidPanelEntry =
+            List.head totalCholesterolResults
+                |> Maybe.map
+                    (\( date, totalCholesterolResult ) ->
+                        let
+                            totalCholesterolResultsNormal_ =
+                                Maybe.map totalCholesterolResultNormal totalCholesterolResult
+                                    |> -- It's ok not to have a result, because test
+                                       -- may have been not performed yet.
+                                       Maybe.withDefault True
 
-        viewDipstickEntry label date result maybeAction resultNormal =
+                            resultsNormal =
+                                if not totalCholesterolResultsNormal_ then
+                                    False
+
+                                else
+                                    Maybe.map3
+                                        (\ldlCholesterolResult hdlCholesterolResult triglyceridesResult ->
+                                            ldlCholesterolResultNormal ldlCholesterolResult
+                                                && hdlCholesterolResultNormal hdlCholesterolResult
+                                                && triglyceridesResultNormal triglyceridesResult
+                                        )
+                                        (List.head ldlCholesterolResults |> Maybe.andThen Tuple.second)
+                                        (List.head hdlCholesterolResults |> Maybe.andThen Tuple.second)
+                                        (List.head triglyceridesResults |> Maybe.andThen Tuple.second)
+                                        |> -- We should never get here since protein result
+                                           -- existed, and all 4 are entered together.
+                                           Maybe.withDefault False
+
+                            result =
+                                if resultsNormal then
+                                    translate language Translate.Normal
+
+                                else
+                                    translate language Translate.Abnormal
+                        in
+                        viewConsolidatedEntry Translate.LipidPanel
+                            (formatDDMMYYYY date)
+                            result
+                            (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentLipidPanel)
+                            resultsNormal
+                    )
+                |> Maybe.withDefault (emptyConsolidatedEntry Translate.LipidPanel)
+
+        emptyConsolidatedEntry label =
+            viewConsolidatedEntry label "--/--/----" "---" Nothing True
+
+        viewConsolidatedEntry label date result maybeAction resultNormal =
             let
                 forwardIcon =
                     Maybe.map
@@ -931,6 +1078,18 @@ viewLabResultsHistoryPane language currentDate mode =
 
                 LabResultsHistoryHbA1c assembled ->
                     List.map (viewEntry String.fromFloat hba1cResultNormal) assembled
+
+                LabResultsHistoryTotalCholesterol assembled ->
+                    List.map (viewEntry String.fromFloat totalCholesterolResultNormal) assembled
+
+                LabResultsHistoryLDLCholesterol assembled ->
+                    List.map (viewEntry String.fromFloat ldlCholesterolResultNormal) assembled
+
+                LabResultsHistoryHDLCholesterol assembled ->
+                    List.map (viewEntry String.fromFloat hdlCholesterolResultNormal) assembled
+
+                LabResultsHistoryTriglycerides assembled ->
+                    List.map (viewEntry String.fromFloat triglyceridesResultNormal) assembled
 
         viewEntry resultToStringFunc resultNormalFunc ( date, maybeResult ) =
             let
