@@ -993,6 +993,7 @@ type TestExecutionNote
     | TestNoteBrokenEquipment
     | TestNoteNotIndicated
     | TestNoteKnownAsPositive
+    | TestNoteToBeDoneAtHospital
 
 
 type TestResult
@@ -2670,6 +2671,17 @@ type UnitOfMeasurement
     | UnitMgdL
 
 
+type alias NCDHbA1cTest =
+    NCDMeasurement HbA1cTestValue
+
+
+type alias HbA1cTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hba1cResult : Maybe Float
+    }
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -2954,6 +2966,7 @@ type alias NCDMeasurements =
     , dangerSigns : Maybe ( NCDDangerSignsId, NCDDangerSigns )
     , familyHistory : Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )
     , familyPlanning : Maybe ( NCDFamilyPlanningId, NCDFamilyPlanning )
+    , hba1cTest : Maybe ( NCDHbA1cTestId, NCDHbA1cTest )
     , healthEducation : Maybe ( NCDHealthEducationId, NCDHealthEducation )
     , hivTest : Maybe ( NCDHIVTestId, NCDHIVTest )
     , labsResults : Maybe ( NCDLabsResultsId, NCDLabsResults )

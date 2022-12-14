@@ -667,6 +667,7 @@ type TranslationId
     | GestationalDiabetesPreviousPregnancy
     | Glass String
     | GoHome
+    | GotResultsPreviouslyQuestion
     | GroupAssessment
     | Grams
     | Gravida
@@ -678,6 +679,7 @@ type TranslationId
     | HandPallor
     | Hands
     | HandsCPESign HandsCPESign
+    | HbA1cMostRecentTestResultInstruction
     | HCRecommendation HCRecommendation
     | HCResponseQuestion
     | HCResponsePeriodQuestion
@@ -1037,6 +1039,7 @@ type TranslationId
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
     | People
+    | Percentage
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
@@ -1228,6 +1231,7 @@ type TranslationId
     | ReferredToFacilityNot ReferralFacility
     | ReferredToFacilityPostpartum ReferralFacility
     | ReferToHospitalForFurtherEvaluation
+    | ReferToHospitalForTesting
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -5145,6 +5149,11 @@ translationSet trans =
             , kinyarwanda = Just "Kujya ahabanza"
             }
 
+        GotResultsPreviouslyQuestion ->
+            { english = "Has patient previously performed HBA1C test and got results"
+            , kinyarwanda = Nothing
+            }
+
         GroupAssessment ->
             { english = "Group Encounter"
             , kinyarwanda = Just "Gukorera itsinda"
@@ -5242,6 +5251,11 @@ translationSet trans =
 
                 NormalHands ->
                     translationSet Normal
+
+        HbA1cMostRecentTestResultInstruction ->
+            { english = "Please input the most recent HBA1C test result"
+            , kinyarwanda = Nothing
+            }
 
         HCRecommendation recommendation ->
             case recommendation of
@@ -6143,6 +6157,13 @@ translationSet trans =
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
+                TaskHbA1cTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -6295,6 +6316,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskHbA1cTest ->
+                    { english = "HBA1C"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskCompletePreviousTests ->
                     { english = "History"
                     , kinyarwanda = Nothing
@@ -6364,6 +6390,11 @@ translationSet trans =
 
                 TaskLipidPanelTest ->
                     { english = "Lipid Panel"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskHbA1cTest ->
+                    { english = "HBA1C"
                     , kinyarwanda = Nothing
                     }
 
@@ -6440,6 +6471,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskHbA1cTest ->
+                    { english = "HBA1C Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -6510,6 +6546,11 @@ translationSet trans =
 
                 TaskLipidPanelTest ->
                     { english = "Lipid Panel Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskHbA1cTest ->
+                    { english = "HBA1C Test Result"
                     , kinyarwanda = Nothing
                     }
 
@@ -9853,6 +9894,11 @@ translationSet trans =
         People ->
             { english = "People"
             , kinyarwanda = Just "Abantu"
+            }
+
+        Percentage ->
+            { english = "%"
+            , kinyarwanda = Nothing
             }
 
         PersistentStorage authorized ->
@@ -13199,6 +13245,11 @@ translationSet trans =
                     , kinyarwanda = Just "Asanzwe afite ubwandu"
                     }
 
+                TestNoteToBeDoneAtHospital ->
+                    { english = "To be Done at Hospital"
+                    , kinyarwanda = Nothing
+                    }
+
         TestResult result ->
             case result of
                 TestPositive ->
@@ -14270,6 +14321,11 @@ translationSet trans =
 
         ReferToHospitalForFurtherEvaluation ->
             { english = "Refer patient to hospital for further evaluation"
+            , kinyarwanda = Nothing
+            }
+
+        ReferToHospitalForTesting ->
+            { english = "Refer patient to hospital for testing"
             , kinyarwanda = Nothing
             }
 

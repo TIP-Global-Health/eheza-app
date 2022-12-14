@@ -513,6 +513,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityNCDFamilyPlanning identifier ->
                 viewMeasurement identifier "NCDFamilyPlanning"
 
+            BackendAuthorityNCDHbA1cTest identifier ->
+                viewMeasurement identifier "NCDHbA1cTest"
+
             BackendAuthorityNCDHealthEducation identifier ->
                 viewMeasurement identifier "NCDHealthEducation"
 

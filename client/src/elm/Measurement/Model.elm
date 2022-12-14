@@ -580,6 +580,7 @@ type LaboratoryTask
     | TaskCreatinineTest
     | TaskLiverFunctionTest
     | TaskLipidPanelTest
+    | TaskHbA1cTest
     | TaskCompletePreviousTests
 
 
@@ -614,6 +615,8 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setLiverFunctionTestExecutionNoteMsg : TestExecutionNote -> msg
     , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
+    , setHbA1cTestExecutionNoteMsg : TestExecutionNote -> msg
     , noOpMsg : msg
     }
 
@@ -658,6 +661,10 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setLipidPanelTestExecutionDateMsg : NominalDate -> msg
     , setLipidPanelTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
+    , setHbA1cTestExecutionDateMsg : NominalDate -> msg
+    , setHbA1cTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHbA1cTestResultMsg : String -> msg
     , noOpMsg : msg
     }
 
@@ -1065,4 +1072,29 @@ emptyLipidPanelResultForm =
     , ldlCholesterolResult = Nothing
     , hdlCholesterolResult = Nothing
     , triglyceridesResult = Nothing
+    }
+
+
+type alias HbA1cTestForm msg =
+    { gotResultsPreviously : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    , hba1cResult : Maybe Float
+    , hba1cResultDirty : Bool
+    }
+
+
+emptyHbA1cTestForm : HbA1cTestForm msg
+emptyHbA1cTestForm =
+    { gotResultsPreviously = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , dateSelectorPopupState = Nothing
+    , hba1cResult = Nothing
+    , hba1cResultDirty = False
     }

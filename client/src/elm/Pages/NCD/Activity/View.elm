@@ -34,6 +34,7 @@ import Measurement.Utils
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
         , emptyContentAndTasksLaboratoryTestInitialConfig
         , familyPlanningFormWithDefault
+        , hba1cTestFormWithDefault
         , hivTestFormWithDefault
         , laboratoryTaskIconClass
         , nonRDTFormWithDefault
@@ -43,6 +44,7 @@ import Measurement.Utils
         , randomBloodSugarFormWithDefault
         , urineDipstickFormWithDefault
         , viewHIVTestForm
+        , viewHbA1cTestForm
         , viewNonRDTForm
         , viewPregnancyTestForm
         , viewRandomBloodSugarForm
@@ -990,6 +992,22 @@ viewLaboratoryContent language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     TaskLipidPanelTest
 
+                        TaskHbA1cTest ->
+                            let
+                                previousTestsDates =
+                                    generatePreviousLaboratoryTestsDatesDict currentDate assembled
+                                        |> Dict.get TaskHbA1cTest
+                                        |> Maybe.withDefault []
+                            in
+                            measurements.hba1cTest
+                                |> getMeasurementValueFunc
+                                |> hba1cTestFormWithDefault data.hba1cTestForm
+                                |> viewHbA1cTestForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    previousTestsDates
+
                         -- Others do not participate at NCD.
                         _ ->
                             ( emptyNode, 0, 0 )
@@ -1043,6 +1061,9 @@ viewLaboratoryContent language currentDate assembled data =
 
                                 TaskLipidPanelTest ->
                                     SaveLipidPanelTest personId measurements.lipidPanelTest nextTask
+
+                                TaskHbA1cTest ->
+                                    SaveHbA1cTest personId measurements.hba1cTest nextTask
 
                                 -- Others do not participate at NCD.
                                 _ ->
@@ -1117,6 +1138,10 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setLipidPanelTestFormBoolInputMsg = SetLipidPanelTestFormBoolInput
                     , setLipidPanelTestExecutionDateMsg = SetLipidPanelTestExecutionDate
                     , setLipidPanelTestDateSelectorStateMsg = SetLipidPanelTestDateSelectorState
+                    , setHbA1cTestFormBoolInputMsg = SetHbA1cTestFormBoolInput
+                    , setHbA1cTestExecutionDateMsg = SetHbA1cTestExecutionDate
+                    , setHbA1cTestDateSelectorStateMsg = SetHbA1cTestDateSelectorState
+                    , setHbA1cTestResultMsg = SetHbA1cTestResult
                 }
            )
 

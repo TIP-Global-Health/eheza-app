@@ -88,6 +88,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'ncd_danger_signs' => 'ncd-danger-signs',
   'ncd_family_history' => 'ncd-family-history',
   'ncd_family_planning' => 'ncd-family-planning',
+  'ncd_hba1c_test' => 'ncd-hba1c-test',
   'ncd_health_education' => 'ncd-health-education',
   'ncd_hiv_test' => 'ncd-hiv-test',
   'ncd_labs_results' => 'ncd-labs-results',

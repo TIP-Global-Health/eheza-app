@@ -71,6 +71,16 @@ function hedley_ncd_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create ncd_hba1c_test content'.
+  $permissions['create ncd_hba1c_test content'] = array(
+    'name' => 'create ncd_hba1c_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create ncd_health_education content'.
   $permissions['create ncd_health_education content'] = array(
     'name' => 'create ncd_health_education content',
@@ -275,6 +285,15 @@ function hedley_ncd_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any ncd_hba1c_test content'.
+  $permissions['delete any ncd_hba1c_test content'] = array(
+    'name' => 'delete any ncd_hba1c_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any ncd_health_education content'.
   $permissions['delete any ncd_health_education content'] = array(
     'name' => 'delete any ncd_health_education content',
@@ -458,6 +477,15 @@ function hedley_ncd_user_default_permissions() {
   // Exported permission: 'delete own ncd_family_planning content'.
   $permissions['delete own ncd_family_planning content'] = array(
     'name' => 'delete own ncd_family_planning content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own ncd_hba1c_test content'.
+  $permissions['delete own ncd_hba1c_test content'] = array(
+    'name' => 'delete own ncd_hba1c_test content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -652,6 +680,16 @@ function hedley_ncd_user_default_permissions() {
   // Exported permission: 'edit any ncd_family_planning content'.
   $permissions['edit any ncd_family_planning content'] = array(
     'name' => 'edit any ncd_family_planning content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any ncd_hba1c_test content'.
+  $permissions['edit any ncd_hba1c_test content'] = array(
+    'name' => 'edit any ncd_hba1c_test content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -862,6 +900,16 @@ function hedley_ncd_user_default_permissions() {
   // Exported permission: 'edit own ncd_family_planning content'.
   $permissions['edit own ncd_family_planning content'] = array(
     'name' => 'edit own ncd_family_planning content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own ncd_hba1c_test content'.
+  $permissions['edit own ncd_hba1c_test content'] = array(
+    'name' => 'edit own ncd_hba1c_test content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

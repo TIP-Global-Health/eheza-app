@@ -789,6 +789,9 @@ encodeTestExecutionNote value =
             TestNoteKnownAsPositive ->
                 "known-as-positive"
 
+            TestNoteToBeDoneAtHospital ->
+                "to-be-done-at-hospital"
+
 
 encodeTestResult : TestResult -> Value
 encodeTestResult =
@@ -4689,3 +4692,33 @@ encodeLipidPanelTestValue value =
 encodeUnitOfMeasurement : UnitOfMeasurement -> Value
 encodeUnitOfMeasurement =
     unitOfMeasurementToString >> string
+
+
+encodeNCDHbA1cTest : NCDHbA1cTest -> List ( String, Value )
+encodeNCDHbA1cTest =
+    encodeNCDMeasurement encodeHbA1cTestValue
+
+
+encodeHbA1cTestValue : HbA1cTestValue -> List ( String, Value )
+encodeHbA1cTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\hba1cResult ->
+                    [ ( "hba1c_result", float hba1cResult ) ]
+                )
+                value.hba1cResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_hba1c_test" )
+           ]

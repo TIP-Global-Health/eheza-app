@@ -67,6 +67,14 @@ function hedley_ncd_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'ncd_hba1c_test' => array(
+      'name' => t('NCD HbA1c Test'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'ncd_health_education' => array(
       'name' => t('NCD Health Education'),
       'base' => 'node_content',

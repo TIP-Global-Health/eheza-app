@@ -249,6 +249,7 @@ decodeNCDMeasurements =
         |> optional "ncd_danger_signs" (decodeHead decodeNCDDangerSigns) Nothing
         |> optional "ncd_family_history" (decodeHead decodeNCDFamilyHistory) Nothing
         |> optional "ncd_family_planning" (decodeHead decodeNCDFamilyPlanning) Nothing
+        |> optional "ncd_hba1c_test" (decodeHead decodeNCDHbA1cTest) Nothing
         |> optional "ncd_health_education" (decodeHead decodeNCDHealthEducation) Nothing
         |> optional "ncd_hiv_test" (decodeHead decodeNCDHIVTest) Nothing
         |> optional "ncd_labs_results" (decodeHead decodeNCDLabsResults) Nothing
@@ -794,6 +795,9 @@ decodeTestExecutionNote =
 
                     "known-as-positive" ->
                         succeed TestNoteKnownAsPositive
+
+                    "to-be-done-at-hospital" ->
+                        succeed TestNoteToBeDoneAtHospital
 
                     _ ->
                         fail <|
@@ -5084,3 +5088,16 @@ decodeUnitOfMeasurement =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized UnitOfMeasurement")
             )
+
+
+decodeNCDHbA1cTest : Decoder NCDHbA1cTest
+decodeNCDHbA1cTest =
+    decodeNCDMeasurement decodeHbA1cTestValue
+
+
+decodeHbA1cTestValue : Decoder HbA1cTestValue
+decodeHbA1cTestValue =
+    succeed HbA1cTestValue
+        |> required "test_execution_note" decodeTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "hba1c_result" (nullable decodeFloat) Nothing

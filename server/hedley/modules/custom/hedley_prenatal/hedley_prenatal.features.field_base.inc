@@ -1431,6 +1431,7 @@ function hedley_prenatal_field_default_field_bases() {
         'broken-equipment' => 'Broken Equipment',
         'not-indicated' => 'Not Indicated',
         'known-as-positive' => 'Known as Positive',
+        'to-be-done-at-hospital' => 'To be done at hospital',
       ),
       'allowed_values_function' => '',
     ),

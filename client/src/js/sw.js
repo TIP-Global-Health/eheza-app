@@ -89,6 +89,7 @@ var tableForType = {
     ncd_encounter: 'shards',
     ncd_family_history: 'shards',
     ncd_family_planning: 'shards',
+    ncd_hba1c_test: 'shards',
     ncd_health_education: 'shards',
     ncd_hiv_test: 'shards',
     ncd_labs_results: 'shards',

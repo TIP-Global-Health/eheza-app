@@ -443,6 +443,7 @@ type Revision
     | NCDEncounterRevision NCDEncounterId NCDEncounter
     | NCDFamilyHistoryRevision NCDFamilyHistoryId NCDFamilyHistory
     | NCDFamilyPlanningRevision NCDFamilyPlanningId NCDFamilyPlanning
+    | NCDHbA1cTestRevision NCDHbA1cTestId NCDHbA1cTest
     | NCDHealthEducationRevision NCDHealthEducationId NCDHealthEducation
     | NCDHIVTestRevision NCDHIVTestId NCDHIVTest
     | NCDLabsResultsRevision NCDLabsResultsId NCDLabsResults

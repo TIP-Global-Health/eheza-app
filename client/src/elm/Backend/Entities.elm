@@ -1373,3 +1373,11 @@ type alias NCDLipidPanelTestId =
 
 type NCDLipidPanelTestUuidType
     = NCDLipidPanelTestUuidType
+
+
+type alias NCDHbA1cTestId =
+    EntityUuid NCDHbA1cTestUuidType
+
+
+type NCDHbA1cTestUuidType
+    = NCDHbA1cTestUuidType

@@ -10,6 +10,7 @@ import Measurement.Model
         ( CorePhysicalExamForm
         , FamilyPlanningForm
         , HIVTestForm
+        , HbA1cTestForm
         , LaboratoryTask
         , MalariaTestForm
         , NonRDTForm
@@ -22,6 +23,7 @@ import Measurement.Model
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
         , emptyHIVTestForm
+        , emptyHbA1cTestForm
         , emptyNonRDTForm
         , emptyOutsideCareForm
         , emptyPregnancyTestForm
@@ -129,6 +131,11 @@ type Msg
     | SetLipidPanelTestExecutionDate NominalDate
     | SetLipidPanelTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveLipidPanelTest PersonId (Maybe ( NCDLipidPanelTestId, NCDLipidPanelTest )) (Maybe LaboratoryTask)
+    | SetHbA1cTestFormBoolInput (Bool -> HbA1cTestForm Msg -> HbA1cTestForm Msg) Bool
+    | SetHbA1cTestExecutionDate NominalDate
+    | SetHbA1cTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetHbA1cTestResult String
+    | SaveHbA1cTest PersonId (Maybe ( NCDHbA1cTestId, NCDHbA1cTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
@@ -344,6 +351,7 @@ type alias LaboratoryData =
     , creatinineTestForm : NonRDTForm Msg
     , liverFunctionTestForm : NonRDTForm Msg
     , lipidPanelTestForm : NonRDTForm Msg
+    , hba1cTestForm : HbA1cTestForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -357,6 +365,7 @@ emptyLaboratoryData =
     , creatinineTestForm = emptyNonRDTForm
     , liverFunctionTestForm = emptyNonRDTForm
     , lipidPanelTestForm = emptyNonRDTForm
+    , hba1cTestForm = emptyHbA1cTestForm
     , activeTask = Nothing
     }
 

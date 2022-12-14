@@ -2443,6 +2443,149 @@ viewNonRDTForm language currentDate configInitial configPerformed task form =
     )
 
 
+viewHbA1cTestForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
+    -> List NominalDate
+    -> HbA1cTestForm msg
+    -> ( Html msg, Int, Int )
+viewHbA1cTestForm language currentDate configInitial configPerformed previousTestsDates form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            if List.isEmpty previousTestsDates then
+                let
+                    updateFunc =
+                        \gotResultsPreviously form_ ->
+                            let
+                                executionNote =
+                                    if not gotResultsPreviously then
+                                        Just TestNoteToBeDoneAtHospital
+
+                                    else
+                                        Nothing
+                            in
+                            { form_
+                                | gotResultsPreviously = Just gotResultsPreviously
+                                , executionNote = executionNote
+                                , executionNoteDirty = True
+                                , executionDate = Nothing
+                                , executionDateDirty = True
+                                , hba1cResult = Nothing
+                                , hba1cResultDirty = True
+                            }
+
+                    referral =
+                        if form.gotResultsPreviously == Just False then
+                            referralMessage
+
+                        else
+                            []
+                in
+                ( [ viewQuestionLabel language Translate.GotResultsPreviouslyQuestion
+                  , viewBoolInput
+                        language
+                        form.gotResultsPreviously
+                        (configPerformed.setHbA1cTestFormBoolInputMsg updateFunc)
+                        "got-results-previously"
+                        Nothing
+                  ]
+                    ++ referral
+                , taskCompleted form.gotResultsPreviously
+                , 1
+                )
+
+            else
+                emptySection
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if (not <| List.isEmpty previousTestsDates) || form.gotResultsPreviously == Just True then
+                let
+                    ( executionDateSection, executionDateTasksCompleted, executionDateTasksTotal ) =
+                        let
+                            executionDateForView =
+                                Maybe.map formatDDMMYYYY form.executionDate
+                                    |> Maybe.withDefault ""
+
+                            dateSelectorConfig =
+                                let
+                                    dateTo =
+                                        Date.add Days -1 currentDate
+                                in
+                                { select = configPerformed.setHbA1cTestExecutionDateMsg
+                                , close = configPerformed.setHbA1cTestDateSelectorStateMsg Nothing
+                                , dateFrom = Date.add Years -5 currentDate
+                                , dateTo = dateTo
+                                , dateDefault = Just dateTo
+                                }
+                        in
+                        ( [ viewCustomLabel language Translate.HbA1cMostRecentTestResultInstruction "." "label instruction"
+                          , viewLabel language <| Translate.LaboratoryTaskDate TaskHbA1cTest
+                          , div
+                                [ class "form-input date"
+                                , onClick <| configPerformed.setHbA1cTestDateSelectorStateMsg (Just dateSelectorConfig)
+                                ]
+                                [ text executionDateForView
+                                ]
+                          , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.executionDate
+                          ]
+                        , taskCompleted form.executionDate
+                        , 1
+                        )
+
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                        if isNothing form.executionDate then
+                            emptySection
+
+                        else
+                            ( [ viewLabel language <| Translate.LaboratoryTaskResult TaskHbA1cTest
+                              , viewMeasurementInput language
+                                    form.hba1cResult
+                                    configPerformed.setHbA1cTestResultMsg
+                                    "hba1c-result"
+                                    Translate.Percentage
+                              ]
+                            , taskCompleted form.hba1cResult
+                            , 1
+                            )
+
+                    referral =
+                        Maybe.map2
+                            (\executionDate _ ->
+                                if Date.diff Months executionDate currentDate >= 6 then
+                                    referralMessage
+
+                                else
+                                    []
+                            )
+                            form.executionDate
+                            form.hba1cResult
+                            |> Maybe.withDefault []
+                in
+                ( executionDateSection ++ testResultSection ++ referral
+                , executionDateTasksCompleted + testResultTasksCompleted
+                , executionDateTasksTotal + testResultTasksTotal
+                )
+
+            else
+                emptySection
+
+        referralMessage =
+            [ viewCustomLabel language Translate.ReferToHospitalForTesting "." "label referral" ]
+
+        emptySection =
+            ( [], 0, 0 )
+    in
+    ( div [ class "ui form laboratory hba1c" ] <|
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHbA1cTest) "" "label header" ]
+            ++ initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
 nonRDTFormInputsAndTasks :
     Language
     -> NominalDate
@@ -2574,6 +2717,12 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                 TaskLipidPanelTest ->
                     { setBoolInputMsg = config.setLipidPanelTestFormBoolInputMsg boolInputUpdateFunc
                     , setExecutionNoteMsg = config.setLipidPanelTestExecutionNoteMsg
+                    }
+
+                TaskHbA1cTest ->
+                    -- Not in use, as this task got a proprietary form.
+                    { setBoolInputMsg = always config.noOpMsg
+                    , setExecutionNoteMsg = always config.noOpMsg
                     }
 
                 TaskCompletePreviousTests ->
@@ -2744,6 +2893,13 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                         , setDateSelectorStateMsg = config.setLipidPanelTestDateSelectorStateMsg
                         }
 
+                    TaskHbA1cTest ->
+                        -- Not in use, as this task got a proprietary form.
+                        { setBoolInputMsg = always config.noOpMsg
+                        , setExecutionDateMsg = always config.noOpMsg
+                        , setDateSelectorStateMsg = always config.noOpMsg
+                        }
+
                     TaskCompletePreviousTests ->
                         -- Not in use, as this task got a proprietary form.
                         { setBoolInputMsg = always config.noOpMsg
@@ -2906,6 +3062,8 @@ emptyContentAndTasksLaboratoryTestInitialConfig noOpMsg =
     , setLiverFunctionTestExecutionNoteMsg = always noOpMsg
     , setLipidPanelTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setLipidPanelTestExecutionNoteMsg = always noOpMsg
+    , setHbA1cTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHbA1cTestExecutionNoteMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -2951,6 +3109,10 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
     , setLipidPanelTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setLipidPanelTestExecutionDateMsg = always noOpMsg
     , setLipidPanelTestDateSelectorStateMsg = always noOpMsg
+    , setHbA1cTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHbA1cTestExecutionDateMsg = always noOpMsg
+    , setHbA1cTestDateSelectorStateMsg = always noOpMsg
+    , setHbA1cTestResultMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -2999,6 +3161,9 @@ laboratoryTaskIconClass task =
 
         TaskLipidPanelTest ->
             "lipid-panel"
+
+        TaskHbA1cTest ->
+            "hba1c"
 
 
 hepatitisBResultFormWithDefault : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId
@@ -3353,6 +3518,46 @@ toLipidPanelResultsValue form =
             , ldlCholesterolResult = form.ldlCholesterolResult
             , hdlCholesterolResult = form.hdlCholesterolResult
             , triglyceridesResult = form.triglyceridesResult
+            }
+        )
+        form.executionNote
+
+
+hba1cTestFormWithDefault : HbA1cTestForm msg -> Maybe HbA1cTestValue -> HbA1cTestForm msg
+hba1cTestFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    gotResultsPreviouslyByValue =
+                        isJust value.executionDate
+                in
+                { gotResultsPreviously = or form.gotResultsPreviously (Just gotResultsPreviouslyByValue)
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
+                , hba1cResult = maybeValueConsideringIsDirtyField form.hba1cResultDirty form.hba1cResult value.hba1cResult
+                , hba1cResultDirty = form.hba1cResultDirty
+                }
+            )
+
+
+toHbA1cTestValueWithDefault : Maybe HbA1cTestValue -> HbA1cTestForm msg -> Maybe HbA1cTestValue
+toHbA1cTestValueWithDefault saved form =
+    hba1cTestFormWithDefault form saved
+        |> toHbA1cTestValue
+
+
+toHbA1cTestValue : HbA1cTestForm msg -> Maybe HbA1cTestValue
+toHbA1cTestValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , hba1cResult = form.hba1cResult
             }
         )
         form.executionNote
