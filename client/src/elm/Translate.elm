@@ -122,6 +122,7 @@ import Pages.Report.Model
         ( LabResultsCurrentMode(..)
         , LabResultsHistoryMode(..)
         , PaneEntryStatus(..)
+        , RandomBloodSugarResult(..)
         , ReportTab(..)
         )
 import Pages.TraceContact.Model exposing (NoContactReason(..))
@@ -1206,6 +1207,7 @@ type TranslationId
     | ProvidedPreventionEducationQuestionShort
     | ProvidedSymtomReliefGuidanceQuestion
     | Province
+    | RandomBloodSugarResultNormalRange RandomBloodSugarResult
     | ReasonForCSection
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -7345,7 +7347,11 @@ translationSet trans =
                     }
 
                 LabResultsHistoryRandomBloodSugar _ ->
-                    { english = "74-110 mg/dL"
+                    -- This one is not in use, because normal range
+                    -- depends on prerequesit - has patient eaten before
+                    -- the test or not.
+                    -- Therefore RandomBloodSugarResultNormalRange set is used.
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -13585,6 +13591,18 @@ translationSet trans =
             { english = "Reason for C-section"
             , kinyarwanda = Nothing
             }
+
+        RandomBloodSugarResultNormalRange type_ ->
+            case type_ of
+                TestRunBeforeMeal _ ->
+                    { english = "74-126 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestRunAfterMeal _ ->
+                    { english = "74-200 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
 
         ReasonForNotBreastfeeding reason ->
             case reason of

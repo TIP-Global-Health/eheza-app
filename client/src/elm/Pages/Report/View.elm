@@ -268,7 +268,7 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                             List.head assembled |> Maybe.andThen Tuple.second
                     in
                     { label = Translate.LaboratoryTaskLabel TaskRandomBloodSugarTest
-                    , recentResult = Maybe.map String.fromFloat recentResultValue
+                    , recentResult = Maybe.map (getRandomBloodSugarResultValue >> String.fromFloat) recentResultValue
                     , knownAsPositive = False
                     , recentResultDate = List.head assembled |> Maybe.map Tuple.first
                     , totalResults = List.length assembled
@@ -495,12 +495,23 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
 
             else
                 emptyNode
+
+        normalRange =
+            case results of
+                LabResultsHistoryRandomBloodSugar assembled ->
+                    List.head assembled
+                        |> Maybe.andThen Tuple.second
+                        |> Maybe.map Translate.RandomBloodSugarResultNormalRange
+                        |> Maybe.withDefault Translate.EmptyString
+
+                _ ->
+                    Translate.LabResultsNormalRange results
     in
     div [ classList [ ( "entry", True ), ( "warning", not config.recentResultNormal ) ] ]
         [ div [ class "name" ] [ translateText language config.label ]
         , div [ class "date" ] [ dateCell ]
         , div [ class "result" ] [ resultCell ]
-        , div [ class "normal-range" ] [ text <| translate language <| Translate.LabResultsNormalRange results ]
+        , div [ class "normal-range" ] [ text <| translate language normalRange ]
         , historyResultsIcon
         ]
 
@@ -670,7 +681,29 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
             List.map (\( date, value ) -> ( date, value.bilirubin )) longUrineDipstickTestResults
 
         randomBloodSugarResults =
-            getTestResults .randomBloodSugar .sugarCount
+            List.filterMap
+                (\value ->
+                    if testPerformedByExecutionNote value.executionNote then
+                        Maybe.map2
+                            (\executionDate testPrerequisites ->
+                                let
+                                    result =
+                                        if EverySet.member PrerequisiteFastFor12h testPrerequisites then
+                                            Maybe.map TestRunBeforeMeal value.sugarCount
+
+                                        else
+                                            Maybe.map TestRunAfterMeal value.sugarCount
+                                in
+                                ( executionDate, result )
+                            )
+                            value.executionDate
+                            value.testPrerequisites
+
+                    else
+                        Nothing
+                )
+                data.randomBloodSugar
+                |> List.sortWith sortTuplesByDateDesc
 
         hemoglobinResults =
             getTestResults .hemoglobin .hemoglobinCount
@@ -1051,7 +1084,14 @@ viewLabResultsHistoryPane language currentDate mode =
                     List.map (viewEntry (Translate.LaboratoryBilirubinValue >> translate language) bilirubinResultNormal) assembled
 
                 LabResultsHistoryRandomBloodSugar assembled ->
-                    List.map (viewEntry String.fromFloat randomBloodSugarResultNormal) assembled
+                    List.map
+                        (viewCustomEntry (getRandomBloodSugarResultValue >> String.fromFloat)
+                            randomBloodSugarResultNormal
+                            (Maybe.map Translate.RandomBloodSugarResultNormalRange
+                                >> Maybe.withDefault Translate.EmptyString
+                            )
+                        )
+                        assembled
 
                 LabResultsHistoryHemoglobin assembled ->
                     List.map (viewEntry String.fromFloat hemoglobinResultNormal) assembled
@@ -1093,6 +1133,12 @@ viewLabResultsHistoryPane language currentDate mode =
                     List.map (viewEntry String.fromFloat triglyceridesResultNormal) assembled
 
         viewEntry resultToStringFunc resultNormalFunc ( date, maybeResult ) =
+            viewCustomEntry resultToStringFunc
+                resultNormalFunc
+                (always (Translate.LabResultsNormalRange mode))
+                ( date, maybeResult )
+
+        viewCustomEntry resultToStringFunc resultNormalFunc normalRangeFunc ( date, maybeResult ) =
             let
                 resultCell =
                     Maybe.map (resultToStringFunc >> text) maybeResult
@@ -1108,11 +1154,14 @@ viewLabResultsHistoryPane language currentDate mode =
 
                     else
                         emptyNode
+
+                normalRange =
+                    normalRangeFunc maybeResult
             in
             div [ classList [ ( "entry", True ), ( "warning", not resultNormal ) ] ]
                 [ div [ class "date" ] [ text <| formatDDMMYYYY date ]
                 , div [ class "result" ] [ resultCell ]
-                , div [ class "normal-range" ] [ text <| translate language <| Translate.LabResultsNormalRange mode ]
+                , div [ class "normal-range" ] [ text <| translate language normalRange ]
                 , warningIcon
                 ]
     in

@@ -83,9 +83,14 @@ bilirubinResultNormal =
     (==) BilirubinNegative
 
 
-randomBloodSugarResultNormal : Float -> Bool
-randomBloodSugarResultNormal value =
-    value >= 74 && value <= 110
+randomBloodSugarResultNormal : RandomBloodSugarResult -> Bool
+randomBloodSugarResultNormal result =
+    case result of
+        TestRunBeforeMeal value ->
+            value >= 74 && value <= 126
+
+        TestRunAfterMeal value ->
+            value >= 74 && value <= 200
 
 
 hemoglobinResultNormal : Float -> Bool
@@ -223,3 +228,13 @@ diagnosisEntryStatusToString status =
 
         StatusResolved ->
             "resolved"
+
+
+getRandomBloodSugarResultValue : RandomBloodSugarResult -> Float
+getRandomBloodSugarResultValue result =
+    case result of
+        TestRunBeforeMeal value ->
+            value
+
+        TestRunAfterMeal value ->
+            value
