@@ -1621,7 +1621,7 @@ hivTestFormWithDefault form saved =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1706,7 +1706,7 @@ malariaTestFormWithDefault form saved =
             (\value ->
                 let
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1751,7 +1751,7 @@ urineDipstickFormWithDefault form saved =
             (\value ->
                 let
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1805,7 +1805,7 @@ randomBloodSugarFormWithDefault form saved =
             (\value ->
                 let
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1886,7 +1886,7 @@ pregnancyTestFormWithDefault form saved =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1938,7 +1938,7 @@ nonRDTFormWithDefault form saved =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -4255,6 +4255,31 @@ resultFormHeaderSection language currentDate executionDate task =
         :: executionDateSection
 
 
+testPerformedByValue : Maybe { a | executionNote : TestExecutionNote } -> Bool
+testPerformedByValue =
+    Maybe.map (.executionNote >> testPerformedByExecutionNote)
+        >> Maybe.withDefault False
+
+
+testPerformedByExecutionNote : TestExecutionNote -> Bool
+testPerformedByExecutionNote executionNote =
+    List.member executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+
+expectRandomBloodSugarResultTask : RandomBloodSugarTestValue encounterId -> Bool
+expectRandomBloodSugarResultTask value =
+    let
+        -- It's possible to enter the result immediatly (and not from
+        -- Case management).
+        -- If this is the case, we do not expect to see results task.
+        immediateResult =
+            Maybe.map (EverySet.member PrerequisiteImmediateResult) value.testPrerequisites
+                |> Maybe.withDefault False
+    in
+    not immediateResult
+        && testPerformedByExecutionNote value.executionNote
+
+
 viewSelectInput :
     Language
     -> TranslationId
@@ -4650,7 +4675,7 @@ resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
     getMeasurementValueFunc measurement
         |> Maybe.andThen
             (\value ->
-                if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                if testPerformedByExecutionNote value.executionNote then
                     if resultsExistFunc value && (not <| resultsValidFunc value) then
                         -- Entered result is not valid, therefore,
                         -- we treat the test as if it was not performed.

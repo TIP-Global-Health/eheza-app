@@ -38,6 +38,7 @@ import Measurement.Utils
         , getNextVaccineDose
         , isTestResultValid
         , resolveLabTestDate
+        , testPerformedByExecutionNote
         , toEverySet
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
@@ -1728,7 +1729,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                 diabetesBySugarCount value
 
                             byUrineGlucose =
-                                if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                                if testPerformedByExecutionNote value.executionNote then
                                     -- If random blood sugar test was perfomed, we determine by its results.
                                     False
 

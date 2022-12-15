@@ -12,7 +12,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (vitalsFormWithDefault)
+import Measurement.Utils exposing (expectRandomBloodSugarResultTask, testPerformedByValue, vitalsFormWithDefault)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
@@ -146,11 +146,7 @@ expectLaboratoryResultTask currentDate assembled task =
         wasTestPerformed getMeasurementFunc =
             getMeasurementFunc assembled.measurements
                 |> getMeasurementValueFunc
-                |> Maybe.map
-                    (\value ->
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-                    )
-                |> Maybe.withDefault False
+                |> testPerformedByValue
     in
     case task of
         TaskHIVTest ->
@@ -175,7 +171,9 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .hemoglobinTest
 
         TaskRandomBloodSugarTest ->
-            wasTestPerformed .randomBloodSugarTest
+            getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
+                |> Maybe.map expectRandomBloodSugarResultTask
+                |> Maybe.withDefault False
 
         TaskHIVPCRTest ->
             wasTestPerformed .hivPCRTest

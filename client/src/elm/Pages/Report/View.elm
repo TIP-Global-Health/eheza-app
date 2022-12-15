@@ -18,6 +18,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
+import Measurement.Utils exposing (testPerformedByExecutionNote)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
 import Pages.Report.Utils exposing (..)
@@ -563,7 +564,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
             getValueFunc data
                 |> List.filterMap
                     (\value ->
-                        if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                        if testPerformedByExecutionNote value.executionNote then
                             Maybe.map (\executionDate -> ( executionDate, getResultFunc value ))
                                 value.executionDate
 
@@ -579,7 +580,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                         if value.executionNote == TestNoteKnownAsPositive then
                             Just ( currentDate, Just TestNotPerformedKnownAsPositive )
 
-                        else if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                        else if testPerformedByExecutionNote value.executionNote then
                             Maybe.map (\executionDate -> ( executionDate, getResultFunc value |> Maybe.map TestPerformed ))
                                 value.executionDate
 
@@ -618,7 +619,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
         urineDipstickTestResults =
             List.filterMap
                 (\value ->
-                    if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                    if testPerformedByExecutionNote value.executionNote then
                         Maybe.map (\executionDate -> ( executionDate, ( value.protein, value.ph, value.glucose ) ))
                             value.executionDate
 
@@ -631,7 +632,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
         longUrineDipstickTestResults =
             List.filterMap
                 (\value ->
-                    if value.testVariant == Just VariantLongTest && List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                    if value.testVariant == Just VariantLongTest && testPerformedByExecutionNote value.executionNote then
                         Maybe.map (\executionDate -> ( executionDate, value ))
                             value.executionDate
 
@@ -710,7 +711,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
         lipidPanelTestResults =
             List.filterMap
                 (\value ->
-                    if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                    if testPerformedByExecutionNote value.executionNote then
                         Maybe.map
                             (\executionDate ->
                                 ( executionDate

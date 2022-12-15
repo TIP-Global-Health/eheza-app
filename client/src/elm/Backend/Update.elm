@@ -4698,7 +4698,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                     []
 
                 else
-                    -- Here we know that trigger for update cam form another encounter.
+                    -- Here we know that trigger for update came form another encounter.
                     -- Therefore, we only need to perform actions for that originating encounter.
                     Maybe.map
                         (\( originatingEncounterId, targetDiagnoses ) ->
