@@ -7,7 +7,9 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Date
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
+import Measurement.Utils exposing (testPerformedByExecutionNote)
 import Pages.Report.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
@@ -238,3 +240,25 @@ getRandomBloodSugarResultValue result =
 
         TestRunAfterMeal value ->
             value
+
+
+randomBloodSugarResultFromValue : RandomBloodSugarTestValue encounterId -> Maybe ( NominalDate, Maybe RandomBloodSugarResult )
+randomBloodSugarResultFromValue value =
+    if testPerformedByExecutionNote value.executionNote then
+        Maybe.map2
+            (\executionDate testPrerequisites ->
+                let
+                    result =
+                        if EverySet.member PrerequisiteFastFor12h testPrerequisites then
+                            Maybe.map TestRunBeforeMeal value.sugarCount
+
+                        else
+                            Maybe.map TestRunAfterMeal value.sugarCount
+                in
+                ( executionDate, result )
+            )
+            value.executionDate
+            value.testPrerequisites
+
+    else
+        Nothing

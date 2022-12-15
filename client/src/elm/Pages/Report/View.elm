@@ -681,28 +681,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
             List.map (\( date, value ) -> ( date, value.bilirubin )) longUrineDipstickTestResults
 
         randomBloodSugarResults =
-            List.filterMap
-                (\value ->
-                    if testPerformedByExecutionNote value.executionNote then
-                        Maybe.map2
-                            (\executionDate testPrerequisites ->
-                                let
-                                    result =
-                                        if EverySet.member PrerequisiteFastFor12h testPrerequisites then
-                                            Maybe.map TestRunBeforeMeal value.sugarCount
-
-                                        else
-                                            Maybe.map TestRunAfterMeal value.sugarCount
-                                in
-                                ( executionDate, result )
-                            )
-                            value.executionDate
-                            value.testPrerequisites
-
-                    else
-                        Nothing
-                )
-                data.randomBloodSugar
+            List.filterMap randomBloodSugarResultFromValue data.randomBloodSugar
                 |> List.sortWith sortTuplesByDateDesc
 
         hemoglobinResults =

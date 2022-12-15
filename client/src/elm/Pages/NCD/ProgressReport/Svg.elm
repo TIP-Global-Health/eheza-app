@@ -1,6 +1,8 @@
 module Pages.NCD.ProgressReport.Svg exposing (..)
 
 import Html exposing (Html)
+import Pages.Report.Model exposing (RandomBloodSugarResult(..))
+import Pages.Report.Utils exposing (getRandomBloodSugarResultValue)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
@@ -17,39 +19,29 @@ viewMarkers =
         ]
         [ defs
             []
-            [ marker
-                [ id "dot-marker-green"
-                , markerWidth "8"
-                , markerHeight "8"
-                , refX "4"
-                , refY "4"
-                , markerUnits "userSpaceOnUse"
-                ]
-                [ circle
-                    [ cx "4"
-                    , cy "4"
-                    , r "3"
-                    , Svg.Attributes.style "fill:#1CBCB2"
-                    ]
-                    []
-                ]
-            , marker
-                [ id "dot-marker-red"
-                , markerWidth "8"
-                , markerHeight "8"
-                , refX "4"
-                , refY "4"
-                , markerUnits "userSpaceOnUse"
-                ]
-                [ circle
-                    [ cx "4"
-                    , cy "4"
-                    , r "3"
-                    , Svg.Attributes.style "fill:#D4145A"
-                    ]
-                    []
-                ]
+            [ svgMarker "dot-marker-green" "#1CBCB2"
+            , svgMarker "dot-marker-red" "#D4145A"
+            , svgMarker "dot-marker-black" "#000000"
             ]
+        ]
+
+
+svgMarker identification fill =
+    marker
+        [ id identification
+        , markerWidth "8"
+        , markerHeight "8"
+        , refX "4"
+        , refY "4"
+        , markerUnits "userSpaceOnUse"
+        ]
+        [ circle
+            [ cx "4"
+            , cy "4"
+            , r "3"
+            , Svg.Attributes.style <| "fill:" ++ fill
+            ]
+            []
         ]
 
 
@@ -136,8 +128,8 @@ viewBloodPressureByTime language sysPoints diaPoints =
         ]
 
 
-viewBloodGlucoseByTime : Language -> List Float -> Html any
-viewBloodGlucoseByTime language points =
+viewBloodGlucoseByTime : Language -> List RandomBloodSugarResult -> Html any
+viewBloodGlucoseByTime language results =
     let
         verticalParts =
             20
@@ -160,8 +152,43 @@ viewBloodGlucoseByTime language points =
         horizontalStep =
             widthPx / toFloat (horizontalMax - horizontalMin)
 
+        points =
+            List.map getRandomBloodSugarResultValue results
+
+        measurementsWithIndicators =
+            measurementsWithInidactorsByTime verticalMin
+                verticalMax
+                verticalStep
+                horizontalStep
+                getRandomBloodSugarResultValue
+                identity
+                results
+
         measurements =
-            measurementsByTime verticalMin verticalMax verticalStep horizontalStep points
+            List.map Tuple.second measurementsWithIndicators
+
+        indicators =
+            List.map
+                (\( result, ( left_, top_ ) ) ->
+                    let
+                        ( indicator, left ) =
+                            case result of
+                                TestRunBeforeMeal _ ->
+                                    ( "F", left_ - 5 |> String.fromFloat )
+
+                                TestRunAfterMeal _ ->
+                                    ( "NF", left_ - 12 |> String.fromFloat )
+
+                        top =
+                            top_ - 10 |> String.fromFloat
+                    in
+                    text_
+                        [ transform <| "matrix(1 0 0 1 " ++ left ++ " " ++ top ++ ")"
+                        , class <| "z-score-semibold chart-helper red"
+                        ]
+                        [ text indicator ]
+                )
+                measurementsWithIndicators
     in
     svg
         [ class "chart"
@@ -170,12 +197,13 @@ viewBloodGlucoseByTime language points =
         , viewBox "25 25 841.9 595.3"
         ]
         [ frame
-        , g []
+        , g [] <|
             [ horizontalLabel language
             , verticalLabel language Translate.BloodGlucose
             ]
+                ++ indicators
         , g []
-            [ drawPolyline measurements "data red" ]
+            [ drawPolyline measurements "data black" ]
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.left - 21.5 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.right + 7.5 |> String.fromFloat)
@@ -224,7 +252,7 @@ viewHbA1cByTime language points =
             , verticalLabel language Translate.HbA1cPercentage
             ]
         , g []
-            [ drawPolyline measurements "data red" ]
+            [ drawPolyline measurements "data black" ]
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 1 (dimensionsPx.left - 21.5 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 1 (dimensionsPx.right + 7.5 |> String.fromFloat)
@@ -346,15 +374,32 @@ referenceVerticalNumbers parts min gap posX =
 
 measurementsByTime : Float -> Float -> Float -> Float -> List Float -> List ( Float, Float )
 measurementsByTime verticalMin verticalMax verticalStep horizontalStep points =
+    measurementsWithInidactorsByTime verticalMin verticalMax verticalStep horizontalStep identity identity points
+        |> List.map Tuple.second
+
+
+measurementsWithInidactorsByTime :
+    Float
+    -> Float
+    -> Float
+    -> Float
+    -> (a -> Float)
+    -> (a -> indicator)
+    -> List a
+    -> List ( indicator, ( Float, Float ) )
+measurementsWithInidactorsByTime verticalMin verticalMax verticalStep horizontalStep toNumberFunc toIndicatorFunc points =
     List.indexedMap (\index value -> ( toFloat <| index + 1, value )) points
         |> List.filterMap
             (\( time, value_ ) ->
                 let
                     value =
-                        value_ - verticalMin
+                        toNumberFunc value_ - verticalMin
                 in
                 if withinRange value verticalMin verticalMax then
-                    Just ( dimensionsPx.left + time * horizontalStep, dimensionsPx.bottom - value * verticalStep )
+                    Just
+                        ( toIndicatorFunc value_
+                        , ( dimensionsPx.left + time * horizontalStep, dimensionsPx.bottom - value * verticalStep )
+                        )
 
                 else
                     Nothing
