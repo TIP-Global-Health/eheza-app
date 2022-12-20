@@ -15,6 +15,7 @@ type alias LabsResultsDisplayConfig =
     , liverFunction : Bool
     , pregnancy : Bool
     , hba1c : Bool
+    , lipidPanel : Bool
     }
 
 
@@ -32,6 +33,7 @@ type alias LabsResultsValues encounterId =
     , liverFunction : List Backend.Measurement.Model.LiverFunctionTestValue
     , pregnancy : List Backend.Measurement.Model.PregnancyTestValue
     , hba1c : List Backend.Measurement.Model.HbA1cTestValue
+    , lipidPanel : List Backend.Measurement.Model.LipidPanelTestValue
     }
 
 
@@ -44,6 +46,7 @@ type LabResultsCurrentMode
     = LabResultsCurrentMain
     | LabResultsCurrentDipstickShort
     | LabResultsCurrentDipstickLong
+    | LabResultsCurrentLipidPanel
 
 
 type LabResultsHistoryMode
@@ -70,7 +73,11 @@ type LabResultsHistoryMode
     | LabResultsHistoryALT (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryAST (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryPregnancy (List ( NominalDate, Maybe TestReport ))
-    | LabResultsHbA1c (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryHbA1c (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryTotalCholesterol (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryLDLCholesterol (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryHDLCholesterol (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryTriglycerides (List ( NominalDate, Maybe Float ))
 
 
 type TestReport

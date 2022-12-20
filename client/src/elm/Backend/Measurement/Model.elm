@@ -2658,7 +2658,11 @@ type alias NCDLipidPanelTest =
 type alias LipidPanelTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+
+    -- Indicates what unit of measurement was used while results were recorded.
     , unitOfMeasurement : Maybe UnitOfMeasurement
+
+    -- All results are stored in mg/dL unit.
     , totalCholesterolResult : Maybe Float
     , ldlCholesterolResult : Maybe Float
     , hdlCholesterolResult : Maybe Float

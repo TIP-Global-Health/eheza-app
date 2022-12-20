@@ -179,9 +179,11 @@ viewHeader language id initiator model =
                                         LabResultsCurrentDipstickLong ->
                                             backToCurrentMsg LabResultsCurrentMain
 
+                                        LabResultsCurrentLipidPanel ->
+                                            backToCurrentMsg LabResultsCurrentMain
+
                                 LabResultsHistory historyMode ->
-                                    Maybe.withDefault LabResultsCurrentMain model.labResultsHistoryOrigin
-                                        |> backToCurrentMsg
+                                    SetLabResultsMode model.labResultsHistoryOrigin
                         )
                         model.labResultsMode
                         |> Maybe.withDefault defaultAction
@@ -227,6 +229,7 @@ viewContent language currentDate isChw initiator model assembled =
                                     , liverFunction = False
                                     , pregnancy = False
                                     , hba1c = False
+                                    , lipidPanel = False
                                     }
                             in
                             [ generateLabsResultsPaneData currentDate assembled
@@ -1368,6 +1371,7 @@ generateLabsResultsPaneData currentDate assembled =
     , liverFunction = []
     , pregnancy = []
     , hba1c = []
+    , lipidPanel = []
     }
 
 

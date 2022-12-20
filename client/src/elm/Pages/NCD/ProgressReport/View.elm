@@ -138,9 +138,11 @@ viewHeader language initiator model =
                                 LabResultsCurrentDipstickLong ->
                                     backToCurrentMsg LabResultsCurrentMain
 
+                                LabResultsCurrentLipidPanel ->
+                                    backToCurrentMsg LabResultsCurrentMain
+
                         LabResultsHistory historyMode ->
-                            Maybe.withDefault LabResultsCurrentMain model.labResultsHistoryOrigin
-                                |> backToCurrentMsg
+                            SetLabResultsMode model.labResultsHistoryOrigin
 
                 goBackActionByDiagnosisMode defaultAction =
                     case model.diagnosisMode of
@@ -193,6 +195,7 @@ viewContent language currentDate initiator db model assembled =
                                     , liverFunction = True
                                     , pregnancy = expectLaboratoryTask currentDate assembled TaskPregnancyTest
                                     , hba1c = True
+                                    , lipidPanel = True
                                     }
                             in
                             [ generateLabsResultsPaneData currentDate assembled
@@ -770,4 +773,5 @@ generateLabsResultsPaneData currentDate assembled =
     , liverFunction = extractValues .liverFunctionTest
     , pregnancy = extractValues .pregnancyTest
     , hba1c = extractValues .hba1cTest
+    , lipidPanel = extractValues .lipidPanelTest
     }

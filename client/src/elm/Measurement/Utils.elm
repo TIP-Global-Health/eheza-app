@@ -52,6 +52,7 @@ import Pages.Utils
         , viewMeasurementInput
         , viewQuestionLabel
         )
+import Round
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
@@ -2304,7 +2305,7 @@ viewUrineDipstickForm language currentDate configInitial configPerformed form =
                                 [ VariantLongTest ]
                                 form.testVariant
                                 configInitial.setUrineDipstickTestVariantMsg
-                                Translate.PrenatalUrineDipstickTestVariant
+                                Translate.UrineDipstickTestVariant
                           ]
                         , taskCompleted form.testVariant
                         , 1
@@ -3490,13 +3491,46 @@ lipidPanelResultFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    unitOfMeasurement =
+                        or form.unitOfMeasurement value.unitOfMeasurement
+
+                    resultByValue ratio maybeResult =
+                        Maybe.map2
+                            (\result unit ->
+                                case unit of
+                                    UnitMmolL ->
+                                        Round.roundNum 2 (result / ratio)
+
+                                    UnitMgdL ->
+                                        Round.roundNum 0 result
+                            )
+                            maybeResult
+                            unitOfMeasurement
+                in
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
-                , unitOfMeasurement = or form.unitOfMeasurement value.unitOfMeasurement
-                , totalCholesterolResult = or form.totalCholesterolResult value.totalCholesterolResult
-                , ldlCholesterolResult = or form.ldlCholesterolResult value.ldlCholesterolResult
-                , hdlCholesterolResult = or form.hdlCholesterolResult value.hdlCholesterolResult
-                , triglyceridesResult = or form.triglyceridesResult value.triglyceridesResult
+                , unitOfMeasurement = unitOfMeasurement
+                , totalCholesterolResult =
+                    maybeValueConsideringIsDirtyField form.totalCholesterolResultDirty
+                        form.totalCholesterolResult
+                        (resultByValue cholesterolMmolLToMgdLRatio value.totalCholesterolResult)
+                , totalCholesterolResultDirty = form.totalCholesterolResultDirty
+                , ldlCholesterolResult =
+                    maybeValueConsideringIsDirtyField form.ldlCholesterolResultDirty
+                        form.ldlCholesterolResult
+                        (resultByValue cholesterolMmolLToMgdLRatio value.ldlCholesterolResult)
+                , ldlCholesterolResultDirty = form.ldlCholesterolResultDirty
+                , hdlCholesterolResult =
+                    maybeValueConsideringIsDirtyField form.hdlCholesterolResultDirty
+                        form.hdlCholesterolResult
+                        (resultByValue cholesterolMmolLToMgdLRatio value.hdlCholesterolResult)
+                , hdlCholesterolResultDirty = form.hdlCholesterolResultDirty
+                , triglyceridesResult =
+                    maybeValueConsideringIsDirtyField form.triglyceridesResultDirty
+                        form.triglyceridesResult
+                        (resultByValue triglyceridesMmolLToMgdLRatio value.triglyceridesResult)
+                , triglyceridesResultDirty = form.triglyceridesResultDirty
                 }
             )
 
@@ -3511,16 +3545,40 @@ toLipidPanelResultsValue : LipidPanelResultForm -> Maybe LipidPanelTestValue
 toLipidPanelResultsValue form =
     Maybe.map
         (\executionNote ->
+            let
+                resultForBackend ratio maybeResult =
+                    Maybe.map2
+                        (\unitOfMeasurement result ->
+                            case unitOfMeasurement of
+                                UnitMmolL ->
+                                    Round.roundNum 0 (result * ratio)
+
+                                UnitMgdL ->
+                                    result
+                        )
+                        form.unitOfMeasurement
+                        maybeResult
+            in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , unitOfMeasurement = form.unitOfMeasurement
-            , totalCholesterolResult = form.totalCholesterolResult
-            , ldlCholesterolResult = form.ldlCholesterolResult
-            , hdlCholesterolResult = form.hdlCholesterolResult
-            , triglyceridesResult = form.triglyceridesResult
+            , totalCholesterolResult = resultForBackend cholesterolMmolLToMgdLRatio form.totalCholesterolResult
+            , ldlCholesterolResult = resultForBackend cholesterolMmolLToMgdLRatio form.ldlCholesterolResult
+            , hdlCholesterolResult = resultForBackend cholesterolMmolLToMgdLRatio form.hdlCholesterolResult
+            , triglyceridesResult = resultForBackend triglyceridesMmolLToMgdLRatio form.triglyceridesResult
             }
         )
         form.executionNote
+
+
+cholesterolMmolLToMgdLRatio : Float
+cholesterolMmolLToMgdLRatio =
+    33.67
+
+
+triglyceridesMmolLToMgdLRatio : Float
+triglyceridesMmolLToMgdLRatio =
+    88.57
 
 
 hba1cTestFormWithDefault : HbA1cTestForm msg -> Maybe HbA1cTestValue -> HbA1cTestForm msg
@@ -3664,16 +3722,16 @@ bloodGpRsResultFormAndTasks language currentDate setBloodGroupMsg setRhesusMsg f
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             ( viewSelectInput language
-                Translate.PrenatalLaboratoryBloodGroupTestResult
+                Translate.LaboratoryBloodGroupTestResult
                 form.bloodGroup
-                Translate.PrenatalLaboratoryBloodGroup
+                Translate.LaboratoryBloodGroup
                 bloodGroupToString
                 [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
                 setBloodGroupMsg
                 ++ viewSelectInput language
-                    Translate.PrenatalLaboratoryRhesusTestResult
+                    Translate.LaboratoryRhesusTestResult
                     form.rhesus
-                    Translate.PrenatalLaboratoryRhesus
+                    Translate.LaboratoryRhesus
                     rhesusToString
                     [ RhesusPositive, RhesusNegative ]
                     setRhesusMsg
@@ -3711,9 +3769,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                     let
                         ( commonSection, commonTasksCompleted, commonTasksTotal ) =
                             ( viewSelectInput language
-                                Translate.PrenatalLaboratoryProteinTestResult
+                                Translate.LaboratoryProteinTestResult
                                 form.protein
-                                Translate.PrenatalLaboratoryProteinValue
+                                Translate.LaboratoryProteinValue
                                 proteinValueToString
                                 [ Protein0
                                 , ProteinPlus1
@@ -3723,9 +3781,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                 ]
                                 setProteinMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryPHTestResult
+                                    Translate.LaboratoryPHTestResult
                                     form.ph
-                                    Translate.PrenatalLaboratoryPHValue
+                                    Translate.LaboratoryPHValue
                                     phValueToString
                                     [ Ph40
                                     , Ph45
@@ -3739,9 +3797,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setPHMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryGlucoseTestResult
+                                    Translate.LaboratoryGlucoseTestResult
                                     form.glucose
-                                    Translate.PrenatalLaboratoryGlucoseValue
+                                    Translate.LaboratoryGlucoseValue
                                     glucoseValueToString
                                     [ Glucose0
                                     , GlucosePlus1
@@ -3761,9 +3819,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                         VariantLongTest ->
                             ( commonSection
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryLeukocytesTestResult
+                                    Translate.LaboratoryLeukocytesTestResult
                                     form.leukocytes
-                                    Translate.PrenatalLaboratoryLeukocytesValue
+                                    Translate.LaboratoryLeukocytesValue
                                     leukocytesValueToString
                                     [ LeukocytesNegative
                                     , LeukocytesSmall
@@ -3772,9 +3830,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setLeukocytesMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryNitriteTestResult
+                                    Translate.LaboratoryNitriteTestResult
                                     form.nitrite
-                                    Translate.PrenatalLaboratoryNitriteValue
+                                    Translate.LaboratoryNitriteValue
                                     nitriteValueToString
                                     [ NitriteNegative
                                     , NitritePlus
@@ -3782,9 +3840,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setNitriteMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryUrobilinogenTestResult
+                                    Translate.LaboratoryUrobilinogenTestResult
                                     form.urobilinogen
-                                    Translate.PrenatalLaboratoryUrobilinogenValue
+                                    Translate.LaboratoryUrobilinogenValue
                                     urobilinogenValueToString
                                     [ Urobilinogen002
                                     , Urobilinogen10
@@ -3794,9 +3852,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setUrobilinogenMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryHaemoglobinTestResult
+                                    Translate.LaboratoryHaemoglobinTestResult
                                     form.haemoglobin
-                                    Translate.PrenatalLaboratoryHaemoglobinValue
+                                    Translate.LaboratoryHaemoglobinValue
                                     haemoglobinValueToString
                                     [ HaemoglobinNegative
                                     , HaemoglobinNonHemolyzedTrace
@@ -3808,9 +3866,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setHaemoglobinMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryKetoneTestResult
+                                    Translate.LaboratoryKetoneTestResult
                                     form.ketone
-                                    Translate.PrenatalLaboratoryKetoneValue
+                                    Translate.LaboratoryKetoneValue
                                     ketoneValueToString
                                     [ KetoneNegative
                                     , Ketone5
@@ -3822,9 +3880,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setKetoneMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryBilirubinTestResult
+                                    Translate.LaboratoryBilirubinTestResult
                                     form.bilirubin
-                                    Translate.PrenatalLaboratoryBilirubinValue
+                                    Translate.LaboratoryBilirubinValue
                                     bilirubinValueToString
                                     [ BilirubinNegative
                                     , BilirubinSmall
@@ -3862,7 +3920,7 @@ hemoglobinResultFormAndTasks :
 hemoglobinResultFormAndTasks language currentDate setHemoglobinMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.PrenatalLaboratoryHemoglobinTestResult
+            ( [ viewLabel language Translate.LaboratoryHemoglobinTestResult
               , viewMeasurementInput language
                     form.hemoglobinCount
                     setHemoglobinMsg
@@ -3890,7 +3948,7 @@ randomBloodSugarResultFormAndTasks :
 randomBloodSugarResultFormAndTasks language currentDate setRandomBloodSugarMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.PrenatalLaboratoryRandomBloodSugarTestResult
+            ( [ viewLabel language Translate.LaboratoryRandomBloodSugarTestResult
               , viewMeasurementInput language
                     form.sugarCount
                     setRandomBloodSugarMsg
@@ -3922,7 +3980,7 @@ hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoad
             let
                 ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
                     if form.hivViralLoadStatus == Just ViralLoadDetectable then
-                        ( [ viewLabel language Translate.PrenatalLaboratoryHIVPCRTestResult
+                        ( [ viewLabel language Translate.LaboratoryHIVPCRTestResult
                           , viewMeasurementInput language
                                 form.hivViralLoad
                                 setHIVViralLoadMsg
@@ -3936,7 +3994,7 @@ hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoad
                     else
                         ( [], 0, 0 )
             in
-            ( [ viewQuestionLabel language Translate.PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
+            ( [ viewQuestionLabel language Translate.LaboratoryHIVPCRViralLoadStatusQuestion
               , viewBoolInput language
                     (Maybe.map ((==) ViralLoadUndetectable) form.hivViralLoadStatus)
                     setHIVViralLoadUndetectableMsg
@@ -4043,25 +4101,25 @@ lipidPanelResultFormAndTasks language currentDate setUnitOfMeasurementMsg setTot
                 ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
                     Maybe.map
                         (\unitOfMeasurement ->
-                            ( [ viewLabel language Translate.LaboratoryLipidPanelTotalCholesterolResult
+                            ( [ viewLabel language Translate.LaboratoryLipidPanelTotalCholesterolLabel
                               , viewMeasurementInput language
                                     form.totalCholesterolResult
                                     setTotalCholesterolResultMsg
                                     "total-cholesterol"
                                     (Translate.UnitOfMeasurement unitOfMeasurement)
-                              , viewLabel language Translate.LaboratoryLipidPanelLDLCholesterolResult
+                              , viewLabel language Translate.LaboratoryLipidPanelLDLCholesterolLabel
                               , viewMeasurementInput language
                                     form.ldlCholesterolResult
                                     setLDLCholesterolResultMsg
                                     "ldl"
                                     (Translate.UnitOfMeasurement unitOfMeasurement)
-                              , viewLabel language Translate.LaboratoryLipidPanelHDLCholesterolResult
+                              , viewLabel language Translate.LaboratoryLipidPanelHDLCholesterolLabel
                               , viewMeasurementInput language
                                     form.hdlCholesterolResult
                                     setHDLCholesterolResultMsg
                                     "hdl"
                                     (Translate.UnitOfMeasurement unitOfMeasurement)
-                              , viewLabel language Translate.LaboratoryLipidPanelTriglyceridesResult
+                              , viewLabel language Translate.LaboratoryLipidPanelTriglyceridesLabel
                               , viewMeasurementInput language
                                     form.triglyceridesResult
                                     setTriglyceridesResultMsg
