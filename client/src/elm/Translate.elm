@@ -2254,7 +2254,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NCDA ->
-                    { english = "NCDA"
+                    { english = "ECD Scorecard"
                     , kinyarwanda = Nothing
                     }
 
@@ -2336,7 +2336,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NCDA ->
-                    { english = "NCDA:"
+                    { english = "ECD Scorecard:"
                     , kinyarwanda = Nothing
                     }
 
@@ -2418,7 +2418,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NCDA ->
-                    { english = "NCDA"
+                    { english = "ECD Scorecard"
                     , kinyarwanda = Nothing
                     }
 
@@ -2505,7 +2505,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NCDA ->
-                    { english = "NCDA"
+                    { english = "ECD Scorecard"
                     , kinyarwanda = Nothing
                     }
 
@@ -9820,7 +9820,7 @@ translationSet trans =
                     }
 
                 Backend.NutritionActivity.Model.NCDA ->
-                    { english = "NCDA"
+                    { english = "ECD Scorecard"
                     , kinyarwanda = Nothing
                     }
 
@@ -9857,7 +9857,7 @@ translationSet trans =
                     }
 
                 Backend.NutritionActivity.Model.NCDA ->
-                    { english = "NCDA"
+                    { english = "ECD Scorecard"
                     , kinyarwanda = Nothing
                     }
 
@@ -14549,7 +14549,7 @@ translationSet trans =
                     }
 
                 TabNCDAScoreboard ->
-                    { english = "NCDA Scorecard"
+                    { english = "ECD Scorecard"
                     , kinyarwanda = Nothing
                     }
 
@@ -16358,7 +16358,7 @@ translationSet trans =
                     }
 
                 WellChildNCDA ->
-                    { english = "NCDA"
+                    { english = "ECD Scorecard"
                     , kinyarwanda = Nothing
                     }
 
