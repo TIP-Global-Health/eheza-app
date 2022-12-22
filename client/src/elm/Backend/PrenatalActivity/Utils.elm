@@ -86,6 +86,15 @@ activityToString activity =
         PrenatalImmunisation ->
             "immunisation"
 
+        Breastfeeding ->
+            "breastfeeding"
+
+        SpecialityCare ->
+            "speciality-care"
+
+        PostpartumTreatmentReview ->
+            "postpartum-treatment-review"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -142,6 +151,15 @@ activityFromString s =
 
         "immunisation" ->
             Just PrenatalImmunisation
+
+        "breastfeeding" ->
+            Just Breastfeeding
+
+        "speciality-care" ->
+            Just SpecialityCare
+
+        "postpartum-treatment-review" ->
+            Just PostpartumTreatmentReview
 
         _ ->
             Nothing

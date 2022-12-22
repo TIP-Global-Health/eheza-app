@@ -20,7 +20,7 @@ update currentDate id msg model =
             )
 
         SetActivePage page ->
-            ( model
+            ( { model | viewMode = ViewPatientRecord }
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )

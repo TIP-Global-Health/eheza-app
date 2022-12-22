@@ -100,7 +100,6 @@ viewLabsHistoryContent language currentDate lab db data assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate False assembled Nothing
             ++ viewLab language currentDate lab assembled data
-            ++ []
 
 
 viewLab : Language -> NominalDate -> PrenatalLaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
@@ -217,7 +216,7 @@ viewHeaderAndContent language currentDate id activity db model assembled =
         [ viewHeader language (PrenatalRecurrentEncounterPage id) (Translate.PrenatalRecurrentActivitiesTitle activity) assembled
         , viewContent language currentDate activity db model assembled
         , viewModal <|
-            warningPopup language currentDate False SetWarningPopupState model.warningPopupState
+            warningPopup language currentDate False assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
 
 
@@ -837,7 +836,7 @@ viewNextStepsContent language currentDate assembled data =
                     activeTask == Just task
 
                 isCompleted =
-                    nextStepsTaskCompleted assembled task
+                    nextStepsTaskCompleted currentDate assembled task
 
                 navigationAction =
                     if isActive then

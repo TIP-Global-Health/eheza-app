@@ -1022,3 +1022,21 @@ prenatalTetanusImmunisationEndpoint : ReadWriteEndPoint Error PrenatalTetanusImm
 prenatalTetanusImmunisationEndpoint =
     swEndpoint "nodes/prenatal_tetanus_immunisation" decodePrenatalTetanusImmunisation
         |> withValueEncoder (object << encodePrenatalTetanusImmunisation)
+
+
+prenatalBreastfeedingEndpoint : ReadWriteEndPoint Error PrenatalBreastfeedingId PrenatalBreastfeeding PrenatalBreastfeeding ()
+prenatalBreastfeedingEndpoint =
+    swEndpoint "nodes/prenatal_breastfeeding" decodePrenatalBreastfeeding
+        |> withValueEncoder (object << encodePrenatalBreastfeeding)
+
+
+prenatalGUExamEndpoint : ReadWriteEndPoint Error PrenatalGUExamId PrenatalGUExam PrenatalGUExam ()
+prenatalGUExamEndpoint =
+    swEndpoint "nodes/prenatal_gu_exam" decodePrenatalGUExam
+        |> withValueEncoder (object << encodePrenatalGUExam)
+
+
+prenatalSpecialityCareEndpoint : ReadWriteEndPoint Error PrenatalSpecialityCareId PrenatalSpecialityCare PrenatalSpecialityCare ()
+prenatalSpecialityCareEndpoint =
+    swEndpoint "nodes/prenatal_speciality_care" decodePrenatalSpecialityCare
+        |> withValueEncoder (object << encodePrenatalSpecialityCare)

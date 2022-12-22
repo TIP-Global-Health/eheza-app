@@ -7,6 +7,7 @@ type ExaminationTask
     | NutritionAssessment
     | ObstetricalExam
     | Vitals
+    | GUExam
 
 
 type HistoryTask
@@ -71,6 +72,12 @@ type HeartburnReliefMethod
     | ReliefMethodSleepWithHeadRaised
 
 
+type EarlyMastitisOrEngorgmentReliefMethod
+    = ReliefMethodBreastMassage
+    | ReliefMethodIncreaseFluid
+    | ReliefMethodBreastfeedingOrHandExpression
+
+
 type TreatmentReviewTask
     = TreatmentReviewPrenatalMedication
     | TreatmentReviewHIV
@@ -87,3 +94,12 @@ type OutsideCareStep
 
 type ImmunisationTask
     = TaskTetanus
+
+
+type WarningPopupType msg
+    = WarningPopupUrgent ( String, String )
+    | WarningPopupRegular
+    | WarningPopupTuberculosis
+    | WarningPopupMentalHealth msg
+    | WarningPopupTreatmentReview msg
+    | WarningPopupVitaminA msg

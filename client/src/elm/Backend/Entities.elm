@@ -1149,3 +1149,27 @@ type alias PrenatalTetanusImmunisationId =
 
 type PrenatalTetanusImmunisationUuidType
     = PrenatalTetanusImmunisationUuidType
+
+
+type alias PrenatalBreastfeedingId =
+    EntityUuid PrenatalBreastfeedingUuidType
+
+
+type PrenatalBreastfeedingUuidType
+    = PrenatalBreastfeedingUuidType
+
+
+type alias PrenatalGUExamId =
+    EntityUuid PrenatalGUExamUuidType
+
+
+type PrenatalGUExamUuidType
+    = PrenatalGUExamUuidType
+
+
+type alias PrenatalSpecialityCareId =
+    EntityUuid PrenatalSpecialityCareUuidType
+
+
+type PrenatalSpecialityCareUuidType
+    = PrenatalSpecialityCareUuidType

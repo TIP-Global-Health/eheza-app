@@ -16,7 +16,7 @@ update msg model =
         CloseEncounter id ->
             ( model
             , Cmd.none
-            , [ Backend.PrenatalEncounter.Model.ClosePrenatalEncounter
+            , [ Backend.PrenatalEncounter.Model.CloseEncounter
                     |> Backend.Model.MsgPrenatalEncounter id
                     |> App.Model.MsgIndexedDb
               , App.Model.SetActivePage PinCodePage

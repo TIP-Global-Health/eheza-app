@@ -13,12 +13,13 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
-import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
+import Pages.GlobalCaseManagement.Utils exposing (prenatalLabsResultsTestData)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Utils exposing (setMultiSelectInputValue)
+import Pages.Utils exposing (nonAdministrationReasonToSign, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 
@@ -501,13 +502,53 @@ update language currentDate id db msg model =
             Maybe.map (\task -> [ SetActiveLabResultsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
 
-        generateNextStepsMsgs nextTask =
+        generateNextStepsMsgs personId nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault
-                    [ SetActivePage <|
-                        UserPage <|
-                            ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id) id
-                    ]
+                    (let
+                        -- When Next steps are completed, and all lab results were
+                        -- entered, we close the entry.
+                        closeLabsResultsMsg =
+                            Dict.get id db.prenatalMeasurements
+                                |> Maybe.andThen RemoteData.toMaybe
+                                |> Maybe.andThen .labsResults
+                                |> Maybe.andThen
+                                    (\( labsResultsId, results ) ->
+                                        let
+                                            ( performedTests, completedTests ) =
+                                                prenatalLabsResultsTestData currentDate results
+                                        in
+                                        if List.length performedTests == List.length completedTests then
+                                            let
+                                                updatedValue =
+                                                    results.value
+                                                        |> (\value ->
+                                                                { value | resolutionDate = currentDate }
+                                                           )
+                                            in
+                                            Just <| CloseLabsResultsEntry personId labsResultsId updatedValue
+
+                                        else
+                                            Nothing
+                                    )
+                     in
+                     Maybe.map
+                        (\closeMsg ->
+                            -- We're closing labs results enrty, which means that all results
+                            -- were entered and Next steps are completed.
+                            -- Therefore, we navigate to Progress report page.
+                            [ closeMsg
+                            , SetActivePage <|
+                                UserPage <|
+                                    ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id) id
+                            ]
+                        )
+                        closeLabsResultsMsg
+                        |> Maybe.withDefault
+                            -- Not all labs results are completed, therefore,
+                            -- we navigate to encounter page.
+                            [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
+                    )
     in
     case msg of
         NoOp ->
@@ -524,28 +565,6 @@ update language currentDate id db msg model =
 
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
-
-        ViewWarningPopupForNonUrgentDiagnoses ->
-            let
-                nonUrgentDiagnoses =
-                    Dict.get id db.prenatalEncounters
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map (.diagnoses >> EverySet.toList >> filterNonUrgentDiagnoses)
-                        |> Maybe.withDefault []
-
-                extraMsgs =
-                    if List.isEmpty nonUrgentDiagnoses then
-                        []
-
-                    else
-                        let
-                            message =
-                                List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) nonUrgentDiagnoses
-                                    |> String.join ", "
-                        in
-                        [ SetWarningPopupState <| Just ( message, "" ) ]
-            in
-            sequenceExtra (update language currentDate id db) extraMsgs noChange
 
         SetVitalsFloatInput formUpdateFunc value ->
             let
@@ -1186,7 +1205,7 @@ update language currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs personId nextTask
 
                 appMsgs =
                     model.nextStepsData.referralForm
@@ -1284,7 +1303,7 @@ update language currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs personId nextTask
 
                 appMsgs =
                     model.nextStepsData.medicationDistributionForm
@@ -1326,7 +1345,7 @@ update language currentDate id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask
+                    generateNextStepsMsgs personId nextTask
 
                 appMsgs =
                     model.nextStepsData.healthEducationForm
@@ -1344,3 +1363,12 @@ update language currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        CloseLabsResultsEntry personId labsResultsId value ->
+            ( model
+            , Cmd.none
+            , [ Backend.PrenatalEncounter.Model.SaveLabsResults personId (Just labsResultsId) value
+                    |> Backend.Model.MsgPrenatalEncounter id
+                    |> App.Model.MsgIndexedDb
+              ]
+            )

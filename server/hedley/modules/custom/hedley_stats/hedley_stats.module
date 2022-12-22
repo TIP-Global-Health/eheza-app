@@ -335,9 +335,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   // Get all clinics of type 'FBF' for the HC.
   $fbf_clinics = hedley_health_center_get_clinics_by_health_center($health_center_id, 'fbf');
   // Calculate statistics that are provided for FBF clinics only.
-  if (!empty($fbf_clinics)) {
-    hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
-  }
+  hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
 
   $villages_with_residents = hedley_stats_get_villages_with_residents($health_center_id);
 
@@ -523,7 +521,9 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
 
   $individual_participants = array_keys($result);
   if (empty($individual_participants)) {
-    return [];
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA, $health_center_id, NULL, $result);
+    return $result;
   }
 
   // For each illness, pull the patient and outcome data.
@@ -704,7 +704,9 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $result = hedley_stats_run_node_query_in_batches($query);
 
   if (empty($result)) {
-    return [];
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PRENATAL_DATA, $health_center_id, NULL, $result);
+    return $result;
   }
 
   $items = [];
@@ -1008,14 +1010,16 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
  * @throws \Exception
  */
 function hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, array $fbf_clinics) {
-  if (empty($fbf_clinics)) {
-    // No clinics found.
-    return [];
-  }
-
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id)) {
     return $cache_data;
+  }
+
+  if (empty($fbf_clinics)) {
+    $result = [[], []];
+    // No clinics found.
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id, NULL, $result);
+    return $result;
   }
 
   $periods = [
@@ -1978,7 +1982,7 @@ function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY
  * @param string $period
  *   Optional; A period for the cache ID.
  * @param mixed $cache_data
- *   Optional; The cache data to set, if empty it won't be set.
+ *   Optional; The cache data to set.
  *
  * @return mixed|null
  *   Either the cache data or nothing if we are setting it.
@@ -1988,13 +1992,15 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
 
   switch ($method) {
     case HEDLEY_STATS_CACHE_GET:
-      $cache = cache_get($cache_id);
-      return !empty($cache) ? $cache->data : NULL;
+      $cached = cache_get($cache_id);
+      return !empty($cached) ? $cached->data['value'] : NULL;
 
     case HEDLEY_STATS_CACHE_SET:
-      if ($cache_data) {
-        cache_set($cache_id, $cache_data);
-      }
+      $cached = [
+        'timestamp' => time(),
+        'value' => $cache_data,
+      ];
+      cache_set($cache_id, $cached);
       break;
 
     case HEDLEY_STATS_CACHE_CLEAR:

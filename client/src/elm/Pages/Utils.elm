@@ -3,7 +3,14 @@ module Pages.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (PersonId)
-import Backend.Measurement.Model exposing (AdministrationNote, MedicationDistributionSign(..), MedicationDistributionValue, MedicationNonAdministrationSign(..), PhotoUrl(..))
+import Backend.Measurement.Model
+    exposing
+        ( AdministrationNote(..)
+        , MedicationDistributionSign(..)
+        , MedicationDistributionValue
+        , MedicationNonAdministrationSign(..)
+        , PhotoUrl(..)
+        )
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
@@ -208,6 +215,97 @@ viewQuestionLabel language translationId =
 viewCustomLabel : Language -> TranslationId -> String -> String -> Html any
 viewCustomLabel language translationId suffix class_ =
     div [ class class_ ] [ text <| (translate language translationId ++ suffix) ]
+
+
+getCurrentReasonForMedicationNonAdministration :
+    (AdministrationNote -> MedicationNonAdministrationSign)
+    -> { f | nonAdministrationSigns : Maybe (EverySet MedicationNonAdministrationSign) }
+    -> Maybe AdministrationNote
+getCurrentReasonForMedicationNonAdministration reasonToSignFunc form =
+    let
+        nonAdministrationSigns =
+            form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
+    in
+    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientDeclined, NonAdministrationPatientUnableToAfford, NonAdministrationOther ]
+        |> List.filterMap
+            (\reason ->
+                if EverySet.member (reasonToSignFunc reason) nonAdministrationSigns then
+                    Just reason
+
+                else
+                    Nothing
+            )
+        |> List.head
+
+
+nonAdministrationReasonToSign : MedicationDistributionSign -> AdministrationNote -> MedicationNonAdministrationSign
+nonAdministrationReasonToSign sign reason =
+    case sign of
+        Amoxicillin ->
+            MedicationAmoxicillin reason
+
+        Coartem ->
+            MedicationCoartem reason
+
+        ORS ->
+            MedicationORS reason
+
+        Zinc ->
+            MedicationZinc reason
+
+        Paracetamol ->
+            MedicationParacetamol reason
+
+        Mebendezole ->
+            MedicationMebendezole reason
+
+        Tenofovir ->
+            MedicationTenofovir reason
+
+        Lamivudine ->
+            MedicationLamivudine reason
+
+        Dolutegravir ->
+            MedicationDolutegravir reason
+
+        TDF3TC ->
+            MedicationTDF3TC reason
+
+        Iron ->
+            MedicationIron reason
+
+        FolicAcid ->
+            MedicationFolicAcid reason
+
+        Ceftriaxone ->
+            MedicationCeftriaxone reason
+
+        Azithromycin ->
+            MedicationAzithromycin reason
+
+        Metronidazole ->
+            MedicationMetronidazole reason
+
+        VitaminA ->
+            MedicationVitaminA reason
+
+        -- Bellow are not in use, but we specify them explicitly to make
+        -- sure that compile arets if we forget to address new
+        -- MedicationDistributionSign, when added.
+        Albendazole ->
+            NoMedicationNonAdministrationSigns
+
+        LemonJuiceOrHoney ->
+            NoMedicationNonAdministrationSigns
+
+        NoMedicationDistributionSigns ->
+            NoMedicationNonAdministrationSigns
+
+        NoMedicationDistributionSignsInitialPhase ->
+            NoMedicationNonAdministrationSigns
+
+        NoMedicationDistributionSignsRecurrentPhase ->
+            NoMedicationNonAdministrationSigns
 
 
 

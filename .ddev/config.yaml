@@ -1,7 +1,7 @@
 name: eheza-app
 type: drupal7
 docroot: server/www
-php_version: "7.3"
+php_version: "7.4"
 webserver_type: nginx-fpm
 router_http_port: "8081"
 router_https_port: "4443"
@@ -16,6 +16,7 @@ mutagen_enabled: false
 use_dns_when_possible: true
 composer_version: "1"
 web_environment: []
+nodejs_version: "16"
 
 # Key features of ddev's config.yaml:
 

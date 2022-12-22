@@ -35,6 +35,7 @@ emptyPrenatalEncounter participant startDate encounterType shard =
 
 type PrenatalEncounterType
     = NurseEncounter
+    | NursePostpartumEncounter
     | ChwFirstEncounter
     | ChwSecondEncounter
     | ChwThirdPlusEncounter
@@ -106,6 +107,9 @@ type alias Model =
     , saveHIVPCRTest : WebData ()
     , saveMentalHealth : WebData ()
     , saveTetanusImmunisation : WebData ()
+    , saveBreastfeeding : WebData ()
+    , saveGUExam : WebData ()
+    , saveSpecialityCare : WebData ()
     }
 
 
@@ -148,11 +152,14 @@ emptyModel =
     , saveHIVPCRTest = NotAsked
     , saveMentalHealth = NotAsked
     , saveTetanusImmunisation = NotAsked
+    , saveBreastfeeding = NotAsked
+    , saveGUExam = NotAsked
+    , saveSpecialityCare = NotAsked
     }
 
 
 type Msg
-    = ClosePrenatalEncounter
+    = CloseEncounter
     | SetPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetPastPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetLabsHistoryCompleted
@@ -229,3 +236,9 @@ type Msg
     | HandleSavedMentalHealth (WebData ())
     | SaveTetanusImmunisation PersonId (Maybe PrenatalTetanusImmunisationId) VaccinationValue
     | HandleSavedTetanusImmunisation (WebData ())
+    | SaveBreastfeeding PersonId (Maybe PrenatalBreastfeedingId) BreastfeedingValue
+    | HandleSavedBreastfeeding (WebData ())
+    | SaveGUExam PersonId (Maybe PrenatalGUExamId) GUExamValue
+    | HandleSavedGUExam (WebData ())
+    | SaveSpecialityCare PersonId (Maybe PrenatalSpecialityCareId) SpecialityCareValue
+    | HandleSavedSpecialityCare (WebData ())

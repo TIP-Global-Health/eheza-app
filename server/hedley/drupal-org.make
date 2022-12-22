@@ -26,7 +26,7 @@ projects[composer_manager][subdir] = "contrib"
 projects[composer_manager][version] = "1.8"
 
 projects[date][subdir] = "contrib"
-projects[date][version] = "2.11-beta3"
+projects[date][version] = "2.13"
 
 projects[diff][subdir] = "contrib"
 projects[diff][version] = "3.2"
@@ -107,13 +107,13 @@ projects[strongarm][subdir] = "contrib"
 projects[strongarm][version] = "2.0"
 
 projects[title][subdir] = "contrib"
-projects[title][version] = "1.0-alpha9"
+projects[title][version] = "1.0-beta4"
 
 projects[token][subdir] = "contrib"
 projects[token][version] = "1.7"
 
 projects[views][subdir] = "contrib"
-projects[views][version] = "3.22"
+projects[views][version] = "3.27"
 
 projects[views_bulk_operations][subdir] = "contrib"
 projects[views_bulk_operations][version] = "3.5"

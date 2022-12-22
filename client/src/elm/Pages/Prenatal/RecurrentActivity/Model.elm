@@ -7,7 +7,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (SendToHCForm, VitalsForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.Page exposing (Page)
-import Pages.Prenatal.Activity.Types exposing (LaboratoryTask)
+import Pages.Prenatal.Activity.Types exposing (LaboratoryTask, WarningPopupType)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 
@@ -16,8 +16,7 @@ type Msg
     = NoOp
     | SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetWarningPopupState (Maybe ( String, String ))
-    | ViewWarningPopupForNonUrgentDiagnoses
+    | SetWarningPopupState (Maybe (WarningPopupType Msg))
       -- ExaminationMsgs
     | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
     | SaveVitals PersonId (Maybe ( VitalsId, Vitals ))
@@ -59,6 +58,7 @@ type Msg
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) (Maybe NextStepsTask)
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation )) (Maybe NextStepsTask)
+    | CloseLabsResultsEntry PersonId PrenatalLabsResultsId PrenatalLabsResultsValue
 
 
 type alias Model =
@@ -66,7 +66,7 @@ type alias Model =
     , labResultsData : LabResultsData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
-    , warningPopupState : Maybe ( String, String )
+    , warningPopupState : Maybe (WarningPopupType Msg)
     }
 
 

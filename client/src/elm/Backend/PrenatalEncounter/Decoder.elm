@@ -45,6 +45,9 @@ decodePrenatalEncounterType =
                     "nurse" ->
                         succeed NurseEncounter
 
+                    "nurse-postpartum" ->
+                        succeed NursePostpartumEncounter
+
                     "chw-1" ->
                         succeed ChwFirstEncounter
 
@@ -276,6 +279,36 @@ decodePrenatalDiagnosis =
 
                     "other" ->
                         succeed DiagnosisOther
+
+                    "postpartum-abdominal-pain" ->
+                        succeed DiagnosisPostpartumAbdominalPain
+
+                    "postpartum-urinary-incontinence" ->
+                        succeed DiagnosisPostpartumUrinaryIncontinence
+
+                    "postpartum-headache" ->
+                        succeed DiagnosisPostpartumHeadache
+
+                    "postpartum-fatigue" ->
+                        succeed DiagnosisPostpartumFatigue
+
+                    "postpartum-fever" ->
+                        succeed DiagnosisPostpartumFever
+
+                    "postpartum-perineal-pain-discharge" ->
+                        succeed DiagnosisPostpartumPerinealPainOrDischarge
+
+                    "postpartum-infection" ->
+                        succeed DiagnosisPostpartumInfection
+
+                    "postpartum-excessive-bleeding" ->
+                        succeed DiagnosisPostpartumExcessiveBleeding
+
+                    "postpartum-early-mastitis-engorgment" ->
+                        succeed DiagnosisPostpartumEarlyMastitisOrEngorgment
+
+                    "postpartum-mastitis" ->
+                        succeed DiagnosisPostpartumMastitis
 
                     "none" ->
                         succeed NoPrenatalDiagnosis

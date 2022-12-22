@@ -132,6 +132,9 @@ decodePrenatalMeasurements =
         |> optional "prenatal_hiv_pcr_test" (decodeHead decodePrenatalHIVPCRTest) Nothing
         |> optional "prenatal_mental_health" (decodeHead decodePrenatalMentalHealth) Nothing
         |> optional "prenatal_tetanus_immunisation" (decodeHead decodePrenatalTetanusImmunisation) Nothing
+        |> optional "prenatal_breastfeeding" (decodeHead decodePrenatalBreastfeeding) Nothing
+        |> optional "prenatal_gu_exam" (decodeHead decodePrenatalGUExam) Nothing
+        |> optional "prenatal_speciality_care" (decodeHead decodePrenatalSpecialityCare) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -337,6 +340,12 @@ decodePrenatalHealthEducationSign =
 
                     "diabetes" ->
                         succeed EducationDiabetes
+
+                    "early-mastitis-engorgment" ->
+                        succeed EducationEarlyMastitisOrEngorgment
+
+                    "mastitis" ->
+                        succeed EducationMastitis
 
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
@@ -932,6 +941,121 @@ decodePrenatalTetanusImmunisation =
     decodePrenatalMeasurement decodeVaccinationValue
 
 
+decodePrenatalBreastfeeding : Decoder PrenatalBreastfeeding
+decodePrenatalBreastfeeding =
+    decodePrenatalMeasurement decodeBreastfeedingValue
+
+
+decodeBreastfeedingValue : Decoder BreastfeedingValue
+decodeBreastfeedingValue =
+    field "breastfeeding_signs" (decodeEverySet decodeBreastfeedingSign)
+
+
+decodeBreastfeedingSign : Decoder BreastfeedingSign
+decodeBreastfeedingSign =
+    string
+        |> andThen
+            (\s ->
+                breastfeedingSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized BreastfeedingSign"
+                        )
+            )
+
+
+decodePrenatalGUExam : Decoder PrenatalGUExam
+decodePrenatalGUExam =
+    decodePrenatalMeasurement decodeGUExamValue
+
+
+decodeGUExamValue : Decoder GUExamValue
+decodeGUExamValue =
+    succeed GUExamValue
+        |> required "vaginal_exam_signs" (decodeEverySet decodeVaginalExamSign)
+        |> required "gu_exam_signs" (decodeEverySet decodeGUExamSign)
+        |> optional "postpartum_healing_problem" (nullable (decodeEverySet decodePostpartumHealingProblem)) Nothing
+
+
+decodeVaginalExamSign : Decoder VaginalExamSign
+decodeVaginalExamSign =
+    string
+        |> andThen
+            (\s ->
+                vaginalExamSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized VaginalExamSign"
+                        )
+            )
+
+
+decodeGUExamSign : Decoder GUExamSign
+decodeGUExamSign =
+    string
+        |> andThen
+            (\s ->
+                guExamSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized GUExamSign"
+                        )
+            )
+
+
+decodePostpartumHealingProblem : Decoder PostpartumHealingProblem
+decodePostpartumHealingProblem =
+    string
+        |> andThen
+            (\s ->
+                postpartumHealingProblemFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized PostpartumHealingProblem"
+                        )
+            )
+
+
+decodePrenatalSpecialityCare : Decoder PrenatalSpecialityCare
+decodePrenatalSpecialityCare =
+    decodePrenatalMeasurement decodeSpecialityCareValue
+
+
+decodeSpecialityCareValue : Decoder SpecialityCareValue
+decodeSpecialityCareValue =
+    field "speciality_care_signs" (decodeEverySet decodeSpecialityCareSign)
+
+
+decodeSpecialityCareSign : Decoder SpecialityCareSign
+decodeSpecialityCareSign =
+    string
+        |> andThen
+            (\value ->
+                case value of
+                    "arv" ->
+                        succeed EnrolledToARVProgram
+
+                    "ncd" ->
+                        succeed EnrolledToNCDProgram
+
+                    "none" ->
+                        succeed NoSpecialityCareSigns
+
+                    _ ->
+                        fail <|
+                            value
+                                ++ " is not a recognized SpecialityCareSign"
+            )
+
+
 decodeHeight : Decoder Height
 decodeHeight =
     field "height" decodeFloat
@@ -1253,6 +1377,9 @@ decodeBreastExamSign =
 
                     "infection" ->
                         succeed Infection
+
+                    "warmth" ->
+                        succeed Warmth
 
                     "normal" ->
                         succeed NormalBreast
@@ -1624,6 +1751,12 @@ decodeMedicationSign =
 
                     "mebendezole" ->
                         succeed Mebendazole
+
+                    "folic-acid" ->
+                        succeed PostpartumFolicAcid
+
+                    "vitamin-a" ->
+                        succeed PostpartumVitaminA
 
                     "none" ->
                         succeed NoMedication
@@ -3006,7 +3139,7 @@ decodeMedicationDistributionSign =
                     "mebendezole" ->
                         succeed Mebendezole
 
-                    "vitamin-a" ->
+                    "vitamina" ->
                         succeed VitaminA
 
                     "paracetamol" ->
@@ -3152,6 +3285,11 @@ decodeMedicationNonAdministrationSign =
                                     "metronidazole" ->
                                         administrationNote
                                             |> Maybe.map (MedicationMetronidazole >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "vitamina" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationVitaminA >> succeed)
                                             |> Maybe.withDefault failure
 
                                     _ ->

@@ -36,7 +36,8 @@ import Pages.Prenatal.Activity.Utils exposing (activityCompleted, expectActivity
 import Pages.Prenatal.Encounter.Model exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Prenatal.View exposing (viewPauseEncounterButton)
+import Pages.Prenatal.Utils exposing (undeterminedPostpartumDiagnoses)
+import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButton)
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -81,6 +82,8 @@ viewHeaderAndContent language currentDate id isChw model assembled =
         , viewModal <|
             viewChwWarningPopup language assembled model
         , viewModal endEncounterDialog
+        , viewModal <|
+            viewUndeterminedDiagnosesWarningPopup language currentDate assembled model
         ]
 
 
@@ -132,6 +135,51 @@ viewChwWarningPopup language assembled model =
 
     else
         Nothing
+
+
+viewUndeterminedDiagnosesWarningPopup : Language -> NominalDate -> AssembledData -> Model -> Maybe (Html Msg)
+viewUndeterminedDiagnosesWarningPopup language currentDate assembled model =
+    if assembled.encounter.encounterType /= NursePostpartumEncounter || model.undeterminedDiagnosesWarningAcknowledged then
+        Nothing
+
+    else
+        let
+            ( completedActivities, pendingActivities ) =
+                getAllActivities assembled
+                    |> List.filter (expectActivity currentDate assembled)
+                    |> List.partition (activityCompleted currentDate assembled)
+        in
+        if List.length pendingActivities > 0 || List.member NextSteps completedActivities then
+            Nothing
+
+        else
+            let
+                diagnoses =
+                    EverySet.toList assembled.encounter.diagnoses
+
+                ( undetermined, determined ) =
+                    List.partition (\diagnosis -> List.member diagnosis undeterminedPostpartumDiagnoses) diagnoses
+            in
+            if List.isEmpty undetermined then
+                Nothing
+
+            else
+                let
+                    undeterminedDiagnoses =
+                        List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) undetermined
+                            |> String.join ", "
+
+                    message =
+                        div [ class "top-message" ]
+                            [ p []
+                                [ text <| translate language Translate.UndeterminedDiagnoses
+                                , text " - "
+                                , text undeterminedDiagnoses
+                                ]
+                            , p [] [ text <| translate language Translate.FollowPostpartumProtocols ]
+                            ]
+                in
+                Just <| customWarningPopup language ( message, emptyNode, UndeterminedDiagnosesWarningAcknowledged )
 
 
 viewMotherAndMeasurements : Language -> NominalDate -> Bool -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> List (Html msg)
@@ -425,9 +473,10 @@ viewMainPageContent language currentDate assembled model =
                 , viewActionButton language
                     pendingActivities
                     completedActivities
-                    -- When pausing, we don't close the encounter,
-                    -- as it should happend on second phase.
-                    (SetActivePage PinCodePage)
+                    -- When pausing, we close the encounter.
+                    -- Entering lab results is available from
+                    -- Case management page.
+                    CloseEncounter
                     SetEndEncounterDialogState
                     assembled
                 ]
@@ -447,6 +496,9 @@ generateActivityData activity assembled =
         NextSteps ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
+                    default
+
+                NursePostpartumEncounter ->
                     default
 
                 ChwPostpartumEncounter ->
@@ -477,7 +529,7 @@ viewActionButton language pendingActivities completedActivities pauseMsg setDial
                     [] ->
                         True
 
-                    -- Or only one none mandatory activity remains
+                    -- Or only one non mandatory activity remains
                     [ PrenatalPhoto ] ->
                         True
 

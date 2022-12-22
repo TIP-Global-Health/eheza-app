@@ -166,6 +166,11 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
 
       foreach ($this->multiDateFields as $field_name) {
         $public_name = str_replace('field_', '', $field_name);
+
+        if (empty($item->{$public_name})) {
+          continue;
+        }
+
         $dates = [];
         foreach ($item->{$public_name} as $raw_date) {
           $date = explode(' ', $raw_date);

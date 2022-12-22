@@ -17,7 +17,7 @@ view language toSelect toClose minimum maximum selected =
             [ class "ui button"
             , onClick toClose
             ]
-            [ text <| translate language Translate.Close ]
+            [ text <| translate language Translate.Save ]
         ]
 
 
