@@ -319,8 +319,7 @@ viewContent language currentDate isChw initiator model assembled =
                             Maybe.map (EverySet.member component) model.components
                                 |> Maybe.withDefault False
                     in
-                    [ viewHeaderPane language currentDate assembled
-                    , viewRiskFactorsPane language currentDate firstEncounterMeasurements
+                    [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
                         |> showIf
                             ((regularViewMode && isNothing model.labResultsMode)
                                 || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalRiskFactors
