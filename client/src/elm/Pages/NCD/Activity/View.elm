@@ -1126,6 +1126,7 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
                     , setRandomBloodSugarTestExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
                     , setRandomBloodSugarTestDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                    , setRandomBloodSugarResultMsg = SetRandomBloodSugarResult
                     , setPregnancyTestFormBoolInputMsg = SetPregnancyTestFormBoolInput
                     , setPregnancyTestExecutionDateMsg = SetPregnancyTestExecutionDate
                     , setPregnancyTestDateSelectorStateMsg = SetPregnancyTestDateSelectorState

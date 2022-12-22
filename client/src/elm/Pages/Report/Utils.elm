@@ -7,7 +7,9 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Date
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
+import Measurement.Utils exposing (testPerformedByExecutionNote)
 import Pages.Report.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
@@ -83,9 +85,14 @@ bilirubinResultNormal =
     (==) BilirubinNegative
 
 
-randomBloodSugarResultNormal : Float -> Bool
-randomBloodSugarResultNormal value =
-    value >= 74 && value <= 110
+randomBloodSugarResultNormal : RandomBloodSugarResult -> Bool
+randomBloodSugarResultNormal result =
+    case result of
+        TestRunBeforeMeal value ->
+            value >= 74 && value <= 126
+
+        TestRunAfterMeal value ->
+            value >= 74 && value <= 200
 
 
 hemoglobinResultNormal : Float -> Bool
@@ -223,3 +230,35 @@ diagnosisEntryStatusToString status =
 
         StatusResolved ->
             "resolved"
+
+
+getRandomBloodSugarResultValue : RandomBloodSugarResult -> Float
+getRandomBloodSugarResultValue result =
+    case result of
+        TestRunBeforeMeal value ->
+            value
+
+        TestRunAfterMeal value ->
+            value
+
+
+randomBloodSugarResultFromValue : RandomBloodSugarTestValue encounterId -> Maybe ( NominalDate, Maybe RandomBloodSugarResult )
+randomBloodSugarResultFromValue value =
+    if testPerformedByExecutionNote value.executionNote then
+        Maybe.map2
+            (\executionDate testPrerequisites ->
+                let
+                    result =
+                        if EverySet.member PrerequisiteFastFor12h testPrerequisites then
+                            Maybe.map TestRunBeforeMeal value.sugarCount
+
+                        else
+                            Maybe.map TestRunAfterMeal value.sugarCount
+                in
+                ( executionDate, result )
+            )
+            value.executionDate
+            value.testPrerequisites
+
+    else
+        Nothing

@@ -1621,7 +1621,7 @@ hivTestFormWithDefault form saved =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1706,7 +1706,7 @@ malariaTestFormWithDefault form saved =
             (\value ->
                 let
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1751,7 +1751,7 @@ urineDipstickFormWithDefault form saved =
             (\value ->
                 let
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1805,7 +1805,7 @@ randomBloodSugarFormWithDefault form saved =
             (\value ->
                 let
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1813,10 +1813,15 @@ randomBloodSugarFormWithDefault form saved =
                     patientFastedValue =
                         Maybe.map (EverySet.member PrerequisiteFastFor12h)
                             value.testPrerequisites
+
+                    immediateResultValue =
+                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                            value.testPrerequisites
                 in
                 { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
                 , patientFasted = or form.patientFasted patientFastedValue
+                , immediateResult = or form.immediateResult immediateResultValue
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -1824,6 +1829,8 @@ randomBloodSugarFormWithDefault form saved =
                 , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
                 , executionDateDirty = form.executionDateDirty
                 , dateSelectorPopupState = form.dateSelectorPopupState
+                , sugarCount = maybeValueConsideringIsDirtyField form.sugarCountDirty form.sugarCount value.sugarCount
+                , sugarCountDirty = form.sugarCountDirty
                 }
             )
 
@@ -1840,20 +1847,28 @@ toRandomBloodSugarTestValue form =
         (\executionNote ->
             let
                 testPrerequisites =
-                    Maybe.map
-                        (\patientFasted ->
-                            if patientFasted then
-                                EverySet.singleton PrerequisiteFastFor12h
+                    Maybe.map2
+                        (\patientFasted immediateResult ->
+                            case ( patientFasted, immediateResult ) of
+                                ( True, True ) ->
+                                    EverySet.fromList [ PrerequisiteFastFor12h, PrerequisiteImmediateResult ]
 
-                            else
-                                EverySet.singleton NoTestPrerequisites
+                                ( True, False ) ->
+                                    EverySet.singleton PrerequisiteFastFor12h
+
+                                ( False, True ) ->
+                                    EverySet.singleton PrerequisiteImmediateResult
+
+                                ( False, False ) ->
+                                    EverySet.singleton NoTestPrerequisites
                         )
                         form.patientFasted
+                        form.immediateResult
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisites
-            , sugarCount = Nothing
+            , sugarCount = form.sugarCount
             , originatingEncounter = Nothing
             }
         )
@@ -1871,7 +1886,7 @@ pregnancyTestFormWithDefault form saved =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1923,7 +1938,7 @@ nonRDTFormWithDefault form saved =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -2355,32 +2370,60 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
                         contentAndTasksForPerformedLaboratoryTest language currentDate configPerformed TaskRandomBloodSugarTest form
 
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
+                        ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteImmediateResult
+                          , viewBoolInput
+                                language
+                                form.immediateResult
+                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , sugarCount = Nothing
+                                            , sugarCountDirty = True
+                                        }
+                                    )
+                                )
+                                "immediate-result"
+                                (Just ( Translate.PointOfCare, Translate.Lab ))
+                          , viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
                           , viewBoolInput
                                 language
                                 form.patientFasted
-                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg (\value form_ -> { form_ | patientFasted = Just value }))
+                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg
+                                    (\value form_ -> { form_ | patientFasted = Just value })
+                                )
                                 "patient-fasted"
                                 Nothing
                           ]
-                        , taskCompleted form.patientFasted
-                        , 1
+                        , taskCompleted form.patientFasted + taskCompleted form.immediateResult
+                        , 2
                         )
 
-                    testResultSection =
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
-                            []
+                            emptySection
+
+                        else if form.immediateResult == Just True then
+                            randomBloodSugarResultInputAndTask language
+                                configPerformed.setRandomBloodSugarResultMsg
+                                form.sugarCount
 
                         else
-                            [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                            ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                            , 0
+                            , 0
+                            )
                 in
                 ( testPrerequisitesSection ++ performedTestSection ++ testResultSection
-                , performedTestTasksCompleted + testPrerequisitesTasksCompleted
-                , performedTestTasksTotal + testPrerequisitesTasksTotal
+                , performedTestTasksCompleted + testPrerequisitesTasksCompleted + testResultTasksCompleted
+                , performedTestTasksTotal + testPrerequisitesTasksTotal + testResultTasksTotal
                 )
 
             else
-                ( [], 0, 0 )
+                emptySection
+
+        emptySection =
+            ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
         [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
@@ -2691,7 +2734,25 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     }
 
                 TaskRandomBloodSugarTest ->
-                    { setBoolInputMsg = config.setRandomBloodSugarTestFormBoolInputMsg boolInputUpdateFunc
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedDirty = True
+                                    , testPerformedToday = Nothing
+                                    , testPerformedTodayDirty = True
+                                    , patientFasted = Nothing
+                                    , immediateResult = Nothing
+                                    , executionNote = Nothing
+                                    , executionNoteDirty = True
+                                    , executionDate = Nothing
+                                    , executionDateDirty = True
+                                    , sugarCount = Nothing
+                                    , sugarCountDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setRandomBloodSugarTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setRandomBloodSugarTestExecutionNoteMsg
                     }
 
@@ -3095,6 +3156,7 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
     , setRandomBloodSugarTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setRandomBloodSugarTestExecutionDateMsg = always noOpMsg
     , setRandomBloodSugarTestDateSelectorStateMsg = always noOpMsg
+    , setRandomBloodSugarResultMsg = always noOpMsg
     , setHIVPCRTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setHIVPCRTestExecutionDateMsg = always noOpMsg
     , setHIVPCRTestDateSelectorStateMsg = always noOpMsg
@@ -3948,22 +4010,31 @@ randomBloodSugarResultFormAndTasks :
 randomBloodSugarResultFormAndTasks language currentDate setRandomBloodSugarMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.LaboratoryRandomBloodSugarTestResult
-              , viewMeasurementInput language
-                    form.sugarCount
-                    setRandomBloodSugarMsg
-                    "sugar-count"
-                    Translate.UnitMilliGramsPerDeciliter
-              ]
-            , taskCompleted form.sugarCount
-            , 1
-            )
+            randomBloodSugarResultInputAndTask language setRandomBloodSugarMsg form.sugarCount
     in
     ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal
+    )
+
+
+randomBloodSugarResultInputAndTask :
+    Language
+    -> (String -> msg)
+    -> Maybe Float
+    -> ( List (Html msg), Int, Int )
+randomBloodSugarResultInputAndTask language setRandomBloodSugarMsg sugarCount =
+    ( [ viewLabel language Translate.LaboratoryRandomBloodSugarTestResult
+      , viewMeasurementInput language
+            sugarCount
+            setRandomBloodSugarMsg
+            "sugar-count"
+            Translate.UnitMilliGramsPerDeciliter
+      ]
+    , taskCompleted sugarCount
+    , 1
     )
 
 
@@ -4182,6 +4253,31 @@ resultFormHeaderSection language currentDate executionDate task =
     in
     viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
         :: executionDateSection
+
+
+testPerformedByValue : Maybe { a | executionNote : TestExecutionNote } -> Bool
+testPerformedByValue =
+    Maybe.map (.executionNote >> testPerformedByExecutionNote)
+        >> Maybe.withDefault False
+
+
+testPerformedByExecutionNote : TestExecutionNote -> Bool
+testPerformedByExecutionNote executionNote =
+    List.member executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+
+expectRandomBloodSugarResultTask : RandomBloodSugarTestValue encounterId -> Bool
+expectRandomBloodSugarResultTask value =
+    let
+        -- It's possible to enter the result immediatly (and not from
+        -- Case management).
+        -- If this is the case, we do not expect to see results task.
+        immediateResult =
+            Maybe.map (EverySet.member PrerequisiteImmediateResult) value.testPrerequisites
+                |> Maybe.withDefault False
+    in
+    not immediateResult
+        && testPerformedByExecutionNote value.executionNote
 
 
 viewSelectInput :
@@ -4579,7 +4675,7 @@ resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
     getMeasurementValueFunc measurement
         |> Maybe.andThen
             (\value ->
-                if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                if testPerformedByExecutionNote value.executionNote then
                     if resultsExistFunc value && (not <| resultsValidFunc value) then
                         -- Entered result is not valid, therefore,
                         -- we treat the test as if it was not performed.

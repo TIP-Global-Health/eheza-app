@@ -630,7 +630,8 @@ viewPatientProgressPane language currentDate assembled =
             List.map
                 (.randomBloodSugarTest
                     >> getMeasurementValueFunc
-                    >> Maybe.andThen .sugarCount
+                    >> Maybe.andThen randomBloodSugarResultFromValue
+                    >> Maybe.andThen Tuple.second
                 )
                 allMeasurements
                 |> Maybe.Extra.values

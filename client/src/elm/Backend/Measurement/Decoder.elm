@@ -592,6 +592,9 @@ decodeTestPrerequisite =
                     "fasting-12h" ->
                         succeed PrerequisiteFastFor12h
 
+                    "immediate-result" ->
+                        succeed PrerequisiteImmediateResult
+
                     "none" ->
                         succeed NoTestPrerequisites
 

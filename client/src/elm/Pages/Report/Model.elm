@@ -64,7 +64,7 @@ type LabResultsHistoryMode
     | LabResultsHistoryHaemoglobin (List ( NominalDate, Maybe HaemoglobinValue ))
     | LabResultsHistoryKetone (List ( NominalDate, Maybe KetoneValue ))
     | LabResultsHistoryBilirubin (List ( NominalDate, Maybe BilirubinValue ))
-    | LabResultsHistoryRandomBloodSugar (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryRandomBloodSugar (List ( NominalDate, Maybe RandomBloodSugarResult ))
     | LabResultsHistoryHemoglobin (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryBloodGroup (List ( NominalDate, Maybe BloodGroup ))
     | LabResultsHistoryRhesus (List ( NominalDate, Maybe Rhesus ))
@@ -98,3 +98,8 @@ type ReportTab
 type PaneEntryStatus
     = StatusOngoing
     | StatusResolved
+
+
+type RandomBloodSugarResult
+    = TestRunBeforeMeal Float
+    | TestRunAfterMeal Float

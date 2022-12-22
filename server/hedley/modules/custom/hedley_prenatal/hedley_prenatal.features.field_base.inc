@@ -1457,6 +1457,7 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'fasting-12h' => 'Fasting for 12 hours',
+        'immediate-result' => 'Immediate result (performed at point of care)',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

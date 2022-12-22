@@ -122,6 +122,7 @@ import Pages.Report.Model
         ( LabResultsCurrentMode(..)
         , LabResultsHistoryMode(..)
         , PaneEntryStatus(..)
+        , RandomBloodSugarResult(..)
         , ReportTab(..)
         )
 import Pages.TraceContact.Model exposing (NoContactReason(..))
@@ -764,6 +765,7 @@ type TranslationId
     | LabelOnePregnancyEpisodeOpen
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
+    | Lab
     | LabHistory
     | LaboratoryBloodGroupLabel
     | LaboratoryBloodGroupTestResult
@@ -1106,6 +1108,7 @@ type TranslationId
     | PleaseContact
     | PleaseSelectGroup
     | PleaseSync
+    | PointOfCare
     | PositiveLabel
     | PostpartumEncounter
     | PostpartumHealingProblem PostpartumHealingProblem
@@ -1204,6 +1207,7 @@ type TranslationId
     | ProvidedPreventionEducationQuestionShort
     | ProvidedSymtomReliefGuidanceQuestion
     | Province
+    | RandomBloodSugarResultNormalRange RandomBloodSugarResult
     | ReasonForCSection
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -6212,6 +6216,11 @@ translationSet trans =
             , kinyarwanda = Just "Ntabwo iherezo ry'inda ryanditswe"
             }
 
+        Lab ->
+            { english = "Lab"
+            , kinyarwanda = Nothing
+            }
+
         LabHistory ->
             { english = "Lab History"
             , kinyarwanda = Just "Amakuru ku bizamini byakozwe"
@@ -7338,7 +7347,11 @@ translationSet trans =
                     }
 
                 LabResultsHistoryRandomBloodSugar _ ->
-                    { english = "74-110 mg/dL"
+                    -- This one is not in use, because normal range
+                    -- depends on prerequesit - has patient eaten before
+                    -- the test or not.
+                    -- Therefore RandomBloodSugarResultNormalRange set is used.
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -10622,6 +10635,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PointOfCare ->
+            { english = "Point of Care"
+            , kinyarwanda = Nothing
+            }
+
         PositiveLabel ->
             { english = "Positive"
             , kinyarwanda = Just "Afite ubwandu"
@@ -13509,6 +13527,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umurwayi yafatiwe iki kizamini mbere yo kurya"
                     }
 
+                PrerequisiteImmediateResult ->
+                    { english = "Where is this test performed"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoTestPrerequisites ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -13568,6 +13591,18 @@ translationSet trans =
             { english = "Reason for C-section"
             , kinyarwanda = Nothing
             }
+
+        RandomBloodSugarResultNormalRange type_ ->
+            case type_ of
+                TestRunBeforeMeal _ ->
+                    { english = "74-126 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestRunAfterMeal _ ->
+                    { english = "74-200 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
 
         ReasonForNotBreastfeeding reason ->
             case reason of
