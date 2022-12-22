@@ -108,6 +108,11 @@ obstetricalDiagnoses =
     , DiagnosisDepressionHighlyPossible
     , DiagnosisDepressionProbable
     , DiagnosisSuicideRisk
+    , DiagnosisPostpartumUrinaryIncontinence
+    , DiagnosisPostpartumInfection
+    , DiagnosisPostpartumExcessiveBleeding
+    , DiagnosisPostpartumEarlyMastitisOrEngorgment
+    , DiagnosisPostpartumMastitis
     ]
 
 
@@ -140,6 +145,11 @@ medicalDiagnoses =
     , DiagnosisTrichomonasOrBacterialVaginosisContinued
     , DiagnosisDiabetes
     , DiagnosisOther
+    , DiagnosisPostpartumHeadache
+    , DiagnosisPostpartumPerinealPainOrDischarge
+    , DiagnosisPostpartumFatigue
+    , DiagnosisPostpartumAbdominalPain
+    , DiagnosisPostpartumFever
     ]
 
 

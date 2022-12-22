@@ -72,4 +72,15 @@ type PrenatalDiagnosis
     | DiagnosisDepressionProbable
     | DiagnosisSuicideRisk
     | DiagnosisOther
+      -- For Postpartum only:
+    | DiagnosisPostpartumAbdominalPain
+    | DiagnosisPostpartumUrinaryIncontinence
+    | DiagnosisPostpartumHeadache
+    | DiagnosisPostpartumFatigue
+    | DiagnosisPostpartumFever
+    | DiagnosisPostpartumPerinealPainOrDischarge
+    | DiagnosisPostpartumInfection
+    | DiagnosisPostpartumExcessiveBleeding
+    | DiagnosisPostpartumEarlyMastitisOrEngorgment
+    | DiagnosisPostpartumMastitis
     | NoPrenatalDiagnosis

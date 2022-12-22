@@ -1574,6 +1574,10 @@ div.page-activity.home-visit {
         }
       }
 
+      .label.question {
+        font-size: 22px;
+      }
+
       .ui.grid.systolic img {
         margin-top: -10px;
       }
@@ -1738,6 +1742,7 @@ div.page-activity.home-visit {
       }
 
       .form.send-to-hc,
+      .form.referral,
       .form.medication-distribution,
       .form.recommended-treatment {
 
@@ -1782,7 +1787,8 @@ div.page-activity.prenatal {
 
       .form.referral,
       .form.history.outside-care,
-      .form.medication-distribution {
+      .form.medication-distribution,
+      .form.speciality-care {
 
         .separator:last-of-type {
           display: none;
@@ -1858,6 +1864,10 @@ div.page-activity.prenatal {
         .checkbox-select-input {
           margin-bottom: 40px;
         }
+      }
+
+      .form.speciality-care .label.header {
+        margin-bottom: 20px;
       }
 
       .ui.form.vaccination .header.icon-label {
@@ -2431,14 +2441,11 @@ div.page-report.clinical .ui.unstackable.items {
   .obstetric-diagnosis {
     background: $color-white;
 
-    .pane-content p {
-      line-height: 32px;
-      margin-bottom: 5px;
-    }
-
     .pane-content ul {
       font-size: 24px;
       line-height: 35px;
+      margin-bottom: 0;
+      margin-top: 0;
       padding: 0 20px;
     }
   }

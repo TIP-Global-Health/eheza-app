@@ -12,7 +12,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils exposing (vitalsFormWithDefault)
-import Pages.AcuteIllness.Activity.Utils exposing (nonAdministrationReasonToSign)
 import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
@@ -66,7 +65,7 @@ activityCompleted currentDate assembled activity =
         RecurrentNextSteps ->
             (not <| expectActivity currentDate assembled RecurrentNextSteps)
                 || (resolveNextStepsTasks currentDate assembled
-                        |> List.all (nextStepsTaskCompleted assembled)
+                        |> List.all (nextStepsTaskCompleted currentDate assembled)
                    )
 
         RecurrentExamination ->
@@ -430,8 +429,8 @@ expectNextStepsTask currentDate assembled task =
             diagnosedAnyOf (DiagnosisHIVDetectableViralLoad :: diabetesDiagnoses) assembled
 
 
-nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
-nextStepsTaskCompleted assembled task =
+nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted currentDate assembled task =
     case task of
         NextStepsSendToHC ->
             resolveRequiredReferralFacilities assembled
@@ -441,6 +440,18 @@ nextStepsTaskCompleted assembled task =
             let
                 allowedSigns =
                     NoMedicationDistributionSignsRecurrentPhase :: medicationsRecurrentPhase
+
+                medicationDistributionRequired =
+                    resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
+                        |> List.isEmpty
+                        |> not
+
+                medicationDistributionCompleted =
+                    if medicationDistributionRequired then
+                        medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+
+                    else
+                        True
 
                 syphilisTreatmentCompleted =
                     if diagnosedSyphilis assembled then
@@ -456,7 +467,7 @@ nextStepsTaskCompleted assembled task =
                     else
                         True
             in
-            medicationDistributionMeasurementTaken allowedSigns assembled.measurements
+            medicationDistributionCompleted
                 && syphilisTreatmentCompleted
                 && hypertensionTreatmentCompleted
 
@@ -699,7 +710,11 @@ healthEducationFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { expectations = EverySet.member EducationExpectations value.signs |> Just
+                { hivDetectableViralLoad = or form.hivDetectableViralLoad (Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2)
+                , diabetes = or form.diabetes (Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2)
+
+                -- Signs that do not participate at recurrent phase. Resolved directly from value.
+                , expectations = EverySet.member EducationExpectations value.signs |> Just
                 , visitsReview = EverySet.member EducationVisitsReview value.signs |> Just
                 , warningSigns = EverySet.member EducationWarningSigns value.signs |> Just
                 , hemorrhaging = EverySet.member EducationHemorrhaging value.signs |> Just
@@ -720,8 +735,8 @@ healthEducationFormWithDefault form saved =
                 , pelvicPain = EverySet.member EducationPelvicPain value.signs |> Just
                 , saferSex = EverySet.member EducationSaferSex value.signs |> Just
                 , mentalHealth = EverySet.member EducationMentalHealth value.signs |> Just
-                , hivDetectableViralLoad = or form.hivDetectableViralLoad (Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2)
-                , diabetes = or form.diabetes (Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2)
+                , earlyMastitisOrEngorgment = EverySet.member EducationEarlyMastitisOrEngorgment value.signs |> Just
+                , mastitis = EverySet.member EducationMastitis value.signs |> Just
                 }
             )
 

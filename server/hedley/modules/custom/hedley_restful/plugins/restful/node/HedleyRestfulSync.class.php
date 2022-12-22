@@ -319,10 +319,17 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $cached_hash = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
     if (empty($cached_hash)) {
       // There's no cached data for health center - trigger statistics
-      // calculation by adding an AQ item.
-      hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_id, [
-        'health_center_nid' => $health_center_id,
-      ]);
+      // calculation, unless health center is member of exclusion list.
+      $excluded_health_centers = variable_get('hedley_statistics_excluded_health_centers', '');
+      $excluded_health_centers = explode(',', $excluded_health_centers);
+      if (array_search($health_center_id, $excluded_health_centers) === FALSE) {
+        // This health center is not excluded - trigger statistics calculation
+        // by adding an AQ item.
+        hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_id, [
+          'health_center_nid' => $health_center_id,
+        ]);
+      }
+
       return $return;
     }
 
@@ -332,11 +339,15 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       // indicates that we need to send updated statistics to client.
       // So, we return what we have stored in cache, with updated hash
       // for health center statistics.
-      $return['batch'][] = hedley_stats_pull_stats_for_health_center($health_center_id, $cached_hash);
+      $stats = hedley_stats_pull_stats_for_health_center($health_center_id, $cached_hash);
+
+      // If statistics were successfully pulled, we return them.
+      // Otherwise, returning an empty result.
+      if (!empty($stats)) {
+        $return['batch'][] = $stats;
+      }
     }
 
-    // If we got this far, we know that statistics on client are
-    // up-to-date - return empty response.
     return $return;
   }
 

@@ -440,9 +440,11 @@ type Revision
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
     | PregnancyTestRevision PregnancyTestId PregnancyTest
     | PrenatalBloodGpRsTestRevision PrenatalBloodGpRsTestId PrenatalBloodGpRsTest
+    | PrenatalBreastfeedingRevision PrenatalBreastfeedingId PrenatalBreastfeeding
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
     | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp
+    | PrenatalGUExamRevision PrenatalGUExamId PrenatalGUExam
     | PrenatalHealthEducationRevision PrenatalHealthEducationId PrenatalHealthEducation
     | PrenatalHemoglobinTestRevision PrenatalHemoglobinTestId PrenatalHemoglobinTest
     | PrenatalHepatitisBTestRevision PrenatalHepatitisBTestId PrenatalHepatitisBTest
@@ -457,6 +459,7 @@ type Revision
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | PrenatalRandomBloodSugarTestRevision PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest
     | PrenatalSendToHCRevision PrenatalSendToHCId PrenatalSendToHC
+    | PrenatalSpecialityCareRevision PrenatalSpecialityCareId PrenatalSpecialityCare
     | PrenatalSymptomReviewRevision PrenatalSymptomReviewId PrenatalSymptomReview
     | PrenatalSyphilisTestRevision PrenatalSyphilisTestId PrenatalSyphilisTest
     | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation

@@ -25,6 +25,7 @@ import Backend.Measurement.Model
         , ReferToFacilitySign(..)
         , ReferralFacility(..)
         , SendToHCSign(..)
+        , SpecialityCareSign(..)
         , ViralLoadStatus(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, prenatalLabExpirationPeriod)
@@ -36,8 +37,8 @@ import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
-        , allMedicalDiagnosis
-        , allObstetricalDiagnosis
+        , allMedicalDiagnoses
+        , allObstetricalDiagnoses
         , allRiskFactors
         , allTrimesters
         )
@@ -90,7 +91,10 @@ import Pages.Prenatal.Utils
         , outsideCareDiagnosesWithPossibleMedication
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
+        , recommendedTreatmentSignsForMastitis
         , recommendedTreatmentSignsForSyphilis
+        , resolveARVReferralDiagnosis
+        , resolveNCDReferralDiagnoses
         )
 import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProgressReport, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -223,129 +227,136 @@ viewHeader language id initiator model =
 viewContent : Language -> NominalDate -> Bool -> PrenatalProgressReportInitiator -> Model -> AssembledData -> Html Msg
 viewContent language currentDate isChw initiator model assembled =
     let
-        firstEncounterMeasurements =
-            getFirstEncounterMeasurements isChw assembled
+        derivedContent =
+            case model.labResultsMode of
+                Just mode ->
+                    case mode of
+                        LabResultsCurrent currentMode ->
+                            [ viewLabResultsPane language currentDate currentMode assembled ]
 
-        labsPane =
-            Maybe.map
-                (\components ->
-                    viewLabResultsPane language currentDate LabResultsCurrentMain assembled
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalLabsResults)
-                )
-                model.components
-                |> Maybe.withDefault
-                    (case model.labResultsMode of
-                        Just mode ->
-                            case mode of
-                                LabResultsCurrent currentMode ->
-                                    viewLabResultsPane language currentDate currentMode assembled
+                        LabResultsHistory historyMode ->
+                            [ viewLabResultsHistoryPane language currentDate historyMode ]
 
-                                LabResultsHistory historyMode ->
-                                    viewLabResultsHistoryPane language currentDate historyMode
-
-                        Nothing ->
-                            viewLabsPane language currentDate assembled
-                    )
-
-        actions =
-            case initiator of
-                InitiatorEncounterPage _ ->
+                Nothing ->
                     let
-                        ( completedActivities, pendingActivities ) =
-                            getAllActivities assembled
-                                |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
-                                |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
+                        firstEncounterMeasurements =
+                            getFirstEncounterMeasurements isChw assembled
+
+                        labsPane =
+                            Maybe.map
+                                (\components ->
+                                    viewLabResultsPane language currentDate LabResultsCurrentMain assembled
+                                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalLabsResults)
+                                )
+                                model.components
+                                |> Maybe.withDefault (viewLabsPane language currentDate assembled)
+
+                        actions =
+                            case initiator of
+                                InitiatorEncounterPage id ->
+                                    let
+                                        ( completedActivities, pendingActivities ) =
+                                            getAllActivities assembled
+                                                |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
+                                                |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
+                                    in
+                                    div [ class "actions two" ]
+                                        [ viewActionButton language
+                                            pendingActivities
+                                            completedActivities
+                                            -- When pausing, we close the encounter.
+                                            -- Entering lab results is available from
+                                            -- Case management page.
+                                            (CloseEncounter id)
+                                            SetEndEncounterDialogState
+                                            assembled
+                                        , button
+                                            [ class "ui fluid primary button"
+                                            , onClick <|
+                                                MsgSendViaWhatsAppDialog <|
+                                                    Components.SendViaWhatsAppDialog.Model.SetState <|
+                                                        Just Components.SendViaWhatsAppDialog.Model.Consent
+                                            ]
+                                            [ text <| translate language Translate.SendViaWhatsApp ]
+                                        ]
+
+                                InitiatorRecurrentEncounterPage _ ->
+                                    let
+                                        ( completedActivities, pendingActivities ) =
+                                            Pages.Prenatal.RecurrentEncounter.Utils.allActivities
+                                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
+                                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+
+                                        allowEndEcounter =
+                                            List.isEmpty pendingActivities
+                                    in
+                                    viewEndEncounterMenuForProgressReport language
+                                        allowEndEcounter
+                                        (always <| SetActivePage PinCodePage)
+                                        (MsgSendViaWhatsAppDialog <|
+                                            Components.SendViaWhatsAppDialog.Model.SetState <|
+                                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                                        )
+
+                                InitiatorNewEncounter encounterId ->
+                                    div [ class "actions" ]
+                                        [ button
+                                            [ class "ui fluid primary button"
+                                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
+                                            ]
+                                            [ text <| translate language Translate.Reviewed ]
+                                        ]
+
+                                Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
+                                    emptyNode
+
+                        regularViewMode =
+                            isNothing model.components
+
+                        showComponent component =
+                            -- Show component if it was selected to be shared via WhatsApp,
+                            -- or, if viewing not for sharing via WhatsApp.
+                            Maybe.map (EverySet.member component) model.components
+                                |> Maybe.withDefault False
                     in
-                    div [ class "actions two" ]
-                        [ viewActionButton language
-                            pendingActivities
-                            completedActivities
-                            (SetActivePage PinCodePage)
-                            SetEndEncounterDialogState
-                            assembled
-                        , button
-                            [ class "ui fluid primary button"
-                            , onClick <|
-                                MsgSendViaWhatsAppDialog <|
-                                    Components.SendViaWhatsAppDialog.Model.SetState <|
-                                        Just Components.SendViaWhatsAppDialog.Model.Consent
-                            ]
-                            [ text <| translate language Translate.SendViaWhatsApp ]
-                        ]
-
-                InitiatorRecurrentEncounterPage _ ->
-                    let
-                        ( completedActivities, pendingActivities ) =
-                            Pages.Prenatal.RecurrentEncounter.Utils.allActivities
-                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
-                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
-
-                        allowEndEcounter =
-                            List.isEmpty pendingActivities
-                    in
-                    viewEndEncounterMenuForProgressReport language
-                        allowEndEcounter
-                        SetEndEncounterDialogState
-                        (MsgSendViaWhatsAppDialog <|
-                            Components.SendViaWhatsAppDialog.Model.SetState <|
-                                Just Components.SendViaWhatsAppDialog.Model.Consent
-                        )
-
-                InitiatorNewEncounter encounterId ->
-                    div [ class "actions" ]
-                        [ button
-                            [ class "ui fluid primary button"
-                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
-                            ]
-                            [ text <| translate language Translate.Reviewed ]
-                        ]
-
-                Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
-                    emptyNode
-
-        regularViewMode =
-            isNothing model.components
-
-        showComponent component =
-            -- Show component if it was selected to be shared via WhatsApp,
-            -- or, if viewing not for sharing via WhatsApp.
-            Maybe.map (EverySet.member component) model.components
-                |> Maybe.withDefault False
+                    [ viewHeaderPane language currentDate assembled
+                    , viewRiskFactorsPane language currentDate firstEncounterMeasurements
+                        |> showIf
+                            ((regularViewMode && isNothing model.labResultsMode)
+                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalRiskFactors
+                            )
+                    , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                        |> showIf
+                            ((regularViewMode && isNothing model.labResultsMode)
+                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnoses
+                            )
+                    , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                        |> showIf
+                            ((regularViewMode && isNothing model.labResultsMode)
+                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnoses
+                            )
+                    , viewPatientProgressPane language currentDate isChw assembled
+                        |> showIf
+                            ((regularViewMode && isNothing model.labResultsMode)
+                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalPatientProgress
+                            )
+                    , labsPane
+                    , viewProgressPhotosPane language currentDate isChw assembled
+                        |> showIf
+                            ((regularViewMode && isNothing model.labResultsMode)
+                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalProgressPhotos
+                            )
+                    , -- Actions are hidden when viewing for sharing via WhatsApp.
+                      showIf regularViewMode actions
+                    ]
     in
     div
         [ class "ui unstackable items"
         , Html.Attributes.id "report-content"
         ]
-        [ viewHeaderPane language currentDate assembled
-        , viewRiskFactorsPane language currentDate firstEncounterMeasurements
-            |> showIf
-                ((regularViewMode && isNothing model.labResultsMode)
-                    || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalRiskFactors
-                )
-        , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-            |> showIf
-                ((regularViewMode && isNothing model.labResultsMode)
-                    || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnoses
-                )
-        , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-            |> showIf
-                ((regularViewMode && isNothing model.labResultsMode)
-                    || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnoses
-                )
-        , viewPatientProgressPane language currentDate isChw assembled
-            |> showIf
-                ((regularViewMode && isNothing model.labResultsMode)
-                    || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalPatientProgress
-                )
-        , labsPane
-        , viewProgressPhotosPane language currentDate isChw assembled
-            |> showIf
-                ((regularViewMode && isNothing model.labResultsMode)
-                    || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalProgressPhotos
-                )
-        , -- Actions are hidden when viewing for sharing via WhatsApp.
-          showIf regularViewMode actions
-        ]
+    <|
+        viewHeaderPane language currentDate assembled
+            :: derivedContent
 
 
 viewHeaderPane : Language -> NominalDate -> AssembledData -> Html Msg
@@ -432,9 +443,12 @@ viewRiskFactorsPane : Language -> NominalDate -> PrenatalMeasurements -> Html Ms
 viewRiskFactorsPane language currentDate measurements =
     let
         alerts =
-            allRiskFactors
-                |> List.filterMap (generateRiskFactorAlertData language currentDate measurements)
-                |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
+            List.filterMap
+                (generateRiskFactorAlertData language currentDate measurements)
+                allRiskFactors
+                |> List.map (\alert -> li [] [ text alert ])
+                |> ul []
+                |> List.singleton
     in
     div [ class "risk-factors" ]
         [ div [ class <| "pane-heading red" ]
@@ -448,35 +462,40 @@ viewRiskFactorsPane language currentDate measurements =
 viewMedicalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
 viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
     let
-        allMeasurementsWithDates =
-            assembled.nursePreviousMeasurementsWithDates
+        allNurseEncountersData =
+            assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
 
                     else
-                        [ ( currentDate, assembled.encounter.diagnoses, assembled.measurements ) ]
+                        [ { startDate = assembled.encounter.startDate
+                          , diagnoses = assembled.encounter.diagnoses
+                          , pastDiagnoses = assembled.encounter.pastDiagnoses
+                          , measurements = assembled.measurements
+                          }
+                        ]
                    )
-                |> List.sortWith (sortByDateDesc (\( date, _, _ ) -> date))
+                |> List.sortWith (sortByDateDesc .startDate)
 
         dignoses =
             List.map
-                (\( date, diagnoses, measurements ) ->
+                (\data ->
                     let
                         diagnosesIncludingChronic =
-                            updateChronicHypertensionDiagnoses date diagnoses assembled medicalDiagnoses
+                            updateChronicHypertensionDiagnoses data.startDate data.diagnoses assembled medicalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) diagnosesIncludingChronic
+                            List.map (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
                                 |> List.concat
 
                         outsideCareDiagnosesEntries =
-                            getMeasurementValueFunc measurements.outsideCare
+                            getMeasurementValueFunc data.measurements.outsideCare
                                 |> Maybe.andThen
                                     (\value ->
                                         Maybe.map
                                             (EverySet.toList
                                                 >> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
-                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language date value.medications)
+                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language data.startDate value.medications)
                                                 >> List.concat
                                             )
                                             value.diagnoses
@@ -484,18 +503,69 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                                 |> Maybe.withDefault []
 
                         knownAsPositiveEntries =
-                            viewKnownPositives language date measurements
+                            viewKnownPositives language data.startDate data.measurements
+
+                        programReferralEntries =
+                            getMeasurementValueFunc data.measurements.specialityCare
+                                |> Maybe.map
+                                    (\value ->
+                                        let
+                                            arvEntry =
+                                                resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
+                                                    |> Maybe.map
+                                                        (\diagnosis ->
+                                                            if not <| EverySet.member EnrolledToARVProgram value then
+                                                                viewProgramReferralEntry language data.startDate diagnosis FacilityARVProgram
+
+                                                            else
+                                                                []
+                                                        )
+                                                    |> Maybe.withDefault []
+
+                                            ncdEntries =
+                                                resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
+                                                    |> List.map
+                                                        (\diagnosis ->
+                                                            if not <| EverySet.member EnrolledToARVProgram value then
+                                                                viewProgramReferralEntry language data.startDate diagnosis FacilityNCDProgram
+
+                                                            else
+                                                                []
+                                                        )
+                                                    |> List.concat
+                                        in
+                                        arvEntry ++ ncdEntries
+                                    )
+                                |> Maybe.withDefault []
+
+                        pastDiagnosesEntries =
+                            EverySet.toList data.pastDiagnoses
+                                |> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
+                                |> List.map (viewTreatmentForPastDiagnosis language data.startDate)
+                                |> List.concat
                     in
-                    knownAsPositiveEntries ++ diagnosesEntries ++ outsideCareDiagnosesEntries
+                    knownAsPositiveEntries
+                        ++ diagnosesEntries
+                        ++ outsideCareDiagnosesEntries
+                        ++ pastDiagnosesEntries
+                        ++ programReferralEntries
                 )
-                allMeasurementsWithDates
+                allNurseEncountersData
                 |> List.concat
                 |> ul []
 
         alerts =
-            allMedicalDiagnosis
-                |> List.filterMap (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
-                |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
+            -- Alerts are displayed only for CHW.
+            if isChw then
+                List.filterMap
+                    (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
+                    allMedicalDiagnoses
+                    |> List.map (\alert -> li [] [ text alert ])
+                    |> ul []
+                    |> List.singleton
+
+            else
+                []
     in
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
@@ -505,23 +575,40 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
         ]
 
 
+viewProgramReferralEntry : Language -> NominalDate -> PrenatalDiagnosis -> ReferralFacility -> List (Html Msg)
+viewProgramReferralEntry language date diagnosis facility =
+    diagnosisForProgressReportToString language diagnosis
+        ++ " - "
+        ++ (translate language <| Translate.ReferredToFacilityPostpartum facility)
+        ++ " "
+        ++ (String.toLower <| translate language Translate.On)
+        ++ " "
+        ++ formatDDMMYYYY date
+        |> wrapWithLI
+
+
 viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
 viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
     let
-        allMeasurementsWithDates =
-            assembled.nursePreviousMeasurementsWithDates
+        allNurseEncountersData =
+            assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
 
                     else
-                        [ ( currentDate, assembled.encounter.diagnoses, assembled.measurements ) ]
+                        [ { startDate = assembled.encounter.startDate
+                          , diagnoses = assembled.encounter.diagnoses
+                          , pastDiagnoses = assembled.encounter.pastDiagnoses
+                          , measurements = assembled.measurements
+                          }
+                        ]
                    )
-                |> List.sortWith (sortByDateDesc (\( date, _, _ ) -> date))
+                |> List.sortWith (sortByDateDesc .startDate)
 
         initialHealthEducationOccurances =
             List.foldr
-                (\( date, _, measurements ) accum ->
-                    getMeasurementValueFunc measurements.healthEducation
+                (\data accum ->
+                    getMeasurementValueFunc data.measurements.healthEducation
                         |> Maybe.map
                             (\value ->
                                 let
@@ -530,7 +617,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                             EverySet.member sign value.signs
                                                 && (isNothing <| Dict.get sign accum)
                                         then
-                                            Just ( sign, date )
+                                            Just ( sign, data.startDate )
 
                                         else
                                             Nothing
@@ -550,40 +637,46 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                         |> Maybe.withDefault accum
                 )
                 Dict.empty
-                allMeasurementsWithDates
+                allNurseEncountersData
 
         dignoses =
             List.map
-                (\( date, diagnoses, measurements ) ->
+                (\data ->
                     let
                         diagnosesIncludingChronic =
-                            updateChronicHypertensionDiagnoses date diagnoses assembled obstetricalDiagnoses
+                            updateChronicHypertensionDiagnoses data.startDate data.diagnoses assembled obstetricalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language date measurements diagnoses) diagnosesIncludingChronic
+                            List.map (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
                                 |> List.concat
 
                         outsideCareDiagnosesEntries =
-                            getMeasurementValueFunc measurements.outsideCare
+                            getMeasurementValueFunc data.measurements.outsideCare
                                 |> Maybe.andThen
                                     (\value ->
                                         Maybe.map
                                             (EverySet.toList
                                                 >> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
-                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language date value.medications)
+                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language data.startDate value.medications)
                                                 >> List.concat
                                             )
                                             value.diagnoses
                                     )
                                 |> Maybe.withDefault []
 
+                        pastDiagnosesEntries =
+                            EverySet.toList data.pastDiagnoses
+                                |> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
+                                |> List.map (viewTreatmentForPastDiagnosis language data.startDate)
+                                |> List.concat
+
                         healthEducationDiagnosesEntries =
-                            getMeasurementValueFunc measurements.healthEducation
+                            getMeasurementValueFunc data.measurements.healthEducation
                                 |> Maybe.map
                                     (\value ->
                                         let
                                             formatedDate =
-                                                formatDDMMYYYY date
+                                                formatDDMMYYYY data.startDate
 
                                             messageForSign sign =
                                                 if EverySet.member sign value.signs then
@@ -592,7 +685,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                                             (\initialDate ->
                                                                 let
                                                                     currentIsInitial =
-                                                                        Date.compare initialDate date == EQ
+                                                                        Date.compare initialDate data.startDate == EQ
                                                                 in
                                                                 Translate.PrenatalHealthEducationSignsDiagnosis currentIsInitial formatedDate sign
                                                                     |> translate language
@@ -615,16 +708,24 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                     )
                                 |> Maybe.withDefault []
                     in
-                    diagnosesEntries ++ outsideCareDiagnosesEntries ++ healthEducationDiagnosesEntries
+                    diagnosesEntries ++ outsideCareDiagnosesEntries ++ pastDiagnosesEntries ++ healthEducationDiagnosesEntries
                 )
-                allMeasurementsWithDates
+                allNurseEncountersData
                 |> List.concat
                 |> ul []
 
         alerts =
-            allObstetricalDiagnosis
-                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
-                |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
+            -- Alerts are displayed only for CHW.
+            if isChw then
+                List.filterMap
+                    (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
+                    allObstetricalDiagnoses
+                    |> List.map (\alert -> li [] [ text alert ])
+                    |> ul []
+                    |> List.singleton
+
+            else
+                []
     in
     div [ class "obstetric-diagnosis" ]
         [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
@@ -654,11 +755,16 @@ viewChwActivityPane language currentDate isChw assembled =
                 )
                 allMeasurementsWithDates
 
-        heading =
-            div [ class "heading" ]
-                [ div [ class "date" ] [ text <| translate language Translate.Date ]
-                , div [ class "chw-actions" ] [ text <| translate language Translate.Actions ]
-                ]
+        content =
+            if not <| List.isEmpty actions then
+                div [ class "heading" ]
+                    [ div [ class "date" ] [ text <| translate language Translate.Date ]
+                    , div [ class "chw-actions" ] [ text <| translate language Translate.Actions ]
+                    ]
+                    :: actions
+
+            else
+                []
 
         actions =
             List.map
@@ -678,9 +784,8 @@ viewChwActivityPane language currentDate isChw assembled =
     in
     div [ class "chw-activities" ]
         [ viewItemHeading language Translate.ChwActivity "blue"
-        , div [ class "pane-content" ] <|
-            heading
-                :: actions
+        , div [ class "pane-content" ]
+            content
         ]
 
 
@@ -727,8 +832,8 @@ matchCHWActivityAtEncounter measurements activity =
 viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
 viewPatientProgressPane language currentDate isChw assembled =
     let
-        allMeasurementsWithDates =
-            List.map (\( date, _, measurements ) -> ( date, measurements )) assembled.nursePreviousMeasurementsWithDates
+        allNurseEncountersData =
+            List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
 
@@ -737,11 +842,10 @@ viewPatientProgressPane language currentDate isChw assembled =
                    )
 
         allMeasurements =
-            allMeasurementsWithDates
-                |> List.map Tuple.second
+            List.map Tuple.second allNurseEncountersData
 
         encountersTrimestersData =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.map
                     (\( date, _ ) ->
                         ( date
@@ -773,7 +877,7 @@ viewPatientProgressPane language currentDate isChw assembled =
             List.length encountersThirdTrimester
 
         fetalMovementsDate =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.filter
                     (\( _, measurements ) ->
                         measurements.obstetricalExam
@@ -784,7 +888,7 @@ viewPatientProgressPane language currentDate isChw assembled =
                 |> Maybe.map Tuple.first
 
         fetalHeartRateDate =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.filter
                     (\( _, measurements ) ->
                         measurements.obstetricalExam
@@ -1017,7 +1121,7 @@ viewPatientProgressPane language currentDate isChw assembled =
                 ]
 
         egaBmiValues =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.filterMap
                     (\( date, measurements ) ->
                         assembled.globalLmpDate
@@ -1051,7 +1155,7 @@ viewPatientProgressPane language currentDate isChw assembled =
                     )
 
         egaFundalHeightValues =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.filterMap
                     (\( date, measurements ) ->
                         assembled.globalLmpDate
@@ -1094,13 +1198,13 @@ viewPatientProgressPane language currentDate isChw assembled =
                 [ viewMarkers
                 , div [ class "bmi-info" ]
                     [ viewChartHeading Translate.BMI
-                    , heightWeightBMITable language currentDate assembled.globalLmpDate allMeasurementsWithDates
+                    , heightWeightBMITable language currentDate assembled.globalLmpDate allNurseEncountersData
                     , viewBMIForEGA language egaBmiValues
                     , illustrativePurposes language
                     ]
                 , div [ class "fundal-height-info" ]
                     [ viewChartHeading Translate.FundalHeight
-                    , fundalHeightTable language currentDate assembled.globalLmpDate allMeasurementsWithDates
+                    , fundalHeightTable language currentDate assembled.globalLmpDate allNurseEncountersData
                     , viewFundalHeightForEGA language egaFundalHeightValues
                     , illustrativePurposes language
                     ]
@@ -1324,7 +1428,7 @@ viewLabResultsPane language currentDate mode assembled =
 
         measurementsWithLabResults =
             assembled.measurements
-                :: List.map (\( _, _, measurements ) -> measurements) assembled.nursePreviousMeasurementsWithDates
+                :: List.map .measurements assembled.nursePreviousEncountersData
 
         getTestResults getMeasurementFunc getResultFunc =
             List.filterMap (getMeasurementFunc >> getMeasurementValueFunc)
@@ -2083,8 +2187,8 @@ viewLabResultsHistoryPane language currentDate mode =
 viewProgressPhotosPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
 viewProgressPhotosPane language currentDate isChw assembled =
     let
-        allMeasurementsWithDates =
-            List.map (\( date, _, measurements ) -> ( date, measurements )) assembled.nursePreviousMeasurementsWithDates
+        allNurseEncountersData =
+            List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
                 ++ (if isChw then
                         []
 
@@ -2093,7 +2197,7 @@ viewProgressPhotosPane language currentDate isChw assembled =
                    )
 
         content =
-            allMeasurementsWithDates
+            allNurseEncountersData
                 |> List.filterMap
                     (\( date, measurements ) ->
                         measurements.prenatalPhoto
@@ -2290,7 +2394,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                                         " - "
                                                             ++ (String.toLower <| translate language Translate.TreatedWith)
                                                             ++ " "
-                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabelForProgressReport medication)
                                                     )
                                                 |> Maybe.withDefault ""
                                     in
@@ -2409,6 +2513,16 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         ++ formatDDMMYYYY date
                         ++ suffix
                         |> wrapWithLI
+
+        undeterminedDiagnosisMessage =
+            diagnosisForProgressReport
+                ++ " - "
+                ++ translate language Translate.UndeterminedDiagnosisMessage
+                ++ " "
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+                |> wrapWithLI
 
         noTreatmentRecordedMessage =
             noTreatmentRecordedMessageWithComplications ""
@@ -2763,7 +2877,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             referredToHospitalMessage
 
         DiagnosisMalariaWithSevereAnemia ->
-            malariaTreatmentMessage ++ referredToHospitalMessage
+            malariaTreatmentMessage
 
         DiagnosisHepatitisB ->
             referredToHospitalMessage
@@ -2978,6 +3092,90 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisSuicideRisk ->
             mentalHealthMessage
 
+        DiagnosisPostpartumAbdominalPain ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumHeadache ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumFatigue ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumFever ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumPerinealPainOrDischarge ->
+            undeterminedDiagnosisMessage
+
+        DiagnosisPostpartumUrinaryIncontinence ->
+            referredToHospitalMessage
+
+        DiagnosisPostpartumInfection ->
+            referredToHospitalMessage
+
+        DiagnosisPostpartumExcessiveBleeding ->
+            referredToHospitalMessage
+
+        DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            nonAdministrationReasons =
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
+                        in
+                        treatmentMessageForMedicationLower value.distributionSigns nonAdministrationReasons Paracetamol
+                            |> Maybe.map
+                                (\message ->
+                                    diagnosisForProgressReport
+                                        ++ " - "
+                                        ++ message
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                        |> wrapWithLI
+                                )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
+        DiagnosisPostpartumMastitis ->
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
+                |> Maybe.map
+                    (EverySet.toList
+                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMastitis)
+                        >> (\treatment ->
+                                if List.isEmpty treatment then
+                                    noTreatmentRecordedMessage
+
+                                else if List.member NoTreatmentForMastitis treatment then
+                                    noTreatmentAdministeredMessage
+
+                                else
+                                    let
+                                        treatedWithMessage =
+                                            List.head treatment
+                                                |> Maybe.map
+                                                    (\medication ->
+                                                        " - "
+                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
+                                                            ++ " "
+                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+                                                    )
+                                                |> Maybe.withDefault ""
+                                    in
+                                    diagnosisForProgressReport
+                                        ++ treatedWithMessage
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                        |> wrapWithLI
+                           )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
         DiagnosisOther ->
             -- Other diagnosis is used only at outside care diagnostics.
             []
@@ -3013,6 +3211,11 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
     in
     if List.member diagnosis outsideCareDiagnosesWithPossibleMedication then
         let
+            treatmentForHypertensionMessage =
+                treatedWithPhrase outsideCareMedicationOptionsHypertension NoOutsideCareMedicationForHypertension
+                    |> Just
+                    |> completePhrase
+
             treatedWithPhrase treartmentOptions noTreatmentOption =
                 Maybe.map
                     (EverySet.toList
@@ -3030,7 +3233,6 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
                                                 treatments
                                                 |> String.join ", "
                                            )
-                                        ++ " "
                            )
                     )
                     medications
@@ -3043,7 +3245,7 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
         in
         case diagnosis of
             DiagnosisHIV ->
-                treatedWithPhrase outsideCareMedicationOptionsMalaria NoOutsideCareMedicationForMalaria
+                treatedWithPhrase outsideCareMedicationOptionsHIV NoOutsideCareMedicationForMalaria
                     |> Just
                     |> completePhrase
 
@@ -3063,14 +3265,13 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
                     |> completePhrase
 
             DiagnosisGestationalHypertensionImmediate ->
-                treatedWithPhrase outsideCareMedicationOptionsHypertension NoOutsideCareMedicationForHypertension
-                    |> Just
-                    |> completePhrase
+                treatmentForHypertensionMessage
 
             DiagnosisChronicHypertensionImmediate ->
-                treatedWithPhrase outsideCareMedicationOptionsHypertension NoOutsideCareMedicationForHypertension
-                    |> Just
-                    |> completePhrase
+                treatmentForHypertensionMessage
+
+            DiagnosisModeratePreeclampsiaInitialPhase ->
+                treatmentForHypertensionMessage
 
             -- Will never get here.
             _ ->
@@ -3082,3 +3283,16 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
     else
         -- Not an outside care diagnosis.
         []
+
+
+viewTreatmentForPastDiagnosis : Language -> NominalDate -> PrenatalDiagnosis -> List (Html any)
+viewTreatmentForPastDiagnosis language date diagnosis =
+    diagnosisForProgressReportToString language diagnosis
+        ++ " - "
+        ++ (String.toLower <| translate language Translate.DiagnosedOn)
+        ++ " "
+        ++ formatDDMMYYYY date
+        ++ " "
+        ++ (String.toLower <| translate language Translate.PastDiagnosisReportReason)
+        ++ "."
+        |> wrapWithLI

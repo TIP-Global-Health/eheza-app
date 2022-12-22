@@ -19,7 +19,7 @@ import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, with
 update : Maybe NurseId -> Maybe HealthCenterId -> PrenatalEncounterId -> Maybe PrenatalEncounter -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
 update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
     case msg of
-        ClosePrenatalEncounter ->
+        CloseEncounter ->
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
         SetPrenatalDiagnoses diagnoses ->
@@ -405,6 +405,36 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
 
         HandleSavedTetanusImmunisation data ->
             ( { model | saveTetanusImmunisation = data }
+            , Cmd.none
+            )
+
+        SaveBreastfeeding personId valueId value ->
+            ( { model | saveBreastfeeding = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalBreastfeedingEndpoint HandleSavedBreastfeeding
+            )
+
+        HandleSavedBreastfeeding data ->
+            ( { model | saveBreastfeeding = data }
+            , Cmd.none
+            )
+
+        SaveGUExam personId valueId value ->
+            ( { model | saveGUExam = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalGUExamEndpoint HandleSavedGUExam
+            )
+
+        HandleSavedGUExam data ->
+            ( { model | saveGUExam = data }
+            , Cmd.none
+            )
+
+        SaveSpecialityCare personId valueId value ->
+            ( { model | saveSpecialityCare = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalSpecialityCareEndpoint HandleSavedSpecialityCare
+            )
+
+        HandleSavedSpecialityCare data ->
+            ( { model | saveSpecialityCare = data }
             , Cmd.none
             )
 

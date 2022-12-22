@@ -1,6 +1,11 @@
 module Backend.PrenatalEncounter.Utils exposing (..)
 
-import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..), RecordPreganancyInitiator(..))
+import Backend.PrenatalEncounter.Model
+    exposing
+        ( PrenatalEncounterType(..)
+        , PrenatalProgressReportInitiator(..)
+        , RecordPreganancyInitiator(..)
+        )
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
@@ -98,3 +103,8 @@ lmpToEDDDate lmpDate =
 eddToLmpDate : NominalDate -> NominalDate
 eddToLmpDate eddDate =
     Date.add Days -280 eddDate
+
+
+isNurseEncounter : PrenatalEncounterType -> Bool
+isNurseEncounter encounterType =
+    List.member encounterType [ NurseEncounter, NursePostpartumEncounter ]
