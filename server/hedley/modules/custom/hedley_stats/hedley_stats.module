@@ -351,7 +351,6 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   // We started recalculation of HC statistics. Therefore, we delete its
   // statistics hash cache, to indicate that it's not available (until
   // recalculation is completed).
-
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
 
   // Get all clinics of type 'FBF' for the HC.
@@ -362,15 +361,10 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   $villages_with_residents = hedley_stats_get_villages_with_residents($health_center_id);
 
   hedley_stats_get_case_management($health_center_id);
-
   hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id);
-
   hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS);
-
   hedley_stats_get_total_encounters($health_center_id, $villages_with_residents);
-
   hedley_stats_get_acute_illness_data($health_center_id);
-
   hedley_stats_get_prenatal_data($health_center_id);
 
   $stats_cache_hash = md5(time());
@@ -869,6 +863,9 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
 
   foreach ($result as $row) {
     $clinic_type = $row->field_group_type;
+    // Using node_load() instead of entity_metadata_wrapper(), because latter
+    // has shown excessive memory usage, and did not respond when
+    // drupal_static_reset() was invoked to free up memory.
     $child_node = node_load($row->field_person);
     $birth_date = $child_node->field_birth_date['und'][0]['value'];
 
@@ -878,6 +875,9 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
       continue;
     }
 
+    // Using node_load() instead of entity_metadata_wrapper(), because latter
+    // has shown excessive memory usage, and did not respond when
+    // drupal_static_reset() was invoked to free up memory.
     $adult_node = node_load($row->field_adult);
     $phone_number = empty($adult_node->field_phone_number) ? '' : $adult_node->field_phone_number['und'][0]['value'];
 
@@ -927,6 +927,9 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
 
   $items = [];
   foreach ($result as $row) {
+    // Using node_load() instead of entity_metadata_wrapper(), because latter
+    // has shown excessive memory usage, and did not respond when
+    // drupal_static_reset() was invoked to free up memory.
     $child_node = node_load($row->field_person);
     $birth_date = $child_node->field_birth_date['und'][0]['value'];
 
@@ -1408,6 +1411,9 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
 
     $people = [];
     foreach ($people_data as $id => $person) {
+      // Using node_load() instead of entity_metadata_wrapper(), because latter
+      // has shown excessive memory usage, and did not respond when
+      // drupal_static_reset() was invoked to free up memory.
       $node = node_load($id);
       $birth_date = $node->field_birth_date['und'][0]['value'];
 
