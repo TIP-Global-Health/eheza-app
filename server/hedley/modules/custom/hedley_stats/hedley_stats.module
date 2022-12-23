@@ -352,7 +352,6 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   // statistics hash cache, to indicate that it's not available (until
   // recalculation is completed).
 
-  $start_time = time();
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
 
   // Get all clinics of type 'FBF' for the HC.
@@ -360,46 +359,19 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   // Calculate statistics that are provided for FBF clinics only.
   hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
 
-  $run_time = time() - $start_time;
-  watchdog('debug', "hedley_stats_get_session_attendance_stats_by_health_center: $run_time seconds");
-  $start_time = time();
-
   $villages_with_residents = hedley_stats_get_villages_with_residents($health_center_id);
 
   hedley_stats_get_case_management($health_center_id);
 
-  $run_time = time() - $start_time;
-  watchdog('debug', "hedley_stats_get_case_management: $run_time seconds");
-  $start_time = time();
-
   hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id);
-
-  $run_time = time() - $start_time;
-  watchdog('debug', "hedley_stats_get_children_beneficiaries_stats_by_period: $run_time seconds");
-  $start_time = time();
 
   hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS);
 
-  $run_time = time() - $start_time;
-  watchdog('debug', "hedley_stats_get_family_planning_stats_by_period: $run_time seconds");
-  $start_time = time();
-
   hedley_stats_get_total_encounters($health_center_id, $villages_with_residents);
-
-  $run_time = time() - $start_time;
-  watchdog('debug', "hedley_stats_get_total_encounters: $run_time seconds");
-  $start_time = time();
 
   hedley_stats_get_acute_illness_data($health_center_id);
 
-  $run_time = time() - $start_time;
-  watchdog('debug', "hedley_stats_get_acute_illness_data: $run_time seconds");
-  $start_time = time();
-
   hedley_stats_get_prenatal_data($health_center_id);
-
-  $run_time = time() - $start_time;
-  watchdog('debug', "hedley_stats_get_prenatal_data: $run_time seconds");
 
   $stats_cache_hash = md5(time());
   // Store in cache only the hash. All statistics have their own cache.
@@ -1077,9 +1049,6 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
     return $result;
   }
 
-  $mem_usage = round(memory_get_usage() / 1048576);
-  watchdog('memory', "1: $mem_usage");
-
   $periods = [
     HEDLEY_STATS_PERIOD_TWO_MONTHS_AGO,
     HEDLEY_STATS_PERIOD_LAST_MONTH,
@@ -1095,9 +1064,6 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
   // Loop through the clinics and get sessions for each clinic and from there
   // get expected people for each clinic.
   foreach ($fbf_clinics as $clinic_id) {
-    $mem_usage = round(memory_get_usage() / 1048576);
-    watchdog('memory', "loop start: $mem_usage");
-
     // Get PMTCT participants by clinic and session dates
     // (all expected people).
     $pmtct_by_clinic = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 5000);
@@ -1180,10 +1146,6 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
         }
       }
     }
-
-    $mem_usage = round(memory_get_usage() / 1048576);
-    watchdog('memory', "loop end: $mem_usage");
-
     // Free up memory.
     drupal_static_reset();
   }
@@ -1530,21 +1492,14 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
         }
       }
       $people[] = $item;
-
-//      $mem_usage = round(memory_get_usage() / 1048576);
-//      watchdog('memory', "Before freeing: $mem_usage");
-
       // Free up memory.
       drupal_static_reset();
     }
 
     $result[$program_type] = $people;
-
-    $mem_usage = round(memory_get_usage() / 1048576);
-    watchdog('memory', "Ending: $mem_usage");
+    // Free up memory.
     drupal_static_reset();
   }
-
 
   // Set the cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period, $result);
