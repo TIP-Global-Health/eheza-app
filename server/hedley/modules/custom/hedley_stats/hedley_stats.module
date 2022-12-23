@@ -947,7 +947,7 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
       'id' => $child_node->nid,
       'name' => $child_node->title,
       'birth_date' => date("Y-m-d", strtotime($birth_date)),
-      $child_node->field_gender['und'][0]['value'],
+      'gender' => $child_node->field_gender['und'][0]['value'],
       'graduation_date' => hedley_stats_convert_timestamp_to_nominal($graduation_date),
       // No need to provide mother details, because we do not present
       // it anywhere, when it comes to individual participant data.
