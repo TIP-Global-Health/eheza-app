@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley WhatsApp feature.
+ */
+
+include_once 'hedley_whatsapp.features.inc';
