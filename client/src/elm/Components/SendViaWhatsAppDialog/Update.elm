@@ -5,6 +5,8 @@ import App.Ports
 import Backend.Model
 import Backend.Person.Model exposing (PatchPersonInitator(..))
 import Components.SendViaWhatsAppDialog.Model exposing (..)
+import Components.SendViaWhatsAppDialog.Utils exposing (..)
+import Restful.Endpoint exposing (fromEntityUuid)
 
 
 update : Msg msg -> Model -> ( Model, Cmd msg, ( List msg, List App.Model.Msg ) )
@@ -31,9 +33,13 @@ update msg model =
               )
             )
 
-        Execute phoneNumber ->
+        Execute reportType personId phoneNumber ->
             ( { model | state = Just <| ExecutionResult Nothing }
-            , App.Ports.makeProgressReportScreenshot phoneNumber
+            , App.Ports.makeProgressReportScreenshot
+                { reportType = reportTypeToString reportType
+                , personId = fromEntityUuid personId
+                , phoneNumber = phoneNumber
+                }
             , ( []
               , []
               )

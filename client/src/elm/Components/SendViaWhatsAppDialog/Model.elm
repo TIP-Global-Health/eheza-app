@@ -65,6 +65,6 @@ type Msg msg
     = SetState (Maybe DialogState)
     | UpdatePhoneAtProfile PersonId Person String
     | SetReportComponents msg String
-    | Execute String
+    | Execute ReportType PersonId String
     | CancelExecute (Maybe msg)
     | SetExecutionResult (Maybe msg) String

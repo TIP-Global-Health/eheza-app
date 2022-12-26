@@ -407,7 +407,7 @@ viewConfirmationBeforeExecuting language currentDate reportType personId phoneNu
                 [ text <| translate language Translate.No ]
             , button
                 [ class "ui primary fluid button"
-                , onClick <| Execute phoneNumber
+                , onClick <| Execute reportType personId phoneNumber
                 ]
                 [ text <| translate language Translate.Send ]
             ]

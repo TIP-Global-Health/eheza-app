@@ -265,7 +265,7 @@ dbSync.version(17).stores({
 });
 
 dbSync.version(18).stores({
-    whatsAppUploads: '++localId,photo,phoneNumber,isSynced',
+    whatsAppUploads: '++localId,photo,report_type,person,phone_number,isSynced',
 });
 
 
@@ -955,12 +955,12 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
 });
 
 
-elmApp.ports.makeProgressReportScreenshot.subscribe(function(phoneNumber) {
-  waitForElement('report-content', makeProgressReportScreenshot, phoneNumber);
+elmApp.ports.makeProgressReportScreenshot.subscribe(function(data) {
+  waitForElement('report-content', makeProgressReportScreenshot, data);
 });
 
 
-function makeProgressReportScreenshot(elementId, phoneNumber) {
+function makeProgressReportScreenshot(elementId, data) {
   var element = document.getElementById(elementId);
 
   (async () => {
@@ -1009,7 +1009,9 @@ function makeProgressReportScreenshot(elementId, phoneNumber) {
 
          var entry = {
              photo: json.url,
-             phoneNumber: phoneNumber,
+             report_type: data.reportType,
+             person: data.personId,
+             phone_number: data.phoneNumber,
              isSynced: 0,
          };
 

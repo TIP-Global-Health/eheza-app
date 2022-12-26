@@ -56,4 +56,4 @@ port bindDropZone : () -> Cmd msg
 port scrollToElement : String -> Cmd msg
 
 
-port makeProgressReportScreenshot : String -> Cmd msg
+port makeProgressReportScreenshot : { reportType : String, personId : String, phoneNumber : String } -> Cmd msg
