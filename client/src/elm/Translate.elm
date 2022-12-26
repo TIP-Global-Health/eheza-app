@@ -13069,6 +13069,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                -- Not in use, because AcuteIllness does not allow
+                -- components selection.
+                Components.SendViaWhatsAppDialog.Model.ReportAcuteIllness ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         SendViaWhatsAppConfirmationBeforeExecutingHeader ->
             { english = "By pressing send you are releasing the selected documents to:"
             , kinyarwanda = Nothing

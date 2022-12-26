@@ -16,14 +16,14 @@ import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewModal)
 
 
-view : Language -> NominalDate -> ( PersonId, Person ) -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
-view language currentDate ( personId, person ) componentsConfig model =
+view : Language -> NominalDate -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
+view language currentDate ( personId, person ) reportType componentsConfig model =
     viewModal <|
-        Maybe.map (viewDialog language currentDate ( personId, person ) componentsConfig) model.state
+        Maybe.map (viewDialog language currentDate ( personId, person ) reportType componentsConfig) model.state
 
 
-viewDialog : Language -> NominalDate -> ( PersonId, Person ) -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html (Msg msg)
-viewDialog language currentDate ( personId, person ) componentsConfig state =
+viewDialog : Language -> NominalDate -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html (Msg msg)
+viewDialog language currentDate ( personId, person ) reportType componentsConfig state =
     let
         content =
             case state of
@@ -43,7 +43,7 @@ viewDialog language currentDate ( personId, person ) componentsConfig state =
                     viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneNumber
 
                 ComponentsSelection phoneNumber componentsList ->
-                    Maybe.map (viewComponentsSelection language currentDate phoneNumber componentsList)
+                    Maybe.map (viewComponentsSelection language currentDate phoneNumber componentsList reportType)
                         componentsConfig
                         |> Maybe.withDefault []
 
@@ -53,7 +53,7 @@ viewDialog language currentDate ( personId, person ) componentsConfig state =
                             config.setReportComponentsMsg Nothing
                         )
                         componentsConfig
-                        |> viewConfirmationBeforeExecuting language currentDate phoneNumber
+                        |> viewConfirmationBeforeExecuting language currentDate reportType personId phoneNumber
 
                 ExecutionResult result ->
                     Maybe.map
@@ -221,11 +221,18 @@ viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneN
     ]
 
 
-viewComponentsSelection : Language -> NominalDate -> String -> Maybe ReportComponentsList -> ReportComponentsConfig msg -> List (Html (Msg msg))
-viewComponentsSelection language currentDate phoneNumber componentsList config =
+viewComponentsSelection :
+    Language
+    -> NominalDate
+    -> String
+    -> Maybe ReportComponentsList
+    -> ReportType
+    -> ReportComponentsConfig msg
+    -> List (Html (Msg msg))
+viewComponentsSelection language currentDate phoneNumber componentsList reportType config =
     let
         componentsSelectionInput =
-            case config.reportType of
+            case reportType of
                 ReportWellChild ->
                     let
                         currentValue =
@@ -323,6 +330,10 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
                         setMsg
                         Translate.ReportComponentAntenatal
 
+                -- Not in use.
+                ReportAcuteIllness ->
+                    emptyNode
+
         continueButtonAction =
             if componentsSelected then
                 [ onClick <| SetReportComponents (config.setReportComponentsMsg componentsList) phoneNumber ]
@@ -333,7 +344,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
         componentsSelected =
             Maybe.map
                 (\list ->
-                    case config.reportType of
+                    case reportType of
                         ReportWellChild ->
                             case list of
                                 WellChild components ->
@@ -351,12 +362,16 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
                                 -- We should never get here.
                                 WellChild _ ->
                                     False
+
+                        -- Not in use.
+                        ReportAcuteIllness ->
+                            False
                 )
                 componentsList
                 |> Maybe.withDefault False
     in
     [ div [ class "content" ]
-        [ p [] [ translateText language <| Translate.SendViaWhatsAppComponentsSelectionHeader config.reportType ]
+        [ p [] [ translateText language <| Translate.SendViaWhatsAppComponentsSelectionHeader reportType ]
         , componentsSelectionInput
         ]
     , div [ class "actions" ]
@@ -376,8 +391,8 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
     ]
 
 
-viewConfirmationBeforeExecuting : Language -> NominalDate -> String -> Maybe msg -> List (Html (Msg msg))
-viewConfirmationBeforeExecuting language currentDate phoneNumber clearComponentsMsg =
+viewConfirmationBeforeExecuting : Language -> NominalDate -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
+viewConfirmationBeforeExecuting language currentDate reportType personId phoneNumber clearComponentsMsg =
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingHeader ]
         , p [] [ text phoneNumber ]

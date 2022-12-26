@@ -133,10 +133,7 @@ view language currentDate zscores id isChw db model =
             InitiatorWellChild id
 
         componentsConfig =
-            Just
-                { reportType = Components.SendViaWhatsAppDialog.Model.ReportWellChild
-                , setReportComponentsMsg = SetReportComponents
-                }
+            Just { setReportComponentsMsg = SetReportComponents }
     in
     viewWebData language
         (viewProgressReport language
@@ -387,6 +384,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 language
                 currentDate
                 ( childId, child )
+                Components.SendViaWhatsAppDialog.Model.ReportWellChild
                 componentsConfig
                 sendViaWhatsAppDialog
             )

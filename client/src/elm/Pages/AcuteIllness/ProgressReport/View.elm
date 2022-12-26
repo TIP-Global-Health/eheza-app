@@ -132,6 +132,7 @@ viewContent language currentDate id isChw initiator model assembled =
                 language
                 currentDate
                 ( assembled.participant.person, assembled.person )
+                Components.SendViaWhatsAppDialog.Model.ReportAcuteIllness
                 Nothing
                 model.sendViaWhatsAppDialog
             )

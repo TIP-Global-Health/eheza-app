@@ -28,14 +28,13 @@ type DialogState
 
 
 type alias ReportComponentsConfig msg =
-    { reportType : ReportType
-    , setReportComponentsMsg : Maybe ReportComponentsList -> msg
-    }
+    { setReportComponentsMsg : Maybe ReportComponentsList -> msg }
 
 
 type ReportType
     = ReportWellChild
     | ReportAntenatal
+    | ReportAcuteIllness
 
 
 type ReportComponentsList
