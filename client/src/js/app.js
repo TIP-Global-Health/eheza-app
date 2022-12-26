@@ -964,8 +964,8 @@ function makeProgressReportScreenshot(elementId, data) {
   var element = document.getElementById(elementId);
 
   (async () => {
-    const photosUploadCache = 'photos-upload';
-    const cache = await caches.open(photosUploadCache);
+    const screenshotsUploadCache = 'screenshots-upload';
+    const cache = await caches.open(screenshotsUploadCache);
 
     let totalHeight = 0;
     let children = element.childNodes;
@@ -992,7 +992,7 @@ function makeProgressReportScreenshot(elementId, data) {
       const imageName = 'whatsapp-upload-' + getRandom8Digits() + '.png';
       formData.set('file', blob, imageName);
 
-      const url = "cache-upload/images/" + Date.now();
+      const url = "cache-upload/screenshots/" + Date.now();
 
       try {
         var response = await fetch(url, {
