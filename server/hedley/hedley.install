@@ -634,3 +634,11 @@ function hedley_update_7032() {
 function hedley_update_7033() {
   module_enable(['views_litepager']);
 }
+
+/**
+ * Enable the Hedley WhatsApp module.
+ */
+function hedley_update_7034() {
+  module_enable(['hedley_whatsapp']);
+}
+
