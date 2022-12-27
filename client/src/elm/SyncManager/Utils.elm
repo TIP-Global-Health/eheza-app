@@ -152,6 +152,15 @@ determineSyncStatus activePage model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
+                            ( SyncUploadWhatsApp emptyUploadRec, syncInfoAuthorities )
+
+                        else
+                            noChange
+
+                    SyncUploadWhatsApp record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
                             ( SyncUploadAuthority emptyUploadRec, syncInfoAuthorities )
 
                         else

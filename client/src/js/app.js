@@ -809,6 +809,39 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
       break;
 
+
+    case 'IndexDbQueryUploadWhatsApp':
+      (async () => {
+
+        const batchSize = 50;
+
+        let totalEntites = await dbSync
+            .nodeChanges
+            .where('syncStage')
+            .equals(1)
+            .count();
+
+        if (totalEntites == 0) {
+          // No entities for upload found.
+          return sendIndexedDbFetchResult(queryType, null);
+        }
+
+        let entitiesResult = await dbSync
+            .nodeChanges
+            .where('syncStage')
+            .equals(1)
+            .limit(batchSize)
+            .toArray();
+
+        const resultToSend = {
+          'entities': entitiesResult,
+          'remaining': totalEntites - entitiesResult.length
+        };
+
+        return sendIndexedDbFetchResult(queryType, resultToSend);
+      })();
+      break;
+
     case 'IndexDbQueryUploadAuthority':
       let authorityId = data;
 
@@ -976,6 +1009,10 @@ elmApp.ports.deleteEntitiesThatWereUploaded.subscribe(async function(info) {
   switch (type) {
     case 'General':
       table = dbSync.nodeChanges;
+      break;
+
+    case 'WhatsApp':
+      table = dbSync.whatsAppUploads;
       break;
 
     case 'Authority':

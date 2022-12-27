@@ -435,6 +435,7 @@ type SyncStatus
       -- If counter exceeds threshold, sync will be stopped.
     | SyncUploadScreenshot Int (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
     | SyncUploadGeneral (UploadRec IndexDbQueryUploadGeneralResultRecord)
+    | SyncUploadWhatsApp (UploadRec IndexDbQueryUploadWhatsAppResultRecord)
     | SyncUploadAuthority (UploadRec IndexDbQueryUploadAuthorityResultRecord)
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
@@ -466,6 +467,7 @@ type IndexDbQueryType
       IndexDbQueryUploadPhoto
     | IndexDbQueryUploadScreenshot
     | IndexDbQueryUploadGeneral
+    | IndexDbQueryUploadWhatsApp
       -- Query one authority at a time, to make sure
       -- content is being uploaded in correct order,
       -- and we present correct 'remianing for upload'
@@ -490,6 +492,7 @@ type IndexDbQueryTypeResult
       -- A single screenshot for upload, if exists.
     | IndexDbQueryUploadScreenshotResult (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
     | IndexDbQueryUploadGeneralResult (Maybe IndexDbQueryUploadGeneralResultRecord)
+    | IndexDbQueryUploadWhatsAppResult (Maybe IndexDbQueryUploadWhatsAppResultRecord)
     | IndexDbQueryUploadAuthorityResult (Maybe IndexDbQueryUploadAuthorityResultRecord)
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
@@ -549,6 +552,19 @@ type UploadMethod
 type alias IndexDbQueryUploadGeneralResultRecord =
     { entities : List ( BackendGeneralEntity, UploadMethod )
     , remaining : Int
+    }
+
+
+type alias IndexDbQueryUploadWhatsAppResultRecord =
+    { entities : List BackendWhatsAppEntity
+    , remaining : Int
+    }
+
+
+type alias BackendWhatsAppEntity =
+    { phoneNumber : String
+    , fileId : Int
+    , personId : String
     }
 
 
@@ -628,6 +644,8 @@ type Msg
     | BackendUploadAuthorityHandle IndexDbQueryUploadAuthorityResultRecord (WebData ())
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
+    | BackendUploadWhatsApp (Maybe IndexDbQueryUploadWhatsAppResultRecord)
+    | BackendUploadWhatsAppHandle IndexDbQueryUploadWhatsAppResultRecord (WebData ())
     | BackendUploadPhotoHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | BackendUploadScreenshotHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
     | BackendReportState Int
@@ -637,6 +655,7 @@ type Msg
     | SavedAtIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
     | FetchFromIndexDbUploadGeneral
+    | FetchFromIndexDbUploadWhatsApp
     | FetchFromIndexDbUploadAuthority
     | RevisionIdAuthorityAdd HealthCenterId
     | RevisionIdAuthorityRemove HealthCenterId

@@ -66,6 +66,15 @@ decodeIndexDbQueryTypeResult =
                             , succeed (IndexDbQueryUploadGeneralResult Nothing)
                             ]
 
+                    "IndexDbQueryUploadWhatsAppResult" ->
+                        oneOf
+                            [ field "data" decodeIndexDbQueryUploadWhatsAppResultRecord
+                                |> andThen (\record -> succeed (IndexDbQueryUploadWhatsAppResult (Just record)))
+
+                            -- In case we have no entities to upload.
+                            , succeed (IndexDbQueryUploadWhatsAppResult Nothing)
+                            ]
+
                     "IndexDbQueryDeferredPhotoResult" ->
                         oneOf
                             [ field "data" decodeIndexDbQueryDeferredPhotoResult
@@ -187,6 +196,21 @@ decodeIndexDbQueryUploadGeneralResultRecord =
     succeed IndexDbQueryUploadGeneralResultRecord
         |> required "entities" (list <| decodeBackendEntityAndUploadMethod (\uuid localId -> decodeBackendGeneralEntity (hardcoded uuid) (hardcoded localId)))
         |> required "remaining" decodeInt
+
+
+decodeIndexDbQueryUploadWhatsAppResultRecord : Decoder IndexDbQueryUploadWhatsAppResultRecord
+decodeIndexDbQueryUploadWhatsAppResultRecord =
+    succeed IndexDbQueryUploadWhatsAppResultRecord
+        |> required "entities" (list decodeBackendWhatsAppEntity)
+        |> required "remaining" decodeInt
+
+
+decodeBackendWhatsAppEntity : Decoder BackendWhatsAppEntity
+decodeBackendWhatsAppEntity =
+    succeed BackendWhatsAppEntity
+        |> required "phone_number" string
+        |> required "fileId" decodeInt
+        |> required "person_id" string
 
 
 decodeIndexDbQueryUploadAuthorityResultRecord : Decoder IndexDbQueryUploadAuthorityResultRecord
