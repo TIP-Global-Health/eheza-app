@@ -19,6 +19,7 @@
 
     self.addEventListener('fetch', function ( event) {
 
+        // Photos download.
         if (event.request.method === 'GET' && photosDownloadUrlRegex.test(event.request.url)) {
 
             event.respondWith(async function() {
