@@ -428,10 +428,13 @@ type alias IndexDbUploadRemoteData a =
 -}
 type SyncStatus
     = SyncIdle
-    | SyncUploadGeneral (UploadRec IndexDbQueryUploadGeneralResultRecord)
       -- Int is used for a counter, to track file upload errors.
       -- If counter exceeds threshold, sync will be stopped.
-    | SyncUploadPhotoAuthority Int (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | SyncUploadPhoto Int (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
+      -- Int is used for a counter, to track file upload errors.
+      -- If counter exceeds threshold, sync will be stopped.
+    | SyncUploadScreenshot Int (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
+    | SyncUploadGeneral (UploadRec IndexDbQueryUploadGeneralResultRecord)
     | SyncUploadAuthority (UploadRec IndexDbQueryUploadAuthorityResultRecord)
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
@@ -460,7 +463,8 @@ type SyncCycle
 -}
 type IndexDbQueryType
     = -- Get a single photo pending uploading.
-      IndexDbQueryUploadPhotoAuthority
+      IndexDbQueryUploadPhoto
+    | IndexDbQueryUploadScreenshot
     | IndexDbQueryUploadGeneral
       -- Query one authority at a time, to make sure
       -- content is being uploaded in correct order,
@@ -482,15 +486,17 @@ type IndexDbQueryType
 
 type IndexDbQueryTypeResult
     = -- A single photo for upload, if exists.
-      IndexDbQueryUploadPhotoAuthorityResult (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
-    | IndexDbQueryUploadAuthorityResult (Maybe IndexDbQueryUploadAuthorityResultRecord)
+      IndexDbQueryUploadPhotoResult (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
+      -- A single screenshot for upload, if exists.
+    | IndexDbQueryUploadScreenshotResult (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
     | IndexDbQueryUploadGeneralResult (Maybe IndexDbQueryUploadGeneralResultRecord)
+    | IndexDbQueryUploadAuthorityResult (Maybe IndexDbQueryUploadAuthorityResultRecord)
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | IndexDbQueryGetTotalEntriesToUploadResult Int
 
 
-type UploadPhotoError
+type UploadFileError
     = BadJson String
     | NetworkError String
     | UploadError String
@@ -515,14 +521,20 @@ type IndexDbSaveStatus
     | IndexDbSaveSuccess
 
 
-{-| The info we get from query to `generalPhotoUploadChanges`.
--}
 type alias IndexDbQueryUploadPhotoResultRecord =
     { uuid : String
     , photo : String
     , localId : Int
 
     -- If photo was uploaded to Drupal, get the file ID.
+    , fileId : Maybe Int
+    }
+
+
+type alias IndexDbQueryUploadFileResultRecord =
+    { localId : Int
+
+    -- If file was uploaded to Drupal, get the ID.
     , fileId : Maybe Int
     }
 
@@ -610,12 +622,14 @@ type Msg
       -- uploading the photos happens in JS, since we have to deal with file blobs
       -- which would be harder in Elm, given we have elm/http@1.0.
       -- This is the reason it doesn't get as arguments the result of the IndexDB.
-    | BackendPhotoUploadAuthority
+    | BackendPhotoUpload
+    | BackendScreenshotUpload
     | BackendUploadAuthority (Maybe IndexDbQueryUploadAuthorityResultRecord)
     | BackendUploadAuthorityHandle IndexDbQueryUploadAuthorityResultRecord (WebData ())
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
-    | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | BackendUploadPhotoHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | BackendUploadScreenshotHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
     | BackendReportState Int
     | BackendReportSyncIncident SyncIncidentType
     | QueryIndexDb IndexDbQueryType

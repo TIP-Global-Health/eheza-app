@@ -71,15 +71,51 @@ determineSyncStatus activePage model =
                 -- Cases are ordered by the cycle order.
                 case syncStatus of
                     SyncIdle ->
-                        ( SyncUploadPhotoAuthority 0 RemoteData.NotAsked, syncInfoAuthorities )
+                        ( SyncUploadPhoto 0 RemoteData.NotAsked, syncInfoAuthorities )
 
-                    SyncUploadPhotoAuthority errorsCount webData ->
+                    SyncUploadPhoto errorsCount webData ->
                         case webData of
                             RemoteData.Success maybeData ->
                                 case maybeData of
                                     Just data ->
                                         -- We still have data. Reset errors counter to 0, since last upload was succesfull.
-                                        ( SyncUploadPhotoAuthority 0 webData, syncInfoAuthorities )
+                                        ( SyncUploadPhoto 0 webData, syncInfoAuthorities )
+
+                                    Nothing ->
+                                        -- No more photos to upload. Move on to uploading screenshots.
+                                        ( SyncUploadScreenshot 0 RemoteData.NotAsked, syncInfoAuthorities )
+
+                            RemoteData.Failure error ->
+                                let
+                                    handleNonNetworkError reason =
+                                        if errorsCount > fileUploadFailureThreshold then
+                                            -- Threshold exceeded - report an incident and stop current sync cycle.
+                                            ( SyncReportIncident (FileUploadIncident reason), syncInfoAuthorities )
+
+                                        else
+                                            -- Threshold not exceeded - increase counter and try uploading again.
+                                            ( SyncUploadPhoto (errorsCount + 1) webData, syncInfoAuthorities )
+                                in
+                                case error of
+                                    NetworkError _ ->
+                                        noChange
+
+                                    BadJson reason ->
+                                        handleNonNetworkError reason
+
+                                    UploadError reason ->
+                                        handleNonNetworkError reason
+
+                            _ ->
+                                noChange
+
+                    SyncUploadScreenshot errorsCount webData ->
+                        case webData of
+                            RemoteData.Success maybeData ->
+                                case maybeData of
+                                    Just data ->
+                                        -- We still have data. Reset errors counter to 0, since last upload was succesfull.
+                                        ( SyncUploadScreenshot 0 webData, syncInfoAuthorities )
 
                                     Nothing ->
                                         -- No more photos to upload.
@@ -94,7 +130,7 @@ determineSyncStatus activePage model =
 
                                         else
                                             -- Threshold not exceeded - increase counter and try uploading again.
-                                            ( SyncUploadPhotoAuthority (errorsCount + 1) webData, syncInfoAuthorities )
+                                            ( SyncUploadScreenshot (errorsCount + 1) webData, syncInfoAuthorities )
                                 in
                                 case error of
                                     NetworkError _ ->

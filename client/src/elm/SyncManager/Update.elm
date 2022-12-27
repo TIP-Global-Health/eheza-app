@@ -471,14 +471,24 @@ update currentDate currentTime activePage dbVersion device msg model =
                         -- We send state report when we begin the sync.
                         |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
-                SyncUploadPhotoAuthority _ _ ->
+                SyncUploadPhoto _ _ ->
                     update
                         currentDate
                         currentTime
                         activePage
                         dbVersion
                         device
-                        BackendPhotoUploadAuthority
+                        BackendPhotoUpload
+                        model
+
+                SyncUploadScreenshot _ _ ->
+                    update
+                        currentDate
+                        currentTime
+                        activePage
+                        dbVersion
+                        device
+                        BackendScreenshotUpload
                         model
 
                 SyncUploadGeneral _ ->
@@ -967,9 +977,9 @@ update currentDate currentTime activePage dbVersion device msg model =
                 _ ->
                     noChange
 
-        BackendPhotoUploadAuthority ->
+        BackendPhotoUpload ->
             case model.syncStatus of
-                SyncUploadPhotoAuthority errorsCount webData ->
+                SyncUploadPhoto errorsCount webData ->
                     if RemoteData.isLoading webData then
                         noChange
 
@@ -980,20 +990,58 @@ update currentDate currentTime activePage dbVersion device msg model =
                             activePage
                             dbVersion
                             device
-                            (QueryIndexDb IndexDbQueryUploadPhotoAuthority)
-                            { model | syncStatus = SyncUploadPhotoAuthority errorsCount RemoteData.Loading }
+                            (QueryIndexDb IndexDbQueryUploadPhoto)
+                            { model | syncStatus = SyncUploadPhoto errorsCount RemoteData.Loading }
 
                 _ ->
                     noChange
 
-        BackendUploadPhotoAuthorityHandle remoteData ->
+        BackendScreenshotUpload ->
+            case model.syncStatus of
+                SyncUploadScreenshot errorsCount webData ->
+                    if RemoteData.isLoading webData then
+                        noChange
+
+                    else
+                        update
+                            currentDate
+                            currentTime
+                            activePage
+                            dbVersion
+                            device
+                            (QueryIndexDb IndexDbQueryUploadScreenshot)
+                            { model | syncStatus = SyncUploadScreenshot errorsCount RemoteData.Loading }
+
+                _ ->
+                    noChange
+
+        BackendUploadPhotoHandle remoteData ->
             -- Uploading of photos happened through JS, since it involves working
             -- with file blobs. This handler however is for post upload attempt
             -- (success or not), to set RemoteData accordingly.
             case model.syncStatus of
-                SyncUploadPhotoAuthority errorsCount _ ->
+                SyncUploadPhoto errorsCount _ ->
                     SubModelReturn
-                        (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = SyncUploadPhotoAuthority errorsCount remoteData })
+                        (SyncManager.Utils.determineSyncStatus activePage
+                            { model | syncStatus = SyncUploadPhoto errorsCount remoteData }
+                        )
+                        Cmd.none
+                        noError
+                        []
+
+                _ ->
+                    noChange
+
+        BackendUploadScreenshotHandle remoteData ->
+            -- Uploading of screenshots happened through JS, since it involves working
+            -- with file blobs. This handler however is for post upload attempt
+            -- (success or not), to set RemoteData accordingly.
+            case model.syncStatus of
+                SyncUploadScreenshot errorsCount _ ->
+                    SubModelReturn
+                        (SyncManager.Utils.determineSyncStatus activePage
+                            { model | syncStatus = SyncUploadScreenshot errorsCount remoteData }
+                        )
                         Cmd.none
                         noError
                         []
@@ -1509,7 +1557,7 @@ update currentDate currentTime activePage dbVersion device msg model =
             let
                 record =
                     case indexDbQueryType of
-                        IndexDbQueryUploadPhotoAuthority ->
+                        IndexDbQueryUploadPhoto ->
                             let
                                 -- Send the device info so on JS, we'd know how
                                 -- to contact the backend.
@@ -1517,7 +1565,19 @@ update currentDate currentTime activePage dbVersion device msg model =
                                     Device.Encoder.encode device
                                         |> Json.Encode.encode 0
                             in
-                            { queryType = "IndexDbQueryUploadPhotoAuthority"
+                            { queryType = "IndexDbQueryUploadPhoto"
+                            , data = Just encodedData
+                            }
+
+                        IndexDbQueryUploadScreenshot ->
+                            let
+                                -- Send the device info so on JS, we'd know how
+                                -- to contact the backend.
+                                encodedData =
+                                    Device.Encoder.encode device
+                                        |> Json.Encode.encode 0
+                            in
+                            { queryType = "IndexDbQueryUploadScreenshot"
                             , data = Just encodedData
                             }
 
@@ -1582,14 +1642,24 @@ update currentDate currentTime activePage dbVersion device msg model =
             case decodeValue SyncManager.Decoder.decodeIndexDbQueryTypeResult val of
                 Ok indexDbQueryTypeResult ->
                     case indexDbQueryTypeResult of
-                        IndexDbQueryUploadPhotoAuthorityResult remoteData ->
+                        IndexDbQueryUploadPhotoResult remoteData ->
                             update
                                 currentDate
                                 currentTime
                                 activePage
                                 dbVersion
                                 device
-                                (BackendUploadPhotoAuthorityHandle remoteData)
+                                (BackendUploadPhotoHandle remoteData)
+                                model
+
+                        IndexDbQueryUploadScreenshotResult remoteData ->
+                            update
+                                currentDate
+                                currentTime
+                                activePage
+                                dbVersion
+                                device
+                                (BackendUploadScreenshotHandle remoteData)
                                 model
 
                         IndexDbQueryUploadAuthorityResult result ->

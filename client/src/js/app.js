@@ -265,7 +265,7 @@ dbSync.version(17).stores({
 });
 
 dbSync.version(18).stores({
-    whatsAppUploads: '++localId,photo,report_type,person,phone_number,isSynced',
+    whatsAppUploads: '++localId,screenshot,report_type,person,phone_number,fileId,syncStage',
 });
 
 
@@ -572,7 +572,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const data = info.data;
   switch (queryType) {
 
-    case 'IndexDbQueryUploadPhotoAuthority':
+    case 'IndexDbQueryUploadPhoto':
       (async () => {
 
         let result = await dbSync
@@ -670,6 +670,105 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               // their name. So on the two records there were created on the
               // photoUploadChanges table, the same photo local URL will appear.
               await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
+            }
+
+            return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
+        });
+      })();
+      break;
+
+    case 'IndexDbQueryUploadScreenshot':
+      (async () => {
+
+        console.log('IndexDbQueryUploadScreenshot');
+
+        let result = await dbSync
+            .whatsAppUploads
+            .where('syncStage')
+            // On stage 0, we upload the file to backend.
+            .equals(0)
+            // We upload screenshots one by one.
+            .limit(1)
+            .toArray();
+
+        if (!result[0]) {
+          // No screenshots to upload.
+          return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: null});
+        }
+
+        const screenshotsUploadCache = "screenshots-upload";
+        const cache = await caches.open(screenshotsUploadCache);
+
+        result.forEach(async function(row, index) {
+            const cachedResponse = await cache.match(row.screenshot);
+
+            if (cachedResponse) {
+              const blob = await cachedResponse.blob();
+              const formData = new FormData();
+              const imageName = 'whatsapp-upload-' + getRandom8Digits() + '.png';
+
+              formData.set('file', blob, imageName);
+
+              const dataArr = JSON.parse(data);
+
+              const backendUrl = dataArr.backend_url;
+              const accessToken = dataArr.access_token;
+
+              const uploadUrl = [
+                backendUrl,
+                '/api/file-upload?access_token=',
+                accessToken,
+              ].join('');
+
+              try {
+                var response = await fetch(uploadUrl, {
+                  method: 'POST',
+                  body: formData,
+                  // This prevents attaching cookies to request, to prevent
+                  // sending authentication cookie, as our desired
+                  // authentication method is token.
+                  credentials: 'omit'
+                });
+              }
+              catch (e) {
+                  // Network error.
+                  return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'NetworkError', reason: e.toString()});
+              }
+
+              if (!response.ok) {
+                return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'UploadError', reason: row.screenshot});
+              }
+
+              // Response indicated success.
+              try {
+                var json = await response.json();
+              }
+              catch (e) {
+                // Bad JSON.
+                return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'BadJson', reason: row.screenshot});
+              }
+
+              const changes = {
+                'fileId': parseInt(json.data[0].id),
+                'syncStage': 1,
+              }
+
+              await dbSync.whatsAppUploads.where('screenshot').equals(row.screenshot).modify(changes);
+            }
+            else {
+              // Screenshot is registered in IndexDB, but doesn't appear in the cache.
+              // For the sync not to get stuck, we set the data of default image instead.
+              const changes = {
+                'fileId': 5002,
+                'syncStage': 1,
+              }
+
+              // Update IndexDb to hold the fileId. As there could have been multiple
+              // operations on the same entity, we replace all the screenshot occurrences.
+              // For example, lets say a person's screenshot was changed, and later also
+              // their name. So on the two records there were created on the
+              // screenshotUploadChanges table, the same screenshot local URL will appear.
+              await dbSync.authorityPhotoUploadChanges.where('screenshot').equals(row.screenshot).modify(changes);
             }
 
             return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
@@ -1008,11 +1107,12 @@ function makeProgressReportScreenshot(elementId, data) {
          var json = await response.json();
 
          var entry = {
-             photo: json.url,
+             screenshot: json.url,
              report_type: data.reportType,
              person: data.personId,
              phone_number: data.phoneNumber,
-             isSynced: 0,
+             syncStage: 0,
+             fileId: null
          };
 
          await dbSync.whatsAppUploads.add(entry);

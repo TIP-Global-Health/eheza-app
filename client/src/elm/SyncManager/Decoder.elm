@@ -40,9 +40,13 @@ decodeIndexDbQueryTypeResult =
         |> andThen
             (\queryType ->
                 case queryType of
-                    "IndexDbQueryUploadPhotoAuthorityResult" ->
+                    "IndexDbQueryUploadPhotoResult" ->
                         decodeIndexDbQueryUploadPhotoResultRecordRemoteData
-                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoAuthorityResult val))
+                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoResult val))
+
+                    "IndexDbQueryUploadScreenshotResult" ->
+                        decodeIndexDbQueryUploadScreenshotResultRecordRemoteData
+                            |> andThen (\val -> succeed (IndexDbQueryUploadScreenshotResult val))
 
                     "IndexDbQueryUploadAuthorityResult" ->
                         oneOf
@@ -80,7 +84,7 @@ decodeIndexDbQueryTypeResult =
             )
 
 
-decodeIndexDbQueryUploadPhotoResultRecordRemoteData : Decoder (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+decodeIndexDbQueryUploadPhotoResultRecordRemoteData : Decoder (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
 decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
     at [ "data", "tag" ] string
         |> andThen
@@ -89,6 +93,47 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                     "Success" ->
                         oneOf
                             [ at [ "data", "result" ] decodeIndexDbQueryUploadPhotoResultRecord
+                                |> andThen (\record -> succeed (RemoteData.Success (Just record)))
+
+                            -- In case we have no photos to upload.
+                            , succeed (RemoteData.Success Nothing)
+                            ]
+
+                    "Error" ->
+                        (succeed (\a b -> ( a, b ))
+                            |> requiredAt [ "data", "error" ] string
+                            |> optionalAt [ "data", "reason" ] (nullable string) Nothing
+                        )
+                            |> andThen
+                                (\( error, maybeReason ) ->
+                                    case error of
+                                        "BadJson" ->
+                                            succeed (RemoteData.Failure <| BadJson (Maybe.withDefault "" maybeReason))
+
+                                        "NetworkError" ->
+                                            succeed (RemoteData.Failure <| NetworkError (Maybe.withDefault "" maybeReason))
+
+                                        "UploadError" ->
+                                            succeed (RemoteData.Failure <| UploadError (Maybe.withDefault "" maybeReason))
+
+                                        _ ->
+                                            fail <| error ++ " is not a recognized Error tag IndexDbQueryUploadPhotoResultRecord"
+                                )
+
+                    _ ->
+                        fail <| tag ++ " is not a recognized Error for decodeIndexDbQueryUploadPhotoResultRecordRemoteData"
+            )
+
+
+decodeIndexDbQueryUploadScreenshotResultRecordRemoteData : Decoder (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
+decodeIndexDbQueryUploadScreenshotResultRecordRemoteData =
+    at [ "data", "tag" ] string
+        |> andThen
+            (\tag ->
+                case tag of
+                    "Success" ->
+                        oneOf
+                            [ at [ "data", "result" ] decodeIndexDbQueryUploadFileResultRecord
                                 |> andThen (\record -> succeed (RemoteData.Success (Just record)))
 
                             -- In case we have no photos to upload.
@@ -126,6 +171,13 @@ decodeIndexDbQueryUploadPhotoResultRecord =
     succeed IndexDbQueryUploadPhotoResultRecord
         |> required "uuid" string
         |> required "photo" string
+        |> required "localId" int
+        |> optional "fileId" (nullable int) Nothing
+
+
+decodeIndexDbQueryUploadFileResultRecord : Decoder IndexDbQueryUploadFileResultRecord
+decodeIndexDbQueryUploadFileResultRecord =
+    succeed IndexDbQueryUploadFileResultRecord
         |> required "localId" int
         |> optional "fileId" (nullable int) Nothing
 
