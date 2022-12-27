@@ -1489,19 +1489,17 @@ update currentDate currentTime activePage dbVersion device msg model =
                                     Cmd.none
 
                                 else
-                                    -- @todo
-                                    -- HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                    --     |> withQueryParams [ ( "access_token", device.accessToken ) ]
-                                    --     |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadWhatsAppResultRecord dbVersion result)
-                                    --     |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadWhatsAppHandle result)
-                                    Cmd.none
+                                    HttpBuilder.post (device.backendUrl ++ "/api/sync")
+                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadWhatsAppResultRecord dbVersion result)
+                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadWhatsAppHandle result)
 
                             modelUpdated =
                                 { model | syncStatus = SyncUploadWhatsApp recordUpdated, syncInfoGeneral = syncInfoGeneral }
                         in
                         SubModelReturn
                             (SyncManager.Utils.determineSyncStatus activePage modelUpdated)
-                            setSyncInfoGeneralCmd
+                            (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
                             noError
                             []
 
@@ -1553,21 +1551,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 -- We have successfully uploaded the entities, so
                                 -- we can mark them as `isSynced`.
                                 cmd =
-                                    let
-                                        localIds =
-                                            -- @todo:
-                                            -- List.map
-                                            --     (\( entity, _ ) ->
-                                            --         let
-                                            --             identifier =
-                                            --                 SyncManager.Utils.getBackendWhatsAppEntityIdentifier entity
-                                            --         in
-                                            --         identifier.revision
-                                            --     )
-                                            --     result.entities
-                                            []
-                                    in
-                                    deleteEntitiesThatWereUploaded { type_ = "WhatsApp", localId = localIds }
+                                    deleteEntitiesThatWereUploaded { type_ = "WhatsApp", localId = List.map .localId result.entities }
                             in
                             SubModelReturn
                                 (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })

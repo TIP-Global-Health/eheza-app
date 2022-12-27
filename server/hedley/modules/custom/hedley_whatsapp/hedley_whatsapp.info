@@ -25,6 +25,7 @@ features[field_instance][] = node-whatsapp_record-field_person
 features[field_instance][] = node-whatsapp_record-field_phone_number
 features[field_instance][] = node-whatsapp_record-field_report_type
 features[field_instance][] = node-whatsapp_record-field_screenshot
+features[field_instance][] = node-whatsapp_record-field_uuid
 features[node][] = whatsapp_record
 features[user_permission][] = create whatsapp_record content
 features[user_permission][] = delete any whatsapp_record content

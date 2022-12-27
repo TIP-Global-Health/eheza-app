@@ -25,8 +25,10 @@ import Backend.Relationship.Decoder
 import Backend.Session.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
+import Components.SendViaWhatsAppDialog.Decoder exposing (decodeReportType)
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
+import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
@@ -208,9 +210,12 @@ decodeIndexDbQueryUploadWhatsAppResultRecord =
 decodeBackendWhatsAppEntity : Decoder BackendWhatsAppEntity
 decodeBackendWhatsAppEntity =
     succeed BackendWhatsAppEntity
+        |> required "localId" decodeInt
+        |> required "person" string
+        |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "report_type" decodeReportType
         |> required "phone_number" string
         |> required "fileId" decodeInt
-        |> required "person_id" string
 
 
 decodeIndexDbQueryUploadAuthorityResultRecord : Decoder IndexDbQueryUploadAuthorityResultRecord

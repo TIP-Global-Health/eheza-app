@@ -20,8 +20,10 @@ import Backend.Relationship.Model exposing (Relationship)
 import Backend.Session.Model exposing (Session)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
+import Components.SendViaWhatsAppDialog.Model exposing (ReportType)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import Editable exposing (Editable)
+import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -562,9 +564,12 @@ type alias IndexDbQueryUploadWhatsAppResultRecord =
 
 
 type alias BackendWhatsAppEntity =
-    { phoneNumber : String
-    , fileId : Int
+    { localId : Int
     , personId : String
+    , dateMeasured : NominalDate
+    , reportType : ReportType
+    , phoneNumber : String
+    , screenshot : Int
     }
 
 

@@ -98,7 +98,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
   public function allEntities() {
     return array_merge(
       $this->entitiesForAllDevices(),
-      $this->entitiesForHealthCenters()
+      $this->entitiesForHealthCenters(),
+      HEDLEY_RESTFUL_FOR_UPLOAD
     );
   }
 
@@ -465,10 +466,13 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             break;
 
           case 'POST':
-            $nid = hedley_restful_resolve_nid_for_uuid($item['uuid']);
+            $nid = FALSE;
             // Check if node with provided UUID already exists.
             // If it does, we don't do anything, as this is duplicate request.
             // Otherwise, we can proceed with content creation.
+            if (!empty($item['uuid'])) {
+              $nid = hedley_restful_resolve_nid_for_uuid($item['uuid']);
+            }
             if ($nid === FALSE) {
               $sub_handler->post('', $data);
             }
@@ -495,7 +499,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       watchdog('debug', $m2, [], WATCHDOG_ERROR);
 
       $details = $m1 . PHP_EOL . PHP_EOL . $m2;
-      hedley_restful_report_sync_incident('content-upload', $item['uuid'], $account->uid, $details);
+      $uuid = !empty($item['uuid']) ? $item['uuid'] : 'no-uuid';
+      hedley_restful_report_sync_incident('content-upload', $uuid, $account->uid, $details);
 
       throw $e;
     }

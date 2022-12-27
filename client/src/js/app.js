@@ -680,8 +680,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
     case 'IndexDbQueryUploadScreenshot':
       (async () => {
 
-        console.log('IndexDbQueryUploadScreenshot');
-
         let result = await dbSync
             .whatsAppUploads
             .where('syncStage')
@@ -812,11 +810,10 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
     case 'IndexDbQueryUploadWhatsApp':
       (async () => {
-
         const batchSize = 50;
 
         let totalEntites = await dbSync
-            .nodeChanges
+            .whatsAppUploads
             .where('syncStage')
             .equals(1)
             .count();
@@ -827,7 +824,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         }
 
         let entitiesResult = await dbSync
-            .nodeChanges
+            .whatsAppUploads
             .where('syncStage')
             .equals(1)
             .limit(batchSize)
@@ -1142,11 +1139,13 @@ function makeProgressReportScreenshot(elementId, data) {
 
         if (response.ok) {
          var json = await response.json();
+         var today = new Date();
 
          var entry = {
              screenshot: json.url,
-             report_type: data.reportType,
              person: data.personId,
+             date_measured: today.toISOString().split('T')[0],
+             report_type: data.reportType,
              phone_number: data.phoneNumber,
              syncStage: 0,
              fileId: null
