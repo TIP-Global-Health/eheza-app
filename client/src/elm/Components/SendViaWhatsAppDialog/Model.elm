@@ -19,12 +19,35 @@ emptyModel =
 type DialogState
     = Consent
     | PhoneVerification String
-    | PhoneInput String
+    | PhoneInput PhoneData
     | PhoneUpdateAtProfile String
     | PhoneUpdateConfirmation String
     | ComponentsSelection String (Maybe ReportComponentsList)
     | ConfirmationBeforeExecuting String
     | ExecutionResult (Maybe String)
+
+
+type alias PhoneData =
+    { countryCode : CountryCode
+    , phone : String
+    }
+
+
+emptyPhoneData : PhoneData
+emptyPhoneData =
+    { countryCode = CountryCodeRwanda
+    , phone = ""
+    }
+
+
+type CountryCode
+    = CountryCodeRwanda
+    | CountryCodeUganda
+    | CountryCodeCongo
+    | CountryCodeKenya
+    | CountryCodeTanzania
+    | CountryCodeBurundi
+    | CountryCodeUSACanada
 
 
 type alias ReportComponentsConfig msg =
@@ -63,6 +86,8 @@ type ReportComponentAntenatal
 
 type Msg msg
     = SetState (Maybe DialogState)
+    | SetPhoneNumber String
+    | SetCountryCode String
     | UpdatePhoneAtProfile PersonId Person String
     | SetReportComponents msg String
     | Execute ReportType PersonId String

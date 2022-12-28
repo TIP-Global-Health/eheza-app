@@ -2301,6 +2301,14 @@ div.page-report {
           }
         }
       }
+
+      div.phone-inputs {
+        display: flex;
+
+        .phone-number {
+          margin-left: 10px;
+        }
+      }
     }
 
     .actions > button {

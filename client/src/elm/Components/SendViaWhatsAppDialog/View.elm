@@ -3,6 +3,7 @@ module Components.SendViaWhatsAppDialog.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model exposing (..)
+import Components.SendViaWhatsAppDialog.Utils exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -33,8 +34,8 @@ viewDialog language currentDate ( personId, person ) reportType componentsConfig
                 PhoneVerification phoneNumber ->
                     viewPhoneVerification language currentDate allowComponentsSelection phoneNumber
 
-                PhoneInput inputValue ->
-                    viewPhoneInput language currentDate inputValue
+                PhoneInput data ->
+                    viewPhoneInput language currentDate data
 
                 PhoneUpdateAtProfile phoneNumber ->
                     viewPhoneUpdateAtProfile language currentDate allowComponentsSelection personId person phoneNumber
@@ -80,10 +81,10 @@ viewConsent language currentDate person =
                         PhoneVerification number
 
                     else
-                        PhoneInput ""
+                        PhoneInput emptyPhoneData
                 )
                 person.telephoneNumber
-                |> Maybe.withDefault (PhoneInput "")
+                |> Maybe.withDefault (PhoneInput emptyPhoneData)
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppConsentQuestion ]
@@ -125,7 +126,7 @@ viewPhoneVerification language currentDate allowComponentsSelection phoneNumber 
         [ div [ class "two ui buttons" ]
             [ button
                 [ class "ui velvet fluid button"
-                , onClick <| SetState <| Just (PhoneInput "")
+                , onClick <| SetState <| Just (PhoneInput emptyPhoneData)
                 ]
                 [ text <| translate language Translate.No ]
             , button
@@ -138,15 +139,49 @@ viewPhoneVerification language currentDate allowComponentsSelection phoneNumber 
     ]
 
 
-viewPhoneInput : Language -> NominalDate -> String -> List (Html (Msg msg))
-viewPhoneInput language currentDate inputValue =
+viewPhoneInput : Language -> NominalDate -> PhoneData -> List (Html (Msg msg))
+viewPhoneInput language currentDate data =
+    let
+        countryCodeOptions =
+            List.map
+                (\item ->
+                    option
+                        [ value <| countryCodeToString item
+                        , selected <| data.countryCode == item
+                        ]
+                        [ text <| "+" ++ countryCodeToString item ]
+                )
+                [ CountryCodeRwanda
+                , CountryCodeUganda
+                , CountryCodeCongo
+                , CountryCodeKenya
+                , CountryCodeTanzania
+                , CountryCodeBurundi
+                , CountryCodeUSACanada
+                ]
+
+        curerntPhoneNumber =
+            case data.countryCode of
+                CountryCodeRwanda ->
+                    "0" ++ trimLeadingZeros data.phone
+
+                _ ->
+                    "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone
+    in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppPhoneInputHeader ]
-        , viewTextInput language
-            inputValue
-            (PhoneInput >> Just >> SetState)
-            Nothing
-            (Just "phone-number")
+        , div [ class "phone-inputs" ]
+            [ select
+                [ onInput SetCountryCode
+                , class "select"
+                ]
+                countryCodeOptions
+            , viewTextInput language
+                data.phone
+                SetPhoneNumber
+                Nothing
+                (Just "phone-number")
+            ]
         ]
     , div [ class "actions" ]
         [ div [ class "two ui buttons" ]
@@ -157,7 +192,7 @@ viewPhoneInput language currentDate inputValue =
                 [ text <| translate language Translate.Cancel ]
             , button
                 [ class "ui primary fluid button"
-                , onClick <| SetState <| Just (PhoneUpdateAtProfile inputValue)
+                , onClick <| SetState <| Just (PhoneUpdateAtProfile curerntPhoneNumber)
                 ]
                 [ text <| translate language Translate.Continue ]
             ]
@@ -393,6 +428,23 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
 
 viewConfirmationBeforeExecuting : Language -> NominalDate -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
 viewConfirmationBeforeExecuting language currentDate reportType personId phoneNumber clearComponentsMsg =
+    let
+        phoneNumberForWhatsApp =
+            if String.startsWith "+" phoneNumber then
+                -- International number with country code.
+                -- Trim '+' and add 00  prefix.
+                "00" ++ String.dropLeft 1 phoneNumber
+
+            else if String.startsWith "0" phoneNumber then
+                -- Rwanda number with no country code.
+                -- Trim leading 0, and add 00 and country code.
+                "00" ++ countryCodeToString CountryCodeRwanda ++ trimLeadingZeros phoneNumber
+
+            else
+                -- Rwanda numberm without leading 0.
+                -- Add 00 and country code.
+                "00" ++ countryCodeToString CountryCodeRwanda ++ phoneNumber
+    in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingHeader ]
         , p [] [ text phoneNumber ]
@@ -407,7 +459,7 @@ viewConfirmationBeforeExecuting language currentDate reportType personId phoneNu
                 [ text <| translate language Translate.No ]
             , button
                 [ class "ui primary fluid button"
-                , onClick <| Execute reportType personId phoneNumber
+                , onClick <| Execute reportType personId phoneNumberForWhatsApp
                 ]
                 [ text <| translate language Translate.Send ]
             ]
