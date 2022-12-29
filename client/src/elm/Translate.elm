@@ -12482,6 +12482,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                ComponentAntenatalCHWActivity ->
+                    { english = "CHW Activity"
+                    , kinyarwanda = Nothing
+                    }
+
                 ComponentAntenatalPatientProgress ->
                     { english = "Patient Progress"
                     , kinyarwanda = Nothing
