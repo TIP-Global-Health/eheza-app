@@ -320,6 +320,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                         [ ComponentAntenatalRiskFactors
                         , ComponentAntenatalMedicalDiagnoses
                         , ComponentAntenatalObstetricalDiagnoses
+                        , ComponentAntenatalCHWActivity
                         , ComponentAntenatalPatientProgress
                         , ComponentAntenatalLabsResults
                         , ComponentAntenatalProgressPhotos

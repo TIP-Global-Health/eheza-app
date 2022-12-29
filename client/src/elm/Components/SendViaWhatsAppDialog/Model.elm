@@ -54,8 +54,7 @@ type ReportComponentAntenatal
     = ComponentAntenatalRiskFactors
     | ComponentAntenatalMedicalDiagnoses
     | ComponentAntenatalObstetricalDiagnoses
-      -- @todo: implement after pane is developed.
-      -- | ComponentAntenatalCHWActivity
+    | ComponentAntenatalCHWActivity
     | ComponentAntenatalPatientProgress
     | ComponentAntenatalLabsResults
     | ComponentAntenatalProgressPhotos
