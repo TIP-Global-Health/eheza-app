@@ -332,6 +332,11 @@ viewContent language currentDate isChw initiator model assembled =
                             ((regularViewMode && isNothing model.labResultsMode)
                                 || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnoses
                             )
+                    , viewChwActivityPane language currentDate isChw assembled
+                        |> showIf
+                            ((regularViewMode && isNothing model.labResultsMode)
+                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalCHWActivity
+                            )
                     , viewPatientProgressPane language currentDate isChw assembled
                         |> showIf
                             ((regularViewMode && isNothing model.labResultsMode)
