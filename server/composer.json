@@ -1,5 +1,6 @@
 {
     "require": {
-        "consolidation/robo": "^2.0"
+        "consolidation/robo": "^2.0",
+        "cmdotcom/text-sdk-php": "^2.2.1"
     }
 }
