@@ -1,7 +1,5 @@
 <?php
 
-require_once "../vendor/autoload.php";
-
 /**
  * @file
  * Locates duplicates by UUID and deletes all, but first one.
