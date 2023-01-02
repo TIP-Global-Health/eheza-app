@@ -15,7 +15,13 @@ if (!drupal_is_cli()) {
   return;
 }
 
-$client = new TextClient('cac034a9-0c8b-47dd-b1d2-55cb23fd5349');
+$key = variable_get('hedley_whatsapp_api_key', '');
+if (empty($key)) {
+  drush_print("API key not set. Aborting.");
+  return;
+}
+
+$client = new TextClient($key);
 $result = $client->SendMessage('Hello world!', 'TIP Health', [ '00972546925278' ]);
 
 drush_print("Status code: $result->statusCode");
