@@ -89,16 +89,37 @@ function hedley_stats_trigger_stats_recalculation($node) {
     return;
   }
 
-  // Reset statistics cache of each health center, because
-  // content affecting its statistics has been added / changed.
-  foreach ($health_centers as $health_center) {
-    hedley_stats_clear_caches_for_health_center($health_center, $cache_type_for_recalculation);
+  foreach ($health_centers as $health_center_id) {
+    // Reset statistics cache for health center, because
+    // content affecting its statistics has been added / changed.
+    hedley_stats_clear_caches_for_health_center($health_center_id, $cache_type_for_recalculation);
 
-    // Add an AQ item to re-calculate all the statistics offline.
-    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center, [
-      'health_center_nid' => $health_center,
-    ]);
+    // Schedule recalculation of statistics.
+    hedley_stats_schedule_statistics_calculation_for_health_center($health_center_id);
   }
+}
+
+/**
+ * Schedules statistics calculation.
+ *
+ * AQ task is added for statistics calculation, unless health center
+ * is member of exclusion list.
+ *
+ * @param int $health_center_id
+ *   The node ID of health center, which statistics are calculated.
+ */
+function hedley_stats_schedule_statistics_calculation_for_health_center($health_center_id) {
+  $excluded_health_centers = variable_get('hedley_statistics_excluded_health_centers', '');
+  $excluded_health_centers = explode(',', $excluded_health_centers);
+  if (array_search($health_center_id, $excluded_health_centers) !== FALSE) {
+    // Health center is member of the exclusion list.
+    return;
+  }
+  // This health center is not excluded - schedule statistics
+  // calculation by adding an AQ task.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_id, [
+    'health_center_nid' => $health_center_id,
+  ]);
 }
 
 /**
@@ -842,8 +863,11 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
 
   foreach ($result as $row) {
     $clinic_type = $row->field_group_type;
-    $child_wrapper = entity_metadata_wrapper('node', $row->field_person);
-    $birth_date = $child_wrapper->field_birth_date->value();
+    // Using node_load() instead of entity_metadata_wrapper(), because latter
+    // has shown excessive memory usage, and did not respond when
+    // drupal_static_reset() was invoked to free up memory.
+    $child_node = node_load($row->field_person);
+    $birth_date = $child_node->field_birth_date[LANGUAGE_NONE][0]['value'];
 
     if (empty($birth_date)) {
       // Child got no birthdate set. We can't process
@@ -851,22 +875,25 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
       continue;
     }
 
-    $adult_wrapper = entity_metadata_wrapper('node', $row->field_adult);
+    // Using node_load() instead of entity_metadata_wrapper(), because latter
+    // has shown excessive memory usage, and did not respond when
+    // drupal_static_reset() was invoked to free up memory.
+    $adult_node = node_load($row->field_adult);
+    $phone_number = empty($adult_node->field_phone_number) ? '' : $adult_node->field_phone_number[LANGUAGE_NONE][0]['value'];
 
     $items[$clinic_type][] = [
       'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
-      'id' => $child_wrapper->getIdentifier(),
-      'name' => $child_wrapper->label(),
-      'birth_date' => hedley_stats_convert_timestamp_to_nominal($birth_date),
-      'gender' => $child_wrapper->field_gender->value(),
-      'mother_name' => $adult_wrapper->label(),
-      'phone_number' => $adult_wrapper->field_phone_number->value(),
+      'id' => $child_node->nid,
+      'name' => $child_node->title,
+      'birth_date' => date("Y-m-d", strtotime($birth_date)),
+      'gender' => $child_node->field_gender[LANGUAGE_NONE][0]['value'],
+      'mother_name' => $adult_node->title,
+      'phone_number' => $phone_number,
       'graduation_date' => date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d'),
     ];
+    // Free up memory.
+    drupal_static_reset();
   }
-
-  // Free up memory.
-  drupal_static_reset();
 
   return $items;
 }
@@ -900,8 +927,11 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
 
   $items = [];
   foreach ($result as $row) {
-    $child_wrapper = entity_metadata_wrapper('node', $row->field_person);
-    $birth_date = $child_wrapper->field_birth_date->value();
+    // Using node_load() instead of entity_metadata_wrapper(), because latter
+    // has shown excessive memory usage, and did not respond when
+    // drupal_static_reset() was invoked to free up memory.
+    $child_node = node_load($row->field_person);
+    $birth_date = $child_node->field_birth_date[LANGUAGE_NONE][0]['value'];
 
     if (empty($birth_date)) {
       // Child got no birthdate set. We can't process
@@ -914,10 +944,10 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
 
     $items[] = [
       'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
-      'id' => $child_wrapper->getIdentifier(),
-      'name' => $child_wrapper->label(),
-      'birth_date' => hedley_stats_convert_timestamp_to_nominal($birth_date),
-      'gender' => $child_wrapper->field_gender->value(),
+      'id' => $child_node->nid,
+      'name' => $child_node->title,
+      'birth_date' => date("Y-m-d", strtotime($birth_date)),
+      'gender' => $child_node->field_gender[LANGUAGE_NONE][0]['value'],
       'graduation_date' => hedley_stats_convert_timestamp_to_nominal($graduation_date),
       // No need to provide mother details, because we do not present
       // it anywhere, when it comes to individual participant data.
@@ -1106,7 +1136,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
           $measurements = hedley_activity_get_person_measurements_by_period($child_id, $measurements_types, $period, 1);
           if (empty($measurements)) {
             // This person missed the session because they don't have any
-            // measurements found for that session on this date so we add it to
+            // measurements found for that session on this date, so we add it to
             // the list of dates, to be able to filter it in the frontend.
             $expected_person['expected_date'] = hedley_stats_convert_timestamp_to_nominal($session_start_date);
             $missed_session[] = $expected_person;
@@ -1119,6 +1149,8 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
         }
       }
     }
+    // Free up memory.
+    drupal_static_reset();
   }
 
   // Set the cache.
@@ -1157,6 +1189,9 @@ function hedley_stats_get_total_encounters($health_center_id, $villages_with_res
   foreach ($villages_with_residents as $village_uuid => $residents_ids) {
     $result['villages'][$village_uuid] = hedley_stats_get_total_encounters_for_residents($health_center_id, $residents_ids);
   }
+
+  // Free up memory.
+  drupal_static_reset();
 
   // Set the cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $health_center_id, NULL, $result);
@@ -1376,12 +1411,17 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
 
     $people = [];
     foreach ($people_data as $id => $person) {
-      $wrapper = entity_metadata_wrapper('node', $id);
-      $people[$id] = [
+      // Using node_load() instead of entity_metadata_wrapper(), because latter
+      // has shown excessive memory usage, and did not respond when
+      // drupal_static_reset() was invoked to free up memory.
+      $node = node_load($id);
+      $birth_date = $node->field_birth_date[LANGUAGE_NONE][0]['value'];
+
+      $item = [
         'id' => $id,
-        'name' => trim($wrapper->label()),
-        'birth_date' => hedley_stats_convert_timestamp_to_nominal($wrapper->field_birth_date->value()),
-        'gender' => $wrapper->field_gender->value(),
+        'name' => $node->title,
+        'birth_date' => date("Y-m-d", strtotime($birth_date)),
+        'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
         'nutrition' => $nutrition_per_person,
       ];
 
@@ -1415,11 +1455,11 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
             if (in_array($type, ['nutrition', 'nutrition_nutrition'])) {
               if ($value != 'none') {
                 // This indicates to front-end of a 'Severe nutrition' case.
-                $people[$id]['nutrition']['nutrition_signs'][$month] = -3;
+                $item['nutrition']['nutrition_signs'][$month] = -3;
               }
               else {
                 // This indicates to front-end of a 'Good nutrition' case.
-                $people[$id]['nutrition']['nutrition_signs'][$month] = 3;
+                $item['nutrition']['nutrition_signs'][$month] = 3;
               }
 
               // Move on to next measurement.
@@ -1433,36 +1473,38 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
               case 'height':
               case 'nutrition_height':
                 // The value to display in the table.
-                $people[$id]['nutrition']['stunting'][$month] = $formatted_value;
+                $item['nutrition']['stunting'][$month] = $formatted_value;
                 break;
 
               case 'weight':
               case 'nutrition_weight':
                 if ($field_name == 'field_zscore_age') {
                   // The value to display in the table.
-                  $people[$id]['nutrition']['underweight'][$month] = $formatted_value;
+                  $item['nutrition']['underweight'][$month] = $formatted_value;
                 }
                 elseif ($field_name == 'field_zscore_length') {
                   // The value to display in the table.
-                  $people[$id]['nutrition']['wasting'][$month] = $formatted_value;
+                  $item['nutrition']['wasting'][$month] = $formatted_value;
                 }
                 break;
 
               case 'muac':
               case 'nutrition_muac':
                 // The value to display in the table.
-                $people[$id]['nutrition']['muac'][$month] = $formatted_value;
+                $item['nutrition']['muac'][$month] = $formatted_value;
                 break;
             }
           }
         }
       }
+      $people[] = $item;
+      // Free up memory.
+      drupal_static_reset();
     }
 
+    $result[$program_type] = $people;
     // Free up memory.
     drupal_static_reset();
-
-    $result[$program_type] = array_values($people);
   }
 
   // Set the cache.
