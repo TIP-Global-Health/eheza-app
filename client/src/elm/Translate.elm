@@ -13595,12 +13595,12 @@ translationSet trans =
         RandomBloodSugarResultNormalRange type_ ->
             case type_ of
                 TestRunBeforeMeal _ ->
-                    { english = "74-126 mg/dL"
+                    { english = "74-126 mg/dL (F)"
                     , kinyarwanda = Nothing
                     }
 
                 TestRunAfterMeal _ ->
-                    { english = "74-200 mg/dL"
+                    { english = "74-200 mg/dL (NF)"
                     , kinyarwanda = Nothing
                     }
 
