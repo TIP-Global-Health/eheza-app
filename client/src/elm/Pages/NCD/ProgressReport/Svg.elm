@@ -283,12 +283,12 @@ measurementsWithInidactorsByTime verticalMin verticalMax verticalStep horizontal
             (\( time, value_ ) ->
                 let
                     value =
-                        toNumberFunc value_ - verticalMin
+                        toNumberFunc value_
                 in
                 if withinRange value verticalMin verticalMax then
                     Just
                         ( toIndicatorFunc value_
-                        , ( dimensionsPx.left + time * horizontalStep, dimensionsPx.bottom - value * verticalStep )
+                        , ( dimensionsPx.left + time * horizontalStep, dimensionsPx.bottom - (value - verticalMin) * verticalStep )
                         )
 
                 else
