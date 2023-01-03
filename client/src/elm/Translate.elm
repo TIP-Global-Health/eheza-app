@@ -13528,7 +13528,7 @@ translationSet trans =
                     }
 
                 PrerequisiteImmediateResult ->
-                    { english = "Where is this test performed"
+                    { english = "Where was this test performed"
                     , kinyarwanda = Nothing
                     }
 
