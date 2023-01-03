@@ -622,7 +622,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , expectedAge = ExpectAdultOrChild
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -90 today
-                            , birthDateSelectorTo = today
+                            , birthDateSelectorTo = Date.add Years -12 today
                             , title = Translate.People
                             }
 
