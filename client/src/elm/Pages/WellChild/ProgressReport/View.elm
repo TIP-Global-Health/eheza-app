@@ -268,6 +268,42 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
         derivedContent =
             case diagnosisMode of
                 ModeActiveDiagnosis ->
+                    let
+                        -- Drawing SVG charts causes major slowness, specially when
+                        -- typing new phone number. Therefore, we do not show it when
+                        -- 'Send via WhatsApp' dialog is open, until its final
+                        -- confirmation steps.
+                        showGrowthPaneByWhatsAppDialog =
+                            Maybe.map
+                                (\state ->
+                                    case state of
+                                        Components.SendViaWhatsAppDialog.Model.ConfirmationBeforeExecuting _ ->
+                                            True
+
+                                        Components.SendViaWhatsAppDialog.Model.ExecutionResult _ ->
+                                            True
+
+                                        _ ->
+                                            False
+                                )
+                                sendViaWhatsAppDialog.state
+                                |> Maybe.withDefault True
+
+                        growthPane =
+                            if showGrowthPaneByWhatsAppDialog then
+                                viewGrowthPane language
+                                    currentDate
+                                    zscores
+                                    ( childId, child )
+                                    expectedSessions
+                                    groupNutritionMeasurements
+                                    individualNutritionMeasurementsWithDates
+                                    individualWellChildMeasurementsWithDates
+                                    |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildGrowth)
+
+                            else
+                                emptyNode
+                    in
                     [ viewVaccinationHistoryPane language
                         currentDate
                         child
@@ -281,20 +317,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         individualWellChildMeasurementsWithDates
                         db
                         |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildECD)
-
-                    -- @todo:
-                    -- Drawing SVG charts causes major slowness, specially when
-                    -- typing new phone number. Need to decide how to
-                    -- solve this.
-                    , viewGrowthPane language
-                        currentDate
-                        zscores
-                        ( childId, child )
-                        expectedSessions
-                        groupNutritionMeasurements
-                        individualNutritionMeasurementsWithDates
-                        individualWellChildMeasurementsWithDates
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildGrowth)
+                    , growthPane
                     , viewNextAppointmentPane language
                         currentDate
                         child
