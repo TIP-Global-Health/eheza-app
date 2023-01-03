@@ -13153,7 +13153,7 @@ translationSet trans =
 
         ServiceWorkerActive ->
             { english = "The app is installed on this device."
-            , kinyarwanda = Just "Apulikasiyo muri icyi cyuma y'inkoranabuhanga yinjijwe."
+            , kinyarwanda = Just "Apulikasiyo muri icyi cyuma cy'inkoranabuhanga yinjijwe."
             }
 
         ServiceWorkerCurrent ->
