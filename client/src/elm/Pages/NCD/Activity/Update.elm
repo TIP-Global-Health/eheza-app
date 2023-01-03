@@ -28,6 +28,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, nonReferralReasonToSign, testResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Model
+import Date exposing (Unit(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -1873,7 +1874,7 @@ update currentDate id db msg model =
                     model.laboratoryData.hba1cTestForm
 
                 updatedForm =
-                    { form | executionDate = Just value, executionNote = Just TestNoteRunPreviously }
+                    { form | executionDate = Just value }
 
                 updatedData =
                     model.laboratoryData
@@ -1892,8 +1893,27 @@ update currentDate id db msg model =
                 defaultSelection =
                     Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
 
+                -- The date is set when date selectore is closed by pressing
+                -- 'Save' button. Once it happens, we get here, and examine the
+                -- date that was entered, and set execution note according to
+                -- time that has passed since.
+                executionNote =
+                    Maybe.map
+                        (\selectedDate ->
+                            if Date.diff Months selectedDate currentDate >= 6 then
+                                TestNoteToBeDoneAtHospital
+
+                            else
+                                TestNoteRunPreviously
+                        )
+                        defaultSelection
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+                    { form
+                        | dateSelectorPopupState = state
+                        , executionDate = defaultSelection
+                        , executionNote = executionNote
+                    }
 
                 updatedData =
                     model.laboratoryData
