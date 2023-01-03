@@ -43,7 +43,7 @@ function classified_count($age, $gender, $region) {
     return db_query("SELECT COUNT(*)
     FROM person_classified
     LEFT JOIN field_data_field_health_center hc ON person_classified.entity_id=hc.entity_id
-    WHERE field_health_center_target_id = '1246786'")->fetchField();
+    WHERE field_health_center_target_id = '1592981'")->fetchField();
   }
   else {
     return db_query("SELECT
@@ -51,7 +51,7 @@ function classified_count($age, $gender, $region) {
     FROM
     person_classified
     LEFT JOIN field_data_field_health_center hc ON person_classified.entity_id=hc.entity_id
-    WHERE field_health_center_target_id = '1246786'
+    WHERE field_health_center_target_id = '1592981'
     AND age = :age AND
     gender = :gender
     ", [
@@ -78,7 +78,7 @@ function impacted_count($age, $gender, $region) {
       FROM person_classified cl
       INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id
       LEFT JOIN field_data_field_health_center hc ON cl.entity_id=hc.entity_id
-      WHERE field_health_center_target_id = '1246786'")->fetchField();
+      WHERE field_health_center_target_id = '1592981'")->fetchField();
   }
   else {
     return (int) db_query("
@@ -88,7 +88,7 @@ function impacted_count($age, $gender, $region) {
         person_classified cl
         INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id
         LEFT JOIN field_data_field_health_center hc ON cl.entity_id=hc.entity_id
-        WHERE field_health_center_target_id = '1246786'
+        WHERE field_health_center_target_id = '1592981'
         AND age = :age
         AND gender = :gender
       ", [
@@ -121,7 +121,7 @@ function encounter_all_count($type, $filter = NULL, $limit = NULL, $region = NUL
       LEFT JOIN field_data_field_prenatal_encounter_type t ON e.field_prenatal_encounter_target_id=t.entity_id
       WHERE (field_prenatal_encounter_type_value='nurse'
         OR field_prenatal_encounter_type_value is NULL)
-        AND field_health_center_target_id = '1246786'
+        AND field_health_center_target_id = '1592981'
         AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
 
   }
@@ -132,7 +132,7 @@ function encounter_all_count($type, $filter = NULL, $limit = NULL, $region = NUL
       LEFT JOIN field_data_field_individual_participant ip ON e.field_{$type}_encounter_target_id=ip.entity_id
       LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
       LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id=hc.entity_id
-      WHERE field_health_center_target_id = '1246786'
+      WHERE field_health_center_target_id = '1592981'
       AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
   }
 }
@@ -160,7 +160,7 @@ function encounter_unique_count($type, $filter = NULL, $limit = NULL, $region = 
       LEFT JOIN field_data_field_prenatal_encounter_type t on e.field_prenatal_encounter_target_id=t.entity_id
         WHERE (field_prenatal_encounter_type_value='nurse'
           OR field_prenatal_encounter_type_value is NULL)
-          AND field_health_center_target_id = '1246786'
+          AND field_health_center_target_id = '1592981'
           AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
   }
   return db_query("SELECT COUNT(DISTINCT person.field_person_target_id)
@@ -170,7 +170,7 @@ function encounter_unique_count($type, $filter = NULL, $limit = NULL, $region = 
     LEFT JOIN field_data_field_individual_participant ip ON e.field_{$type}_encounter_target_id=ip.entity_id
     LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
     LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id=hc.entity_id
-    WHERE field_health_center_target_id = '1246786'
+    WHERE field_health_center_target_id = '1592981'
     AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
 }
 
@@ -319,7 +319,7 @@ FROM
         sess_rel.bundle IN ($measurement_types_list)
         AND field_group_type_value IS NOT NULL
         AND class.entity_id IS NOT NULL
-        AND field_health_center_target_id = '1246786'
+        AND field_health_center_target_id = '1592981'
         AND FROM_UNIXTIME(node.created) < '$limit'
     GROUP BY
       field_group_type_value, field_person_target_id, field_session_target_id
@@ -357,7 +357,7 @@ FROM
         sess_rel.bundle IN ($measurement_types_list)
         AND field_group_type_value IS NOT NULL
         AND class.entity_id IS NOT NULL
-        AND field_health_center_target_id = '1246786'
+        AND field_health_center_target_id = '1592981'
         AND FROM_UNIXTIME(node.created) < '$limit'
     GROUP BY
       field_group_type_value, field_person_target_id
