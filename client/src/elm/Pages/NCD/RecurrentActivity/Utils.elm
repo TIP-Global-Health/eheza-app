@@ -239,6 +239,9 @@ expectLaboratoryResultTask currentDate assembled task =
         TaskLipidPanelTest ->
             wasTestPerformed .lipidPanelTest
 
+        TaskHbA1cTest ->
+            False
+
         -- Others are not in use for NCD.
         _ ->
             False

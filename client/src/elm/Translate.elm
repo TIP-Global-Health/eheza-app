@@ -8598,7 +8598,7 @@ translationSet trans =
             }
 
         NCDABirthweightQuestion ->
-            { english = "What was the childs birthweight"
+            { english = "What was the child's birthweight"
             , kinyarwanda = Nothing
             }
 
