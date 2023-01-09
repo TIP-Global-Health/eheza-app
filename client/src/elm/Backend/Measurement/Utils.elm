@@ -3404,6 +3404,9 @@ laboratoryTestFromString value =
         "liver-function" ->
             Just TestLiverFunction
 
+        "lipid-panel" ->
+            Just TestLipidPanel
+
         _ ->
             Nothing
 
