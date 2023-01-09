@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Locates duplicates by UUID and deletes all, but first one.
+ * Delivers WhatsApp records to messaging vendor.
  *
  * Execution: drush scr
  *   profiles/hedley/modules/custom/hedley_whatsapp/scripts/send-messages.php.
