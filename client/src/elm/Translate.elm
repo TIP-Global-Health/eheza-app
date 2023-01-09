@@ -2337,7 +2337,7 @@ translationSet trans =
 
                 ChildActivity Activity.Model.NCDA ->
                     { english = "Child Scorecard:"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
+                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana:"
                     }
 
         ActivitiesTitle activity ->
@@ -5168,7 +5168,7 @@ translationSet trans =
 
         Grams ->
             { english = "grams"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amagarama"
             }
 
         GroupEncounter ->
@@ -5266,7 +5266,7 @@ translationSet trans =
 
         HbA1cPercentage ->
             { english = "Percentage (%)"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ku ijana (%)"
             }
 
         HbA1cMostRecentTestResultInstruction ->
@@ -6218,7 +6218,7 @@ translationSet trans =
 
         Lab ->
             { english = "Lab"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibizamini"
             }
 
         LabHistory ->
@@ -7015,17 +7015,17 @@ translationSet trans =
 
                 TaskPregnancyTest ->
                     { english = "Pregnancy Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki y'ikizamini cyo gutwita"
                     }
 
                 TaskCreatinineTest ->
                     { english = "Creatinine Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki y'ikizamini cya Keleyatinine"
                     }
 
                 TaskLiverFunctionTest ->
                     { english = "Liver Function Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "itariki y'ikizamini cy'Imikorere y'Umwijima"
                     }
 
                 TaskLipidPanelTest ->
@@ -7093,17 +7093,17 @@ translationSet trans =
 
                 TaskPregnancyTest ->
                     { english = "Pregnancy Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cyo gutwita"
                     }
 
                 TaskCreatinineTest ->
                     { english = "Creatinine Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cya Keleyatinine"
                     }
 
                 TaskLiverFunctionTest ->
                     { english = "Liver Function Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cy'Imikorere y'Umwijima"
                     }
 
                 TaskLipidPanelTest ->
@@ -7501,7 +7501,7 @@ translationSet trans =
 
         LegLeft ->
             { english = "Left leg"
-            , kinyarwanda = Just "Ikiguru kw'ibumoso"
+            , kinyarwanda = Just "Ukuguru kw'ibumoso"
             }
 
         LegRight ->
@@ -7584,12 +7584,12 @@ translationSet trans =
 
         LmpDateConfirmationLabel ->
             { english = "Please confirm the last menstrual period submitted by the CHW"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Emeza itariki aherukira mu mihango yujujwe n' umujyanama w'ubuzima"
             }
 
         LmpDateConfirmationQuestion ->
             { english = "Do you want to confirm the above LMP"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Urashaka kwemeza itariki uherukira mu mihango yavuzwe hejuru"
             }
 
         LmpDateConfidentHeader ->
@@ -8109,7 +8109,7 @@ translationSet trans =
 
                 DiagnosisHypertensionBeforePregnancy ->
                     { english = "Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso"
                     }
 
                 Backend.PrenatalActivity.Model.DiagnosisTuberculosis ->
@@ -8433,7 +8433,7 @@ translationSet trans =
 
                 else
                     String.fromInt minutes ++ " Minutes"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Iminota " ++ String.fromInt minutes
             }
 
         MinutesAgo minutes ->
@@ -8696,7 +8696,7 @@ translationSet trans =
 
                 NoNCDASigns ->
                     { english = "None"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
         NCDActivityTitle activity ->
@@ -8867,7 +8867,7 @@ translationSet trans =
         NCDAFillTheBlanksItemLabel item ->
             case item of
                 HeightToAge ->
-                    { english = "Level of stuning using child length mat"
+                    { english = "Level of stunting using child length mat"
                     , kinyarwanda = Just "Ikigero cyo kugwingira hakoreshejwe agasambi"
                     }
 
@@ -9395,17 +9395,17 @@ translationSet trans =
 
         NextDoseDue ->
             { english = "Next Dose Due"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itariki azafatiraho indi miti"
             }
 
         NextImmunisationVisit ->
             { english = "Next immunization visit"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikingira rikurikira"
             }
 
         NextPediatricVisit ->
             { english = "Next pediatric visit"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Isura ry'umwana rikurikira"
             }
 
         NextSteps ->
@@ -9514,7 +9514,7 @@ translationSet trans =
 
         NoGroupsFound ->
             { english = "No groups found."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nta matsinda yabonetse"
             }
 
         NoMatchesFound ->
@@ -9603,7 +9603,7 @@ translationSet trans =
 
                 NonAdministrationHomeBirth ->
                     { english = "Home Birth"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yabyariye mu rugo"
                     }
 
                 NonAdministrationTooIll ->
@@ -9618,7 +9618,7 @@ translationSet trans =
 
                 AdministeredToday ->
                     { english = "Administered Today"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yahawe umuti uyu munsi"
                     }
 
                 AdministeredPreviously ->
@@ -10131,7 +10131,7 @@ translationSet trans =
             case diagnosis of
                 DiagnosisRhNegative ->
                     { english = "Patient is RH Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umurwayi afite Rezisi negatifu"
                     }
 
                 DiagnosisModerateUnderweight ->
@@ -10146,7 +10146,7 @@ translationSet trans =
 
                 DiagnosisOverweight ->
                     { english = "Overweight"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Aftie ibiro byinshi"
                     }
 
                 DiagnosisObese ->
@@ -10161,22 +10161,22 @@ translationSet trans =
 
                 DiagnosisFetusBreech ->
                     { english = "Fetus is in breech"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Abanje ikibuno(umwana yaje yicaye)"
                     }
 
                 DiagnosisFetusTransverse ->
                     { english = "Fetus is transverse"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana aritambitse"
                     }
 
                 DiagnosisBreastExamination ->
                     { english = "Breast exam showed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusuzuma amabere byagaragaje"
                     }
 
                 DiagnosisHypotension ->
                     { english = "Hypotension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuvuduko w'amaraso uri hasi"
                     }
 
                 DiagnosisPregnancyInducedHypertension ->
@@ -10186,7 +10186,7 @@ translationSet trans =
 
                 DiagnosisPreeclampsiaHighRisk ->
                     { english = "High Risk for Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "afite ibyago byinshi byo kugira Preklampusi"
                     }
 
         OK ->
@@ -10303,12 +10303,12 @@ translationSet trans =
 
         ParticipantReviewed ->
             { english = "I have reviewed and understand the above."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nasomye kandi numva ibyavzwe haruguru"
             }
 
         ParticipantSignature ->
             { english = "Participant Signature"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umukono w'umugenerwabikorwa"
             }
 
         ParticipantSummary ->
@@ -10323,7 +10323,7 @@ translationSet trans =
 
         ParticipantInformation ->
             { english = "Participant Information"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakauru ku mugenerwabikorwa"
             }
 
         PartnerHivTestResult ->
@@ -10343,7 +10343,7 @@ translationSet trans =
 
         PastDiagnosisReportReason ->
             { english = "As a result of entering lab results from past encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nk'igisubizo cyo kwinjiza ibisubizo by'ibizamini by'ubushize"
             }
 
         PatientDiagnosedWithLabel ->
@@ -10457,64 +10457,64 @@ translationSet trans =
 
         PatientShowsNoSignsOfCovid ->
             { english = "Patient shows no signs of Covid"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi nta bimenyetso bya Koronavirusi agaragaza"
             }
 
         PediatricVisit ->
             { english = "Pediatric Visit"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Isura ry'umwana"
             }
 
         PediatricCareMilestone milestone ->
             case milestone of
                 Milestone6Weeks ->
                     { english = "6 weeks"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibyumweru 6"
                     }
 
                 Milestone14Weeks ->
                     { english = "14 weeks"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibyumweru 14"
                     }
 
                 Milestone6Months ->
                     { english = "6 months"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amezi 6"
                     }
 
                 Milestone9Months ->
                     { english = "9 months"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amezi 9"
                     }
 
                 Milestone12Months ->
                     { english = "12 months"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amezi 12"
                     }
 
                 Milestone15Months ->
                     { english = "15 months"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amezi 15"
                     }
 
                 Milestone18Months ->
                     { english = "18 months"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amezi 18"
                     }
 
                 Milestone2Years ->
                     { english = "2 years"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imyaka 2"
                     }
 
                 Milestone3Years ->
                     { english = "3 years"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imyaka 3"
                     }
 
                 Milestone4Years ->
                     { english = "4 years"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imyaka 4"
                     }
 
         People ->
@@ -10555,7 +10555,7 @@ translationSet trans =
 
         PhotosTransferStatus ->
             { english = "Photos Transfer Status"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uko kohereza amafoto bihagaze"
             }
 
         PhysicalExam ->
@@ -10617,17 +10617,17 @@ translationSet trans =
 
         PleaseCall ->
             { english = "Please call"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hamagara"
             }
 
         PleaseContact ->
             { english = "Please contact"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Vugisha"
             }
 
         PleaseSelectGroup ->
             { english = "Please select the relevant Group for the new encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamam itsinda rikwiriye kuri iri sura rishya"
             }
 
         PleaseSync ->
@@ -10923,12 +10923,12 @@ translationSet trans =
 
                 Backend.PrenatalActivity.Model.MalariaPrevention ->
                     { english = "Malaria Prevention"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwirinda Malariya"
                     }
 
                 Backend.PrenatalActivity.Model.Medication ->
                     { english = "Medication"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gufata Imiti"
                     }
 
                 Backend.PrenatalActivity.Model.SymptomReview ->
@@ -13529,7 +13529,7 @@ translationSet trans =
 
                 PrerequisiteImmediateResult ->
                     { english = "Where is this test performed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Iki Kizamini cyakozwe"
                     }
 
                 NoTestPrerequisites ->
