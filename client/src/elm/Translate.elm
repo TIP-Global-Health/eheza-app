@@ -15171,7 +15171,7 @@ translationSet trans =
             }
 
         SendViaWhatsAppPhoneVerificationQuestion ->
-            { english = "Is this the correct number for the patients WhatsApp?"
+            { english = "Is this the correct number for the patient's WhatsApp?"
             , kinyarwanda = Nothing
             }
 
