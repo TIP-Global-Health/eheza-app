@@ -496,7 +496,7 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
             -- Show component if it was selected to be shared via WhatsApp,
             -- or, if viewing not for sharing via WhatsApp.
             Maybe.map (EverySet.member component) selectedComponents
-                |> Maybe.withDefault False
+                |> Maybe.withDefault True
     in
     [ viewPersonInfoPane language currentDate child
     , viewDiagnosisPane language
