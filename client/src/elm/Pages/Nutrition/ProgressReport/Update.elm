@@ -31,3 +31,6 @@ update msg model =
 
         SetDiagnosisMode mode ->
             ( { model | diagnosisMode = mode }, Cmd.none, [] )
+
+        SetReportTab tab ->
+            ( { model | reportTab = tab }, Cmd.none, [] )

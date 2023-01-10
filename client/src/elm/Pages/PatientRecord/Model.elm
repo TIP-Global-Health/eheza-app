@@ -3,13 +3,14 @@ module Pages.PatientRecord.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Pages.Page exposing (Page)
-import Pages.WellChild.ProgressReport.Model exposing (DiagnosisMode(..))
+import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
 
 
 type alias Model =
     { diagnosisMode : DiagnosisMode
     , viewMode : ViewMode
     , filter : PatientRecordFilter
+    , spvReportTab : ReportTab
     }
 
 
@@ -18,12 +19,14 @@ emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , viewMode = ViewPatientRecord
     , filter = FilterAcuteIllness
+    , spvReportTab = TabSPVReport
     }
 
 
 type Msg
     = SetActivePage Page
     | SetDiagnosisMode DiagnosisMode
+    | SetSPVReportTab ReportTab
     | SetViewMode ViewMode
     | SetFilter PatientRecordFilter
     | NoOp

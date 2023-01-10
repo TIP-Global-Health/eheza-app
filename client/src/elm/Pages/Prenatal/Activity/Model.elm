@@ -10,12 +10,30 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
-        ( DropZoneFile
+        ( CorePhysicalExamForm
+        , DropZoneFile
+        , FamilyPlanningForm
+        , HIVTestForm
+        , LaboratoryTask
+        , MalariaTestForm
+        , NonRDTForm
+        , OutsideCareForm
+        , OutsideCareStep(..)
+        , RandomBloodSugarForm
         , SendToHCForm
+        , UrineDipstickForm
         , VaccinationForm
         , VaccinationFormViewMode
         , VitalsForm
+        , emptyCorePhysicalExamForm
+        , emptyFamilyPlanningForm
+        , emptyHIVTestForm
+        , emptyMalariaTestForm
+        , emptyNonRDTForm
+        , emptyOutsideCareForm
+        , emptyRandomBloodSugarForm
         , emptySendToHCForm
+        , emptyUrineDipstickForm
         , emptyVaccinationForm
         , emptyVitalsForm
         )
@@ -59,13 +77,13 @@ type Msg
     | SaveSocialHistory PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Outside Care
     | SetOutsideCareStep OutsideCareStep
-    | SetOutsideCareSignBoolInput (Bool -> OutsideCareForm -> OutsideCareForm) Bool
+    | SetOutsideCareSignBoolInput (Bool -> OutsideCareForm PrenatalDiagnosis -> OutsideCareForm PrenatalDiagnosis) Bool
     | SetOutsideCareDiagnosis PrenatalDiagnosis
-    | SetOutsideCareMalariaMedication PrenatalOutsideCareMedication
-    | SetOutsideCareHypertensionMedication PrenatalOutsideCareMedication
-    | SetOutsideCareSyphilisMedication PrenatalOutsideCareMedication
-    | SetOutsideCareAnemiaMedication PrenatalOutsideCareMedication
-    | SetOutsideCareHIVMedication PrenatalOutsideCareMedication
+    | SetOutsideCareMalariaMedication OutsideCareMedication
+    | SetOutsideCareHypertensionMedication OutsideCareMedication
+    | SetOutsideCareSyphilisMedication OutsideCareMedication
+    | SetOutsideCareAnemiaMedication OutsideCareMedication
+    | SetOutsideCareHIVMedication OutsideCareMedication
     | SaveOutsideCare PersonId (Maybe ( PrenatalOutsideCareId, PrenatalOutsideCare )) (Maybe HistoryTask)
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
@@ -125,51 +143,52 @@ type Msg
     | SetActiveLaboratoryTask LaboratoryTask
     | SetPregnancyTestResult String
     | SavePregnancyTest PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
-    | SetHIVTestFormBoolInput (Bool -> PrenatalHIVTestForm -> PrenatalHIVTestForm) Bool
-    | SetHIVTestExecutionNote PrenatalTestExecutionNote
+    | SetHIVTestFormBoolInput (Bool -> HIVTestForm Msg -> HIVTestForm Msg) Bool
+    | SetHIVTestExecutionNote TestExecutionNote
     | SetHIVTestExecutionDate NominalDate
     | SetHIVTestResult String
     | SetHIVTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHIVTest PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
-    | SetSyphilisTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
-    | SetSyphilisTestExecutionNote PrenatalTestExecutionNote
+    | SetSyphilisTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetSyphilisTestExecutionNote TestExecutionNote
     | SetSyphilisTestExecutionDate NominalDate
     | SetSyphilisTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveSyphilisTest PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
-    | SetHepatitisBTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
-    | SetHepatitisBTestExecutionNote PrenatalTestExecutionNote
+    | SetHepatitisBTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetHepatitisBTestExecutionNote TestExecutionNote
     | SetHepatitisBTestExecutionDate NominalDate
     | SetHepatitisBTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHepatitisBTest PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
-    | SetMalariaTestFormBoolInput (Bool -> PrenatalMalariaTestForm -> PrenatalMalariaTestForm) Bool
-    | SetMalariaTestExecutionNote PrenatalTestExecutionNote
+    | SetMalariaTestFormBoolInput (Bool -> MalariaTestForm Msg -> MalariaTestForm Msg) Bool
+    | SetMalariaTestExecutionNote TestExecutionNote
     | SetMalariaTestExecutionDate NominalDate
     | SetMalariaTestResult String
     | SetMalariaTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveMalariaTest PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
-    | SetBloodGpRsTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
-    | SetBloodGpRsTestExecutionNote PrenatalTestExecutionNote
+    | SetBloodGpRsTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetBloodGpRsTestExecutionNote TestExecutionNote
     | SetBloodGpRsTestExecutionDate NominalDate
     | SetBloodGpRsTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveBloodGpRsTest PersonId (Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )) (Maybe LaboratoryTask)
-    | SetUrineDipstickTestFormBoolInput (Bool -> PrenatalUrineDipstickForm -> PrenatalUrineDipstickForm) Bool
-    | SetUrineDipstickTestExecutionNote PrenatalTestExecutionNote
-    | SetUrineDipstickTestVariant PrenatalTestVariant
+    | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickForm Msg -> UrineDipstickForm Msg) Bool
+    | SetUrineDipstickTestExecutionNote TestExecutionNote
+    | SetUrineDipstickTestVariant TestVariant
     | SetUrineDipstickTestExecutionDate NominalDate
     | SetUrineDipstickTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveUrineDipstickTest PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
-    | SetHemoglobinTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
-    | SetHemoglobinTestExecutionNote PrenatalTestExecutionNote
+    | SetHemoglobinTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetHemoglobinTestExecutionNote TestExecutionNote
     | SetHemoglobinTestExecutionDate NominalDate
     | SetHemoglobinTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
-    | SetRandomBloodSugarTestFormBoolInput (Bool -> PrenatalRandomBloodSugarForm -> PrenatalRandomBloodSugarForm) Bool
-    | SetRandomBloodSugarTestExecutionNote PrenatalTestExecutionNote
+    | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarForm Msg -> RandomBloodSugarForm Msg) Bool
+    | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugarTestExecutionDate NominalDate
     | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetRandomBloodSugarResult String
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
-    | SetHIVPCRTestFormBoolInput (Bool -> PrenatalLabsNonRDTForm -> PrenatalLabsNonRDTForm) Bool
-    | SetHIVPCRTestExecutionNote PrenatalTestExecutionNote
+    | SetHIVPCRTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetHIVPCRTestExecutionNote TestExecutionNote
     | SetHIVPCRTestExecutionDate NominalDate
     | SetHIVPCRTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHIVPCRTest PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
@@ -197,7 +216,7 @@ type Msg
     | SetRecommendedTreatmentSign (List RecommendedTreatmentSign) RecommendedTreatmentSign
     | SetAvoidingGuidanceReason AvoidingGuidanceReason
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) Bool (Maybe NextStepsTask)
-    | SaveWait PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue Bool (Maybe NextStepsTask)
+    | SaveWait PersonId (Maybe PrenatalLabsResultsId) LabsResultsValue Bool (Maybe NextStepsTask)
       -- SYMPTOMREVIEWMsgs
     | SetSymptomReviewStep SymptomReviewStep
     | SetPrenatalSymptom PrenatalSymptom
@@ -309,8 +328,7 @@ type alias HistoryData =
     , obstetricHistoryStep : ObstetricHistoryStep
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
-    , outsideCareForm : OutsideCareForm
-    , outsideCareStep : OutsideCareStep
+    , outsideCareForm : OutsideCareForm PrenatalDiagnosis
     , activeTask : Maybe HistoryTask
     }
 
@@ -323,7 +341,6 @@ emptyHistoryData =
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
     , outsideCareForm = emptyOutsideCareForm
-    , outsideCareStep = OutsideCareStepDiagnoses
     , activeTask = Nothing
     }
 
@@ -503,15 +520,15 @@ emptyBirthPlanData =
 
 type alias LaboratoryData =
     { pregnancyTestForm : PregnancyTestForm
-    , bloodGpRsTestForm : PrenatalLabsNonRDTForm
-    , hemoglobinTestForm : PrenatalLabsNonRDTForm
-    , hepatitisBTestForm : PrenatalLabsNonRDTForm
-    , hivTestForm : PrenatalHIVTestForm
-    , malariaTestForm : PrenatalMalariaTestForm
-    , randomBloodSugarTestForm : PrenatalRandomBloodSugarForm
-    , syphilisTestForm : PrenatalLabsNonRDTForm
-    , urineDipstickTestForm : PrenatalUrineDipstickForm
-    , hivPCRTestForm : PrenatalLabsNonRDTForm
+    , bloodGpRsTestForm : NonRDTForm Msg
+    , hemoglobinTestForm : NonRDTForm Msg
+    , hepatitisBTestForm : NonRDTForm Msg
+    , hivTestForm : HIVTestForm Msg
+    , malariaTestForm : MalariaTestForm Msg
+    , randomBloodSugarTestForm : RandomBloodSugarForm Msg
+    , syphilisTestForm : NonRDTForm Msg
+    , urineDipstickTestForm : UrineDipstickForm Msg
+    , hivPCRTestForm : NonRDTForm Msg
     , labsHistoryForm : LabsHistoryForm
     , activeTask : Maybe LaboratoryTask
     }
@@ -520,15 +537,15 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { pregnancyTestForm = PregnancyTestForm Nothing
-    , bloodGpRsTestForm = emptyPrenatalLabsNonRDTForm
-    , hemoglobinTestForm = emptyPrenatalLabsNonRDTForm
-    , hepatitisBTestForm = emptyPrenatalLabsNonRDTForm
-    , hivTestForm = emptyPrenatalHIVTestForm
-    , malariaTestForm = emptyPrenatalMalariaTestForm
-    , randomBloodSugarTestForm = emptyPrenatalRandomBloodSugarForm
-    , syphilisTestForm = emptyPrenatalLabsNonRDTForm
-    , urineDipstickTestForm = emptyPrenatalUrineDipstickForm
-    , hivPCRTestForm = emptyPrenatalLabsNonRDTForm
+    , bloodGpRsTestForm = emptyNonRDTForm
+    , hemoglobinTestForm = emptyNonRDTForm
+    , hepatitisBTestForm = emptyNonRDTForm
+    , hivTestForm = emptyHIVTestForm
+    , malariaTestForm = emptyMalariaTestForm
+    , randomBloodSugarTestForm = emptyRandomBloodSugarForm
+    , syphilisTestForm = emptyNonRDTForm
+    , urineDipstickTestForm = emptyUrineDipstickForm
+    , hivPCRTestForm = emptyNonRDTForm
     , labsHistoryForm = emptyLabsHistoryForm
     , activeTask = Nothing
     }
@@ -835,39 +852,8 @@ emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing Nothing
 
 
-type alias OutsideCareForm =
-    { seenAtAnotherFacility : Maybe Bool
-    , givenNewDiagnosis : Maybe Bool
-    , givenMedicine : Maybe Bool
-    , plannedFollowUp : Maybe Bool
-    , diagnoses : Maybe (List PrenatalDiagnosis)
-    , diagnosesDirty : Bool
-    , malariaMedications : Maybe (List PrenatalOutsideCareMedication)
-    , hypertensionMedications : Maybe (List PrenatalOutsideCareMedication)
-    , syphilisMedications : Maybe (List PrenatalOutsideCareMedication)
-    , hivMedications : Maybe (List PrenatalOutsideCareMedication)
-    , anemiaMedications : Maybe (List PrenatalOutsideCareMedication)
-    }
-
-
-emptyOutsideCareForm : OutsideCareForm
-emptyOutsideCareForm =
-    { seenAtAnotherFacility = Nothing
-    , givenNewDiagnosis = Nothing
-    , givenMedicine = Nothing
-    , plannedFollowUp = Nothing
-    , diagnoses = Nothing
-    , diagnosesDirty = False
-    , malariaMedications = Nothing
-    , hypertensionMedications = Nothing
-    , syphilisMedications = Nothing
-    , hivMedications = Nothing
-    , anemiaMedications = Nothing
-    }
-
-
-encodeLmpRange : LmpRange -> String
-encodeLmpRange range =
+lmpRangeToString : LmpRange -> String
+lmpRangeToString range =
     case range of
         OneMonth ->
             "one-month"
@@ -879,8 +865,8 @@ encodeLmpRange range =
             "six-month"
 
 
-decodeLmpRange : String -> Maybe LmpRange
-decodeLmpRange s =
+lmpRangeFromString : String -> Maybe LmpRange
+lmpRangeFromString s =
     case s of
         "one-month" ->
             Just OneMonth
@@ -913,33 +899,6 @@ emptyNutritionAssessmentForm =
     , weightDirty = False
     , muac = Nothing
     , muacDirty = False
-    }
-
-
-type alias CorePhysicalExamForm =
-    { brittleHair : Maybe Bool
-    , paleConjuctiva : Maybe Bool
-    , neck : Maybe (List NeckCPESign)
-    , heart : Maybe HeartCPESign
-    , heartMurmur : Maybe Bool
-    , lungs : Maybe (List LungsCPESign)
-    , abdomen : Maybe (List AbdomenCPESign)
-    , hands : Maybe (List HandsCPESign)
-    , legs : Maybe (List LegsCPESign)
-    }
-
-
-emptyCorePhysicalExamForm : CorePhysicalExamForm
-emptyCorePhysicalExamForm =
-    { brittleHair = Nothing
-    , paleConjuctiva = Nothing
-    , neck = Nothing
-    , heart = Nothing
-    , heartMurmur = Nothing
-    , lungs = Nothing
-    , abdomen = Nothing
-    , hands = Nothing
-    , legs = Nothing
     }
 
 
@@ -1001,16 +960,6 @@ emptyGUExamForm =
     }
 
 
-type alias FamilyPlanningForm =
-    { signs : Maybe (List FamilyPlanningSign)
-    }
-
-
-emptyFamilyPlanningForm : FamilyPlanningForm
-emptyFamilyPlanningForm =
-    FamilyPlanningForm Nothing
-
-
 type alias DangerSignsForm =
     { signs : Maybe (List DangerSign)
     , postpartumMother : Maybe (List PostpartumMotherDangerSign)
@@ -1046,139 +995,6 @@ emptyBirthPlanForm =
 
 type alias PregnancyTestForm =
     { pregnancyTestResult : Maybe PregnancyTestResult
-    }
-
-
-type alias PrenatalMalariaTestForm =
-    { testPerformed : Maybe Bool
-    , testPerformedDirty : Bool
-    , testPerformedToday : Maybe Bool
-    , testPerformedTodayDirty : Bool
-    , executionNote : Maybe PrenatalTestExecutionNote
-    , executionNoteDirty : Bool
-    , executionDate : Maybe NominalDate
-    , executionDateDirty : Bool
-    , testResult : Maybe PrenatalTestResult
-    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
-    }
-
-
-emptyPrenatalMalariaTestForm : PrenatalMalariaTestForm
-emptyPrenatalMalariaTestForm =
-    PrenatalMalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
-
-
-type alias PrenatalRandomBloodSugarForm =
-    { testPerformed : Maybe Bool
-    , testPerformedDirty : Bool
-    , patientFasted : Maybe Bool
-    , testPerformedToday : Maybe Bool
-    , testPerformedTodayDirty : Bool
-    , executionNote : Maybe PrenatalTestExecutionNote
-    , executionNoteDirty : Bool
-    , executionDate : Maybe NominalDate
-    , executionDateDirty : Bool
-    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
-    }
-
-
-emptyPrenatalRandomBloodSugarForm : PrenatalRandomBloodSugarForm
-emptyPrenatalRandomBloodSugarForm =
-    { testPerformed = Nothing
-    , testPerformedDirty = False
-    , patientFasted = Nothing
-    , testPerformedToday = Nothing
-    , testPerformedTodayDirty = False
-    , executionNote = Nothing
-    , executionNoteDirty = False
-    , executionDate = Nothing
-    , executionDateDirty = False
-    , dateSelectorPopupState = Nothing
-    }
-
-
-type alias PrenatalLabsNonRDTForm =
-    { knownAsPositive : Maybe Bool
-    , testPerformed : Maybe Bool
-    , testPerformedDirty : Bool
-    , testPerformedToday : Maybe Bool
-    , testPerformedTodayDirty : Bool
-    , executionNote : Maybe PrenatalTestExecutionNote
-    , executionNoteDirty : Bool
-    , executionDate : Maybe NominalDate
-    , executionDateDirty : Bool
-    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
-    }
-
-
-emptyPrenatalLabsNonRDTForm : PrenatalLabsNonRDTForm
-emptyPrenatalLabsNonRDTForm =
-    PrenatalLabsNonRDTForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing
-
-
-type alias PrenatalUrineDipstickForm =
-    { testPerformed : Maybe Bool
-    , testPerformedDirty : Bool
-    , testPerformedToday : Maybe Bool
-    , testPerformedTodayDirty : Bool
-    , testVariant : Maybe PrenatalTestVariant
-    , executionNote : Maybe PrenatalTestExecutionNote
-    , executionNoteDirty : Bool
-    , executionDate : Maybe NominalDate
-    , executionDateDirty : Bool
-    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
-    }
-
-
-emptyPrenatalUrineDipstickForm : PrenatalUrineDipstickForm
-emptyPrenatalUrineDipstickForm =
-    PrenatalUrineDipstickForm Nothing False Nothing False Nothing Nothing False Nothing False Nothing
-
-
-type alias PrenatalHIVTestForm =
-    { knownAsPositive : Maybe Bool
-    , testPerformed : Maybe Bool
-    , testPerformedDirty : Bool
-    , testPerformedToday : Maybe Bool
-    , testPerformedTodayDirty : Bool
-    , executionNote : Maybe PrenatalTestExecutionNote
-    , executionNoteDirty : Bool
-    , executionDate : Maybe NominalDate
-    , executionDateDirty : Bool
-    , testResult : Maybe PrenatalTestResult
-    , hivProgramHC : Maybe Bool
-    , hivProgramHCDirty : Bool
-    , partnerHIVPositive : Maybe Bool
-    , partnerHIVPositiveDirty : Bool
-    , partnerTakingARV : Maybe Bool
-    , partnerTakingARVDirty : Bool
-    , partnerSurpressedViralLoad : Maybe Bool
-    , partnerSurpressedViralLoadDirty : Bool
-    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
-    }
-
-
-emptyPrenatalHIVTestForm : PrenatalHIVTestForm
-emptyPrenatalHIVTestForm =
-    { knownAsPositive = Nothing
-    , testPerformed = Nothing
-    , testPerformedDirty = False
-    , testPerformedToday = Nothing
-    , testPerformedTodayDirty = False
-    , executionNote = Nothing
-    , executionNoteDirty = False
-    , executionDate = Nothing
-    , executionDateDirty = False
-    , testResult = Nothing
-    , hivProgramHC = Nothing
-    , hivProgramHCDirty = False
-    , partnerHIVPositive = Nothing
-    , partnerHIVPositiveDirty = False
-    , partnerTakingARV = Nothing
-    , partnerTakingARVDirty = False
-    , partnerSurpressedViralLoad = Nothing
-    , partnerSurpressedViralLoadDirty = False
-    , dateSelectorPopupState = Nothing
     }
 
 

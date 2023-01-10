@@ -2,7 +2,7 @@ module Pages.Prenatal.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
@@ -17,7 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (SendToHCForm)
 import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel)
+import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage, viewTreatmentWithDosage)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Utils
@@ -26,6 +26,7 @@ import Pages.Utils
         , ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , nonAdministrationReasonToSign
         , taskAllCompleted
@@ -188,10 +189,10 @@ diagnosesCausingHospitalReferralByOtherReasons assembled =
 
             else
                 let
-                    bloodPreasureRequiresHospitalization =
-                        bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled
+                    bloodPressureRequiresHospitalization =
+                        bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled
                 in
-                if moderatePreeclampsiaAsCurrent && bloodPreasureRequiresHospitalization then
+                if moderatePreeclampsiaAsCurrent && bloodPressureRequiresHospitalization then
                     [ DiagnosisModeratePreeclampsiaInitialPhase ]
 
                 else
@@ -213,8 +214,8 @@ moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled =
         |> Maybe.withDefault False
 
 
-bloodPreasureAtHypertensionTreatmentRequiresHospitalization : AssembledData -> Bool
-bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled =
+bloodPressureAtHypertensionTreatmentRequiresHospitalization : AssembledData -> Bool
+bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled =
     getMeasurementValueFunc assembled.measurements.vitals
         |> Maybe.andThen
             (\value ->
@@ -309,8 +310,8 @@ emergencyReferralDiagnosesRecurrent =
     ]
 
 
-hierarchalBloodPreasureDiagnoses : List PrenatalDiagnosis
-hierarchalBloodPreasureDiagnoses =
+hierarchalBloodPressureDiagnoses : List PrenatalDiagnosis
+hierarchalBloodPressureDiagnoses =
     [ -- Emergency diagnoses.
       DiagnosisEclampsia
     , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
@@ -925,7 +926,7 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
                             )
                         |> Maybe.withDefault ( emptyNode, emptyNode )
 
-                ( derrivedInput, derrivedCompleted, derrivedActive ) =
+                ( derivedInput, derivedCompleted, derivedActive ) =
                     Maybe.map
                         (\recommendedTreatmentSigns ->
                             if not <| List.member recommendedMedication recommendedTreatmentSigns then
@@ -959,10 +960,10 @@ resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks lang
               , newTreatmentLabel
               ]
                 ++ input
-                ++ derrivedInput
+                ++ derivedInput
                 ++ [ div [ class "separator" ] [] ]
-            , completed + derrivedCompleted
-            , active + derrivedActive
+            , completed + derivedCompleted
+            , active + derivedActive
             )
         )
         (hypertensionTreatementUpdateRecommendationByBP assembled)
@@ -1023,22 +1024,15 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate options set
 -}
 viewTreatmentOptionForHypertension : Language -> RecommendedTreatmentSign -> Html any
 viewTreatmentOptionForHypertension language sign =
-    let
-        multipleTreatmentWithDosage =
-            List.map (viewTreatmentWithDosage language)
-                >> List.intersperse [ b [] [ text <| " " ++ (String.toUpper <| translate language Translate.And) ++ " " ] ]
-                >> List.concat
-                >> label []
-    in
     case sign of
         TreatmentHypertensionAddCarvedilol ->
-            multipleTreatmentWithDosage
+            viewMultipleTreatmentWithDosage language
                 [ TreatmentMethyldopa4
                 , TreatmentHypertensionAddCarvedilol
                 ]
 
         TreatmentHypertensionAddAmlodipine ->
-            multipleTreatmentWithDosage
+            viewMultipleTreatmentWithDosage language
                 [ TreatmentMethyldopa4
                 , TreatmentHypertensionAddCarvedilol
                 , TreatmentHypertensionAddAmlodipine
@@ -1423,30 +1417,6 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks language currentDate setRec
     , taskCompleted currentValue
     , 1
     )
-
-
-viewTreatmentOptionWithDosage : Language -> RecommendedTreatmentSign -> Html any
-viewTreatmentOptionWithDosage language sign =
-    if
-        List.member sign
-            [ NoTreatmentForHypertension
-            , NoTreatmentForMalaria
-            , NoTreatmentForSyphilis
-            , NoTreatmentForMastitis
-            ]
-    then
-        label [] [ text <| translate language <| Translate.RecommendedTreatmentSignLabel sign ]
-
-    else
-        viewTreatmentWithDosage language sign
-            |> label []
-
-
-viewTreatmentWithDosage : Language -> RecommendedTreatmentSign -> List (Html any)
-viewTreatmentWithDosage language sign =
-    [ span [ class "treatment" ] [ text <| (translate language <| Translate.RecommendedTreatmentSignLabel sign) ++ ":" ]
-    , span [ class "dosage" ] [ text <| translate language <| Translate.RecommendedTreatmentSignDosage sign ]
-    ]
 
 
 recommendedTreatmentSignsForSyphilis : List RecommendedTreatmentSign
@@ -2067,7 +2037,7 @@ resolveMebendezoleDistributionInputsAndTasks language currentDate person setMedi
         updateFunc value form_ =
             { form_ | mebendezole = Just value, nonAdministrationSigns = updateNonAdministrationSigns Mebendezole MedicationMebendezole value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.mebendezole == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Mebendezole MedicationMebendezole setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2088,8 +2058,8 @@ resolveMebendezoleDistributionInputsAndTasks language currentDate person setMedi
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.mebendezole + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.mebendezole + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2117,7 +2087,7 @@ resolveTenofovirDistributionInputsAndTasks language currentDate person setMedica
         updateFunc value form_ =
             { form_ | tenofovir = Just value, nonAdministrationSigns = updateNonAdministrationSigns Tenofovir MedicationTenofovir value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.tenofovir == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Tenofovir MedicationTenofovir setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2138,8 +2108,8 @@ resolveTenofovirDistributionInputsAndTasks language currentDate person setMedica
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.tenofovir + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.tenofovir + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2167,7 +2137,7 @@ resolveLamivudineDistributionInputsAndTasks language currentDate person setMedic
         updateFunc value form_ =
             { form_ | lamivudine = Just value, nonAdministrationSigns = updateNonAdministrationSigns Lamivudine MedicationLamivudine value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.lamivudine == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Lamivudine MedicationLamivudine setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2188,8 +2158,8 @@ resolveLamivudineDistributionInputsAndTasks language currentDate person setMedic
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.lamivudine + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.lamivudine + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2217,7 +2187,7 @@ resolveDolutegravirDistributionInputsAndTasks language currentDate person setMed
         updateFunc value form_ =
             { form_ | dolutegravir = Just value, nonAdministrationSigns = updateNonAdministrationSigns Dolutegravir MedicationDolutegravir value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.dolutegravir == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Dolutegravir MedicationDolutegravir setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2238,8 +2208,8 @@ resolveDolutegravirDistributionInputsAndTasks language currentDate person setMed
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.dolutegravir + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.dolutegravir + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2262,7 +2232,7 @@ resolveTDF3TCDistributionInputsAndTasks language currentDate person setMedicatio
         updateFunc value form_ =
             { form_ | tdf3tc = Just value, nonAdministrationSigns = updateNonAdministrationSigns TDF3TC MedicationTDF3TC value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.tdf3tc == Just False then
                 ( viewMedicationDistributionDerivedQuestion language TDF3TC MedicationTDF3TC setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2283,8 +2253,8 @@ resolveTDF3TCDistributionInputsAndTasks language currentDate person setMedicatio
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.tdf3tc + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.tdf3tc + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2312,7 +2282,7 @@ resolveIronDistributionInputsAndTasks language currentDate person setMedicationD
         updateFunc value form_ =
             { form_ | iron = Just value, nonAdministrationSigns = updateNonAdministrationSigns Iron MedicationIron value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.iron == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Iron MedicationIron setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2333,8 +2303,8 @@ resolveIronDistributionInputsAndTasks language currentDate person setMedicationD
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.iron + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.iron + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2362,7 +2332,7 @@ resolveFolicAcidDistributionInputsAndTasks language currentDate person setMedica
         updateFunc value form_ =
             { form_ | folicAcid = Just value, nonAdministrationSigns = updateNonAdministrationSigns FolicAcid MedicationFolicAcid value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.folicAcid == Just False then
                 ( viewMedicationDistributionDerivedQuestion language FolicAcid MedicationFolicAcid setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2383,8 +2353,8 @@ resolveFolicAcidDistributionInputsAndTasks language currentDate person setMedica
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.folicAcid + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.folicAcid + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2412,7 +2382,7 @@ resolveCeftriaxoneDistributionInputsAndTasks language currentDate person setMedi
         updateFunc value form_ =
             { form_ | ceftriaxone = Just value, nonAdministrationSigns = updateNonAdministrationSigns Ceftriaxone MedicationCeftriaxone value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.ceftriaxone == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Ceftriaxone MedicationCeftriaxone setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2433,8 +2403,8 @@ resolveCeftriaxoneDistributionInputsAndTasks language currentDate person setMedi
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.ceftriaxone + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.ceftriaxone + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2462,7 +2432,7 @@ resolveAzithromycinDistributionInputsAndTasks language currentDate person setMed
         updateFunc value form_ =
             { form_ | azithromycin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Azithromycin MedicationAzithromycin value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.azithromycin == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Azithromycin MedicationAzithromycin setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2483,8 +2453,8 @@ resolveAzithromycinDistributionInputsAndTasks language currentDate person setMed
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.azithromycin + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.azithromycin + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2512,7 +2482,7 @@ resolveMetronidazoleDistributionInputsAndTasks language currentDate person setMe
         updateFunc value form_ =
             { form_ | metronidazole = Just value, nonAdministrationSigns = updateNonAdministrationSigns Metronidazole MedicationMetronidazole value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.metronidazole == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Metronidazole MedicationMetronidazole setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2533,8 +2503,8 @@ resolveMetronidazoleDistributionInputsAndTasks language currentDate person setMe
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.metronidazole + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.metronidazole + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2562,7 +2532,7 @@ resolveVitaminADistributionInputsAndTasks language currentDate person setMedicat
         updateFunc value form_ =
             { form_ | vitaminA = Just value, nonAdministrationSigns = updateNonAdministrationSigns VitaminA MedicationVitaminA value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.vitaminA == Just False then
                 ( viewMedicationDistributionDerivedQuestion language VitaminA MedicationVitaminA setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2583,8 +2553,8 @@ resolveVitaminADistributionInputsAndTasks language currentDate person setMedicat
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.vitaminA + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.vitaminA + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2612,7 +2582,7 @@ resolveParacetamolDistributionInputsAndTasks language currentDate person setMedi
         updateFunc value form_ =
             { form_ | paracetamol = Just value, nonAdministrationSigns = updateNonAdministrationSigns Paracetamol MedicationParacetamol value form_ }
 
-        ( derivedInput, derrivedTaskCompleted, derrivedTaskActive ) =
+        ( derivedInput, derivedTaskCompleted, derivedTaskActive ) =
             if form.paracetamol == Just False then
                 ( viewMedicationDistributionDerivedQuestion language Paracetamol MedicationParacetamol setMedicationDistributionAdministrationNoteMsg form
                 , taskCompleted <|
@@ -2633,8 +2603,8 @@ resolveParacetamolDistributionInputsAndTasks language currentDate person setMedi
             Nothing
       ]
         ++ derivedInput
-    , taskCompleted form.paracetamol + derrivedTaskCompleted
-    , 1 + derrivedTaskActive
+    , taskCompleted form.paracetamol + derivedTaskCompleted
+    , 1 + derivedTaskActive
     )
 
 
@@ -2779,11 +2749,7 @@ recommendedTreatmentMeasurementTaken : List RecommendedTreatmentSign -> Prenatal
 recommendedTreatmentMeasurementTaken allowedSigns measurements =
     getMeasurementValueFunc measurements.medicationDistribution
         |> Maybe.andThen .recommendedTreatmentSigns
-        |> Maybe.map
-            (\signs ->
-                List.any (\sign -> EverySet.member sign signs)
-                    allowedSigns
-            )
+        |> Maybe.map (Backend.Measurement.Utils.recommendedTreatmentMeasurementTaken allowedSigns)
         |> Maybe.withDefault False
 
 
@@ -3312,8 +3278,12 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                         , reasonToSignFunc = NonReferralReasonNCDProgram
                         }
 
+                FacilityANCServices ->
+                    -- Not in use at Prenatal
+                    Nothing
+
                 FacilityHealthCenter ->
-                    -- We should never get here.
+                    -- Not in use at Prenatal
                     Nothing
     in
     Maybe.map
@@ -3365,12 +3335,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
 
                             else
                                 ( nonReferralReasonSection language facility config.reasonToSignFunc setNonReferralReasonMsg form
-                                , [ if isJust <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form then
-                                        Just True
-
-                                    else
-                                        Nothing
-                                  ]
+                                , [ maybeToBoolTask <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form ]
                                 )
                         )
                         config.referralField
@@ -3443,95 +3408,19 @@ getCurrentReasonForNonReferralByForm reasonToSignFunc form =
     getCurrentReasonForNonReferral reasonToSignFunc form.facilityNonReferralReasons
 
 
-getCurrentReasonForNonReferral :
-    (ReasonForNonReferral -> NonReferralSign)
-    -> Maybe (EverySet NonReferralSign)
-    -> Maybe ReasonForNonReferral
-getCurrentReasonForNonReferral reasonToSignFunc nonReferralReasons =
-    let
-        facilityNonReferralReasons =
-            Maybe.withDefault EverySet.empty nonReferralReasons
-    in
-    List.filterMap
-        (\reason ->
-            if EverySet.member (reasonToSignFunc reason) facilityNonReferralReasons then
-                Just reason
-
-            else
-                Nothing
-        )
-        [ ClientRefused
-        , NoAmbulance
-        , ClientUnableToAffordFees
-        , ClientAlreadyInCare
-        , ReasonForNonReferralNotIndicated
-        , ReasonForNonReferralOther
-        ]
-        |> List.head
-
-
-nonReferralReasonToSign : ReferralFacility -> ReasonForNonReferral -> NonReferralSign
-nonReferralReasonToSign facility reason =
-    case facility of
-        FacilityHospital ->
-            NonReferralReasonHospital reason
-
-        FacilityMentalHealthSpecialist ->
-            NonReferralReasonMentalHealthSpecialist reason
-
-        FacilityARVProgram ->
-            NonReferralReasonARVProgram reason
-
-        FacilityNCDProgram ->
-            NonReferralReasonNCDProgram reason
-
-        FacilityHealthCenter ->
-            -- We should never get here.
-            NoNonReferralSigns
-
-
 {-| Referal to facility is completed when we mark that facility was referred to,
 or, reason was set for not referring to that facility.
-|
 -}
 referralToFacilityCompleted : AssembledData -> ReferralFacility -> Bool
 referralToFacilityCompleted assembled facility =
     getMeasurementValueFunc assembled.measurements.sendToHC
         |> Maybe.andThen
             (\value ->
-                let
-                    referralConfig =
-                        case facility of
-                            FacilityHospital ->
-                                Just ( ReferToHospital, NonReferralReasonHospital )
-
-                            FacilityMentalHealthSpecialist ->
-                                Just ( ReferToMentalHealthSpecialist, NonReferralReasonMentalHealthSpecialist )
-
-                            FacilityARVProgram ->
-                                Just ( ReferToARVProgram, NonReferralReasonARVProgram )
-
-                            FacilityNCDProgram ->
-                                Just ( ReferToNCDProgram, NonReferralReasonNCDProgram )
-
-                            FacilityHealthCenter ->
-                                -- We should never get here.
-                                Nothing
-                in
                 Maybe.map
-                    (\( referralSign, nonReferralSign ) ->
-                        let
-                            facilityWasReferred =
-                                Maybe.map (EverySet.member referralSign)
-                                    value.referToFacilitySigns
-                                    |> Maybe.withDefault False
-
-                            facilityNonReferralReasonSet =
-                                isJust <| getCurrentReasonForNonReferral nonReferralSign value.facilityNonReferralReasons
-                        in
-                        facilityWasReferred || facilityNonReferralReasonSet
+                    (\referralSigns ->
+                        Backend.Measurement.Utils.referralToFacilityCompleted referralSigns value.facilityNonReferralReasons facility
                     )
-                    referralConfig
+                    value.referToFacilitySigns
             )
         |> Maybe.withDefault False
 
@@ -3560,19 +3449,19 @@ applyDiagnosesHierarchy =
 applyHypertensionlikeDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyHypertensionlikeDiagnosesHierarchy diagnoses =
     let
-        ( bloodPreasureDiagnoses, others ) =
+        ( bloodPressureDiagnoses, others ) =
             EverySet.toList diagnoses
-                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPreasureDiagnoses)
+                |> List.partition (\diagnosis -> List.member diagnosis hierarchalBloodPressureDiagnoses)
 
-        topBloodPreasureDiagnosis =
-            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPreasureDiagnoses
+        topBloodPressureDiagnosis =
+            List.map hierarchalHypertensionlikeDiagnosisToNumber bloodPressureDiagnoses
                 |> Maybe.Extra.values
                 |> List.maximum
                 |> Maybe.andThen hierarchalHypertensionlikeDiagnosisFromNumber
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in
-    topBloodPreasureDiagnosis
+    topBloodPressureDiagnosis
         ++ others
         |> EverySet.fromList
 

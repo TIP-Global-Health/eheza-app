@@ -11,8 +11,8 @@ import Backend.Measurement.Utils
         , muacIndication
         , muacValueFunc
         , pregnancyTestResultToString
-        , prenatalTestResultToString
         , socialHistoryHivTestingResultToString
+        , testResultToString
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -32,9 +32,50 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (InvokationModule(..), SendToHCForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
-import Measurement.Utils exposing (vaccinationFormWithDefault, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.Model
+    exposing
+        ( ContentAndTasksForPerformedLaboratoryTestConfig
+        , ContentAndTasksLaboratoryTestInitialConfig
+        , CorePhysicalExamForm
+        , InvokationModule(..)
+        , LaboratoryTask(..)
+        , OutsideCareStep(..)
+        , RandomBloodSugarForm
+        , SendToHCForm
+        , VaccinationFormViewMode(..)
+        , VitalsForm
+        , VitalsFormMode(..)
+        )
+import Measurement.Utils
+    exposing
+        ( corePhysicalExamFormWithDefault
+        , emptyContentAndTasksForPerformedLaboratoryTestConfig
+        , emptyContentAndTasksLaboratoryTestInitialConfig
+        , familyPlanningFormWithDefault
+        , hivTestFormWithDefault
+        , laboratoryTaskIconClass
+        , malariaTestFormWithDefault
+        , nonRDTFormWithDefault
+        , outsideCareFormInputsAndTasks
+        , outsideCareFormWithDefault
+        , randomBloodSugarFormWithDefault
+        , urineDipstickFormWithDefault
+        , vaccinationFormWithDefault
+        , viewHIVTestForm
+        , viewMalariaTestForm
+        , viewNonRDTForm
+        , viewNonRDTFormCheckKnownAsPositive
+        , viewRandomBloodSugarForm
+        , viewUrineDipstickForm
+        , vitalsFormWithDefault
+        )
+import Measurement.View
+    exposing
+        ( viewActionTakenLabel
+        , viewFamilyPlanningForm
+        , viewFamilyPlanningInput
+        , viewSendToHealthCenterForm
+        )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
@@ -46,8 +87,11 @@ import Pages.Prenatal.Utils exposing (..)
 import Pages.Prenatal.View exposing (customWarningPopup, viewMedicationDistributionForm, viewPauseEncounterButton)
 import Pages.Utils
     exposing
-        ( emptySelectOption
+        ( customSaveButton
+        , emptySelectOption
         , isTaskCompleted
+        , maybeToBoolTask
+        , saveButton
         , taskAllCompleted
         , taskCompleted
         , tasksBarId
@@ -345,7 +389,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                         |> List.map
                             (\range ->
                                 option
-                                    [ value (encodeLmpRange range)
+                                    [ value (lmpRangeToString range)
                                     , selected (form.lmpRange == Just range)
                                     ]
                                     [ text <| translate language <| Translate.LmpRange range ]
@@ -551,18 +595,52 @@ viewHistoryContent language currentDate assembled data =
                 |> outsideCareFormWithDefault data.outsideCareForm
 
         ( outsideCareInputs, outsideCareTasks ) =
-            case data.outsideCareStep of
+            case outsideCareForm.step of
                 OutsideCareStepDiagnoses ->
                     ( outsideCareInputsStep1, outsideCareTasksStep1 )
 
                 OutsideCareStepMedications ->
                     ( outsideCareInputsStep2, outsideCareTasksStep2 )
 
+        outsideCareConfig =
+            { setBoolInputMsg = SetOutsideCareSignBoolInput
+            , setDiagnosisMsg = SetOutsideCareDiagnosis
+            , setMalariaMedicationMsg = SetOutsideCareMalariaMedication
+            , setHypertensionMedicationMsg = SetOutsideCareHypertensionMedication
+            , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
+            , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
+            , setHIVMedicationMsg = SetOutsideCareHIVMedication
+            , malariaDiagnoses = [ DiagnosisMalaria ]
+            , hypertensionDiagnoses =
+                [ DiagnosisGestationalHypertensionImmediate
+                , DiagnosisChronicHypertensionImmediate
+                , DiagnosisModeratePreeclampsiaInitialPhase
+                ]
+            , syphilisDiagnoses = [ DiagnosisSyphilis ]
+            , anemiaDiagnoses = [ DiagnosisModerateAnemia ]
+            , hivDiagnoses = [ DiagnosisHIV ]
+            , malariaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisMalaria
+            , resolveHypertensionHeaderTransId =
+                \diagnoses ->
+                    if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
+                        Translate.ModeratePreeclampsia
+
+                    else
+                        Translate.Hypertension
+            , syphilisHeaderTransId = Translate.PrenatalDiagnosis DiagnosisSyphilis
+            , anemiaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisModerateAnemia
+            , hivHeaderTransId = Translate.PrenatalDiagnosis DiagnosisHIV
+            , diagnosesLeftColumn = outsideCareDiagnosesLeftColumn
+            , diagnosesRightColumn = outsideCareDiagnosesRightColumn
+            , otherDiagnosis = DiagnosisOther
+            , diagnosisTransId = Translate.PrenatalDiagnosis
+            }
+
         ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
-            outsideCareFormInputsAndTasks language OutsideCareStepDiagnoses outsideCareForm
+            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
 
         ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
-            outsideCareFormInputsAndTasks language OutsideCareStepMedications outsideCareForm
+            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepMedications outsideCareForm
 
         viewForm =
             case activeTask of
@@ -701,7 +779,7 @@ viewHistoryContent language currentDate assembled data =
                                             saveAction =
                                                 SaveOutsideCare assembled.participant.person assembled.measurements.outsideCare nextTask
                                         in
-                                        case data.outsideCareStep of
+                                        case outsideCareForm.step of
                                             OutsideCareStepDiagnoses ->
                                                 let
                                                     actionMsg =
@@ -727,7 +805,7 @@ viewHistoryContent language currentDate assembled data =
                                 [ ( "actions", True )
                                 , ( "two"
                                   , (task == Obstetric && data.obstetricHistoryStep == ObstetricHistorySecondStep)
-                                        || (task == OutsideCare && data.outsideCareStep == OutsideCareStepMedications)
+                                        || (task == OutsideCare && outsideCareForm.step == OutsideCareStepMedications)
                                   )
                                 ]
                             ]
@@ -868,7 +946,7 @@ viewExaminationContent language currentDate assembled data =
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
                         |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
-                        |> viewCorePhysicalExamForm language currentDate assembled
+                        |> viewCorePhysicalExamForm language currentDate
 
                 Just ObstetricalExam ->
                     getMeasurementValueFunc assembled.measurements.obstetricalExam
@@ -964,16 +1042,7 @@ viewFamilyPlanningContent language currentDate assembled data =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form family-planning" ]
-                [ viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
-                , viewCheckBoxMultipleSelectInput language
-                    [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
-                    [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
-                    (form.signs |> Maybe.withDefault [])
-                    (Just NoFamilyPlanning)
-                    SetFamilyPlanningSign
-                    Translate.FamilyPlanningSignLabel
-                ]
+            [ viewFamilyPlanningForm language Translate.FamilyPlanningInFutureQuestion SetFamilyPlanningSign form
             ]
         , div [ class "actions" ]
             [ button
@@ -1282,13 +1351,7 @@ viewBirthPlanContent language currentDate assembled data =
                     "saved-money"
                     Nothing
                 , viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
-                , viewCheckBoxMultipleSelectInput language
-                    [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
-                    [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
-                    (form.familyPlanning |> Maybe.withDefault [])
-                    (Just NoFamilyPlanning)
-                    SetBirthPlanFamilyPlanning
-                    Translate.FamilyPlanningSignLabel
+                , viewFamilyPlanningInput language SetBirthPlanFamilyPlanning form.familyPlanning
                 , viewQuestionLabel language Translate.TransportationPlanQuestion
                 , viewBoolInput
                     language
@@ -1359,7 +1422,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.PrenatalLaboratoryTask task)
+                    , text <| translate language (Translate.LaboratoryTask task)
                     ]
                 ]
 
@@ -1371,59 +1434,95 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskHIVTest ->
                             measurements.hivTest
                                 |> getMeasurementValueFunc
-                                |> prenatalHIVTestFormWithDefault data.hivTestForm
-                                |> viewPrenatalHIVTestForm language currentDate
+                                |> hivTestFormWithDefault data.hivTestForm
+                                |> viewHIVTestForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskSyphilisTest ->
                             measurements.syphilisTest
                                 |> getMeasurementValueFunc
-                                |> prenatalNonRDTFormWithDefault data.syphilisTestForm
-                                |> viewPrenatalNonRDTForm language currentDate TaskSyphilisTest
+                                |> nonRDTFormWithDefault data.syphilisTestForm
+                                |> viewNonRDTForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    TaskSyphilisTest
 
                         TaskHepatitisBTest ->
                             measurements.hepatitisBTest
                                 |> getMeasurementValueFunc
-                                |> prenatalNonRDTFormWithDefault data.hepatitisBTestForm
-                                |> viewPrenatalNonRDTFormCheckKnownAsPositive language currentDate TaskHepatitisBTest
+                                |> nonRDTFormWithDefault data.hepatitisBTestForm
+                                |> viewNonRDTFormCheckKnownAsPositive language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    TaskHepatitisBTest
 
                         TaskMalariaTest ->
                             measurements.malariaTest
                                 |> getMeasurementValueFunc
-                                |> prenatalMalariaTestFormWithDefault data.malariaTestForm
-                                |> viewPrenatalMalariaTestForm language currentDate TaskMalariaTest
+                                |> malariaTestFormWithDefault data.malariaTestForm
+                                |> viewMalariaTestForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskBloodGpRsTest ->
                             measurements.bloodGpRsTest
                                 |> getMeasurementValueFunc
-                                |> prenatalNonRDTFormWithDefault data.bloodGpRsTestForm
-                                |> viewPrenatalNonRDTForm language currentDate TaskBloodGpRsTest
+                                |> nonRDTFormWithDefault data.bloodGpRsTestForm
+                                |> viewNonRDTForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    TaskBloodGpRsTest
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
                                 |> getMeasurementValueFunc
-                                |> prenatalUrineDipstickFormWithDefault data.urineDipstickTestForm
-                                |> viewPrenatalUrineDipstickForm language currentDate
+                                |> urineDipstickFormWithDefault data.urineDipstickTestForm
+                                |> viewUrineDipstickForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskHemoglobinTest ->
                             measurements.hemoglobinTest
                                 |> getMeasurementValueFunc
-                                |> prenatalNonRDTFormWithDefault data.hemoglobinTestForm
-                                |> viewPrenatalNonRDTForm language currentDate TaskHemoglobinTest
+                                |> nonRDTFormWithDefault data.hemoglobinTestForm
+                                |> viewNonRDTForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    TaskHemoglobinTest
 
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
-                                |> prenatalRandomBloodSugarFormWithDefault data.randomBloodSugarTestForm
-                                |> viewPrenatalRandomBloodSugarForm language currentDate
+                                |> randomBloodSugarFormWithDefault data.randomBloodSugarTestForm
+                                |> viewRandomBloodSugarForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskHIVPCRTest ->
                             measurements.hivPCRTest
                                 |> getMeasurementValueFunc
-                                |> prenatalNonRDTFormWithDefault data.hivPCRTestForm
-                                |> viewPrenatalNonRDTForm language currentDate TaskHIVPCRTest
+                                |> nonRDTFormWithDefault data.hivPCRTestForm
+                                |> viewNonRDTForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    TaskHIVPCRTest
 
                         TaskCompletePreviousTests ->
                             viewLabsHistoryForm language currentDate assembled data.labsHistoryForm
+
+                        -- Others do not participate at Prenatal.
+                        _ ->
+                            ( emptyNode, 0, 0 )
                     )
                 )
                 tasks
@@ -1483,6 +1582,10 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
                                 TaskCompletePreviousTests ->
                                     SaveLabsHistory
+
+                                -- Others do not participate at Prenatal.
+                                _ ->
+                                    NoOp
 
                         disableSave =
                             if task == TaskCompletePreviousTests then
@@ -1913,16 +2016,15 @@ viewNextStepsContent language currentDate isChw assembled data =
                     viewNewbornEnrolmentForm language currentDate assembled
 
                 Just NextStepsMedicationDistribution ->
-                    getMeasurementValueFunc measurements.medicationDistribution
-                        |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
-                        |> viewMedicationDistributionForm language
-                            currentDate
-                            PrenatalEncounterPhaseInitial
-                            assembled
-                            SetMedicationDistributionBoolInput
-                            SetMedicationDistributionAdministrationNote
-                            SetRecommendedTreatmentSign
-                            SetAvoidingGuidanceReason
+                    viewMedicationDistributionForm language
+                        currentDate
+                        PrenatalEncounterPhaseInitial
+                        assembled
+                        SetMedicationDistributionBoolInput
+                        SetMedicationDistributionAdministrationNote
+                        SetRecommendedTreatmentSign
+                        SetAvoidingGuidanceReason
+                        medicationDistributionForm
 
                 Just NextStepsWait ->
                     viewWaitForm language currentDate assembled
@@ -1931,8 +2033,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     emptyNode
 
         medicationDistributionForm =
-            measurements.medicationDistribution
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc measurements.medicationDistribution
                 |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
 
         tasksAfterSave =
@@ -3248,162 +3349,20 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                ]
 
 
-viewCorePhysicalExamForm : Language -> NominalDate -> AssembledData -> CorePhysicalExamForm -> Html Msg
-viewCorePhysicalExamForm language currentDate assembled form =
+viewCorePhysicalExamForm : Language -> NominalDate -> CorePhysicalExamForm -> Html Msg
+viewCorePhysicalExamForm language currentDate form =
     let
-        brittleHairUpdateFunc value form_ =
-            { form_ | brittleHair = Just value }
-
-        paleConjuctivaUpdateFunc value form_ =
-            { form_ | paleConjuctiva = Just value }
-
-        heartMurmurUpdateFunc value form_ =
-            { form_ | heartMurmur = Just value }
+        config =
+            { setBoolInputMsg = SetCorePhysicalExamBoolInput
+            , setNeckMsg = SetCorePhysicalExamNeck
+            , setHeartMsg = SetCorePhysicalExamHeart
+            , setLungsMsg = SetCorePhysicalExamLungs
+            , setAbdomenMsg = SetCorePhysicalExamAbdomen
+            , setHandsMsg = SetCorePhysicalExamHands
+            , setLegsMsg = SetCorePhysicalExamLegs
+            }
     in
-    div [ class "ui form examination core-physical-exam" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HeadHair ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.brittleHair False ]
-            ]
-        , viewBoolInput
-            language
-            form.brittleHair
-            (SetCorePhysicalExamBoolInput brittleHairUpdateFunc)
-            "head-hair"
-            (Just ( Translate.BrittleHair, Translate.Normal ))
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Eyes ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.paleConjuctiva False ]
-            ]
-        , viewBoolInput
-            language
-            form.paleConjuctiva
-            (SetCorePhysicalExamBoolInput paleConjuctivaUpdateFunc)
-            "eyes"
-            (Just ( Translate.PaleConjuctiva, Translate.Normal ))
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Neck ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.neck |> Maybe.withDefault [])
-                    [ NormalNeck ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ EnlargedThyroid, EnlargedLymphNodes ]
-            [ NormalNeck ]
-            (form.neck |> Maybe.withDefault [])
-            Nothing
-            SetCorePhysicalExamNeck
-            Translate.NeckCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Heart ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    [ NormalRateAndRhythm ]
-                ]
-            ]
-        , viewCheckBoxSelectInput language
-            [ IrregularRhythm, SinusTachycardia ]
-            [ NormalRateAndRhythm ]
-            form.heart
-            SetCorePhysicalExamHeart
-            Translate.HeartCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HeartMurmur ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.heartMurmur False ]
-            ]
-        , viewBoolInput
-            language
-            form.heartMurmur
-            (SetCorePhysicalExamBoolInput heartMurmurUpdateFunc)
-            "heart-murmur"
-            Nothing
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Lungs ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.lungs |> Maybe.withDefault [])
-                    [ NormalLungs ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ Wheezes, Crackles ]
-            [ NormalLungs ]
-            (form.lungs |> Maybe.withDefault [])
-            Nothing
-            SetCorePhysicalExamLungs
-            Translate.LungsCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Abdomen ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.abdomen |> Maybe.withDefault [])
-                    [ NormalAbdomen ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ Hepatomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
-            [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
-            (form.abdomen |> Maybe.withDefault [])
-            Nothing
-            SetCorePhysicalExamAbdomen
-            Translate.AbdomenCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewLabel language Translate.Extremities ]
-            ]
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ div [ class "title hands" ] [ text <| (translate language Translate.Hands ++ ":") ] ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.hands |> Maybe.withDefault [])
-                    [ NormalHands ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ PallorHands, EdemaHands ]
-            [ NormalHands ]
-            (form.hands |> Maybe.withDefault [])
-            Nothing
-            SetCorePhysicalExamHands
-            Translate.HandsCPESign
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ] ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.legs |> Maybe.withDefault [])
-                    [ NormalLegs ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ PallorLegs, EdemaLegs ]
-            [ NormalLegs ]
-            (form.legs |> Maybe.withDefault [])
-            Nothing
-            SetCorePhysicalExamLegs
-            Translate.LegsCPESign
-        ]
+    Measurement.View.viewCorePhysicalExamForm language currentDate config form
 
 
 viewObstetricalExamForm : Language -> NominalDate -> AssembledData -> ObstetricalExamForm -> Html Msg
@@ -3669,414 +3628,71 @@ viewNewbornEnrolmentForm language currentDate assembled =
         ]
 
 
-viewPrenatalHIVTestForm : Language -> NominalDate -> PrenatalHIVTestForm -> ( Html Msg, Int, Int )
-viewPrenatalHIVTestForm language currentDate form =
-    let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestKnownAsPositive language currentDate TaskHIVTest form
-
-        emptySection =
-            ( [], 0, 0 )
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.knownAsPositive /= Just False then
-                emptySection
-
-            else
-                let
-                    ( rdtSection, rdtTasksCompleted, rdtTasksTotal ) =
-                        prenatalRDTFormInputsAndTasks language currentDate TaskHIVTest form
-
-                    ( hivSignsSection, hivSignsTasksCompleted, hivSignsTasksTotal ) =
-                        Maybe.map
-                            (\testResult ->
-                                case testResult of
-                                    PrenatalTestPositive ->
-                                        let
-                                            updateFunc =
-                                                \value form_ ->
-                                                    { form_ | hivProgramHC = Just value, hivProgramHCDirty = True }
-                                        in
-                                        ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion HIVProgramHC
-                                          , viewBoolInput
-                                                language
-                                                form.hivProgramHC
-                                                (SetHIVTestFormBoolInput updateFunc)
-                                                "hiv-program"
-                                                Nothing
-                                          ]
-                                        , taskCompleted form.hivProgramHC
-                                        , 1
-                                        )
-
-                                    PrenatalTestNegative ->
-                                        let
-                                            partnerHIVPositiveUpdateFunc =
-                                                \value form_ ->
-                                                    { form_
-                                                        | partnerHIVPositive = Just value
-                                                        , partnerHIVPositiveDirty = True
-                                                        , partnerTakingARV = Nothing
-                                                        , partnerTakingARVDirty = True
-                                                        , partnerSurpressedViralLoad = Nothing
-                                                        , partnerSurpressedViralLoadDirty = True
-                                                    }
-
-                                            ( partnerHivStatusSection, partnerHivStatusTasksCompleted, partnerHivStatusTasksTotal ) =
-                                                if form.partnerHIVPositive == Just True then
-                                                    let
-                                                        partnerTakingARVUpdateFunc =
-                                                            \value form_ ->
-                                                                { form_
-                                                                    | partnerTakingARV = Just value
-                                                                    , partnerTakingARVDirty = True
-                                                                    , partnerSurpressedViralLoad = Nothing
-                                                                    , partnerSurpressedViralLoadDirty = True
-                                                                }
-
-                                                        ( partnerARVSection, partnerARVTasksCompleted, partnerARVTasksTotal ) =
-                                                            if form.partnerTakingARV == Just True then
-                                                                let
-                                                                    partnerSurpressedViralLoadUpdateFunc =
-                                                                        \value form_ ->
-                                                                            { form_ | partnerSurpressedViralLoad = Just value, partnerSurpressedViralLoadDirty = True }
-                                                                in
-                                                                ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerSurpressedViralLoad
-                                                                  , viewBoolInput
-                                                                        language
-                                                                        form.partnerSurpressedViralLoad
-                                                                        (SetHIVTestFormBoolInput partnerSurpressedViralLoadUpdateFunc)
-                                                                        "partner-surpressed-viral-load"
-                                                                        Nothing
-                                                                  ]
-                                                                , taskCompleted form.partnerSurpressedViralLoad
-                                                                , 1
-                                                                )
-
-                                                            else
-                                                                emptySection
-                                                    in
-                                                    ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerTakingARV
-                                                      , viewBoolInput
-                                                            language
-                                                            form.partnerTakingARV
-                                                            (SetHIVTestFormBoolInput partnerTakingARVUpdateFunc)
-                                                            "partner-taking-arv"
-                                                            Nothing
-                                                      ]
-                                                        ++ partnerARVSection
-                                                    , taskCompleted form.partnerTakingARV + partnerARVTasksCompleted
-                                                    , 1 + partnerARVTasksTotal
-                                                    )
-
-                                                else
-                                                    emptySection
-                                        in
-                                        ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerHIVPositive
-                                          , viewBoolInput
-                                                language
-                                                form.partnerHIVPositive
-                                                (SetHIVTestFormBoolInput partnerHIVPositiveUpdateFunc)
-                                                "partner-hiv-positive"
-                                                Nothing
-                                          ]
-                                            ++ partnerHivStatusSection
-                                        , taskCompleted form.partnerHIVPositive + partnerHivStatusTasksCompleted
-                                        , 1 + partnerHivStatusTasksTotal
-                                        )
-
-                                    PrenatalTestIndeterminate ->
-                                        emptySection
-                            )
-                            form.testResult
-                            |> Maybe.withDefault emptySection
-                in
-                ( rdtSection ++ hivSignsSection
-                , rdtTasksCompleted + hivSignsTasksCompleted
-                , rdtTasksTotal + hivSignsTasksTotal
-                )
-    in
-    ( div [ class "ui form laboratory hiv" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskHIVTest) "" "label header"
-        ]
-            ++ initialSection
-            ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
-    )
+contentAndTasksLaboratoryTestInitialConfig : ContentAndTasksLaboratoryTestInitialConfig Msg
+contentAndTasksLaboratoryTestInitialConfig =
+    emptyContentAndTasksLaboratoryTestInitialConfig NoOp
+        |> (\config ->
+                { config
+                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
+                    , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
+                    , setHIVTestResultMsg = SetHIVTestResult
+                    , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
+                    , setSyphilisTestExecutionNoteMsg = SetSyphilisTestExecutionNote
+                    , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
+                    , setHepatitisBTestExecutionNoteMsg = SetHepatitisBTestExecutionNote
+                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
+                    , setMalariaTestResultMsg = SetMalariaTestResult
+                    , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
+                    , setBloodGpRsTestExecutionNoteMsg = SetBloodGpRsTestExecutionNote
+                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
+                    , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
+                    , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
+                    , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
+                    , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
+                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
+                    , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
+                    , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
+                    , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                }
+           )
 
 
-viewPrenatalMalariaTestForm : Language -> NominalDate -> LaboratoryTask -> PrenatalMalariaTestForm -> ( Html Msg, Int, Int )
-viewPrenatalMalariaTestForm language currentDate task form =
-    let
-        ( inputs, tasksCompleted, tasksTotal ) =
-            prenatalRDTFormInputsAndTasks language currentDate task form
-    in
-    ( div [ class "ui form laboratory malaria" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header" ]
-            ++ inputs
-    , tasksCompleted
-    , tasksTotal
-    )
-
-
-prenatalRDTFormInputsAndTasks :
-    Language
-    -> NominalDate
-    -> LaboratoryTask
-    ->
-        { f
-            | testPerformed : Maybe Bool
-            , testPerformedToday : Maybe Bool
-            , executionNote : Maybe PrenatalTestExecutionNote
-            , executionDate : Maybe NominalDate
-            , testResult : Maybe PrenatalTestResult
-            , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
-        }
-    -> ( List (Html Msg), Int, Int )
-prenatalRDTFormInputsAndTasks language currentDate task form =
-    let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial language currentDate task form
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.testPerformed == Just True then
-                let
-                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
-                        contentAndTasksForPerformedLaboratoryTest language currentDate task form
-
-                    setTestResultMsg =
-                        case task of
-                            TaskHIVTest ->
-                                Just SetHIVTestResult
-
-                            TaskMalariaTest ->
-                                Just SetMalariaTestResult
-
-                            _ ->
-                                Nothing
-
-                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-                        if isNothing form.executionDate then
-                            ( [], 0, 0 )
-
-                        else
-                            Maybe.map
-                                (\setResultMsg ->
-                                    let
-                                        emptyOption =
-                                            if isNothing form.testResult then
-                                                emptySelectOption True
-
-                                            else
-                                                emptyNode
-                                    in
-                                    ( [ viewLabel language <| Translate.PrenatalLaboratoryTaskResult task
-                                      , emptyOption
-                                            :: List.map
-                                                (\result ->
-                                                    option
-                                                        [ value (prenatalTestResultToString result)
-                                                        , selected (form.testResult == Just result)
-                                                        ]
-                                                        [ text <| translate language <| Translate.PrenatalTestResult result ]
-                                                )
-                                                [ PrenatalTestPositive, PrenatalTestNegative, PrenatalTestIndeterminate ]
-                                            |> select
-                                                [ onInput setResultMsg
-                                                , class "form-input select"
-                                                ]
-                                      ]
-                                    , taskCompleted form.testResult
-                                    , 1
-                                    )
-                                )
-                                setTestResultMsg
-                                |> Maybe.withDefault ( [], 0, 0 )
-                in
-                ( performedTestSection ++ testResultSection
-                , performedTestTasksCompleted + testResultTasksCompleted
-                , performedTestTasksTotal + testResultTasksTotal
-                )
-
-            else
-                ( [], 0, 0 )
-    in
-    ( initialSection ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
-    )
-
-
-viewPrenatalUrineDipstickForm : Language -> NominalDate -> PrenatalUrineDipstickForm -> ( Html Msg, Int, Int )
-viewPrenatalUrineDipstickForm language currentDate form =
-    let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial language currentDate TaskUrineDipstickTest form
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.testPerformed == Just True then
-                let
-                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
-                        contentAndTasksForPerformedLaboratoryTest language currentDate TaskUrineDipstickTest form
-
-                    ( testVariantSection, testVariantTasksCompleted, testVariantTasksTotal ) =
-                        ( [ viewQuestionLabel language Translate.TestVariantUrineDipstickQuestion
-                          , viewCheckBoxSelectInput language
-                                [ VariantShortTest ]
-                                [ VariantLongTest ]
-                                form.testVariant
-                                SetUrineDipstickTestVariant
-                                Translate.PrenatalUrineDipstickTestVariant
-                          ]
-                        , taskCompleted form.testVariant
-                        , 1
-                        )
-
-                    testResultSection =
-                        if isNothing form.executionDate then
-                            []
-
-                        else
-                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
-                in
-                ( testVariantSection ++ performedTestSection ++ testResultSection
-                , performedTestTasksCompleted + testVariantTasksCompleted
-                , performedTestTasksTotal + testVariantTasksTotal
-                )
-
-            else
-                ( [], 0, 0 )
-    in
-    ( div [ class "ui form laboratory urine-dipstick" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskUrineDipstickTest) "" "label header"
-        ]
-            ++ initialSection
-            ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
-    )
-
-
-viewPrenatalRandomBloodSugarForm : Language -> NominalDate -> PrenatalRandomBloodSugarForm -> ( Html Msg, Int, Int )
-viewPrenatalRandomBloodSugarForm language currentDate form =
-    let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial language currentDate TaskRandomBloodSugarTest form
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.testPerformed == Just True then
-                let
-                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
-                        contentAndTasksForPerformedLaboratoryTest language currentDate TaskRandomBloodSugarTest form
-
-                    ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
-                          , viewBoolInput
-                                language
-                                form.patientFasted
-                                (SetRandomBloodSugarTestFormBoolInput (\value form_ -> { form_ | patientFasted = Just value }))
-                                "patient-fasted"
-                                Nothing
-                          ]
-                        , taskCompleted form.patientFasted
-                        , 1
-                        )
-
-                    testResultSection =
-                        if isNothing form.executionDate then
-                            []
-
-                        else
-                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
-                in
-                ( testPrerequisitesSection ++ performedTestSection ++ testResultSection
-                , performedTestTasksCompleted + testPrerequisitesTasksCompleted
-                , performedTestTasksTotal + testPrerequisitesTasksTotal
-                )
-
-            else
-                ( [], 0, 0 )
-    in
-    ( div [ class "ui form laboratory urine-dipstick" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
-        ]
-            ++ initialSection
-            ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
-    )
-
-
-viewPrenatalNonRDTFormCheckKnownAsPositive : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( Html Msg, Int, Int )
-viewPrenatalNonRDTFormCheckKnownAsPositive language currentDate task form =
-    let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.knownAsPositive /= Just False then
-                ( [], 0, 0 )
-
-            else
-                prenatalNonRDTFormInputsAndTasks language currentDate task form
-    in
-    ( div [ class "ui form laboratory non-rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
-        ]
-            ++ initialSection
-            ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
-    )
-
-
-viewPrenatalNonRDTForm : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( Html Msg, Int, Int )
-viewPrenatalNonRDTForm language currentDate task form =
-    let
-        ( inputs, tasksCompleted, tasksTotal ) =
-            prenatalNonRDTFormInputsAndTasks language currentDate task form
-    in
-    ( div [ class "ui form laboratory non-rdt" ] <|
-        [ viewCustomLabel language (Translate.PrenatalLaboratoryTaskLabel task) "" "label header"
-        ]
-            ++ inputs
-    , tasksCompleted
-    , tasksTotal
-    )
-
-
-prenatalNonRDTFormInputsAndTasks : Language -> NominalDate -> LaboratoryTask -> PrenatalLabsNonRDTForm -> ( List (Html Msg), Int, Int )
-prenatalNonRDTFormInputsAndTasks language currentDate task form =
-    let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial language currentDate task form
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.testPerformed == Just True then
-                let
-                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
-                        contentAndTasksForPerformedLaboratoryTest language currentDate task form
-
-                    testResultSection =
-                        if isNothing form.executionDate then
-                            []
-
-                        else
-                            [ viewCustomLabel language Translate.PrenatalLaboratoryTaskResultsHelper "." "label" ]
-                in
-                ( performedTestSection ++ testResultSection
-                , performedTestTasksCompleted
-                , performedTestTasksTotal
-                )
-
-            else
-                ( [], 0, 0 )
-    in
-    ( initialSection ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
-    )
+contentAndTasksForPerformedLaboratoryTestConfig : ContentAndTasksForPerformedLaboratoryTestConfig Msg
+contentAndTasksForPerformedLaboratoryTestConfig =
+    emptyContentAndTasksForPerformedLaboratoryTestConfig NoOp
+        |> (\config ->
+                { config
+                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
+                    , setHIVTestExecutionDateMsg = SetHIVTestExecutionDate
+                    , setHIVTestDateSelectorStateMsg = SetHIVTestDateSelectorState
+                    , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
+                    , setSyphilisTestExecutionDateMsg = SetSyphilisTestExecutionDate
+                    , setSyphilisTestDateSelectorStateMsg = SetSyphilisTestDateSelectorState
+                    , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
+                    , setHepatitisBTestExecutionDateMsg = SetHepatitisBTestExecutionDate
+                    , setHepatitisBTestDateSelectorStateMsg = SetHepatitisBTestDateSelectorState
+                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    , setMalariaTestExecutionDateMsg = SetMalariaTestExecutionDate
+                    , setMalariaTestDateSelectorStateMsg = SetMalariaTestDateSelectorState
+                    , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
+                    , setBloodGpRsTestExecutionDateMsg = SetBloodGpRsTestExecutionDate
+                    , setBloodGpRsTestDateSelectorStateMsg = SetBloodGpRsTestDateSelectorState
+                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
+                    , setUrineDipstickTestExecutionDateMsg = SetUrineDipstickTestExecutionDate
+                    , setUrineDipstickTestDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState
+                    , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
+                    , setHemoglobinTestExecutionDateMsg = SetHemoglobinTestExecutionDate
+                    , setHemoglobinTestDateSelectorStateMsg = SetHemoglobinTestDateSelectorState
+                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
+                    , setRandomBloodSugarTestExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
+                    , setRandomBloodSugarTestDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                    , setRandomBloodSugarResultMsg = SetRandomBloodSugarResult
+                    , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
+                    , setHIVPCRTestExecutionDateMsg = SetHIVPCRTestExecutionDate
+                    , setHIVPCRTestDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
+                }
+           )
 
 
 viewLabsHistoryForm : Language -> NominalDate -> AssembledData -> LabsHistoryForm -> ( Html Msg, Int, Int )
@@ -4087,7 +3703,7 @@ viewLabsHistoryForm language currentDate assembled form =
                 |> div [ class "history-entries" ]
 
         input =
-            [ viewQuestionLabel language Translate.PrenatalLabsHistoryCompletedQuestion
+            [ viewQuestionLabel language Translate.LabsHistoryCompletedQuestion
             , viewBoolInput
                 language
                 form.completed
@@ -4107,7 +3723,7 @@ viewLabsHistoryForm language currentDate assembled form =
         viewEntry date encounterId lab index =
             div [ class "history-entry" ]
                 [ div [ class "index" ] [ text <| String.fromInt (index + 1) ]
-                , div [ class "name" ] [ text <| translate language <| Translate.PrenatalLaboratoryTest lab ]
+                , div [ class "name" ] [ text <| translate language <| Translate.LaboratoryTest lab ]
                 , div [ class "date" ] [ text <| formatDDMMYYYY date ]
                 , div
                     [ class "action"
@@ -4117,378 +3733,13 @@ viewLabsHistoryForm language currentDate assembled form =
                 ]
     in
     ( div [ class "ui form laboratory labs-history" ] <|
-        [ viewCustomLabel language Translate.PrenatalLabsHistoryLabel "." "label"
-        , viewCustomLabel language Translate.PrenatalLabsHistoryInstructions "." "instructions"
+        [ viewCustomLabel language Translate.LabsHistoryCompletedQuestion "." "label"
+        , viewCustomLabel language Translate.LabsHistoryCompletedQuestion "." "instructions"
         ]
             ++ (entries :: input)
     , taskCompleted form.completed
     , 1
     )
-
-
-contentAndTasksLaboratoryTestKnownAsPositive :
-    Language
-    -> NominalDate
-    -> LaboratoryTask
-    -> { f | knownAsPositive : Maybe Bool }
-    -> ( List (Html Msg), Int, Int )
-contentAndTasksLaboratoryTestKnownAsPositive language currentDate task form =
-    let
-        updateFunc =
-            \knownAsPositive form_ ->
-                let
-                    executionNote =
-                        if knownAsPositive then
-                            Just TestNoteKnownAsPositive
-
-                        else
-                            Nothing
-                in
-                { form_
-                    | knownAsPositive = Just knownAsPositive
-                    , testPerformed = Nothing
-                    , testPerformedDirty = True
-                    , testPerformedToday = Nothing
-                    , testPerformedTodayDirty = True
-                    , executionNote = executionNote
-                    , executionNoteDirty = True
-                    , executionDate = Nothing
-                    , executionDateDirty = True
-                }
-
-        setMsg =
-            case task of
-                TaskHIVTest ->
-                    SetHIVTestFormBoolInput updateFunc
-
-                TaskSyphilisTest ->
-                    SetSyphilisTestFormBoolInput updateFunc
-
-                TaskHepatitisBTest ->
-                    SetHepatitisBTestFormBoolInput updateFunc
-
-                TaskMalariaTest ->
-                    -- Known as positive is not applicable for this test.
-                    always NoOp
-
-                TaskBloodGpRsTest ->
-                    -- Known as positive is not applicable for this test.
-                    always NoOp
-
-                TaskUrineDipstickTest ->
-                    -- Known as positive is not applicable for this test.
-                    always NoOp
-
-                TaskHemoglobinTest ->
-                    -- Known as positive is not applicable for this test.
-                    always NoOp
-
-                TaskRandomBloodSugarTest ->
-                    -- Known as positive is not applicable for this test.
-                    always NoOp
-
-                TaskHIVPCRTest ->
-                    -- Known as positive is not applicable for this test.
-                    always NoOp
-
-                TaskCompletePreviousTests ->
-                    -- Known as positive is not applicable for this test.
-                    always NoOp
-    in
-    ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
-      , viewBoolInput
-            language
-            form.knownAsPositive
-            setMsg
-            "known-as-positive"
-            Nothing
-      ]
-    , taskCompleted form.knownAsPositive
-    , 1
-    )
-
-
-contentAndTasksLaboratoryTestInitial :
-    Language
-    -> NominalDate
-    -> LaboratoryTask
-    ->
-        { f
-            | testPerformed : Maybe Bool
-            , executionNote : Maybe PrenatalTestExecutionNote
-        }
-    -> ( List (Html Msg), Int, Int )
-contentAndTasksLaboratoryTestInitial language currentDate task form =
-    let
-        boolInputUpdateFunc =
-            \value form_ ->
-                { form_
-                    | testPerformed = Just value
-                    , testPerformedDirty = True
-                    , testPerformedToday = Nothing
-                    , testPerformedTodayDirty = True
-                    , executionNote = Nothing
-                    , executionNoteDirty = True
-                    , executionDate = Nothing
-                    , executionDateDirty = True
-                }
-
-        msgs =
-            case task of
-                TaskHIVTest ->
-                    { setBoolInputMsg = SetHIVTestFormBoolInput boolInputUpdateFunc
-                    , setExecutionNoteMsg = SetHIVTestExecutionNote
-                    }
-
-                TaskSyphilisTest ->
-                    { setBoolInputMsg = SetSyphilisTestFormBoolInput boolInputUpdateFunc
-                    , setExecutionNoteMsg = SetSyphilisTestExecutionNote
-                    }
-
-                TaskHepatitisBTest ->
-                    { setBoolInputMsg = SetHepatitisBTestFormBoolInput boolInputUpdateFunc
-                    , setExecutionNoteMsg = SetHepatitisBTestExecutionNote
-                    }
-
-                TaskMalariaTest ->
-                    { setBoolInputMsg = SetMalariaTestFormBoolInput boolInputUpdateFunc
-                    , setExecutionNoteMsg = SetMalariaTestExecutionNote
-                    }
-
-                TaskBloodGpRsTest ->
-                    { setBoolInputMsg = SetBloodGpRsTestFormBoolInput boolInputUpdateFunc
-                    , setExecutionNoteMsg = SetBloodGpRsTestExecutionNote
-                    }
-
-                TaskUrineDipstickTest ->
-                    { setBoolInputMsg = SetUrineDipstickTestFormBoolInput boolInputUpdateFunc
-                    , setExecutionNoteMsg = SetUrineDipstickTestExecutionNote
-                    }
-
-                TaskHemoglobinTest ->
-                    { setBoolInputMsg = SetHemoglobinTestFormBoolInput boolInputUpdateFunc
-                    , setExecutionNoteMsg = SetHemoglobinTestExecutionNote
-                    }
-
-                TaskRandomBloodSugarTest ->
-                    { setBoolInputMsg = SetRandomBloodSugarTestFormBoolInput boolInputUpdateFunc
-                    , setExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
-                    }
-
-                TaskHIVPCRTest ->
-                    { setBoolInputMsg = SetHIVPCRTestFormBoolInput boolInputUpdateFunc
-                    , setExecutionNoteMsg = SetHIVPCRTestExecutionNote
-                    }
-
-                TaskCompletePreviousTests ->
-                    -- Not in use, as this task got a proprietary form.
-                    { setBoolInputMsg = always NoOp
-                    , setExecutionNoteMsg = always NoOp
-                    }
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            Maybe.map
-                (\testPerformed ->
-                    if testPerformed then
-                        ( [], 0, 0 )
-
-                    else
-                        ( [ div [ class "why-not" ]
-                                [ viewQuestionLabel language Translate.WhyNot
-                                , viewCheckBoxSelectInput language
-                                    [ TestNoteLackOfReagents
-                                    , TestNoteLackOfOtherSupplies
-                                    , TestNoteBrokenEquipment
-                                    ]
-                                    [ TestNoteNoEquipment
-                                    , TestNoteNotIndicated
-                                    ]
-                                    form.executionNote
-                                    msgs.setExecutionNoteMsg
-                                    Translate.PrenatalTestExecutionNote
-                                ]
-                          ]
-                        , taskCompleted form.executionNote
-                        , 1
-                        )
-                )
-                form.testPerformed
-                |> Maybe.withDefault ( [], 0, 0 )
-    in
-    ( [ viewQuestionLabel language Translate.TestPerformedQuestion
-      , viewBoolInput
-            language
-            form.testPerformed
-            msgs.setBoolInputMsg
-            "test-performed"
-            Nothing
-      ]
-        ++ derivedSection
-    , taskCompleted form.testPerformed + derivedTasksCompleted
-    , 1 + derivedTasksTotal
-    )
-
-
-contentAndTasksForPerformedLaboratoryTest :
-    Language
-    -> NominalDate
-    -> LaboratoryTask
-    ->
-        { f
-            | testPerformed : Maybe Bool
-            , testPerformedToday : Maybe Bool
-            , executionNote : Maybe PrenatalTestExecutionNote
-            , executionDate : Maybe NominalDate
-            , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
-        }
-    -> ( List (Html Msg), Int, Int )
-contentAndTasksForPerformedLaboratoryTest language currentDate task form =
-    if form.testPerformed /= Just True then
-        ( [], 0, 0 )
-
-    else
-        let
-            boolInputUpdateFunc =
-                \value form_ ->
-                    let
-                        ( executionNote, executionDate ) =
-                            if value == True then
-                                ( Just TestNoteRunToday, Just currentDate )
-
-                            else
-                                ( Just TestNoteRunPreviously, Nothing )
-                    in
-                    { form_
-                        | testPerformedToday = Just value
-                        , testPerformedTodayDirty = True
-                        , executionNote = executionNote
-                        , executionNoteDirty = True
-                        , executionDate = executionDate
-                        , executionDateDirty = True
-                    }
-
-            msgs =
-                case task of
-                    TaskHIVTest ->
-                        { setBoolInputMsg = SetHIVTestFormBoolInput boolInputUpdateFunc
-                        , setExecutionDateMsg = SetHIVTestExecutionDate
-                        , setDateSelectorStateMsg = SetHIVTestDateSelectorState
-                        }
-
-                    TaskSyphilisTest ->
-                        { setBoolInputMsg = SetSyphilisTestFormBoolInput boolInputUpdateFunc
-                        , setExecutionDateMsg = SetSyphilisTestExecutionDate
-                        , setDateSelectorStateMsg = SetSyphilisTestDateSelectorState
-                        }
-
-                    TaskHepatitisBTest ->
-                        { setBoolInputMsg = SetHepatitisBTestFormBoolInput boolInputUpdateFunc
-                        , setExecutionDateMsg = SetHepatitisBTestExecutionDate
-                        , setDateSelectorStateMsg = SetHepatitisBTestDateSelectorState
-                        }
-
-                    TaskMalariaTest ->
-                        { setBoolInputMsg = SetMalariaTestFormBoolInput boolInputUpdateFunc
-                        , setExecutionDateMsg = SetMalariaTestExecutionDate
-                        , setDateSelectorStateMsg = SetMalariaTestDateSelectorState
-                        }
-
-                    TaskBloodGpRsTest ->
-                        { setBoolInputMsg = SetBloodGpRsTestFormBoolInput boolInputUpdateFunc
-                        , setExecutionDateMsg = SetBloodGpRsTestExecutionDate
-                        , setDateSelectorStateMsg = SetBloodGpRsTestDateSelectorState
-                        }
-
-                    TaskUrineDipstickTest ->
-                        { setBoolInputMsg = SetUrineDipstickTestFormBoolInput boolInputUpdateFunc
-                        , setExecutionDateMsg = SetUrineDipstickTestExecutionDate
-                        , setDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState
-                        }
-
-                    TaskHemoglobinTest ->
-                        { setBoolInputMsg = SetHemoglobinTestFormBoolInput boolInputUpdateFunc
-                        , setExecutionDateMsg = SetHemoglobinTestExecutionDate
-                        , setDateSelectorStateMsg = SetHemoglobinTestDateSelectorState
-                        }
-
-                    TaskRandomBloodSugarTest ->
-                        { setBoolInputMsg = SetRandomBloodSugarTestFormBoolInput boolInputUpdateFunc
-                        , setExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
-                        , setDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
-                        }
-
-                    TaskHIVPCRTest ->
-                        { setBoolInputMsg = SetHIVPCRTestFormBoolInput boolInputUpdateFunc
-                        , setExecutionDateMsg = SetHIVPCRTestExecutionDate
-                        , setDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
-                        }
-
-                    TaskCompletePreviousTests ->
-                        -- Not in use, as this task got a proprietary form.
-                        { setBoolInputMsg = always NoOp
-                        , setExecutionDateMsg = always NoOp
-                        , setDateSelectorStateMsg = always NoOp
-                        }
-
-            ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-                Maybe.map
-                    (\testPerformedToday ->
-                        let
-                            ( executionDateContent, executionDateTasksCompleted, executionDateTasksTotal ) =
-                                if testPerformedToday then
-                                    ( [ p [ class "test-date" ] [ text <| formatDDMMYYYY currentDate ] ], 0, 0 )
-
-                                else
-                                    let
-                                        executionDateForView =
-                                            Maybe.map formatDDMMYYYY form.executionDate
-                                                |> Maybe.withDefault ""
-
-                                        dateSelectorConfig =
-                                            let
-                                                dateTo =
-                                                    Date.add Days -1 currentDate
-                                            in
-                                            { select = msgs.setExecutionDateMsg
-                                            , close = msgs.setDateSelectorStateMsg Nothing
-                                            , dateFrom = Date.add Days -35 currentDate
-                                            , dateTo = dateTo
-                                            , dateDefault = Just dateTo
-                                            }
-                                    in
-                                    ( [ div
-                                            [ class "form-input date"
-                                            , onClick <| msgs.setDateSelectorStateMsg (Just dateSelectorConfig)
-                                            ]
-                                            [ text executionDateForView
-                                            ]
-                                      , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.executionDate
-                                      ]
-                                    , taskCompleted form.executionDate
-                                    , 1
-                                    )
-                        in
-                        ( (viewLabel language <| Translate.PrenatalLaboratoryTaskDate task)
-                            :: executionDateContent
-                        , executionDateTasksCompleted
-                        , executionDateTasksTotal
-                        )
-                    )
-                    form.testPerformedToday
-                    |> Maybe.withDefault ( [], 0, 0 )
-        in
-        ( [ viewQuestionLabel language Translate.TestPerformedTodayQuestion
-          , viewBoolInput
-                language
-                form.testPerformedToday
-                msgs.setBoolInputMsg
-                "test-performed-today"
-                Nothing
-          ]
-            ++ derivedSection
-        , taskCompleted form.testPerformedToday + derivedTasksCompleted
-        , 1 + derivedTasksTotal
-        )
 
 
 viewWaitForm : Language -> NominalDate -> AssembledData -> Html Msg
@@ -4626,12 +3877,7 @@ viewBreastfeedingContent language currentDate assembled data =
                                 SetReasonForNotBreastfeeding
                                 Translate.ReasonForNotBreastfeeding
                           ]
-                        , [ if isJust form.reasonForNotBreastfeeding then
-                                Just True
-
-                            else
-                                Nothing
-                          ]
+                        , [ maybeToBoolTask form.reasonForNotBreastfeeding ]
                         )
                 )
                 form.isBreastfeeding
@@ -4841,21 +4087,3 @@ viewWarning language maybeMessage =
                 div [ class "five wide column" ]
                     [ text message ]
             )
-
-
-saveButton : Language -> Bool -> Msg -> Html Msg
-saveButton language active msg =
-    customSaveButton language active msg Translate.Save
-
-
-customSaveButton : Language -> Bool -> Msg -> Translate.TranslationId -> Html Msg
-customSaveButton language active msg label =
-    button
-        [ classList
-            [ ( "ui fluid primary button", True )
-            , ( "active", active )
-            , ( "disabled", not active )
-            ]
-        , onClick msg
-        ]
-        [ text <| translate language label ]

@@ -23,6 +23,9 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
+import Backend.NCDEncounter.Encoder exposing (encodeNCDEncounter)
+import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
@@ -1040,3 +1043,165 @@ prenatalSpecialityCareEndpoint : ReadWriteEndPoint Error PrenatalSpecialityCareI
 prenatalSpecialityCareEndpoint =
     swEndpoint "nodes/prenatal_speciality_care" decodePrenatalSpecialityCare
         |> withValueEncoder (object << encodePrenatalSpecialityCare)
+
+
+ncdEncounterEndpoint : ReadWriteEndPoint Error NCDEncounterId NCDEncounter NCDEncounter (Maybe IndividualEncounterParticipantId)
+ncdEncounterEndpoint =
+    swEndpoint "nodes/ncd_encounter" decodeNCDEncounter
+        |> withValueEncoder (object << encodeNCDEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+ncdMeasurementsEndpoint : ReadOnlyEndPoint Error NCDEncounterId NCDMeasurements ()
+ncdMeasurementsEndpoint =
+    swEndpoint "nodes/ncd-measurements" decodeNCDMeasurements
+
+
+ncdCoMorbiditiesEndpoint : ReadWriteEndPoint Error NCDCoMorbiditiesId NCDCoMorbidities NCDCoMorbidities ()
+ncdCoMorbiditiesEndpoint =
+    swEndpoint "nodes/ncd_co_morbidities" decodeNCDCoMorbidities
+        |> withValueEncoder (object << encodeNCDCoMorbidities)
+
+
+ncdCoreExamEndpoint : ReadWriteEndPoint Error NCDCoreExamId NCDCoreExam NCDCoreExam ()
+ncdCoreExamEndpoint =
+    swEndpoint "nodes/ncd_core_exam" decodeNCDCoreExam
+        |> withValueEncoder (object << encodeNCDCoreExam)
+
+
+ncdCreatinineTestEndpoint : ReadWriteEndPoint Error NCDCreatinineTestId NCDCreatinineTest NCDCreatinineTest ()
+ncdCreatinineTestEndpoint =
+    swEndpoint "nodes/ncd_creatinine_test" decodeNCDCreatinineTest
+        |> withValueEncoder (object << encodeNCDCreatinineTest)
+
+
+ncdDangerSignsEndpoint : ReadWriteEndPoint Error NCDDangerSignsId NCDDangerSigns NCDDangerSigns ()
+ncdDangerSignsEndpoint =
+    swEndpoint "nodes/ncd_danger_signs" decodeNCDDangerSigns
+        |> withValueEncoder (object << encodeNCDDangerSigns)
+
+
+ncdFamilyHistoryEndpoint : ReadWriteEndPoint Error NCDFamilyHistoryId NCDFamilyHistory NCDFamilyHistory ()
+ncdFamilyHistoryEndpoint =
+    swEndpoint "nodes/ncd_family_history" decodeNCDFamilyHistory
+        |> withValueEncoder (object << encodeNCDFamilyHistory)
+
+
+ncdFamilyPlanningEndpoint : ReadWriteEndPoint Error NCDFamilyPlanningId NCDFamilyPlanning NCDFamilyPlanning ()
+ncdFamilyPlanningEndpoint =
+    swEndpoint "nodes/ncd_family_planning" decodeNCDFamilyPlanning
+        |> withValueEncoder (object << encodeNCDFamilyPlanning)
+
+
+ncdHealthEducationEndpoint : ReadWriteEndPoint Error NCDHealthEducationId NCDHealthEducation NCDHealthEducation ()
+ncdHealthEducationEndpoint =
+    swEndpoint "nodes/ncd_health_education" decodeNCDHealthEducation
+        |> withValueEncoder (object << encodeNCDHealthEducation)
+
+
+ncdHIVTestEndpoint : ReadWriteEndPoint Error NCDHIVTestId NCDHIVTest NCDHIVTest ()
+ncdHIVTestEndpoint =
+    swEndpoint "nodes/ncd_hiv_test" decodeNCDHIVTest
+        |> withValueEncoder (object << encodeNCDHIVTest)
+
+
+ncdLabsResultsEndpoint : ReadWriteEndPoint Error NCDLabsResultsId NCDLabsResults NCDLabsResults ()
+ncdLabsResultsEndpoint =
+    swEndpoint "nodes/ncd_labs_results" decodeNCDLabsResults
+        |> withValueEncoder (object << encodeNCDLabsResults)
+
+
+ncdLiverFunctionTestEndpoint : ReadWriteEndPoint Error NCDLiverFunctionTestId NCDLiverFunctionTest NCDLiverFunctionTest ()
+ncdLiverFunctionTestEndpoint =
+    swEndpoint "nodes/ncd_liver_function_test" decodeNCDLiverFunctionTest
+        |> withValueEncoder (object << encodeNCDLiverFunctionTest)
+
+
+ncdMedicationDistributionEndpoint : ReadWriteEndPoint Error NCDMedicationDistributionId NCDMedicationDistribution NCDMedicationDistribution ()
+ncdMedicationDistributionEndpoint =
+    swEndpoint "nodes/ncd_medication_distribution" decodeNCDMedicationDistribution
+        |> withValueEncoder (object << encodeNCDMedicationDistribution)
+
+
+ncdMedicationHistoryEndpoint : ReadWriteEndPoint Error NCDMedicationHistoryId NCDMedicationHistory NCDMedicationHistory ()
+ncdMedicationHistoryEndpoint =
+    swEndpoint "nodes/ncd_medication_history" decodeNCDMedicationHistory
+        |> withValueEncoder (object << encodeNCDMedicationHistory)
+
+
+ncdOutsideCareEndpoint : ReadWriteEndPoint Error NCDOutsideCareId NCDOutsideCare NCDOutsideCare ()
+ncdOutsideCareEndpoint =
+    swEndpoint "nodes/ncd_outside_care" decodeNCDOutsideCare
+        |> withValueEncoder (object << encodeNCDOutsideCare)
+
+
+ncdPregnancyTestEndpoint : ReadWriteEndPoint Error NCDPregnancyTestId NCDPregnancyTest NCDPregnancyTest ()
+ncdPregnancyTestEndpoint =
+    swEndpoint "nodes/ncd_pregnancy_test" decodeNCDPregnancyTest
+        |> withValueEncoder (object << encodeNCDPregnancyTest)
+
+
+ncdRandomBloodSugarTestEndpoint : ReadWriteEndPoint Error NCDRandomBloodSugarTestId NCDRandomBloodSugarTest NCDRandomBloodSugarTest ()
+ncdRandomBloodSugarTestEndpoint =
+    swEndpoint "nodes/ncd_random_blood_sugar_test" decodeNCDRandomBloodSugarTest
+        |> withValueEncoder (object << encodeNCDRandomBloodSugarTest)
+
+
+ncdReferralEndpoint : ReadWriteEndPoint Error NCDReferralId NCDReferral NCDReferral ()
+ncdReferralEndpoint =
+    swEndpoint "nodes/ncd_referral" decodeNCDReferral
+        |> withValueEncoder (object << encodeNCDReferral)
+
+
+ncdSocialHistoryEndpoint : ReadWriteEndPoint Error NCDSocialHistoryId NCDSocialHistory NCDSocialHistory ()
+ncdSocialHistoryEndpoint =
+    swEndpoint "nodes/ncd_social_history" decodeNCDSocialHistory
+        |> withValueEncoder (object << encodeNCDSocialHistory)
+
+
+ncdSymptomReviewEndpoint : ReadWriteEndPoint Error NCDSymptomReviewId NCDSymptomReview NCDSymptomReview ()
+ncdSymptomReviewEndpoint =
+    swEndpoint "nodes/ncd_symptom_review" decodeNCDSymptomReview
+        |> withValueEncoder (object << encodeNCDSymptomReview)
+
+
+ncdUrineDipstickTestEndpoint : ReadWriteEndPoint Error NCDUrineDipstickTestId NCDUrineDipstickTest NCDUrineDipstickTest ()
+ncdUrineDipstickTestEndpoint =
+    swEndpoint "nodes/ncd_urine_dipstick_test" decodeNCDUrineDipstickTest
+        |> withValueEncoder (object << encodeNCDUrineDipstickTest)
+
+
+ncdVitalsEndpoint : ReadWriteEndPoint Error NCDVitalsId NCDVitals NCDVitals ()
+ncdVitalsEndpoint =
+    swEndpoint "nodes/ncd_vitals" decodeNCDVitals
+        |> withValueEncoder (object << encodeNCDVitals)
+
+
+groupNCDAEndpoint : ReadWriteEndPoint Error GroupNCDAId GroupNCDA GroupNCDA ()
+groupNCDAEndpoint =
+    swEndpoint "nodes/group_ncda" decodeGroupNCDA
+        |> withValueEncoder (object << encodeGroupNCDA)
+
+
+nutritionNCDAEndpoint : ReadWriteEndPoint Error NutritionNCDAId NutritionNCDA NutritionNCDA ()
+nutritionNCDAEndpoint =
+    swEndpoint "nodes/nutrition_ncda" decodeNutritionNCDA
+        |> withValueEncoder (object << encodeNutritionNCDA)
+
+
+wellChildNCDAEndpoint : ReadWriteEndPoint Error WellChildNCDAId WellChildNCDA WellChildNCDA ()
+wellChildNCDAEndpoint =
+    swEndpoint "nodes/well_child_ncda" decodeWellChildNCDA
+        |> withValueEncoder (object << encodeWellChildNCDA)
+
+
+ncdLipidPanelTestEndpoint : ReadWriteEndPoint Error NCDLipidPanelTestId NCDLipidPanelTest NCDLipidPanelTest ()
+ncdLipidPanelTestEndpoint =
+    swEndpoint "nodes/ncd_lipid_panel_test" decodeNCDLipidPanelTest
+        |> withValueEncoder (object << encodeNCDLipidPanelTest)
+
+
+ncdHbA1cTestEndpoint : ReadWriteEndPoint Error NCDHbA1cTestId NCDHbA1cTest NCDHbA1cTest ()
+ncdHbA1cTestEndpoint =
+    swEndpoint "nodes/ncd_hba1c_test" decodeNCDHbA1cTest
+        |> withValueEncoder (object << encodeNCDHbA1cTest)

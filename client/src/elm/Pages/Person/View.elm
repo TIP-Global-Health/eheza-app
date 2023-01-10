@@ -606,6 +606,19 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , title = Translate.People
                             }
 
+                        NCDEncounter ->
+                            let
+                                expectedAge =
+                                    expectedAgeByForm currentDate personForm operation
+                            in
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage NCDEncounter)
+                            , expectedAge = expectedAge
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorTo = Date.add Years -12 today
+                            , title = Translate.People
+                            }
+
                         -- Note yet implemented. Providing 'default'
                         -- values, to satisfy compiler.
                         InmmunizationEncounter ->

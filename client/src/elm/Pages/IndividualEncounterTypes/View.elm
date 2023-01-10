@@ -96,6 +96,7 @@ viewContent language currentDate selectedHealthCenter isChw app =
                                     [ encounterButton AcuteIllnessEncounter
                                     , encounterButton AntenatalEncounter
                                     , encounterButton NutritionEncounter
+                                    , encounterButton NCDEncounter
                                     , encounterButton WellChildEncounter
                                     ]
                         in

@@ -32,6 +32,7 @@ type ChildActivity
     | NutritionSigns
     | SendToHC
     | Weight
+    | NCDA
 
 
 {-| So far, it seems simpler not to have a separate `CaregiverActivityType`.

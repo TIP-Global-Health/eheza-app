@@ -23,6 +23,12 @@ update currentDate id msg model =
             , []
             )
 
+        SetSPVReportTab tab ->
+            ( { model | spvReportTab = tab }
+            , Cmd.none
+            , []
+            )
+
         SetViewMode mode ->
             ( { model | viewMode = mode }
             , Cmd.none

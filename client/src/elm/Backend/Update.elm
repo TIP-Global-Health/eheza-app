@@ -29,13 +29,16 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
+        , labExpirationPeriod
         , mapChildMeasurementsAtOfflineSession
         , mapMeasurementData
-        , prenatalLabExpirationPeriod
         , splitChildMeasurements
         , splitMotherMeasurements
         )
 import Backend.Model exposing (..)
+import Backend.NCDActivity.Model
+import Backend.NCDEncounter.Model
+import Backend.NCDEncounter.Update
 import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
@@ -91,6 +94,8 @@ import Pages.AcuteIllness.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
 import Pages.GlobalCaseManagement.Utils
+import Pages.NCD.RecurrentActivity.Utils
+import Pages.NCD.Utils
 import Pages.NextSteps.Model
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.Utils
@@ -567,6 +572,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchNCDEncountersForParticipant id ->
+            ( { model | ncdEncountersByParticipant = Dict.insert id Loading model.ncdEncountersByParticipant }
+            , sw.select ncdEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedNCDEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedNCDEncountersForParticipant id data ->
+            ( { model | ncdEncountersByParticipant = Dict.insert id data model.ncdEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -641,6 +659,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedWellChildMeasurements id data ->
             ( { model | wellChildMeasurements = Dict.insert id data model.wellChildMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchNCDMeasurements id ->
+            ( { model | ncdMeasurements = Dict.insert id Loading model.ncdMeasurements }
+            , sw.get ncdMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedNCDMeasurements id)
+            , []
+            )
+
+        HandleFetchedNCDMeasurements id data ->
+            ( { model | ncdMeasurements = Dict.insert id data model.ncdMeasurements }
             , Cmd.none
             , []
             )
@@ -939,6 +970,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchNCDEncounter id ->
+            ( { model | ncdEncounters = Dict.insert id Loading model.ncdEncounters }
+            , sw.get ncdEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedNCDEncounter id)
+            , []
+            )
+
+        HandleFetchedNCDEncounter id data ->
+            ( { model | ncdEncounters = Dict.insert id data model.ncdEncounters }
+            , Cmd.none
+            , []
+            )
+
         FetchIndividualEncounterParticipant id ->
             ( { model | individualParticipants = Dict.insert id Loading model.individualParticipants }
             , sw.get individualEncounterParticipantEndpoint id
@@ -1104,7 +1148,23 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         in
                         ( newModel, extraMsgs )
 
-                processRevisionAndUpdateLabsResults participantId encounterId test executionNote resultsAdded =
+                processRevisionAndAssessNCD participantId encounterId =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateNCDAssessmentMsgs currentDate language activePage newModel)
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
+                processRevisionAndUpdatePrenatalLabsResults participantId encounterId test executionNote resultsAdded =
                     if downloadingContent then
                         ( model, [] )
 
@@ -1186,6 +1246,29 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                     )
                                     value.dia
                                     value.sys
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
+                processRevisionAndUpdateNCDLabsResults participantId encounterId test executionNote resultsAdded =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map
+                                    (\encounterId_ ->
+                                        if resultsAdded then
+                                            generateNCDLabsResultsAddedMsgs currentDate newModel test encounterId_
+
+                                        else
+                                            generateNCDLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+                                    )
+                                    encounterId
                                     |> Maybe.withDefault []
                         in
                         ( newModel, extraMsgs )
@@ -1798,7 +1881,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateLabsResults
+                            processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestHIVPCR
@@ -1819,7 +1902,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateLabsResults
+                            processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestSyphilis
@@ -1845,7 +1928,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateLabsResults
+                            processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestHepatitisB
@@ -1879,7 +1962,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateLabsResults
+                            processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestUrineDipstick
@@ -1900,7 +1983,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateLabsResults
+                            processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestBloodGpRs
@@ -1924,7 +2007,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateLabsResults
+                            processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestHemoglobin
@@ -1945,7 +2028,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes below.
                         ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateLabsResults
+                            processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestRandomBloodSugar
@@ -2092,6 +2175,119 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ NCDRandomBloodSugarTestRevision uid data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessNCD`
+                        -- activation that comes below.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestRandomBloodSugar
+                                data.value.executionNote
+                                (isJust data.value.sugarCount)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ NCDUrineDipstickTestRevision uid data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessNCD`
+                        -- activation that comes below.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestUrineDipstick
+                                data.value.executionNote
+                                (isJust data.value.protein)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ NCDCreatinineTestRevision uid data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessNCD`
+                        -- activation that comes below.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestCreatinine
+                                data.value.executionNote
+                                (isJust data.value.creatinineResult)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ NCDLiverFunctionTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestLiverFunction
+                                data.value.executionNote
+                                (isJust data.value.altResult)
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults
+                    )
+
+                [ NCDCoMorbiditiesRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NCDVitalsRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NCDLipidPanelTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestLipidPanel
+                                data.value.executionNote
+                                (isJust data.value.totalCholesterolResult)
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults
+                    )
+
                 _ ->
                     let
                         ( newModel, recalculateEditableSessions ) =
@@ -2214,6 +2410,25 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | wellChildEncounterRequests = Dict.insert encounterId subModel model.wellChildEncounterRequests }
             , Cmd.map (MsgWellChildEncounter encounterId) subCmd
+            , []
+            )
+
+        MsgNCDEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.ncdEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.ncdEncounterRequests
+                        |> Maybe.withDefault Backend.NCDEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.NCDEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | ncdEncounterRequests = Dict.insert encounterId subModel model.ncdEncounterRequests }
+            , Cmd.map (MsgNCDEncounter encounterId) subCmd
             , []
             )
 
@@ -2543,6 +2758,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                     HomeVisitEncounter ->
                                                         IndividualEncounterTypesPage
 
+                                                    NCDEncounter ->
+                                                        NCDParticipantPage InitiatorParticipantsPage personId
+
                                                     -- Note yet implemented. Providing 'default'
                                                     -- page, to satisfy compiler.
                                                     InmmunizationEncounter ->
@@ -2755,6 +2973,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         _ ->
                                             []
 
+                                NCDEncounter ->
+                                    [ Backend.NCDEncounter.Model.emptyNCDEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostNCDEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
                                 InmmunizationEncounter ->
                                     []
                         )
@@ -2884,6 +3108,27 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     [ App.Model.SetActivePage <|
                         UserPage <|
                             Pages.Page.AcuteIllnessEncounterPage acuteIllnessEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
+        PostNCDEncounter ncdEncounter ->
+            ( { model | postNCDEncounter = Dict.insert ncdEncounter.participant Loading model.postNCDEncounter }
+            , sw.post ncdEncounterEndpoint ncdEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedNCDEncounter ncdEncounter.participant)
+            , []
+            )
+
+        HandlePostedNCDEncounter participantId data ->
+            ( { model | postNCDEncounter = Dict.insert participantId data model.postNCDEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( ncdEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.NCDEncounterPage ncdEncounterId
                     ]
                 )
                 data
@@ -3204,6 +3449,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
+        GroupNCDARevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | ncda = Dict.insert uuid data measurements.ncda })
+                model
+            , True
+            )
+
         GroupSendToHCRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
@@ -3347,6 +3600,204 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
+        NCDCoMorbiditiesRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | coMorbidities = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDCoreExamRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | coreExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDCreatinineTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | creatinineTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDDangerSignsRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDEncounterRevision uuid data ->
+            let
+                ncdEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.ncdEncounters
+
+                ncdEncountersByParticipant =
+                    Dict.remove data.participant model.ncdEncountersByParticipant
+            in
+            ( { model
+                | ncdEncounters = ncdEncounters
+                , ncdEncountersByParticipant = ncdEncountersByParticipant
+              }
+            , recalc
+            )
+
+        NCDFamilyHistoryRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | familyHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDFamilyPlanningRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDHbA1cTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hba1cTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDHealthEducationRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDHIVTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hivTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDLabsResultsRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | ncdLabs = Dict.insert uuid data measurements.ncdLabs })
+                        model
+            in
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | labsResults = Just ( uuid, data ) })
+                modelWithMappedFollowUp
+            , recalc
+            )
+
+        NCDLipidPanelTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | lipidPanelTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDLiverFunctionTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | liverFunctionTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDMedicationDistributionRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDMedicationHistoryRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicationHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDOutsideCareRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | outsideCare = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDPregnancyTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDRandomBloodSugarTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | randomBloodSugarTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDReferralRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDSocialHistoryRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDSymptomReviewRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDUrineDipstickTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | urineDipstickTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDVitalsRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NurseRevision uuid data ->
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
             noChange
@@ -3441,6 +3892,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapNutritionMeasurements
                 data.encounterId
                 (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NutritionNCDARevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -4034,6 +4493,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        WellChildNCDARevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildNextVisitRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -4238,7 +4705,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                     []
 
                 else
-                    -- Here we know that trigger for update cam form another encounter.
+                    -- Here we know that trigger for update came form another encounter.
                     -- Therefore, we only need to perform actions for that originating encounter.
                     Maybe.map
                         (\( originatingEncounterId, targetDiagnoses ) ->
@@ -4417,8 +4884,8 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
 generatePrenatalLabsTestAddedMsgs :
     NominalDate
     -> ModelIndexedDb
-    -> Backend.Measurement.Model.PrenatalLaboratoryTest
-    -> Backend.Measurement.Model.PrenatalTestExecutionNote
+    -> Backend.Measurement.Model.LaboratoryTest
+    -> Backend.Measurement.Model.TestExecutionNote
     -> PrenatalEncounterId
     -> List App.Model.Msg
 generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
@@ -4443,7 +4910,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
 
                                                     else
                                                         EverySet.remove test value.performedTests
-                                                , resolutionDate = Date.add Days prenatalLabExpirationPeriod currentDate
+                                                , resolutionDate = Date.add Days labExpirationPeriod currentDate
                                             }
                                        )
                         in
@@ -4452,7 +4919,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                                 || (not testExecuted && EverySet.member test measurement.value.performedTests)
                         then
                             -- Update value only when really needed, as it may be set up properly already.
-                            [ saveLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
 
                         else
                             []
@@ -4462,13 +4929,13 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                         (if testExecuted then
                             let
                                 resultsValue =
-                                    Backend.Measurement.Model.PrenatalLabsResultsValue
+                                    Backend.Measurement.Model.LabsResultsValue
                                         (EverySet.singleton test)
                                         EverySet.empty
-                                        (Date.add Days prenatalLabExpirationPeriod currentDate)
+                                        (Date.add Days labExpirationPeriod currentDate)
                                         False
                             in
-                            [ saveLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
+                            [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
 
                          else
                             []
@@ -4480,7 +4947,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
 generatePrenatalLabsResultsAddedMsgs :
     NominalDate
     -> ModelIndexedDb
-    -> Backend.Measurement.Model.PrenatalLaboratoryTest
+    -> Backend.Measurement.Model.LaboratoryTest
     -> PrenatalEncounterId
     -> List App.Model.Msg
 generatePrenatalLabsResultsAddedMsgs currentDate after test id =
@@ -4544,7 +5011,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test id =
                                                 )
                                            )
                             in
-                            saveLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue
+                            savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue
                                 :: navigateToProgressReportMsg
                     )
                     assembled.measurements.labsResults
@@ -4552,15 +5019,179 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test id =
         |> Maybe.withDefault []
 
 
-saveLabsResultsMsg :
+savePrenatalLabsResultsMsg :
     PrenatalEncounterId
     -> PersonId
     -> Maybe PrenatalLabsResultsId
-    -> Backend.Measurement.Model.PrenatalLabsResultsValue
+    -> Backend.Measurement.Model.LabsResultsValue
     -> App.Model.Msg
-saveLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
+savePrenatalLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
     Backend.PrenatalEncounter.Model.SaveLabsResults personId labsResultsId labsResultsValue
         |> Backend.Model.MsgPrenatalEncounter encounterId
+        |> App.Model.MsgIndexedDb
+
+
+generateNCDAssessmentMsgs :
+    NominalDate
+    -> Language
+    -> Page
+    -> ModelIndexedDb
+    -> NCDEncounterId
+    -> List App.Model.Msg
+generateNCDAssessmentMsgs currentDate language activePage after id =
+    Maybe.map
+        (\assembledAfter ->
+            let
+                diagnosesBefore =
+                    -- At this stage new diagnoses were not updated yet, therefore,
+                    -- we can use the dignoses set for the encounter.
+                    assembledAfter.encounter.diagnoses
+
+                diagnosesAfter =
+                    Pages.NCD.Utils.generateNCDDiagnoses currentDate assembledAfter
+            in
+            if everySetsEqual diagnosesBefore diagnosesAfter then
+                []
+
+            else
+                [ Backend.NCDEncounter.Model.SetNCDDiagnoses diagnosesAfter
+                    |> Backend.Model.MsgNCDEncounter id
+                    |> App.Model.MsgIndexedDb
+                ]
+        )
+        (RemoteData.toMaybe <| Pages.NCD.Utils.generateAssembledData id after)
+        |> Maybe.withDefault []
+
+
+generateNCDLabsTestAddedMsgs :
+    NominalDate
+    -> ModelIndexedDb
+    -> Backend.Measurement.Model.LaboratoryTest
+    -> Backend.Measurement.Model.TestExecutionNote
+    -> NCDEncounterId
+    -> List App.Model.Msg
+generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
+    Pages.NCD.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                let
+                    testExecuted =
+                        List.member executionNote [ Backend.Measurement.Model.TestNoteRunToday, Backend.Measurement.Model.TestNoteRunPreviously ]
+                in
+                Maybe.map
+                    (\( resultsId, measurement ) ->
+                        let
+                            updatedValue =
+                                measurement.value
+                                    |> (\value ->
+                                            { value
+                                                | performedTests =
+                                                    if testExecuted then
+                                                        EverySet.insert test value.performedTests
+
+                                                    else
+                                                        EverySet.remove test value.performedTests
+                                                , resolutionDate = Date.add Days labExpirationPeriod currentDate
+                                            }
+                                       )
+                        in
+                        if
+                            (testExecuted && (not <| EverySet.member test measurement.value.performedTests))
+                                || (not testExecuted && EverySet.member test measurement.value.performedTests)
+                        then
+                            -- Update value only when really needed, as it may be set up properly already.
+                            [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+
+                        else
+                            []
+                    )
+                    assembled.measurements.labsResults
+                    |> Maybe.withDefault
+                        (if testExecuted then
+                            let
+                                resultsValue =
+                                    Backend.Measurement.Model.LabsResultsValue
+                                        (EverySet.singleton test)
+                                        EverySet.empty
+                                        (Date.add Days labExpirationPeriod currentDate)
+                                        False
+                            in
+                            [ saveNCDLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
+
+                         else
+                            []
+                        )
+            )
+        |> Maybe.withDefault []
+
+
+generateNCDLabsResultsAddedMsgs :
+    NominalDate
+    -> ModelIndexedDb
+    -> Backend.Measurement.Model.LaboratoryTest
+    -> NCDEncounterId
+    -> List App.Model.Msg
+generateNCDLabsResultsAddedMsgs currentDate after test id =
+    Pages.NCD.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.andThen
+            (\assembled ->
+                Maybe.map
+                    (\( resultsId, results ) ->
+                        if EverySet.member test results.value.completedTests then
+                            -- Do not update value if we have it set up properly already.
+                            []
+
+                        else
+                            let
+                                ( performedTests, completedTests ) =
+                                    Pages.GlobalCaseManagement.Utils.ncdLabsResultsTestData currentDate results
+
+                                updatedValue =
+                                    results.value
+                                        |> (\value ->
+                                                let
+                                                    updatedCompletedTests =
+                                                        test :: completedTests
+
+                                                    resolutionDate =
+                                                        -- When all performed tests are completed, and Next Steps are either
+                                                        -- completed, or not required, setting today as resolution date.
+                                                        if
+                                                            (List.length updatedCompletedTests == List.length performedTests)
+                                                                && Pages.NCD.RecurrentActivity.Utils.activityCompleted
+                                                                    currentDate
+                                                                    assembled
+                                                                    Backend.NCDActivity.Model.RecurrentNextSteps
+                                                        then
+                                                            currentDate
+
+                                                        else
+                                                            value.resolutionDate
+                                                in
+                                                { value
+                                                    | completedTests = EverySet.fromList updatedCompletedTests
+                                                    , resolutionDate = resolutionDate
+                                                }
+                                           )
+                            in
+                            [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                    )
+                    assembled.measurements.labsResults
+            )
+        |> Maybe.withDefault []
+
+
+saveNCDLabsResultsMsg :
+    NCDEncounterId
+    -> PersonId
+    -> Maybe NCDLabsResultsId
+    -> Backend.Measurement.Model.LabsResultsValue
+    -> App.Model.Msg
+saveNCDLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
+    Backend.NCDEncounter.Model.SaveLabsResults personId labsResultsId labsResultsValue
+        |> Backend.Model.MsgNCDEncounter encounterId
         |> App.Model.MsgIndexedDb
 
 

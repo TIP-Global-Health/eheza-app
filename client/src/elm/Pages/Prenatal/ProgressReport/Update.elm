@@ -5,6 +5,7 @@ import Backend.Model
 import Backend.PrenatalEncounter.Model
 import Pages.Page exposing (Page(..))
 import Pages.Prenatal.ProgressReport.Model exposing (..)
+import Pages.Report.Model exposing (LabResultsMode(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -24,7 +25,22 @@ update msg model =
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
 
         SetLabResultsMode mode ->
-            ( { model | labResultsMode = mode }, Cmd.none, [] )
+            let
+                labResultsHistoryOrigin =
+                    case mode of
+                        Just (LabResultsHistory _) ->
+                            model.labResultsMode
+
+                        _ ->
+                            Nothing
+            in
+            ( { model
+                | labResultsMode = mode
+                , labResultsHistoryOrigin = labResultsHistoryOrigin
+              }
+            , Cmd.none
+            , []
+            )
 
         SetEndEncounterDialogState value ->
             ( { model | showEndEncounterDialog = value }, Cmd.none, [] )

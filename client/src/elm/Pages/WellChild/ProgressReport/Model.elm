@@ -3,10 +3,12 @@ module Pages.WellChild.ProgressReport.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Pages.Page exposing (Page)
+import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
 
 
 type alias Model =
     { diagnosisMode : DiagnosisMode
+    , activeTab : ReportTab
     , showEndEncounterDialog : Bool
     }
 
@@ -14,18 +16,9 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
+    , activeTab = TabSPVReport
     , showEndEncounterDialog = False
     }
-
-
-type DiagnosisMode
-    = ModeActiveDiagnosis
-    | ModeCompletedDiagnosis
-
-
-type PaneEntryStatus
-    = StatusOngoing
-    | StatusResolved
 
 
 type ECDStatus
@@ -44,11 +37,65 @@ type WellChildProgressReportInitiator
 
 type alias BottomActionData msg =
     { showEndEncounterDialog : Bool
-    , allowEndEcounter : Bool
+    , allowEndEncounter : Bool
     , closeEncounterMsg : msg
     , setEndEncounterDialogStateMsg : Bool -> msg
     , startEncounterMsg : msg
     }
+
+
+type NCDAANCNewbornItem
+    = RegularCheckups
+    | IronDuringPregnancy
+
+
+type NCDANutritionBehaviorItem
+    = BreastfedSixMonths
+    | AppropriateComplementaryFeeding
+    | DiverseDiet
+    | MealsADay
+
+
+type NCDAInfrastructureEnvironmentWashItem
+    = HasToilets
+    | HasCleanWater
+    | HasHandwashingFacility
+    | HasKitchenGarden
+    | InsecticideTreatedBedNets
+
+
+type NCDATargetedInterventionsItem
+    = FBFGiven
+    | TreatmentForAcuteMalnutrition
+    | TreatmentForDiarrhea
+    | SupportChildWithDisability
+    | ConditionalCashTransfer
+    | ConditionalFoodItems
+
+
+type NCDAUniversalInterventionsItem
+    = Immunization
+    | VitaminA
+    | Deworming
+    | OngeraMNP
+    | ECDServices
+
+
+type NCDAFillTheBlanksItem
+    = HeightToAge
+    | WeightToAge
+    | MuacValue
+    | EdemaPresent
+
+
+type NCDACellValue
+    = NCDACellValueV
+    | NCDACellValueX
+    | NCDACellValueDash
+    | NCDACellValueC
+    | NCDACellValueH
+    | NCDACellValueT
+    | NCDACellValueEmpty
 
 
 type Msg
@@ -57,3 +104,4 @@ type Msg
     | SetActivePage Page
     | SetEndEncounterDialogState Bool
     | SetDiagnosisMode DiagnosisMode
+    | SetActiveTab ReportTab
