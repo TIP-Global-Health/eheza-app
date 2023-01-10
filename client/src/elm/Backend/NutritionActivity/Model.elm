@@ -11,4 +11,5 @@ type NutritionActivity
     | Nutrition
     | Photo
     | Weight
+    | NCDA
     | NextSteps

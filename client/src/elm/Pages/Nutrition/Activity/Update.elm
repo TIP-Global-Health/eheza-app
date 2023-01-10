@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), ContributingFactorsSign(..), PhotoUrl(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), ContributingFactorsSign(..), PhotoUrl(..), WeightInGrm(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
@@ -232,6 +232,91 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.NutritionEncounter.Model.SaveWeight personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetNCDABoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ncdaData.form
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBirthWeight string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | birthWeight = String.toFloat string |> Maybe.map WeightInGrm
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNCDAFormStep step ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | step = Just step })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNCDAHelperState state ->
+            let
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | helperState = state })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveNCDA personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.ncdaData.form
+                        |> toNCDAValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.NutritionEncounter.Model.SaveNCDA personId measurementId value
                                     |> Backend.Model.MsgNutritionEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id

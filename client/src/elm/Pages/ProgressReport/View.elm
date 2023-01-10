@@ -52,7 +52,9 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
             db
             model.diagnosisMode
             model.sendViaWhatsAppDialog
+            model.reportTab
             SetActivePage
+            SetReportTab
             SetDiagnosisMode
             MsgSendViaWhatsAppDialog
             componentsConfig

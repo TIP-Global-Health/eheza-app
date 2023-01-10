@@ -245,6 +245,21 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchNCDEncounter id ->
+            Dict.get id model.ncdEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchNCDEncountersForParticipant id ->
+            Dict.get id model.ncdEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchNCDMeasurements id ->
+            Dict.get id model.ncdMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
@@ -377,6 +392,15 @@ forget msg model =
 
         FetchWellChildMeasurements id ->
             { model | wellChildMeasurements = Dict.remove id model.wellChildMeasurements }
+
+        FetchNCDEncounter id ->
+            { model | ncdEncounters = Dict.remove id model.ncdEncounters }
+
+        FetchNCDEncountersForParticipant id ->
+            { model | ncdEncountersByParticipant = Dict.remove id model.ncdEncountersByParticipant }
+
+        FetchNCDMeasurements id ->
+            { model | ncdMeasurements = Dict.remove id model.ncdMeasurements }
 
         FetchIndividualEncounterParticipant id ->
             { model | individualParticipants = Dict.remove id model.individualParticipants }

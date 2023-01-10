@@ -10,7 +10,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Utils exposing (viewCheckBoxSelectInputWithRecommendation, viewCustomLabel, viewInstructionsLabel)
+import Pages.Utils exposing (viewCheckBoxSelectInputWithRecommendation, viewCustomLabel, viewEncounterActionButton, viewInstructionsLabel)
 import Translate exposing (Language, translate)
 
 
@@ -44,20 +44,7 @@ viewMedicationDistributionForm language currentDate phase assembled setMedicatio
 
 viewPauseEncounterButton : Language -> Bool -> msg -> Html msg
 viewPauseEncounterButton language enabled pauseAction =
-    let
-        attributes =
-            if enabled then
-                [ class "ui fluid primary button"
-                , onClick pauseAction
-                ]
-
-            else
-                [ class "ui fluid primary button disabled" ]
-    in
-    div [ class "actions" ]
-        [ button attributes
-            [ text <| translate language Translate.PauseEncounter ]
-        ]
+    viewEncounterActionButton language Translate.PauseEncounter enabled pauseAction
 
 
 customWarningPopup : Language -> ( Html msg, Html msg, msg ) -> Html msg

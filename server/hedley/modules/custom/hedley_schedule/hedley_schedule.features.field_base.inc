@@ -238,6 +238,7 @@ function hedley_schedule_field_default_field_bases() {
         'antenatal' => 'Antenatal',
         'home-visit' => 'Home visit',
         'inmmunization' => 'Inmmunization',
+        'ncd' => 'NCD',
         'nutrition' => 'Nutrition',
         'well-child' => 'Well Child',
       ),

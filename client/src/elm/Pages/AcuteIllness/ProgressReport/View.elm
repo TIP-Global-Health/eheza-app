@@ -93,14 +93,14 @@ viewContent language currentDate id isChw initiator model assembled =
             else
                 Nothing
 
-        allowEndEcounter =
+        allowEndEncounter =
             allowEndingEcounter currentDate isChw assembled pendingActivities
 
         endEncounterMenu =
             case initiator of
                 InitiatorEncounterPage ->
                     viewEndEncounterMenuForProgressReport language
-                        allowEndEcounter
+                        allowEndEncounter
                         SetEndEncounterDialogState
                         (MsgSendViaWhatsAppDialog <|
                             Components.SendViaWhatsAppDialog.Model.SetState <|
@@ -162,6 +162,9 @@ viewHeader language id initiator =
 
                 InitiatorPatientRecord patientRecordInitiator personId ->
                     PatientRecordPage patientRecordInitiator personId
+
+                InitiatorNCDProgressReport ncdProgressReportInitiator ->
+                    NCDProgressReportPage ncdProgressReportInitiator
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]

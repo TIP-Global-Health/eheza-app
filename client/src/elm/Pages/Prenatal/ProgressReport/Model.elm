@@ -7,11 +7,12 @@ import Components.SendViaWhatsAppDialog.Model
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
+import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..))
 
 
 type alias Model =
     { labResultsMode : Maybe LabResultsMode
-    , labResultsHistoryOrigin : Maybe LabResultsCurrentMode
+    , labResultsHistoryOrigin : Maybe LabResultsMode
     , showEndEncounterDialog : Bool
     , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
     , components : Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentAntenatal)
@@ -26,43 +27,6 @@ emptyModel =
     , sendViaWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
     , components = Nothing
     }
-
-
-type PrenatalTestReport
-    = TestPerformed PrenatalTestResult
-    | TestNotPerformedKnownAsPositive
-
-
-type LabResultsMode
-    = LabResultsCurrent LabResultsCurrentMode
-    | LabResultsHistory LabResultsHistoryMode
-
-
-type LabResultsCurrentMode
-    = LabResultsCurrentMain
-    | LabResultsCurrentDipstickShort
-    | LabResultsCurrentDipstickLong
-
-
-type LabResultsHistoryMode
-    = LabResultsHistoryHIV (List ( NominalDate, Maybe PrenatalTestReport ))
-    | LabResultsHistoryHIVPCR (List ( NominalDate, Maybe HIVPCRResult ))
-    | LabResultsHistorySyphilis (List ( NominalDate, Maybe PrenatalTestResult ))
-    | LabResultsHistoryHepatitisB (List ( NominalDate, Maybe PrenatalTestReport ))
-    | LabResultsHistoryMalaria (List ( NominalDate, Maybe PrenatalTestResult ))
-    | LabResultsHistoryProtein (List ( NominalDate, Maybe ProteinValue ))
-    | LabResultsHistoryPH (List ( NominalDate, Maybe PHValue ))
-    | LabResultsHistoryGlucose (List ( NominalDate, Maybe GlucoseValue ))
-    | LabResultsHistoryLeukocytes (List ( NominalDate, Maybe LeukocytesValue ))
-    | LabResultsHistoryNitrite (List ( NominalDate, Maybe NitriteValue ))
-    | LabResultsHistoryUrobilinogen (List ( NominalDate, Maybe UrobilinogenValue ))
-    | LabResultsHistoryHaemoglobin (List ( NominalDate, Maybe HaemoglobinValue ))
-    | LabResultsHistoryKetone (List ( NominalDate, Maybe KetoneValue ))
-    | LabResultsHistoryBilirubin (List ( NominalDate, Maybe BilirubinValue ))
-    | LabResultsHistoryRandomBloodSugar (List ( NominalDate, Maybe Float ))
-    | LabResultsHistoryHemoglobin (List ( NominalDate, Maybe Float ))
-    | LabResultsHistoryBloodGroup (List ( NominalDate, Maybe BloodGroup ))
-    | LabResultsHistoryRhesus (List ( NominalDate, Maybe Rhesus ))
 
 
 obstetricalDiagnoses : List PrenatalDiagnosis

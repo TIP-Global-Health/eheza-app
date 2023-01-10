@@ -60,3 +60,6 @@ update msg model =
                         |> Maybe.withDefault { model | components = Nothing }
             in
             ( updatedModel, Cmd.none, [] )
+
+        SetActiveTab tab ->
+            ( { model | activeTab = tab }, Cmd.none, [] )

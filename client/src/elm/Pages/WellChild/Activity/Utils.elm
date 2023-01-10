@@ -3,7 +3,7 @@ module Pages.WellChild.Activity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (WellChildEncounterId)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementValueFunc, headCircumferenceValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
@@ -89,6 +89,9 @@ activityCompleted currentDate zscores isChw assembled db activity =
         WellChildPhoto ->
             (not <| activityExpected WellChildPhoto) || isJust measurements.photo
 
+        WellChildNCDA ->
+            (not <| activityExpected WellChildNCDA) || isJust measurements.ncda
+
 
 expectActivity : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
 expectActivity currentDate zscores isChw assembled db activity =
@@ -142,6 +145,9 @@ expectActivity currentDate zscores isChw assembled db activity =
         WellChildPhoto ->
             True
 
+        WellChildNCDA ->
+            expectNCDAActivity currentDate assembled.person
+
 
 fromPregnancySummaryValue : Maybe PregnancySummaryValue -> PregnancySummaryForm
 fromPregnancySummaryValue saved =
@@ -150,12 +156,31 @@ fromPregnancySummaryValue saved =
             Maybe.map (.deliveryComplications >> EverySet.toList) saved
 
         deliveryComplicationsPresent =
-            Maybe.map complicationsPresent deliveryComplications
+            Maybe.map (listNotEmptyWithException NoDeliveryComplications) deliveryComplications
+
+        birthDefects =
+            Maybe.map (.birthDefects >> EverySet.toList) saved
+
+        birthDefectsPresent =
+            Maybe.map (listNotEmptyWithException NoBirthDefects) birthDefects
+
+        signs =
+            Maybe.map (.signs >> EverySet.toList) saved
     in
     { expectedDateConcluded = Maybe.map .expectedDateConcluded saved
     , dateSelectorPopupState = Nothing
     , deliveryComplicationsPresent = deliveryComplicationsPresent
     , deliveryComplications = deliveryComplications
+    , apgarScoresAvailable = Maybe.map (List.member ApgarScores) signs
+    , apgarOneMin = Maybe.andThen .apgarOneMin saved
+    , apgarFiveMin = Maybe.andThen .apgarFiveMin saved
+    , apgarDirty = False
+    , birthWeight = Maybe.andThen .birthWeight saved
+    , birthLengthAvailable = Maybe.map (List.member BirthLength) signs
+    , birthLength = Maybe.andThen .birthLength saved
+    , birthLengthDirty = False
+    , birthDefectsPresent = birthDefectsPresent
+    , birthDefects = birthDefects
     }
 
 
@@ -172,11 +197,35 @@ pregnancySummaryFormWithDefault form saved =
 
                         else
                             EverySet.toList value.deliveryComplications
+
+                    birthDefects =
+                        if form.birthDefectsPresent == Just False then
+                            [ NoBirthDefects ]
+
+                        else
+                            EverySet.toList value.birthDefects
+
+                    signsFromValue =
+                        EverySet.toList value.signs
                 in
                 { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
                 , dateSelectorPopupState = form.dateSelectorPopupState
-                , deliveryComplicationsPresent = or form.deliveryComplicationsPresent (complicationsPresent deliveryComplications |> Just)
+                , deliveryComplicationsPresent =
+                    or form.deliveryComplicationsPresent
+                        (listNotEmptyWithException NoDeliveryComplications deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
+                , apgarScoresAvailable = or form.apgarScoresAvailable (List.member ApgarScores signsFromValue |> Just)
+                , apgarOneMin = or form.apgarOneMin (Maybe.andThen .apgarOneMin saved)
+                , apgarFiveMin = or form.apgarFiveMin (Maybe.andThen .apgarFiveMin saved)
+                , apgarDirty = form.apgarDirty
+                , birthWeight = or form.birthWeight (Maybe.andThen .birthWeight saved)
+                , birthLengthAvailable = or form.birthLengthAvailable (List.member BirthLength signsFromValue |> Just)
+                , birthLength = or form.birthLength (Maybe.andThen .birthLength saved)
+                , birthLengthDirty = form.birthLengthDirty
+                , birthDefectsPresent =
+                    or form.birthDefectsPresent
+                        (listNotEmptyWithException NoBirthDefects birthDefects |> Just)
+                , birthDefects = or form.birthDefects (Just birthDefects)
                 }
             )
 
@@ -191,25 +240,40 @@ toPregnancySummaryValue : PregnancySummaryForm -> Maybe PregnancySummaryValue
 toPregnancySummaryValue form =
     let
         deliveryComplications =
-            form.deliveryComplications
-                |> Maybe.map EverySet.fromList
+            Maybe.map EverySet.fromList form.deliveryComplications
                 |> Maybe.withDefault (EverySet.singleton NoDeliveryComplications)
+
+        signs =
+            [ ifNullableTrue ApgarScores form.apgarScoresAvailable
+            , ifNullableTrue BirthLength form.birthLengthAvailable
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPregnancySummarySigns)
+
+        birthDefects =
+            Maybe.map EverySet.fromList form.birthDefects
+                |> Maybe.withDefault (EverySet.singleton NoBirthDefects)
     in
     Maybe.map PregnancySummaryValue form.expectedDateConcluded
         |> andMap (Just deliveryComplications)
+        |> andMap signs
+        |> andMap (Just form.apgarOneMin)
+        |> andMap (Just form.apgarFiveMin)
+        |> andMap (Just form.birthWeight)
+        |> andMap (Just form.birthLength)
+        |> andMap (Just birthDefects)
 
 
-complicationsPresent : List DeliveryComplication -> Bool
-complicationsPresent complications =
-    case complications of
-        [] ->
-            False
+listNotEmptyWithException : a -> List a -> Bool
+listNotEmptyWithException exception list =
+    if List.isEmpty list then
+        False
 
-        [ NoDeliveryComplications ] ->
-            False
+    else if list == [ exception ] then
+        False
 
-        _ ->
-            True
+    else
+        True
 
 
 nutritionAssessmentTaskCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
@@ -359,52 +423,6 @@ toSymptomsReviewValueWithDefault saved form =
 toSymptomsReviewValue : SymptomsReviewForm -> Maybe (EverySet WellChildSymptom)
 toSymptomsReviewValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NoWellChildSymptoms) form.symptoms
-
-
-fromWellChildECDValue : Maybe (EverySet ECDSign) -> WellChildECDForm
-fromWellChildECDValue signs =
-    { followMothersEyes = Maybe.map (EverySet.member FollowMothersEyes) signs
-    , moveArmsAndLegs = Maybe.map (EverySet.member MoveArmsAndLegs) signs
-    , raiseHandsUp = Maybe.map (EverySet.member RaiseHandsUp) signs
-    , smile = Maybe.map (EverySet.member Smile) signs
-    , rollSideways = Maybe.map (EverySet.member RollSideways) signs
-    , bringHandsToMouth = Maybe.map (EverySet.member BringHandsToMouth) signs
-    , holdHeadWithoutSupport = Maybe.map (EverySet.member HoldHeadWithoutSupport) signs
-    , holdAndShakeToys = Maybe.map (EverySet.member HoldAndShakeToys) signs
-    , reactToSuddenSounds = Maybe.map (EverySet.member ReactToSuddenSounds) signs
-    , useConsonantSounds = Maybe.map (EverySet.member UseConsonantSounds) signs
-    , respondToSoundWithSound = Maybe.map (EverySet.member RespondToSoundWithSound) signs
-    , turnHeadWhenCalled = Maybe.map (EverySet.member TurnHeadWhenCalled) signs
-    , sitWithoutSupport = Maybe.map (EverySet.member SitWithoutSupport) signs
-    , smileBack = Maybe.map (EverySet.member SmileBack) signs
-    , rollTummyToBack = Maybe.map (EverySet.member RollTummyToBack) signs
-    , reachForToys = Maybe.map (EverySet.member ReachForToys) signs
-    , useSimpleGestures = Maybe.map (EverySet.member UseSimpleGestures) signs
-    , standOnTheirOwn = Maybe.map (EverySet.member StandOnTheirOwn) signs
-    , copyDuringPlay = Maybe.map (EverySet.member CopyDuringPlay) signs
-    , sayMamaDada = Maybe.map (EverySet.member SayMamaDada) signs
-    , canHoldSmallObjects = Maybe.map (EverySet.member CanHoldSmallObjects) signs
-    , looksWhenPointedAt = Maybe.map (EverySet.member LooksWhenPointedAt) signs
-    , useSingleWords = Maybe.map (EverySet.member UseSingleWords) signs
-    , walkWithoutHelp = Maybe.map (EverySet.member WalkWithoutHelp) signs
-    , playPretend = Maybe.map (EverySet.member PlayPretend) signs
-    , pointToThingsOfInterest = Maybe.map (EverySet.member PointToThingsOfInterest) signs
-    , useShortPhrases = Maybe.map (EverySet.member UseShortPhrases) signs
-    , interestedInOtherChildren = Maybe.map (EverySet.member InterestedInOtherChildren) signs
-    , followSimlpeInstructions = Maybe.map (EverySet.member FollowSimpleInstructions) signs
-    , kickBall = Maybe.map (EverySet.member KickBall) signs
-    , pointAtNamedObjects = Maybe.map (EverySet.member PointAtNamedObjects) signs
-    , dressThemselves = Maybe.map (EverySet.member DressThemselves) signs
-    , washHandsGoToToiled = Maybe.map (EverySet.member WashHandsGoToToiled) signs
-    , knowsColorsAndNumbers = Maybe.map (EverySet.member KnowsColorsAndNumbers) signs
-    , useMediumPhrases = Maybe.map (EverySet.member UseMediumPhrases) signs
-    , playMakeBelieve = Maybe.map (EverySet.member PlayMakeBelieve) signs
-    , followThreeStepInstructions = Maybe.map (EverySet.member FollowThreeStepInstructions) signs
-    , standOnOneFootFiveSeconds = Maybe.map (EverySet.member StandOnOneFootFiveSeconds) signs
-    , useLongPhrases = Maybe.map (EverySet.member UseLongPhrases) signs
-    , shareWithOtherChildren = Maybe.map (EverySet.member ShareWithOtherChildren) signs
-    , countToTen = Maybe.map (EverySet.member CountToTen) signs
-    }
 
 
 wellChildECDFormWithDefault : WellChildECDForm -> Maybe (EverySet ECDSign) -> WellChildECDForm
@@ -746,7 +764,12 @@ generateSuggestedVaccinations currentDate isChw assembled =
 {-| For each type of vaccine, we generate next dose and administration date.
 If there's no need for future vaccination, Nothing is returned.
 -}
-generateFutureVaccinationsData : NominalDate -> Person -> Bool -> VaccinationProgressDict -> List ( WellChildVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData :
+    NominalDate
+    -> Person
+    -> Bool
+    -> VaccinationProgressDict
+    -> List ( WellChildVaccineType, Maybe ( VaccineDose, NominalDate ) )
 generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vaccinationProgress =
     let
         initialOpvAdministered =

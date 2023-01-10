@@ -11,8 +11,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
-recordPreganancyInitiatorToUrlFragmemt : RecordPreganancyInitiator -> String
-recordPreganancyInitiatorToUrlFragmemt initiator =
+recordPreganancyInitiatorToUrlFragment : RecordPreganancyInitiator -> String
+recordPreganancyInitiatorToUrlFragment initiator =
     case initiator of
         InitiatorParticipantPage ->
             "participant-page"
@@ -24,8 +24,8 @@ recordPreganancyInitiatorToUrlFragmemt initiator =
             "postpartum-encounter-" ++ fromEntityUuid encounterId
 
 
-recordPreganancyInitiatorFromUrlFragmemt : String -> Maybe RecordPreganancyInitiator
-recordPreganancyInitiatorFromUrlFragmemt s =
+recordPreganancyInitiatorFromUrlFragment : String -> Maybe RecordPreganancyInitiator
+recordPreganancyInitiatorFromUrlFragment s =
     case s of
         "participant-page" ->
             Just InitiatorParticipantPage
@@ -44,8 +44,8 @@ recordPreganancyInitiatorFromUrlFragmemt s =
                 Nothing
 
 
-progressReportInitiatorToUrlFragmemt : PrenatalProgressReportInitiator -> String
-progressReportInitiatorToUrlFragmemt initiator =
+progressReportInitiatorToUrlFragment : PrenatalProgressReportInitiator -> String
+progressReportInitiatorToUrlFragment initiator =
     case initiator of
         InitiatorEncounterPage encounterId ->
             "encounter-page-" ++ fromEntityUuid encounterId
@@ -60,8 +60,8 @@ progressReportInitiatorToUrlFragmemt initiator =
             "patient-record-" ++ fromEntityUuid personId
 
 
-progressReportInitiatorFromUrlFragmemt : String -> Maybe PrenatalProgressReportInitiator
-progressReportInitiatorFromUrlFragmemt s =
+progressReportInitiatorFromUrlFragment : String -> Maybe PrenatalProgressReportInitiator
+progressReportInitiatorFromUrlFragment s =
     if String.startsWith "encounter-page-" s then
         String.dropLeft (String.length "encounter-page-") s
             |> toEntityUuid

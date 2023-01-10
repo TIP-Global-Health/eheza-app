@@ -47,3 +47,6 @@ update msg model =
                         |> Maybe.withDefault { model | components = Nothing }
             in
             ( updatedModel, Cmd.none, [] )
+
+        SetReportTab tab ->
+            ( { model | reportTab = tab }, Cmd.none, [] )
