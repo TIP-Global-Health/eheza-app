@@ -231,6 +231,42 @@ function hedley_ncd_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_hba1c_result'.
+  $field_bases['field_hba1c_result'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_hba1c_result',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_hdl_cholesterol'.
+  $field_bases['field_hdl_cholesterol'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_hdl_cholesterol',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
   // Exported field_base: 'field_heart_problem_predecessors'.
   $field_bases['field_heart_problem_predecessors'] = array(
     'active' => 1,
@@ -285,6 +321,24 @@ function hedley_ncd_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_ldl_cholesterol'.
+  $field_bases['field_ldl_cholesterol'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_ldl_cholesterol',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
   );
 
   // Exported field_base: 'field_medical_conditions'.
@@ -633,6 +687,24 @@ function hedley_ncd_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_total_cholesterol'.
+  $field_bases['field_total_cholesterol'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_total_cholesterol',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
   // Exported field_base: 'field_treating_diabetes'.
   $field_bases['field_treating_diabetes'] = array(
     'active' => 1,
@@ -686,6 +758,50 @@ function hedley_ncd_field_default_field_bases() {
         'beta-blockers' => 'BetaBlockers',
         'hydralazine' => 'Hydralazine',
         'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_triglycerides'.
+  $field_bases['field_triglycerides'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_triglycerides',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_unit_of_measurement'.
+  $field_bases['field_unit_of_measurement'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_unit_of_measurement',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'mmol-L' => 'mmol/L',
+        'mg-dL' => 'mg/dL',
       ),
       'allowed_values_function' => '',
     ),

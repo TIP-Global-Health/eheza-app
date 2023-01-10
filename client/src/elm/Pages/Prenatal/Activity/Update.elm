@@ -283,7 +283,7 @@ update language currentDate id db msg model =
         SetLmpRange value ->
             let
                 range =
-                    decodeLmpRange value
+                    lmpRangeFromString value
 
                 updatedForm =
                     model.pregnancyDatingData.form
@@ -642,9 +642,13 @@ update language currentDate id db msg model =
 
         SetOutsideCareStep step ->
             let
+                updatedForm =
+                    model.historyData.outsideCareForm
+                        |> (\form -> { form | step = step })
+
                 updatedData =
                     model.historyData
-                        |> (\data -> { data | outsideCareStep = step })
+                        |> (\data -> { data | outsideCareForm = updatedForm })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -2537,6 +2541,23 @@ update language currentDate id db msg model =
 
                 updatedForm =
                     { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetRandomBloodSugarResult value ->
+            let
+                form =
+                    model.laboratoryData.randomBloodSugarTestForm
+
+                updatedForm =
+                    { form | sugarCount = String.toFloat value, sugarCountDirty = True }
 
                 updatedData =
                     model.laboratoryData

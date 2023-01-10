@@ -389,7 +389,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                         |> List.map
                             (\range ->
                                 option
-                                    [ value (encodeLmpRange range)
+                                    [ value (lmpRangeToString range)
                                     , selected (form.lmpRange == Just range)
                                     ]
                                     [ text <| translate language <| Translate.LmpRange range ]
@@ -595,7 +595,7 @@ viewHistoryContent language currentDate assembled data =
                 |> outsideCareFormWithDefault data.outsideCareForm
 
         ( outsideCareInputs, outsideCareTasks ) =
-            case data.outsideCareStep of
+            case outsideCareForm.step of
                 OutsideCareStepDiagnoses ->
                     ( outsideCareInputsStep1, outsideCareTasksStep1 )
 
@@ -779,7 +779,7 @@ viewHistoryContent language currentDate assembled data =
                                             saveAction =
                                                 SaveOutsideCare assembled.participant.person assembled.measurements.outsideCare nextTask
                                         in
-                                        case data.outsideCareStep of
+                                        case outsideCareForm.step of
                                             OutsideCareStepDiagnoses ->
                                                 let
                                                     actionMsg =
@@ -805,7 +805,7 @@ viewHistoryContent language currentDate assembled data =
                                 [ ( "actions", True )
                                 , ( "two"
                                   , (task == Obstetric && data.obstetricHistoryStep == ObstetricHistorySecondStep)
-                                        || (task == OutsideCare && data.outsideCareStep == OutsideCareStepMedications)
+                                        || (task == OutsideCare && outsideCareForm.step == OutsideCareStepMedications)
                                   )
                                 ]
                             ]
@@ -3687,6 +3687,7 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
                     , setRandomBloodSugarTestExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
                     , setRandomBloodSugarTestDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                    , setRandomBloodSugarResultMsg = SetRandomBloodSugarResult
                     , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
                     , setHIVPCRTestExecutionDateMsg = SetHIVPCRTestExecutionDate
                     , setHIVPCRTestDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
@@ -3702,7 +3703,7 @@ viewLabsHistoryForm language currentDate assembled form =
                 |> div [ class "history-entries" ]
 
         input =
-            [ viewQuestionLabel language Translate.PrenatalLabsHistoryCompletedQuestion
+            [ viewQuestionLabel language Translate.LabsHistoryCompletedQuestion
             , viewBoolInput
                 language
                 form.completed
@@ -3732,8 +3733,8 @@ viewLabsHistoryForm language currentDate assembled form =
                 ]
     in
     ( div [ class "ui form laboratory labs-history" ] <|
-        [ viewCustomLabel language Translate.PrenatalLabsHistoryLabel "." "label"
-        , viewCustomLabel language Translate.PrenatalLabsHistoryInstructions "." "instructions"
+        [ viewCustomLabel language Translate.LabsHistoryCompletedQuestion "." "label"
+        , viewCustomLabel language Translate.LabsHistoryCompletedQuestion "." "instructions"
         ]
             ++ (entries :: input)
     , taskCompleted form.completed

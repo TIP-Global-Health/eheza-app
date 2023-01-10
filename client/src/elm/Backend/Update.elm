@@ -2273,6 +2273,21 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
+                [ NCDLipidPanelTestRevision uid data ] ->
+                    let
+                        ( newModel, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestLipidPanel
+                                data.value.executionNote
+                                (isJust data.value.totalCholesterolResult)
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults
+                    )
+
                 _ ->
                     let
                         ( newModel, recalculateEditableSessions ) =
@@ -3434,6 +3449,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
+        GroupNCDARevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | ncda = Dict.insert uuid data measurements.ncda })
+                model
+            , True
+            )
+
         GroupSendToHCRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
@@ -3640,6 +3663,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        NCDHbA1cTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hba1cTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NCDHealthEducationRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
@@ -3657,9 +3688,24 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         NCDLabsResultsRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | ncdLabs = Dict.insert uuid data measurements.ncdLabs })
+                        model
+            in
             ( mapNCDMeasurements
                 data.encounterId
                 (\measurements -> { measurements | labsResults = Just ( uuid, data ) })
+                modelWithMappedFollowUp
+            , recalc
+            )
+
+        NCDLipidPanelTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | lipidPanelTest = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3846,6 +3892,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapNutritionMeasurements
                 data.encounterId
                 (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NutritionNCDARevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -4439,6 +4493,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        WellChildNCDARevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildNextVisitRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -4643,7 +4705,7 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                     []
 
                 else
-                    -- Here we know that trigger for update cam form another encounter.
+                    -- Here we know that trigger for update came form another encounter.
                     -- Therefore, we only need to perform actions for that originating encounter.
                     Maybe.map
                         (\( originatingEncounterId, targetDiagnoses ) ->

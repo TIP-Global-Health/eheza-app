@@ -10,15 +10,22 @@ import Backend.NCDActivity.Utils exposing (getAllActivities)
 import Backend.NCDEncounter.Types exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
+import Date
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
-import Measurement.Utils exposing (corePhysicalExamFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils
+    exposing
+        ( corePhysicalExamFormWithDefault
+        , isTestResultValid
+        , resolveLabTestDate
+        , vitalsFormWithDefault
+        )
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Model exposing (..)
@@ -59,10 +66,15 @@ expectActivity currentDate assembled activity =
             isPersonAFertileWoman currentDate assembled.person
 
         MedicalHistory ->
-            True
+            -- Only for first encounter.
+            List.isEmpty assembled.previousEncountersData
 
         Laboratory ->
             True
+
+        OutsideCare ->
+            -- For subsequent encounters.
+            not <| List.isEmpty assembled.previousEncountersData
 
         NextSteps ->
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
@@ -98,6 +110,9 @@ activityCompleted currentDate assembled activity =
 
         Laboratory ->
             List.all (laboratoryTaskCompleted currentDate assembled) laboratoryTasks
+
+        OutsideCare ->
+            isJust assembled.measurements.outsideCare
 
         NextSteps ->
             resolveNextStepsTasks currentDate assembled
@@ -782,28 +797,88 @@ outsideCareDiagnosesRightColumn =
 
 expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
 expectLaboratoryTask currentDate assembled task =
+    let
+        testsDates =
+            generatePreviousLaboratoryTestsDatesDict currentDate assembled
+
+        initialTestRequired test =
+            Dict.get test testsDates
+                |> Maybe.map List.isEmpty
+                |> Maybe.withDefault True
+
+        recurrentTestRequired period test =
+            Dict.get test testsDates
+                |> Maybe.andThen
+                    (List.sortWith Date.compare
+                        >> List.reverse
+                        >> List.head
+                        >> Maybe.map (\lastTestDate -> diffMonths lastTestDate currentDate >= period)
+                    )
+                |> Maybe.withDefault True
+    in
     case task of
         TaskRandomBloodSugarTest ->
             True
 
         TaskUrineDipstickTest ->
-            True
+            recurrentTestRequired 12 TaskUrineDipstickTest
 
         TaskHIVTest ->
-            True
+            let
+                notKnownAsPositive =
+                    List.filter
+                        (.measurements
+                            >> .hivTest
+                            >> getMeasurementValueFunc
+                            >> Maybe.map (.executionNote >> (==) TestNoteKnownAsPositive)
+                            >> Maybe.withDefault False
+                        )
+                        assembled.previousEncountersData
+                        |> List.isEmpty
+            in
+            notKnownAsPositive && initialTestRequired TaskHIVTest
 
         TaskPregnancyTest ->
             isPersonAFertileWoman currentDate assembled.person
+                && initialTestRequired TaskPregnancyTest
 
         TaskCreatinineTest ->
-            True
+            recurrentTestRequired 12 TaskCreatinineTest
 
         TaskLiverFunctionTest ->
-            True
+            recurrentTestRequired 12 TaskLiverFunctionTest
+
+        TaskLipidPanelTest ->
+            recurrentTestRequired 12 TaskLiverFunctionTest
+
+        TaskHbA1cTest ->
+            recurrentTestRequired 6 TaskHbA1cTest
 
         -- Others are not in use at NCD.
         _ ->
             False
+
+
+generatePreviousLaboratoryTestsDatesDict : NominalDate -> AssembledData -> Dict LaboratoryTask (List NominalDate)
+generatePreviousLaboratoryTestsDatesDict currentDate assembled =
+    let
+        generateTestDates getMeasurementFunc resultsExistFunc resultsValidFunc =
+            List.filterMap
+                (.measurements
+                    >> getMeasurementFunc
+                    >> resolveLabTestDate currentDate resultsExistFunc resultsValidFunc
+                )
+                assembled.previousEncountersData
+    in
+    [ ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) (always True) )
+    , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) (always True) )
+    , ( TaskHIVTest, generateTestDates .hivTest (always True) isTestResultValid )
+    , ( TaskPregnancyTest, generateTestDates .pregnancyTest (.testResult >> isJust) isTestResultValid )
+    , ( TaskCreatinineTest, generateTestDates .creatinineTest (.creatinineResult >> isJust) (always True) )
+    , ( TaskLiverFunctionTest, generateTestDates .liverFunctionTest (.altResult >> isJust) (always True) )
+    , ( TaskHbA1cTest, generateTestDates .hba1cTest (.hba1cResult >> isJust) (always True) )
+    ]
+        |> Dict.fromList
 
 
 laboratoryTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool
@@ -834,6 +909,12 @@ laboratoryTaskCompleted currentDate assembled task =
         TaskLiverFunctionTest ->
             (not <| taskExpected TaskLiverFunctionTest) || isJust measurements.liverFunctionTest
 
+        TaskLipidPanelTest ->
+            (not <| taskExpected TaskLipidPanelTest) || isJust measurements.lipidPanelTest
+
+        TaskHbA1cTest ->
+            (not <| taskExpected TaskHbA1cTest) || isJust measurements.hba1cTest
+
         -- Others are not in use at NCD.
         _ ->
             False
@@ -847,6 +928,8 @@ laboratoryTasks =
     , TaskHIVTest
     , TaskPregnancyTest
     , TaskLiverFunctionTest
+    , TaskLipidPanelTest
+    , TaskHbA1cTest
     ]
 
 

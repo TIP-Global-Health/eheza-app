@@ -1,7 +1,7 @@
 module Measurement.Utils exposing (..)
 
-import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
 import AssocList as Dict exposing (Dict)
+import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
@@ -15,14 +15,15 @@ import Backend.NutritionEncounter.Utils
         , zScoreWeightForAgeModerate
         , zScoreWeightForAgeSevere
         )
-import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
+import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Backend.Session.Model exposing (EditableSession, OfflineSession)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
 import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -51,6 +52,7 @@ import Pages.Utils
         , viewMeasurementInput
         , viewQuestionLabel
         )
+import Round
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
@@ -130,6 +132,9 @@ fromChildMeasurementData data =
     , sendToHCForm =
         fromData .sendToHC (.value >> Just >> fromSendToHCValue)
             |> Maybe.withDefault emptySendToHCForm
+    , ncdaData =
+        fromData .ncda (.value >> Just >> fromNCDAValue >> (\form -> NCDAData form Nothing))
+            |> Maybe.withDefault emptyNCDAData
     }
 
 
@@ -1208,6 +1213,7 @@ outsideCareFormWithDefault form saved =
                 , syphilisMedications = or form.syphilisMedications syphilisMedications
                 , hivMedications = or form.hivMedications hivMedications
                 , anemiaMedications = or form.anemiaMedications anemiaMedications
+                , step = form.step
                 }
             )
 
@@ -1615,7 +1621,7 @@ hivTestFormWithDefault form saved =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1700,7 +1706,7 @@ malariaTestFormWithDefault form saved =
             (\value ->
                 let
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1745,7 +1751,7 @@ urineDipstickFormWithDefault form saved =
             (\value ->
                 let
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1799,7 +1805,7 @@ randomBloodSugarFormWithDefault form saved =
             (\value ->
                 let
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1807,10 +1813,15 @@ randomBloodSugarFormWithDefault form saved =
                     patientFastedValue =
                         Maybe.map (EverySet.member PrerequisiteFastFor12h)
                             value.testPrerequisites
+
+                    immediateResultValue =
+                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                            value.testPrerequisites
                 in
                 { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
                 , patientFasted = or form.patientFasted patientFastedValue
+                , immediateResult = or form.immediateResult immediateResultValue
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -1818,6 +1829,8 @@ randomBloodSugarFormWithDefault form saved =
                 , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
                 , executionDateDirty = form.executionDateDirty
                 , dateSelectorPopupState = form.dateSelectorPopupState
+                , sugarCount = maybeValueConsideringIsDirtyField form.sugarCountDirty form.sugarCount value.sugarCount
+                , sugarCountDirty = form.sugarCountDirty
                 }
             )
 
@@ -1834,20 +1847,28 @@ toRandomBloodSugarTestValue form =
         (\executionNote ->
             let
                 testPrerequisites =
-                    Maybe.map
-                        (\patientFasted ->
-                            if patientFasted then
-                                EverySet.singleton PrerequisiteFastFor12h
+                    Maybe.map2
+                        (\patientFasted immediateResult ->
+                            case ( patientFasted, immediateResult ) of
+                                ( True, True ) ->
+                                    EverySet.fromList [ PrerequisiteFastFor12h, PrerequisiteImmediateResult ]
 
-                            else
-                                EverySet.singleton NoTestPrerequisites
+                                ( True, False ) ->
+                                    EverySet.singleton PrerequisiteFastFor12h
+
+                                ( False, True ) ->
+                                    EverySet.singleton PrerequisiteImmediateResult
+
+                                ( False, False ) ->
+                                    EverySet.singleton NoTestPrerequisites
                         )
                         form.patientFasted
+                        form.immediateResult
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisites
-            , sugarCount = Nothing
+            , sugarCount = form.sugarCount
             , originatingEncounter = Nothing
             }
         )
@@ -1865,7 +1886,7 @@ pregnancyTestFormWithDefault form saved =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1917,7 +1938,7 @@ nonRDTFormWithDefault form saved =
                         List.member value.executionNote [ TestNoteKnownAsPositive ]
 
                     testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
@@ -1983,6 +2004,11 @@ toCreatinineTestValueWithEmptyResults note date =
 toLiverFunctionTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> LiverFunctionTestValue
 toLiverFunctionTestValueWithEmptyResults note date =
     LiverFunctionTestValue note date Nothing Nothing
+
+
+toLipidPanelTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> LipidPanelTestValue
+toLipidPanelTestValueWithEmptyResults note date =
+    LipidPanelTestValue note date Nothing Nothing Nothing Nothing Nothing
 
 
 viewHIVTestForm :
@@ -2294,7 +2320,7 @@ viewUrineDipstickForm language currentDate configInitial configPerformed form =
                                 [ VariantLongTest ]
                                 form.testVariant
                                 configInitial.setUrineDipstickTestVariantMsg
-                                Translate.PrenatalUrineDipstickTestVariant
+                                Translate.UrineDipstickTestVariant
                           ]
                         , taskCompleted form.testVariant
                         , 1
@@ -2344,32 +2370,60 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
                         contentAndTasksForPerformedLaboratoryTest language currentDate configPerformed TaskRandomBloodSugarTest form
 
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
+                        ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteImmediateResult
+                          , viewBoolInput
+                                language
+                                form.immediateResult
+                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , sugarCount = Nothing
+                                            , sugarCountDirty = True
+                                        }
+                                    )
+                                )
+                                "immediate-result"
+                                (Just ( Translate.PointOfCare, Translate.Lab ))
+                          , viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
                           , viewBoolInput
                                 language
                                 form.patientFasted
-                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg (\value form_ -> { form_ | patientFasted = Just value }))
+                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg
+                                    (\value form_ -> { form_ | patientFasted = Just value })
+                                )
                                 "patient-fasted"
                                 Nothing
                           ]
-                        , taskCompleted form.patientFasted
-                        , 1
+                        , taskCompleted form.patientFasted + taskCompleted form.immediateResult
+                        , 2
                         )
 
-                    testResultSection =
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
-                            []
+                            emptySection
+
+                        else if form.immediateResult == Just True then
+                            randomBloodSugarResultInputAndTask language
+                                configPerformed.setRandomBloodSugarResultMsg
+                                form.sugarCount
 
                         else
-                            [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                            ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                            , 0
+                            , 0
+                            )
                 in
                 ( testPrerequisitesSection ++ performedTestSection ++ testResultSection
-                , performedTestTasksCompleted + testPrerequisitesTasksCompleted
-                , performedTestTasksTotal + testPrerequisitesTasksTotal
+                , performedTestTasksCompleted + testPrerequisitesTasksCompleted + testResultTasksCompleted
+                , performedTestTasksTotal + testPrerequisitesTasksTotal + testResultTasksTotal
                 )
 
             else
-                ( [], 0, 0 )
+                emptySection
+
+        emptySection =
+            ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
         [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
@@ -2430,6 +2484,149 @@ viewNonRDTForm language currentDate configInitial configPerformed task form =
             ++ inputs
     , tasksCompleted
     , tasksTotal
+    )
+
+
+viewHbA1cTestForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
+    -> List NominalDate
+    -> HbA1cTestForm msg
+    -> ( Html msg, Int, Int )
+viewHbA1cTestForm language currentDate configInitial configPerformed previousTestsDates form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            if List.isEmpty previousTestsDates then
+                let
+                    updateFunc =
+                        \gotResultsPreviously form_ ->
+                            let
+                                executionNote =
+                                    if not gotResultsPreviously then
+                                        Just TestNoteToBeDoneAtHospital
+
+                                    else
+                                        Nothing
+                            in
+                            { form_
+                                | gotResultsPreviously = Just gotResultsPreviously
+                                , executionNote = executionNote
+                                , executionNoteDirty = True
+                                , executionDate = Nothing
+                                , executionDateDirty = True
+                                , hba1cResult = Nothing
+                                , hba1cResultDirty = True
+                            }
+
+                    referral =
+                        if form.gotResultsPreviously == Just False then
+                            referralMessage
+
+                        else
+                            []
+                in
+                ( [ viewQuestionLabel language Translate.GotResultsPreviouslyQuestion
+                  , viewBoolInput
+                        language
+                        form.gotResultsPreviously
+                        (configPerformed.setHbA1cTestFormBoolInputMsg updateFunc)
+                        "got-results-previously"
+                        Nothing
+                  ]
+                    ++ referral
+                , taskCompleted form.gotResultsPreviously
+                , 1
+                )
+
+            else
+                emptySection
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if (not <| List.isEmpty previousTestsDates) || form.gotResultsPreviously == Just True then
+                let
+                    ( executionDateSection, executionDateTasksCompleted, executionDateTasksTotal ) =
+                        let
+                            executionDateForView =
+                                Maybe.map formatDDMMYYYY form.executionDate
+                                    |> Maybe.withDefault ""
+
+                            dateSelectorConfig =
+                                let
+                                    dateTo =
+                                        Date.add Days -1 currentDate
+                                in
+                                { select = configPerformed.setHbA1cTestExecutionDateMsg
+                                , close = configPerformed.setHbA1cTestDateSelectorStateMsg Nothing
+                                , dateFrom = Date.add Years -5 currentDate
+                                , dateTo = dateTo
+                                , dateDefault = Just dateTo
+                                }
+                        in
+                        ( [ viewCustomLabel language Translate.HbA1cMostRecentTestResultInstruction "." "label instruction"
+                          , viewLabel language <| Translate.LaboratoryTaskDate TaskHbA1cTest
+                          , div
+                                [ class "form-input date"
+                                , onClick <| configPerformed.setHbA1cTestDateSelectorStateMsg (Just dateSelectorConfig)
+                                ]
+                                [ text executionDateForView
+                                ]
+                          , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.executionDate
+                          ]
+                        , taskCompleted form.executionDate
+                        , 1
+                        )
+
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                        if isNothing form.executionDate then
+                            emptySection
+
+                        else
+                            ( [ viewLabel language <| Translate.LaboratoryTaskResult TaskHbA1cTest
+                              , viewMeasurementInput language
+                                    form.hba1cResult
+                                    configPerformed.setHbA1cTestResultMsg
+                                    "hba1c-result"
+                                    Translate.Percentage
+                              ]
+                            , taskCompleted form.hba1cResult
+                            , 1
+                            )
+
+                    referral =
+                        Maybe.map2
+                            (\executionDate _ ->
+                                if Date.diff Months executionDate currentDate >= 6 then
+                                    referralMessage
+
+                                else
+                                    []
+                            )
+                            form.executionDate
+                            form.hba1cResult
+                            |> Maybe.withDefault []
+                in
+                ( executionDateSection ++ testResultSection ++ referral
+                , executionDateTasksCompleted + testResultTasksCompleted
+                , executionDateTasksTotal + testResultTasksTotal
+                )
+
+            else
+                emptySection
+
+        referralMessage =
+            [ viewCustomLabel language Translate.ReferToHospitalForTesting "." "label referral" ]
+
+        emptySection =
+            ( [], 0, 0 )
+    in
+    ( div [ class "ui form laboratory hba1c" ] <|
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHbA1cTest) "" "label header" ]
+            ++ initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
     )
 
 
@@ -2537,7 +2734,25 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     }
 
                 TaskRandomBloodSugarTest ->
-                    { setBoolInputMsg = config.setRandomBloodSugarTestFormBoolInputMsg boolInputUpdateFunc
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedDirty = True
+                                    , testPerformedToday = Nothing
+                                    , testPerformedTodayDirty = True
+                                    , patientFasted = Nothing
+                                    , immediateResult = Nothing
+                                    , executionNote = Nothing
+                                    , executionNoteDirty = True
+                                    , executionDate = Nothing
+                                    , executionDateDirty = True
+                                    , sugarCount = Nothing
+                                    , sugarCountDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setRandomBloodSugarTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setRandomBloodSugarTestExecutionNoteMsg
                     }
 
@@ -2559,6 +2774,17 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                 TaskLiverFunctionTest ->
                     { setBoolInputMsg = config.setLiverFunctionTestFormBoolInputMsg boolInputUpdateFunc
                     , setExecutionNoteMsg = config.setLiverFunctionTestExecutionNoteMsg
+                    }
+
+                TaskLipidPanelTest ->
+                    { setBoolInputMsg = config.setLipidPanelTestFormBoolInputMsg boolInputUpdateFunc
+                    , setExecutionNoteMsg = config.setLipidPanelTestExecutionNoteMsg
+                    }
+
+                TaskHbA1cTest ->
+                    -- Not in use, as this task got a proprietary form.
+                    { setBoolInputMsg = always config.noOpMsg
+                    , setExecutionNoteMsg = always config.noOpMsg
                     }
 
                 TaskCompletePreviousTests ->
@@ -2723,6 +2949,19 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                         , setDateSelectorStateMsg = config.setLiverFunctionTestDateSelectorStateMsg
                         }
 
+                    TaskLipidPanelTest ->
+                        { setBoolInputMsg = config.setLipidPanelTestFormBoolInputMsg boolInputUpdateFunc
+                        , setExecutionDateMsg = config.setLipidPanelTestExecutionDateMsg
+                        , setDateSelectorStateMsg = config.setLipidPanelTestDateSelectorStateMsg
+                        }
+
+                    TaskHbA1cTest ->
+                        -- Not in use, as this task got a proprietary form.
+                        { setBoolInputMsg = always config.noOpMsg
+                        , setExecutionDateMsg = always config.noOpMsg
+                        , setDateSelectorStateMsg = always config.noOpMsg
+                        }
+
                     TaskCompletePreviousTests ->
                         -- Not in use, as this task got a proprietary form.
                         { setBoolInputMsg = always config.noOpMsg
@@ -2883,6 +3122,10 @@ emptyContentAndTasksLaboratoryTestInitialConfig noOpMsg =
     , setCreatinineTestExecutionNoteMsg = always noOpMsg
     , setLiverFunctionTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setLiverFunctionTestExecutionNoteMsg = always noOpMsg
+    , setLipidPanelTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setLipidPanelTestExecutionNoteMsg = always noOpMsg
+    , setHbA1cTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHbA1cTestExecutionNoteMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -2913,6 +3156,7 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
     , setRandomBloodSugarTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setRandomBloodSugarTestExecutionDateMsg = always noOpMsg
     , setRandomBloodSugarTestDateSelectorStateMsg = always noOpMsg
+    , setRandomBloodSugarResultMsg = always noOpMsg
     , setHIVPCRTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setHIVPCRTestExecutionDateMsg = always noOpMsg
     , setHIVPCRTestDateSelectorStateMsg = always noOpMsg
@@ -2925,6 +3169,13 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
     , setLiverFunctionTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setLiverFunctionTestExecutionDateMsg = always noOpMsg
     , setLiverFunctionTestDateSelectorStateMsg = always noOpMsg
+    , setLipidPanelTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setLipidPanelTestExecutionDateMsg = always noOpMsg
+    , setLipidPanelTestDateSelectorStateMsg = always noOpMsg
+    , setHbA1cTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHbA1cTestExecutionDateMsg = always noOpMsg
+    , setHbA1cTestDateSelectorStateMsg = always noOpMsg
+    , setHbA1cTestResultMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -2970,6 +3221,12 @@ laboratoryTaskIconClass task =
 
         TaskLiverFunctionTest ->
             "liver-function"
+
+        TaskLipidPanelTest ->
+            "lipid-panel"
+
+        TaskHbA1cTest ->
+            "hba1c"
 
 
 hepatitisBResultFormWithDefault : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId
@@ -3290,6 +3547,142 @@ toLiverFunctionResultsValue form =
         form.executionNote
 
 
+lipidPanelResultFormWithDefault : LipidPanelResultForm -> Maybe LipidPanelTestValue -> LipidPanelResultForm
+lipidPanelResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    unitOfMeasurement =
+                        or form.unitOfMeasurement value.unitOfMeasurement
+
+                    resultByValue ratio maybeResult =
+                        Maybe.map2
+                            (\result unit ->
+                                case unit of
+                                    UnitMmolL ->
+                                        Round.roundNum 2 (result / ratio)
+
+                                    UnitMgdL ->
+                                        Round.roundNum 0 result
+                            )
+                            maybeResult
+                            unitOfMeasurement
+                in
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , unitOfMeasurement = unitOfMeasurement
+                , totalCholesterolResult =
+                    maybeValueConsideringIsDirtyField form.totalCholesterolResultDirty
+                        form.totalCholesterolResult
+                        (resultByValue cholesterolMmolLToMgdLRatio value.totalCholesterolResult)
+                , totalCholesterolResultDirty = form.totalCholesterolResultDirty
+                , ldlCholesterolResult =
+                    maybeValueConsideringIsDirtyField form.ldlCholesterolResultDirty
+                        form.ldlCholesterolResult
+                        (resultByValue cholesterolMmolLToMgdLRatio value.ldlCholesterolResult)
+                , ldlCholesterolResultDirty = form.ldlCholesterolResultDirty
+                , hdlCholesterolResult =
+                    maybeValueConsideringIsDirtyField form.hdlCholesterolResultDirty
+                        form.hdlCholesterolResult
+                        (resultByValue cholesterolMmolLToMgdLRatio value.hdlCholesterolResult)
+                , hdlCholesterolResultDirty = form.hdlCholesterolResultDirty
+                , triglyceridesResult =
+                    maybeValueConsideringIsDirtyField form.triglyceridesResultDirty
+                        form.triglyceridesResult
+                        (resultByValue triglyceridesMmolLToMgdLRatio value.triglyceridesResult)
+                , triglyceridesResultDirty = form.triglyceridesResultDirty
+                }
+            )
+
+
+toLipidPanelResultsValueWithDefault : Maybe LipidPanelTestValue -> LipidPanelResultForm -> Maybe LipidPanelTestValue
+toLipidPanelResultsValueWithDefault saved form =
+    lipidPanelResultFormWithDefault form saved
+        |> toLipidPanelResultsValue
+
+
+toLipidPanelResultsValue : LipidPanelResultForm -> Maybe LipidPanelTestValue
+toLipidPanelResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            let
+                resultForBackend ratio maybeResult =
+                    Maybe.map2
+                        (\unitOfMeasurement result ->
+                            case unitOfMeasurement of
+                                UnitMmolL ->
+                                    Round.roundNum 0 (result * ratio)
+
+                                UnitMgdL ->
+                                    result
+                        )
+                        form.unitOfMeasurement
+                        maybeResult
+            in
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , unitOfMeasurement = form.unitOfMeasurement
+            , totalCholesterolResult = resultForBackend cholesterolMmolLToMgdLRatio form.totalCholesterolResult
+            , ldlCholesterolResult = resultForBackend cholesterolMmolLToMgdLRatio form.ldlCholesterolResult
+            , hdlCholesterolResult = resultForBackend cholesterolMmolLToMgdLRatio form.hdlCholesterolResult
+            , triglyceridesResult = resultForBackend triglyceridesMmolLToMgdLRatio form.triglyceridesResult
+            }
+        )
+        form.executionNote
+
+
+cholesterolMmolLToMgdLRatio : Float
+cholesterolMmolLToMgdLRatio =
+    38.67
+
+
+triglyceridesMmolLToMgdLRatio : Float
+triglyceridesMmolLToMgdLRatio =
+    88.57
+
+
+hba1cTestFormWithDefault : HbA1cTestForm msg -> Maybe HbA1cTestValue -> HbA1cTestForm msg
+hba1cTestFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    gotResultsPreviouslyByValue =
+                        isJust value.executionDate
+                in
+                { gotResultsPreviously = or form.gotResultsPreviously (Just gotResultsPreviouslyByValue)
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
+                , hba1cResult = maybeValueConsideringIsDirtyField form.hba1cResultDirty form.hba1cResult value.hba1cResult
+                , hba1cResultDirty = form.hba1cResultDirty
+                }
+            )
+
+
+toHbA1cTestValueWithDefault : Maybe HbA1cTestValue -> HbA1cTestForm msg -> Maybe HbA1cTestValue
+toHbA1cTestValueWithDefault saved form =
+    hba1cTestFormWithDefault form saved
+        |> toHbA1cTestValue
+
+
+toHbA1cTestValue : HbA1cTestForm msg -> Maybe HbA1cTestValue
+toHbA1cTestValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , hba1cResult = form.hba1cResult
+            }
+        )
+        form.executionNote
+
+
 syphilisResultFormAndTasks :
     Language
     -> NominalDate
@@ -3391,16 +3784,16 @@ bloodGpRsResultFormAndTasks language currentDate setBloodGroupMsg setRhesusMsg f
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             ( viewSelectInput language
-                Translate.PrenatalLaboratoryBloodGroupTestResult
+                Translate.LaboratoryBloodGroupTestResult
                 form.bloodGroup
-                Translate.PrenatalLaboratoryBloodGroup
+                Translate.LaboratoryBloodGroup
                 bloodGroupToString
                 [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
                 setBloodGroupMsg
                 ++ viewSelectInput language
-                    Translate.PrenatalLaboratoryRhesusTestResult
+                    Translate.LaboratoryRhesusTestResult
                     form.rhesus
-                    Translate.PrenatalLaboratoryRhesus
+                    Translate.LaboratoryRhesus
                     rhesusToString
                     [ RhesusPositive, RhesusNegative ]
                     setRhesusMsg
@@ -3438,9 +3831,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                     let
                         ( commonSection, commonTasksCompleted, commonTasksTotal ) =
                             ( viewSelectInput language
-                                Translate.PrenatalLaboratoryProteinTestResult
+                                Translate.LaboratoryProteinTestResult
                                 form.protein
-                                Translate.PrenatalLaboratoryProteinValue
+                                Translate.LaboratoryProteinValue
                                 proteinValueToString
                                 [ Protein0
                                 , ProteinPlus1
@@ -3450,9 +3843,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                 ]
                                 setProteinMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryPHTestResult
+                                    Translate.LaboratoryPHTestResult
                                     form.ph
-                                    Translate.PrenatalLaboratoryPHValue
+                                    Translate.LaboratoryPHValue
                                     phValueToString
                                     [ Ph40
                                     , Ph45
@@ -3466,9 +3859,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setPHMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryGlucoseTestResult
+                                    Translate.LaboratoryGlucoseTestResult
                                     form.glucose
-                                    Translate.PrenatalLaboratoryGlucoseValue
+                                    Translate.LaboratoryGlucoseValue
                                     glucoseValueToString
                                     [ Glucose0
                                     , GlucosePlus1
@@ -3488,9 +3881,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                         VariantLongTest ->
                             ( commonSection
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryLeukocytesTestResult
+                                    Translate.LaboratoryLeukocytesTestResult
                                     form.leukocytes
-                                    Translate.PrenatalLaboratoryLeukocytesValue
+                                    Translate.LaboratoryLeukocytesValue
                                     leukocytesValueToString
                                     [ LeukocytesNegative
                                     , LeukocytesSmall
@@ -3499,9 +3892,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setLeukocytesMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryNitriteTestResult
+                                    Translate.LaboratoryNitriteTestResult
                                     form.nitrite
-                                    Translate.PrenatalLaboratoryNitriteValue
+                                    Translate.LaboratoryNitriteValue
                                     nitriteValueToString
                                     [ NitriteNegative
                                     , NitritePlus
@@ -3509,9 +3902,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setNitriteMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryUrobilinogenTestResult
+                                    Translate.LaboratoryUrobilinogenTestResult
                                     form.urobilinogen
-                                    Translate.PrenatalLaboratoryUrobilinogenValue
+                                    Translate.LaboratoryUrobilinogenValue
                                     urobilinogenValueToString
                                     [ Urobilinogen002
                                     , Urobilinogen10
@@ -3521,9 +3914,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setUrobilinogenMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryHaemoglobinTestResult
+                                    Translate.LaboratoryHaemoglobinTestResult
                                     form.haemoglobin
-                                    Translate.PrenatalLaboratoryHaemoglobinValue
+                                    Translate.LaboratoryHaemoglobinValue
                                     haemoglobinValueToString
                                     [ HaemoglobinNegative
                                     , HaemoglobinNonHemolyzedTrace
@@ -3535,9 +3928,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setHaemoglobinMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryKetoneTestResult
+                                    Translate.LaboratoryKetoneTestResult
                                     form.ketone
-                                    Translate.PrenatalLaboratoryKetoneValue
+                                    Translate.LaboratoryKetoneValue
                                     ketoneValueToString
                                     [ KetoneNegative
                                     , Ketone5
@@ -3549,9 +3942,9 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
                                     ]
                                     setKetoneMsg
                                 ++ viewSelectInput language
-                                    Translate.PrenatalLaboratoryBilirubinTestResult
+                                    Translate.LaboratoryBilirubinTestResult
                                     form.bilirubin
-                                    Translate.PrenatalLaboratoryBilirubinValue
+                                    Translate.LaboratoryBilirubinValue
                                     bilirubinValueToString
                                     [ BilirubinNegative
                                     , BilirubinSmall
@@ -3589,7 +3982,7 @@ hemoglobinResultFormAndTasks :
 hemoglobinResultFormAndTasks language currentDate setHemoglobinMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.PrenatalLaboratoryHemoglobinTestResult
+            ( [ viewLabel language Translate.LaboratoryHemoglobinTestResult
               , viewMeasurementInput language
                     form.hemoglobinCount
                     setHemoglobinMsg
@@ -3617,22 +4010,31 @@ randomBloodSugarResultFormAndTasks :
 randomBloodSugarResultFormAndTasks language currentDate setRandomBloodSugarMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.PrenatalLaboratoryRandomBloodSugarTestResult
-              , viewMeasurementInput language
-                    form.sugarCount
-                    setRandomBloodSugarMsg
-                    "sugar-count"
-                    Translate.UnitMilliGramsPerDeciliter
-              ]
-            , taskCompleted form.sugarCount
-            , 1
-            )
+            randomBloodSugarResultInputAndTask language setRandomBloodSugarMsg form.sugarCount
     in
     ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal
+    )
+
+
+randomBloodSugarResultInputAndTask :
+    Language
+    -> (String -> msg)
+    -> Maybe Float
+    -> ( List (Html msg), Int, Int )
+randomBloodSugarResultInputAndTask language setRandomBloodSugarMsg sugarCount =
+    ( [ viewLabel language Translate.LaboratoryRandomBloodSugarTestResult
+      , viewMeasurementInput language
+            sugarCount
+            setRandomBloodSugarMsg
+            "sugar-count"
+            Translate.UnitMilliGramsPerDeciliter
+      ]
+    , taskCompleted sugarCount
+    , 1
     )
 
 
@@ -3647,9 +4049,9 @@ hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoad
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             let
-                ( derrivedSection, derrivedTasksCompleted, derrivedTasksTotal ) =
+                ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
                     if form.hivViralLoadStatus == Just ViralLoadDetectable then
-                        ( [ viewLabel language Translate.PrenatalLaboratoryHIVPCRTestResult
+                        ( [ viewLabel language Translate.LaboratoryHIVPCRTestResult
                           , viewMeasurementInput language
                                 form.hivViralLoad
                                 setHIVViralLoadMsg
@@ -3663,16 +4065,16 @@ hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoad
                     else
                         ( [], 0, 0 )
             in
-            ( [ viewQuestionLabel language Translate.PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
+            ( [ viewQuestionLabel language Translate.LaboratoryHIVPCRViralLoadStatusQuestion
               , viewBoolInput language
                     (Maybe.map ((==) ViralLoadUndetectable) form.hivViralLoadStatus)
                     setHIVViralLoadUndetectableMsg
                     "hiv-level-undetectable"
                     Nothing
               ]
-                ++ derrivedSection
-            , taskCompleted form.hivViralLoadStatus + derrivedTasksCompleted
-            , 1 + derrivedTasksTotal
+                ++ derivedSection
+            , taskCompleted form.hivViralLoadStatus + derivedTasksCompleted
+            , 1 + derivedTasksTotal
             )
     in
     ( div [ class "ui form laboratory hiv-prc-result" ] <|
@@ -3753,6 +4155,89 @@ liverFunctionResultFormAndTasks language currentDate setAltResultMsg setAstResul
     )
 
 
+lipidPanelResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> LipidPanelResultForm
+    -> ( Html msg, Int, Int )
+lipidPanelResultFormAndTasks language currentDate setUnitOfMeasurementMsg setTotalCholesterolResultMsg setLDLCholesterolResultMsg setHDLCholesterolResultMsg setTriglyceridesResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            let
+                ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+                    Maybe.map
+                        (\unitOfMeasurement ->
+                            ( [ viewLabel language Translate.LaboratoryLipidPanelTotalCholesterolLabel
+                              , viewMeasurementInput language
+                                    form.totalCholesterolResult
+                                    setTotalCholesterolResultMsg
+                                    "total-cholesterol"
+                                    (Translate.UnitOfMeasurement unitOfMeasurement)
+                              , viewLabel language Translate.LaboratoryLipidPanelLDLCholesterolLabel
+                              , viewMeasurementInput language
+                                    form.ldlCholesterolResult
+                                    setLDLCholesterolResultMsg
+                                    "ldl"
+                                    (Translate.UnitOfMeasurement unitOfMeasurement)
+                              , viewLabel language Translate.LaboratoryLipidPanelHDLCholesterolLabel
+                              , viewMeasurementInput language
+                                    form.hdlCholesterolResult
+                                    setHDLCholesterolResultMsg
+                                    "hdl"
+                                    (Translate.UnitOfMeasurement unitOfMeasurement)
+                              , viewLabel language Translate.LaboratoryLipidPanelTriglyceridesLabel
+                              , viewMeasurementInput language
+                                    form.triglyceridesResult
+                                    setTriglyceridesResultMsg
+                                    "triglycerides"
+                                    (Translate.UnitOfMeasurement unitOfMeasurement)
+                              ]
+                            , taskCompleted form.totalCholesterolResult
+                                + taskCompleted form.ldlCholesterolResult
+                                + taskCompleted form.hdlCholesterolResult
+                                + taskCompleted form.triglyceridesResult
+                            , 4
+                            )
+                        )
+                        form.unitOfMeasurement
+                        |> Maybe.withDefault ( [], 0, 0 )
+            in
+            ( [ viewQuestionLabel language Translate.LaboratoryLipidPanelUnitOfMeasurementQuestion
+              , option
+                    [ value ""
+                    , selected (form.unitOfMeasurement == Nothing)
+                    ]
+                    [ text "" ]
+                    :: ([ UnitMmolL, UnitMgdL ]
+                            |> List.map
+                                (\unit ->
+                                    option
+                                        [ value (unitOfMeasurementToString unit)
+                                        , selected (form.unitOfMeasurement == Just unit)
+                                        ]
+                                        [ text <| translate language <| Translate.UnitOfMeasurement unit ]
+                                )
+                       )
+                    |> select [ onInput setUnitOfMeasurementMsg, class "form-input select unit-of-measurement" ]
+              ]
+                ++ derivedSection
+            , taskCompleted form.unitOfMeasurement + derivedTasksCompleted
+            , 1 + derivedTasksTotal
+            )
+    in
+    ( div [ class "ui form laboratory lipid-panel-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskLipidPanelTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
 resultFormHeaderSection : Language -> NominalDate -> Maybe NominalDate -> LaboratoryTask -> List (Html msg)
 resultFormHeaderSection language currentDate executionDate task =
     let
@@ -3768,6 +4253,31 @@ resultFormHeaderSection language currentDate executionDate task =
     in
     viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
         :: executionDateSection
+
+
+testPerformedByValue : Maybe { a | executionNote : TestExecutionNote } -> Bool
+testPerformedByValue =
+    Maybe.map (.executionNote >> testPerformedByExecutionNote)
+        >> Maybe.withDefault False
+
+
+testPerformedByExecutionNote : TestExecutionNote -> Bool
+testPerformedByExecutionNote executionNote =
+    List.member executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+
+
+expectRandomBloodSugarResultTask : RandomBloodSugarTestValue encounterId -> Bool
+expectRandomBloodSugarResultTask value =
+    let
+        -- It's possible to enter the result immediatly (and not from
+        -- Case management).
+        -- If this is the case, we do not expect to see results task.
+        immediateResult =
+            Maybe.map (EverySet.member PrerequisiteImmediateResult) value.testPrerequisites
+                |> Maybe.withDefault False
+    in
+    not immediateResult
+        && testPerformedByExecutionNote value.executionNote
 
 
 viewSelectInput :
@@ -3805,3 +4315,392 @@ emptyOptionForSelect value =
 
     else
         emptyNode
+
+
+fromNCDAValue : Maybe NCDAValue -> NCDAForm
+fromNCDAValue saved =
+    { step = Nothing
+    , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member NCDABornWithBirthDefect) saved
+    , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member NCDABreastfedForSixMonths) saved
+    , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member NCDAAppropriateComplementaryFeeding) saved
+    , ongeraMNP = Maybe.map (.signs >> EverySet.member NCDAOngeraMNP) saved
+    , fiveFoodGroups = Maybe.map (.signs >> EverySet.member NCDAFiveFoodGroups) saved
+    , mealFrequency6to8Months = Maybe.map (.signs >> EverySet.member NCDAMealFrequency6to8Months) saved
+    , mealFrequency9to11Months = Maybe.map (.signs >> EverySet.member NCDAMealFrequency9to11Months) saved
+    , mealFrequency12MonthsOrMore = Maybe.map (.signs >> EverySet.member NCDAMealFrequency12MonthsOrMore) saved
+    , supportChildWithDisability = Maybe.map (.signs >> EverySet.member NCDASupportChildWithDisability) saved
+    , conditionalCashTransfer = Maybe.map (.signs >> EverySet.member NCDAConditionalCashTransfer) saved
+    , conditionalFoodItems = Maybe.map (.signs >> EverySet.member NCDAConditionalFoodItems) saved
+    , hasCleanWater = Maybe.map (.signs >> EverySet.member NCDAHasCleanWater) saved
+    , hasHandwashingFacility = Maybe.map (.signs >> EverySet.member NCDAHasHandwashingFacility) saved
+    , hasToilets = Maybe.map (.signs >> EverySet.member NCDAHasToilets) saved
+    , hasKitchenGarden = Maybe.map (.signs >> EverySet.member NCDAHasKitchenGarden) saved
+    , regularPrenatalVisits = Maybe.map (.signs >> EverySet.member NCDARegularPrenatalVisits) saved
+    , ironSupplementsDuringPregnancy = Maybe.map (.signs >> EverySet.member NCDAIronSupplementsDuringPregnancy) saved
+    , insecticideTreatedBednetsDuringPregnancy = Maybe.map (.signs >> EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy) saved
+    , birthWeight = Maybe.andThen .birthWeight saved
+    }
+
+
+ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
+ncdaFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { step = form.step
+                , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member NCDABornWithBirthDefect value.signs |> Just)
+                , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member NCDABreastfedForSixMonths value.signs |> Just)
+                , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member NCDAAppropriateComplementaryFeeding value.signs |> Just)
+                , ongeraMNP = or form.ongeraMNP (EverySet.member NCDAOngeraMNP value.signs |> Just)
+                , fiveFoodGroups = or form.fiveFoodGroups (EverySet.member NCDAFiveFoodGroups value.signs |> Just)
+                , mealFrequency6to8Months = or form.mealFrequency6to8Months (EverySet.member NCDAMealFrequency6to8Months value.signs |> Just)
+                , mealFrequency9to11Months = or form.mealFrequency9to11Months (EverySet.member NCDAMealFrequency9to11Months value.signs |> Just)
+                , mealFrequency12MonthsOrMore = or form.mealFrequency12MonthsOrMore (EverySet.member NCDAMealFrequency12MonthsOrMore value.signs |> Just)
+                , supportChildWithDisability = or form.supportChildWithDisability (EverySet.member NCDASupportChildWithDisability value.signs |> Just)
+                , conditionalCashTransfer = or form.conditionalCashTransfer (EverySet.member NCDAConditionalCashTransfer value.signs |> Just)
+                , conditionalFoodItems = or form.conditionalFoodItems (EverySet.member NCDAConditionalFoodItems value.signs |> Just)
+                , hasCleanWater = or form.hasCleanWater (EverySet.member NCDAHasCleanWater value.signs |> Just)
+                , hasHandwashingFacility = or form.hasHandwashingFacility (EverySet.member NCDAHasHandwashingFacility value.signs |> Just)
+                , hasToilets = or form.hasToilets (EverySet.member NCDAHasToilets value.signs |> Just)
+                , hasKitchenGarden = or form.hasKitchenGarden (EverySet.member NCDAHasKitchenGarden value.signs |> Just)
+                , regularPrenatalVisits = or form.regularPrenatalVisits (EverySet.member NCDARegularPrenatalVisits value.signs |> Just)
+                , ironSupplementsDuringPregnancy = or form.ironSupplementsDuringPregnancy (EverySet.member NCDAIronSupplementsDuringPregnancy value.signs |> Just)
+                , insecticideTreatedBednetsDuringPregnancy = or form.insecticideTreatedBednetsDuringPregnancy (EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy value.signs |> Just)
+                , birthWeight = or form.birthWeight value.birthWeight
+                }
+            )
+
+
+toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
+toNCDAValueWithDefault saved form =
+    ncdaFormWithDefault form saved
+        |> toNCDAValue
+
+
+toNCDAValue : NCDAForm -> Maybe NCDAValue
+toNCDAValue form =
+    let
+        signs =
+            [ ifNullableTrue NCDABornWithBirthDefect form.bornWithBirthDefect
+            , ifNullableTrue NCDABreastfedForSixMonths form.breastfedForSixMonths
+            , ifNullableTrue NCDAAppropriateComplementaryFeeding form.appropriateComplementaryFeeding
+            , ifNullableTrue NCDAOngeraMNP form.ongeraMNP
+            , ifNullableTrue NCDAFiveFoodGroups form.fiveFoodGroups
+            , ifNullableTrue NCDAMealFrequency6to8Months form.mealFrequency6to8Months
+            , ifNullableTrue NCDAMealFrequency9to11Months form.mealFrequency9to11Months
+            , ifNullableTrue NCDAMealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore
+            , ifNullableTrue NCDASupportChildWithDisability form.supportChildWithDisability
+            , ifNullableTrue NCDAConditionalCashTransfer form.conditionalCashTransfer
+            , ifNullableTrue NCDAConditionalFoodItems form.conditionalFoodItems
+            , ifNullableTrue NCDAHasCleanWater form.hasCleanWater
+            , ifNullableTrue NCDAHasHandwashingFacility form.hasHandwashingFacility
+            , ifNullableTrue NCDAHasToilets form.hasToilets
+            , ifNullableTrue NCDAHasKitchenGarden form.hasKitchenGarden
+            , ifNullableTrue NCDARegularPrenatalVisits form.regularPrenatalVisits
+            , ifNullableTrue NCDAIronSupplementsDuringPregnancy form.ironSupplementsDuringPregnancy
+            , ifNullableTrue NCDAInsecticideTreatedBednetsDuringPregnancy form.insecticideTreatedBednetsDuringPregnancy
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
+    in
+    Maybe.map NCDAValue signs
+        |> andMap (Just form.birthWeight)
+
+
+{-| Whether to expect a counseling activity is not just a yes/no question,
+since we'd also like to know **which** sort of counseling activity to expect.
+I suppose we could parameterize the `Counseling` activity by
+`CounselingTiming`. However, that would be awkward in its own way, since we
+also don't want more than one in each session.
+
+So, we'll try it this way for now. We'll return `Nothing` if no kind of
+counseling activity is expected, and `Just CounselingTiming` if one is
+expected.
+
+-}
+expectCounselingActivity : EditableSession -> PersonId -> Maybe CounselingTiming
+expectCounselingActivity session childId =
+    let
+        -- First, we check our current value. If we have a counseling session
+        -- stored in the backend, or we've already got a local edit, then we
+        -- use that.  This has two benefits. First, its a kind of optimization,
+        -- since we're basically caching our conclusion about whether to
+        -- showing the counseling activity or not. Second, it provides some UI
+        -- stability ...  once we show the counseling activity and the user
+        -- checks some boxes, it ensures that we'll definitely keep showing
+        -- that one, and not switch to something else.
+        cachedTiming =
+            getChildMeasurementData childId session
+                |> LocalData.toMaybe
+                |> Maybe.andThen
+                    (mapMeasurementData .counselingSession
+                        >> currentValue
+                        >> Maybe.map (.value >> Tuple.first)
+                    )
+
+        -- All the counseling session records from the past
+        historical =
+            getChildHistoricalMeasurements childId session.offlineSession
+                |> LocalData.map .counselingSessions
+                |> LocalData.withDefault Dict.empty
+
+        -- Have we ever completed a counseling session of the specified type?
+        completed timing =
+            historical
+                |> Dict.toList
+                |> List.any
+                    (\( _, counseling ) -> Tuple.first counseling.value == timing)
+
+        -- How long ago did we complete a session of the specified type?
+        completedDaysAgo timing =
+            historical
+                |> Dict.filter (\_ counseling -> Tuple.first counseling.value == timing)
+                |> Dict.toList
+                |> List.head
+                |> Maybe.map (\( _, counseling ) -> diffDays counseling.dateMeasured session.offlineSession.session.startDate)
+
+        -- How old will the child be as of the scheduled date of the session?
+        -- (All of our date calculations are in days here).
+        --
+        -- It simplifies the rest of the calculation if we avoid making this a
+        -- `Maybe`. We've got bigger problems if the session doesn't actually
+        -- contain the child, so it should be safe to default the age to 0.
+        age =
+            getChild childId session.offlineSession
+                |> Maybe.andThen
+                    (\child ->
+                        Maybe.map
+                            (\birthDate -> diffDays birthDate session.offlineSession.session.startDate)
+                            child.birthDate
+                    )
+                |> Maybe.withDefault 0
+
+        -- We don't necessarily know when the next session will be scheduled,
+        -- so we work on the assumption that it will be no more than 6 weeks
+        -- from this session (so, 42 days).
+        maximumSessionGap =
+            42
+
+        -- For the reminder, which isn't as critical, we apply the normal
+        -- session gap of 32 days. This reduces the frequence of cases where we
+        -- issue the reminder super-early, at the cost of some cases where we
+        -- might issue no reminder (which is less serious).
+        normalSessionGap =
+            32
+
+        -- To compute a two-month gap, we use one normal and one maximum
+        twoMonthGap =
+            normalSessionGap + maximumSessionGap
+
+        -- To compute a three month gap, we use two normals and one maximum
+        threeMonthGap =
+            (normalSessionGap * 2) + maximumSessionGap
+
+        -- In how many days (from the session date) will the child be 2 years
+        -- old?
+        daysUntilTwoYearsOld =
+            (365 * 2) - age
+
+        -- In how many days (from the session date) will the child be 1 year
+        -- old?
+        daysUntilOneYearOld =
+            365 - age
+
+        -- If we don't have a value already, we apply our basic logic, but
+        -- lazily, so we make this a function. Here's a summary of our design
+        -- goals, which end up having a number of parts.
+        --
+        -- - Definitely show the counseling activity before the relevant
+        --   anniversary, using the assumption that the next session will be no
+        --   more than 6 weeks away.
+        --
+        -- - Try to avoid showing counseling activities with no reminders, but
+        --   do it without a reminder if necessary.
+        --
+        -- - Once we show a reminder, always show the counseling activity in
+        --   the next session, even if it now seems a bit early (to avoid double
+        --   reminders).
+        --
+        -- - Always show the entry counseling if it hasn't been done, unless
+        --   we've already reached exit counseling.
+        --
+        -- - Make sure that there is a bit of a delay between entry counseling
+        --   and midpoint counseling (for cases where a baby starts late).
+        checkTiming _ =
+            if completed Exit then
+                -- If exit counseling has been done, then we need no more
+                -- counseling
+                Nothing
+
+            else if completed BeforeExit then
+                -- If we've given the exit reminder, then show the exit
+                -- counseling now, even if it seems a bit early.
+                Just Exit
+
+            else if daysUntilTwoYearsOld < maximumSessionGap then
+                -- If we can't be sure we'll have another session before the
+                -- baby is two, then show the exit counseling
+                Just Exit
+
+            else if not (completed Entry) then
+                -- If we haven't done entry counseling, then we always need to
+                -- do it
+                Just Entry
+
+            else if completed MidPoint then
+                -- If we have already done the MidPoint counseling, then the
+                -- only thing left to consider is whether to show the Exit
+                -- reminder
+                if daysUntilTwoYearsOld < twoMonthGap then
+                    Just BeforeExit
+
+                else
+                    Nothing
+
+            else if completed BeforeMidpoint then
+                -- If we've given the midpoint warning, then show it, even if
+                -- it seems a bit early now.
+                Just MidPoint
+
+            else if daysUntilOneYearOld < maximumSessionGap then
+                -- If we can't be sure we'll have another session before the
+                -- baby is one year old, we show the exit counseling. Except,
+                -- we also check to see whether we've done entry counseling
+                -- recently ...  so that we'll always have a bit of a gap.
+                case completedDaysAgo Entry of
+                    Just daysAgo ->
+                        if daysAgo < threeMonthGap then
+                            -- We're forcing the midpoint counseling to be
+                            -- roungly 3 months after the entry counseling. So,
+                            -- the ideal sequence would be:
+                            --
+                            -- entry -> Nothing -> Rminder MidPoint -> MidPoint
+                            if daysAgo < twoMonthGap then
+                                Nothing
+
+                            else
+                                Just BeforeMidpoint
+
+                        else
+                            Just MidPoint
+
+                    Nothing ->
+                        Just MidPoint
+
+            else if daysUntilOneYearOld < twoMonthGap then
+                -- If we think we'll do the midpoint counseling at the next
+                -- session, show the reminder. Except, again, we try to force a
+                -- bit of separation between Entry and the Midpoint.
+                case completedDaysAgo Entry of
+                    Just daysAgo ->
+                        if daysAgo < twoMonthGap then
+                            -- We're forcing the reminder for midpoint
+                            -- counseling to be roughtly 2 months after the
+                            -- entry counseling.
+                            Nothing
+
+                        else
+                            Just BeforeMidpoint
+
+                    Nothing ->
+                        Just BeforeMidpoint
+
+            else
+                Nothing
+    in
+    cachedTiming
+        |> Maybe.Extra.orElseLazy checkTiming
+
+
+{-| Which participant forms would we expect this mother to consent to in this session?
+-}
+expectParticipantConsent : OfflineSession -> PersonId -> Dict ParticipantFormId ParticipantForm
+expectParticipantConsent session motherId =
+    let
+        previouslyConsented =
+            getMotherHistoricalMeasurements motherId session
+                |> LocalData.map
+                    (.consents
+                        >> Dict.map (\_ consent -> consent.value.formId)
+                        >> Dict.values
+                        >> EverySet.fromList
+                    )
+                |> LocalData.withDefault EverySet.empty
+
+        consentedAtCurrentSession =
+            getMotherMeasurementData2 motherId session
+                |> LocalData.map
+                    (.current
+                        >> .consent
+                        >> Dict.map (\_ consent -> consent.value.formId)
+                        >> Dict.values
+                        >> EverySet.fromList
+                    )
+                |> LocalData.withDefault EverySet.empty
+
+        consentedAtPreviousSessions =
+            EverySet.diff previouslyConsented consentedAtCurrentSession
+    in
+    session.allParticipantForms
+        |> Dict.filter (\id _ -> not (EverySet.member id consentedAtPreviousSessions))
+
+
+resolveLabTestDate :
+    NominalDate
+    -> ({ v | executionNote : TestExecutionNote, executionDate : Maybe NominalDate } -> Bool)
+    -> ({ v | executionNote : TestExecutionNote, executionDate : Maybe NominalDate } -> Bool)
+    ->
+        Maybe
+            ( id
+            , { m
+                | dateMeasured : NominalDate
+                , value : { v | executionNote : TestExecutionNote, executionDate : Maybe NominalDate }
+              }
+            )
+    -> Maybe NominalDate
+resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
+    let
+        dateMeasured =
+            -- Date on which test was recorded.
+            -- Note that this is not the date when test was performed,
+            -- because it's possible to set past date for that.
+            -- We need the recorded date, because the logic says that
+            -- test that will not have results set for over 35 days is expired.
+            -- Can default to current date, because we use it only when there's
+            -- measurement value, and this means that there must be dateMeasured set.
+            Maybe.map (Tuple.second >> .dateMeasured) measurement
+                |> Maybe.withDefault currentDate
+    in
+    getMeasurementValueFunc measurement
+        |> Maybe.andThen
+            (\value ->
+                if testPerformedByExecutionNote value.executionNote then
+                    if resultsExistFunc value && (not <| resultsValidFunc value) then
+                        -- Entered result is not valid, therefore,
+                        -- we treat the test as if it was not performed.
+                        Nothing
+
+                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
+                        -- No results were entered for more than 35 days since the
+                        -- day on which measurement was taken.
+                        -- Test is considered expired, and is being ignored
+                        -- (as if it was never performed).
+                        Nothing
+
+                    else
+                        value.executionDate
+
+                else
+                    Nothing
+            )
+
+
+isTestResultValid : { a | testResult : Maybe TestResult } -> Bool
+isTestResultValid =
+    .testResult
+        >> Maybe.map ((/=) TestIndeterminate)
+        >> -- In case test result was not set yet, we consider
+           -- it to be valid, because results for some test are
+           -- updated after few hours, or even days.
+           Maybe.withDefault True

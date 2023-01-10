@@ -418,6 +418,7 @@ type Revision
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | FollowUpRevision FollowUpId FollowUp
     | GroupHealthEducationRevision GroupHealthEducationId GroupHealthEducation
+    | GroupNCDARevision GroupNCDAId GroupNCDA
     | GroupSendToHCRevision GroupSendToHCId GroupSendToHC
     | HCContactRevision HCContactId HCContact
     | HealthCenterRevision HealthCenterId HealthCenter
@@ -442,9 +443,11 @@ type Revision
     | NCDEncounterRevision NCDEncounterId NCDEncounter
     | NCDFamilyHistoryRevision NCDFamilyHistoryId NCDFamilyHistory
     | NCDFamilyPlanningRevision NCDFamilyPlanningId NCDFamilyPlanning
+    | NCDHbA1cTestRevision NCDHbA1cTestId NCDHbA1cTest
     | NCDHealthEducationRevision NCDHealthEducationId NCDHealthEducation
     | NCDHIVTestRevision NCDHIVTestId NCDHIVTest
     | NCDLabsResultsRevision NCDLabsResultsId NCDLabsResults
+    | NCDLipidPanelTestRevision NCDLipidPanelTestId NCDLipidPanelTest
     | NCDLiverFunctionTestRevision NCDLiverFunctionTestId NCDLiverFunctionTest
     | NCDMedicationDistributionRevision NCDMedicationDistributionId NCDMedicationDistribution
     | NCDMedicationHistoryRevision NCDMedicationHistoryId NCDMedicationHistory
@@ -467,6 +470,7 @@ type Revision
     | NutritionHeightRevision NutritionHeightId NutritionHeight
     | NutritionHygieneRevision NutritionHygieneId NutritionHygiene
     | NutritionMuacRevision NutritionMuacId NutritionMuac
+    | NutritionNCDARevision NutritionNCDAId NutritionNCDA
     | NutritionNutritionRevision NutritionNutritionId NutritionNutrition
     | NutritionPhotoRevision NutritionPhotoId NutritionPhoto
     | NutritionSendToHCRevision NutritionSendToHCId NutritionSendToHC
@@ -533,6 +537,7 @@ type Revision
     | WellChildMebendezoleRevision WellChildMebendezoleId WellChildMebendezole
     | WellChildMRImmunisationRevision WellChildMRImmunisationId WellChildMRImmunisation
     | WellChildMuacRevision WellChildMuacId WellChildMuac
+    | WellChildNCDARevision WellChildNCDAId WellChildNCDA
     | WellChildNextVisitRevision WellChildNextVisitId WellChildNextVisit
     | WellChildNutritionRevision WellChildNutritionId WellChildNutrition
     | WellChildOPVImmunisationRevision WellChildOPVImmunisationId WellChildOPVImmunisation

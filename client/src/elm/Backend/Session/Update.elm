@@ -44,6 +44,9 @@ update nurseId sessionId maybeSession currentDate db msg model =
 
         MeasurementOutMsgChild personId subMsg ->
             case subMsg of
+                NoOp ->
+                    ( model, Cmd.none, [] )
+
                 FetchIndividualNutritionData id ->
                     ( model, Cmd.none, Backend.NutritionEncounter.Fetch.fetch id db )
 
@@ -110,6 +113,12 @@ update nurseId sessionId maybeSession currentDate db msg model =
                 SaveSendToHC valueId value ->
                     ( { model | saveSendToHCRequest = Dict.insert personId Loading model.saveSendToHCRequest }
                     , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupSendToHCEndpoint (HandleSaveSendToHC personId)
+                    , []
+                    )
+
+                SaveNCDA valueId value ->
+                    ( { model | saveNCDARequest = Dict.insert personId Loading model.saveNCDARequest }
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupNCDAEndpoint (HandleSaveNCDA personId)
                     , []
                     )
 
@@ -241,6 +250,12 @@ update nurseId sessionId maybeSession currentDate db msg model =
 
         HandleSaveSendToHC personId data ->
             ( { model | saveSendToHCRequest = Dict.insert personId data model.saveSendToHCRequest }
+            , bindDropZone ()
+            , []
+            )
+
+        HandleSaveNCDA personId data ->
+            ( { model | saveNCDARequest = Dict.insert personId data model.saveNCDARequest }
             , bindDropZone ()
             , []
             )

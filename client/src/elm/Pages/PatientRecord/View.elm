@@ -43,7 +43,7 @@ import Pages.Utils
         , viewStartEncounterButton
         )
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
-import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading, viewProgressReport)
+import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage, viewModal)
@@ -103,9 +103,7 @@ viewHeader language model =
             [ class "link-back"
             , onClick backAction
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 
@@ -152,6 +150,9 @@ viewStartEncounterPage language currentDate isChw personId person patientType in
 viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
 viewContentForChild language currentDate zscores childId child isChw initiator db model =
     let
+        wellChildReportInitiator =
+            Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId
+
         bottomActionData =
             Just <|
                 { showEndEncounterDialog = False
@@ -161,15 +162,17 @@ viewContentForChild language currentDate zscores childId child isChw initiator d
                 , startEncounterMsg = SetViewMode ViewStartEncounter
                 }
     in
-    viewProgressReport language
+    Pages.WellChild.ProgressReport.View.viewProgressReport language
         currentDate
         zscores
         isChw
-        (Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId)
+        wellChildReportInitiator
         False
         db
         model.diagnosisMode
+        model.spvReportTab
         SetActivePage
+        SetSPVReportTab
         SetDiagnosisMode
         bottomActionData
         ( childId, child )
@@ -210,6 +213,7 @@ viewContentForOther language currentDate isChw personId person patientType initi
                     viewFamilyPlanningPane language currentDate personId (List.map Tuple.first pregnancies) db
 
                 FilterDemographics ->
+                    -- Demographics report got dedicated page.
                     emptyNode
     in
     div [ class "page-activity patient-record" ]
@@ -353,7 +357,7 @@ viewFilters language person patientType model =
         renderButton filter =
             button
                 [ classList
-                    [ ( "active", model.filter == filter )
+                    [ ( "active", filter == model.filter )
                     , ( "primary ui button", True )
                     ]
                 , onClick <| SetFilter filter
@@ -361,24 +365,28 @@ viewFilters language person patientType model =
                 [ translateText language <| Translate.PatientRecordFilter filter ]
 
         patientRecordFilters =
-            case person.gender of
-                Male ->
+            case patientType of
+                PatientChild ->
+                    []
+
+                PatientAdult ->
+                    case person.gender of
+                        Male ->
+                            [ FilterAcuteIllness
+                            , FilterDemographics
+                            ]
+
+                        Female ->
+                            [ FilterAcuteIllness
+                            , FilterAntenatal
+                            , FilterFamilyPlanning
+                            , FilterDemographics
+                            ]
+
+                PatientUnknown ->
                     [ FilterAcuteIllness
                     , FilterDemographics
                     ]
-
-                Female ->
-                    if patientType == PatientAdult then
-                        [ FilterAcuteIllness
-                        , FilterAntenatal
-                        , FilterFamilyPlanning
-                        , FilterDemographics
-                        ]
-
-                    else
-                        [ FilterAcuteIllness
-                        , FilterDemographics
-                        ]
     in
     List.map renderButton patientRecordFilters
         |> div [ class "ui segment filters" ]

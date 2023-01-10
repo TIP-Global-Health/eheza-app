@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
-import Backend.Person.Utils exposing (isAdult)
+import Backend.Person.Utils exposing (ageInMonths, isAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Date
 import EverySet exposing (EverySet)
@@ -163,6 +163,9 @@ splitChildMeasurements sessionId =
 
                 sendToHC =
                     getCurrentAndPrevious sessionId list.sendToHC
+
+                ncda =
+                    getCurrentAndPrevious sessionId list.ncda
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
@@ -210,6 +213,10 @@ splitChildMeasurements sessionId =
                     sendToHC.current
                         |> Dict.toList
                         |> List.head
+                , ncda =
+                    ncda.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 { height = height.previous
@@ -223,6 +230,7 @@ splitChildMeasurements sessionId =
                 , followUp = followUp.previous
                 , healthEducation = healthEducation.previous
                 , sendToHC = sendToHC.previous
+                , ncda = ncda.previous
                 }
             }
         )
@@ -3359,6 +3367,9 @@ laboratoryTestToString value =
         TestLiverFunction ->
             "liver-function"
 
+        TestLipidPanel ->
+            "lipid-panel"
+
 
 laboratoryTestFromString : String -> Maybe LaboratoryTest
 laboratoryTestFromString value =
@@ -3392,6 +3403,9 @@ laboratoryTestFromString value =
 
         "liver-function" ->
             Just TestLiverFunction
+
+        "lipid-panel" ->
+            Just TestLipidPanel
 
         _ ->
             Nothing
@@ -3520,4 +3534,160 @@ diabetesBySugarCount value =
 diabetesByUrineGlucose : UrineDipstickTestValue -> Bool
 diabetesByUrineGlucose value =
     Maybe.map (\glucose -> List.member glucose [ GlucosePlus2, GlucosePlus3, GlucosePlus4 ]) value.glucose
+        |> Maybe.withDefault False
+
+
+unitOfMeasurementToString : UnitOfMeasurement -> String
+unitOfMeasurementToString value =
+    case value of
+        UnitMmolL ->
+            "mmol-L"
+
+        UnitMgdL ->
+            "mg-dL"
+
+
+unitOfMeasurementFromString : String -> Maybe UnitOfMeasurement
+unitOfMeasurementFromString value =
+    case value of
+        "mmol-L" ->
+            Just UnitMmolL
+
+        "mg-dL" ->
+            Just UnitMgdL
+
+        _ ->
+            Nothing
+
+
+ncdaSignToString : NCDASign -> String
+ncdaSignToString value =
+    case value of
+        NCDABornWithBirthDefect ->
+            "born-with-birth-defect"
+
+        NCDABreastfedForSixMonths ->
+            "breastfed-for-six-months"
+
+        NCDAAppropriateComplementaryFeeding ->
+            "appropriate-complementary-feeding"
+
+        NCDAOngeraMNP ->
+            "ongera-mnp"
+
+        NCDAFiveFoodGroups ->
+            "five-food-groups"
+
+        NCDAMealFrequency6to8Months ->
+            "meal-frequency-6to8m"
+
+        NCDAMealFrequency9to11Months ->
+            "meal-frequency-9to11m"
+
+        NCDAMealFrequency12MonthsOrMore ->
+            "meal-frequency-12+m"
+
+        NCDASupportChildWithDisability ->
+            "support-child-with-disability"
+
+        NCDAConditionalCashTransfer ->
+            "conditional-cash-transfer"
+
+        NCDAConditionalFoodItems ->
+            "conditional-food-items"
+
+        NCDAHasCleanWater ->
+            "has-clean-water"
+
+        NCDAHasHandwashingFacility ->
+            "has-handwashing-facility"
+
+        NCDAHasToilets ->
+            "has-toilets"
+
+        NCDAHasKitchenGarden ->
+            "has-kitchen-garden"
+
+        NCDARegularPrenatalVisits ->
+            "regular-prenatal-visits"
+
+        NCDAIronSupplementsDuringPregnancy ->
+            "ron-supplements-during-pregnancy"
+
+        NCDAInsecticideTreatedBednetsDuringPregnancy ->
+            "insecticide-treated-bednets-during-pregnancy"
+
+        NoNCDASigns ->
+            "none"
+
+
+ncdaSignFromString : String -> Maybe NCDASign
+ncdaSignFromString value =
+    case value of
+        "born-with-birth-defect" ->
+            Just NCDABornWithBirthDefect
+
+        "breastfed-for-six-months" ->
+            Just NCDABreastfedForSixMonths
+
+        "appropriate-complementary-feeding" ->
+            Just NCDAAppropriateComplementaryFeeding
+
+        "ongera-mnp" ->
+            Just NCDAOngeraMNP
+
+        "five-food-groups" ->
+            Just NCDAFiveFoodGroups
+
+        "meal-frequency-6to8m" ->
+            Just NCDAMealFrequency6to8Months
+
+        "meal-frequency-9to11m" ->
+            Just NCDAMealFrequency9to11Months
+
+        "meal-frequency-12+m" ->
+            Just NCDAMealFrequency12MonthsOrMore
+
+        "support-child-with-disability" ->
+            Just NCDASupportChildWithDisability
+
+        "conditional-cash-transfer" ->
+            Just NCDAConditionalCashTransfer
+
+        "conditional-food-items" ->
+            Just NCDAConditionalFoodItems
+
+        "has-clean-water" ->
+            Just NCDAHasCleanWater
+
+        "has-handwashing-facility" ->
+            Just NCDAHasHandwashingFacility
+
+        "has-toilets" ->
+            Just NCDAHasToilets
+
+        "has-kitchen-garden" ->
+            Just NCDAHasKitchenGarden
+
+        "regular-prenatal-visits" ->
+            Just NCDARegularPrenatalVisits
+
+        "ron-supplements-during-pregnancy" ->
+            Just NCDAIronSupplementsDuringPregnancy
+
+        "insecticide-treated-bednets-during-pregnancy" ->
+            Just NCDAInsecticideTreatedBednetsDuringPregnancy
+
+        "none" ->
+            Just NoNCDASigns
+
+        _ ->
+            Nothing
+
+
+expectNCDAActivity : NominalDate -> Person -> Bool
+expectNCDAActivity currentDate person =
+    -- Show for children that are younger than 2 years old.
+    ageInMonths currentDate person
+        |> Maybe.map (\ageMonths -> ageMonths < 24)
         |> Maybe.withDefault False

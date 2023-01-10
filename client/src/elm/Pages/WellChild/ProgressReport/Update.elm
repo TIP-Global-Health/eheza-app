@@ -31,3 +31,6 @@ update msg model =
 
         SetDiagnosisMode mode ->
             ( { model | diagnosisMode = mode }, Cmd.none, [] )
+
+        SetActiveTab tab ->
+            ( { model | activeTab = tab }, Cmd.none, [] )

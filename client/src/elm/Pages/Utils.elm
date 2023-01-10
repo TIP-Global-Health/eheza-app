@@ -373,7 +373,7 @@ nonAdministrationReasonToSign sign reason =
         VitaminA ->
             MedicationVitaminA reason
 
-        -- Bellow are not in use, but we specify them explicitly to make
+        -- Below are not in use, but we specify them explicitly to make
         -- sure that compile arets if we forget to address new
         -- MedicationDistributionSign, when added.
         Albendazole ->
@@ -1061,12 +1061,7 @@ tasksBarId =
 viewSaveAction : Language -> msg -> Bool -> Html msg
 viewSaveAction language saveMsg disabled =
     div [ class "actions" ]
-        [ button
-            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-            , onClick saveMsg
-            ]
-            [ text <| translate language Translate.Save ]
-        ]
+        [ saveButton language (not disabled) saveMsg ]
 
 
 emptySelectOption : Bool -> Html any

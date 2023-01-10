@@ -9,10 +9,12 @@ import Measurement.Model
     exposing
         ( CreatinineResultForm
         , LaboratoryTask
+        , LipidPanelResultForm
         , LiverFunctionResultForm
         , RandomBloodSugarResultForm
         , UrineDipstickResultForm
         , emptyCreatinineResultForm
+        , emptyLipidPanelResultForm
         , emptyLiverFunctionResultForm
         , emptyRandomBloodSugarResultForm
         , emptyUrineDipstickResultForm
@@ -45,6 +47,12 @@ type Msg
     | SetAltResult String
     | SetAstResult String
     | SaveLiverFunctionResult PersonId (Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )) (Maybe LaboratoryTask)
+    | SetUnitOfMeasurement String
+    | SetTotalCholesterolResult String
+    | SetLDLCholesterolResult String
+    | SetHDLCholesterolResult String
+    | SetTriglyceridesResult String
+    | SaveLipidPanelResult PersonId (Maybe ( NCDLipidPanelTestId, NCDLipidPanelTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
     | SetRecommendedTreatmentSignSingle (List RecommendedTreatmentSign) RecommendedTreatmentSign
@@ -75,6 +83,7 @@ type alias LabResultsData =
     , urineDipstickTestForm : UrineDipstickResultForm
     , creatinineTestForm : CreatinineResultForm
     , liverFunctionTestForm : LiverFunctionResultForm
+    , lipidPanelTestForm : LipidPanelResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -85,6 +94,7 @@ emptyLabResultsData =
     , urineDipstickTestForm = emptyUrineDipstickResultForm
     , creatinineTestForm = emptyCreatinineResultForm
     , liverFunctionTestForm = emptyLiverFunctionResultForm
+    , lipidPanelTestForm = emptyLipidPanelResultForm
     , activeTask = Nothing
     }
 

@@ -70,6 +70,7 @@ import Http
 import Measurement.Model
     exposing
         ( FloatInputConstraints
+        , GroupOfFoods(..)
         , LaboratoryTask(..)
         , NextStepsTask(..)
         )
@@ -116,11 +117,27 @@ import Pages.Prenatal.Activity.Types
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.RecurrentActivity.Types
-import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), PaneEntryStatus(..))
+import Pages.Report.Model
+    exposing
+        ( LabResultsCurrentMode(..)
+        , LabResultsHistoryMode(..)
+        , PaneEntryStatus(..)
+        , RandomBloodSugarResult(..)
+        , ReportTab(..)
+        )
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
-import Pages.WellChild.ProgressReport.Model exposing (ECDStatus(..))
+import Pages.WellChild.ProgressReport.Model
+    exposing
+        ( ECDStatus(..)
+        , NCDAANCNewbornItem(..)
+        , NCDAFillTheBlanksItem(..)
+        , NCDAInfrastructureEnvironmentWashItem(..)
+        , NCDANutritionBehaviorItem(..)
+        , NCDATargetedInterventionsItem(..)
+        , NCDAUniversalInterventionsItem(..)
+        )
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Time exposing (Month(..))
@@ -378,6 +395,7 @@ type TranslationId
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
+    | ANCNewborn
     | And
     | AndSentence
     | AntenatalProgressReport
@@ -398,6 +416,10 @@ type TranslationId
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
+    | BirthDefect BirthDefect
+    | BirthDefectLabel
+    | BirthDefectsPresentQuestion
+    | BirthDefectsSelectionLabel
     | BloodGlucose
     | BloodPressure
     | BloodPressureElevatedOcassions
@@ -407,6 +429,7 @@ type TranslationId
     | BMIHelper
     | BodyTemperature
     | Born
+    | BornUnderweight
     | BoughtClothesQuestion
     | BowedLegs
     | BpmUnit Int
@@ -442,9 +465,11 @@ type TranslationId
     | ChildCleanQuestion
     | ChildHmisNumber
     | ChildDemographicInformation
+    | ChildIdentification
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
+    | ChildName
     | Children
     | ChildrenNames
     | ChildrenNationalId
@@ -609,7 +634,8 @@ type TranslationId
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
-    | FatherName
+    | FatherOrChiefId
+    | FatherOrChiefName
     | FatherNationalId
     | FbfDistribution ClinicType
     | FbfToReceive Activity Float
@@ -618,6 +644,7 @@ type TranslationId
     | FetalPresentationLabel
     | FetalPresentation FetalPresentation
     | Fetch
+    | FillTheBlanks
     | FilterByName
     | Finish
     | FirstAntenatalVisit
@@ -641,15 +668,21 @@ type TranslationId
     | GestationalDiabetesPreviousPregnancy
     | Glass String
     | GoHome
+    | GotResultsPreviouslyQuestion
     | GroupAssessment
+    | Grams
     | Gravida
     | GroupEncounter
+    | GroupOfFoods GroupOfFoods
     | Growth
     | HalfOfDosage String
     | HandedReferralFormQuestion
     | HandPallor
     | Hands
     | HandsCPESign HandsCPESign
+    | HbA1c
+    | HbA1cPercentage
+    | HbA1cMostRecentTestResultInstruction
     | HCRecommendation HCRecommendation
     | HCResponseQuestion
     | HCResponsePeriodQuestion
@@ -715,6 +748,7 @@ type TranslationId
     | IndividualEncounterSubsequentVisit IndividualEncounterType
     | IndividualEncounterType IndividualEncounterType Bool
     | IndividualEncounterTypes
+    | InfrastructureEnvironmentWash
     | InitialResultsDisplay InitialResultsDisplay
     | IntractableVomiting Bool
     | IntractableVomitingQuestion
@@ -731,9 +765,62 @@ type TranslationId
     | LabelOnePregnancyEpisodeOpen
     | LabelSeenHealthcareProviderForPregnancy
     | LabelDocumentPregnancyOutcome
+    | Lab
     | LabHistory
+    | LaboratoryBloodGroupLabel
+    | LaboratoryBloodGroupTestResult
+    | LaboratoryBloodGroup BloodGroup
+    | LaboratoryRhesusLabel
+    | LaboratoryRhesusTestResult
+    | LaboratoryRhesus Rhesus
+    | LaboratoryProteinLabel
+    | LaboratoryProteinTestResult
+    | LaboratoryProteinValue ProteinValue
+    | LaboratoryPHLabel
+    | LaboratoryPHTestResult
+    | LaboratoryPHValue PHValue
+    | LaboratoryGlucoseLabel
+    | LaboratoryGlucoseTestResult
+    | LaboratoryGlucoseValue GlucoseValue
+    | LaboratoryLeukocytesLabel
+    | LaboratoryLeukocytesTestResult
+    | LaboratoryLeukocytesValue LeukocytesValue
+    | LaboratoryNitriteLabel
+    | LaboratoryNitriteTestResult
+    | LaboratoryNitriteValue NitriteValue
+    | LaboratoryUrobilinogenLabel
+    | LaboratoryUrobilinogenTestResult
+    | LaboratoryUrobilinogenValue UrobilinogenValue
+    | LaboratoryHaemoglobinLabel
+    | LaboratoryHaemoglobinTestResult
+    | LaboratoryHaemoglobinValue HaemoglobinValue
+    | LaboratoryKetoneLabel
+    | LaboratoryKetoneTestResult
+    | LaboratoryKetoneValue KetoneValue
+    | LaboratoryBilirubinLabel
+    | LaboratoryBilirubinTestResult
+    | LaboratoryBilirubinValue BilirubinValue
+    | LaboratoryHemoglobinTestResult
+    | LaboratoryRandomBloodSugarTestResult
+    | LaboratoryHIVPCRTestResult
+    | LaboratoryHIVPCRViralLoadStatusQuestion
+    | LaboratoryCreatinineLabel
+    | LaboratoryBUNLabel
+    | LaboratoryALTLabel
+    | LaboratoryASTLabel
+    | LaboratoryPregnancyLabel
+    | LaboratoryTest LaboratoryTest
+    | LabsEntryState LabsEntryState
+    | LabsHistoryCompletedQuestion
+    | LabsHistoryCompletedInstructions
+    | LabsHistoryCompletedLabel
     | LaboratoryCreatinineCreatinineResult
     | LaboratoryCreatinineBUNResult
+    | LaboratoryLipidPanelUnitOfMeasurementQuestion
+    | LaboratoryLipidPanelTotalCholesterolLabel
+    | LaboratoryLipidPanelLDLCholesterolLabel
+    | LaboratoryLipidPanelHDLCholesterolLabel
+    | LaboratoryLipidPanelTriglyceridesLabel
     | LaboratoryLiverFunctionAltResult
     | LaboratoryLiverFunctionAstResult
     | LaboratoryTask LaboratoryTask
@@ -758,6 +845,7 @@ type TranslationId
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LinkToMother
+    | LipidPanel
     | LiveChildren
     | LmpDateConfirmationLabel
     | LmpDateConfirmationQuestion
@@ -835,6 +923,7 @@ type TranslationId
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
     | MiddleName
+    | Minutes Int
     | MinutesAgo Int
     | MissedDosesOfMedicatgion Int
     | ModeOfDelivery ModeOfDelivery
@@ -847,6 +936,7 @@ type TranslationId
     | MonthsOld
     | Mother
     | MotherDemographicInformation
+    | MotherId
     | MotherName String
     | MotherNameLabel
     | MotherNationalId
@@ -858,8 +948,16 @@ type TranslationId
     | MyRelatedByQuestion MyRelatedBy
     | Name
     | NationalIdNumber
+    | NCDABirthweightQuestion
+    | NCDASignQuestion NCDASign
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
+    | NCDAANCNewbornItemLabel NCDAANCNewbornItem
+    | NCDAInfrastructureEnvironmentWashItemLabel NCDAInfrastructureEnvironmentWashItem
+    | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
+    | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
+    | NCDAUniversalInterventionsItemLabel NCDAUniversalInterventionsItem
+    | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
@@ -931,6 +1029,7 @@ type TranslationId
     | NutritionActivityTitle NutritionActivity
     | NutritionAssessment NutritionAssessment
     | NutritionAssessmentTask NutritionAssessmentTask
+    | NutritionBehavior
     | NutritionCaringOption CaringOption
     | NutritionFeedingSignQuestion NutritionFeedingSign
     | NutritionFoodSecuritySignQuestion NutritionFoodSecuritySign
@@ -950,6 +1049,7 @@ type TranslationId
     | OngoingTreatmentTask OngoingTreatmentTask
     | OnlySickChild
     | Or
+    | OutsideCareLabel
     | PackagesPerMonth
     | Page
     | Page404
@@ -991,6 +1091,7 @@ type TranslationId
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
     | People
+    | Percentage
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
@@ -1007,6 +1108,7 @@ type TranslationId
     | PleaseContact
     | PleaseSelectGroup
     | PleaseSync
+    | PointOfCare
     | PositiveLabel
     | PostpartumEncounter
     | PostpartumHealingProblem PostpartumHealingProblem
@@ -1017,6 +1119,7 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PregnancyConclusion
     | PregnancyStart
+    | PregnancySummarySignQuestion PregnancySummarySign
     | PregnancyTestResult PregnancyTestResult
     | PregnancyTrimester PregnancyTrimester
     | PregnancyUrineTest
@@ -1052,55 +1155,8 @@ type TranslationId
     | PrenatalImmunisationDescription PrenatalVaccineType
     | PrenatalImmunisationHeader PrenatalVaccineType
     | PrenatalImmunisationHistory PrenatalVaccineType
-    | PrenatalLaboratoryBloodGroupLabel
-    | PrenatalLaboratoryBloodGroupTestResult
-    | PrenatalLaboratoryBloodGroup BloodGroup
-    | PrenatalLaboratoryRhesusLabel
-    | PrenatalLaboratoryRhesusTestResult
-    | PrenatalLaboratoryRhesus Rhesus
-    | PrenatalLaboratoryProteinLabel
-    | PrenatalLaboratoryProteinTestResult
-    | PrenatalLaboratoryProteinValue ProteinValue
-    | PrenatalLaboratoryPHLabel
-    | PrenatalLaboratoryPHTestResult
-    | PrenatalLaboratoryPHValue PHValue
-    | PrenatalLaboratoryGlucoseLabel
-    | PrenatalLaboratoryGlucoseTestResult
-    | PrenatalLaboratoryGlucoseValue GlucoseValue
-    | PrenatalLaboratoryLeukocytesLabel
-    | PrenatalLaboratoryLeukocytesTestResult
-    | PrenatalLaboratoryLeukocytesValue LeukocytesValue
-    | PrenatalLaboratoryNitriteLabel
-    | PrenatalLaboratoryNitriteTestResult
-    | PrenatalLaboratoryNitriteValue NitriteValue
-    | PrenatalLaboratoryUrobilinogenLabel
-    | PrenatalLaboratoryUrobilinogenTestResult
-    | PrenatalLaboratoryUrobilinogenValue UrobilinogenValue
-    | PrenatalLaboratoryHaemoglobinLabel
-    | PrenatalLaboratoryHaemoglobinTestResult
-    | PrenatalLaboratoryHaemoglobinValue HaemoglobinValue
-    | PrenatalLaboratoryKetoneLabel
-    | PrenatalLaboratoryKetoneTestResult
-    | PrenatalLaboratoryKetoneValue KetoneValue
-    | PrenatalLaboratoryBilirubinLabel
-    | PrenatalLaboratoryBilirubinTestResult
-    | PrenatalLaboratoryBilirubinValue BilirubinValue
-    | PrenatalLaboratoryHemoglobinTestResult
-    | PrenatalLaboratoryRandomBloodSugarTestResult
-    | PrenatalLaboratoryHIVPCRTestResult
-    | PrenatalLaboratoryHIVPCRViralLoadStatusQuestion
-    | PrenatalLaboratoryCreatinineLabel
-    | PrenatalLaboratoryBUNLabel
-    | PrenatalLaboratoryALTLabel
-    | PrenatalLaboratoryASTLabel
-    | PrenatalLaboratoryPregnancyLabel
-    | LaboratoryTest LaboratoryTest
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
-    | LabsEntryState LabsEntryState
-    | PrenatalLabsHistoryCompletedQuestion
-    | PrenatalLabsHistoryInstructions
-    | PrenatalLabsHistoryLabel
     | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
     | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | PrenatalMentalHealthSpecialistHelper
@@ -1121,8 +1177,6 @@ type TranslationId
     | PrenatalSymptomQuestionsHeader
     | TestExecutionNote TestExecutionNote
     | TestResult TestResult
-    | PrenatalUrineDipstickTestLabel TestVariant
-    | PrenatalUrineDipstickTestVariant TestVariant
     | PrenatalVaccineLabel PrenatalVaccineType
     | PreTerm
     | PregnancyConcludedLabel
@@ -1153,6 +1207,7 @@ type TranslationId
     | ProvidedPreventionEducationQuestionShort
     | ProvidedSymtomReliefGuidanceQuestion
     | Province
+    | RandomBloodSugarResultNormalRange RandomBloodSugarResult
     | ReasonForCSection
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -1181,6 +1236,7 @@ type TranslationId
     | ReferredToFacilityNot ReferralFacility
     | ReferredToFacilityPostpartum ReferralFacility
     | ReferToHospitalForFurtherEvaluation
+    | ReferToHospitalForTesting
     | ReferToProgramAction
     | ReferToProgramQuestion
     | Register
@@ -1205,6 +1261,7 @@ type TranslationId
     | ReportRemaining Int
     | ReportResultsOfContactsSearch Int
     | ReportResultsOfParticipantsSearch Int
+    | ReportTab ReportTab
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
@@ -1341,6 +1398,7 @@ type TranslationId
     | TakenCareOfBy
     | TakingMedicationAsPrescribed Bool
     | TasksCompleted Int Int
+    | TargetedInterventions
     | TelephoneNumber
     | Term
     | TermPregnancy
@@ -1395,10 +1453,15 @@ type TranslationId
     | UnitGramsPerDeciliter
     | UnitInternationalUnitsPerLiter
     | UnitMilliGramsPerDeciliter
+    | UnitMillimolesPerLiter
+    | UnitOfMeasurement UnitOfMeasurement
+    | UniversalInterventions
     | Unknown
     | Update
     | UpdateError
     | Uploading
+    | UrineDipstickTestLabel TestVariant
+    | UrineDipstickTestVariant TestVariant
     | UrinaryTractInfectionRecommendedTreatmentHeader
     | UrinaryTractInfectionRecommendedTreatmentHelper
     | UrinaryTractInfectionRecommendedTreatmentInstructions
@@ -2190,6 +2253,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
                     }
 
+                ChildActivity Activity.Model.NCDA ->
+                    { english = "ECD Scorecard"
+                    , kinyarwanda = Nothing
+                    }
+
         ActivitiesLabel activity ->
             case activity of
                 MotherActivity Activity.Model.FamilyPlanning ->
@@ -2267,6 +2335,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima:"
                     }
 
+                ChildActivity Activity.Model.NCDA ->
+                    { english = "ECD Scorecard:"
+                    , kinyarwanda = Nothing
+                    }
+
         ActivitiesTitle activity ->
             case activity of
                 MotherActivity Activity.Model.FamilyPlanning ->
@@ -2342,6 +2415,11 @@ translationSet trans =
                 ChildActivity Activity.Model.SendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                    }
+
+                ChildActivity Activity.Model.NCDA ->
+                    { english = "ECD Scorecard"
+                    , kinyarwanda = Nothing
                     }
 
         ActivitityTitleAchi ->
@@ -2424,6 +2502,11 @@ translationSet trans =
                 ChildActivity Activity.Model.SendToHC ->
                     { english = "Send to Health Center"
                     , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+                    }
+
+                ChildActivity Activity.Model.NCDA ->
+                    { english = "ECD Scorecard"
+                    , kinyarwanda = Nothing
                     }
 
         ActivitiesToComplete count ->
@@ -2592,6 +2675,11 @@ translationSet trans =
             , kinyarwanda = Just "Bitwara igihe kingana gute ngo imbangukiragutabara ihagere"
             }
 
+        ANCNewborn ->
+            { english = "ANC & Newborn"
+            , kinyarwanda = Nothing
+            }
+
         AgeSingleMonthWithoutDay month ->
             { english = String.fromInt month ++ " month"
             , kinyarwanda = Just <| String.fromInt month ++ " Ukwezi"
@@ -2746,6 +2834,108 @@ translationSet trans =
             , kinyarwanda = Just "Tangira igikorwa gishya"
             }
 
+        BirthDefect defect ->
+            case defect of
+                DefectBirthInjury ->
+                    { english = "Birth Injury"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectCleftLipWithCleftPalate ->
+                    { english = "Cleft Lip with Cleft Palate"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectCleftPalate ->
+                    { english = "Cleft Palate"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectClubFoot ->
+                    { english = "ClubFoot"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectMacrocephaly ->
+                    { english = "Macrocephaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectGastroschisis ->
+                    { english = "Gastroschisis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectHearingLoss ->
+                    { english = "Hearing Loss"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectUndescendedTestes ->
+                    { english = "Undescended Testes"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectHypospadias ->
+                    { english = "Hypospadias"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectInguinalHernia ->
+                    { english = "Inguinal Hernia"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectMicrocephaly ->
+                    { english = "Microcephaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectNeuralTubes ->
+                    { english = "Neural Tubes Defects"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectDownSyndrome ->
+                    { english = "Down Syndrome"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectCongenitalHeart ->
+                    { english = "CongenitalHeart Defects (CHD)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectVentricalSeptal ->
+                    { english = "Ventrical Septal Defect"
+                    , kinyarwanda = Nothing
+                    }
+
+                DefectPulmonaryValveAtresiaAndStenosis ->
+                    { english = "Pulmonary Valve Atresia and Stenosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoBirthDefects ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
+
+        BirthDefectLabel ->
+            { english = "Birth Defect"
+            , kinyarwanda = Nothing
+            }
+
+        BirthDefectsPresentQuestion ->
+            { english = "Does the child have any birth defects"
+            , kinyarwanda = Nothing
+            }
+
+        BirthDefectsSelectionLabel ->
+            { english = "Which of the following"
+            , kinyarwanda = Nothing
+            }
+
         BloodGlucose ->
             { english = "Blood Glucose"
             , kinyarwanda = Just "Ingano y'Isukari mu Maraso"
@@ -2789,6 +2979,11 @@ translationSet trans =
         Born ->
             { english = "Born"
             , kinyarwanda = Just "Kuvuka/ itariki y'amavuko"
+            }
+
+        BornUnderweight ->
+            { english = "Born Underweight"
+            , kinyarwanda = Nothing
             }
 
         BoughtClothesQuestion ->
@@ -3038,6 +3233,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ChildIdentification ->
+            { english = "Child Identification"
+            , kinyarwanda = Nothing
+            }
+
         ChildNutritionSignLabel sign ->
             case sign of
                 AbdominalDistension ->
@@ -3164,6 +3364,11 @@ translationSet trans =
         ChildOf ->
             { english = "Child of"
             , kinyarwanda = Just "Umwana wa"
+            }
+
+        ChildName ->
+            { english = "Child Name"
+            , kinyarwanda = Nothing
             }
 
         Clear ->
@@ -4700,8 +4905,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        FatherName ->
-            { english = "Father's Name"
+        FatherOrChiefId ->
+            { english = "Father or Chief of Family ID"
+            , kinyarwanda = Nothing
+            }
+
+        FatherOrChiefName ->
+            { english = "Fathers or Chief of Family Name"
             , kinyarwanda = Nothing
             }
 
@@ -4755,6 +4965,11 @@ translationSet trans =
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
+            }
+
+        FillTheBlanks ->
+            { english = "Fill in the Blanks: Cyatsi, Hondo, Tuku & Ibipimo"
+            , kinyarwanda = Nothing
             }
 
         FilterByName ->
@@ -4941,15 +5156,67 @@ translationSet trans =
             , kinyarwanda = Just "Kujya ahabanza"
             }
 
+        GotResultsPreviouslyQuestion ->
+            { english = "Has patient previously performed HBA1C test and got results"
+            , kinyarwanda = Nothing
+            }
+
         GroupAssessment ->
             { english = "Group Encounter"
             , kinyarwanda = Just "Gukorera itsinda"
+            }
+
+        Grams ->
+            { english = "grams"
+            , kinyarwanda = Nothing
             }
 
         GroupEncounter ->
             { english = "Group Encounter"
             , kinyarwanda = Nothing
             }
+
+        GroupOfFoods value ->
+            case value of
+                Staples ->
+                    { english = "Staples (grains, roots and tubers)"
+                    , kinyarwanda = Nothing
+                    }
+
+                Legumes ->
+                    { english = "Legumes (beans, peas, cereals)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DairyProducts ->
+                    { english = "Dairy products"
+                    , kinyarwanda = Nothing
+                    }
+
+                AnimalSourceFoods ->
+                    { english = "Animal-source foods (flesh meats, eggs, fish, small fish (indagara))"
+                    , kinyarwanda = Nothing
+                    }
+
+                Eggs ->
+                    { english = "Eggs"
+                    , kinyarwanda = Nothing
+                    }
+
+                FruitsVegetables ->
+                    { english = "Fruits and vegetables"
+                    , kinyarwanda = Nothing
+                    }
+
+                BreastMilk ->
+                    { english = "Breastfeeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                MealsWithEdibleOil ->
+                    { english = "Meals with added edible oil"
+                    , kinyarwanda = Nothing
+                    }
 
         Growth ->
             { english = "Growth"
@@ -4991,6 +5258,21 @@ translationSet trans =
 
                 NormalHands ->
                     translationSet Normal
+
+        HbA1c ->
+            { english = "HBA1c"
+            , kinyarwanda = Nothing
+            }
+
+        HbA1cPercentage ->
+            { english = "Percentage (%)"
+            , kinyarwanda = Nothing
+            }
+
+        HbA1cMostRecentTestResultInstruction ->
+            { english = "Please input the most recent HBA1C test result"
+            , kinyarwanda = Nothing
+            }
 
         HCRecommendation recommendation ->
             case recommendation of
@@ -5224,10 +5506,8 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru y'uwo bashakanye (umugabo)"
                     }
 
-                OutsideCare ->
-                    { english = "Outside Care"
-                    , kinyarwanda = Just "Kuvurirwa ku rindi vuriro"
-                    }
+                Pages.Prenatal.Activity.Types.OutsideCare ->
+                    translationSet OutsideCareLabel
 
         HIV ->
             { english = "HIV"
@@ -5746,6 +6026,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        InfrastructureEnvironmentWash ->
+            { english = "Infrastructure, Environment & Wash"
+            , kinyarwanda = Nothing
+            }
+
         InitialResultsDisplay display ->
             case display of
                 InitialResultsHidden ->
@@ -5882,6 +6167,20 @@ translationSet trans =
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
+                TaskLipidPanelTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                TaskHbA1cTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -5917,9 +6216,558 @@ translationSet trans =
             , kinyarwanda = Just "Ntabwo iherezo ry'inda ryanditswe"
             }
 
+        Lab ->
+            { english = "Lab"
+            , kinyarwanda = Nothing
+            }
+
         LabHistory ->
             { english = "Lab History"
             , kinyarwanda = Just "Amakuru ku bizamini byakozwe"
+            }
+
+        LaboratoryBloodGroupLabel ->
+            { english = "Blood Group"
+            , kinyarwanda = Just "Ubwoko bw'Amaraso"
+            }
+
+        LaboratoryBloodGroupTestResult ->
+            { english = "Blood Group Test Result"
+            , kinyarwanda = Just "Igisubizo ku kizamini cy'ubwoko bw'amaraso"
+            }
+
+        LaboratoryBloodGroup value ->
+            case value of
+                BloodGroupA ->
+                    { english = "A"
+                    , kinyarwanda = Just "Ubwoko bwa A"
+                    }
+
+                BloodGroupB ->
+                    { english = "B"
+                    , kinyarwanda = Just "Ubwoko bwa B"
+                    }
+
+                BloodGroupAB ->
+                    { english = "AB"
+                    , kinyarwanda = Just "Ubwoko bwa AB"
+                    }
+
+                BloodGroupO ->
+                    { english = "O"
+                    , kinyarwanda = Just "Ubwoko bwa O"
+                    }
+
+        LaboratoryRhesusLabel ->
+            { english = "Rhesus"
+            , kinyarwanda = Just "Rezisi"
+            }
+
+        LaboratoryRhesusTestResult ->
+            { english = "Rhesus Test Result"
+            , kinyarwanda = Just "Igisubizo ku kizamini cya Rezisi"
+            }
+
+        LaboratoryRhesus value ->
+            case value of
+                RhesusPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Just "Afite Resisi pisitifu"
+                    }
+
+                RhesusNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Just "Afite Resisi negatifu"
+                    }
+
+        LaboratoryProteinLabel ->
+            { english = "Protein"
+            , kinyarwanda = Just "Proteyine"
+            }
+
+        LaboratoryProteinTestResult ->
+            { english = "Protein Test Result"
+            , kinyarwanda = Just "Ibisubizo bya proteyine"
+            }
+
+        LaboratoryProteinValue value ->
+            case value of
+                Protein0 ->
+                    { english = "0"
+                    , kinyarwanda = Nothing
+                    }
+
+                ProteinPlus1 ->
+                    { english = "+1"
+                    , kinyarwanda = Nothing
+                    }
+
+                ProteinPlus2 ->
+                    { english = "+2"
+                    , kinyarwanda = Nothing
+                    }
+
+                ProteinPlus3 ->
+                    { english = "+3"
+                    , kinyarwanda = Nothing
+                    }
+
+                ProteinPlus4 ->
+                    { english = "+4"
+                    , kinyarwanda = Nothing
+                    }
+
+        LaboratoryPHLabel ->
+            { english = "pH"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryPHTestResult ->
+            { english = "pH Test Result"
+            , kinyarwanda = Just "Igisubizo cya pH"
+            }
+
+        LaboratoryPHValue value ->
+            case value of
+                Ph40 ->
+                    { english = "4.0"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph45 ->
+                    { english = "4.5"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph50 ->
+                    { english = "5.0"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph60 ->
+                    { english = "6.0"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph65 ->
+                    { english = "6.5"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph70 ->
+                    { english = "7.0"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph75 ->
+                    { english = "7.5"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph80 ->
+                    { english = "8.0"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ph85 ->
+                    { english = "8.5"
+                    , kinyarwanda = Nothing
+                    }
+
+        LaboratoryGlucoseLabel ->
+            { english = "Glucose"
+            , kinyarwanda = Just "Isukari"
+            }
+
+        LaboratoryGlucoseTestResult ->
+            { english = "Glucose Test Result"
+            , kinyarwanda = Just "Ibisubizo by'isukari mu nkari"
+            }
+
+        LaboratoryGlucoseValue value ->
+            case value of
+                Glucose0 ->
+                    { english = "0"
+                    , kinyarwanda = Nothing
+                    }
+
+                GlucosePlus1 ->
+                    { english = "+1"
+                    , kinyarwanda = Nothing
+                    }
+
+                GlucosePlus2 ->
+                    { english = "+2"
+                    , kinyarwanda = Nothing
+                    }
+
+                GlucosePlus3 ->
+                    { english = "+3"
+                    , kinyarwanda = Nothing
+                    }
+
+                GlucosePlus4 ->
+                    { english = "+4"
+                    , kinyarwanda = Nothing
+                    }
+
+        LaboratoryLeukocytesLabel ->
+            { english = "Leukocytes"
+            , kinyarwanda = Just "Uturemangingo twera"
+            }
+
+        LaboratoryLeukocytesTestResult ->
+            { english = "Leukocytes Test Result"
+            , kinyarwanda = Just "Igisubizo k'uturemangingo twera"
+            }
+
+        LaboratoryLeukocytesValue value ->
+            case value of
+                LeukocytesNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Just "Nta Kibazo afite"
+                    }
+
+                LeukocytesSmall ->
+                    { english = "Small (+)"
+                    , kinyarwanda = Just "Insoro zera nke zigaragara mu nkari (+)"
+                    }
+
+                LeukocytesMedium ->
+                    { english = "Medium (++)"
+                    , kinyarwanda = Just "Insoro zera ziringaniye zigaragara mu nkari (++)"
+                    }
+
+                LeukocytesLarge ->
+                    { english = "Large (+++)"
+                    , kinyarwanda = Just "Insoro zera nyinshi zigaragara mu nkari (+++)"
+                    }
+
+        LaboratoryNitriteLabel ->
+            { english = "Nitrite"
+            , kinyarwanda = Just "Umunyu wapimwe mu nkari"
+            }
+
+        LaboratoryNitriteTestResult ->
+            { english = "Nitrite Test Result"
+            , kinyarwanda = Just "Ibisubizo kumunyu wapimwe mu nkari"
+            }
+
+        LaboratoryNitriteValue value ->
+            case value of
+                NitriteNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Just "Nta kibazo afite"
+                    }
+
+                NitritePlus ->
+                    { english = "+"
+                    , kinyarwanda = Nothing
+                    }
+
+                NitritePlusPlus ->
+                    { english = "++"
+                    , kinyarwanda = Nothing
+                    }
+
+        LaboratoryUrobilinogenLabel ->
+            { english = "Urobilinogen"
+            , kinyarwanda = Just "urobilinogene (mu nkari)"
+            }
+
+        LaboratoryUrobilinogenTestResult ->
+            { english = "Urobilinogen Test Result"
+            , kinyarwanda = Just "Igisubizo cya urobilinogene (mu nkari)"
+            }
+
+        LaboratoryUrobilinogenValue value ->
+            case value of
+                Urobilinogen002 ->
+                    { english = "0-0.2"
+                    , kinyarwanda = Nothing
+                    }
+
+                Urobilinogen10 ->
+                    { english = "1"
+                    , kinyarwanda = Nothing
+                    }
+
+                Urobilinogen20 ->
+                    { english = "2"
+                    , kinyarwanda = Nothing
+                    }
+
+                Urobilinogen40 ->
+                    { english = "4"
+                    , kinyarwanda = Nothing
+                    }
+
+                Urobilinogen80 ->
+                    { english = "8"
+                    , kinyarwanda = Nothing
+                    }
+
+        LaboratoryHaemoglobinLabel ->
+            { english = "Hemoglobin"
+            , kinyarwanda = Just "Ingano y'Amaraso"
+            }
+
+        LaboratoryHaemoglobinTestResult ->
+            { english = "Hemoglobin Test Result"
+            , kinyarwanda = Just "Igisubizo by'ikizamini gipima ingano y'amaraso"
+            }
+
+        LaboratoryHaemoglobinValue value ->
+            case value of
+                HaemoglobinNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Just "Nta kibazo afite"
+                    }
+
+                HaemoglobinNonHemolyzedTrace ->
+                    { english = "Non-Hemolyzed Trace"
+                    , kinyarwanda = Just "Insoro zitukura nkeya zidashwanyutse"
+                    }
+
+                HaemoglobinNonHemolyzedModerate ->
+                    { english = "Non-Hemolyzed Moderate"
+                    , kinyarwanda = Just "Insoro  zitukura  ziri mu rugero zidashwanyutse"
+                    }
+
+                HaemoglobinHemolyzedTrace ->
+                    { english = "Hemolyzed Trace"
+                    , kinyarwanda = Just "Insoro zitukura zashwanyutse"
+                    }
+
+                HaemoglobinSmall ->
+                    { english = "Small"
+                    , kinyarwanda = Just "Ikigero gito cy'amaraso agaragara mu nkari"
+                    }
+
+                HaemoglobinModerate ->
+                    { english = "Moderate"
+                    , kinyarwanda = Just "Ikigero kiringaniye cy'amaraso agaragara mu nkari"
+                    }
+
+                HaemoglobinLarge ->
+                    { english = "Large"
+                    , kinyarwanda = Just "Ikigero kinini cy'amaraso (hemoglobini)  agaragara mu nkari"
+                    }
+
+        LaboratoryKetoneLabel ->
+            { english = "Ketone Test"
+            , kinyarwanda = Just "Ikizamini cya Ketone mu nkari"
+            }
+
+        LaboratoryKetoneTestResult ->
+            { english = "Ketone Test Result"
+            , kinyarwanda = Just "Igisubizo cya Ketone (mu nkari)"
+            }
+
+        LaboratoryKetoneValue value ->
+            case value of
+                KetoneNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Just "Nta Kibazo afite"
+                    }
+
+                Ketone5 ->
+                    { english = "5"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone10 ->
+                    { english = "10"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone15 ->
+                    { english = "15"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone40 ->
+                    { english = "40"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone80 ->
+                    { english = "80"
+                    , kinyarwanda = Nothing
+                    }
+
+                Ketone100 ->
+                    { english = "100"
+                    , kinyarwanda = Nothing
+                    }
+
+        LaboratoryBilirubinLabel ->
+            { english = "Bilirubin"
+            , kinyarwanda = Just "Bililibine (mu nkari)"
+            }
+
+        LaboratoryBilirubinTestResult ->
+            { english = "Bilirubin Test Result"
+            , kinyarwanda = Just "Igisubizo cya Bililibine (mu nkari)"
+            }
+
+        LaboratoryBilirubinValue value ->
+            case value of
+                BilirubinNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Just "Nta kibazo afite"
+                    }
+
+                BilirubinSmall ->
+                    { english = "Small (+)"
+                    , kinyarwanda = Just "Byoroheje"
+                    }
+
+                BilirubinMedium ->
+                    { english = "Medium (++)"
+                    , kinyarwanda = Just "Bikabije"
+                    }
+
+                BilirubinLarge ->
+                    { english = "Large (+++)"
+                    , kinyarwanda = Just "Bikabije cyane"
+                    }
+
+        LaboratoryHemoglobinTestResult ->
+            { english = "Hemoglobin Test Result"
+            , kinyarwanda = Just "Igisubizo ku kizamini gipima ingano y'amaraso"
+            }
+
+        LaboratoryRandomBloodSugarTestResult ->
+            { english = "Random Blood Sugar Test Result"
+            , kinyarwanda = Just "Igisubizo ku kizamini gipima ingano y'isukari mu maraso"
+            }
+
+        LaboratoryHIVPCRTestResult ->
+            { english = "HIV PCR Test Result"
+            , kinyarwanda = Just "Ibisubizo by'ikizamini cya PCR gipima Virusi itera SIDA"
+            }
+
+        LaboratoryHIVPCRViralLoadStatusQuestion ->
+            { english = "Are there less than 20 copies/mm3"
+            , kinyarwanda = Just "Haba hari kopi ziri munsi ya 20 kuri mirimrtro kibe"
+            }
+
+        LaboratoryCreatinineLabel ->
+            { english = "Creatinine"
+            , kinyarwanda = Just "Keleyatinine"
+            }
+
+        LaboratoryBUNLabel ->
+            { english = "BUN"
+            , kinyarwanda = Just "Ikizamini cy'Impyiko"
+            }
+
+        LaboratoryALTLabel ->
+            { english = "ALT"
+            , kinyarwanda = Just "Ikizamini cy'Impyiko"
+            }
+
+        LaboratoryASTLabel ->
+            { english = "AST"
+            , kinyarwanda = Just "Ikizamini cy'Umwijima"
+            }
+
+        LaboratoryPregnancyLabel ->
+            { english = "Pregnancy"
+            , kinyarwanda = Just "Ikizamini cyo Gutwita"
+            }
+
+        LaboratoryTest value ->
+            case value of
+                TestBloodGpRs ->
+                    { english = "Blood Group"
+                    , kinyarwanda = Just "Ubwoko bw'Amaraso"
+                    }
+
+                TestHemoglobin ->
+                    { english = "Hemoglobin"
+                    , kinyarwanda = Just "Ingano y'Amaraso"
+                    }
+
+                TestHepatitisB ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Just "Umwijima wo mu bwoko bwa B"
+                    }
+
+                TestRandomBloodSugar ->
+                    { english = "Blood Sugar"
+                    , kinyarwanda = Just "Ingano y'isukari mu Maraso"
+                    }
+
+                TestSyphilis ->
+                    { english = "Syphilis"
+                    , kinyarwanda = Just "Mburugu"
+                    }
+
+                TestUrineDipstick ->
+                    { english = "Urine Dipstick"
+                    , kinyarwanda = Just "Ikizamini cy'inkari"
+                    }
+
+                TestVitalsRecheck ->
+                    { english = "Vitals Recheck"
+                    , kinyarwanda = Just "Gusubiramo ibipimo by'ubuzima"
+                    }
+
+                TestHIVPCR ->
+                    { english = "HIV PCR"
+                    , kinyarwanda = Just "PCR ipima Virusi itera SIDA"
+                    }
+
+                TestCreatinine ->
+                    { english = "Creatinine"
+                    , kinyarwanda = Just "Keleyatinine"
+                    }
+
+                TestLiverFunction ->
+                    { english = "Liver Function"
+                    , kinyarwanda = Just "Imikorere y'Umwijima"
+                    }
+
+                TestLipidPanel ->
+                    translationSet LipidPanel
+
+        PrenatalLabsCaseManagementEntryTypeResults ->
+            { english = "ANC Lab Results"
+            , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe ku mugore utwite"
+            }
+
+        PrenatalLabsCaseManagementEntryTypeVitals ->
+            { english = "Vitals Recheck"
+            , kinyarwanda = Just "Gusubiramo ibipimo by'ubuzima"
+            }
+
+        LabsEntryState state ->
+            case state of
+                LabsEntryPending ->
+                    { english = "Pending"
+                    , kinyarwanda = Just "Birategerejwe"
+                    }
+
+                LabsEntryClosingSoon ->
+                    { english = "Closing Soon"
+                    , kinyarwanda = Just "Birafunga vuba"
+                    }
+
+        LabsHistoryCompletedQuestion ->
+            { english = "Have you updated all results that have been returned for this patient"
+            , kinyarwanda = Just "Waba wujuje ibisubizo byose byaba byabonetse kuri uyu mubyeyi"
+            }
+
+        LabsHistoryCompletedInstructions ->
+            { english = "Please update all outstanding lab results before proceeding"
+            , kinyarwanda = Just "Gerageza gushyiramo ibisubizo byose mbere yo gukomeza"
+            }
+
+        LabsHistoryCompletedLabel ->
+            { english = "This patient has pending lab results"
+            , kinyarwanda = Just "Umubyeyi afite ibizamini bitarabonerwa ibisubizo"
             }
 
         LaboratoryCreatinineCreatinineResult ->
@@ -5930,6 +6778,31 @@ translationSet trans =
         LaboratoryCreatinineBUNResult ->
             { english = "BUN Result"
             , kinyarwanda = Just "Ibisubizo by'ibizamini by'impyiko"
+            }
+
+        LaboratoryLipidPanelUnitOfMeasurementQuestion ->
+            { english = "What units are the test results in"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLipidPanelTotalCholesterolLabel ->
+            { english = "Total Cholesterol"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLipidPanelLDLCholesterolLabel ->
+            { english = "LDL"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLipidPanelHDLCholesterolLabel ->
+            { english = "HDL"
+            , kinyarwanda = Nothing
+            }
+
+        LaboratoryLipidPanelTriglyceridesLabel ->
+            { english = "Triglycerides"
+            , kinyarwanda = Nothing
             }
 
         LaboratoryLiverFunctionAltResult ->
@@ -6004,6 +6877,14 @@ translationSet trans =
                     , kinyarwanda = Just "Imikorere y'Umwijima"
                     }
 
+                TaskLipidPanelTest ->
+                    translationSet LipidPanel
+
+                TaskHbA1cTest ->
+                    { english = "HBA1C"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskCompletePreviousTests ->
                     { english = "History"
                     , kinyarwanda = Just "Amakuru"
@@ -6071,6 +6952,14 @@ translationSet trans =
                     , kinyarwanda = Just "Imikorere y'Umwijima"
                     }
 
+                TaskLipidPanelTest ->
+                    translationSet LipidPanel
+
+                TaskHbA1cTest ->
+                    { english = "HBA1C"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -6126,17 +7015,27 @@ translationSet trans =
 
                 TaskPregnancyTest ->
                     { english = "Pregnancy Test Date"
-                    , kinyarwanda = Just "Itariki y'ikizamini cyo gutwita"
+                    , kinyarwanda = Nothing
                     }
 
                 TaskCreatinineTest ->
                     { english = "Creatinine Test Date"
-                    , kinyarwanda = Just "Itariki y'ikizamini cya Keleyatinine"
+                    , kinyarwanda = Nothing
                     }
 
                 TaskLiverFunctionTest ->
                     { english = "Liver Function Test Date"
-                    , kinyarwanda = Just "Itariki y'ikizamini cy'imikorere y'Umwijima"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLipidPanelTest ->
+                    { english = "Lipid Panel Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskHbA1cTest ->
+                    { english = "HBA1C Test Date"
+                    , kinyarwanda = Nothing
                     }
 
                 -- Not in use, so no translation is needed.
@@ -6194,17 +7093,27 @@ translationSet trans =
 
                 TaskPregnancyTest ->
                     { english = "Pregnancy Test Result"
-                    , kinyarwanda = Just "Ibisubizo by'ikizamini cyo gutwita"
+                    , kinyarwanda = Nothing
                     }
 
                 TaskCreatinineTest ->
                     { english = "Creatinine Test Result"
-                    , kinyarwanda = Just "Ibisubizo by'ikizamini cya Keleyatinine"
+                    , kinyarwanda = Nothing
                     }
 
                 TaskLiverFunctionTest ->
                     { english = "Liver Function Test Result"
-                    , kinyarwanda = Just "Ibisubizo by'ikizamini cy'imikorere y'Umwijima"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskLipidPanelTest ->
+                    { english = "Lipid Panel Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskHbA1cTest ->
+                    { english = "HBA1C Test Result"
+                    , kinyarwanda = Nothing
                     }
 
                 -- Not in use, so no translation is needed.
@@ -6340,6 +7249,31 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru ku kizamini cyo Gutwita"
                     }
 
+                LabResultsHistoryHbA1c _ ->
+                    { english = "HBA1C"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryTotalCholesterol _ ->
+                    { english = "Total Cholesterol"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryLDLCholesterol _ ->
+                    { english = "LDL Cholesterol"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHDLCholesterol _ ->
+                    { english = "HDL Cholesterol"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryTriglycerides _ ->
+                    { english = "Triglycerides"
+                    , kinyarwanda = Nothing
+                    }
+
         LabResultsNormalRange mode ->
             case mode of
                 LabResultsHistoryHIV _ ->
@@ -6413,7 +7347,11 @@ translationSet trans =
                     }
 
                 LabResultsHistoryRandomBloodSugar _ ->
-                    { english = "74-110 mg/dL"
+                    -- This one is not in use, because normal range
+                    -- depends on prerequesit - has patient eaten before
+                    -- the test or not.
+                    -- Therefore RandomBloodSugarResultNormalRange set is used.
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -6457,6 +7395,31 @@ translationSet trans =
                     , kinyarwanda = Just "Nta bwandu afite"
                     }
 
+                LabResultsHistoryHbA1c _ ->
+                    { english = "Below 6%"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryTotalCholesterol _ ->
+                    { english = "Below 200 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryLDLCholesterol _ ->
+                    { english = "130-160 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryHDLCholesterol _ ->
+                    { english = "40-60 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
+                LabResultsHistoryTriglycerides _ ->
+                    { english = "54-150 mg/dL"
+                    , kinyarwanda = Nothing
+                    }
+
         LabResultsPaneHeader mode ->
             case mode of
                 LabResultsCurrentMain ->
@@ -6472,6 +7435,11 @@ translationSet trans =
                 LabResultsCurrentDipstickLong ->
                     { english = "Long Dipstick Lab Results"
                     , kinyarwanda = Just "Ibisubizo by'ikizamini cy'inkari gitanga ibisubizo byinshi"
+                    }
+
+                LabResultsCurrentLipidPanel ->
+                    { english = "Lipid Panel Results"
+                    , kinyarwanda = Nothing
                     }
 
         LastChecked ->
@@ -6602,6 +7570,11 @@ translationSet trans =
         LinkToMother ->
             { english = "Link to mother"
             , kinyarwanda = Just "Guhuza n'amakuru y'umubyeyi"
+            }
+
+        LipidPanel ->
+            { english = "Lipid Panel"
+            , kinyarwanda = Nothing
             }
 
         LiveChildren ->
@@ -7052,7 +8025,7 @@ translationSet trans =
 
                 NoMedicationTreatingDiabetes ->
                     { english = "None of the Above"
-                    , kinyarwanda = Just "nta na kimwe"
+                    , kinyarwanda = Just "Nta na kimwe"
                     }
 
         MedicationTreatingDiabetesQuestion ->
@@ -7082,11 +8055,6 @@ translationSet trans =
                     , kinyarwanda = Just "Kalisiyumu"
                     }
 
-                MedicationMethyldopa ->
-                    { english = "Methyldopa"
-                    , kinyarwanda = Nothing
-                    }
-
                 MedicationBetaBlockers ->
                     { english = "Beta-Blockers"
                     , kinyarwanda = Just "Beta boloka"
@@ -7095,6 +8063,11 @@ translationSet trans =
                 MedicationHydralazine ->
                     { english = "Hydralazine"
                     , kinyarwanda = Just "Idaralazine"
+                    }
+
+                MedicationMethyldopa ->
+                    { english = "Methyldopa"
+                    , kinyarwanda = Nothing
                     }
 
                 NoMedicationTreatingHypertension ->
@@ -7274,7 +8247,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                VitaminA ->
+                Backend.Measurement.Model.VitaminA ->
                     -- Names of Medication, therefore,
                     -- no translation is needed.
                     { english = "Vitamin A"
@@ -7453,6 +8426,16 @@ translationSet trans =
             , kinyarwanda = Just "Izina ryo hagati"
             }
 
+        Minutes minutes ->
+            { english =
+                if minutes == 1 then
+                    "1 Minute"
+
+                else
+                    String.fromInt minutes ++ " Minutes"
+            , kinyarwanda = Nothing
+            }
+
         MinutesAgo minutes ->
             { english =
                 if minutes == 0 then
@@ -7558,6 +8541,11 @@ translationSet trans =
             , kinyarwanda = Just "Umwirondoro w'umubyeyi"
             }
 
+        MotherId ->
+            { english = "Mother ID"
+            , kinyarwanda = Nothing
+            }
+
         MotherName name ->
             { english = "Mother/Caregiver: " ++ name
             , kinyarwanda = Just <| "Umubyeyi: " ++ name
@@ -7609,6 +8597,108 @@ translationSet trans =
             , kinyarwanda = Just "Numero y'irangamuntu"
             }
 
+        NCDABirthweightQuestion ->
+            { english = "What was the child's birthweight"
+            , kinyarwanda = Nothing
+            }
+
+        NCDASignQuestion sign ->
+            case sign of
+                NCDABornWithBirthDefect ->
+                    { english = "Was the child born with a birth defect"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDABreastfedForSixMonths ->
+                    { english = "Breastfed baby for 6 months without interruption"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAAppropriateComplementaryFeeding ->
+                    { english = "Appropriate complementary feeding (6-24 months)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAOngeraMNP ->
+                    { english = "Did you receive and use Ongera-MNP"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAFiveFoodGroups ->
+                    { english = "Does the child receive food items from the 5 food groups"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAMealFrequency6to8Months ->
+                    { english = "Feed your young child complementary foods 2 to 3 times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAMealFrequency9to11Months ->
+                    { english = "Feed your young child complementary foods 3 to 4 times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAMealFrequency12MonthsOrMore ->
+                    { english = "Feed your young child complementary foods at least 5 times a day"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDASupportChildWithDisability ->
+                    { english = "Provide support to a child with a disability"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAConditionalCashTransfer ->
+                    { english = "Receipt of conditional cash transfer e.g. NSDS, VUP"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAConditionalFoodItems ->
+                    { english = "Receipt of conditional food items including small livestock"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAHasCleanWater ->
+                    { english = "Does the house have clean water"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAHasHandwashingFacility ->
+                    { english = "Does the house have a handwashing facility"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAHasToilets ->
+                    { english = "Does the household have toilets"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAHasKitchenGarden ->
+                    { english = "Does the house have a kitchen garden"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDARegularPrenatalVisits ->
+                    { english = "Did the mother receive regular prenatal and post-partum visits"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAIronSupplementsDuringPregnancy ->
+                    { english = "Did the mother receive iron supplements during pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDAInsecticideTreatedBednetsDuringPregnancy ->
+                    { english = "Did the mother receive insecticide-treated bednets during pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDASigns ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
+
         NCDActivityTitle activity ->
             case activity of
                 Backend.NCDActivity.Model.DangerSigns ->
@@ -7646,10 +8736,155 @@ translationSet trans =
                     , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
                     }
 
+                Backend.NCDActivity.Model.OutsideCare ->
+                    translationSet OutsideCareLabel
+
         NCDANCServicesInstructions ->
             { english = "Refer patient to ANC services for further management of hypertension during pregnancy"
             , kinyarwanda = Just "Ohereza umubyeyi muri serivise yita ku babyeyi batwite bakurikrane byimbitse umuvuduko w'amaraso"
             }
+
+        NCDAANCNewbornItemLabel item ->
+            case item of
+                RegularCheckups ->
+                    { english = "Regular prenatal and postpartum checkups"
+                    , kinyarwanda = Nothing
+                    }
+
+                IronDuringPregnancy ->
+                    { english = "Iron during pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDAInfrastructureEnvironmentWashItemLabel item ->
+            case item of
+                HasToilets ->
+                    { english = "Household has toilets"
+                    , kinyarwanda = Nothing
+                    }
+
+                HasCleanWater ->
+                    { english = "Household has clean water"
+                    , kinyarwanda = Nothing
+                    }
+
+                HasHandwashingFacility ->
+                    { english = "Household has handwashing facility"
+                    , kinyarwanda = Nothing
+                    }
+
+                HasKitchenGarden ->
+                    { english = "Household has kitchen garden"
+                    , kinyarwanda = Nothing
+                    }
+
+                InsecticideTreatedBedNets ->
+                    { english = "Insecticide treated bed nets"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDANutritionBehaviorItemLabel item ->
+            case item of
+                BreastfedSixMonths ->
+                    { english = "Breastfed baby for 6 mo without interruption"
+                    , kinyarwanda = Nothing
+                    }
+
+                AppropriateComplementaryFeeding ->
+                    { english = "Appropriate complementary feeding (6-24 mo)"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiverseDiet ->
+                    { english = "Does the child have a diverse diet?"
+                    , kinyarwanda = Nothing
+                    }
+
+                MealsADay ->
+                    { english = "Number of times a child eats a day"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDATargetedInterventionsItemLabel item ->
+            case item of
+                FBFGiven ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentForAcuteMalnutrition ->
+                    { english = "Treatment for acute malnutrition (severe or moderate)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatmentForDiarrhea ->
+                    { english = "Treatment of diarrhea (ORS & Zinc)"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupportChildWithDisability ->
+                    { english = "Provide support to a child with a disability "
+                    , kinyarwanda = Nothing
+                    }
+
+                ConditionalCashTransfer ->
+                    { english = "Receipt of conditional cash transfer e.g. NSDS, VUP"
+                    , kinyarwanda = Nothing
+                    }
+
+                ConditionalFoodItems ->
+                    { english = "Receipt of conditional food items including small livestock"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDAUniversalInterventionsItemLabel item ->
+            case item of
+                Immunization ->
+                    { english = "Immunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.WellChild.ProgressReport.Model.VitaminA ->
+                    { english = "Vitamin A"
+                    , kinyarwanda = Nothing
+                    }
+
+                Deworming ->
+                    { english = "Deworming"
+                    , kinyarwanda = Nothing
+                    }
+
+                OngeraMNP ->
+                    { english = "Use additional nutrients (Ongera)"
+                    , kinyarwanda = Nothing
+                    }
+
+                ECDServices ->
+                    { english = "ECD services provided to child"
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDAFillTheBlanksItemLabel item ->
+            case item of
+                HeightToAge ->
+                    { english = "Level of stuning using child length mat"
+                    , kinyarwanda = Nothing
+                    }
+
+                WeightToAge ->
+                    { english = "Weight"
+                    , kinyarwanda = Nothing
+                    }
+
+                MuacValue ->
+                    { english = "MUAC"
+                    , kinyarwanda = Nothing
+                    }
+
+                EdemaPresent ->
+                    { english = "Edema"
+                    , kinyarwanda = Nothing
+                    }
 
         NCDDangerSign sign ->
             case sign of
@@ -8584,6 +9819,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
 
+                Backend.NutritionActivity.Model.NCDA ->
+                    { english = "ECD Scorecard"
+                    , kinyarwanda = Nothing
+                    }
+
                 Backend.NutritionActivity.Model.NextSteps ->
                     { english = "Next Steps"
                     , kinyarwanda = Just "Ibikurikiyeho"
@@ -8614,6 +9854,11 @@ translationSet trans =
                 Backend.NutritionActivity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
+                    }
+
+                Backend.NutritionActivity.Model.NCDA ->
+                    { english = "ECD Scorecard"
+                    , kinyarwanda = Nothing
                     }
 
                 Backend.NutritionActivity.Model.NextSteps ->
@@ -8694,6 +9939,11 @@ translationSet trans =
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
                     }
+
+        NutritionBehavior ->
+            { english = "Nutrition Behavior"
+            , kinyarwanda = Nothing
+            }
 
         NutritionCaringOption option ->
             case option of
@@ -8986,6 +10236,11 @@ translationSet trans =
             , kinyarwanda = Just "cyangwa"
             }
 
+        OutsideCareLabel ->
+            { english = "Outside Care"
+            , kinyarwanda = Nothing
+            }
+
         PackagesPerMonth ->
             { english = "packages / month"
             , kinyarwanda = Just "Amapaki ku kwezi"
@@ -9267,6 +10522,11 @@ translationSet trans =
             , kinyarwanda = Just "Abantu"
             }
 
+        Percentage ->
+            { english = "%"
+            , kinyarwanda = Nothing
+            }
+
         PersistentStorage authorized ->
             if authorized then
                 { english = "Persistent storage has been authorized. The browser will not delete locally cached data without your approval."
@@ -9372,6 +10632,11 @@ translationSet trans =
 
         PleaseSync ->
             { english = "Please sync data for selected Health Center."
+            , kinyarwanda = Nothing
+            }
+
+        PointOfCare ->
+            { english = "Point of Care"
             , kinyarwanda = Nothing
             }
 
@@ -9519,8 +10784,8 @@ translationSet trans =
                     }
 
                 NoPredecessors ->
-                    { english = ""
-                    , kinyarwanda = Nothing
+                    { english = "None"
+                    , kinyarwanda = Just "Ntabyo"
                     }
 
         PreeclampsiaPreviousPregnancy ->
@@ -9537,6 +10802,23 @@ translationSet trans =
             { english = "Pregnancy Start"
             , kinyarwanda = Just "Itangira ryo Gutwita"
             }
+
+        PregnancySummarySignQuestion sign ->
+            case sign of
+                ApgarScores ->
+                    { english = "Are APGAR scores available for this patient"
+                    , kinyarwanda = Nothing
+                    }
+
+                BirthLength ->
+                    { english = "Is birth length available"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoPregnancySummarySigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         PregnancyTestResult result ->
             case result of
@@ -11280,547 +12562,6 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru ku ndwara y'Agakwega"
                     }
 
-        PrenatalLaboratoryBloodGroupLabel ->
-            { english = "Blood Group"
-            , kinyarwanda = Just "Ubwoko bw'Amaraso"
-            }
-
-        PrenatalLaboratoryBloodGroupTestResult ->
-            { english = "Blood Group Test Result"
-            , kinyarwanda = Just "Igisubizo ku kizamini cy'ubwoko bw'amaraso"
-            }
-
-        PrenatalLaboratoryBloodGroup value ->
-            case value of
-                BloodGroupA ->
-                    { english = "A"
-                    , kinyarwanda = Just "Ubwoko bwa A"
-                    }
-
-                BloodGroupB ->
-                    { english = "B"
-                    , kinyarwanda = Just "Ubwoko bwa B"
-                    }
-
-                BloodGroupAB ->
-                    { english = "AB"
-                    , kinyarwanda = Just "Ubwoko bwa AB"
-                    }
-
-                BloodGroupO ->
-                    { english = "O"
-                    , kinyarwanda = Just "Ubwoko bwa O"
-                    }
-
-        PrenatalLaboratoryRhesusLabel ->
-            { english = "Rhesus"
-            , kinyarwanda = Just "Rezisi"
-            }
-
-        PrenatalLaboratoryRhesusTestResult ->
-            { english = "Rhesus Test Result"
-            , kinyarwanda = Just "Igisubizo ku kizamini cya Rezisi"
-            }
-
-        PrenatalLaboratoryRhesus value ->
-            case value of
-                RhesusPositive ->
-                    { english = "Positive"
-                    , kinyarwanda = Just "Afite Resisi pisitifu"
-                    }
-
-                RhesusNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Afite Resisi negatifu"
-                    }
-
-        PrenatalLaboratoryProteinLabel ->
-            { english = "Protein"
-            , kinyarwanda = Just "Proteyine"
-            }
-
-        PrenatalLaboratoryProteinTestResult ->
-            { english = "Protein Test Result"
-            , kinyarwanda = Just "Ibisubizo bya proteyine"
-            }
-
-        PrenatalLaboratoryProteinValue value ->
-            case value of
-                Protein0 ->
-                    { english = "0"
-                    , kinyarwanda = Nothing
-                    }
-
-                ProteinPlus1 ->
-                    { english = "+1"
-                    , kinyarwanda = Nothing
-                    }
-
-                ProteinPlus2 ->
-                    { english = "+2"
-                    , kinyarwanda = Nothing
-                    }
-
-                ProteinPlus3 ->
-                    { english = "+3"
-                    , kinyarwanda = Nothing
-                    }
-
-                ProteinPlus4 ->
-                    { english = "+4"
-                    , kinyarwanda = Nothing
-                    }
-
-        PrenatalLaboratoryPHLabel ->
-            { english = "pH"
-            , kinyarwanda = Nothing
-            }
-
-        PrenatalLaboratoryPHTestResult ->
-            { english = "pH Test Result"
-            , kinyarwanda = Just "Igisubizo cya pH"
-            }
-
-        PrenatalLaboratoryPHValue value ->
-            case value of
-                Ph40 ->
-                    { english = "4.0"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ph45 ->
-                    { english = "4.5"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ph50 ->
-                    { english = "5.0"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ph60 ->
-                    { english = "6.0"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ph65 ->
-                    { english = "6.5"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ph70 ->
-                    { english = "7.0"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ph75 ->
-                    { english = "7.5"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ph80 ->
-                    { english = "8.0"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ph85 ->
-                    { english = "8.5"
-                    , kinyarwanda = Nothing
-                    }
-
-        PrenatalLaboratoryGlucoseLabel ->
-            { english = "Glucose"
-            , kinyarwanda = Just "Isukari"
-            }
-
-        PrenatalLaboratoryGlucoseTestResult ->
-            { english = "Glucose Test Result"
-            , kinyarwanda = Just "Ibisubizo by'isukari mu nkari"
-            }
-
-        PrenatalLaboratoryGlucoseValue value ->
-            case value of
-                Glucose0 ->
-                    { english = "0"
-                    , kinyarwanda = Nothing
-                    }
-
-                GlucosePlus1 ->
-                    { english = "+1"
-                    , kinyarwanda = Nothing
-                    }
-
-                GlucosePlus2 ->
-                    { english = "+2"
-                    , kinyarwanda = Nothing
-                    }
-
-                GlucosePlus3 ->
-                    { english = "+3"
-                    , kinyarwanda = Nothing
-                    }
-
-                GlucosePlus4 ->
-                    { english = "+4"
-                    , kinyarwanda = Nothing
-                    }
-
-        PrenatalLaboratoryLeukocytesLabel ->
-            { english = "Leukocytes"
-            , kinyarwanda = Just "Uturemangingo twera"
-            }
-
-        PrenatalLaboratoryLeukocytesTestResult ->
-            { english = "Leukocytes Test Result"
-            , kinyarwanda = Just "Igisubizo k'uturemangingo twera"
-            }
-
-        PrenatalLaboratoryLeukocytesValue value ->
-            case value of
-                LeukocytesNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta Kibazo afite"
-                    }
-
-                LeukocytesSmall ->
-                    { english = "Small (+)"
-                    , kinyarwanda = Just "Insoro zera nke zigaragara mu nkari (+)"
-                    }
-
-                LeukocytesMedium ->
-                    { english = "Medium (++)"
-                    , kinyarwanda = Just "Insoro zera ziringaniye zigaragara mu nkari (++)"
-                    }
-
-                LeukocytesLarge ->
-                    { english = "Large (+++)"
-                    , kinyarwanda = Just "Insoro zera nyinshi zigaragara mu nkari (+++)"
-                    }
-
-        PrenatalLaboratoryNitriteLabel ->
-            { english = "Nitrite"
-            , kinyarwanda = Just "Umunyu wapimwe mu nkari"
-            }
-
-        PrenatalLaboratoryNitriteTestResult ->
-            { english = "Nitrite Test Result"
-            , kinyarwanda = Just "Ibisubizo kumunyu wapimwe mu nkari"
-            }
-
-        PrenatalLaboratoryNitriteValue value ->
-            case value of
-                NitriteNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta kibazo afite"
-                    }
-
-                NitritePlus ->
-                    { english = "+"
-                    , kinyarwanda = Nothing
-                    }
-
-                NitritePlusPlus ->
-                    { english = "++"
-                    , kinyarwanda = Nothing
-                    }
-
-        PrenatalLaboratoryUrobilinogenLabel ->
-            { english = "Urobilinogen"
-            , kinyarwanda = Just "urobilinogene (mu nkari)"
-            }
-
-        PrenatalLaboratoryUrobilinogenTestResult ->
-            { english = "Urobilinogen Test Result"
-            , kinyarwanda = Just "Igisubizo cya urobilinogene (mu nkari)"
-            }
-
-        PrenatalLaboratoryUrobilinogenValue value ->
-            case value of
-                Urobilinogen002 ->
-                    { english = "0-0.2"
-                    , kinyarwanda = Nothing
-                    }
-
-                Urobilinogen10 ->
-                    { english = "1"
-                    , kinyarwanda = Nothing
-                    }
-
-                Urobilinogen20 ->
-                    { english = "2"
-                    , kinyarwanda = Nothing
-                    }
-
-                Urobilinogen40 ->
-                    { english = "4"
-                    , kinyarwanda = Nothing
-                    }
-
-                Urobilinogen80 ->
-                    { english = "8"
-                    , kinyarwanda = Nothing
-                    }
-
-        PrenatalLaboratoryHaemoglobinLabel ->
-            { english = "Hemoglobin"
-            , kinyarwanda = Just "Ingano y'Amaraso"
-            }
-
-        PrenatalLaboratoryHaemoglobinTestResult ->
-            { english = "Hemoglobin Test Result"
-            , kinyarwanda = Just "Igisubizo by'ikizamini gipima ingano y'amaraso"
-            }
-
-        PrenatalLaboratoryHaemoglobinValue value ->
-            case value of
-                HaemoglobinNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta kibazo afite"
-                    }
-
-                HaemoglobinNonHemolyzedTrace ->
-                    { english = "Non-Hemolyzed Trace"
-                    , kinyarwanda = Just "Insoro zitukura nkeya zidashwanyutse"
-                    }
-
-                HaemoglobinNonHemolyzedModerate ->
-                    { english = "Non-Hemolyzed Moderate"
-                    , kinyarwanda = Just "Insoro  zitukura  ziri mu rugero zidashwanyutse"
-                    }
-
-                HaemoglobinHemolyzedTrace ->
-                    { english = "Hemolyzed Trace"
-                    , kinyarwanda = Just "Insoro zitukura zashwanyutse"
-                    }
-
-                HaemoglobinSmall ->
-                    { english = "Small"
-                    , kinyarwanda = Just "Ikigero gito cy'amaraso agaragara mu nkari"
-                    }
-
-                HaemoglobinModerate ->
-                    { english = "Moderate"
-                    , kinyarwanda = Just "Ikigero kiringaniye cy'amaraso agaragara mu nkari"
-                    }
-
-                HaemoglobinLarge ->
-                    { english = "Large"
-                    , kinyarwanda = Just "Ikigero kinini cy'amaraso (hemoglobini)  agaragara mu nkari"
-                    }
-
-        PrenatalLaboratoryKetoneLabel ->
-            { english = "Ketone Test"
-            , kinyarwanda = Just "Ikizamini cya Ketone mu nkari"
-            }
-
-        PrenatalLaboratoryKetoneTestResult ->
-            { english = "Ketone Test Result"
-            , kinyarwanda = Just "Igisubizo cya Ketone (mu nkari)"
-            }
-
-        PrenatalLaboratoryKetoneValue value ->
-            case value of
-                KetoneNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta Kibazo afite"
-                    }
-
-                Ketone5 ->
-                    { english = "5"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ketone10 ->
-                    { english = "10"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ketone15 ->
-                    { english = "15"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ketone40 ->
-                    { english = "40"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ketone80 ->
-                    { english = "80"
-                    , kinyarwanda = Nothing
-                    }
-
-                Ketone100 ->
-                    { english = "100"
-                    , kinyarwanda = Nothing
-                    }
-
-        PrenatalLaboratoryBilirubinLabel ->
-            { english = "Bilirubin"
-            , kinyarwanda = Just "Bililibine (mu nkari)"
-            }
-
-        PrenatalLaboratoryBilirubinTestResult ->
-            { english = "Bilirubin Test Result"
-            , kinyarwanda = Just "Igisubizo cya Bililibine (mu nkari)"
-            }
-
-        PrenatalLaboratoryBilirubinValue value ->
-            case value of
-                BilirubinNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta kibazo afite"
-                    }
-
-                BilirubinSmall ->
-                    { english = "Small (+)"
-                    , kinyarwanda = Just "Byoroheje"
-                    }
-
-                BilirubinMedium ->
-                    { english = "Medium (++)"
-                    , kinyarwanda = Just "Bikabije"
-                    }
-
-                BilirubinLarge ->
-                    { english = "Large (+++)"
-                    , kinyarwanda = Just "Bikabije cyane"
-                    }
-
-        PrenatalLaboratoryHemoglobinTestResult ->
-            { english = "Hemoglobin Test Result"
-            , kinyarwanda = Just "Igisubizo ku kizamini gipima ingano y'amaraso"
-            }
-
-        PrenatalLaboratoryRandomBloodSugarTestResult ->
-            { english = "Random Blood Sugar Test Result"
-            , kinyarwanda = Just "Igisubizo ku kizamini gipima ingano y'isukari mu maraso"
-            }
-
-        PrenatalLaboratoryHIVPCRTestResult ->
-            { english = "HIV PCR Test Result"
-            , kinyarwanda = Just "Ibisubizo by'ikizamini cya PCR gipima Virusi itera SIDA"
-            }
-
-        PrenatalLaboratoryHIVPCRViralLoadStatusQuestion ->
-            { english = "Are there less than 20 copies/mm3"
-            , kinyarwanda = Just "Haba hari kopi ziri munsi ya 20 kuri mirimrtro kibe"
-            }
-
-        PrenatalLaboratoryCreatinineLabel ->
-            { english = "Creatinine"
-            , kinyarwanda = Just "Keleyatinine"
-            }
-
-        PrenatalLaboratoryBUNLabel ->
-            { english = "BUN"
-            , kinyarwanda = Just "Ikizamini cy'Impyiko"
-            }
-
-        PrenatalLaboratoryALTLabel ->
-            { english = "ALT"
-            , kinyarwanda = Just "Ikizamini cy'Impyiko"
-            }
-
-        PrenatalLaboratoryASTLabel ->
-            { english = "AST"
-            , kinyarwanda = Just "Ikizamini cy'Umwijima"
-            }
-
-        PrenatalLaboratoryPregnancyLabel ->
-            { english = "Pregnancy"
-            , kinyarwanda = Just "Ikizamini cyo Gutwita"
-            }
-
-        LaboratoryTest value ->
-            case value of
-                TestBloodGpRs ->
-                    { english = "Blood Group"
-                    , kinyarwanda = Just "Ubwoko bw'Amaraso"
-                    }
-
-                TestHemoglobin ->
-                    { english = "Hemoglobin"
-                    , kinyarwanda = Just "Ingano y'Amaraso"
-                    }
-
-                TestHepatitisB ->
-                    { english = "Hepatitis B"
-                    , kinyarwanda = Just "Umwijima wo mu bwoko bwa B"
-                    }
-
-                TestRandomBloodSugar ->
-                    { english = "Blood Sugar"
-                    , kinyarwanda = Just "Ingano y'isukari mu Maraso"
-                    }
-
-                TestSyphilis ->
-                    { english = "Syphilis"
-                    , kinyarwanda = Just "Mburugu"
-                    }
-
-                TestUrineDipstick ->
-                    { english = "Urine Dipstick"
-                    , kinyarwanda = Just "Ikizamini cy'inkari"
-                    }
-
-                TestVitalsRecheck ->
-                    { english = "Vitals Recheck"
-                    , kinyarwanda = Just "Gusubiramo ibipimo by'ubuzima"
-                    }
-
-                TestHIVPCR ->
-                    { english = "HIV PCR"
-                    , kinyarwanda = Just "PCR ipima Virusi itera SIDA"
-                    }
-
-                TestCreatinine ->
-                    { english = "Creatinine"
-                    , kinyarwanda = Just "Keleyatinine"
-                    }
-
-                TestLiverFunction ->
-                    { english = "Liver Function"
-                    , kinyarwanda = Just "Imikorere y'Umwijima"
-                    }
-
-        PrenatalLabsCaseManagementEntryTypeResults ->
-            { english = "ANC Lab Results"
-            , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe ku mugore utwite"
-            }
-
-        PrenatalLabsCaseManagementEntryTypeVitals ->
-            { english = "Vitals Recheck"
-            , kinyarwanda = Just "Gusubiramo ibipimo by'ubuzima"
-            }
-
-        LabsEntryState state ->
-            case state of
-                LabsEntryPending ->
-                    { english = "Pending"
-                    , kinyarwanda = Just "Birategerejwe"
-                    }
-
-                LabsEntryClosingSoon ->
-                    { english = "Closing Soon"
-                    , kinyarwanda = Just "Birafunga vuba"
-                    }
-
-        PrenatalLabsHistoryCompletedQuestion ->
-            { english = "Have you updated all results that have been returned for this patient"
-            , kinyarwanda = Just "Waba wujuje ibisubizo byose byaba byabonetse kuri uyu mubyeyi"
-            }
-
-        PrenatalLabsHistoryInstructions ->
-            { english = "Please update all outstanding lab results before proceeding"
-            , kinyarwanda = Just "Gerageza gushyiramo ibisubizo byose mbere yo gukomeza"
-            }
-
-        PrenatalLabsHistoryLabel ->
-            { english = "This patient has pending lab results"
-            , kinyarwanda = Just "Umubyeyi afite ibizamini bitarabonerwa ibisubizo"
-            }
-
         PrenatalMentalHealthQuestion question ->
             case question of
                 MentalHealthQuestion1 ->
@@ -12589,6 +13330,11 @@ translationSet trans =
                     , kinyarwanda = Just "Asanzwe afite ubwandu"
                     }
 
+                TestNoteToBeDoneAtHospital ->
+                    { english = "To be Done at Hospital"
+                    , kinyarwanda = Nothing
+                    }
+
         TestResult result ->
             case result of
                 TestPositive ->
@@ -12604,30 +13350,6 @@ translationSet trans =
                 TestIndeterminate ->
                     { english = "Indeterminate"
                     , kinyarwanda = Just "Ntibisobanutse"
-                    }
-
-        PrenatalUrineDipstickTestLabel variant ->
-            case variant of
-                VariantShortTest ->
-                    { english = "Urine Dipstick Short"
-                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo bike"
-                    }
-
-                VariantLongTest ->
-                    { english = "Urine Dipstick Long"
-                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo byinshi"
-                    }
-
-        PrenatalUrineDipstickTestVariant variant ->
-            case variant of
-                VariantShortTest ->
-                    { english = "Short Dip"
-                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo bike"
-                    }
-
-                VariantLongTest ->
-                    { english = "Long Dip"
-                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo byinshi"
                     }
 
         PrenatalVaccineLabel value ->
@@ -12805,6 +13527,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umurwayi yafatiwe iki kizamini mbere yo kurya"
                     }
 
+                PrerequisiteImmediateResult ->
+                    { english = "Where was this test performed"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoTestPrerequisites ->
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
@@ -12864,6 +13591,18 @@ translationSet trans =
             { english = "Reason for C-section"
             , kinyarwanda = Nothing
             }
+
+        RandomBloodSugarResultNormalRange type_ ->
+            case type_ of
+                TestRunBeforeMeal _ ->
+                    { english = "74-126 mg/dL (F)"
+                    , kinyarwanda = Nothing
+                    }
+
+                TestRunAfterMeal _ ->
+                    { english = "74-200 mg/dL (NF)"
+                    , kinyarwanda = Nothing
+                    }
 
         ReasonForNotBreastfeeding reason ->
             case reason of
@@ -13663,6 +14402,11 @@ translationSet trans =
             , kinyarwanda = Just "Ohereza umurwayi ku bitaro kugirango hakorwe isuzuma ryimbitse"
             }
 
+        ReferToHospitalForTesting ->
+            { english = "Refer patient to hospital for testing"
+            , kinyarwanda = Nothing
+            }
+
         ReferToProgramAction ->
             { english = "Refer patient to appropriate nutrition program"
             , kinyarwanda = Just "Ohereza umurwayi muri porogaramu y'imirire yabugenewe "
@@ -13795,6 +14539,18 @@ translationSet trans =
                 _ ->
                     { english = "There are " ++ String.fromInt total ++ " participants that match your search."
                     , kinyarwanda = Just <| "Hari abagenerwabikorwa " ++ String.fromInt total ++ " bahuye nuwo ushaka mu ishakiro"
+                    }
+
+        ReportTab tab ->
+            case tab of
+                TabSPVReport ->
+                    { english = "Standard Pediatric Report"
+                    , kinyarwanda = Nothing
+                    }
+
+                TabNCDAScoreboard ->
+                    { english = "ECD Scorecard"
+                    , kinyarwanda = Nothing
                     }
 
         Reports ->
@@ -14892,6 +15648,11 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt completed ++ "/" ++ String.fromInt total ++ " Ibikorwa byarangiye"
             }
 
+        TargetedInterventions ->
+            { english = "Targeted Interventions"
+            , kinyarwanda = Nothing
+            }
+
         TelephoneNumber ->
             { english = "Telephone Number"
             , kinyarwanda = Just "Numero ya telefoni"
@@ -15268,6 +16029,24 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        UnitMillimolesPerLiter ->
+            { english = "mmol/L"
+            , kinyarwanda = Nothing
+            }
+
+        UnitOfMeasurement unit ->
+            case unit of
+                UnitMmolL ->
+                    translationSet UnitMillimolesPerLiter
+
+                UnitMgdL ->
+                    translationSet UnitMilliGramsPerDeciliter
+
+        UniversalInterventions ->
+            { english = "Universal Interventions"
+            , kinyarwanda = Nothing
+            }
+
         Unknown ->
             { english = "Unknown"
             , kinyarwanda = Just "Ntabizi"
@@ -15287,6 +16066,30 @@ translationSet trans =
             { english = "Uploading"
             , kinyarwanda = Nothing
             }
+
+        UrineDipstickTestLabel variant ->
+            case variant of
+                VariantShortTest ->
+                    { english = "Urine Dipstick Short"
+                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo bike"
+                    }
+
+                VariantLongTest ->
+                    { english = "Urine Dipstick Long"
+                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo byinshi"
+                    }
+
+        UrineDipstickTestVariant variant ->
+            case variant of
+                VariantShortTest ->
+                    { english = "Short Dip"
+                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo bike"
+                    }
+
+                VariantLongTest ->
+                    { english = "Long Dip"
+                    , kinyarwanda = Just "Ikizamini gitanga ibisubizo byinshi"
+                    }
 
         UrinaryTractInfectionRecommendedTreatmentHeader ->
             { english = "This patient shows signs of Urinary Tract Infection"
@@ -15535,8 +16338,8 @@ translationSet trans =
                     }
 
                 WellChildPregnancySummary ->
-                    { english = "History"
-                    , kinyarwanda = Just "Amateka y'ibyamubayeho"
+                    { english = "Birth History"
+                    , kinyarwanda = Nothing
                     }
 
                 WellChildImmunisation ->
@@ -15552,6 +16355,11 @@ translationSet trans =
                 WellChildPhoto ->
                     { english = "Photo"
                     , kinyarwanda = Just "Ifoto"
+                    }
+
+                WellChildNCDA ->
+                    { english = "ECD Scorecard"
+                    , kinyarwanda = Nothing
                     }
 
         WellChildDangerSignsTask task ->

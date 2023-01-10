@@ -185,6 +185,7 @@ type Msg
     | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugarTestExecutionDate NominalDate
     | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetRandomBloodSugarResult String
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SetHIVPCRTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
     | SetHIVPCRTestExecutionNote TestExecutionNote
@@ -328,7 +329,6 @@ type alias HistoryData =
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
     , outsideCareForm : OutsideCareForm PrenatalDiagnosis
-    , outsideCareStep : OutsideCareStep
     , activeTask : Maybe HistoryTask
     }
 
@@ -341,7 +341,6 @@ emptyHistoryData =
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
     , outsideCareForm = emptyOutsideCareForm
-    , outsideCareStep = OutsideCareStepDiagnoses
     , activeTask = Nothing
     }
 
@@ -853,8 +852,8 @@ emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing Nothing
 
 
-encodeLmpRange : LmpRange -> String
-encodeLmpRange range =
+lmpRangeToString : LmpRange -> String
+lmpRangeToString range =
     case range of
         OneMonth ->
             "one-month"
@@ -866,8 +865,8 @@ encodeLmpRange range =
             "six-month"
 
 
-decodeLmpRange : String -> Maybe LmpRange
-decodeLmpRange s =
+lmpRangeFromString : String -> Maybe LmpRange
+lmpRangeFromString s =
     case s of
         "one-month" ->
             Just OneMonth

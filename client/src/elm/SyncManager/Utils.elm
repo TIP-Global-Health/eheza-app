@@ -451,6 +451,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityGroupHealthEducation identifier ->
             getIdentifier identifier "group_health_education"
 
+        BackendAuthorityGroupNCDA identifier ->
+            getIdentifier identifier "group_ncda"
+
         BackendAuthorityGroupSendToHC identifier ->
             getIdentifier identifier "group_send_to_hc"
 
@@ -517,6 +520,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityNCDFamilyPlanning identifier ->
             getIdentifier identifier "ncd_family_planning"
 
+        BackendAuthorityNCDHbA1cTest identifier ->
+            getIdentifier identifier "ncd_hba1c_test"
+
         BackendAuthorityNCDHealthEducation identifier ->
             getIdentifier identifier "ncd_health_education"
 
@@ -525,6 +531,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityNCDLabsResults identifier ->
             getIdentifier identifier "ncd_labs_results"
+
+        BackendAuthorityNCDLipidPanelTest identifier ->
+            getIdentifier identifier "ncd_lipid_panel_test"
 
         BackendAuthorityNCDLiverFunctionTest identifier ->
             getIdentifier identifier "ncd_liver_function_test"
@@ -591,6 +600,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityNutritionMuac identifier ->
             getIdentifier identifier "nutrition_muac"
+
+        BackendAuthorityNutritionNCDA identifier ->
+            getIdentifier identifier "nutrition_ncda"
 
         BackendAuthorityNutritionNutrition identifier ->
             getIdentifier identifier "nutrition_nutrition"
@@ -786,6 +798,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityWellChildMuac identifier ->
             getIdentifier identifier "well_child_muac"
+
+        BackendAuthorityWellChildNCDA identifier ->
+            getIdentifier identifier "well_child_ncda"
 
         BackendAuthorityWellChildNextVisit identifier ->
             getIdentifier identifier "well_child_next_visit"
@@ -1096,6 +1111,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityGroupHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodeGroupHealthEducation identifier
 
+        BackendAuthorityGroupNCDA identifier ->
+            encode Backend.Measurement.Encoder.encodeGroupNCDA identifier
+
         BackendAuthorityGroupSendToHC identifier ->
             encode Backend.Measurement.Encoder.encodeGroupSendToHC identifier
 
@@ -1162,6 +1180,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityNCDFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodeNCDFamilyPlanning identifier
 
+        BackendAuthorityNCDHbA1cTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDHbA1cTest identifier
+
         BackendAuthorityNCDHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodeNCDHealthEducation identifier
 
@@ -1170,6 +1191,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityNCDLabsResults identifier ->
             encode Backend.Measurement.Encoder.encodeNCDLabsResults identifier
+
+        BackendAuthorityNCDLipidPanelTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDLipidPanelTest identifier
 
         BackendAuthorityNCDLiverFunctionTest identifier ->
             encode Backend.Measurement.Encoder.encodeNCDLiverFunctionTest identifier
@@ -1236,6 +1260,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityNutritionMuac identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionMuac identifier
+
+        BackendAuthorityNutritionNCDA identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionNCDA identifier
 
         BackendAuthorityNutritionNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionNutrition identifier
@@ -1431,6 +1458,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityWellChildMuac identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildMuac identifier
+
+        BackendAuthorityWellChildNCDA identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildNCDA identifier
 
         BackendAuthorityWellChildNextVisit identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildNextVisit identifier
@@ -1704,6 +1734,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityGroupHealthEducation identifier ->
             GroupHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityGroupNCDA identifier ->
+            GroupNCDARevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityGroupSendToHC identifier ->
             GroupSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1770,6 +1803,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityNCDFamilyPlanning identifier ->
             NCDFamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityNCDHbA1cTest identifier ->
+            NCDHbA1cTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityNCDHealthEducation identifier ->
             NCDHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1778,6 +1814,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityNCDLabsResults identifier ->
             NCDLabsResultsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDLipidPanelTest identifier ->
+            NCDLipidPanelTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNCDLiverFunctionTest identifier ->
             NCDLiverFunctionTestRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1844,6 +1883,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityNutritionMuac identifier ->
             NutritionMuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionNCDA identifier ->
+            NutritionNCDARevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutritionNutrition identifier ->
             NutritionNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -2039,6 +2081,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildMuac identifier ->
             WellChildMuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildNCDA identifier ->
+            WellChildNCDARevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildNextVisit identifier ->
             WellChildNextVisitRevision (toEntityUuid identifier.uuid) identifier.entity

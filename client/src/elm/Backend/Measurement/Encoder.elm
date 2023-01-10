@@ -580,6 +580,9 @@ encodeTestPrerequisite value =
             PrerequisiteFastFor12h ->
                 "fasting-12h"
 
+            PrerequisiteImmediateResult ->
+                "immediate-result"
+
             NoTestPrerequisites ->
                 "none"
 
@@ -788,6 +791,9 @@ encodeTestExecutionNote value =
 
             TestNoteKnownAsPositive ->
                 "known-as-positive"
+
+            TestNoteToBeDoneAtHospital ->
+                "to-be-done-at-hospital"
 
 
 encodeTestResult : TestResult -> Value
@@ -3933,11 +3939,44 @@ encodeWellChildPregnancySummary =
 
 encodePregnancySummaryValue : PregnancySummaryValue -> List ( String, Value )
 encodePregnancySummaryValue value =
+    let
+        apgar =
+            Maybe.map2
+                (\apgarOneMin apgarFiveMin ->
+                    [ ( "apgar_one_min", float apgarOneMin )
+                    , ( "apgar_five_min", float apgarFiveMin )
+                    ]
+                )
+                value.apgarOneMin
+                value.apgarFiveMin
+                |> Maybe.withDefault []
+
+        birthWeight =
+            Maybe.map
+                (\(WeightInGrm weight) ->
+                    [ ( "weight", float weight ) ]
+                )
+                value.birthWeight
+                |> Maybe.withDefault []
+
+        birthLength =
+            Maybe.map
+                (\(HeightInCm length) ->
+                    [ ( "height", float length ) ]
+                )
+                value.birthLength
+                |> Maybe.withDefault []
+    in
     [ ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.expectedDateConcluded )
     , ( "delivery_complications", encodeEverySet encodeDeliveryComplication value.deliveryComplications )
+    , ( "pregnancy_summary_signs", encodeEverySet encodePregnancySummarySign value.signs )
+    , ( "birth_defects", encodeEverySet encodeBirthDefect value.birthDefects )
     , ( "deleted", bool False )
     , ( "type", string "well_child_pregnancy_summary" )
     ]
+        ++ apgar
+        ++ birthWeight
+        ++ birthLength
 
 
 encodeDeliveryComplication : DeliveryComplication -> Value
@@ -3966,6 +4005,76 @@ encodeDeliveryComplication complication =
                 "other"
 
             NoDeliveryComplications ->
+                "none"
+
+
+encodePregnancySummarySign : PregnancySummarySign -> Value
+encodePregnancySummarySign sign =
+    string <|
+        case sign of
+            ApgarScores ->
+                "apgar-scores"
+
+            BirthLength ->
+                "birth-length"
+
+            NoPregnancySummarySigns ->
+                "none"
+
+
+encodeBirthDefect : BirthDefect -> Value
+encodeBirthDefect defect =
+    string <|
+        case defect of
+            DefectBirthInjury ->
+                "birth-injury"
+
+            DefectCleftLipWithCleftPalate ->
+                "cleft-lip-with-cleft-palate"
+
+            DefectCleftPalate ->
+                "cleft-palate"
+
+            DefectClubFoot ->
+                "club-foot"
+
+            DefectMacrocephaly ->
+                "macrocephaly"
+
+            DefectGastroschisis ->
+                "gastroschisis"
+
+            DefectHearingLoss ->
+                "hearing-loss"
+
+            DefectUndescendedTestes ->
+                "undescended-testes"
+
+            DefectHypospadias ->
+                "hypospadias"
+
+            DefectInguinalHernia ->
+                "inguinal-hernia"
+
+            DefectMicrocephaly ->
+                "microcephaly"
+
+            DefectNeuralTubes ->
+                "neural-tubes"
+
+            DefectDownSyndrome ->
+                "down-syndrome"
+
+            DefectCongenitalHeart ->
+                "congenital-heart"
+
+            DefectVentricalSeptal ->
+                "ventrical-septal"
+
+            DefectPulmonaryValveAtresiaAndStenosis ->
+                "pulmonary-valve-atresia-and-stenosis"
+
+            NoBirthDefects ->
                 "none"
 
 
@@ -4507,3 +4616,112 @@ encodeNCDUrineDipstickTest =
 encodeNCDVitals : NCDVitals -> List ( String, Value )
 encodeNCDVitals =
     encodeNCDMeasurement (encodeVitalsValueWithType "ncd_vitals")
+
+
+encodeGroupNCDA : GroupNCDA -> List ( String, Value )
+encodeGroupNCDA =
+    encodeGroupMeasurement (encodeNCDAValueWithType "group_ncda")
+
+
+encodeNutritionNCDA : NutritionNCDA -> List ( String, Value )
+encodeNutritionNCDA =
+    encodeNutritionMeasurement (encodeNCDAValueWithType "nutrition_ncda")
+
+
+encodeWellChildNCDA : WellChildNCDA -> List ( String, Value )
+encodeWellChildNCDA =
+    encodeWellChildMeasurement (encodeNCDAValueWithType "well_child_ncda")
+
+
+encodeNCDAValueWithType : String -> NCDAValue -> List ( String, Value )
+encodeNCDAValueWithType type_ value =
+    let
+        birthWeight =
+            Maybe.map (\(WeightInGrm weight) -> [ ( "weight", float weight ) ])
+                value.birthWeight
+                |> Maybe.withDefault []
+    in
+    [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+        ++ birthWeight
+
+
+encodeNCDASign : NCDASign -> Value
+encodeNCDASign =
+    ncdaSignToString >> string
+
+
+encodeNCDLipidPanelTest : NCDLipidPanelTest -> List ( String, Value )
+encodeNCDLipidPanelTest =
+    encodeNCDMeasurement encodeLipidPanelTestValue
+
+
+encodeLipidPanelTestValue : LipidPanelTestValue -> List ( String, Value )
+encodeLipidPanelTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map5
+                (\unitOfMeasurement totalCholesterolResult ldlCholesterolResult hdlCholesterolResult triglycerides ->
+                    [ ( "unit_of_measurement", encodeUnitOfMeasurement unitOfMeasurement )
+                    , ( "total_cholesterol", float totalCholesterolResult )
+                    , ( "ldl_cholesterol", float ldlCholesterolResult )
+                    , ( "hdl_cholesterol", float hdlCholesterolResult )
+                    , ( "triglycerides", float triglycerides )
+                    ]
+                )
+                value.unitOfMeasurement
+                value.totalCholesterolResult
+                value.ldlCholesterolResult
+                value.hdlCholesterolResult
+                value.triglyceridesResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_lipid_panel_test" )
+           ]
+
+
+encodeUnitOfMeasurement : UnitOfMeasurement -> Value
+encodeUnitOfMeasurement =
+    unitOfMeasurementToString >> string
+
+
+encodeNCDHbA1cTest : NCDHbA1cTest -> List ( String, Value )
+encodeNCDHbA1cTest =
+    encodeNCDMeasurement encodeHbA1cTestValue
+
+
+encodeHbA1cTestValue : HbA1cTestValue -> List ( String, Value )
+encodeHbA1cTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\hba1cResult ->
+                    [ ( "hba1c_result", float hba1cResult ) ]
+                )
+                value.hba1cResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_hba1c_test" )
+           ]

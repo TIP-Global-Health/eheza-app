@@ -8,6 +8,7 @@ type NCDActivity
     | Laboratory
     | MedicalHistory
     | NextSteps
+    | OutsideCare
     | SymptomReview
 
 

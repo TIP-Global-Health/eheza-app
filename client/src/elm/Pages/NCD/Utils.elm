@@ -766,7 +766,7 @@ recommendedTreatmentForDiabetesInputAndTask language currentDate options setReco
                         |> Maybe.andThen .glucose
                         |> Maybe.map
                             (\glucose ->
-                                Translate.PatientGotDiabetesByUrineDip (translate language <| Translate.PrenatalLaboratoryGlucoseValue glucose)
+                                Translate.PatientGotDiabetesByUrineDip (translate language <| Translate.LaboratoryGlucoseValue glucose)
                             )
                         |> Maybe.withDefault Translate.EmptyString
 

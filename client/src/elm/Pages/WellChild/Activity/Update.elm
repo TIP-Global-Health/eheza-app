@@ -42,6 +42,9 @@ import Result exposing (Result)
 update : NominalDate -> Bool -> WellChildEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate isChw id db msg model =
     let
+        pregnancySummaryForm =
+            resolveFormWithDefaults .pregnancySummary pregnancySummaryFormWithDefault model.pregnancySummaryForm
+
         resolveFormWithDefaults getMeasurementFunc formWithDefaultsFunc form =
             Dict.get id db.wellChildMeasurements
                 |> Maybe.withDefault NotAsked
@@ -129,11 +132,20 @@ update currentDate isChw id db msg model =
             , [ focusOnCalendarMsg ]
             )
 
-        SetDeliveryComplicationsPresent value ->
+        SetPregnancySummaryBoolInput updateFunc value ->
             let
                 updatedForm =
-                    model.pregnancySummaryForm
-                        |> (\form -> { form | deliveryComplicationsPresent = Just value, deliveryComplications = Nothing })
+                    updateFunc value model.pregnancySummaryForm
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetPregnancySummaryNumberInput updateFunc value ->
+            let
+                updatedForm =
+                    updateFunc value model.pregnancySummaryForm
             in
             ( { model | pregnancySummaryForm = updatedForm }
             , Cmd.none
@@ -142,15 +154,26 @@ update currentDate isChw id db msg model =
 
         SetDeliveryComplication complication ->
             let
-                form =
-                    resolveFormWithDefaults .pregnancySummary pregnancySummaryFormWithDefault model.pregnancySummaryForm
-
                 updatedForm =
                     setMultiSelectInputValue .deliveryComplications
-                        (\complications -> { form | deliveryComplications = complications })
+                        (\complications -> { pregnancySummaryForm | deliveryComplications = complications })
                         NoDeliveryComplications
                         complication
-                        form
+                        pregnancySummaryForm
+            in
+            ( { model | pregnancySummaryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetBirthDefect defect ->
+            let
+                updatedForm =
+                    setMultiSelectInputValue .birthDefects
+                        (\defects -> { pregnancySummaryForm | birthDefects = defects })
+                        NoBirthDefects
+                        defect
+                        pregnancySummaryForm
             in
             ( { model | pregnancySummaryForm = updatedForm }
             , Cmd.none
@@ -1645,6 +1668,91 @@ update currentDate isChw id db msg model =
                     ]
             in
             ( { model | photoForm = emptyPhotoForm }
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetNCDABoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ncdaData.form
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBirthWeight string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | birthWeight = String.toFloat string |> Maybe.map WeightInGrm
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNCDAFormStep step ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | step = Just step })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNCDAHelperState state ->
+            let
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | helperState = state })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveNCDA personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.ncdaData.form
+                        |> toNCDAValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.WellChildEncounter.Model.SaveNCDA personId measurementId value
+                                    |> Backend.Model.MsgWellChildEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| WellChildEncounterPage id
+                                ]
+                            )
+            in
+            ( model
             , Cmd.none
             , appMsgs
             )

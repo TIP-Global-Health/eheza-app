@@ -8,7 +8,7 @@ import Pages.Report.Model exposing (DiagnosisMode(..), LabResultsCurrentMode(..)
 type alias Model =
     { diagnosisMode : DiagnosisMode
     , labResultsMode : Maybe LabResultsMode
-    , labResultsHistoryOrigin : Maybe LabResultsCurrentMode
+    , labResultsHistoryOrigin : Maybe LabResultsMode
     , showEndEncounterDialog : Bool
     }
 

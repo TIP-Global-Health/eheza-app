@@ -5,6 +5,7 @@ import Backend.Model
 import Backend.NCDEncounter.Model
 import Pages.NCD.ProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..))
+import Pages.Report.Model exposing (LabResultsMode(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -30,7 +31,22 @@ update msg model =
             ( { model | diagnosisMode = mode }, Cmd.none, [] )
 
         SetLabResultsMode mode ->
-            ( { model | labResultsMode = mode }, Cmd.none, [] )
+            let
+                labResultsHistoryOrigin =
+                    case mode of
+                        Just (LabResultsHistory _) ->
+                            model.labResultsMode
+
+                        _ ->
+                            Nothing
+            in
+            ( { model
+                | labResultsMode = mode
+                , labResultsHistoryOrigin = labResultsHistoryOrigin
+              }
+            , Cmd.none
+            , []
+            )
 
         SetEndEncounterDialogState isOpen ->
             ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )

@@ -23,10 +23,12 @@ import Backend.Measurement.Model
         , NeckCPESign(..)
         , OutsideCareMedication(..)
         , Predecessor(..)
+        , TestExecutionNote(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, nonReferralReasonToSign, testResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Model
+import Date exposing (Unit(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -40,6 +42,8 @@ import Measurement.Utils
         , toCreatinineTestValueWithEmptyResults
         , toFamilyPlanningValueWithDefault
         , toHIVTestValueWithDefault
+        , toHbA1cTestValueWithDefault
+        , toLipidPanelTestValueWithEmptyResults
         , toLiverFunctionTestValueWithEmptyResults
         , toNonRDTValueWithDefault
         , toOutsideCareValueWithDefault
@@ -903,9 +907,13 @@ update currentDate id db msg model =
 
         SetOutsideCareStep step ->
             let
+                updatedForm =
+                    model.medicalHistoryData.outsideCareForm
+                        |> (\form -> { form | step = step })
+
                 updatedData =
                     model.medicalHistoryData
-                        |> (\data -> { data | outsideCareStep = step })
+                        |> (\data -> { data | outsideCareForm = updatedForm })
             in
             ( { model | medicalHistoryData = updatedData }
             , Cmd.none
@@ -1385,6 +1393,23 @@ update currentDate id db msg model =
             , []
             )
 
+        SetRandomBloodSugarResult value ->
+            let
+                form =
+                    model.laboratoryData.randomBloodSugarTestForm
+
+                updatedForm =
+                    { form | sugarCount = String.toFloat value, sugarCountDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveRandomBloodSugarTest personId saved nextTask ->
             let
                 measurementId =
@@ -1715,6 +1740,223 @@ update currentDate id db msg model =
                         |> toNonRDTValueWithDefault measurement toLiverFunctionTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveLiverFunctionTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetLipidPanelTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.lipidPanelTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLipidPanelTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.lipidPanelTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLipidPanelTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.lipidPanelTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLipidPanelTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.lipidPanelTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | lipidPanelTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveLipidPanelTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.lipidPanelTestForm
+                        |> toNonRDTValueWithDefault measurement toLipidPanelTestValueWithEmptyResults
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveLipidPanelTest personId measurementId
+                                >> Backend.Model.MsgNCDEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetHbA1cTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.hba1cTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hba1cTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHbA1cTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.hba1cTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hba1cTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHbA1cTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.hba1cTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                -- The date is set when date selectore is closed by pressing
+                -- 'Save' button. Once it happens, we get here, and examine the
+                -- date that was entered, and set execution note according to
+                -- time that has passed since.
+                executionNote =
+                    Maybe.map
+                        (\selectedDate ->
+                            if Date.diff Months selectedDate currentDate >= 6 then
+                                TestNoteToBeDoneAtHospital
+
+                            else
+                                TestNoteRunPreviously
+                        )
+                        defaultSelection
+
+                updatedForm =
+                    { form
+                        | dateSelectorPopupState = state
+                        , executionDate = defaultSelection
+                        , executionNote = executionNote
+                    }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hba1cTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHbA1cTestResult value ->
+            let
+                form =
+                    model.laboratoryData.hba1cTestForm
+
+                updatedForm =
+                    { form | hba1cResult = String.toFloat value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | hba1cTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHbA1cTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.hba1cTestForm
+                        |> toHbA1cTestValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.NCDEncounter.Model.SaveHbA1cTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

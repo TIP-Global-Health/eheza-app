@@ -444,6 +444,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityGroupHealthEducation identifier ->
                 viewMeasurement identifier "Group Health Education"
 
+            BackendAuthorityGroupNCDA identifier ->
+                viewMeasurement identifier "Group NCDA"
+
             BackendAuthorityGroupSendToHC identifier ->
                 viewMeasurement identifier "Group Send to HC"
 
@@ -510,6 +513,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityNCDFamilyPlanning identifier ->
                 viewMeasurement identifier "NCDFamilyPlanning"
 
+            BackendAuthorityNCDHbA1cTest identifier ->
+                viewMeasurement identifier "NCDHbA1cTest"
+
             BackendAuthorityNCDHealthEducation identifier ->
                 viewMeasurement identifier "NCDHealthEducation"
 
@@ -518,6 +524,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityNCDLabsResults identifier ->
                 viewMeasurement identifier "NCDLabsResults"
+
+            BackendAuthorityNCDLipidPanelTest identifier ->
+                viewMeasurement identifier "NCDLipidPanelTest"
 
             BackendAuthorityNCDLiverFunctionTest identifier ->
                 viewMeasurement identifier "NCDLiverFunctionTest"
@@ -584,6 +593,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityNutritionMuac identifier ->
                 viewMeasurement identifier "Nutrition Muac"
+
+            BackendAuthorityNutritionNCDA identifier ->
+                viewMeasurement identifier "Nutrition NCDA"
 
             BackendAuthorityNutritionNutrition identifier ->
                 viewMeasurement identifier "Nutrition Nutrition"
@@ -779,6 +791,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWellChildMuac identifier ->
                 viewMeasurement identifier "Well Child Muac"
+
+            BackendAuthorityWellChildNCDA identifier ->
+                viewMeasurement identifier "Well Child NCDA"
 
             BackendAuthorityWellChildNextVisit identifier ->
                 viewMeasurement identifier "Well Child Next Visit"

@@ -108,6 +108,10 @@ type WeightInKg
     = WeightInKg Float
 
 
+type WeightInGrm
+    = WeightInGrm Float
+
+
 type alias Weight =
     GroupMeasurement WeightInKg
 
@@ -259,6 +263,38 @@ type FollowUpOption
     | OneMonths
     | TwoMonths
     | ThreeMonths
+
+
+type alias GroupNCDA =
+    GroupMeasurement NCDAValue
+
+
+type alias NCDAValue =
+    { signs : EverySet NCDASign
+    , birthWeight : Maybe WeightInGrm
+    }
+
+
+type NCDASign
+    = NCDABornWithBirthDefect
+    | NCDABreastfedForSixMonths
+    | NCDAAppropriateComplementaryFeeding
+    | NCDAOngeraMNP
+    | NCDAFiveFoodGroups
+    | NCDAMealFrequency6to8Months
+    | NCDAMealFrequency9to11Months
+    | NCDAMealFrequency12MonthsOrMore
+    | NCDASupportChildWithDisability
+    | NCDAConditionalCashTransfer
+    | NCDAConditionalFoodItems
+    | NCDAHasCleanWater
+    | NCDAHasHandwashingFacility
+    | NCDAHasToilets
+    | NCDAHasKitchenGarden
+    | NCDARegularPrenatalVisits
+    | NCDAIronSupplementsDuringPregnancy
+    | NCDAInsecticideTreatedBednetsDuringPregnancy
+    | NoNCDASigns
 
 
 
@@ -417,6 +453,10 @@ type CaringOption
     | CaredByNeighbor
     | CaredByHouseHelper
     | CaredByDaycare
+
+
+type alias NutritionNCDA =
+    NutritionMeasurement NCDAValue
 
 
 
@@ -953,6 +993,7 @@ type TestExecutionNote
     | TestNoteBrokenEquipment
     | TestNoteNotIndicated
     | TestNoteKnownAsPositive
+    | TestNoteToBeDoneAtHospital
 
 
 type TestResult
@@ -1063,6 +1104,7 @@ type alias RandomBloodSugarTestValue encounterId =
 
 type TestPrerequisite
     = PrerequisiteFastFor12h
+    | PrerequisiteImmediateResult
     | NoTestPrerequisites
 
 
@@ -1215,6 +1257,7 @@ type LaboratoryTest
     | TestHIVPCR
     | TestCreatinine
     | TestLiverFunction
+    | TestLipidPanel
 
 
 type alias PrenatalMedicationDistribution =
@@ -2211,7 +2254,19 @@ type alias WellChildPregnancySummary =
 type alias PregnancySummaryValue =
     { expectedDateConcluded : NominalDate
     , deliveryComplications : EverySet DeliveryComplication
+    , signs : EverySet PregnancySummarySign
+    , apgarOneMin : Maybe Float
+    , apgarFiveMin : Maybe Float
+    , birthWeight : Maybe WeightInGrm
+    , birthLength : Maybe HeightInCm
+    , birthDefects : EverySet BirthDefect
     }
+
+
+type PregnancySummarySign
+    = ApgarScores
+    | BirthLength
+    | NoPregnancySummarySigns
 
 
 type DeliveryComplication
@@ -2223,6 +2278,26 @@ type DeliveryComplication
     | ComplicationMaternalDeath
     | ComplicationOther
     | NoDeliveryComplications
+
+
+type BirthDefect
+    = DefectBirthInjury
+    | DefectCleftLipWithCleftPalate
+    | DefectCleftPalate
+    | DefectClubFoot
+    | DefectMacrocephaly
+    | DefectGastroschisis
+    | DefectHearingLoss
+    | DefectUndescendedTestes
+    | DefectHypospadias
+    | DefectInguinalHernia
+    | DefectMicrocephaly
+    | DefectNeuralTubes
+    | DefectDownSyndrome
+    | DefectCongenitalHeart
+    | DefectVentricalSeptal
+    | DefectPulmonaryValveAtresiaAndStenosis
+    | NoBirthDefects
 
 
 type alias WellChildNextVisit =
@@ -2272,6 +2347,10 @@ type alias VaccinationValue =
     , administrationDates : EverySet NominalDate
     , administrationNote : AdministrationNote
     }
+
+
+type alias WellChildNCDA =
+    WellChildMeasurement NCDAValue
 
 
 
@@ -2573,6 +2652,41 @@ type alias NCDLabsResults =
     NCDMeasurement LabsResultsValue
 
 
+type alias NCDLipidPanelTest =
+    NCDMeasurement LipidPanelTestValue
+
+
+type alias LipidPanelTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+
+    -- Indicates what unit of measurement was used while results were recorded.
+    , unitOfMeasurement : Maybe UnitOfMeasurement
+
+    -- All results are stored in mg/dL unit.
+    , totalCholesterolResult : Maybe Float
+    , ldlCholesterolResult : Maybe Float
+    , hdlCholesterolResult : Maybe Float
+    , triglyceridesResult : Maybe Float
+    }
+
+
+type UnitOfMeasurement
+    = UnitMmolL
+    | UnitMgdL
+
+
+type alias NCDHbA1cTest =
+    NCDMeasurement HbA1cTestValue
+
+
+type alias HbA1cTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hba1cResult : Maybe Float
+    }
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -2616,6 +2730,7 @@ type alias ChildMeasurementList =
     , followUp : Dict FollowUpId FollowUp
     , healthEducation : Dict GroupHealthEducationId GroupHealthEducation
     , sendToHC : Dict GroupSendToHCId GroupSendToHC
+    , ncda : Dict GroupNCDAId GroupNCDA
     }
 
 
@@ -2632,6 +2747,7 @@ emptyChildMeasurementList =
     , followUp = Dict.empty
     , healthEducation = Dict.empty
     , sendToHC = Dict.empty
+    , ncda = Dict.empty
     }
 
 
@@ -2756,6 +2872,7 @@ type alias NutritionMeasurements =
     , healthEducation : Maybe ( NutritionHealthEducationId, NutritionHealthEducation )
     , contributingFactors : Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )
     , followUp : Maybe ( NutritionFollowUpId, NutritionFollowUp )
+    , ncda : Maybe ( NutritionNCDAId, NutritionNCDA )
     }
 
 
@@ -2841,6 +2958,7 @@ type alias WellChildMeasurements =
     , opvImmunisation : Maybe ( WellChildOPVImmunisationId, WellChildOPVImmunisation )
     , pcv13Immunisation : Maybe ( WellChildPCV13ImmunisationId, WellChildPCV13Immunisation )
     , rotarixImmunisation : Maybe ( WellChildRotarixImmunisationId, WellChildRotarixImmunisation )
+    , ncda : Maybe ( WellChildNCDAId, WellChildNCDA )
     }
 
 
@@ -2853,9 +2971,11 @@ type alias NCDMeasurements =
     , dangerSigns : Maybe ( NCDDangerSignsId, NCDDangerSigns )
     , familyHistory : Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )
     , familyPlanning : Maybe ( NCDFamilyPlanningId, NCDFamilyPlanning )
+    , hba1cTest : Maybe ( NCDHbA1cTestId, NCDHbA1cTest )
     , healthEducation : Maybe ( NCDHealthEducationId, NCDHealthEducation )
     , hivTest : Maybe ( NCDHIVTestId, NCDHIVTest )
     , labsResults : Maybe ( NCDLabsResultsId, NCDLabsResults )
+    , lipidPanelTest : Maybe ( NCDLipidPanelTestId, NCDLipidPanelTest )
     , liverFunctionTest : Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )
     , medicationDistribution : Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )
     , medicationHistory : Maybe ( NCDMedicationHistoryId, NCDMedicationHistory )
@@ -2889,6 +3009,7 @@ type alias ChildMeasurements =
     , followUp : Maybe ( FollowUpId, FollowUp )
     , healthEducation : Maybe ( GroupHealthEducationId, GroupHealthEducation )
     , sendToHC : Maybe ( GroupSendToHCId, GroupSendToHC )
+    , ncda : Maybe ( GroupNCDAId, GroupNCDA )
     }
 
 
@@ -2905,6 +3026,7 @@ emptyChildMeasurements =
     , followUp = Nothing
     , healthEducation = Nothing
     , sendToHC = Nothing
+    , ncda = Nothing
     }
 
 

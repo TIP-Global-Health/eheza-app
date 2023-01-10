@@ -23,6 +23,7 @@ import Measurement.Model
         , CorePhysicalExamForm
         , InvokationModule(..)
         , LaboratoryTask(..)
+        , OutsideCareForm
         , OutsideCareStep(..)
         , VitalsForm
         , VitalsFormMode(..)
@@ -33,6 +34,7 @@ import Measurement.Utils
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
         , emptyContentAndTasksLaboratoryTestInitialConfig
         , familyPlanningFormWithDefault
+        , hba1cTestFormWithDefault
         , hivTestFormWithDefault
         , laboratoryTaskIconClass
         , nonRDTFormWithDefault
@@ -42,6 +44,7 @@ import Measurement.Utils
         , randomBloodSugarFormWithDefault
         , urineDipstickFormWithDefault
         , viewHIVTestForm
+        , viewHbA1cTestForm
         , viewNonRDTForm
         , viewPregnancyTestForm
         , viewRandomBloodSugarForm
@@ -140,6 +143,9 @@ viewActivity language currentDate activity assembled db model =
 
         SymptomReview ->
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
+
+        OutsideCare ->
+            viewOutsideCareContent language currentDate assembled model.medicalHistoryData.outsideCareForm
 
         NextSteps ->
             viewNextStepsContent language currentDate assembled model.nextStepsData
@@ -549,36 +555,12 @@ viewMedicalHistoryContent language currentDate assembled data =
                 |> outsideCareFormWithDefault data.outsideCareForm
 
         ( outsideCareInputs, outsideCareTasks ) =
-            case data.outsideCareStep of
+            case outsideCareForm.step of
                 OutsideCareStepDiagnoses ->
                     ( outsideCareInputsStep1, outsideCareTasksStep1 )
 
                 OutsideCareStepMedications ->
                     ( outsideCareInputsStep2, outsideCareTasksStep2 )
-
-        outsideCareConfig =
-            { setBoolInputMsg = SetOutsideCareSignBoolInput
-            , setDiagnosisMsg = SetOutsideCareDiagnosis
-            , setMalariaMedicationMsg = SetOutsideCareMalariaMedication
-            , setHypertensionMedicationMsg = SetOutsideCareHypertensionMedication
-            , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
-            , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
-            , setHIVMedicationMsg = SetOutsideCareHIVMedication
-            , malariaDiagnoses = [ MedicalConditionMalaria ]
-            , hypertensionDiagnoses = [ MedicalConditionHypertension ]
-            , syphilisDiagnoses = [ MedicalConditionSyphilis ]
-            , anemiaDiagnoses = [ MedicalConditionAnemia ]
-            , hivDiagnoses = [ MedicalConditionHIV ]
-            , malariaHeaderTransId = Translate.MedicalCondition MedicalConditionMalaria
-            , resolveHypertensionHeaderTransId = always (Translate.MedicalCondition MedicalConditionHypertension)
-            , syphilisHeaderTransId = Translate.MedicalCondition MedicalConditionSyphilis
-            , anemiaHeaderTransId = Translate.MedicalCondition MedicalConditionAnemia
-            , hivHeaderTransId = Translate.MedicalCondition MedicalConditionHIV
-            , diagnosesLeftColumn = outsideCareDiagnosesLeftColumn
-            , diagnosesRightColumn = outsideCareDiagnosesRightColumn
-            , otherDiagnosis = MedicalConditionOther
-            , diagnosisTransId = Translate.MedicalCondition
-            }
 
         ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
             outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
@@ -662,7 +644,7 @@ viewMedicalHistoryContent language currentDate assembled data =
                                         saveAction =
                                             SaveOutsideCare personId measurements.outsideCare nextTask
                                     in
-                                    case data.outsideCareStep of
+                                    case outsideCareForm.step of
                                         OutsideCareStepDiagnoses ->
                                             let
                                                 actionMsg =
@@ -686,7 +668,7 @@ viewMedicalHistoryContent language currentDate assembled data =
                     div
                         [ classList
                             [ ( "actions", True )
-                            , ( "two", task == TaskOutsideCare && data.outsideCareStep == OutsideCareStepMedications )
+                            , ( "two", task == TaskOutsideCare && outsideCareForm.step == OutsideCareStepMedications )
                             ]
                         ]
                         buttons
@@ -706,6 +688,102 @@ viewMedicalHistoryContent language currentDate assembled data =
             ]
         ]
     ]
+
+
+viewOutsideCareContent : Language -> NominalDate -> AssembledData -> OutsideCareForm MedicalCondition -> List (Html Msg)
+viewOutsideCareContent language currentDate assembled form =
+    let
+        outsideCareForm =
+            assembled.measurements.outsideCare
+                |> getMeasurementValueFunc
+                |> outsideCareFormWithDefault form
+
+        ( outsideCareInputs, outsideCareTasks ) =
+            case outsideCareForm.step of
+                OutsideCareStepDiagnoses ->
+                    ( outsideCareInputsStep1, outsideCareTasksStep1 )
+
+                OutsideCareStepMedications ->
+                    ( outsideCareInputsStep2, outsideCareTasksStep2 )
+
+        ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
+            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
+
+        ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
+            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepMedications outsideCareForm
+
+        totalTasks =
+            List.length outsideCareTasks
+
+        tasksCompleted =
+            Maybe.Extra.values outsideCareTasks
+                |> List.length
+
+        actions =
+            let
+                saveAction =
+                    SaveOutsideCare assembled.participant.person assembled.measurements.outsideCare Nothing
+
+                saveButtonActive =
+                    tasksCompleted == totalTasks
+            in
+            case form.step of
+                OutsideCareStepDiagnoses ->
+                    let
+                        actionMsg =
+                            if List.isEmpty outsideCareTasksStep2 then
+                                saveAction
+
+                            else
+                                SetOutsideCareStep OutsideCareStepMedications
+                    in
+                    div [ class "actions" ]
+                        [ saveButton language saveButtonActive actionMsg ]
+
+                OutsideCareStepMedications ->
+                    div [ class "actions two" ]
+                        [ button
+                            [ class "ui fluid primary button"
+                            , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
+                            ]
+                            [ text <| ("< " ++ translate language Translate.Back) ]
+                        , saveButton language saveButtonActive saveAction
+                        ]
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form history outside-care" ]
+                outsideCareInputs
+            ]
+        , actions
+        ]
+    ]
+
+
+outsideCareConfig =
+    { setBoolInputMsg = SetOutsideCareSignBoolInput
+    , setDiagnosisMsg = SetOutsideCareDiagnosis
+    , setMalariaMedicationMsg = SetOutsideCareMalariaMedication
+    , setHypertensionMedicationMsg = SetOutsideCareHypertensionMedication
+    , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
+    , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
+    , setHIVMedicationMsg = SetOutsideCareHIVMedication
+    , malariaDiagnoses = [ MedicalConditionMalaria ]
+    , hypertensionDiagnoses = [ MedicalConditionHypertension ]
+    , syphilisDiagnoses = [ MedicalConditionSyphilis ]
+    , anemiaDiagnoses = [ MedicalConditionAnemia ]
+    , hivDiagnoses = [ MedicalConditionHIV ]
+    , malariaHeaderTransId = Translate.MedicalCondition MedicalConditionMalaria
+    , resolveHypertensionHeaderTransId = always (Translate.MedicalCondition MedicalConditionHypertension)
+    , syphilisHeaderTransId = Translate.MedicalCondition MedicalConditionSyphilis
+    , anemiaHeaderTransId = Translate.MedicalCondition MedicalConditionAnemia
+    , hivHeaderTransId = Translate.MedicalCondition MedicalConditionHIV
+    , diagnosesLeftColumn = outsideCareDiagnosesLeftColumn
+    , diagnosesRightColumn = outsideCareDiagnosesRightColumn
+    , otherDiagnosis = MedicalConditionOther
+    , diagnosisTransId = Translate.MedicalCondition
+    }
 
 
 viewCoMorbiditiesForm : Language -> NominalDate -> CoMorbiditiesForm -> Html Msg
@@ -904,6 +982,32 @@ viewLaboratoryContent language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     TaskLiverFunctionTest
 
+                        TaskLipidPanelTest ->
+                            measurements.lipidPanelTest
+                                |> getMeasurementValueFunc
+                                |> nonRDTFormWithDefault data.lipidPanelTestForm
+                                |> viewNonRDTForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    TaskLipidPanelTest
+
+                        TaskHbA1cTest ->
+                            let
+                                previousTestsDates =
+                                    generatePreviousLaboratoryTestsDatesDict currentDate assembled
+                                        |> Dict.get TaskHbA1cTest
+                                        |> Maybe.withDefault []
+                            in
+                            measurements.hba1cTest
+                                |> getMeasurementValueFunc
+                                |> hba1cTestFormWithDefault data.hba1cTestForm
+                                |> viewHbA1cTestForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    previousTestsDates
+
                         -- Others do not participate at NCD.
                         _ ->
                             ( emptyNode, 0, 0 )
@@ -955,6 +1059,12 @@ viewLaboratoryContent language currentDate assembled data =
                                 TaskLiverFunctionTest ->
                                     SaveLiverFunctionTest personId measurements.liverFunctionTest nextTask
 
+                                TaskLipidPanelTest ->
+                                    SaveLipidPanelTest personId measurements.lipidPanelTest nextTask
+
+                                TaskHbA1cTest ->
+                                    SaveHbA1cTest personId measurements.hba1cTest nextTask
+
                                 -- Others do not participate at NCD.
                                 _ ->
                                     NoOp
@@ -996,6 +1106,8 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setCreatinineTestExecutionNoteMsg = SetCreatinineTestExecutionNote
                     , setLiverFunctionTestFormBoolInputMsg = SetLiverFunctionTestFormBoolInput
                     , setLiverFunctionTestExecutionNoteMsg = SetLiverFunctionTestExecutionNote
+                    , setLipidPanelTestFormBoolInputMsg = SetLipidPanelTestFormBoolInput
+                    , setLipidPanelTestExecutionNoteMsg = SetLipidPanelTestExecutionNote
                 }
            )
 
@@ -1014,6 +1126,7 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
                     , setRandomBloodSugarTestExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
                     , setRandomBloodSugarTestDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                    , setRandomBloodSugarResultMsg = SetRandomBloodSugarResult
                     , setPregnancyTestFormBoolInputMsg = SetPregnancyTestFormBoolInput
                     , setPregnancyTestExecutionDateMsg = SetPregnancyTestExecutionDate
                     , setPregnancyTestDateSelectorStateMsg = SetPregnancyTestDateSelectorState
@@ -1023,6 +1136,13 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setLiverFunctionTestFormBoolInputMsg = SetLiverFunctionTestFormBoolInput
                     , setLiverFunctionTestExecutionDateMsg = SetLiverFunctionTestExecutionDate
                     , setLiverFunctionTestDateSelectorStateMsg = SetLiverFunctionTestDateSelectorState
+                    , setLipidPanelTestFormBoolInputMsg = SetLipidPanelTestFormBoolInput
+                    , setLipidPanelTestExecutionDateMsg = SetLipidPanelTestExecutionDate
+                    , setLipidPanelTestDateSelectorStateMsg = SetLipidPanelTestDateSelectorState
+                    , setHbA1cTestFormBoolInputMsg = SetHbA1cTestFormBoolInput
+                    , setHbA1cTestExecutionDateMsg = SetHbA1cTestExecutionDate
+                    , setHbA1cTestDateSelectorStateMsg = SetHbA1cTestDateSelectorState
+                    , setHbA1cTestResultMsg = SetHbA1cTestResult
                 }
            )
 

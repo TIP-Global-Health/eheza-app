@@ -50,6 +50,7 @@ type alias ModelChild =
     , followUpForm : FollowUpForm
     , healthEducationForm : HealthEducationForm
     , sendToHCForm : SendToHCForm
+    , ncdaData : NCDAData
     }
 
 
@@ -74,6 +75,7 @@ emptyModelChild =
     , followUpForm = emptyFollowUpForm
     , healthEducationForm = emptyHealthEducationForm
     , sendToHCForm = emptySendToHCForm
+    , ncdaData = emptyNCDAData
     }
 
 
@@ -240,6 +242,10 @@ type MsgChild
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
+    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetBirthWeight String
+    | SetNCDAHelperState (Maybe NCDASign)
+    | SetNCDAFormStep NCDAStep
 
 
 type MsgMother
@@ -262,7 +268,8 @@ creating a new one.
 
 -}
 type OutMsgChild
-    = FetchIndividualNutritionData PersonId
+    = NoOp
+    | FetchIndividualNutritionData PersonId
     | SaveHeight (Maybe HeightId) HeightInCm
     | SaveWeight (Maybe WeightId) WeightInKg
     | SaveMuac (Maybe MuacId) MuacInCm
@@ -274,6 +281,7 @@ type OutMsgChild
     | SaveFollowUp (Maybe FollowUpId) FollowUpValue
     | SaveHealthEducation (Maybe GroupHealthEducationId) HealthEducationValue
     | SaveSendToHC (Maybe GroupSendToHCId) SendToHCValue
+    | SaveNCDA (Maybe GroupNCDAId) NCDAValue
 
 
 type OutMsgMother
@@ -521,7 +529,8 @@ emptyFamilyPlanningForm =
 
 
 type alias OutsideCareForm diagnosis =
-    { seenAtAnotherFacility : Maybe Bool
+    { step : OutsideCareStep
+    , seenAtAnotherFacility : Maybe Bool
     , givenNewDiagnosis : Maybe Bool
     , givenMedicine : Maybe Bool
     , plannedFollowUp : Maybe Bool
@@ -537,7 +546,8 @@ type alias OutsideCareForm diagnosis =
 
 emptyOutsideCareForm : OutsideCareForm diagnosis
 emptyOutsideCareForm =
-    { seenAtAnotherFacility = Nothing
+    { step = OutsideCareStepDiagnoses
+    , seenAtAnotherFacility = Nothing
     , givenNewDiagnosis = Nothing
     , givenMedicine = Nothing
     , plannedFollowUp = Nothing
@@ -569,6 +579,8 @@ type LaboratoryTask
     | TaskPregnancyTest
     | TaskCreatinineTest
     | TaskLiverFunctionTest
+    | TaskLipidPanelTest
+    | TaskHbA1cTest
     | TaskCompletePreviousTests
 
 
@@ -601,6 +613,10 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setCreatinineTestExecutionNoteMsg : TestExecutionNote -> msg
     , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setLiverFunctionTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
+    , setHbA1cTestExecutionNoteMsg : TestExecutionNote -> msg
     , noOpMsg : msg
     }
 
@@ -630,6 +646,7 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
     , setRandomBloodSugarTestExecutionDateMsg : NominalDate -> msg
     , setRandomBloodSugarTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setRandomBloodSugarResultMsg : String -> msg
     , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setHIVPCRTestExecutionDateMsg : NominalDate -> msg
     , setHIVPCRTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
@@ -642,6 +659,13 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setLiverFunctionTestExecutionDateMsg : NominalDate -> msg
     , setLiverFunctionTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLipidPanelTestExecutionDateMsg : NominalDate -> msg
+    , setLipidPanelTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
+    , setHbA1cTestExecutionDateMsg : NominalDate -> msg
+    , setHbA1cTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHbA1cTestResultMsg : String -> msg
     , noOpMsg : msg
     }
 
@@ -735,6 +759,7 @@ type alias RandomBloodSugarForm msg =
     { testPerformed : Maybe Bool
     , testPerformedDirty : Bool
     , patientFasted : Maybe Bool
+    , immediateResult : Maybe Bool
     , testPerformedToday : Maybe Bool
     , testPerformedTodayDirty : Bool
     , executionNote : Maybe TestExecutionNote
@@ -742,6 +767,8 @@ type alias RandomBloodSugarForm msg =
     , executionDate : Maybe NominalDate
     , executionDateDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    , sugarCount : Maybe Float
+    , sugarCountDirty : Bool
     }
 
 
@@ -750,6 +777,7 @@ emptyRandomBloodSugarForm =
     { testPerformed = Nothing
     , testPerformedDirty = False
     , patientFasted = Nothing
+    , immediateResult = Nothing
     , testPerformedToday = Nothing
     , testPerformedTodayDirty = False
     , executionNote = Nothing
@@ -757,6 +785,11 @@ emptyRandomBloodSugarForm =
     , executionDate = Nothing
     , executionDateDirty = False
     , dateSelectorPopupState = Nothing
+
+    -- We need this, since RandomBloodSugar result can be
+    -- entered both  immediately, and from case management.
+    , sugarCount = Nothing
+    , sugarCountDirty = False
     }
 
 
@@ -948,3 +981,138 @@ type alias LiverFunctionResultForm =
 emptyLiverFunctionResultForm : LiverFunctionResultForm
 emptyLiverFunctionResultForm =
     LiverFunctionResultForm Nothing Nothing Nothing Nothing
+
+
+type alias NCDAData =
+    { form : NCDAForm
+    , helperState : Maybe NCDASign
+    }
+
+
+emptyNCDAData : NCDAData
+emptyNCDAData =
+    { form = emptyNCDAForm
+    , helperState = Nothing
+    }
+
+
+type alias NCDAForm =
+    { step : Maybe NCDAStep
+    , bornWithBirthDefect : Maybe Bool
+    , breastfedForSixMonths : Maybe Bool
+    , appropriateComplementaryFeeding : Maybe Bool
+    , ongeraMNP : Maybe Bool
+    , fiveFoodGroups : Maybe Bool
+    , mealFrequency6to8Months : Maybe Bool
+    , mealFrequency9to11Months : Maybe Bool
+    , mealFrequency12MonthsOrMore : Maybe Bool
+    , supportChildWithDisability : Maybe Bool
+    , conditionalCashTransfer : Maybe Bool
+    , conditionalFoodItems : Maybe Bool
+    , hasCleanWater : Maybe Bool
+    , hasHandwashingFacility : Maybe Bool
+    , hasToilets : Maybe Bool
+    , hasKitchenGarden : Maybe Bool
+    , regularPrenatalVisits : Maybe Bool
+    , ironSupplementsDuringPregnancy : Maybe Bool
+    , insecticideTreatedBednetsDuringPregnancy : Maybe Bool
+    , birthWeight : Maybe WeightInGrm
+    }
+
+
+emptyNCDAForm : NCDAForm
+emptyNCDAForm =
+    { step = Nothing
+    , bornWithBirthDefect = Nothing
+    , breastfedForSixMonths = Nothing
+    , appropriateComplementaryFeeding = Nothing
+    , ongeraMNP = Nothing
+    , fiveFoodGroups = Nothing
+    , mealFrequency6to8Months = Nothing
+    , mealFrequency9to11Months = Nothing
+    , mealFrequency12MonthsOrMore = Nothing
+    , supportChildWithDisability = Nothing
+    , conditionalCashTransfer = Nothing
+    , conditionalFoodItems = Nothing
+    , hasCleanWater = Nothing
+    , hasHandwashingFacility = Nothing
+    , hasToilets = Nothing
+    , hasKitchenGarden = Nothing
+    , regularPrenatalVisits = Nothing
+    , ironSupplementsDuringPregnancy = Nothing
+    , insecticideTreatedBednetsDuringPregnancy = Nothing
+    , birthWeight = Nothing
+    }
+
+
+type NCDAStep
+    = NCDAStepQuestionsAskedOnce
+    | NCDAStepPermanentQuestions1
+    | NCDAStepPermanentQuestions2
+
+
+type GroupOfFoods
+    = Staples
+    | Legumes
+    | DairyProducts
+    | AnimalSourceFoods
+    | Eggs
+    | FruitsVegetables
+    | BreastMilk
+    | MealsWithEdibleOil
+
+
+type alias LipidPanelResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , unitOfMeasurement : Maybe UnitOfMeasurement
+    , totalCholesterolResult : Maybe Float
+    , totalCholesterolResultDirty : Bool
+    , ldlCholesterolResult : Maybe Float
+    , ldlCholesterolResultDirty : Bool
+    , hdlCholesterolResult : Maybe Float
+    , hdlCholesterolResultDirty : Bool
+    , triglyceridesResult : Maybe Float
+    , triglyceridesResultDirty : Bool
+    }
+
+
+emptyLipidPanelResultForm : LipidPanelResultForm
+emptyLipidPanelResultForm =
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , unitOfMeasurement = Nothing
+    , totalCholesterolResult = Nothing
+    , totalCholesterolResultDirty = False
+    , ldlCholesterolResult = Nothing
+    , ldlCholesterolResultDirty = False
+    , hdlCholesterolResult = Nothing
+    , hdlCholesterolResultDirty = False
+    , triglyceridesResult = Nothing
+    , triglyceridesResultDirty = False
+    }
+
+
+type alias HbA1cTestForm msg =
+    { gotResultsPreviously : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    , hba1cResult : Maybe Float
+    , hba1cResultDirty : Bool
+    }
+
+
+emptyHbA1cTestForm : HbA1cTestForm msg
+emptyHbA1cTestForm =
+    { gotResultsPreviously = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , dateSelectorPopupState = Nothing
+    , hba1cResult = Nothing
+    , hba1cResultDirty = False
+    }

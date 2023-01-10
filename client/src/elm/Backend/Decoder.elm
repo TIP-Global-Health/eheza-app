@@ -119,6 +119,9 @@ decodeRevision =
                     "group_health_education" ->
                         decodeWithUuid GroupHealthEducationRevision decodeGroupHealthEducation
 
+                    "group_ncda" ->
+                        decodeWithUuid GroupNCDARevision decodeGroupNCDA
+
                     "group_send_to_hc" ->
                         decodeWithUuid GroupSendToHCRevision decodeGroupSendToHC
 
@@ -188,6 +191,9 @@ decodeRevision =
                     "ncd_family_planning" ->
                         decodeWithUuid NCDFamilyPlanningRevision decodeNCDFamilyPlanning
 
+                    "ncd_hba1c_test" ->
+                        decodeWithUuid NCDHbA1cTestRevision decodeNCDHbA1cTest
+
                     "ncd_health_education" ->
                         decodeWithUuid NCDHealthEducationRevision decodeNCDHealthEducation
 
@@ -196,6 +202,9 @@ decodeRevision =
 
                     "ncd_labs_results" ->
                         decodeWithUuid NCDLabsResultsRevision decodeNCDLabsResults
+
+                    "ncd_lipid_panel_test" ->
+                        decodeWithUuid NCDLipidPanelTestRevision decodeNCDLipidPanelTest
 
                     "ncd_liver_function_test" ->
                         decodeWithUuid NCDLiverFunctionTestRevision decodeNCDLiverFunctionTest
@@ -265,6 +274,9 @@ decodeRevision =
 
                     "nutrition_muac" ->
                         decodeWithUuid NutritionMuacRevision decodeNutritionMuac
+
+                    "nutrition_ncda" ->
+                        decodeWithUuid NutritionNCDARevision decodeNutritionNCDA
 
                     "nutrition_nutrition" ->
                         decodeWithUuid NutritionNutritionRevision decodeNutritionNutrition
@@ -469,6 +481,9 @@ decodeRevision =
 
                     "well_child_muac" ->
                         decodeWithUuid WellChildMuacRevision decodeWellChildMuac
+
+                    "well_child_ncda" ->
+                        decodeWithUuid WellChildNCDARevision decodeWellChildNCDA
 
                     "well_child_next_visit" ->
                         decodeWithUuid WellChildNextVisitRevision decodeWellChildNextVisit

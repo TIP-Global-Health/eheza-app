@@ -96,6 +96,7 @@ decodeChildMeasurementList =
         |> optional "follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeFollowUp)) Dict.empty
         |> optional "group_health_education" (map Dict.fromList <| list (decodeWithEntityUuid decodeGroupHealthEducation)) Dict.empty
         |> optional "group_send_to_hc" (map Dict.fromList <| list (decodeWithEntityUuid decodeGroupSendToHC)) Dict.empty
+        |> optional "group_ncda" (map Dict.fromList <| list (decodeWithEntityUuid decodeGroupNCDA)) Dict.empty
 
 
 decodePrenatalMeasurements : Decoder PrenatalMeasurements
@@ -154,6 +155,7 @@ decodeNutritionMeasurements =
         |> optional "nutrition_health_education" (decodeHead decodeNutritionHealthEducation) Nothing
         |> optional "nutrition_contributing_factors" (decodeHead decodeNutritionContributingFactors) Nothing
         |> optional "nutrition_follow_up" (decodeHead decodeNutritionFollowUp) Nothing
+        |> optional "nutrition_ncda" (decodeHead decodeNutritionNCDA) Nothing
 
 
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
@@ -235,6 +237,7 @@ decodeWellChildMeasurements =
         |> optional "well_child_opv_immunisation" (decodeHead decodeWellChildOPVImmunisation) Nothing
         |> optional "well_child_pcv13_immunisation" (decodeHead decodeWellChildPCV13Immunisation) Nothing
         |> optional "well_child_rotarix_immunisation" (decodeHead decodeWellChildRotarixImmunisation) Nothing
+        |> optional "well_child_ncda" (decodeHead decodeWellChildNCDA) Nothing
 
 
 decodeNCDMeasurements : Decoder NCDMeasurements
@@ -246,9 +249,11 @@ decodeNCDMeasurements =
         |> optional "ncd_danger_signs" (decodeHead decodeNCDDangerSigns) Nothing
         |> optional "ncd_family_history" (decodeHead decodeNCDFamilyHistory) Nothing
         |> optional "ncd_family_planning" (decodeHead decodeNCDFamilyPlanning) Nothing
+        |> optional "ncd_hba1c_test" (decodeHead decodeNCDHbA1cTest) Nothing
         |> optional "ncd_health_education" (decodeHead decodeNCDHealthEducation) Nothing
         |> optional "ncd_hiv_test" (decodeHead decodeNCDHIVTest) Nothing
         |> optional "ncd_labs_results" (decodeHead decodeNCDLabsResults) Nothing
+        |> optional "ncd_lipid_panel_test" (decodeHead decodeNCDLipidPanelTest) Nothing
         |> optional "ncd_liver_function_test" (decodeHead decodeNCDLiverFunctionTest) Nothing
         |> optional "ncd_medication_distribution" (decodeHead decodeNCDMedicationDistribution) Nothing
         |> optional "ncd_medication_history" (decodeHead decodeNCDMedicationHistory) Nothing
@@ -587,6 +592,9 @@ decodeTestPrerequisite =
                     "fasting-12h" ->
                         succeed PrerequisiteFastFor12h
 
+                    "immediate-result" ->
+                        succeed PrerequisiteImmediateResult
+
                     "none" ->
                         succeed NoTestPrerequisites
 
@@ -790,6 +798,9 @@ decodeTestExecutionNote =
 
                     "known-as-positive" ->
                         succeed TestNoteKnownAsPositive
+
+                    "to-be-done-at-hospital" ->
+                        succeed TestNoteToBeDoneAtHospital
 
                     _ ->
                         fail <|
@@ -4390,6 +4401,20 @@ decodePregnancySummaryValue =
     succeed PregnancySummaryValue
         |> required "expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
         |> required "delivery_complications" (decodeEverySet decodeDeliveryComplication)
+        |> required "pregnancy_summary_signs"
+            (decodeWithFallback
+                (EverySet.singleton NoPregnancySummarySigns)
+                (decodeEverySet decodePregnancySummarySign)
+            )
+        |> optional "apgar_one_min" (nullable decodeFloat) Nothing
+        |> optional "apgar_five_min" (nullable decodeFloat) Nothing
+        |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
+        |> optional "height" (nullable (map HeightInCm decodeFloat)) Nothing
+        |> required "birth_defects"
+            (decodeWithFallback
+                (EverySet.singleton NoBirthDefects)
+                (decodeEverySet decodeBirthDefect)
+            )
 
 
 decodeDeliveryComplication : Decoder DeliveryComplication
@@ -4424,6 +4449,88 @@ decodeDeliveryComplication =
 
                     _ ->
                         fail <| complication ++ " is not a recognized DeliveryComplication"
+            )
+
+
+decodePregnancySummarySign : Decoder PregnancySummarySign
+decodePregnancySummarySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "apgar-scores" ->
+                        succeed ApgarScores
+
+                    "birth-length" ->
+                        succeed BirthLength
+
+                    "none" ->
+                        succeed NoPregnancySummarySigns
+
+                    _ ->
+                        fail <| sign ++ " is not a recognized PregnancySummarySign"
+            )
+
+
+decodeBirthDefect : Decoder BirthDefect
+decodeBirthDefect =
+    string
+        |> andThen
+            (\defect ->
+                case defect of
+                    "birth-injury" ->
+                        succeed DefectBirthInjury
+
+                    "cleft-lip-with-cleft-palate" ->
+                        succeed DefectCleftLipWithCleftPalate
+
+                    "cleft-palate" ->
+                        succeed DefectCleftPalate
+
+                    "club-foot" ->
+                        succeed DefectClubFoot
+
+                    "macrocephaly" ->
+                        succeed DefectMacrocephaly
+
+                    "gastroschisis" ->
+                        succeed DefectGastroschisis
+
+                    "hearing-loss" ->
+                        succeed DefectHearingLoss
+
+                    "undescended-testes" ->
+                        succeed DefectUndescendedTestes
+
+                    "hypospadias" ->
+                        succeed DefectHypospadias
+
+                    "inguinal-hernia" ->
+                        succeed DefectInguinalHernia
+
+                    "microcephaly" ->
+                        succeed DefectMicrocephaly
+
+                    "neural-tubes" ->
+                        succeed DefectNeuralTubes
+
+                    "down-syndrome" ->
+                        succeed DefectDownSyndrome
+
+                    "congenital-heart" ->
+                        succeed DefectCongenitalHeart
+
+                    "ventrical-septal" ->
+                        succeed DefectVentricalSeptal
+
+                    "pulmonary-valve-atresia-and-stenosis" ->
+                        succeed DefectPulmonaryValveAtresiaAndStenosis
+
+                    "none" ->
+                        succeed NoBirthDefects
+
+                    _ ->
+                        fail <| defect ++ " is not a recognized BirthDefect"
             )
 
 
@@ -4923,3 +5030,77 @@ decodeNCDUrineDipstickTest =
 decodeNCDVitals : Decoder NCDVitals
 decodeNCDVitals =
     decodeNCDMeasurement decodeVitalsValue
+
+
+decodeNCDAValue : Decoder NCDAValue
+decodeNCDAValue =
+    succeed NCDAValue
+        |> required "ncda_signs" (decodeEverySet decodeNCDASign)
+        |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
+
+
+decodeNCDASign : Decoder NCDASign
+decodeNCDASign =
+    string
+        |> andThen
+            (\s ->
+                ncdaSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDASign")
+            )
+
+
+decodeGroupNCDA : Decoder GroupNCDA
+decodeGroupNCDA =
+    decodeGroupMeasurement decodeNCDAValue
+
+
+decodeNutritionNCDA : Decoder NutritionNCDA
+decodeNutritionNCDA =
+    decodeNutritionMeasurement decodeNCDAValue
+
+
+decodeWellChildNCDA : Decoder WellChildNCDA
+decodeWellChildNCDA =
+    decodeWellChildMeasurement decodeNCDAValue
+
+
+decodeNCDLipidPanelTest : Decoder NCDLipidPanelTest
+decodeNCDLipidPanelTest =
+    decodeNCDMeasurement decodeLipidPanelTestValue
+
+
+decodeLipidPanelTestValue : Decoder LipidPanelTestValue
+decodeLipidPanelTestValue =
+    succeed LipidPanelTestValue
+        |> required "test_execution_note" decodeTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "unit_of_measurement" (nullable decodeUnitOfMeasurement) Nothing
+        |> optional "total_cholesterol" (nullable decodeFloat) Nothing
+        |> optional "ldl_cholesterol" (nullable decodeFloat) Nothing
+        |> optional "hdl_cholesterol" (nullable decodeFloat) Nothing
+        |> optional "triglycerides" (nullable decodeFloat) Nothing
+
+
+decodeUnitOfMeasurement : Decoder UnitOfMeasurement
+decodeUnitOfMeasurement =
+    string
+        |> andThen
+            (\s ->
+                unitOfMeasurementFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized UnitOfMeasurement")
+            )
+
+
+decodeNCDHbA1cTest : Decoder NCDHbA1cTest
+decodeNCDHbA1cTest =
+    decodeNCDMeasurement decodeHbA1cTestValue
+
+
+decodeHbA1cTestValue : Decoder HbA1cTestValue
+decodeHbA1cTestValue =
+    succeed HbA1cTestValue
+        |> required "test_execution_note" decodeTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "hba1c_result" (nullable decodeFloat) Nothing

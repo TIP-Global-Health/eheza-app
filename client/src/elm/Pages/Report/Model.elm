@@ -14,6 +14,8 @@ type alias LabsResultsDisplayConfig =
     , creatinine : Bool
     , liverFunction : Bool
     , pregnancy : Bool
+    , hba1c : Bool
+    , lipidPanel : Bool
     }
 
 
@@ -30,6 +32,8 @@ type alias LabsResultsValues encounterId =
     , creatinine : List Backend.Measurement.Model.CreatinineTestValue
     , liverFunction : List Backend.Measurement.Model.LiverFunctionTestValue
     , pregnancy : List Backend.Measurement.Model.PregnancyTestValue
+    , hba1c : List Backend.Measurement.Model.HbA1cTestValue
+    , lipidPanel : List Backend.Measurement.Model.LipidPanelTestValue
     }
 
 
@@ -42,6 +46,7 @@ type LabResultsCurrentMode
     = LabResultsCurrentMain
     | LabResultsCurrentDipstickShort
     | LabResultsCurrentDipstickLong
+    | LabResultsCurrentLipidPanel
 
 
 type LabResultsHistoryMode
@@ -59,7 +64,7 @@ type LabResultsHistoryMode
     | LabResultsHistoryHaemoglobin (List ( NominalDate, Maybe HaemoglobinValue ))
     | LabResultsHistoryKetone (List ( NominalDate, Maybe KetoneValue ))
     | LabResultsHistoryBilirubin (List ( NominalDate, Maybe BilirubinValue ))
-    | LabResultsHistoryRandomBloodSugar (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryRandomBloodSugar (List ( NominalDate, Maybe RandomBloodSugarResult ))
     | LabResultsHistoryHemoglobin (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryBloodGroup (List ( NominalDate, Maybe BloodGroup ))
     | LabResultsHistoryRhesus (List ( NominalDate, Maybe Rhesus ))
@@ -68,6 +73,11 @@ type LabResultsHistoryMode
     | LabResultsHistoryALT (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryAST (List ( NominalDate, Maybe Float ))
     | LabResultsHistoryPregnancy (List ( NominalDate, Maybe TestReport ))
+    | LabResultsHistoryHbA1c (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryTotalCholesterol (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryLDLCholesterol (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryHDLCholesterol (List ( NominalDate, Maybe Float ))
+    | LabResultsHistoryTriglycerides (List ( NominalDate, Maybe Float ))
 
 
 type TestReport
@@ -80,6 +90,16 @@ type DiagnosisMode
     | ModeCompletedDiagnosis
 
 
+type ReportTab
+    = TabSPVReport
+    | TabNCDAScoreboard
+
+
 type PaneEntryStatus
     = StatusOngoing
     | StatusResolved
+
+
+type RandomBloodSugarResult
+    = TestRunBeforeMeal Float
+    | TestRunAfterMeal Float

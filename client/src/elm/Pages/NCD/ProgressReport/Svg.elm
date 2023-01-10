@@ -1,6 +1,9 @@
-module Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewMarkers)
+module Pages.NCD.ProgressReport.Svg exposing (..)
 
 import Html exposing (Html)
+import Pages.Report.Model exposing (RandomBloodSugarResult(..))
+import Pages.Report.Svg exposing (..)
+import Pages.Report.Utils exposing (getRandomBloodSugarResultValue)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
@@ -17,38 +20,9 @@ viewMarkers =
         ]
         [ defs
             []
-            [ marker
-                [ id "dot-marker-green"
-                , markerWidth "8"
-                , markerHeight "8"
-                , refX "4"
-                , refY "4"
-                , markerUnits "userSpaceOnUse"
-                ]
-                [ circle
-                    [ cx "4"
-                    , cy "4"
-                    , r "3"
-                    , Svg.Attributes.style "fill:#1CBCB2"
-                    ]
-                    []
-                ]
-            , marker
-                [ id "dot-marker-red"
-                , markerWidth "8"
-                , markerHeight "8"
-                , refX "4"
-                , refY "4"
-                , markerUnits "userSpaceOnUse"
-                ]
-                [ circle
-                    [ cx "4"
-                    , cy "4"
-                    , r "3"
-                    , Svg.Attributes.style "fill:#D4145A"
-                    ]
-                    []
-                ]
+            [ svgMarker "dot-marker-green" "#1CBCB2"
+            , svgMarker "dot-marker-red" "#D4145A"
+            , svgMarker "dot-marker-black" "#000000"
             ]
         ]
 
@@ -136,8 +110,8 @@ viewBloodPressureByTime language sysPoints diaPoints =
         ]
 
 
-viewBloodGlucoseByTime : Language -> List Float -> Html any
-viewBloodGlucoseByTime language points =
+viewBloodGlucoseByTime : Language -> List RandomBloodSugarResult -> Html any
+viewBloodGlucoseByTime language results =
     let
         verticalParts =
             20
@@ -147,6 +121,91 @@ viewBloodGlucoseByTime language points =
 
         verticalMax =
             440
+
+        verticalStep =
+            heightPx / toFloat (verticalMax - verticalMin)
+
+        horizontalMin =
+            0
+
+        horizontalMax =
+            13
+
+        horizontalStep =
+            widthPx / toFloat (horizontalMax - horizontalMin)
+
+        points =
+            List.map getRandomBloodSugarResultValue results
+
+        measurementsWithIndicators =
+            measurementsWithInidactorsByTime verticalMin
+                verticalMax
+                verticalStep
+                horizontalStep
+                getRandomBloodSugarResultValue
+                identity
+                results
+
+        measurements =
+            List.map Tuple.second measurementsWithIndicators
+
+        indicators =
+            List.map
+                (\( result, ( left_, top_ ) ) ->
+                    let
+                        ( indicator, left ) =
+                            case result of
+                                TestRunBeforeMeal _ ->
+                                    ( "F", left_ - 5 |> String.fromFloat )
+
+                                TestRunAfterMeal _ ->
+                                    ( "NF", left_ - 12 |> String.fromFloat )
+
+                        top =
+                            top_ - 10 |> String.fromFloat
+                    in
+                    text_
+                        [ transform <| "matrix(1 0 0 1 " ++ left ++ " " ++ top ++ ")"
+                        , class <| "z-score-semibold chart-helper red"
+                        ]
+                        [ text indicator ]
+                )
+                measurementsWithIndicators
+    in
+    svg
+        [ class "chart"
+        , x "0px"
+        , y "0px"
+        , viewBox "25 25 841.9 595.3"
+        ]
+        [ frame
+        , g [] <|
+            [ horizontalLabel language
+            , verticalLabel language Translate.BloodGlucose
+            ]
+                ++ indicators
+        , g []
+            [ drawPolyline measurements "data black" ]
+        , (referenceVerticalLines verticalParts
+            ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.left - 21.5 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.right + 7.5 |> String.fromFloat)
+          )
+            |> g []
+        , referenceHorizontalLines 13 ++ referenceHorizontalNumbers 13 0 1 |> g []
+        ]
+
+
+viewHbA1cByTime : Language -> List Float -> Html any
+viewHbA1cByTime language points =
+    let
+        verticalParts =
+            14
+
+        verticalMin =
+            0
+
+        verticalMax =
+            14
 
         verticalStep =
             heightPx / toFloat (verticalMax - verticalMin)
@@ -172,13 +231,13 @@ viewBloodGlucoseByTime language points =
         [ frame
         , g []
             [ horizontalLabel language
-            , verticalLabel language Translate.BloodGlucose
+            , verticalLabel language Translate.HbA1cPercentage
             ]
         , g []
-            [ drawPolyline measurements "data red" ]
+            [ drawPolyline measurements "data black" ]
         , (referenceVerticalLines verticalParts
-            ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.left - 21.5 |> String.fromFloat)
-            ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.right + 7.5 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 1 (dimensionsPx.left - 21.5 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 1 (dimensionsPx.right + 7.5 |> String.fromFloat)
           )
             |> g []
         , referenceHorizontalLines 13 ++ referenceHorizontalNumbers 13 0 1 |> g []
@@ -203,140 +262,38 @@ horizontalLabel language =
         [ text <| translate language Translate.Time ]
 
 
-referenceHorizontalLines : Int -> List (Svg any)
-referenceHorizontalLines parts =
-    let
-        margin =
-            widthPx / toFloat parts
-    in
-    List.repeat (parts - 1) ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    posX =
-                        dimensionsPx.left + (toFloat (index + 1) * margin) |> String.fromFloat
-                in
-                line [ class "refference-line", x1 posX, y1 (String.fromFloat dimensionsPx.bottom), x2 posX, y2 (String.fromFloat dimensionsPx.top) ] []
-            )
-
-
-referenceHorizontalNumbers : Int -> Int -> Int -> List (Svg any)
-referenceHorizontalNumbers parts min gap =
-    let
-        margin =
-            widthPx / toFloat parts
-    in
-    List.repeat (parts - 1) ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    posX =
-                        dimensionsPx.left + (toFloat (index + 1) * margin)
-
-                    number =
-                        min + (index + 1) * gap
-
-                    posX_ =
-                        (if number > 9 then
-                            posX - 4
-
-                         else
-                            posX - 2.5
-                        )
-                            |> String.fromFloat
-
-                    number_ =
-                        number |> String.fromInt
-                in
-                text_ [ transform <| "matrix(1 0 0 1 " ++ posX_ ++ " 520)", class "z-score-semibold st17" ] [ text number_ ]
-            )
-
-
-referenceVerticalLines : Int -> List (Svg any)
-referenceVerticalLines parts =
-    let
-        margin =
-            heightPx / toFloat parts
-    in
-    List.repeat (parts - 1) ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    posY =
-                        dimensionsPx.top + (toFloat (index + 1) * margin) |> String.fromFloat
-                in
-                line [ class "refference-line", x1 (String.fromFloat dimensionsPx.left), y1 posY, x2 (String.fromFloat dimensionsPx.right), y2 posY ] []
-            )
-
-
-referenceVerticalNumbers : Int -> Int -> Int -> String -> List (Svg any)
-referenceVerticalNumbers parts min gap posX =
-    let
-        margin =
-            heightPx / toFloat parts
-    in
-    List.repeat (parts - 1) ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    posY =
-                        dimensionsPx.top + (toFloat (index + 1) * margin)
-
-                    number =
-                        min + (parts - index - 1) * gap
-
-                    posY_ =
-                        posY + 2 |> String.fromFloat
-
-                    number_ =
-                        number |> String.fromInt
-                in
-                text_ [ transform <| "matrix(1 0 0 1 " ++ posX ++ " " ++ posY_ ++ ")", class "z-score-semibold st17" ] [ text number_ ]
-            )
-
-
 measurementsByTime : Float -> Float -> Float -> Float -> List Float -> List ( Float, Float )
 measurementsByTime verticalMin verticalMax verticalStep horizontalStep points =
+    measurementsWithInidactorsByTime verticalMin verticalMax verticalStep horizontalStep identity identity points
+        |> List.map Tuple.second
+
+
+measurementsWithInidactorsByTime :
+    Float
+    -> Float
+    -> Float
+    -> Float
+    -> (a -> Float)
+    -> (a -> indicator)
+    -> List a
+    -> List ( indicator, ( Float, Float ) )
+measurementsWithInidactorsByTime verticalMin verticalMax verticalStep horizontalStep toNumberFunc toIndicatorFunc points =
     List.indexedMap (\index value -> ( toFloat <| index + 1, value )) points
         |> List.filterMap
             (\( time, value_ ) ->
                 let
                     value =
-                        value_ - verticalMin
+                        toNumberFunc value_
                 in
                 if withinRange value verticalMin verticalMax then
-                    Just ( dimensionsPx.left + time * horizontalStep, dimensionsPx.bottom - value * verticalStep )
+                    Just
+                        ( toIndicatorFunc value_
+                        , ( dimensionsPx.left + time * horizontalStep, dimensionsPx.bottom - (value - verticalMin) * verticalStep )
+                        )
 
                 else
                     Nothing
             )
-
-
-drawPolygon : List ( Float, Float ) -> String -> Svg any
-drawPolygon =
-    drawPolyshape polygon
-
-
-drawPolyline : List ( Float, Float ) -> String -> Svg any
-drawPolyline =
-    drawPolyshape polyline
-
-
-drawPolyshape shape points_ class_ =
-    List.map
-        (\( x, y ) ->
-            String.fromFloat x ++ "," ++ String.fromFloat y
-        )
-        points_
-        |> String.join " "
-        |> points
-        |> (\pointList ->
-                shape
-                    [ class class_
-                    , pointList
-                    ]
-                    []
-           )
 
 
 frame : Svg any
@@ -360,25 +317,3 @@ frame =
             ]
             []
         ]
-
-
-withinRange : number -> number -> number -> Bool
-withinRange value min max =
-    (value >= min)
-        && (value <= max)
-
-
-widthPx =
-    dimensionsPx.right - dimensionsPx.left
-
-
-heightPx =
-    dimensionsPx.bottom - dimensionsPx.top
-
-
-dimensionsPx =
-    { left = 110.9
-    , top = 119.9
-    , right = 737.7
-    , bottom = 506.7
-    }

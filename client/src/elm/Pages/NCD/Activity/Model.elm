@@ -10,6 +10,7 @@ import Measurement.Model
         ( CorePhysicalExamForm
         , FamilyPlanningForm
         , HIVTestForm
+        , HbA1cTestForm
         , LaboratoryTask
         , MalariaTestForm
         , NonRDTForm
@@ -22,6 +23,7 @@ import Measurement.Model
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
         , emptyHIVTestForm
+        , emptyHbA1cTestForm
         , emptyNonRDTForm
         , emptyOutsideCareForm
         , emptyPregnancyTestForm
@@ -107,6 +109,7 @@ type Msg
     | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugarTestExecutionDate NominalDate
     | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetRandomBloodSugarResult String
     | SaveRandomBloodSugarTest PersonId (Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SetPregnancyTestFormBoolInput (Bool -> PregnancyTestForm Msg -> PregnancyTestForm Msg) Bool
     | SetPregnancyTestExecutionNote TestExecutionNote
@@ -124,6 +127,16 @@ type Msg
     | SetLiverFunctionTestExecutionDate NominalDate
     | SetLiverFunctionTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveLiverFunctionTest PersonId (Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )) (Maybe LaboratoryTask)
+    | SetLipidPanelTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetLipidPanelTestExecutionNote TestExecutionNote
+    | SetLipidPanelTestExecutionDate NominalDate
+    | SetLipidPanelTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveLipidPanelTest PersonId (Maybe ( NCDLipidPanelTestId, NCDLipidPanelTest )) (Maybe LaboratoryTask)
+    | SetHbA1cTestFormBoolInput (Bool -> HbA1cTestForm Msg -> HbA1cTestForm Msg) Bool
+    | SetHbA1cTestExecutionDate NominalDate
+    | SetHbA1cTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetHbA1cTestResult String
+    | SaveHbA1cTest PersonId (Maybe ( NCDHbA1cTestId, NCDHbA1cTest )) (Maybe LaboratoryTask)
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
@@ -144,6 +157,7 @@ type alias Model =
     , familyPlanningData : FamilyPlanningData
     , medicalHistoryData : MedicalHistoryData
     , laboratoryData : LaboratoryData
+    , outsideCareData : OutsideCareData
     , nextStepsData : NextStepsData
     }
 
@@ -156,6 +170,7 @@ emptyModel =
     , familyPlanningData = emptyFamilyPlanningData
     , medicalHistoryData = emptyMedicalHistoryData
     , laboratoryData = emptyLaboratoryData
+    , outsideCareData = emptyOutsideCareData
     , nextStepsData = emptyNextStepsData
     }
 
@@ -236,7 +251,6 @@ type alias MedicalHistoryData =
     , medicationHistoryForm : MedicationHistoryForm
     , socialHistoryForm : SocialHistoryForm
     , outsideCareForm : OutsideCareForm MedicalCondition
-    , outsideCareStep : OutsideCareStep
     , activeTask : Maybe MedicalHistoryTask
     }
 
@@ -248,7 +262,6 @@ emptyMedicalHistoryData =
     , medicationHistoryForm = emptyMedicationHistoryForm
     , socialHistoryForm = emptySocialHistoryForm
     , outsideCareForm = emptyOutsideCareForm
-    , outsideCareStep = OutsideCareStepDiagnoses
     , activeTask = Nothing
     }
 
@@ -338,6 +351,8 @@ type alias LaboratoryData =
     , pregnancyTestForm : PregnancyTestForm Msg
     , creatinineTestForm : NonRDTForm Msg
     , liverFunctionTestForm : NonRDTForm Msg
+    , lipidPanelTestForm : NonRDTForm Msg
+    , hba1cTestForm : HbA1cTestForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -350,6 +365,8 @@ emptyLaboratoryData =
     , pregnancyTestForm = emptyPregnancyTestForm
     , creatinineTestForm = emptyNonRDTForm
     , liverFunctionTestForm = emptyNonRDTForm
+    , lipidPanelTestForm = emptyNonRDTForm
+    , hba1cTestForm = emptyHbA1cTestForm
     , activeTask = Nothing
     }
 
@@ -378,3 +395,16 @@ type alias HealthEducationForm =
 emptyHealthEducationForm : HealthEducationForm
 emptyHealthEducationForm =
     { hypertension = Nothing }
+
+
+type alias OutsideCareData =
+    { form : OutsideCareForm MedicalCondition
+    , step : OutsideCareStep
+    }
+
+
+emptyOutsideCareData : OutsideCareData
+emptyOutsideCareData =
+    { form = emptyOutsideCareForm
+    , step = OutsideCareStepDiagnoses
+    }
