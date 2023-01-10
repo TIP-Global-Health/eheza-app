@@ -278,7 +278,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                             EverySet.toList components
 
                                         -- We should never get here.
-                                        Antenatal _ ->
+                                        _ ->
                                             []
                                 )
                                 componentsList
@@ -326,7 +326,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                             EverySet.toList components
 
                                         -- We should never get here.
-                                        WellChild _ ->
+                                        _ ->
                                             []
                                 )
                                 componentsList
@@ -370,6 +370,54 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                 ReportAcuteIllness ->
                     emptyNode
 
+                ReportNCD ->
+                    let
+                        currentValue =
+                            Maybe.map
+                                (\list ->
+                                    case list of
+                                        NCD components ->
+                                            EverySet.toList components
+
+                                        -- We should never get here.
+                                        _ ->
+                                            []
+                                )
+                                componentsList
+                                |> Maybe.withDefault []
+
+                        setMsg =
+                            \component ->
+                                let
+                                    currentComponents =
+                                        EverySet.fromList currentValue
+
+                                    updatedComponents =
+                                        if EverySet.member component currentComponents then
+                                            EverySet.remove component currentComponents
+
+                                        else
+                                            EverySet.insert component currentComponents
+                                in
+                                NCD updatedComponents
+                                    |> Just
+                                    |> ComponentsSelection phoneNumber
+                                    |> Just
+                                    |> SetState
+                    in
+                    viewCheckBoxMultipleSelectInput language
+                        [ ComponentNCDRiskFactors
+                        , ComponentNCDActiveDiagnosis
+                        , ComponentNCDMedicalDiagnosis
+                        , ComponentNCDPatientProgress
+                        , ComponentNCDLabsResults
+                        ]
+                        []
+                        currentValue
+                        Nothing
+                        setMsg
+                        Translate.ReportComponentNCD
+
         continueButtonAction =
             if componentsSelected then
                 [ onClick <| SetReportComponents (config.setReportComponentsMsg componentsList) phoneNumber ]
@@ -387,7 +435,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                     not <| EverySet.isEmpty components
 
                                 -- We should never get here.
-                                Antenatal _ ->
+                                _ ->
                                     False
 
                         ReportAntenatal ->
@@ -396,12 +444,21 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                     not <| EverySet.isEmpty components
 
                                 -- We should never get here.
-                                WellChild _ ->
+                                _ ->
                                     False
 
                         -- Not in use.
                         ReportAcuteIllness ->
                             False
+
+                        ReportNCD ->
+                            case list of
+                                NCD components ->
+                                    not <| EverySet.isEmpty components
+
+                                -- We should never get here.
+                                _ ->
+                                    False
                 )
                 componentsList
                 |> Maybe.withDefault False

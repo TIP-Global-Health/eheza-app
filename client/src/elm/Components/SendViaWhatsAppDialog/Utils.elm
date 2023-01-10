@@ -15,6 +15,9 @@ reportTypeToString reportType =
         ReportAcuteIllness ->
             "acute-illness"
 
+        ReportNCD ->
+            "ncd"
+
 
 reportTypeFromString : String -> Maybe ReportType
 reportTypeFromString reportType =
@@ -27,6 +30,9 @@ reportTypeFromString reportType =
 
         "acute-illness" ->
             Just ReportAcuteIllness
+
+        "ncd" ->
+            Just ReportNCD
 
         _ ->
             Nothing

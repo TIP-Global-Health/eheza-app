@@ -58,11 +58,13 @@ type ReportType
     = ReportWellChild
     | ReportAntenatal
     | ReportAcuteIllness
+    | ReportNCD
 
 
 type ReportComponentsList
     = WellChild (EverySet ReportComponentWellChild)
     | Antenatal (EverySet ReportComponentAntenatal)
+    | NCD (EverySet ReportComponentNCD)
 
 
 type ReportComponentWellChild
@@ -81,6 +83,14 @@ type ReportComponentAntenatal
     | ComponentAntenatalPatientProgress
     | ComponentAntenatalLabsResults
     | ComponentAntenatalProgressPhotos
+
+
+type ReportComponentNCD
+    = ComponentNCDRiskFactors
+    | ComponentNCDActiveDiagnosis
+    | ComponentNCDMedicalDiagnosis
+    | ComponentNCDPatientProgress
+    | ComponentNCDLabsResults
 
 
 type Msg msg
