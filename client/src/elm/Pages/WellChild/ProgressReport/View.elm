@@ -457,7 +457,7 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
                                     reportData.expectedSessions
                                     reportData.groupNutritionMeasurements
                                     reportData.individualNutritionMeasurementsWithDates
-                                    reportData.individualWellChildMeasurementsWithDatess
+                                    reportData.individualWellChildMeasurementsWithDates
                                     |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildGrowth)
 
                             else
