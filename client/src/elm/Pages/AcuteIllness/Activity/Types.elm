@@ -30,7 +30,7 @@ type PhysicalExamTask
 -- LABORATORY
 
 
-type LaboratoryTask
+type AILaboratoryTask
     = LaboratoryMalariaTesting
     | LaboratoryCovidTesting
 

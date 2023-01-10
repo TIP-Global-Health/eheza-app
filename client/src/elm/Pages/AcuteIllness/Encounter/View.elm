@@ -27,7 +27,7 @@ import Pages.AcuteIllness.Activity.Utils
 import Pages.AcuteIllness.Encounter.Model exposing (..)
 import Pages.AcuteIllness.Encounter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -354,22 +354,15 @@ viewMainPageContent language currentDate id isChw assembled model =
                 Reports ->
                     ( [], "" )
 
-        viewReportLink labelTransId redirectPage =
-            div
-                [ class "report-wrapper"
-                , onClick <| SetActivePage redirectPage
-                ]
-                [ div [ class "icon-progress-report" ] []
-                , div [ class "report-text" ]
-                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
-                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
-                    ]
-                ]
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| AcuteIllnessProgressReportPage InitiatorEncounterPage assembled.id)
+                    [ viewReportLink language
+                        Translate.ClinicalProgressReport
+                        (SetActivePage <|
+                            UserPage <|
+                                AcuteIllnessProgressReportPage InitiatorEncounterPage assembled.id
+                        )
                     ]
 
             else
@@ -384,13 +377,13 @@ viewMainPageContent language currentDate id isChw assembled model =
                         ]
                     ]
 
-        allowEndEcounter =
+        allowEndEncounter =
             allowEndingEcounter currentDate isChw assembled pendingActivities
 
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language allowEndEcounter SetEndEncounterDialogState
+                , viewEndEncounterButton language allowEndEncounter SetEndEncounterDialogState
                 ]
     in
     [ tabs
