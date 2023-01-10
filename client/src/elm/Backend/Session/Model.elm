@@ -139,6 +139,7 @@ type alias Model =
     , saveFollowUpRequest : Dict PersonId (WebData ())
     , saveHealthEducationRequest : Dict PersonId (WebData ())
     , saveSendToHCRequest : Dict PersonId (WebData ())
+    , saveNCDARequest : Dict PersonId (WebData ())
     }
 
 
@@ -160,6 +161,7 @@ emptyModel =
     , saveFollowUpRequest = Dict.empty
     , saveHealthEducationRequest = Dict.empty
     , saveSendToHCRequest = Dict.empty
+    , saveNCDARequest = Dict.empty
     }
 
 
@@ -183,6 +185,7 @@ type Msg
     | HandleSaveFollowUp PersonId (WebData ())
     | HandleSaveHealthEducation PersonId (WebData ())
     | HandleSaveSendToHC PersonId (WebData ())
+    | HandleSaveNCDA PersonId (WebData ())
 
 
 batchSize : Int

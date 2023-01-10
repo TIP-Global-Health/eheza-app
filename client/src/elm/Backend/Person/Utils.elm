@@ -83,7 +83,7 @@ resolveExpectedAge currentDate birthDate operation =
                         ExpectChild
 
                     else
-                        -- Creating with no relation => should be a adult.
+                        -- Creating with no relation => should be an adult.
                         ExpectAdult
 
                 EditPerson _ ->
@@ -92,7 +92,7 @@ resolveExpectedAge currentDate birthDate operation =
         Just False ->
             case operation of
                 CreatePerson maybeId ->
-                    -- Creating person with relation to child => should be a adult.
+                    -- Creating person with relation to child => should be an adult.
                     if isJust maybeId then
                         ExpectAdult
 
@@ -121,8 +121,8 @@ defaultIconForPerson currentDate person =
         |> Maybe.withDefault "mother"
 
 
-initiatorToUrlFragmemt : Initiator -> String
-initiatorToUrlFragmemt initiator =
+initiatorToUrlFragment : Initiator -> String
+initiatorToUrlFragment initiator =
     case initiator of
         ParticipantDirectoryOrigin ->
             "directory"
@@ -142,8 +142,8 @@ initiatorToUrlFragmemt initiator =
             ""
 
 
-initiatorFromUrlFragmemt : String -> Maybe Initiator
-initiatorFromUrlFragmemt s =
+initiatorFromUrlFragment : String -> Maybe Initiator
+initiatorFromUrlFragment s =
     case s of
         "directory" ->
             Just ParticipantDirectoryOrigin
@@ -165,6 +165,9 @@ initiatorFromUrlFragmemt s =
 
         "well-child" ->
             IndividualEncounterOrigin WellChildEncounter |> Just
+
+        "ncd" ->
+            IndividualEncounterOrigin NCDEncounter |> Just
 
         _ ->
             if String.startsWith "session-" s then

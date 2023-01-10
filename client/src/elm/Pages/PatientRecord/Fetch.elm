@@ -33,7 +33,6 @@ fetch currentDate personId db =
     [ FetchPerson personId
     , FetchRelationshipsForPerson personId
     ]
-        ++ Pages.AcuteIllness.Participant.Fetch.fetch personId db
         ++ msgsByAge
 
 

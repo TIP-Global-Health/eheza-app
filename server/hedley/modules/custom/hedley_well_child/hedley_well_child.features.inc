@@ -139,6 +139,14 @@ function hedley_well_child_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'well_child_ncda' => array(
+      'name' => t('Well Child NCDA'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_next_visit' => array(
       'name' => t('Well Child Next Visit'),
       'base' => 'node_content',
