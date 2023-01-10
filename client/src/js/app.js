@@ -265,9 +265,12 @@ dbSync.version(17).stores({
 });
 
 dbSync.version(18).stores({
-    whatsAppUploads: '++localId,photo,report_type,person,phone_number,isSynced',
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 });
 
+dbSync.version(19).stores({
+    whatsAppUploads: '++localId,photo,report_type,person,phone_number,isSynced',
+});
 
 /**
  * --- !!! IMPORTANT !!! ---

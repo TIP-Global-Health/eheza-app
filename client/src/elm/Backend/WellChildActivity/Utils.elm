@@ -30,6 +30,9 @@ encodeActivityAsString activity =
         WellChildPhoto ->
             "well-child-photo"
 
+        WellChildNCDA ->
+            "well-child-ncda"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -59,6 +62,9 @@ decodeActivityFromString s =
 
         "well-child-photo" ->
             Just WellChildPhoto
+
+        "well-child-ncda" ->
+            Just WellChildNCDA
 
         _ ->
             Nothing
@@ -94,6 +100,9 @@ getActivityIcon activity =
         WellChildPhoto ->
             "photo"
 
+        WellChildNCDA ->
+            "history"
+
 
 getAllActivities : Bool -> List WellChildActivity
 getAllActivities isChw =
@@ -112,5 +121,6 @@ getAllActivities isChw =
         , WellChildECD
         , WellChildMedication
         , WellChildPhoto
+        , WellChildNCDA
         , WellChildNextSteps
         ]

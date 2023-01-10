@@ -38,19 +38,6 @@ type PatientProvisionsTask
     | Resources
 
 
-type LaboratoryTask
-    = TaskBloodGpRsTest
-    | TaskHemoglobinTest
-    | TaskHepatitisBTest
-    | TaskHIVTest
-    | TaskMalariaTest
-    | TaskRandomBloodSugarTest
-    | TaskSyphilisTest
-    | TaskUrineDipstickTest
-    | TaskHIVPCRTest
-    | TaskCompletePreviousTests
-
-
 type SymptomReviewStep
     = SymptomReviewStepSymptoms
     | SymptomReviewStepQuestions
@@ -85,11 +72,6 @@ type TreatmentReviewTask
     | TreatmentReviewMalaria
     | TreatmentReviewAnemia
     | TreatmentReviewSyphilis
-
-
-type OutsideCareStep
-    = OutsideCareStepDiagnoses
-    | OutsideCareStepMedications
 
 
 type ImmunisationTask

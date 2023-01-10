@@ -206,31 +206,31 @@ type Msg
     | HandleSavedSendToHC (WebData ())
     | SaveAppointmentConfirmation PersonId (Maybe PrenatalAppointmentConfirmationId) PrenatalAppointmentConfirmationValue
     | HandleSavedAppointmentConfirmation (WebData ())
-    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) PrenatalHIVTestValue
+    | SaveHIVTest PersonId (Maybe PrenatalHIVTestId) HIVTestValue
     | HandleSavedHIVTest (WebData ())
-    | SaveSyphilisTest PersonId (Maybe PrenatalSyphilisTestId) PrenatalSyphilisTestValue
+    | SaveSyphilisTest PersonId (Maybe PrenatalSyphilisTestId) (SyphilisTestValue PrenatalEncounterId)
     | HandleSavedSyphilisTest (WebData ())
-    | SaveHepatitisBTest PersonId (Maybe PrenatalHepatitisBTestId) PrenatalHepatitisBTestValue
+    | SaveHepatitisBTest PersonId (Maybe PrenatalHepatitisBTestId) (HepatitisBTestValue PrenatalEncounterId)
     | HandleSavedHepatitisBTest (WebData ())
-    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) PrenatalMalariaTestValue
+    | SaveMalariaTest PersonId (Maybe PrenatalMalariaTestId) MalariaTestValue
     | HandleSavedMalariaTest (WebData ())
-    | SaveBloodGpRsTest PersonId (Maybe PrenatalBloodGpRsTestId) PrenatalBloodGpRsTestValue
+    | SaveBloodGpRsTest PersonId (Maybe PrenatalBloodGpRsTestId) (BloodGpRsTestValue PrenatalEncounterId)
     | HandleSavedBloodGpRsTest (WebData ())
-    | SaveUrineDipstickTest PersonId (Maybe PrenatalUrineDipstickTestId) PrenatalUrineDipstickTestValue
+    | SaveUrineDipstickTest PersonId (Maybe PrenatalUrineDipstickTestId) UrineDipstickTestValue
     | HandleSavedUrineDipstickTest (WebData ())
-    | SaveHemoglobinTest PersonId (Maybe PrenatalHemoglobinTestId) PrenatalHemoglobinTestValue
+    | SaveHemoglobinTest PersonId (Maybe PrenatalHemoglobinTestId) HemoglobinTestValue
     | HandleSavedHemoglobinTest (WebData ())
-    | SaveRandomBloodSugarTest PersonId (Maybe PrenatalRandomBloodSugarTestId) PrenatalRandomBloodSugarTestValue
+    | SaveRandomBloodSugarTest PersonId (Maybe PrenatalRandomBloodSugarTestId) (RandomBloodSugarTestValue PrenatalEncounterId)
     | HandleSavedRandomBloodSugarTest (WebData ())
-    | SaveLabsResults PersonId (Maybe PrenatalLabsResultsId) PrenatalLabsResultsValue
+    | SaveLabsResults PersonId (Maybe PrenatalLabsResultsId) LabsResultsValue
     | HandleSavedLabsResults (WebData ())
     | SaveMedicationDistribution PersonId (Maybe PrenatalMedicationDistributionId) PrenatalMedicationDistributionValue
     | HandleSavedMedicationDistribution (WebData ())
     | SaveSymptomReview PersonId (Maybe PrenatalSymptomReviewId) PrenatalSymptomReviewValue
     | HandleSavedSymptomReview (WebData ())
-    | SaveOutsideCare PersonId (Maybe PrenatalOutsideCareId) PrenatalOutsideCareValue
+    | SaveOutsideCare PersonId (Maybe PrenatalOutsideCareId) (OutsideCareValue PrenatalDiagnosis)
     | HandleSavedOutsideCare (WebData ())
-    | SaveHIVPCRTest PersonId (Maybe PrenatalHIVPCRTestId) PrenatalHIVPCRTestValue
+    | SaveHIVPCRTest PersonId (Maybe PrenatalHIVPCRTestId) HIVPCRTestValue
     | HandleSavedHIVPCRTest (WebData ())
     | SaveMentalHealth PersonId (Maybe PrenatalMentalHealthId) PrenatalMentalHealthValue
     | HandleSavedMentalHealth (WebData ())

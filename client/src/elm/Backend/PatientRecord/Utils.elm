@@ -6,8 +6,8 @@ import Maybe.Extra
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
-progressReportInitiatorToUrlFragmemt : PatientRecordInitiator -> String
-progressReportInitiatorToUrlFragmemt initiator =
+progressReportInitiatorToUrlFragment : PatientRecordInitiator -> String
+progressReportInitiatorToUrlFragment initiator =
     case initiator of
         InitiatorParticipantDirectory ->
             "participant-directory"
@@ -16,8 +16,8 @@ progressReportInitiatorToUrlFragmemt initiator =
             "patient-record-" ++ fromEntityUuid personId
 
 
-progressReportInitiatorFromUrlFragmemt : String -> Maybe PatientRecordInitiator
-progressReportInitiatorFromUrlFragmemt s =
+progressReportInitiatorFromUrlFragment : String -> Maybe PatientRecordInitiator
+progressReportInitiatorFromUrlFragment s =
     case s of
         "participant-directory" ->
             Just InitiatorParticipantDirectory

@@ -50,13 +50,13 @@ type Msg
     | SetCoreExamLungs LungsCPESign
     | SaveCoreExam PersonId (Maybe ( AcuteIllnessCoreExamId, AcuteIllnessCoreExam )) (Maybe PhysicalExamTask)
       -- LABORATORY Msgs
-    | SetActiveLaboratoryTask LaboratoryTask
+    | SetActiveLaboratoryTask AILaboratoryTask
     | SetRapidTestResult String
     | SetIsPregnant Bool
-    | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting )) (Maybe LaboratoryTask)
+    | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting )) (Maybe AILaboratoryTask)
     | SetCovidTestingBoolInput (Bool -> CovidTestingForm -> CovidTestingForm) Bool
     | SetCovidTestingAdministrationNote AdministrationNote
-    | SaveCovidTesting PersonId (Maybe ( CovidTestingId, CovidTesting )) (Maybe LaboratoryTask)
+    | SaveCovidTesting PersonId (Maybe ( CovidTestingId, CovidTesting )) (Maybe AILaboratoryTask)
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
     | SetCovid19Country Bool
@@ -243,7 +243,7 @@ type alias AcuteIllnessCoreExamForm =
 type alias LaboratoryData =
     { malariaTestingForm : MalariaTestingForm
     , covidTestingForm : CovidTestingForm
-    , activeTask : Maybe LaboratoryTask
+    , activeTask : Maybe AILaboratoryTask
     }
 
 

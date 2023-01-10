@@ -29,6 +29,9 @@ individualEncounterTypeToString encounterType =
         WellChildEncounter ->
             "well-child"
 
+        NCDEncounter ->
+            "ncd"
+
 
 individualEncounterTypeFromString : String -> Maybe IndividualEncounterType
 individualEncounterTypeFromString string =
@@ -51,6 +54,9 @@ individualEncounterTypeFromString string =
         "well-child" ->
             Just WellChildEncounter
 
+        "ncd" ->
+            Just NCDEncounter
+
         _ ->
             Nothing
 
@@ -60,8 +66,8 @@ isDailyEncounterActive currentDate encounter =
     encounter.startDate == currentDate && isNothing encounter.endDate
 
 
-initiatorToUrlFragmemt : IndividualParticipantInitiator -> String
-initiatorToUrlFragmemt initiator =
+initiatorToUrlFragment : IndividualParticipantInitiator -> String
+initiatorToUrlFragment initiator =
     case initiator of
         InitiatorParticipantsPage ->
             "participants-page"
@@ -70,11 +76,11 @@ initiatorToUrlFragmemt initiator =
             "patient-record-"
                 ++ fromEntityUuid personId
                 ++ "+++"
-                ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragmemt patientRecordInitiator
+                ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragment patientRecordInitiator
 
 
-initiatorFromUrlFragmemt : String -> Maybe IndividualParticipantInitiator
-initiatorFromUrlFragmemt s =
+initiatorFromUrlFragment : String -> Maybe IndividualParticipantInitiator
+initiatorFromUrlFragment s =
     case s of
         "participants-page" ->
             Just InitiatorParticipantsPage
@@ -97,7 +103,7 @@ initiatorFromUrlFragmemt s =
                         (List.head fragments)
                         (List.drop 1 fragments
                             |> List.head
-                            |> Maybe.andThen Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragmemt
+                            |> Maybe.andThen Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragment
                         )
                         |> Maybe.Extra.join
 

@@ -20,6 +20,11 @@ type Msg
     | SavePhoto PersonId (Maybe NutritionPhotoId) PhotoUrl
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
+    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetBirthWeight String
+    | SetNCDAFormStep NCDAStep
+    | SetNCDAHelperState (Maybe NCDASign)
+    | SaveNCDA PersonId (Maybe ( NutritionNCDAId, NutritionNCDA ))
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
@@ -40,6 +45,7 @@ type alias Model =
     , nutritionData : NutritionData
     , photoData : PhotoData
     , weightData : WeightData
+    , ncdaData : NCDAData
     , nextStepsData : NextStepsData
     , warningPopupState : List NutritionAssessment
     }
@@ -52,6 +58,7 @@ emptyModel =
     , nutritionData = emptyNutritionData
     , photoData = emptyPhotoData
     , weightData = emptyWeightData
+    , ncdaData = emptyNCDAData
     , nextStepsData = emptyNextStepsData
     , warningPopupState = []
     }

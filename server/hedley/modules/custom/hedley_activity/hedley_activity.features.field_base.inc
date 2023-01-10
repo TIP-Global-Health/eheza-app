@@ -1186,6 +1186,49 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_ncda_signs'.
+  $field_bases['field_ncda_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_ncda_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'born-with-birth-defect' => 'Born With Birth Defect',
+        'breastfed-for-six-months' => 'Breastfed for six months',
+        'appropriate-complementary-feeding' => 'Appropriate Complementary Feeding',
+        'ongera-mnp' => 'Ongera Mnp',
+        'five-food-groups' => 'Five Food Groups',
+        'meal-frequency-6to8m' => 'Meal Frequency 6 to 9 months',
+        'meal-frequency-9to11m' => 'Meal Frequency 9 to 12 months',
+        'meal-frequency-12+m' => 'Meal Frequency 12 months or more',
+        'support-child-with-disability' => 'Support Child With Disability',
+        'conditional-cash-transfer' => 'Conditional Cash Transfer',
+        'conditional-food-items' => 'Conditional Food Items',
+        'has-clean-water' => 'Has Clean Water',
+        'has-handwashing-facility' => 'Has Handwashing Facility',
+        'has-toilets' => 'Has Toilets',
+        'has-kitchen-garden' => 'Has Kitchen Garden',
+        'regular-prenatal-visits' => 'Regular Prenatal Visits',
+        'ron-supplements-during-pregnancy' => 'Iron Supplements During Pregnancy',
+        'insecticide-treated-bednets-during-pregnancy' => 'Insecticide Treated Bednets During Pregnancy',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_neck'.
   $field_bases['field_neck'] = array(
     'active' => 1,
