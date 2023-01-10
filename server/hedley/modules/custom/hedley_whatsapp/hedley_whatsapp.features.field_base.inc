@@ -47,6 +47,7 @@ function hedley_whatsapp_field_default_field_bases() {
         'well-child' => 'Well Child',
         'antenatal' => 'Antenatal',
         'acute-illness' => 'Acute Illness',
+        'ncd' => 'NCD',
       ),
       'allowed_values_function' => '',
     ),

@@ -44,6 +44,7 @@ import Backend.WellChildEncounter.Model
         , pediatricCareMilestones
         )
 import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.Utils
 import Components.SendViaWhatsAppDialog.View
 import Date
 import EverySet exposing (EverySet)
@@ -492,11 +493,8 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
             Maybe.map (EverySet.member Components.SendViaWhatsAppDialog.Model.ComponentWellChildActiveDiagnoses) selectedComponents
                 |> Maybe.withDefault False
 
-        showComponent component =
-            -- Show component if it was selected to be shared via WhatsApp,
-            -- or, if viewing not for sharing via WhatsApp.
-            Maybe.map (EverySet.member component) selectedComponents
-                |> Maybe.withDefault True
+        showComponent =
+            Components.SendViaWhatsAppDialog.Utils.showComponent selectedComponents
     in
     [ viewPersonInfoPane language currentDate child
     , viewDiagnosisPane language

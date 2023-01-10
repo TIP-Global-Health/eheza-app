@@ -6,14 +6,12 @@ import EverySet exposing (EverySet)
 
 
 type alias Model =
-    { state : Maybe DialogState
-    }
+    { state : Maybe DialogState }
 
 
 emptyModel : Model
 emptyModel =
-    { state = Nothing
-    }
+    { state = Nothing }
 
 
 type DialogState
