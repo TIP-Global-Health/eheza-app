@@ -3900,6 +3900,11 @@ div.page-report.ncd {
     }
   }
 
+  .pane-content.overflow {
+    overflow-y: scroll;
+    position: relative;
+  }
+
   .pane-action {
     border-top: 1px solid $color-text;
     background: $color-white;

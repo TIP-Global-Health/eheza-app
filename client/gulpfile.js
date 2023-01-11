@@ -186,7 +186,6 @@ gulp.task("copy:dev", ["copy:bower", "copy:html2canvas", "copy:images", "copy:fa
 
 // Copy bower.
 gulp.task("copy:bower", function() {
-  // There are unused Dexie files that causes trouble for uglify later
   return gulp.src([
       "bower_components/**/*",
       "!bower_components/**/*.es.js",
@@ -199,7 +198,6 @@ gulp.task("copy:bower", function() {
 
 // Copy html2canvas.
 gulp.task("copy:html2canvas", function() {
-  // There are unused Dexie files that causes trouble for uglify later
   return gulp.src([
       "node_modules/html2canvas/dist/*",
     ]).pipe(gulp.dest("serve/node_modules/html2canvas/dist"))
