@@ -1339,10 +1339,10 @@ type TranslationId
     | SendViaWhatsApp
     | SendViaWhatsAppComponentsSelectionHeader Components.SendViaWhatsAppDialog.Model.ReportType
     | SendViaWhatsAppConfirmationBeforeExecutingHeader
+    | SendViaWhatsAppConfirmationBeforeExecutingInstructions
     | SendViaWhatsAppConfirmationBeforeExecutingQuestion
     | SendViaWhatsAppConsentQuestion
     | SendViaWhatsAppExecutionResultFailure
-    | SendViaWhatsAppExecutionResultPleaseWait
     | SendViaWhatsAppExecutionResultSomethingWentWrong
     | SendViaWhatsAppExecutionResultSuccess
     | SendViaWhatsAppNoticeOfNonRespobsibility
@@ -15194,6 +15194,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SendViaWhatsAppConfirmationBeforeExecutingInstructions ->
+            { english = "This action will take up to one minute to complete."
+            , kinyarwanda = Nothing
+            }
+
         SendViaWhatsAppConfirmationBeforeExecutingQuestion ->
             { english = "Would you like to send?"
             , kinyarwanda = Nothing
@@ -15206,11 +15211,6 @@ translationSet trans =
 
         SendViaWhatsAppExecutionResultFailure ->
             { english = "Action Failed. Please try again. If problem persisits, please contact system administrator."
-            , kinyarwanda = Nothing
-            }
-
-        SendViaWhatsAppExecutionResultPleaseWait ->
-            { english = "Please allow up to one minute for action to complete ..."
             , kinyarwanda = Nothing
             }
 

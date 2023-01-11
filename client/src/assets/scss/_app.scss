@@ -67,6 +67,10 @@ a {
   }
 }
 
+.overlay.bright {
+  background-color: rgba(0,0,0,0.15);
+}
+
 // CSS for the modal itself, inside an overlay. We center
 // the modal vertically inside the viewport.
 .overlay > .modal {

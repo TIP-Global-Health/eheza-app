@@ -11,15 +11,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewTextInput)
 import Translate exposing (Language, translate, translateText)
-import Utils.Html exposing (viewModal)
+import Utils.Html exposing (viewCustomModal)
 
 
 view : Language -> NominalDate -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
 view language currentDate ( personId, person ) reportType componentsConfig model =
-    viewModal <|
+    viewCustomModal [ "bright" ] <|
         Maybe.map (viewDialog language currentDate ( personId, person ) reportType componentsConfig) model.state
 
 
@@ -506,6 +506,7 @@ viewConfirmationBeforeExecuting language currentDate reportType personId phoneNu
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingHeader ]
         , p [] [ text phoneNumber ]
+        , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingInstructions ]
         , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingQuestion ]
         ]
     , div [ class "actions" ]
@@ -551,10 +552,13 @@ viewExecutionResult language currentDate maybeResult clearComponentsMsg =
                     )
                 )
                 maybeResult
-                |> Maybe.withDefault ( Translate.SendViaWhatsAppExecutionResultPleaseWait, emptyNode )
+                |> Maybe.withDefault ( Translate.EmptyString, emptyNode )
     in
     [ div
-        [ class "content"
+        [ classList
+            [ ( "content", True )
+            , ( "hidden", isNothing maybeResult )
+            ]
         , Html.Attributes.id "execution-response"
         , on "screenshotcomplete" (Json.Decode.map (SetExecutionResult clearComponentsMsg) (Json.Decode.at [ "detail", "result" ] Json.Decode.string))
         ]
