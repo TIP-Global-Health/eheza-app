@@ -36,10 +36,7 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
             mandatoryActivitiesCompleted currentDate zscores session.offlineSession childId isChw db
 
         componentsConfig =
-            Just
-                { reportType = Components.SendViaWhatsAppDialog.Model.ReportWellChild
-                , setReportComponentsFunc = SetReportComponents
-                }
+            Just { setReportComponentsMsg = SetReportComponents }
     in
     viewWebData language
         (viewProgressReport

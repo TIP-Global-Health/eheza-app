@@ -23,18 +23,18 @@ type DialogState
     | PhoneUpdateAtProfile String
     | PhoneUpdateConfirmation String
     | ComponentsSelection String (Maybe ReportComponentsList)
-    | ConfirmationBeforeSending String
+    | ConfirmationBeforeExecuting String
+    | ExecutionResult (Maybe String)
 
 
 type alias ReportComponentsConfig msg =
-    { reportType : ReportType
-    , setReportComponentsFunc : Maybe ReportComponentsList -> msg
-    }
+    { setReportComponentsMsg : Maybe ReportComponentsList -> msg }
 
 
 type ReportType
     = ReportWellChild
     | ReportAntenatal
+    | ReportAcuteIllness
 
 
 type ReportComponentsList
@@ -64,3 +64,6 @@ type Msg msg
     = SetState (Maybe DialogState)
     | UpdatePhoneAtProfile PersonId Person String
     | SetReportComponents msg String
+    | Execute ReportType PersonId String
+    | CancelExecute (Maybe msg)
+    | SetExecutionResult (Maybe msg) String

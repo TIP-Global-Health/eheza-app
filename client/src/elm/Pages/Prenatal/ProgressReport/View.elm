@@ -128,10 +128,7 @@ viewContentAndHeader language currentDate isChw initiator model assembled =
                 Nothing
 
         componentsConfig =
-            Just
-                { reportType = Components.SendViaWhatsAppDialog.Model.ReportAntenatal
-                , setReportComponentsFunc = SetReportComponents
-                }
+            Just { setReportComponentsMsg = SetReportComponents }
     in
     div [ class "page-report clinical" ] <|
         [ viewHeader language assembled.id initiator model
@@ -142,6 +139,7 @@ viewContentAndHeader language currentDate isChw initiator model assembled =
                 language
                 currentDate
                 ( assembled.participant.person, assembled.person )
+                Components.SendViaWhatsAppDialog.Model.ReportAntenatal
                 componentsConfig
                 model.sendViaWhatsAppDialog
             )
@@ -373,7 +371,11 @@ viewContent language currentDate isChw initiator model assembled =
                       showIf regularViewMode actions
                     ]
     in
-    div [ class "ui unstackable items" ] <|
+    div
+        [ class "ui unstackable items"
+        , Html.Attributes.id "report-content"
+        ]
+    <|
         viewHeaderPane language currentDate assembled
             :: derivedContent
 

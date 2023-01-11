@@ -159,10 +159,7 @@ view language currentDate zscores id isChw db model =
             InitiatorWellChild id
 
         componentsConfig =
-            Just
-                { reportType = Components.SendViaWhatsAppDialog.Model.ReportWellChild
-                , setReportComponentsFunc = SetReportComponents
-                }
+            Just { setReportComponentsMsg = SetReportComponents }
     in
     viewWebData language
         (viewProgressReport language
@@ -234,7 +231,11 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
     div [ class "page-report well-child" ]
         [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
         , viewTabs language setActiveTabMsg activeTab
-        , div [ class "ui report unstackable items" ] <|
+        , div
+            [ class "ui report unstackable items"
+            , Html.Attributes.id "report-content"
+            ]
+          <|
             content
                 ++ viewActions language initiator msgSendViaWhatsAppDialogMsg bottomActionData
         ]
@@ -439,6 +440,11 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
                         reportData.individualWellChildMeasurementsWithDates
                         db
                         |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildECD)
+
+                    -- @todo:
+                    -- Drawing SVG charts causes major slowness, specially when
+                    -- typing new phone number. Need to decide how to
+                    -- solve this.
                     , viewGrowthPane language
                         currentDate
                         zscores
@@ -447,6 +453,7 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
                         reportData.groupNutritionMeasurements
                         reportData.individualNutritionMeasurementsWithDates
                         reportData.individualWellChildMeasurementsWithDates
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildGrowth)
                     , viewNextAppointmentPane language
                         currentDate
                         child
@@ -494,6 +501,7 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
                     language
                     currentDate
                     ( childId, child )
+                    Components.SendViaWhatsAppDialog.Model.ReportWellChild
                     componentsConfig
                     sendViaWhatsAppDialog
                 )

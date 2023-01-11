@@ -3,6 +3,7 @@ port module App.Ports exposing
     , cacheHealthCenter
     , cachePinCode
     , cacheVillage
+    , makeProgressReportScreenshot
     , memoryQuota
     , persistentStorage
     , scrollToElement
@@ -53,3 +54,6 @@ port bindDropZone : () -> Cmd msg
 
 
 port scrollToElement : String -> Cmd msg
+
+
+port makeProgressReportScreenshot : { reportType : String, personId : String, phoneNumber : String } -> Cmd msg
