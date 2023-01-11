@@ -238,7 +238,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
             ]
           <|
             content
-                ++ viewActions language initiator msgSendViaWhatsAppDialogMsg bottomActionData
+                ++ viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActionData
         ]
 
 
@@ -532,10 +532,11 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
 viewActions :
     Language
     -> WellChildProgressReportInitiator
+    -> ReportTab
     -> (Components.SendViaWhatsAppDialog.Model.Msg msg -> msg)
     -> Maybe (BottomActionData msg)
     -> List (Html msg)
-viewActions language initiator msgSendViaWhatsAppDialogMsg bottomActionData =
+viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActionData =
     Maybe.map
         (\data ->
             let
@@ -545,15 +546,19 @@ viewActions language initiator msgSendViaWhatsAppDialogMsg bottomActionData =
                             viewStartEncounterButton language data.startEncounterMsg
 
                         _ ->
-                            viewEndEncounterMenuForProgressReport language
-                                data.allowEndEncounter
-                                data.setEndEncounterDialogStateMsg
-                                (msgSendViaWhatsAppDialogMsg <|
-                                    Components.SendViaWhatsAppDialog.Model.SetState <|
-                                        Just Components.SendViaWhatsAppDialog.Model.Consent
-                                )
+                            case activeTab of
+                                TabSPVReport ->
+                                    viewEndEncounterMenuForProgressReport language
+                                        data.allowEndEncounter
+                                        data.setEndEncounterDialogStateMsg
+                                        (msgSendViaWhatsAppDialogMsg <|
+                                            Components.SendViaWhatsAppDialog.Model.SetState <|
+                                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                                        )
 
-                -- viewEndEncounterButton language data.allowEndEncounter data.setEndEncounterDialogStateMsg
+                                TabNCDAScoreboard ->
+                                    viewEndEncounterButton language data.allowEndEncounter data.setEndEncounterDialogStateMsg
+
                 endEncounterDialog =
                     if data.showEndEncounterDialog then
                         Just <|
