@@ -31,6 +31,12 @@ update currentDate id msg model =
             , []
             )
 
+        SetSPVReportTab tab ->
+            ( { model | spvReportTab = tab }
+            , Cmd.none
+            , []
+            )
+
         SetViewMode mode ->
             ( { model | viewMode = mode }
             , Cmd.none
@@ -49,8 +55,8 @@ update currentDate id msg model =
 
         MsgSendViaWhatsAppDialog subMsg ->
             let
-                ( dialogUpdated, extraMsgs, appMsgs ) =
+                ( dialogUpdated, cmd, ( extraMsgs, appMsgs ) ) =
                     Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
             in
-            ( { model | sendViaWhatsAppDialog = dialogUpdated }, Cmd.none, appMsgs )
+            ( { model | sendViaWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
                 |> sequenceExtra (update currentDate id) extraMsgs

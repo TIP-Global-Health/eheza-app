@@ -5,6 +5,7 @@ import App.Utils exposing (getLoggedInData)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Fetch
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.AcuteIllness.Activity.Fetch
@@ -22,6 +23,12 @@ import Pages.HomeVisit.Activity.Fetch
 import Pages.HomeVisit.Encounter.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
+import Pages.NCD.Activity.Fetch
+import Pages.NCD.Encounter.Fetch
+import Pages.NCD.Participant.Fetch
+import Pages.NCD.ProgressReport.Fetch
+import Pages.NCD.RecurrentActivity.Fetch
+import Pages.NCD.RecurrentEncounter.Fetch
 import Pages.Nutrition.Activity.Fetch
 import Pages.Nutrition.Encounter.Fetch
 import Pages.Nutrition.Participant.Fetch
@@ -183,6 +190,15 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
+            UserPage (NCDParticipantPage _ personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.NCD.Participant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
             UserPage (IndividualEncounterParticipantsPage encounterType) ->
                 getLoggedInData model
                     |> Maybe.map
@@ -204,16 +220,16 @@ fetch model =
                 Pages.Prenatal.Encounter.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (PrenatalActivityPage prenatalEncounterId _) ->
-                Pages.Prenatal.Activity.Fetch.fetch prenatalEncounterId model.indexedDb
+            UserPage (PrenatalActivityPage encounterId _) ->
+                Pages.Prenatal.Activity.Fetch.fetch encounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (PrenatalRecurrentEncounterPage id) ->
                 Pages.Prenatal.RecurrentEncounter.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (PrenatalRecurrentActivityPage prenatalEncounterId _) ->
-                Pages.Prenatal.RecurrentActivity.Fetch.fetch prenatalEncounterId model.indexedDb
+            UserPage (PrenatalRecurrentActivityPage encounterId _) ->
+                Pages.Prenatal.RecurrentActivity.Fetch.fetch encounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (PrenatalLabsHistoryPage originatingEncounterId labEncounterId _) ->
@@ -270,8 +286,24 @@ fetch model =
                 Pages.WellChild.Activity.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (NutritionProgressReportPage nutritionEncounterId) ->
-                Pages.Nutrition.ProgressReport.Fetch.fetch nutritionEncounterId model.indexedDb
+            UserPage (NCDEncounterPage id) ->
+                Pages.NCD.Encounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (NCDActivityPage id _) ->
+                Pages.NCD.Activity.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (NCDRecurrentEncounterPage id) ->
+                Pages.NCD.RecurrentEncounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (NCDRecurrentActivityPage encounterId _) ->
+                Pages.NCD.RecurrentActivity.Fetch.fetch encounterId model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (NutritionProgressReportPage id) ->
+                Pages.Nutrition.ProgressReport.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (AcuteIllnessProgressReportPage _ id) ->
@@ -280,6 +312,19 @@ fetch model =
 
             UserPage (WellChildProgressReportPage id) ->
                 Pages.WellChild.ProgressReport.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (NCDProgressReportPage initiator) ->
+                let
+                    encounterId =
+                        case initiator of
+                            InitiatorEncounterPage id ->
+                                id
+
+                            InitiatorRecurrentEncounterPage id ->
+                                id
+                in
+                Pages.NCD.ProgressReport.Fetch.fetch encounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (AcuteIllnessOutcomePage id) ->

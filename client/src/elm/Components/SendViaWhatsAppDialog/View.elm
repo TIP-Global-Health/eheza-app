@@ -9,20 +9,21 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewTextInput)
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewModal)
 
 
-view : Language -> NominalDate -> ( PersonId, Person ) -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
-view language currentDate ( personId, person ) componentsConfig model =
+view : Language -> NominalDate -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
+view language currentDate ( personId, person ) reportType componentsConfig model =
     viewModal <|
-        Maybe.map (viewDialog language currentDate ( personId, person ) componentsConfig) model.state
+        Maybe.map (viewDialog language currentDate ( personId, person ) reportType componentsConfig) model.state
 
 
-viewDialog : Language -> NominalDate -> ( PersonId, Person ) -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html (Msg msg)
-viewDialog language currentDate ( personId, person ) componentsConfig state =
+viewDialog : Language -> NominalDate -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html (Msg msg)
+viewDialog language currentDate ( personId, person ) reportType componentsConfig state =
     let
         content =
             case state of
@@ -42,12 +43,25 @@ viewDialog language currentDate ( personId, person ) componentsConfig state =
                     viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneNumber
 
                 ComponentsSelection phoneNumber componentsList ->
-                    Maybe.map (viewComponentsSelection language currentDate phoneNumber componentsList)
+                    Maybe.map (viewComponentsSelection language currentDate phoneNumber componentsList reportType)
                         componentsConfig
                         |> Maybe.withDefault []
 
-                ConfirmationBeforeSending phoneNumber ->
-                    viewConfirmationBeforeSending language currentDate phoneNumber
+                ConfirmationBeforeExecuting phoneNumber ->
+                    Maybe.map
+                        (\config ->
+                            config.setReportComponentsMsg Nothing
+                        )
+                        componentsConfig
+                        |> viewConfirmationBeforeExecuting language currentDate reportType personId phoneNumber
+
+                ExecutionResult result ->
+                    Maybe.map
+                        (\config ->
+                            config.setReportComponentsMsg Nothing
+                        )
+                        componentsConfig
+                        |> viewExecutionResult language currentDate result
 
         allowComponentsSelection =
             isJust componentsConfig
@@ -100,7 +114,7 @@ viewPhoneVerification language currentDate allowComponentsSelection phoneNumber 
                 ComponentsSelection phoneNumber Nothing
 
             else
-                ConfirmationBeforeSending phoneNumber
+                ConfirmationBeforeExecuting phoneNumber
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppPhoneVerificationHeader ]
@@ -159,7 +173,7 @@ viewPhoneUpdateAtProfile language currentDate allowComponentsSelection personId 
                 ComponentsSelection phoneNumber Nothing
 
             else
-                ConfirmationBeforeSending phoneNumber
+                ConfirmationBeforeExecuting phoneNumber
     in
     [ div [ class "content" ]
         [ translateText language Translate.SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix
@@ -193,7 +207,7 @@ viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneN
                 ComponentsSelection phoneNumber Nothing
 
             else
-                ConfirmationBeforeSending phoneNumber
+                ConfirmationBeforeExecuting phoneNumber
     in
     [ div [ class "content" ]
         [ translateText language Translate.SendViaWhatsAppPhoneUpdateConfirmationMessasge ]
@@ -207,11 +221,18 @@ viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneN
     ]
 
 
-viewComponentsSelection : Language -> NominalDate -> String -> Maybe ReportComponentsList -> ReportComponentsConfig msg -> List (Html (Msg msg))
-viewComponentsSelection language currentDate phoneNumber componentsList config =
+viewComponentsSelection :
+    Language
+    -> NominalDate
+    -> String
+    -> Maybe ReportComponentsList
+    -> ReportType
+    -> ReportComponentsConfig msg
+    -> List (Html (Msg msg))
+viewComponentsSelection language currentDate phoneNumber componentsList reportType config =
     let
         componentsSelectionInput =
-            case config.reportType of
+            case reportType of
                 ReportWellChild ->
                     let
                         currentValue =
@@ -310,9 +331,13 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
                         setMsg
                         Translate.ReportComponentAntenatal
 
+                -- Not in use.
+                ReportAcuteIllness ->
+                    emptyNode
+
         continueButtonAction =
             if componentsSelected then
-                [ onClick <| SetReportComponents (config.setReportComponentsFunc componentsList) phoneNumber ]
+                [ onClick <| SetReportComponents (config.setReportComponentsMsg componentsList) phoneNumber ]
 
             else
                 []
@@ -320,7 +345,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
         componentsSelected =
             Maybe.map
                 (\list ->
-                    case config.reportType of
+                    case reportType of
                         ReportWellChild ->
                             case list of
                                 WellChild components ->
@@ -338,12 +363,16 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
                                 -- We should never get here.
                                 WellChild _ ->
                                     False
+
+                        -- Not in use.
+                        ReportAcuteIllness ->
+                            False
                 )
                 componentsList
                 |> Maybe.withDefault False
     in
     [ div [ class "content" ]
-        [ p [] [ translateText language <| Translate.SendViaWhatsAppComponentsSelectionHeader config.reportType ]
+        [ p [] [ translateText language <| Translate.SendViaWhatsAppComponentsSelectionHeader reportType ]
         , componentsSelectionInput
         ]
     , div [ class "actions" ]
@@ -363,27 +392,63 @@ viewComponentsSelection language currentDate phoneNumber componentsList config =
     ]
 
 
-viewConfirmationBeforeSending : Language -> NominalDate -> String -> List (Html (Msg msg))
-viewConfirmationBeforeSending language currentDate phoneNumber =
+viewConfirmationBeforeExecuting : Language -> NominalDate -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
+viewConfirmationBeforeExecuting language currentDate reportType personId phoneNumber clearComponentsMsg =
     [ div [ class "content" ]
-        [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeSendingHeader ]
+        [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingHeader ]
         , p [] [ text phoneNumber ]
-        , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeSendingQuestion ]
+        , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingQuestion ]
         ]
     , div [ class "actions" ]
         [ div [ class "two ui buttons" ]
             [ button
                 [ class "ui velvet fluid button"
-                , onClick <| SetState Nothing
+                , onClick <| CancelExecute clearComponentsMsg
                 ]
                 [ text <| translate language Translate.No ]
             , button
                 [ class "ui primary fluid button"
-
-                -- @todo
-                -- , onClick <| SetState <| Just (PhoneUpdateAtProfile inputValue)
+                , onClick <| Execute reportType personId phoneNumber
                 ]
                 [ text <| translate language Translate.Send ]
             ]
         ]
+    ]
+
+
+viewExecutionResult : Language -> NominalDate -> Maybe String -> Maybe msg -> List (Html (Msg msg))
+viewExecutionResult language currentDate maybeResult clearComponentsMsg =
+    let
+        ( message, actions ) =
+            Maybe.map
+                (\result ->
+                    ( case result of
+                        "success" ->
+                            Translate.SendViaWhatsAppExecutionResultSuccess
+
+                        "failure" ->
+                            Translate.SendViaWhatsAppExecutionResultFailure
+
+                        -- We should never get here, since proper responses are set at app.js.
+                        _ ->
+                            Translate.SendViaWhatsAppExecutionResultSomethingWentWrong
+                    , div [ class "actions" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| SetState Nothing
+                            ]
+                            [ text <| translate language Translate.Close ]
+                        ]
+                    )
+                )
+                maybeResult
+                |> Maybe.withDefault ( Translate.SendViaWhatsAppExecutionResultPleaseWait, emptyNode )
+    in
+    [ div
+        [ class "content"
+        , Html.Attributes.id "execution-response"
+        , on "screenshotcomplete" (Json.Decode.map (SetExecutionResult clearComponentsMsg) (Json.Decode.at [ "detail", "result" ] Json.Decode.string))
+        ]
+        [ text <| translate language message ]
+    , actions
     ]

@@ -117,11 +117,11 @@ encodePhotoUrlWithType type_ (PhotoUrl url) =
 
 encodePregnancyTest : PregnancyTest -> List ( String, Value )
 encodePregnancyTest =
-    encodePrenatalMeasurement encodePregnancyTestValue
+    encodePrenatalMeasurement encodeCHWPregnancyTestValue
 
 
-encodePregnancyTestValue : PregnancyTestResult -> List ( String, Value )
-encodePregnancyTestValue value =
+encodeCHWPregnancyTestValue : PregnancyTestResult -> List ( String, Value )
+encodeCHWPregnancyTestValue value =
     [ ( "urine_pregnancy_test", encodePregnancyTestResult value )
     , ( "deleted", bool False )
     , ( "type", string "pregnancy_testing" )
@@ -288,11 +288,11 @@ encodeAppointmentConfirmationValue value =
 
 encodePrenatalBloodGpRsTest : PrenatalBloodGpRsTest -> List ( String, Value )
 encodePrenatalBloodGpRsTest =
-    encodePrenatalMeasurement encodePrenatalBloodGpRsTestValue
+    encodePrenatalMeasurement encodeBloodGpRsTestValue
 
 
-encodePrenatalBloodGpRsTestValue : PrenatalBloodGpRsTestValue -> List ( String, Value )
-encodePrenatalBloodGpRsTestValue value =
+encodeBloodGpRsTestValue : BloodGpRsTestValue (EntityUuid a) -> List ( String, Value )
+encodeBloodGpRsTestValue value =
     let
         executionDate =
             Maybe.map
@@ -319,7 +319,7 @@ encodePrenatalBloodGpRsTestValue value =
                 value.rhesus
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ originatingEncounter
         ++ results
@@ -340,11 +340,11 @@ encodeRhesus =
 
 encodePrenatalHemoglobinTest : PrenatalHemoglobinTest -> List ( String, Value )
 encodePrenatalHemoglobinTest =
-    encodePrenatalMeasurement encodePrenatalHemoglobinTestValue
+    encodePrenatalMeasurement encodeHemoglobinTestValue
 
 
-encodePrenatalHemoglobinTestValue : PrenatalHemoglobinTestValue -> List ( String, Value )
-encodePrenatalHemoglobinTestValue value =
+encodeHemoglobinTestValue : HemoglobinTestValue -> List ( String, Value )
+encodeHemoglobinTestValue value =
     let
         executionDate =
             Maybe.map
@@ -360,7 +360,7 @@ encodePrenatalHemoglobinTestValue value =
                 value.hemoglobinCount
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ [ ( "deleted", bool False )
@@ -370,11 +370,11 @@ encodePrenatalHemoglobinTestValue value =
 
 encodePrenatalHepatitisBTest : PrenatalHepatitisBTest -> List ( String, Value )
 encodePrenatalHepatitisBTest =
-    encodePrenatalMeasurement encodePrenatalHepatitisBTestValue
+    encodePrenatalMeasurement encodeHepatitisBTestValue
 
 
-encodePrenatalHepatitisBTestValue : PrenatalHepatitisBTestValue -> List ( String, Value )
-encodePrenatalHepatitisBTestValue value =
+encodeHepatitisBTestValue : HepatitisBTestValue (EntityUuid a) -> List ( String, Value )
+encodeHepatitisBTestValue value =
     let
         executionDate =
             Maybe.map
@@ -385,7 +385,7 @@ encodePrenatalHepatitisBTestValue value =
         result =
             Maybe.map
                 (\testResult ->
-                    [ ( "test_result", encodePrenatalTestResult testResult ) ]
+                    [ ( "test_result", encodeTestResult testResult ) ]
                 )
                 value.testResult
                 |> Maybe.withDefault []
@@ -398,7 +398,7 @@ encodePrenatalHepatitisBTestValue value =
                 value.originatingEncounter
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ originatingEncounter
@@ -409,11 +409,11 @@ encodePrenatalHepatitisBTestValue value =
 
 encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
 encodePrenatalHIVTest =
-    encodePrenatalMeasurement encodePrenatalHIVTestValue
+    encodePrenatalMeasurement (encodeHIVTestValue "prenatal_hiv_test")
 
 
-encodePrenatalHIVTestValue : PrenatalHIVTestValue -> List ( String, Value )
-encodePrenatalHIVTestValue value =
+encodeHIVTestValue : String -> HIVTestValue -> List ( String, Value )
+encodeHIVTestValue type_ value =
     let
         executionDate =
             Maybe.map
@@ -423,7 +423,7 @@ encodePrenatalHIVTestValue value =
 
         result =
             Maybe.map
-                (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
+                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
                 value.testResult
                 |> Maybe.withDefault []
 
@@ -439,22 +439,22 @@ encodePrenatalHIVTestValue value =
                 value.hivSigns
                 |> Maybe.withDefault (EverySet.singleton NoPrenatalHIVSign)
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns ) ]
         ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_hiv_test" )
+           , ( "type", string type_ )
            ]
 
 
 encodePrenatalHIVPCRTest : PrenatalHIVPCRTest -> List ( String, Value )
 encodePrenatalHIVPCRTest =
-    encodePrenatalMeasurement encodePrenatalHIVPCRTestValue
+    encodePrenatalMeasurement encodeHIVPCRTestValue
 
 
-encodePrenatalHIVPCRTestValue : PrenatalHIVPCRTestValue -> List ( String, Value )
-encodePrenatalHIVPCRTestValue value =
+encodeHIVPCRTestValue : HIVPCRTestValue -> List ( String, Value )
+encodeHIVPCRTestValue value =
     let
         executionDate =
             Maybe.map
@@ -474,7 +474,7 @@ encodePrenatalHIVPCRTestValue value =
                 value.hivViralLoad
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ hivViralLoadStatus
         ++ hivViralLoad
@@ -501,11 +501,11 @@ encodePrenatalHIVSign =
 
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
 encodePrenatalMalariaTest =
-    encodePrenatalMeasurement encodePrenatalMalariaTestValue
+    encodePrenatalMeasurement encodeMalariaTestValue
 
 
-encodePrenatalMalariaTestValue : PrenatalMalariaTestValue -> List ( String, Value )
-encodePrenatalMalariaTestValue value =
+encodeMalariaTestValue : MalariaTestValue -> List ( String, Value )
+encodeMalariaTestValue value =
     let
         executionDate =
             Maybe.map
@@ -515,11 +515,11 @@ encodePrenatalMalariaTestValue value =
 
         result =
             Maybe.map
-                (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
+                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
                 value.testResult
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ [ ( "deleted", bool False )
@@ -529,11 +529,11 @@ encodePrenatalMalariaTestValue value =
 
 encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )
 encodePrenatalRandomBloodSugarTest =
-    encodePrenatalMeasurement encodePrenatalRandomBloodSugarTestValue
+    encodePrenatalMeasurement (encodeRandomBloodSugarTestValue "prenatal_random_blood_sugar_test")
 
 
-encodePrenatalRandomBloodSugarTestValue : PrenatalRandomBloodSugarTestValue -> List ( String, Value )
-encodePrenatalRandomBloodSugarTestValue value =
+encodeRandomBloodSugarTestValue : String -> RandomBloodSugarTestValue (EntityUuid a) -> List ( String, Value )
+encodeRandomBloodSugarTestValue type_ value =
     let
         executionDate =
             Maybe.map
@@ -563,13 +563,13 @@ encodePrenatalRandomBloodSugarTestValue value =
                 value.sugarCount
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ testPrerequisites
         ++ originatingEncounter
         ++ result
         ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_random_blood_sugar_test" )
+           , ( "type", string type_ )
            ]
 
 
@@ -580,17 +580,20 @@ encodeTestPrerequisite value =
             PrerequisiteFastFor12h ->
                 "fasting-12h"
 
+            PrerequisiteImmediateResult ->
+                "immediate-result"
+
             NoTestPrerequisites ->
                 "none"
 
 
 encodePrenatalSyphilisTest : PrenatalSyphilisTest -> List ( String, Value )
 encodePrenatalSyphilisTest =
-    encodePrenatalMeasurement encodePrenatalSyphilisTestValue
+    encodePrenatalMeasurement encodeSyphilisTestValue
 
 
-encodePrenatalSyphilisTestValue : PrenatalSyphilisTestValue -> List ( String, Value )
-encodePrenatalSyphilisTestValue value =
+encodeSyphilisTestValue : SyphilisTestValue (EntityUuid a) -> List ( String, Value )
+encodeSyphilisTestValue value =
     let
         executionDate =
             Maybe.map
@@ -600,7 +603,7 @@ encodePrenatalSyphilisTestValue value =
 
         result =
             Maybe.map
-                (\testResult -> [ ( "test_result", encodePrenatalTestResult testResult ) ])
+                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
                 value.testResult
                 |> Maybe.withDefault []
 
@@ -618,7 +621,7 @@ encodePrenatalSyphilisTestValue value =
                 value.originatingEncounter
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
         ++ illnessSymptoms
@@ -635,15 +638,15 @@ encodeIllnessSymptom =
 
 encodePrenatalUrineDipstickTest : PrenatalUrineDipstickTest -> List ( String, Value )
 encodePrenatalUrineDipstickTest =
-    encodePrenatalMeasurement encodePrenatalUrineDipstickTestValue
+    encodePrenatalMeasurement (encodeUrineDipstickTestValue "prenatal_urine_dipstick_test")
 
 
-encodePrenatalUrineDipstickTestValue : PrenatalUrineDipstickTestValue -> List ( String, Value )
-encodePrenatalUrineDipstickTestValue value =
+encodeUrineDipstickTestValue : String -> UrineDipstickTestValue -> List ( String, Value )
+encodeUrineDipstickTestValue type_ value =
     let
         testVariant =
             Maybe.map
-                (\variant -> [ ( "test_variant", encodePrenatalTestVariant variant ) ])
+                (\variant -> [ ( "test_variant", encodeTestVariant variant ) ])
                 value.testVariant
                 |> Maybe.withDefault []
 
@@ -688,7 +691,7 @@ encodePrenatalUrineDipstickTestValue value =
         bilirubin =
             encodeField encodeBilirubinValue "bilirubin" value.bilirubin
     in
-    ( "test_execution_note", encodePrenatalTestExecutionNote value.executionNote )
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: testVariant
         ++ executionDate
         ++ protein
@@ -701,12 +704,12 @@ encodePrenatalUrineDipstickTestValue value =
         ++ ketone
         ++ bilirubin
         ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_urine_dipstick_test" )
+           , ( "type", string type_ )
            ]
 
 
-encodePrenatalTestVariant : PrenatalTestVariant -> Value
-encodePrenatalTestVariant value =
+encodeTestVariant : TestVariant -> Value
+encodeTestVariant value =
     string <|
         case value of
             VariantShortTest ->
@@ -761,8 +764,8 @@ encodeBilirubinValue =
     bilirubinValueToString >> string
 
 
-encodePrenatalTestExecutionNote : PrenatalTestExecutionNote -> Value
-encodePrenatalTestExecutionNote value =
+encodeTestExecutionNote : TestExecutionNote -> Value
+encodeTestExecutionNote value =
     string <|
         case value of
             TestNoteRunToday ->
@@ -789,56 +792,43 @@ encodePrenatalTestExecutionNote value =
             TestNoteKnownAsPositive ->
                 "known-as-positive"
 
+            TestNoteToBeDoneAtHospital ->
+                "to-be-done-at-hospital"
 
-encodePrenatalTestResult : PrenatalTestResult -> Value
-encodePrenatalTestResult =
-    prenatalTestResultToString >> string
+
+encodeTestResult : TestResult -> Value
+encodeTestResult =
+    testResultToString >> string
 
 
 encodePrenatalLabsResults : PrenatalLabsResults -> List ( String, Value )
 encodePrenatalLabsResults =
-    encodePrenatalMeasurement encodePrenatalLabsResultsValue
+    encodePrenatalMeasurement (encodeLabsResultsValue "prenatal_labs_results")
 
 
-encodePrenatalLabsResultsValue : PrenatalLabsResultsValue -> List ( String, Value )
-encodePrenatalLabsResultsValue value =
-    [ ( "performed_tests", encodeEverySet encodePrenatalLaboratoryTest value.performedTests )
-    , ( "completed_tests", encodeEverySet encodePrenatalLaboratoryTest value.completedTests )
+encodeLabsResultsValue : String -> LabsResultsValue -> List ( String, Value )
+encodeLabsResultsValue type_ value =
+    let
+        patientNotified =
+            if value.patientNotified then
+                [ ( "patient_notified", bool True ) ]
+
+            else
+                []
+    in
+    [ ( "performed_tests", encodeEverySet encodeLaboratoryTest value.performedTests )
+    , ( "completed_tests", encodeEverySet encodeLaboratoryTest value.completedTests )
     , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.resolutionDate )
-    , ( "patient_notified", bool value.patientNotified )
     ]
+        ++ patientNotified
         ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_labs_results" )
+           , ( "type", string type_ )
            ]
 
 
-encodePrenatalLaboratoryTest : PrenatalLaboratoryTest -> Value
-encodePrenatalLaboratoryTest value =
-    string <|
-        case value of
-            TestSyphilis ->
-                "syphilis"
-
-            TestHepatitisB ->
-                "hepatitis-b"
-
-            TestBloodGpRs ->
-                "blood-group"
-
-            TestUrineDipstick ->
-                "urine-dipstick"
-
-            TestHemoglobin ->
-                "hemoglobin"
-
-            TestRandomBloodSugar ->
-                "random-blood-sugar"
-
-            TestVitalsRecheck ->
-                "vitals-recheck"
-
-            TestHIVPCR ->
-                "hiv-pcr"
+encodeLaboratoryTest : LaboratoryTest -> Value
+encodeLaboratoryTest =
+    laboratoryTestToString >> string
 
 
 encodePrenatalMentalHealth : PrenatalMentalHealth -> List ( String, Value )
@@ -1020,11 +1010,6 @@ encodeAttendance =
     encodeGroupMeasurement encodeAttendanceValue
 
 
-encodeFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
-encodeFamilyPlanningValue signs =
-    encodeFamilyPlanningValueWithType "family_planning" signs
-
-
 encodeFamilyPlanningValueWithType : String -> EverySet FamilyPlanningSign -> List ( String, Value )
 encodeFamilyPlanningValueWithType type_ signs =
     [ ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign signs )
@@ -1035,7 +1020,7 @@ encodeFamilyPlanningValueWithType type_ signs =
 
 encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
 encodeFamilyPlanning =
-    encodeGroupMeasurement encodeFamilyPlanningValue
+    encodeGroupMeasurement (encodeFamilyPlanningValueWithType "family_planning")
 
 
 encodeLactationValue : EverySet LactationSign -> List ( String, Value )
@@ -1082,6 +1067,11 @@ encodeHomeVisitMeasurement =
 encodeWellChildMeasurement : (value -> List ( String, Value )) -> WellChildMeasurement value -> List ( String, Value )
 encodeWellChildMeasurement =
     encodeMeasurement "well_child_encounter"
+
+
+encodeNCDMeasurement : (value -> List ( String, Value )) -> NCDMeasurement value -> List ( String, Value )
+encodeNCDMeasurement =
+    encodeMeasurement "ncd_encounter"
 
 
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
@@ -1318,8 +1308,8 @@ encodeLegsCPESign sign =
                 "normal"
 
 
-encodeCorePhysicalExamValue : CorePhysicalExamValue -> List ( String, Value )
-encodeCorePhysicalExamValue value =
+encodeCorePhysicalExamValueWithType : String -> CorePhysicalExamValue -> List ( String, Value )
+encodeCorePhysicalExamValueWithType type_ value =
     [ ( "head_hair", encodeEverySet encodeHairHeadCPESign value.hairHead )
     , ( "eyes", encodeEverySet encodeEyesCPESign value.eyes )
     , ( "heart", encodeEverySet encodeHeartCPESign value.heart )
@@ -1330,13 +1320,13 @@ encodeCorePhysicalExamValue value =
     , ( "hands", encodeEverySet encodeHandsCPESign value.hands )
     , ( "legs", encodeEverySet encodeLegsCPESign value.legs )
     , ( "deleted", bool False )
-    , ( "type", string "core_physical_exam" )
+    , ( "type", string type_ )
     ]
 
 
 encodeCorePhysicalExam : CorePhysicalExam -> List ( String, Value )
 encodeCorePhysicalExam =
-    encodePrenatalMeasurement encodeCorePhysicalExamValue
+    encodePrenatalMeasurement (encodeCorePhysicalExamValueWithType "core_physical_exam")
 
 
 encodeDangerSign : DangerSign -> Value
@@ -1854,12 +1844,7 @@ encodeBirthPlanSign sign =
 
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
 encodePrenatalFamilyPlanning =
-    encodePrenatalMeasurement encodePrenatalFamilyPlanningValue
-
-
-encodePrenatalFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
-encodePrenatalFamilyPlanningValue signs =
-    encodeFamilyPlanningValueWithType "prenatal_family_planning" signs
+    encodePrenatalMeasurement (encodeFamilyPlanningValueWithType "prenatal_family_planning")
 
 
 encodePrenatalNutrition : PrenatalNutrition -> List ( String, Value )
@@ -2393,6 +2378,15 @@ encodeReferToFacilitySign sign =
             AccompanyToNCDProgram ->
                 "ncd-accompany"
 
+            ReferToANCServices ->
+                "anc"
+
+            ReferralFormANCServices ->
+                "anc-referral-form"
+
+            AccompanyToANCServices ->
+                "anc-accompany"
+
             NoReferToFacilitySigns ->
                 "none"
 
@@ -2412,6 +2406,9 @@ encodeNonReferralSign sign =
 
             NonReferralReasonNCDProgram reason ->
                 "ncd-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonANCServices reason ->
+                "anc-" ++ reasonForNonReferralToString reason
 
             NoNonReferralSigns ->
                 "none"
@@ -2435,6 +2432,9 @@ encodeReferralFacility facility =
 
             FacilityNCDProgram ->
                 "ncd"
+
+            FacilityANCServices ->
+                "anc"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )
@@ -2770,15 +2770,15 @@ encodeNutritionCaring =
 
 encodeNutritionCaringValue : NutritionCaringValue -> List ( String, Value )
 encodeNutritionCaringValue value =
-    [ ( "nutrition_caring_signs", encodeEverySet encondeNutritionCaringSign value.signs )
+    [ ( "nutrition_caring_signs", encodeEverySet encodeNutritionCaringSign value.signs )
     , ( "child_caring_options", encodeNutritionCaringOption value.caringOption )
     , ( "deleted", bool False )
     , ( "type", string "nutrition_caring" )
     ]
 
 
-encondeNutritionCaringSign : NutritionCaringSign -> Value
-encondeNutritionCaringSign sign =
+encodeNutritionCaringSign : NutritionCaringSign -> Value
+encodeNutritionCaringSign sign =
     string <|
         case sign of
             ParentsAliveHealthy ->
@@ -2821,7 +2821,7 @@ encodeMedicationDistribution =
 
 encodeMedicationDistributionValue : MedicationDistributionValue -> List ( String, Value )
 encodeMedicationDistributionValue value =
-    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
+    [ ( "prescribed_medication", encodeEverySet encodeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
     , ( "deleted", bool False )
     , ( "type", string "medication_distribution" )
@@ -2860,7 +2860,7 @@ encodePrenatalMedicationDistributionValue value =
                 value.avoidingGuidanceReason
                 |> Maybe.withDefault []
     in
-    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
+    [ ( "prescribed_medication", encodeEverySet encodeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_medication_distribution" )
@@ -2869,8 +2869,8 @@ encodePrenatalMedicationDistributionValue value =
         ++ avoidingGuidanceReason
 
 
-encondeMedicationDistributionSign : MedicationDistributionSign -> Value
-encondeMedicationDistributionSign sign =
+encodeMedicationDistributionSign : MedicationDistributionSign -> Value
+encodeMedicationDistributionSign sign =
     string <|
         case sign of
             Amoxicillin ->
@@ -3939,11 +3939,44 @@ encodeWellChildPregnancySummary =
 
 encodePregnancySummaryValue : PregnancySummaryValue -> List ( String, Value )
 encodePregnancySummaryValue value =
+    let
+        apgar =
+            Maybe.map2
+                (\apgarOneMin apgarFiveMin ->
+                    [ ( "apgar_one_min", float apgarOneMin )
+                    , ( "apgar_five_min", float apgarFiveMin )
+                    ]
+                )
+                value.apgarOneMin
+                value.apgarFiveMin
+                |> Maybe.withDefault []
+
+        birthWeight =
+            Maybe.map
+                (\(WeightInGrm weight) ->
+                    [ ( "weight", float weight ) ]
+                )
+                value.birthWeight
+                |> Maybe.withDefault []
+
+        birthLength =
+            Maybe.map
+                (\(HeightInCm length) ->
+                    [ ( "height", float length ) ]
+                )
+                value.birthLength
+                |> Maybe.withDefault []
+    in
     [ ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.expectedDateConcluded )
     , ( "delivery_complications", encodeEverySet encodeDeliveryComplication value.deliveryComplications )
+    , ( "pregnancy_summary_signs", encodeEverySet encodePregnancySummarySign value.signs )
+    , ( "birth_defects", encodeEverySet encodeBirthDefect value.birthDefects )
     , ( "deleted", bool False )
     , ( "type", string "well_child_pregnancy_summary" )
     ]
+        ++ apgar
+        ++ birthWeight
+        ++ birthLength
 
 
 encodeDeliveryComplication : DeliveryComplication -> Value
@@ -3972,6 +4005,76 @@ encodeDeliveryComplication complication =
                 "other"
 
             NoDeliveryComplications ->
+                "none"
+
+
+encodePregnancySummarySign : PregnancySummarySign -> Value
+encodePregnancySummarySign sign =
+    string <|
+        case sign of
+            ApgarScores ->
+                "apgar-scores"
+
+            BirthLength ->
+                "birth-length"
+
+            NoPregnancySummarySigns ->
+                "none"
+
+
+encodeBirthDefect : BirthDefect -> Value
+encodeBirthDefect defect =
+    string <|
+        case defect of
+            DefectBirthInjury ->
+                "birth-injury"
+
+            DefectCleftLipWithCleftPalate ->
+                "cleft-lip-with-cleft-palate"
+
+            DefectCleftPalate ->
+                "cleft-palate"
+
+            DefectClubFoot ->
+                "club-foot"
+
+            DefectMacrocephaly ->
+                "macrocephaly"
+
+            DefectGastroschisis ->
+                "gastroschisis"
+
+            DefectHearingLoss ->
+                "hearing-loss"
+
+            DefectUndescendedTestes ->
+                "undescended-testes"
+
+            DefectHypospadias ->
+                "hypospadias"
+
+            DefectInguinalHernia ->
+                "inguinal-hernia"
+
+            DefectMicrocephaly ->
+                "microcephaly"
+
+            DefectNeuralTubes ->
+                "neural-tubes"
+
+            DefectDownSyndrome ->
+                "down-syndrome"
+
+            DefectCongenitalHeart ->
+                "congenital-heart"
+
+            DefectVentricalSeptal ->
+                "ventrical-septal"
+
+            DefectPulmonaryValveAtresiaAndStenosis ->
+                "pulmonary-valve-atresia-and-stenosis"
+
+            NoBirthDefects ->
                 "none"
 
 
@@ -4083,16 +4186,16 @@ encodePrenatalFlankPainSign =
 
 encodePrenatalOutsideCare : PrenatalOutsideCare -> List ( String, Value )
 encodePrenatalOutsideCare =
-    encodePrenatalMeasurement encodePrenatalOutsideCareValue
+    encodePrenatalMeasurement (encodeOutsideCareValue "prenatal_diagnoses" encodePrenatalDiagnosis "prenatal_outside_care")
 
 
-encodePrenatalOutsideCareValue : PrenatalOutsideCareValue -> List ( String, Value )
-encodePrenatalOutsideCareValue value =
+encodeOutsideCareValue : String -> (diagnosis -> Value) -> String -> OutsideCareValue diagnosis -> List ( String, Value )
+encodeOutsideCareValue fieldName diagnosisEncouder type_ value =
     let
         diagnoses =
             Maybe.map
                 (\diagnoses_ ->
-                    [ ( "prenatal_diagnoses", encodeEverySet encodePrenatalDiagnosis diagnoses_ ) ]
+                    [ ( fieldName, encodeEverySet diagnosisEncouder diagnoses_ ) ]
                 )
                 value.diagnoses
                 |> Maybe.withDefault []
@@ -4100,24 +4203,525 @@ encodePrenatalOutsideCareValue value =
         medications =
             Maybe.map
                 (\medications_ ->
-                    [ ( "outside_care_medications", encodeEverySet encodePrenatalOutsideCareMedication medications_ ) ]
+                    [ ( "outside_care_medications", encodeEverySet encodeOutsideCareMedication medications_ ) ]
                 )
                 value.medications
                 |> Maybe.withDefault []
     in
-    [ ( "outside_care_signs", encodeEverySet encodePrenatalOutsideCareSign value.signs )
+    [ ( "outside_care_signs", encodeEverySet encodeOutsideCareSign value.signs )
     , ( "deleted", bool False )
-    , ( "type", string "prenatal_outside_care" )
+    , ( "type", string type_ )
     ]
         ++ diagnoses
         ++ medications
 
 
-encodePrenatalOutsideCareSign : PrenatalOutsideCareSign -> Value
-encodePrenatalOutsideCareSign =
-    prenatalOutsideCareSignToString >> string
+encodeOutsideCareSign : OutsideCareSign -> Value
+encodeOutsideCareSign =
+    outsideCareSignToString >> string
 
 
-encodePrenatalOutsideCareMedication : PrenatalOutsideCareMedication -> Value
-encodePrenatalOutsideCareMedication =
-    prenatalOutsideCareMedicationToString >> string
+encodeOutsideCareMedication : OutsideCareMedication -> Value
+encodeOutsideCareMedication =
+    outsideCareMedicationToString >> string
+
+
+encodeNCDCoMorbidities : NCDCoMorbidities -> List ( String, Value )
+encodeNCDCoMorbidities =
+    encodeNCDMeasurement encodeNCDCoMorbiditiesValue
+
+
+encodeNCDCoMorbiditiesValue : NCDCoMorbiditiesValue -> List ( String, Value )
+encodeNCDCoMorbiditiesValue value =
+    [ ( "comorbidities", encodeEverySet encodeMedicalCondition value )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_co_morbidities" )
+    ]
+
+
+encodeMedicalCondition : MedicalCondition -> Value
+encodeMedicalCondition =
+    medicalConditionToString >> string
+
+
+encodeNCDCoreExam : NCDCoreExam -> List ( String, Value )
+encodeNCDCoreExam =
+    encodeNCDMeasurement (encodeCorePhysicalExamValueWithType "ncd_core_exam")
+
+
+encodeNCDCreatinineTest : NCDCreatinineTest -> List ( String, Value )
+encodeNCDCreatinineTest =
+    encodeNCDMeasurement encodeCreatinineTestValue
+
+
+encodeCreatinineTestValue : CreatinineTestValue -> List ( String, Value )
+encodeCreatinineTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map2
+                (\creatinineResult bunResult ->
+                    [ ( "creatinine_result", float creatinineResult )
+                    , ( "bun_result", float bunResult )
+                    ]
+                )
+                value.creatinineResult
+                value.bunResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_creatinine_test" )
+           ]
+
+
+encodeNCDDangerSigns : NCDDangerSigns -> List ( String, Value )
+encodeNCDDangerSigns =
+    encodeNCDMeasurement encodeNCDDangerSignsValue
+
+
+encodeNCDDangerSignsValue : NCDDangerSignsValue -> List ( String, Value )
+encodeNCDDangerSignsValue value =
+    [ ( "ncd_danger_signs", encodeEverySet encodeNCDDangerSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_danger_signs" )
+    ]
+
+
+encodeNCDDangerSign : NCDDangerSign -> Value
+encodeNCDDangerSign =
+    ncdDangerSignToString >> string
+
+
+encodeNCDFamilyHistory : NCDFamilyHistory -> List ( String, Value )
+encodeNCDFamilyHistory =
+    encodeNCDMeasurement encodeNCDFamilyHistoryValue
+
+
+encodeNCDFamilyHistoryValue : NCDFamilyHistoryValue -> List ( String, Value )
+encodeNCDFamilyHistoryValue value =
+    let
+        hypertensionPredecessors =
+            Maybe.map
+                (\predecessors ->
+                    [ ( "hypertension_predecessors", encodeEverySet encodePredecessor predecessors ) ]
+                )
+                value.hypertensionPredecessors
+                |> Maybe.withDefault []
+
+        heartProblemPredecessors =
+            Maybe.map
+                (\predecessors ->
+                    [ ( "heart_problem_predecessors", encodeEverySet encodePredecessor predecessors ) ]
+                )
+                value.heartProblemPredecessors
+                |> Maybe.withDefault []
+
+        diabetesPredecessors =
+            Maybe.map
+                (\predecessors ->
+                    [ ( "diabetes_predecessors", encodeEverySet encodePredecessor predecessors ) ]
+                )
+                value.diabetesPredecessors
+                |> Maybe.withDefault []
+    in
+    [ ( "ncd_family_history_signs", encodeEverySet encodeNCDFamilyHistorySign value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_family_history" )
+    ]
+        ++ hypertensionPredecessors
+        ++ heartProblemPredecessors
+        ++ diabetesPredecessors
+
+
+encodeNCDFamilyHistorySign : NCDFamilyHistorySign -> Value
+encodeNCDFamilyHistorySign =
+    ncdFamilyHistorySignToString >> string
+
+
+encodePredecessor : Predecessor -> Value
+encodePredecessor =
+    predecessorToString >> string
+
+
+encodeNCDFamilyPlanning : NCDFamilyPlanning -> List ( String, Value )
+encodeNCDFamilyPlanning =
+    encodeNCDMeasurement (encodeFamilyPlanningValueWithType "ncd_family_planning")
+
+
+encodeNCDHealthEducation : NCDHealthEducation -> List ( String, Value )
+encodeNCDHealthEducation =
+    encodeNCDMeasurement encodeNCDHealthEducationValue
+
+
+encodeNCDHealthEducationValue : NCDHealthEducationValue -> List ( String, Value )
+encodeNCDHealthEducationValue value =
+    [ ( "ncd_health_education_signs", encodeEverySet encodeNCDHealthEducationSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_health_education" )
+    ]
+
+
+encodeNCDHealthEducationSign : NCDHealthEducationSign -> Value
+encodeNCDHealthEducationSign sign =
+    string <|
+        case sign of
+            EducationHypertension ->
+                "hypertension"
+
+            NoNCDHealthEducationSigns ->
+                "none"
+
+
+encodeNCDHIVTest : NCDHIVTest -> List ( String, Value )
+encodeNCDHIVTest =
+    encodeNCDMeasurement (encodeHIVTestValue "ncd_hiv_test")
+
+
+encodeNCDLabsResults : NCDLabsResults -> List ( String, Value )
+encodeNCDLabsResults =
+    encodeNCDMeasurement (encodeLabsResultsValue "ncd_labs_results")
+
+
+encodeNCDLiverFunctionTest : NCDLiverFunctionTest -> List ( String, Value )
+encodeNCDLiverFunctionTest =
+    encodeNCDMeasurement encodeLiverFunctionTestValue
+
+
+encodeLiverFunctionTestValue : LiverFunctionTestValue -> List ( String, Value )
+encodeLiverFunctionTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map2
+                (\altResult astResult ->
+                    [ ( "alt_result", float altResult )
+                    , ( "ast_result", float astResult )
+                    ]
+                )
+                value.altResult
+                value.astResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_liver_function_test" )
+           ]
+
+
+encodeNCDMedicationDistribution : NCDMedicationDistribution -> List ( String, Value )
+encodeNCDMedicationDistribution =
+    encodeNCDMeasurement encodeNCDMedicationDistributionValue
+
+
+encodeNCDMedicationDistributionValue : NCDMedicationDistributionValue -> List ( String, Value )
+encodeNCDMedicationDistributionValue value =
+    [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign value.recommendedTreatmentSigns )
+    , ( "ncd_guidance", encodeEverySet encodeNCDGuidanceSign value.guidanceSigns )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_medication_distribution" )
+    ]
+
+
+encodeNCDGuidanceSign : NCDGuidanceSign -> Value
+encodeNCDGuidanceSign sign =
+    string <|
+        case sign of
+            ReturnInOneMonth ->
+                "return-1m"
+
+            NoNCDGuidanceSigns ->
+                "none"
+
+
+encodeNCDMedicationHistory : NCDMedicationHistory -> List ( String, Value )
+encodeNCDMedicationHistory =
+    encodeNCDMeasurement encodeNCDMedicationHistoryValue
+
+
+encodeNCDMedicationHistoryValue : NCDMedicationHistoryValue -> List ( String, Value )
+encodeNCDMedicationHistoryValue value =
+    [ ( "causing_hypertension", encodeEverySet encodeMedicationCausingHypertension value.medicationsCausingHypertension )
+    , ( "treating_hypertension", encodeEverySet encodeMedicationTreatingHypertension value.medicationsTreatingHypertension )
+    , ( "treating_diabetes", encodeEverySet encodeMedicationTreatingDiabetes value.medicationsTreatingDiabetes )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_medication_history" )
+    ]
+
+
+encodeMedicationCausingHypertension : MedicationCausingHypertension -> Value
+encodeMedicationCausingHypertension =
+    medicationCausingHypertensionToString >> string
+
+
+encodeMedicationTreatingHypertension : MedicationTreatingHypertension -> Value
+encodeMedicationTreatingHypertension =
+    medicationTreatingHypertensionToString >> string
+
+
+encodeMedicationTreatingDiabetes : MedicationTreatingDiabetes -> Value
+encodeMedicationTreatingDiabetes =
+    medicationTreatingDiabetesToString >> string
+
+
+encodeNCDOutsideCare : NCDOutsideCare -> List ( String, Value )
+encodeNCDOutsideCare =
+    encodeNCDMeasurement (encodeOutsideCareValue "medical_conditions" encodeMedicalCondition "ncd_outside_care")
+
+
+encodeNCDPregnancyTest : NCDPregnancyTest -> List ( String, Value )
+encodeNCDPregnancyTest =
+    encodeNCDMeasurement encodePregnancyTestValue
+
+
+encodePregnancyTestValue : PregnancyTestValue -> List ( String, Value )
+encodePregnancyTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
+                value.testResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_pregnancy_test" )
+           ]
+
+
+encodeNCDRandomBloodSugarTest : NCDRandomBloodSugarTest -> List ( String, Value )
+encodeNCDRandomBloodSugarTest =
+    encodeNCDMeasurement (encodeRandomBloodSugarTestValue "ncd_random_blood_sugar_test")
+
+
+encodeNCDReferral : NCDReferral -> List ( String, Value )
+encodeNCDReferral =
+    encodeNCDMeasurement encodeReferralValue
+
+
+encodeReferralValue : ReferralValue -> List ( String, Value )
+encodeReferralValue value =
+    let
+        nonReferralReasons =
+            Maybe.map (\reason -> [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ])
+                value.nonReferralReasons
+                |> Maybe.withDefault []
+    in
+    (( "referrals", encodeEverySet encodeReferToFacilitySign value.referralSigns ) :: nonReferralReasons)
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_referral" )
+           ]
+
+
+encodeNCDSocialHistory : NCDSocialHistory -> List ( String, Value )
+encodeNCDSocialHistory =
+    encodeNCDMeasurement encodeNCDSocialHistoryValue
+
+
+encodeNCDSocialHistoryValue : NCDSocialHistoryValue -> List ( String, Value )
+encodeNCDSocialHistoryValue value =
+    let
+        beveragesPerWeek =
+            Maybe.map
+                (\perWeek ->
+                    [ ( "beverages_per_week", int perWeek ) ]
+                )
+                value.beveragesPerWeek
+                |> Maybe.withDefault []
+
+        cigarettesPerWeek =
+            Maybe.map
+                (\perWeek ->
+                    [ ( "cigarettes_per_week", int perWeek ) ]
+                )
+                value.cigarettesPerWeek
+                |> Maybe.withDefault []
+    in
+    [ ( "ncd_social_history_signs", encodeEverySet encodeNCDSocialHistorySign value.signs )
+    , ( "food_group", encodeFoodGroup value.foodGroup )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_social_history" )
+    ]
+        ++ beveragesPerWeek
+        ++ cigarettesPerWeek
+
+
+encodeNCDSocialHistorySign : NCDSocialHistorySign -> Value
+encodeNCDSocialHistorySign =
+    ncdSocialHistorySignToString >> string
+
+
+encodeFoodGroup : FoodGroup -> Value
+encodeFoodGroup =
+    foodGroupToString >> string
+
+
+encodeNCDSymptomReview : NCDSymptomReview -> List ( String, Value )
+encodeNCDSymptomReview =
+    encodeNCDMeasurement encodeNCDSymptomReviewValue
+
+
+encodeNCDSymptomReviewValue : NCDSymptomReviewValue -> List ( String, Value )
+encodeNCDSymptomReviewValue value =
+    [ ( "ncd_group1_symptoms", encodeEverySet encodeNCDGroup1Symptom value.group1Symptoms )
+    , ( "ncd_group2_symptoms", encodeEverySet encodeNCDGroup2Symptom value.group2Symptoms )
+    , ( "ncd_pain_symptoms", encodeEverySet encodeNCDPainSymptom value.painSymptoms )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_symptom_review" )
+    ]
+
+
+encodeNCDGroup1Symptom : NCDGroup1Symptom -> Value
+encodeNCDGroup1Symptom =
+    ncdGroup1SymptomToString >> string
+
+
+encodeNCDGroup2Symptom : NCDGroup2Symptom -> Value
+encodeNCDGroup2Symptom =
+    ncdGroup2SymptomToString >> string
+
+
+encodeNCDPainSymptom : NCDPainSymptom -> Value
+encodeNCDPainSymptom =
+    ncdPainSymptomToString >> string
+
+
+encodeNCDUrineDipstickTest : NCDUrineDipstickTest -> List ( String, Value )
+encodeNCDUrineDipstickTest =
+    encodeNCDMeasurement (encodeUrineDipstickTestValue "ncd_urine_dipstick_test")
+
+
+encodeNCDVitals : NCDVitals -> List ( String, Value )
+encodeNCDVitals =
+    encodeNCDMeasurement (encodeVitalsValueWithType "ncd_vitals")
+
+
+encodeGroupNCDA : GroupNCDA -> List ( String, Value )
+encodeGroupNCDA =
+    encodeGroupMeasurement (encodeNCDAValueWithType "group_ncda")
+
+
+encodeNutritionNCDA : NutritionNCDA -> List ( String, Value )
+encodeNutritionNCDA =
+    encodeNutritionMeasurement (encodeNCDAValueWithType "nutrition_ncda")
+
+
+encodeWellChildNCDA : WellChildNCDA -> List ( String, Value )
+encodeWellChildNCDA =
+    encodeWellChildMeasurement (encodeNCDAValueWithType "well_child_ncda")
+
+
+encodeNCDAValueWithType : String -> NCDAValue -> List ( String, Value )
+encodeNCDAValueWithType type_ value =
+    let
+        birthWeight =
+            Maybe.map (\(WeightInGrm weight) -> [ ( "weight", float weight ) ])
+                value.birthWeight
+                |> Maybe.withDefault []
+    in
+    [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+        ++ birthWeight
+
+
+encodeNCDASign : NCDASign -> Value
+encodeNCDASign =
+    ncdaSignToString >> string
+
+
+encodeNCDLipidPanelTest : NCDLipidPanelTest -> List ( String, Value )
+encodeNCDLipidPanelTest =
+    encodeNCDMeasurement encodeLipidPanelTestValue
+
+
+encodeLipidPanelTestValue : LipidPanelTestValue -> List ( String, Value )
+encodeLipidPanelTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map5
+                (\unitOfMeasurement totalCholesterolResult ldlCholesterolResult hdlCholesterolResult triglycerides ->
+                    [ ( "unit_of_measurement", encodeUnitOfMeasurement unitOfMeasurement )
+                    , ( "total_cholesterol", float totalCholesterolResult )
+                    , ( "ldl_cholesterol", float ldlCholesterolResult )
+                    , ( "hdl_cholesterol", float hdlCholesterolResult )
+                    , ( "triglycerides", float triglycerides )
+                    ]
+                )
+                value.unitOfMeasurement
+                value.totalCholesterolResult
+                value.ldlCholesterolResult
+                value.hdlCholesterolResult
+                value.triglyceridesResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_lipid_panel_test" )
+           ]
+
+
+encodeUnitOfMeasurement : UnitOfMeasurement -> Value
+encodeUnitOfMeasurement =
+    unitOfMeasurementToString >> string
+
+
+encodeNCDHbA1cTest : NCDHbA1cTest -> List ( String, Value )
+encodeNCDHbA1cTest =
+    encodeNCDMeasurement encodeHbA1cTestValue
+
+
+encodeHbA1cTestValue : HbA1cTestValue -> List ( String, Value )
+encodeHbA1cTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\hba1cResult ->
+                    [ ( "hba1c_result", float hba1cResult ) ]
+                )
+                value.hba1cResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_hba1c_test" )
+           ]

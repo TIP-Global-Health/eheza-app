@@ -38,7 +38,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButton)
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -436,23 +436,21 @@ viewMainPageContent language currentDate assembled model =
                 Reports ->
                     ( [], "" )
 
-        viewReportLink labelTransId redirectPage =
-            div
-                [ class "report-wrapper"
-                , onClick <| SetActivePage redirectPage
-                ]
-                [ div [ class "icon-progress-report" ] []
-                , div [ class "report-text" ]
-                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
-                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
-                    ]
-                ]
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage (InitiatorEncounterPage assembled.id) assembled.id)
-                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage (InitiatorEncounterPage assembled.id) assembled.participant.person)
+                    [ viewReportLink language
+                        Translate.ClinicalProgressReport
+                        (SetActivePage <|
+                            UserPage <|
+                                ClinicalProgressReportPage (InitiatorEncounterPage assembled.id) assembled.id
+                        )
+                    , viewReportLink language
+                        Translate.DemographicsReport
+                        (SetActivePage <|
+                            UserPage <|
+                                DemographicsReportPage (InitiatorEncounterPage assembled.id) assembled.participant.person
+                        )
                     ]
 
             else
@@ -490,7 +488,7 @@ generateActivityData : PrenatalActivity -> AssembledData -> ( TranslationId, Str
 generateActivityData activity assembled =
     let
         default =
-            ( Translate.PrenatalActivitiesTitle activity, getActivityIcon activity )
+            ( Translate.PrenatalActivityTitle activity, getActivityIcon activity )
     in
     case activity of
         NextSteps ->

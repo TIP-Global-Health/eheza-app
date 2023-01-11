@@ -70,7 +70,7 @@ view language currentDate zscores id isChw db model =
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEcounter = allowEndingEcounter isChw pendingActivities
+                        , allowEndEncounter = allowEndingEcounter isChw pendingActivities
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
@@ -86,10 +86,7 @@ view language currentDate zscores id isChw db model =
             InitiatorNutritionIndividual id
 
         componentsConfig =
-            Just
-                { reportType = Components.SendViaWhatsAppDialog.Model.ReportWellChild
-                , setReportComponentsFunc = SetReportComponents
-                }
+            Just { setReportComponentsMsg = SetReportComponents }
     in
     viewWebData language
         (viewProgressReport language
@@ -101,7 +98,9 @@ view language currentDate zscores id isChw db model =
             db
             model.diagnosisMode
             model.sendViaWhatsAppDialog
+            model.reportTab
             SetActivePage
+            SetReportTab
             SetDiagnosisMode
             MsgSendViaWhatsAppDialog
             componentsConfig

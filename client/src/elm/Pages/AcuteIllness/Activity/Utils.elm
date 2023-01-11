@@ -350,7 +350,7 @@ physicalExamTasksCompletedFromTotal currentDate isChw person measurements data t
             )
 
 
-laboratoryTasksCompletedFromTotal : NominalDate -> Person -> AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal : NominalDate -> Person -> AcuteIllnessMeasurements -> LaboratoryData -> AILaboratoryTask -> ( Int, Int )
 laboratoryTasksCompletedFromTotal currentDate person measurements data task =
     let
         personAFertileWoman =
@@ -1832,7 +1832,7 @@ toCovidTestingValue form =
         maybeResult
 
 
-expectLaboratoryTask : NominalDate -> Bool -> AssembledData -> LaboratoryTask -> Bool
+expectLaboratoryTask : NominalDate -> Bool -> AssembledData -> AILaboratoryTask -> Bool
 expectLaboratoryTask currentDate isChw assembled task =
     case task of
         LaboratoryMalariaTesting ->
@@ -1894,7 +1894,7 @@ covid19Diagnosed diagnosis =
     List.member diagnosis [ DiagnosisSevereCovid19, DiagnosisPneuminialCovid19, DiagnosisLowRiskCovid19 ]
 
 
-laboratoryTaskCompleted : NominalDate -> Bool -> AssembledData -> LaboratoryTask -> Bool
+laboratoryTaskCompleted : NominalDate -> Bool -> AssembledData -> AILaboratoryTask -> Bool
 laboratoryTaskCompleted currentDate isChw assembled task =
     let
         measurements =
@@ -1911,7 +1911,7 @@ laboratoryTaskCompleted currentDate isChw assembled task =
             (not <| taskExpected LaboratoryCovidTesting) || isJust measurements.covidTesting
 
 
-laboratoryTasks : List LaboratoryTask
+laboratoryTasks : List AILaboratoryTask
 laboratoryTasks =
     [ LaboratoryCovidTesting, LaboratoryMalariaTesting ]
 

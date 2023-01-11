@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley NCD feature.
+ */
+
+include_once 'hedley_ncd.features.inc';

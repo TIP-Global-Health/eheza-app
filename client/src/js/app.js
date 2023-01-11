@@ -264,6 +264,14 @@ dbSync.version(17).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 });
 
+dbSync.version(18).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+});
+
+dbSync.version(19).stores({
+    whatsAppUploads: '++localId,photo,report_type,person,phone_number,isSynced',
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -320,7 +328,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 17;
+const dbVersion = 19;
 
 /**
  * Return saved info for General sync.
@@ -455,6 +463,7 @@ elmApp.ports.setLanguage.subscribe(function(language) {
 elmApp.ports.scrollToElement.subscribe(function(elementId) {
   waitForElement(elementId, scrollToElement, null);
 });
+
 
 function scrollToElement(elementId) {
   var element = document.getElementById(elementId);
@@ -947,6 +956,91 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   const cache = await caches.open('photos-upload');
   await cache.delete(row.data.photo);
 });
+
+
+elmApp.ports.makeProgressReportScreenshot.subscribe(function(data) {
+  waitForElement('report-content', makeProgressReportScreenshot, data);
+});
+
+
+function makeProgressReportScreenshot(elementId, data) {
+  var element = document.getElementById(elementId);
+
+  (async () => {
+    const photosUploadCache = 'photos-upload';
+    const cache = await caches.open(photosUploadCache);
+
+    let totalHeight = 0;
+    let children = element.childNodes;
+
+    for (let i = 0; i < children.length; i++) {
+      if (children[i].clientHeight == undefined) {
+        continue;
+      }
+
+      totalHeight += parseInt(children[i].clientHeight);
+    }
+
+    // Adding height to make sure we capture complete page.
+    // Without this, antenatal reports gets cut off at the top.
+    totalHeight += 500;
+
+    const canvas = await html2canvas(element, {
+        width: element.clientWidth,
+        windowHeight: totalHeight
+      });
+
+    canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      const imageName = 'whatsapp-upload-' + getRandom8Digits() + '.png';
+      formData.set('file', blob, imageName);
+
+      const url = "cache-upload/images/" + Date.now();
+
+      try {
+        var response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          // This prevents attaching cookies to request, to prevent
+          // sending authentication cookie, as our desired
+          // authentication method is token.
+          credentials: 'omit'
+        });
+
+        if (response.ok) {
+         var json = await response.json();
+
+         var entry = {
+             photo: json.url,
+             report_type: data.reportType,
+             person: data.personId,
+             phone_number: data.phoneNumber,
+             isSynced: 0,
+         };
+
+         await dbSync.whatsAppUploads.add(entry);
+
+         reportProgressReportScreenshotResult("success");
+        }
+      }
+      catch (e) {
+        reportProgressReportScreenshotResult("failure");
+      }
+    });
+   })();
+}
+
+function reportProgressReportScreenshotResult(result) {
+  var element = document.getElementById('execution-response');
+  if (element) {
+    var event = makeCustomEvent("screenshotcomplete", {
+      result: result
+    });
+
+    element.dispatchEvent(event);
+  }
+}
+
 
 function getRandom8Digits () {
   var timestamp = String(performance.timeOrigin + performance.now());

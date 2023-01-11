@@ -21,11 +21,11 @@ update msg model =
 
         MsgSendViaWhatsAppDialog subMsg ->
             let
-                ( dialogUpdated, extraMsgs, appMsgs ) =
+                ( dialogUpdated, cmd, ( extraMsgs, appMsgs ) ) =
                     Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
             in
             ( { model | sendViaWhatsAppDialog = dialogUpdated }
-            , Cmd.none
+            , cmd
             , appMsgs
             )
                 |> sequenceExtra update extraMsgs
@@ -47,3 +47,6 @@ update msg model =
                         |> Maybe.withDefault { model | components = Nothing }
             in
             ( updatedModel, Cmd.none, [] )
+
+        SetReportTab tab ->
+            ( { model | reportTab = tab }, Cmd.none, [] )

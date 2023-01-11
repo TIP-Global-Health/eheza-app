@@ -93,14 +93,14 @@ viewContent language currentDate id isChw initiator model assembled =
             else
                 Nothing
 
-        allowEndEcounter =
+        allowEndEncounter =
             allowEndingEcounter currentDate isChw assembled pendingActivities
 
         endEncounterMenu =
             case initiator of
                 InitiatorEncounterPage ->
                     viewEndEncounterMenuForProgressReport language
-                        allowEndEcounter
+                        allowEndEncounter
                         SetEndEncounterDialogState
                         (MsgSendViaWhatsAppDialog <|
                             Components.SendViaWhatsAppDialog.Model.SetState <|
@@ -112,7 +112,10 @@ viewContent language currentDate id isChw initiator model assembled =
     in
     div [ class "page-report acute-illness" ]
         [ viewHeader language id initiator
-        , div [ class "ui report unstackable items" ]
+        , div
+            [ class "ui report unstackable items"
+            , Html.Attributes.id "report-content"
+            ]
             [ viewPersonInfoPane language currentDate assembled.person
             , viewAssessmentPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
             , viewSymptomsPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
@@ -129,6 +132,7 @@ viewContent language currentDate id isChw initiator model assembled =
                 language
                 currentDate
                 ( assembled.participant.person, assembled.person )
+                Components.SendViaWhatsAppDialog.Model.ReportAcuteIllness
                 Nothing
                 model.sendViaWhatsAppDialog
             )
@@ -162,6 +166,9 @@ viewHeader language id initiator =
 
                 InitiatorPatientRecord patientRecordInitiator personId ->
                     PatientRecordPage patientRecordInitiator personId
+
+                InitiatorNCDProgressReport ncdProgressReportInitiator ->
+                    NCDProgressReportPage ncdProgressReportInitiator
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]

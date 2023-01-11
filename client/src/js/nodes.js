@@ -125,6 +125,9 @@
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
+                else if (type === 'ncd-measurements') {
+                    return viewMeasurements('ncd_encounter', uuid);
+                }
                 else {
                     return view(type, uuid);
                 }
@@ -440,6 +443,7 @@
       'family_planning',
       'follow_up',
       'group_health_education',
+      'group_ncda',
       'group_send_to_hc',
       'height',
       'lactation',
@@ -499,6 +503,9 @@
                     else if (key === 'well_child_encounter') {
                         target = node.well_child_encounter;
                     }
+                    else if (key === 'ncd_encounter') {
+                        target = node.ncd_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
@@ -542,13 +549,15 @@
       'prenatal_follow_up',
       'well_child_follow_up',
       'acute_illness_trace_contact',
-      'prenatal_labs_results'
+      'prenatal_labs_results',
+      'ncd_labs_results'
     ];
 
     // Follow Ups that get resolved using date_concluded field.
     var resolvedFollowUpMeasurementsTypes = [
       'acute_illness_trace_contact',
-      'prenatal_labs_results'
+      'prenatal_labs_results',
+      'ncd_labs_results'
     ];
 
     function viewFollowUpMeasurements (shard) {
@@ -749,10 +758,11 @@
                 }
 
                 var encounterTypes = [
-                  'prenatal_encounter',
-                  'nutrition_encounter',
                   'acute_illness_encounter',
                   'home_visit_encounter',
+                  'ncd_encounter',
+                  'nutrition_encounter',
+                  'prenatal_encounter',
                   'well_child_encounter'
                 ];
 
