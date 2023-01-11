@@ -5158,7 +5158,7 @@ translationSet trans =
 
         GotResultsPreviouslyQuestion ->
             { english = "Has patient previously performed HBA1C test and got results"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yaba yarakorewe ikizamini cy'ikigereranyo cy'isukari mu maraso mu mezi atatu ashize abona n'ibisubizo"
             }
 
         GroupAssessment ->
@@ -5261,7 +5261,7 @@ translationSet trans =
 
         HbA1c ->
             { english = "HBA1c"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
             }
 
         HbA1cPercentage ->
@@ -5271,7 +5271,7 @@ translationSet trans =
 
         HbA1cMostRecentTestResultInstruction ->
             { english = "Please input the most recent HBA1C test result"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Injiza ibisubizo biheruka ku kizamini gipima ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
             }
 
         HCRecommendation recommendation ->
@@ -5659,7 +5659,7 @@ translationSet trans =
 
             else
                 { english = "This patient shows signs of Pregnancy-Induced hypertension"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Uyu Murwayi agaragaza ibimenyetso by'Umuvuduko w'amaraso watewe no gutwita"
                 }
 
         HypertensionRecommendedTreatmentHelper ->
@@ -6882,7 +6882,7 @@ translationSet trans =
 
                 TaskHbA1cTest ->
                     { english = "HBA1C"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
                     }
 
                 TaskCompletePreviousTests ->
@@ -6957,7 +6957,7 @@ translationSet trans =
 
                 TaskHbA1cTest ->
                     { english = "HBA1C"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -7035,7 +7035,7 @@ translationSet trans =
 
                 TaskHbA1cTest ->
                     { english = "HBA1C Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki y'ikizamini cy'ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -7113,7 +7113,7 @@ translationSet trans =
 
                 TaskHbA1cTest ->
                     { english = "HBA1C Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cy'ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -7251,7 +7251,7 @@ translationSet trans =
 
                 LabResultsHistoryHbA1c _ ->
                     { english = "HBA1C"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
                     }
 
                 LabResultsHistoryTotalCholesterol _ ->
@@ -7397,7 +7397,7 @@ translationSet trans =
 
                 LabResultsHistoryHbA1c _ ->
                     { english = "Below 6%"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Munsi ya 6 ku ijana"
                     }
 
                 LabResultsHistoryTotalCholesterol _ ->
@@ -10156,7 +10156,7 @@ translationSet trans =
 
                 DisgnosisPeripheralEdema ->
                     { english = "Peripheral Edema"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubyimba amaguru n'amaboko"
                     }
 
                 DiagnosisFetusBreech ->
@@ -10181,7 +10181,7 @@ translationSet trans =
 
                 DiagnosisPregnancyInducedHypertension ->
                     { english = "Pregnancy-induced hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuvuduko w'amaraso watewe no gutwita"
                     }
 
                 DiagnosisPreeclampsiaHighRisk ->
@@ -11007,7 +11007,7 @@ translationSet trans =
 
                 DiagnosisGestationalHypertensionImmediate ->
                     { english = "Pregnancy-Induced Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuvuduko w'amaraso watewe no gutwita"
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
@@ -11398,7 +11398,7 @@ translationSet trans =
 
                 DiagnosisGestationalHypertensionImmediate ->
                     { english = "Pregnancy-Induced Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuvuduko w'amaraso watewe no gutwita"
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
@@ -11864,7 +11864,7 @@ translationSet trans =
 
                 DiagnosisGestationalHypertensionImmediate ->
                     { english = "Patient shows signs of Pregnancy-Induced Hypertension"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Aragaragaza ibimenyetso by'Umuvuduko w'amaraso watewe no gutwita"
                     }
 
                 DiagnosisGestationalHypertensionAfterRecheck ->
