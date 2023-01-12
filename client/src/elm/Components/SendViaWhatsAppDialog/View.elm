@@ -11,15 +11,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewTextInput)
 import Translate exposing (Language, translate, translateText)
-import Utils.Html exposing (viewModal)
+import Utils.Html exposing (viewCustomModal)
 
 
 view : Language -> NominalDate -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
 view language currentDate ( personId, person ) reportType componentsConfig model =
-    viewModal <|
+    viewCustomModal [ "bright" ] <|
         Maybe.map (viewDialog language currentDate ( personId, person ) reportType componentsConfig) model.state
 
 
@@ -278,7 +278,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                             EverySet.toList components
 
                                         -- We should never get here.
-                                        Antenatal _ ->
+                                        _ ->
                                             []
                                 )
                                 componentsList
@@ -326,7 +326,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                             EverySet.toList components
 
                                         -- We should never get here.
-                                        WellChild _ ->
+                                        _ ->
                                             []
                                 )
                                 componentsList
@@ -370,6 +370,54 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                 ReportAcuteIllness ->
                     emptyNode
 
+                ReportNCD ->
+                    let
+                        currentValue =
+                            Maybe.map
+                                (\list ->
+                                    case list of
+                                        NCD components ->
+                                            EverySet.toList components
+
+                                        -- We should never get here.
+                                        _ ->
+                                            []
+                                )
+                                componentsList
+                                |> Maybe.withDefault []
+
+                        setMsg =
+                            \component ->
+                                let
+                                    currentComponents =
+                                        EverySet.fromList currentValue
+
+                                    updatedComponents =
+                                        if EverySet.member component currentComponents then
+                                            EverySet.remove component currentComponents
+
+                                        else
+                                            EverySet.insert component currentComponents
+                                in
+                                NCD updatedComponents
+                                    |> Just
+                                    |> ComponentsSelection phoneNumber
+                                    |> Just
+                                    |> SetState
+                    in
+                    viewCheckBoxMultipleSelectInput language
+                        [ ComponentNCDRiskFactors
+                        , ComponentNCDActiveDiagnosis
+                        , ComponentNCDMedicalDiagnosis
+                        , ComponentNCDPatientProgress
+                        , ComponentNCDLabsResults
+                        ]
+                        []
+                        currentValue
+                        Nothing
+                        setMsg
+                        Translate.ReportComponentNCD
+
         continueButtonAction =
             if componentsSelected then
                 [ onClick <| SetReportComponents (config.setReportComponentsMsg componentsList) phoneNumber ]
@@ -387,7 +435,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                     not <| EverySet.isEmpty components
 
                                 -- We should never get here.
-                                Antenatal _ ->
+                                _ ->
                                     False
 
                         ReportAntenatal ->
@@ -396,12 +444,21 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                     not <| EverySet.isEmpty components
 
                                 -- We should never get here.
-                                WellChild _ ->
+                                _ ->
                                     False
 
                         -- Not in use.
                         ReportAcuteIllness ->
                             False
+
+                        ReportNCD ->
+                            case list of
+                                NCD components ->
+                                    not <| EverySet.isEmpty components
+
+                                -- We should never get here.
+                                _ ->
+                                    False
                 )
                 componentsList
                 |> Maybe.withDefault False
@@ -449,6 +506,7 @@ viewConfirmationBeforeExecuting language currentDate reportType personId phoneNu
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingHeader ]
         , p [] [ text phoneNumber ]
+        , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingInstructions ]
         , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingQuestion ]
         ]
     , div [ class "actions" ]
@@ -494,10 +552,13 @@ viewExecutionResult language currentDate maybeResult clearComponentsMsg =
                     )
                 )
                 maybeResult
-                |> Maybe.withDefault ( Translate.SendViaWhatsAppExecutionResultPleaseWait, emptyNode )
+                |> Maybe.withDefault ( Translate.EmptyString, emptyNode )
     in
     [ div
-        [ class "content"
+        [ classList
+            [ ( "content", True )
+            , ( "hidden", isNothing maybeResult )
+            ]
         , Html.Attributes.id "execution-response"
         , on "screenshotcomplete" (Json.Decode.map (SetExecutionResult clearComponentsMsg) (Json.Decode.at [ "detail", "result" ] Json.Decode.string))
         ]

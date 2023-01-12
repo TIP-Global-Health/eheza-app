@@ -62,7 +62,12 @@ import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
-import Components.SendViaWhatsAppDialog.Model exposing (ReportComponentAntenatal(..), ReportComponentWellChild(..))
+import Components.SendViaWhatsAppDialog.Model
+    exposing
+        ( ReportComponentAntenatal(..)
+        , ReportComponentNCD(..)
+        , ReportComponentWellChild(..)
+        )
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Gizra.NominalDate exposing (NominalDate)
@@ -1259,6 +1264,7 @@ type TranslationId
     | RenalDisease
     | ReportAge String
     | ReportComponentAntenatal ReportComponentAntenatal
+    | ReportComponentNCD ReportComponentNCD
     | ReportComponentWellChild ReportComponentWellChild
     | ReportDOB String
     | ReportRemaining Int
@@ -1333,10 +1339,10 @@ type TranslationId
     | SendViaWhatsApp
     | SendViaWhatsAppComponentsSelectionHeader Components.SendViaWhatsAppDialog.Model.ReportType
     | SendViaWhatsAppConfirmationBeforeExecutingHeader
+    | SendViaWhatsAppConfirmationBeforeExecutingInstructions
     | SendViaWhatsAppConfirmationBeforeExecutingQuestion
     | SendViaWhatsAppConsentQuestion
     | SendViaWhatsAppExecutionResultFailure
-    | SendViaWhatsAppExecutionResultPleaseWait
     | SendViaWhatsAppExecutionResultSomethingWentWrong
     | SendViaWhatsAppExecutionResultSuccess
     | SendViaWhatsAppNoticeOfNonRespobsibility
@@ -14564,6 +14570,33 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        ReportComponentNCD component ->
+            case component of
+                ComponentNCDRiskFactors ->
+                    { english = "Risk Factors"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentNCDActiveDiagnosis ->
+                    { english = "Active Diagnosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentNCDMedicalDiagnosis ->
+                    { english = "Medical Diagnosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentNCDPatientProgress ->
+                    { english = "Patient Progress"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComponentNCDLabsResults ->
+                    { english = "Labs Results"
+                    , kinyarwanda = Nothing
+                    }
+
         ReportComponentWellChild component ->
             case component of
                 ComponentWellChildActiveDiagnoses ->
@@ -15151,8 +15184,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Components.SendViaWhatsAppDialog.Model.ReportNCD ->
+                    { english = "Please select which sections of the NCD Report you would like to send:"
+                    , kinyarwanda = Nothing
+                    }
+
         SendViaWhatsAppConfirmationBeforeExecutingHeader ->
             { english = "By pressing send you are releasing the selected documents to:"
+            , kinyarwanda = Nothing
+            }
+
+        SendViaWhatsAppConfirmationBeforeExecutingInstructions ->
+            { english = "This action will take up to one minute to complete."
             , kinyarwanda = Nothing
             }
 
@@ -15168,11 +15211,6 @@ translationSet trans =
 
         SendViaWhatsAppExecutionResultFailure ->
             { english = "Action Failed. Please try again. If problem persisits, please contact system administrator."
-            , kinyarwanda = Nothing
-            }
-
-        SendViaWhatsAppExecutionResultPleaseWait ->
-            { english = "Please allow up to one minute for action to complete ..."
             , kinyarwanda = Nothing
             }
 

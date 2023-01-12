@@ -1,6 +1,7 @@
 module Components.SendViaWhatsAppDialog.Utils exposing (..)
 
 import Components.SendViaWhatsAppDialog.Model exposing (..)
+import EverySet exposing (EverySet)
 
 
 reportTypeToString : ReportType -> String
@@ -15,6 +16,9 @@ reportTypeToString reportType =
         ReportAcuteIllness ->
             "acute-illness"
 
+        ReportNCD ->
+            "ncd"
+
 
 reportTypeFromString : String -> Maybe ReportType
 reportTypeFromString reportType =
@@ -27,6 +31,9 @@ reportTypeFromString reportType =
 
         "acute-illness" ->
             Just ReportAcuteIllness
+
+        "ncd" ->
+            Just ReportNCD
 
         _ ->
             Nothing
@@ -93,3 +100,11 @@ trimLeadingZeros number =
 
     else
         number
+
+
+showComponent : Maybe (EverySet c) -> c -> Bool
+showComponent components component =
+    -- Show component if it was selected to be shared via WhatsApp,
+    -- or, if viewing not for sharing via WhatsApp.
+    Maybe.map (EverySet.member component) components
+        |> Maybe.withDefault True

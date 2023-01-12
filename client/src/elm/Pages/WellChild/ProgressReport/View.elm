@@ -44,6 +44,7 @@ import Backend.WellChildEncounter.Model
         , pediatricCareMilestones
         )
 import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.Utils
 import Components.SendViaWhatsAppDialog.View
 import Date
 import EverySet exposing (EverySet)
@@ -237,7 +238,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
             ]
           <|
             content
-                ++ viewActions language initiator msgSendViaWhatsAppDialogMsg bottomActionData
+                ++ viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActionData
         ]
 
 
@@ -492,11 +493,8 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
             Maybe.map (EverySet.member Components.SendViaWhatsAppDialog.Model.ComponentWellChildActiveDiagnoses) selectedComponents
                 |> Maybe.withDefault False
 
-        showComponent component =
-            -- Show component if it was selected to be shared via WhatsApp,
-            -- or, if viewing not for sharing via WhatsApp.
-            Maybe.map (EverySet.member component) selectedComponents
-                |> Maybe.withDefault True
+        showComponent =
+            Components.SendViaWhatsAppDialog.Utils.showComponent selectedComponents
     in
     [ viewPersonInfoPane language currentDate child
     , viewDiagnosisPane language
@@ -534,10 +532,11 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
 viewActions :
     Language
     -> WellChildProgressReportInitiator
+    -> ReportTab
     -> (Components.SendViaWhatsAppDialog.Model.Msg msg -> msg)
     -> Maybe (BottomActionData msg)
     -> List (Html msg)
-viewActions language initiator msgSendViaWhatsAppDialogMsg bottomActionData =
+viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActionData =
     Maybe.map
         (\data ->
             let
@@ -547,15 +546,19 @@ viewActions language initiator msgSendViaWhatsAppDialogMsg bottomActionData =
                             viewStartEncounterButton language data.startEncounterMsg
 
                         _ ->
-                            viewEndEncounterMenuForProgressReport language
-                                data.allowEndEncounter
-                                data.setEndEncounterDialogStateMsg
-                                (msgSendViaWhatsAppDialogMsg <|
-                                    Components.SendViaWhatsAppDialog.Model.SetState <|
-                                        Just Components.SendViaWhatsAppDialog.Model.Consent
-                                )
+                            case activeTab of
+                                TabSPVReport ->
+                                    viewEndEncounterMenuForProgressReport language
+                                        data.allowEndEncounter
+                                        data.setEndEncounterDialogStateMsg
+                                        (msgSendViaWhatsAppDialogMsg <|
+                                            Components.SendViaWhatsAppDialog.Model.SetState <|
+                                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                                        )
 
-                -- viewEndEncounterButton language data.allowEndEncounter data.setEndEncounterDialogStateMsg
+                                TabNCDAScoreboard ->
+                                    viewEndEncounterButton language data.allowEndEncounter data.setEndEncounterDialogStateMsg
+
                 endEncounterDialog =
                     if data.showEndEncounterDialog then
                         Just <|
