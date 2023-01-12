@@ -53,7 +53,7 @@ update msg model =
                                     { model | components = Just wellChildComponents }
 
                                 -- We should never get here.
-                                Components.SendViaWhatsAppDialog.Model.Antenatal _ ->
+                                _ ->
                                     model
                         )
                         maybeComponents

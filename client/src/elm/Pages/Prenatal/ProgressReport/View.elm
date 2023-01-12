@@ -51,6 +51,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProg
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.Utils
 import Components.SendViaWhatsAppDialog.View
 import Date exposing (Interval(..), Unit(..))
 import EverySet exposing (EverySet)
@@ -95,7 +96,13 @@ import Pages.Prenatal.Utils
         )
 import Pages.Report.Model exposing (..)
 import Pages.Report.View exposing (..)
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewEndEncounterMenuForProgressReport, viewPhotoThumbFromPhotoUrl)
+import Pages.Utils
+    exposing
+        ( viewEndEncounterButton
+        , viewEndEncounterDialog
+        , viewEndEncounterMenuForProgressReport
+        , viewPhotoThumbFromPhotoUrl
+        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate, translateText)
@@ -327,48 +334,24 @@ viewContent language currentDate isChw initiator model assembled =
                                 Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
                                     emptyNode
 
-                        regularViewMode =
-                            isNothing model.components
-
-                        showComponent component =
-                            -- Show component if it was selected to be shared via WhatsApp,
-                            -- or, if viewing not for sharing via WhatsApp.
-                            Maybe.map (EverySet.member component) model.components
-                                |> Maybe.withDefault False
+                        showComponent =
+                            Components.SendViaWhatsAppDialog.Utils.showComponent model.components
                     in
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
-                        |> showIf
-                            ((regularViewMode && isNothing model.labResultsMode)
-                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalRiskFactors
-                            )
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalRiskFactors)
                     , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                        |> showIf
-                            ((regularViewMode && isNothing model.labResultsMode)
-                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnoses
-                            )
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnoses)
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                        |> showIf
-                            ((regularViewMode && isNothing model.labResultsMode)
-                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnoses
-                            )
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnoses)
                     , viewChwActivityPane language currentDate isChw assembled
-                        |> showIf
-                            ((regularViewMode && isNothing model.labResultsMode)
-                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalCHWActivity
-                            )
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
                     , viewPatientProgressPane language currentDate isChw assembled
-                        |> showIf
-                            ((regularViewMode && isNothing model.labResultsMode)
-                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalPatientProgress
-                            )
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalPatientProgress)
                     , labsPane
                     , viewProgressPhotosPane language currentDate isChw assembled
-                        |> showIf
-                            ((regularViewMode && isNothing model.labResultsMode)
-                                || showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalProgressPhotos
-                            )
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalProgressPhotos)
                     , -- Actions are hidden when viewing for sharing via WhatsApp.
-                      showIf regularViewMode actions
+                      showIf (isNothing model.components) actions
                     ]
     in
     div

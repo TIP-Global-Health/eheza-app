@@ -3,6 +3,7 @@ module Components.SendViaWhatsAppDialog.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model exposing (..)
+import Components.SendViaWhatsAppDialog.Utils exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -10,15 +11,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewTextInput)
 import Translate exposing (Language, translate, translateText)
-import Utils.Html exposing (viewModal)
+import Utils.Html exposing (viewCustomModal)
 
 
 view : Language -> NominalDate -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
 view language currentDate ( personId, person ) reportType componentsConfig model =
-    viewModal <|
+    viewCustomModal [ "bright" ] <|
         Maybe.map (viewDialog language currentDate ( personId, person ) reportType componentsConfig) model.state
 
 
@@ -33,8 +34,8 @@ viewDialog language currentDate ( personId, person ) reportType componentsConfig
                 PhoneVerification phoneNumber ->
                     viewPhoneVerification language currentDate allowComponentsSelection phoneNumber
 
-                PhoneInput inputValue ->
-                    viewPhoneInput language currentDate inputValue
+                PhoneInput data ->
+                    viewPhoneInput language currentDate data
 
                 PhoneUpdateAtProfile phoneNumber ->
                     viewPhoneUpdateAtProfile language currentDate allowComponentsSelection personId person phoneNumber
@@ -80,10 +81,10 @@ viewConsent language currentDate person =
                         PhoneVerification number
 
                     else
-                        PhoneInput ""
+                        PhoneInput emptyPhoneData
                 )
                 person.telephoneNumber
-                |> Maybe.withDefault (PhoneInput "")
+                |> Maybe.withDefault (PhoneInput emptyPhoneData)
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppConsentQuestion ]
@@ -125,7 +126,7 @@ viewPhoneVerification language currentDate allowComponentsSelection phoneNumber 
         [ div [ class "two ui buttons" ]
             [ button
                 [ class "ui velvet fluid button"
-                , onClick <| SetState <| Just (PhoneInput "")
+                , onClick <| SetState <| Just (PhoneInput emptyPhoneData)
                 ]
                 [ text <| translate language Translate.No ]
             , button
@@ -138,15 +139,49 @@ viewPhoneVerification language currentDate allowComponentsSelection phoneNumber 
     ]
 
 
-viewPhoneInput : Language -> NominalDate -> String -> List (Html (Msg msg))
-viewPhoneInput language currentDate inputValue =
+viewPhoneInput : Language -> NominalDate -> PhoneData -> List (Html (Msg msg))
+viewPhoneInput language currentDate data =
+    let
+        countryCodeOptions =
+            List.map
+                (\item ->
+                    option
+                        [ value <| countryCodeToString item
+                        , selected <| data.countryCode == item
+                        ]
+                        [ text <| "+" ++ countryCodeToString item ]
+                )
+                [ CountryCodeRwanda
+                , CountryCodeUganda
+                , CountryCodeCongo
+                , CountryCodeKenya
+                , CountryCodeTanzania
+                , CountryCodeBurundi
+                , CountryCodeUSACanada
+                ]
+
+        curerntPhoneNumber =
+            case data.countryCode of
+                CountryCodeRwanda ->
+                    "0" ++ trimLeadingZeros data.phone
+
+                _ ->
+                    "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone
+    in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppPhoneInputHeader ]
-        , viewTextInput language
-            inputValue
-            (PhoneInput >> Just >> SetState)
-            Nothing
-            (Just "phone-number")
+        , div [ class "phone-inputs" ]
+            [ select
+                [ onInput SetCountryCode
+                , class "select"
+                ]
+                countryCodeOptions
+            , viewTextInput language
+                data.phone
+                SetPhoneNumber
+                Nothing
+                (Just "phone-number")
+            ]
         ]
     , div [ class "actions" ]
         [ div [ class "two ui buttons" ]
@@ -157,7 +192,7 @@ viewPhoneInput language currentDate inputValue =
                 [ text <| translate language Translate.Cancel ]
             , button
                 [ class "ui primary fluid button"
-                , onClick <| SetState <| Just (PhoneUpdateAtProfile inputValue)
+                , onClick <| SetState <| Just (PhoneUpdateAtProfile curerntPhoneNumber)
                 ]
                 [ text <| translate language Translate.Continue ]
             ]
@@ -243,7 +278,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                             EverySet.toList components
 
                                         -- We should never get here.
-                                        Antenatal _ ->
+                                        _ ->
                                             []
                                 )
                                 componentsList
@@ -291,7 +326,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                             EverySet.toList components
 
                                         -- We should never get here.
-                                        WellChild _ ->
+                                        _ ->
                                             []
                                 )
                                 componentsList
@@ -335,6 +370,54 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                 ReportAcuteIllness ->
                     emptyNode
 
+                ReportNCD ->
+                    let
+                        currentValue =
+                            Maybe.map
+                                (\list ->
+                                    case list of
+                                        NCD components ->
+                                            EverySet.toList components
+
+                                        -- We should never get here.
+                                        _ ->
+                                            []
+                                )
+                                componentsList
+                                |> Maybe.withDefault []
+
+                        setMsg =
+                            \component ->
+                                let
+                                    currentComponents =
+                                        EverySet.fromList currentValue
+
+                                    updatedComponents =
+                                        if EverySet.member component currentComponents then
+                                            EverySet.remove component currentComponents
+
+                                        else
+                                            EverySet.insert component currentComponents
+                                in
+                                NCD updatedComponents
+                                    |> Just
+                                    |> ComponentsSelection phoneNumber
+                                    |> Just
+                                    |> SetState
+                    in
+                    viewCheckBoxMultipleSelectInput language
+                        [ ComponentNCDRiskFactors
+                        , ComponentNCDActiveDiagnosis
+                        , ComponentNCDMedicalDiagnosis
+                        , ComponentNCDPatientProgress
+                        , ComponentNCDLabsResults
+                        ]
+                        []
+                        currentValue
+                        Nothing
+                        setMsg
+                        Translate.ReportComponentNCD
+
         continueButtonAction =
             if componentsSelected then
                 [ onClick <| SetReportComponents (config.setReportComponentsMsg componentsList) phoneNumber ]
@@ -352,7 +435,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                     not <| EverySet.isEmpty components
 
                                 -- We should never get here.
-                                Antenatal _ ->
+                                _ ->
                                     False
 
                         ReportAntenatal ->
@@ -361,12 +444,21 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                     not <| EverySet.isEmpty components
 
                                 -- We should never get here.
-                                WellChild _ ->
+                                _ ->
                                     False
 
                         -- Not in use.
                         ReportAcuteIllness ->
                             False
+
+                        ReportNCD ->
+                            case list of
+                                NCD components ->
+                                    not <| EverySet.isEmpty components
+
+                                -- We should never get here.
+                                _ ->
+                                    False
                 )
                 componentsList
                 |> Maybe.withDefault False
@@ -394,9 +486,27 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
 
 viewConfirmationBeforeExecuting : Language -> NominalDate -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
 viewConfirmationBeforeExecuting language currentDate reportType personId phoneNumber clearComponentsMsg =
+    let
+        phoneNumberForWhatsApp =
+            if String.startsWith "+" phoneNumber then
+                -- International number with country code.
+                -- Trim '+' and add 00  prefix.
+                "00" ++ String.dropLeft 1 phoneNumber
+
+            else if String.startsWith "0" phoneNumber then
+                -- Rwanda number with no country code.
+                -- Trim leading 0, and add 00 and country code.
+                "00" ++ countryCodeToString CountryCodeRwanda ++ trimLeadingZeros phoneNumber
+
+            else
+                -- Rwanda numberm without leading 0.
+                -- Add 00 and country code.
+                "00" ++ countryCodeToString CountryCodeRwanda ++ phoneNumber
+    in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingHeader ]
         , p [] [ text phoneNumber ]
+        , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingInstructions ]
         , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingQuestion ]
         ]
     , div [ class "actions" ]
@@ -408,7 +518,7 @@ viewConfirmationBeforeExecuting language currentDate reportType personId phoneNu
                 [ text <| translate language Translate.No ]
             , button
                 [ class "ui primary fluid button"
-                , onClick <| Execute reportType personId phoneNumber
+                , onClick <| Execute reportType personId phoneNumberForWhatsApp
                 ]
                 [ text <| translate language Translate.Send ]
             ]
@@ -442,10 +552,13 @@ viewExecutionResult language currentDate maybeResult clearComponentsMsg =
                     )
                 )
                 maybeResult
-                |> Maybe.withDefault ( Translate.SendViaWhatsAppExecutionResultPleaseWait, emptyNode )
+                |> Maybe.withDefault ( Translate.EmptyString, emptyNode )
     in
     [ div
-        [ class "content"
+        [ classList
+            [ ( "content", True )
+            , ( "hidden", isNothing maybeResult )
+            ]
         , Html.Attributes.id "execution-response"
         , on "screenshotcomplete" (Json.Decode.map (SetExecutionResult clearComponentsMsg) (Json.Decode.at [ "detail", "result" ] Json.Decode.string))
         ]

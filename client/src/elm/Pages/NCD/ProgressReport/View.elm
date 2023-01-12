@@ -25,13 +25,16 @@ import Backend.NCDActivity.Utils exposing (getAllActivities)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..), NCDProgressReportInitiator(..))
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Person)
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.Utils
+import Components.SendViaWhatsAppDialog.View
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
@@ -51,7 +54,14 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
 import Pages.Report.Utils exposing (..)
 import Pages.Report.View exposing (..)
-import Pages.Utils exposing (viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended)
+import Pages.Utils
+    exposing
+        ( viewEncounterActionButton
+        , viewEndEncounterButton
+        , viewEndEncounterDialog
+        , viewEndEncounterMenuForProgressReport
+        , viewPersonDetailsExtended
+        )
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (viewModal)
@@ -179,27 +189,27 @@ viewContent : Language -> NominalDate -> NCDProgressReportInitiator -> ModelInde
 viewContent language currentDate initiator db model assembled =
     let
         derivedContent =
+            let
+                labResultsConfig =
+                    { hivPCR = False
+                    , syphilis = False
+                    , hepatitisB = False
+                    , malaria = False
+                    , hemoglobin = False
+                    , bloodGpRs = False
+                    , creatinine = True
+                    , liverFunction = True
+                    , pregnancy = expectLaboratoryTask currentDate assembled TaskPregnancyTest
+                    , hba1c = True
+                    , lipidPanel = True
+                    }
+            in
             case model.labResultsMode of
                 Just mode ->
                     case mode of
                         LabResultsCurrent currentMode ->
-                            let
-                                config =
-                                    { hivPCR = False
-                                    , syphilis = False
-                                    , hepatitisB = False
-                                    , malaria = False
-                                    , hemoglobin = False
-                                    , bloodGpRs = False
-                                    , creatinine = True
-                                    , liverFunction = True
-                                    , pregnancy = expectLaboratoryTask currentDate assembled TaskPregnancyTest
-                                    , hba1c = True
-                                    , lipidPanel = True
-                                    }
-                            in
                             [ generateLabsResultsPaneData currentDate assembled
-                                |> viewLabResultsPane language currentDate currentMode SetLabResultsMode config
+                                |> viewLabResultsPane language currentDate currentMode SetLabResultsMode labResultsConfig
                             ]
 
                         LabResultsHistory historyMode ->
@@ -220,6 +230,44 @@ viewContent language currentDate initiator db model assembled =
                     case model.diagnosisMode of
                         ModeActiveDiagnosis ->
                             let
+                                -- Drawing SVG charts causes major slowness, specially when
+                                -- typing new phone number. Therefore, we do not show it when
+                                -- 'Send via WhatsApp' dialog is open, until its final
+                                -- confirmation steps.
+                                showPatientProgressPaneByWhatsAppDialog =
+                                    Maybe.map
+                                        (\state ->
+                                            case state of
+                                                Components.SendViaWhatsAppDialog.Model.ConfirmationBeforeExecuting _ ->
+                                                    True
+
+                                                Components.SendViaWhatsAppDialog.Model.ExecutionResult _ ->
+                                                    True
+
+                                                _ ->
+                                                    False
+                                        )
+                                        model.sendViaWhatsAppDialog.state
+                                        |> Maybe.withDefault True
+
+                                patientProgressPane =
+                                    if showPatientProgressPaneByWhatsAppDialog then
+                                        viewPatientProgressPane language currentDate assembled
+                                            |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDPatientProgress)
+
+                                    else
+                                        emptyNode
+
+                                labsPane =
+                                    Maybe.map
+                                        (\components ->
+                                            generateLabsResultsPaneData currentDate assembled
+                                                |> viewLabResultsPane language currentDate LabResultsCurrentMain SetLabResultsMode labResultsConfig
+                                                |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDLabsResults)
+                                        )
+                                        model.components
+                                        |> Maybe.withDefault (viewLabsPane language currentDate SetLabResultsMode)
+
                                 actions =
                                     case initiator of
                                         Backend.NCDEncounter.Types.InitiatorEncounterPage _ ->
@@ -227,26 +275,66 @@ viewContent language currentDate initiator db model assembled =
                                                 ( completedActivities, pendingActivities ) =
                                                     List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled) getAllActivities
                                                         |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
+
+                                                allowEndEncounter =
+                                                    List.isEmpty pendingActivities
                                             in
-                                            viewEndEncounterButton language (List.isEmpty pendingActivities) SetEndEncounterDialogState
+                                            viewEndEncounterMenuForProgressReport language
+                                                allowEndEncounter
+                                                SetEndEncounterDialogState
+                                                (MsgSendViaWhatsAppDialog <|
+                                                    Components.SendViaWhatsAppDialog.Model.SetState <|
+                                                        Just Components.SendViaWhatsAppDialog.Model.Consent
+                                                )
 
                                         Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage _ ->
-                                            viewEncounterActionButton language Translate.LeaveEncounter True (SetActivePage <| UserPage GlobalCaseManagementPage)
+                                            viewEndEncounterMenuForProgressReport language
+                                                True
+                                                (always (SetActivePage <| UserPage GlobalCaseManagementPage))
+                                                (MsgSendViaWhatsAppDialog <|
+                                                    Components.SendViaWhatsAppDialog.Model.SetState <|
+                                                        Just Components.SendViaWhatsAppDialog.Model.Consent
+                                                )
+
+                                showComponent =
+                                    Components.SendViaWhatsAppDialog.Utils.showComponent model.components
                             in
                             [ viewRiskFactorsPane language currentDate assembled
+                                |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDRiskFactors)
                             , viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db
+                                |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDActiveDiagnosis)
                             , viewMedicalDiagnosisPane language currentDate assembled
-                            , viewPatientProgressPane language currentDate assembled
-                            , viewLabsPane language currentDate SetLabResultsMode
-                            , actions
+                                |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDMedicalDiagnosis)
+                            , patientProgressPane
+                            , labsPane
+                            , -- Actions are hidden when viewing for sharing via WhatsApp.
+                              showIf (isNothing model.components) actions
                             ]
 
                         ModeCompletedDiagnosis ->
                             [ viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db ]
+
+        componentsConfig =
+            Just { setReportComponentsMsg = SetReportComponents }
     in
-    div [ class "ui unstackable items" ] <|
+    div
+        [ class "ui unstackable items"
+        , Html.Attributes.id "report-content"
+        ]
+    <|
         viewPersonInfoPane language currentDate assembled.person
-            :: derivedContent
+            :: (derivedContent
+                    ++ [ Html.map MsgSendViaWhatsAppDialog
+                            (Components.SendViaWhatsAppDialog.View.view
+                                language
+                                currentDate
+                                ( assembled.participant.person, assembled.person )
+                                Components.SendViaWhatsAppDialog.Model.ReportNCD
+                                componentsConfig
+                                model.sendViaWhatsAppDialog
+                            )
+                       ]
+               )
 
 
 viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
