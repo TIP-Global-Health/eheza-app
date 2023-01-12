@@ -3635,7 +3635,7 @@ toLipidPanelResultsValue form =
 
 cholesterolMmolLToMgdLRatio : Float
 cholesterolMmolLToMgdLRatio =
-    33.67
+    38.67
 
 
 triglyceridesMmolLToMgdLRatio : Float

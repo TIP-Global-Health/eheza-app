@@ -741,6 +741,10 @@ div.page-outcome {
     }
   }
 
+  .form.history.obstetric.first .form-input.number {
+    height: unset;
+  }
+
   .form.history.obstetric.second .ui.grid {
     min-height: 70px;
   }
@@ -3842,6 +3846,11 @@ div.page-report.ncd {
         width: 100px;
       }
     }
+  }
+
+  .pane-content.overflow {
+    overflow-y: scroll;
+    position: relative;
   }
 
   .pane-action {

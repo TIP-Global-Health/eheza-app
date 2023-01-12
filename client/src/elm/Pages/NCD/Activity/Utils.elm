@@ -839,7 +839,8 @@ expectLaboratoryTask currentDate assembled task =
             notKnownAsPositive && initialTestRequired TaskHIVTest
 
         TaskPregnancyTest ->
-            initialTestRequired TaskPregnancyTest
+            isPersonAFertileWoman currentDate assembled.person
+                && initialTestRequired TaskPregnancyTest
 
         TaskCreatinineTest ->
             recurrentTestRequired 12 TaskCreatinineTest
