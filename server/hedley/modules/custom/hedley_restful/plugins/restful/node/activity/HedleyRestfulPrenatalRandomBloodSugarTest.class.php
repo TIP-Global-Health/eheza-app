@@ -20,7 +20,6 @@ class HedleyRestfulPrenatalRandomBloodSugarTest extends HedleyRestfulPrenatalAct
     'field_originating_encounter',
   ];
 
-
   /**
    * {@inheritdoc}
    */

@@ -40,10 +40,13 @@ update msg model =
                                     { model | components = Just wellChildComponents }
 
                                 -- We should never get here.
-                                Components.SendViaWhatsAppDialog.Model.Antenatal _ ->
+                                _ ->
                                     model
                         )
                         maybeComponents
                         |> Maybe.withDefault { model | components = Nothing }
             in
             ( updatedModel, Cmd.none, [] )
+
+        SetReportTab tab ->
+            ( { model | reportTab = tab }, Cmd.none, [] )

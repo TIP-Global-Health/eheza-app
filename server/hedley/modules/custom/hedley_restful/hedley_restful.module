@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 18);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 19);
 define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
@@ -43,6 +43,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'pmtct_participant' => 'pmtct-participants',
   'individual_participant' => 'individual-participants',
   'prenatal_encounter' => 'prenatal-encounters',
+  'ncd_encounter' => 'ncd-encounter',
   'nutrition_encounter' => 'nutrition-encounters',
   'acute_illness_encounter' => 'acute-illness-encounters',
   'home_visit_encounter' => 'home-visit-encounter',
@@ -74,6 +75,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'family_planning' => 'family-plannings',
   'follow_up' => 'follow-up',
   'group_health_education' => 'group-health-education',
+  'group_ncda' => 'group-ncda',
   'group_send_to_hc' => 'group-send-to-hc',
   'health_education' => 'health-education',
   'hc_contact' => 'hc-contacts',
@@ -87,6 +89,28 @@ const HEDLEY_RESTFUL_SHARDED = [
   'medication_distribution' => 'medication-distributions',
   'mother_fbf' => 'mother-fbfs',
   'muac' => 'muacs',
+  'ncd_co_morbidities' => 'ncd-co-morbidities',
+  'ncd_core_exam' => 'ncd-core-exam',
+  'ncd_creatinine_test' => 'ncd-creatinine-test',
+  'ncd_danger_signs' => 'ncd-danger-signs',
+  'ncd_family_history' => 'ncd-family-history',
+  'ncd_family_planning' => 'ncd-family-planning',
+  'ncd_hba1c_test' => 'ncd-hba1c-test',
+  'ncd_health_education' => 'ncd-health-education',
+  'ncd_hiv_test' => 'ncd-hiv-test',
+  'ncd_labs_results' => 'ncd-labs-results',
+  'ncd_lipid_panel_test' => 'ncd-lipid-panel-test',
+  'ncd_liver_function_test' => 'ncd-liver-function-test',
+  'ncd_medication_distribution' => 'ncd-medication-distribution',
+  'ncd_medication_history' => 'ncd-medication-history',
+  'ncd_outside_care' => 'ncd-outside-care',
+  'ncd_pregnancy_test' => 'ncd-pregnancy-test',
+  'ncd_random_blood_sugar_test' => 'ncd-random-blood-sugar-test',
+  'ncd_referral' => 'ncd-referral',
+  'ncd_social_history' => 'ncd-social-history',
+  'ncd_symptom_review' => 'ncd-symptom-review',
+  'ncd_urine_dipstick_test' => 'ncd-urine-dipstick-test',
+  'ncd_vitals' => 'ncd-vitals',
   'nutrition' => 'nutritions',
   'nutrition_caring' => 'nutrition-caring',
   'nutrition_contributing_factors' => 'nutrition-contributing-factors',
@@ -97,6 +121,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'nutrition_height' => 'nutrition-heights',
   'nutrition_hygiene' => 'nutrition-hygiene',
   'nutrition_muac' => 'nutrition-muacs',
+  'nutrition_ncda' => 'nutrition-ncda',
   'nutrition_nutrition' => 'nutrition-nutritions',
   'nutrition_photo' => 'nutrition-photos',
   'nutrition_send_to_hc' => 'nutrition-send-to-hc',
@@ -156,6 +181,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'well_child_mebendezole' => 'well-child-mebendezole',
   'well_child_mr_immunisation' => 'well-child-mr-immunisation',
   'well_child_muac' => 'well-child-muac',
+  'well_child_ncda' => 'well-child-ncda',
   'well_child_next_visit' => 'well-child-next-visit',
   'well_child_nutrition' => 'well-child-nutrition',
   'well_child_opv_immunisation' => 'well-child-opv-immunisation',

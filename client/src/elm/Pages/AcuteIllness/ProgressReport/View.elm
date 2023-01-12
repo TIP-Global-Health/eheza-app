@@ -13,7 +13,7 @@ import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.View
 import Date
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -93,14 +93,14 @@ viewContent language currentDate id isChw initiator model assembled =
             else
                 Nothing
 
-        allowEndEcounter =
+        allowEndEncounter =
             allowEndingEcounter currentDate isChw assembled pendingActivities
 
         endEncounterMenu =
             case initiator of
                 InitiatorEncounterPage ->
                     viewEndEncounterMenuForProgressReport language
-                        allowEndEcounter
+                        allowEndEncounter
                         SetEndEncounterDialogState
                         (MsgSendViaWhatsAppDialog <|
                             Components.SendViaWhatsAppDialog.Model.SetState <|
@@ -124,7 +124,9 @@ viewContent language currentDate id isChw initiator model assembled =
             , viewTreatmentPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
             , viewActionsTakenPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
             , viewNextStepsPane language currentDate assembled
-            , endEncounterMenu
+            , -- Actions are hidden when 'Share via WhatsApp' dialog is open,
+              -- so they do not appear on generated screenshot.
+              showIf (isNothing model.sendViaWhatsAppDialog.state) endEncounterMenu
             ]
         , viewModal endEncounterDialog
         , Html.map MsgSendViaWhatsAppDialog
@@ -166,6 +168,9 @@ viewHeader language id initiator =
 
                 InitiatorPatientRecord patientRecordInitiator personId ->
                     PatientRecordPage patientRecordInitiator personId
+
+                InitiatorNCDProgressReport ncdProgressReportInitiator ->
+                    NCDProgressReportPage ncdProgressReportInitiator
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]

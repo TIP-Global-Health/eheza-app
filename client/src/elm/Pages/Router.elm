@@ -10,13 +10,18 @@ import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator)
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString, individualEncounterTypeToString)
-import Backend.Measurement.Model exposing (PrenatalLaboratoryTest)
+import Backend.Measurement.Model exposing (LaboratoryTest)
+import Backend.Measurement.Utils
+import Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
+import Backend.NCDActivity.Utils
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
+import Backend.NCDEncounter.Utils
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionActivity.Utils
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PatientRecord.Utils
 import Backend.Person.Model exposing (Initiator(..))
-import Backend.Person.Utils exposing (initiatorFromUrlFragmemt, initiatorToUrlFragmemt)
+import Backend.Person.Utils
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
 import Backend.PrenatalActivity.Utils
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..), RecordPreganancyInitiator(..))
@@ -110,10 +115,10 @@ pageToFragment current =
                     Just "case-management"
 
                 ClinicalProgressReportPage initiator prenatalEncounterId ->
-                    Just <| "clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId ++ "/" ++ progressReportInitiatorToUrlFragmemt initiator
+                    Just <| "clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId ++ "/" ++ progressReportInitiatorToUrlFragment initiator
 
                 DemographicsReportPage initiator prenatalEncounterId ->
-                    Just <| "demographics-report/" ++ fromEntityUuid prenatalEncounterId ++ "/" ++ progressReportInitiatorToUrlFragmemt initiator
+                    Just <| "demographics-report/" ++ fromEntityUuid prenatalEncounterId ++ "/" ++ progressReportInitiatorToUrlFragment initiator
 
                 MyAccountPage ->
                     Just "my-account"
@@ -121,7 +126,7 @@ pageToFragment current =
                 CreatePersonPage relationId initiator ->
                     let
                         fragment =
-                            initiatorToUrlFragmemt initiator
+                            Backend.Person.Utils.initiatorToUrlFragment initiator
 
                         relation =
                             relationId
@@ -136,14 +141,14 @@ pageToFragment current =
                 PersonPage id initiator ->
                     let
                         fragment =
-                            initiatorToUrlFragmemt initiator
+                            Backend.Person.Utils.initiatorToUrlFragment initiator
                     in
                     Just ("person/" ++ fromEntityUuid id ++ "/" ++ fragment)
 
                 PersonsPage related initiator ->
                     let
                         fragment =
-                            initiatorToUrlFragmemt initiator
+                            Backend.Person.Utils.initiatorToUrlFragment initiator
 
                         url =
                             case related of
@@ -156,16 +161,19 @@ pageToFragment current =
                     url ++ "/" ++ fragment |> Just
 
                 PrenatalParticipantPage initiator id ->
-                    Just <| "prenatal-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragmemt initiator
+                    Just <| "prenatal-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
 
                 NutritionParticipantPage initiator id ->
-                    Just <| "nutrition-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragmemt initiator
+                    Just <| "nutrition-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
 
                 AcuteIllnessParticipantPage initiator id ->
-                    Just <| "acute-illness-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragmemt initiator
+                    Just <| "acute-illness-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
 
                 WellChildParticipantPage initiator id ->
-                    Just <| "well-child-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragmemt initiator
+                    Just <| "well-child-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
+
+                NCDParticipantPage initiator id ->
+                    Just <| "ncd-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
 
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
@@ -173,7 +181,7 @@ pageToFragment current =
                 RelationshipPage id1 id2 initiator ->
                     let
                         fragment =
-                            initiatorToUrlFragmemt initiator
+                            Backend.Person.Utils.initiatorToUrlFragment initiator
                     in
                     Just
                         ("relationship/"
@@ -236,13 +244,13 @@ pageToFragment current =
                             ++ "/"
                             ++ fromEntityUuid labEncounterId
                             ++ "/"
-                            ++ Backend.PrenatalActivity.Utils.prenatalLaboratoryTestToString lab
+                            ++ Backend.Measurement.Utils.laboratoryTestToString lab
 
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
 
                 PregnancyOutcomePage initiator id ->
-                    Just <| "pregnancy-outcome/" ++ fromEntityUuid id ++ "/" ++ recordPreganancyInitiatorToUrlFragmemt initiator
+                    Just <| "pregnancy-outcome/" ++ fromEntityUuid id ++ "/" ++ recordPreganancyInitiatorToUrlFragment initiator
 
                 NutritionEncounterPage id ->
                     Just <| "nutrition-encounter/" ++ fromEntityUuid id
@@ -264,7 +272,7 @@ pageToFragment current =
                         "acute-illness-progress-report/"
                             ++ fromEntityUuid id
                             ++ "/"
-                            ++ Backend.AcuteIllnessEncounter.Utils.progressReportInitiatorToUrlFragmemt initiator
+                            ++ Backend.AcuteIllnessEncounter.Utils.progressReportInitiatorToUrlFragment initiator
 
                 AcuteIllnessOutcomePage id ->
                     Just <| "acute-illness-outcome/" ++ fromEntityUuid id
@@ -284,6 +292,21 @@ pageToFragment current =
                 WellChildProgressReportPage id ->
                     Just <| "well-child-progress-report/" ++ fromEntityUuid id
 
+                NCDEncounterPage id ->
+                    Just <| "ncd-encounter/" ++ fromEntityUuid id
+
+                NCDActivityPage id activity ->
+                    Just <| "ncd-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.NCDActivity.Utils.activityToString activity
+
+                NCDRecurrentEncounterPage id ->
+                    Just <| "ncd-recurrent-encounter/" ++ fromEntityUuid id
+
+                NCDRecurrentActivityPage id activity ->
+                    Just <| "ncd-recurrent-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.NCDActivity.Utils.recurrentActivityToString activity
+
+                NCDProgressReportPage initiator ->
+                    Just <| "ncd-progress-report/" ++ Backend.NCDEncounter.Utils.progressReportInitiatorToUrlFragment initiator
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -292,7 +315,7 @@ pageToFragment current =
                         "patient-record/"
                             ++ fromEntityUuid id
                             ++ "/"
-                            ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragmemt initiator
+                            ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragment initiator
 
 
 parser : Parser (Page -> c) c
@@ -318,12 +341,13 @@ parser =
         , map (\id initiator -> UserPage <| NutritionParticipantPage initiator id) (s "nutrition-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| AcuteIllnessParticipantPage initiator id) (s "acute-illness-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| WellChildParticipantPage initiator id) (s "well-child-participant" </> parseUuid </> parseIndividualParticipantInitiator)
+        , map (\id initiator -> UserPage <| NCDParticipantPage initiator id) (s "ncd-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
         , map (\id -> UserPage <| PrenatalRecurrentEncounterPage id) (s "prenatal-recurrent-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalRecurrentActivityPage id activity) (s "prenatal-recurrent-activity" </> parseUuid </> parsePrenatalRecurrentActivity)
-        , map (\id labEncounterId lab -> UserPage <| PrenatalLabsHistoryPage id labEncounterId lab) (s "prenatal-labs-history" </> parseUuid </> parseUuid </> parsePrenatalLaboratoryTest)
+        , map (\id labEncounterId lab -> UserPage <| PrenatalLabsHistoryPage id labEncounterId lab) (s "prenatal-labs-history" </> parseUuid </> parseUuid </> parseLaboratoryTest)
         , map (\id initiator -> UserPage <| ClinicalProgressReportPage initiator id) (s "clinical-progress-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (\id initiator -> UserPage <| DemographicsReportPage initiator id) (s "demographics-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
@@ -341,6 +365,11 @@ parser =
         , map (\id -> UserPage <| WellChildEncounterPage id) (s "well-child-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| WellChildActivityPage id activity) (s "well-child-activity" </> parseUuid </> parseWellChildActivity)
         , map (\id -> UserPage <| WellChildProgressReportPage id) (s "well-child-progress-report" </> parseUuid)
+        , map (\id -> UserPage <| NCDEncounterPage id) (s "ncd-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| NCDActivityPage id activity) (s "ncd-activity" </> parseUuid </> parseNCDActivity)
+        , map (\id -> UserPage <| NCDRecurrentEncounterPage id) (s "ncd-recurrent-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| NCDRecurrentActivityPage id activity) (s "ncd-recurrent-activity" </> parseUuid </> parseNCDRecurrentActivity)
+        , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
 
@@ -398,9 +427,9 @@ parsePrenatalRecurrentActivity =
     custom "PrenatalRecurrentActivity" Backend.PrenatalActivity.Utils.recurrentActivityFromString
 
 
-parsePrenatalLaboratoryTest : Parser (PrenatalLaboratoryTest -> c) c
-parsePrenatalLaboratoryTest =
-    custom "PrenatalLaboratoryTest" Backend.PrenatalActivity.Utils.prenatalLaboratoryTestFromString
+parseLaboratoryTest : Parser (LaboratoryTest -> c) c
+parseLaboratoryTest =
+    custom "LaboratoryTest" Backend.Measurement.Utils.laboratoryTestFromString
 
 
 parseNutritionActivity : Parser (NutritionActivity -> c) c
@@ -423,6 +452,16 @@ parseWellChildActivity =
     custom "WellChildActivity" Backend.WellChildActivity.Utils.decodeActivityFromString
 
 
+parseNCDActivity : Parser (NCDActivity -> c) c
+parseNCDActivity =
+    custom "NCDActivity" Backend.NCDActivity.Utils.activityFromString
+
+
+parseNCDRecurrentActivity : Parser (NCDRecurrentActivity -> c) c
+parseNCDRecurrentActivity =
+    custom "NCDRecurrentActivity" Backend.NCDActivity.Utils.recurrentActivityFromString
+
+
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c
 parseIndividualEncounterType =
     custom "IndividualEncounterType" individualEncounterTypeFromString
@@ -430,29 +469,34 @@ parseIndividualEncounterType =
 
 parseOrigin : Parser (Initiator -> c) c
 parseOrigin =
-    custom "Initiator" initiatorFromUrlFragmemt
+    custom "Initiator" Backend.Person.Utils.initiatorFromUrlFragment
 
 
 parseRecordPreganancyInitiator : Parser (RecordPreganancyInitiator -> c) c
 parseRecordPreganancyInitiator =
-    custom "RecordPreganancyInitiator" recordPreganancyInitiatorFromUrlFragmemt
+    custom "RecordPreganancyInitiator" recordPreganancyInitiatorFromUrlFragment
 
 
 parsePrenatalProgressReportInitiator : Parser (PrenatalProgressReportInitiator -> c) c
 parsePrenatalProgressReportInitiator =
-    custom "PrenatalProgressReportInitiator" progressReportInitiatorFromUrlFragmemt
+    custom "PrenatalProgressReportInitiator" progressReportInitiatorFromUrlFragment
 
 
 parseAcuteIllnessProgressReportInitiator : Parser (AcuteIllnessProgressReportInitiator -> c) c
 parseAcuteIllnessProgressReportInitiator =
-    custom "AcuteIllnessProgressReportInitiator" Backend.AcuteIllnessEncounter.Utils.progressReportInitiatorFromUrlFragmemt
+    custom "AcuteIllnessProgressReportInitiator" Backend.AcuteIllnessEncounter.Utils.progressReportInitiatorFromUrlFragment
 
 
 parsePatientRecordInitiator : Parser (PatientRecordInitiator -> c) c
 parsePatientRecordInitiator =
-    custom "PatientRecordInitiator" Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragmemt
+    custom "PatientRecordInitiator" Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragment
 
 
 parseIndividualParticipantInitiator : Parser (IndividualParticipantInitiator -> c) c
 parseIndividualParticipantInitiator =
-    custom "IndividualParticipantInitiator" Backend.IndividualEncounterParticipant.Utils.initiatorFromUrlFragmemt
+    custom "IndividualParticipantInitiator" Backend.IndividualEncounterParticipant.Utils.initiatorFromUrlFragment
+
+
+parseNCDProgressReportInitiator : Parser (NCDProgressReportInitiator -> c) c
+parseNCDProgressReportInitiator =
+    custom "NCDProgressReportInitiator" Backend.NCDEncounter.Utils.progressReportInitiatorFromUrlFragment

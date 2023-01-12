@@ -1,6 +1,7 @@
 module Pages.PatientRecord.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
@@ -27,6 +28,9 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
+import Pages.Report.Model exposing (PaneEntryStatus(..))
+import Pages.Report.Utils exposing (diagnosisEntryStatusToString)
+import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -40,9 +44,8 @@ import Pages.Utils
         , viewSaveAction
         , viewStartEncounterButton
         )
-import Pages.WellChild.Encounter.View exposing (thumbnailDimensions)
-import Pages.WellChild.ProgressReport.Model exposing (PaneEntryStatus(..), WellChildProgressReportInitiator(..))
-import Pages.WellChild.ProgressReport.View exposing (diagnosisEntryStatusToString, viewAcuteIllnessDiagnosisEntry, viewEntries, viewPaneHeading, viewProgressReport)
+import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
+import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage, viewModal)
@@ -102,9 +105,7 @@ viewHeader language model =
             [ class "link-back"
             , onClick backAction
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 
@@ -151,25 +152,30 @@ viewStartEncounterPage language currentDate isChw personId person patientType in
 viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
 viewContentForChild language currentDate zscores childId child isChw initiator db model =
     let
+        wellChildReportInitiator =
+            Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId
+
         bottomActionData =
             Just <|
                 { showEndEncounterDialog = False
-                , allowEndEcounter = False
+                , allowEndEncounter = False
                 , closeEncounterMsg = NoOp
                 , setEndEncounterDialogStateMsg = always NoOp
                 , startEncounterMsg = SetViewMode ViewStartEncounter
                 }
     in
-    viewProgressReport language
+    Pages.WellChild.ProgressReport.View.viewProgressReport language
         currentDate
         zscores
         isChw
-        (Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId)
+        wellChildReportInitiator
         False
         db
         model.diagnosisMode
         model.sendViaWhatsAppDialog
+        model.spvReportTab
         SetActivePage
+        SetSPVReportTab
         SetDiagnosisMode
         MsgSendViaWhatsAppDialog
         Nothing
@@ -213,6 +219,7 @@ viewContentForOther language currentDate isChw personId person patientType initi
                     viewFamilyPlanningPane language currentDate personId (List.map Tuple.first pregnancies) db
 
                 FilterDemographics ->
+                    -- Demographics report got dedicated page.
                     emptyNode
     in
     div [ class "page-activity patient-record" ]
@@ -343,13 +350,20 @@ viewAdultDetails language currentDate personId person db =
     ]
 
 
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 140
+    , height = 140
+    }
+
+
 viewFilters : Language -> Person -> PatientType -> Model -> Html Msg
 viewFilters language person patientType model =
     let
         renderButton filter =
             button
                 [ classList
-                    [ ( "active", model.filter == filter )
+                    [ ( "active", filter == model.filter )
                     , ( "primary ui button", True )
                     ]
                 , onClick <| SetFilter filter
@@ -357,24 +371,28 @@ viewFilters language person patientType model =
                 [ translateText language <| Translate.PatientRecordFilter filter ]
 
         patientRecordFilters =
-            case person.gender of
-                Male ->
+            case patientType of
+                PatientChild ->
+                    []
+
+                PatientAdult ->
+                    case person.gender of
+                        Male ->
+                            [ FilterAcuteIllness
+                            , FilterDemographics
+                            ]
+
+                        Female ->
+                            [ FilterAcuteIllness
+                            , FilterAntenatal
+                            , FilterFamilyPlanning
+                            , FilterDemographics
+                            ]
+
+                PatientUnknown ->
                     [ FilterAcuteIllness
                     , FilterDemographics
                     ]
-
-                Female ->
-                    if patientType == PatientAdult then
-                        [ FilterAcuteIllness
-                        , FilterAntenatal
-                        , FilterFamilyPlanning
-                        , FilterDemographics
-                        ]
-
-                    else
-                        [ FilterAcuteIllness
-                        , FilterDemographics
-                        ]
     in
     List.map renderButton patientRecordFilters
         |> div [ class "ui segment filters" ]
@@ -407,12 +425,13 @@ viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db =
 
         daignosisEntries =
             List.map
-                (Tuple.first
-                    >> viewAcuteIllnessDiagnosisEntry
+                (\( data, _ ) ->
+                    viewAcuteIllnessDiagnosisEntry
                         language
-                        (Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator personId)
+                        (Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord initiator personId)
                         db
                         SetActivePage
+                        data
                 )
                 entries
                 |> Maybe.Extra.values

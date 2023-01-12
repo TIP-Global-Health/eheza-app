@@ -1,6 +1,7 @@
 module Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 
 import Html exposing (Html)
+import Pages.Report.Svg exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
@@ -35,22 +36,6 @@ viewMarkers =
                 ]
             ]
         ]
-
-
-dimensionsPx =
-    { left = 110.9
-    , top = 119.9
-    , right = 737.7
-    , bottom = 506.7
-    }
-
-
-widthPx =
-    dimensionsPx.right - dimensionsPx.left
-
-
-heightPx =
-    dimensionsPx.bottom - dimensionsPx.top
 
 
 viewBMIForEGA : Language -> List ( Int, Float ) -> Html any
@@ -151,7 +136,7 @@ viewBMIForEGA language points =
             , drawPolygon yellowPoints "yellow-area"
             , drawPolygon greenPoints "green-area"
             , drawPolygon bottomRedPoints "red-area"
-            , drawPolyline measurements "child-data"
+            , drawPolyline measurements "data"
             ]
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
@@ -271,7 +256,7 @@ viewFundalHeightForEGA language points =
             , drawPolygon greenPoints "green-area"
             , drawPolygon topYellowPoints "yellow-area"
             , drawPolygon topRedPoints "red-area"
-            , drawPolyline measurements "child-data"
+            , drawPolyline measurements "data"
             ]
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
@@ -280,125 +265,6 @@ viewFundalHeightForEGA language points =
             |> g []
         , referenceHorizontalLines horizontalParts ++ referenceHorizontalNumbers horizontalParts horizontalMin 2 |> g []
         ]
-
-
-referenceHorizontalLines : Int -> List (Svg any)
-referenceHorizontalLines parts =
-    let
-        margin =
-            widthPx / toFloat parts
-    in
-    List.repeat (parts - 1) ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    posX =
-                        dimensionsPx.left + (toFloat (index + 1) * margin) |> String.fromFloat
-                in
-                line [ class "refference-line", x1 posX, y1 (String.fromFloat dimensionsPx.bottom), x2 posX, y2 (String.fromFloat dimensionsPx.top) ] []
-            )
-
-
-referenceHorizontalNumbers : Int -> Int -> Int -> List (Svg any)
-referenceHorizontalNumbers parts min gap =
-    let
-        margin =
-            widthPx / toFloat parts
-    in
-    List.repeat (parts - 1) ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    posX =
-                        dimensionsPx.left + (toFloat (index + 1) * margin)
-
-                    number =
-                        min + (index + 1) * gap
-
-                    posX_ =
-                        (if number > 9 then
-                            posX - 4
-
-                         else
-                            posX - 2.5
-                        )
-                            |> String.fromFloat
-
-                    number_ =
-                        number |> String.fromInt
-                in
-                text_ [ transform <| "matrix(1 0 0 1 " ++ posX_ ++ " 520)", class "z-score-semibold st17" ] [ text number_ ]
-            )
-
-
-referenceVerticalLines : Int -> List (Svg any)
-referenceVerticalLines parts =
-    let
-        margin =
-            heightPx / toFloat parts
-    in
-    List.repeat (parts - 1) ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    posY =
-                        dimensionsPx.top + (toFloat (index + 1) * margin) |> String.fromFloat
-                in
-                line [ class "refference-line", x1 (String.fromFloat dimensionsPx.left), y1 posY, x2 (String.fromFloat dimensionsPx.right), y2 posY ] []
-            )
-
-
-referenceVerticalNumbers : Int -> Int -> Int -> String -> List (Svg any)
-referenceVerticalNumbers parts min gap posX =
-    let
-        margin =
-            heightPx / toFloat parts
-    in
-    List.repeat (parts - 1) ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    posY =
-                        dimensionsPx.top + (toFloat (index + 1) * margin)
-
-                    number =
-                        min + (parts - index - 1) * gap
-
-                    posY_ =
-                        posY + 2 |> String.fromFloat
-
-                    number_ =
-                        number |> String.fromInt
-                in
-                text_ [ transform <| "matrix(1 0 0 1 " ++ posX ++ " " ++ posY_ ++ ")", class "z-score-semibold st17" ] [ text number_ ]
-            )
-
-
-drawPolygon : List ( Float, Float ) -> String -> Svg any
-drawPolygon =
-    drawPolyshape polygon
-
-
-drawPolyline : List ( Float, Float ) -> String -> Svg any
-drawPolyline =
-    drawPolyshape polyline
-
-
-drawPolyshape shape points_ class_ =
-    points_
-        |> List.map
-            (\( x, y ) ->
-                String.fromFloat x ++ "," ++ String.fromFloat y
-            )
-        |> String.join " "
-        |> points
-        |> (\pointList ->
-                shape
-                    [ class class_
-                    , pointList
-                    ]
-                    []
-           )
 
 
 frame : Svg any
@@ -421,12 +287,3 @@ frame =
             ]
             []
         ]
-
-
-withinRange : number -> number -> number -> Bool
-withinRange value min max =
-    if value < 0 || value > (max - min) then
-        False
-
-    else
-        True

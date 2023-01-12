@@ -12,7 +12,25 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils exposing (toSendToHCValueWithDefault, toVitalsValueWithDefault)
+import Measurement.Utils
+    exposing
+        ( bloodGpRsResultFormWithDefault
+        , hemoglobinResultFormWithDefault
+        , hepatitisBResultFormWithDefault
+        , hivPCRResultFormWithDefault
+        , randomBloodSugarResultFormWithDefault
+        , syphilisResultFormWithDefault
+        , toBloodGpRsResultsValueWithDefault
+        , toHIVPCRRResultsValueWithDefault
+        , toHemoglobinResultsValueWithDefault
+        , toHepatitisBResultsValueWithDefault
+        , toRandomBloodSugarResultsValueWithDefault
+        , toSendToHCValueWithDefault
+        , toSyphilisResultValueWithDefault
+        , toUrineDipstickResultsValueWithDefault
+        , toVitalsValueWithDefault
+        , urineDipstickResultFormWithDefault
+        )
 import Pages.GlobalCaseManagement.Utils exposing (prenatalLabsResultsTestData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
@@ -51,7 +69,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     data.syphilisTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value, symptoms = Nothing, symptomsDirty = True }
+                    { form | testResult = testResultFromString value, symptoms = Nothing, symptomsDirty = True }
             in
             ( { data | syphilisTestForm = updatedForm }
             , Cmd.none
@@ -115,7 +133,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     data.hepatitisBTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value }
+                    { form | testResult = testResultFromString value }
             in
             ( { data | hepatitisBTestForm = updatedForm }
             , Cmd.none
@@ -134,7 +152,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     data.hepatitisBTestForm
 
                 appMsgs =
-                    toHepatitisBValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
+                    toHepatitisBResultsValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -187,7 +205,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     data.bloodGpRsTestForm
 
                 appMsgs =
-                    toPrenatalBloodGpRsResultsValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
+                    toBloodGpRsResultsValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -328,7 +346,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    toPrenatalUrineDipstickResultsValueWithDefault measurement data.urineDipstickTestForm
+                    toUrineDipstickResultsValueWithDefault measurement data.urineDipstickTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -365,7 +383,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    toPrenatalHemoglobinResultsValueWithDefault measurement data.hemoglobinTestForm
+                    toHemoglobinResultsValueWithDefault measurement data.hemoglobinTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -405,7 +423,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     data.randomBloodSugarTestForm
 
                 appMsgs =
-                    toPrenatalRandomBloodSugarResultsValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
+                    toRandomBloodSugarResultsValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -462,7 +480,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    toPrenatalHIVPCRResultsValueWithDefault measurement data.hivPCRTestForm
+                    toHIVPCRRResultsValueWithDefault measurement data.hivPCRTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -623,7 +641,7 @@ update language currentDate id db msg model =
                     model.labResultsData.syphilisTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value, symptoms = Nothing, symptomsDirty = True }
+                    { form | testResult = testResultFromString value, symptoms = Nothing, symptomsDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -695,7 +713,7 @@ update language currentDate id db msg model =
                     model.labResultsData.hepatitisBTestForm
 
                 updatedForm =
-                    { form | testResult = prenatalTestResultFromString value }
+                    { form | testResult = testResultFromString value }
 
                 updatedData =
                     model.labResultsData
@@ -718,7 +736,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toHepatitisBValueWithDefault measurement model.labResultsData.hepatitisBTestForm
+                    toHepatitisBResultsValueWithDefault measurement model.labResultsData.hepatitisBTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -779,7 +797,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalBloodGpRsResultsValueWithDefault measurement model.labResultsData.bloodGpRsTestForm
+                    toBloodGpRsResultsValueWithDefault measurement model.labResultsData.bloodGpRsTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -959,7 +977,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalUrineDipstickResultsValueWithDefault measurement model.labResultsData.urineDipstickTestForm
+                    toUrineDipstickResultsValueWithDefault measurement model.labResultsData.urineDipstickTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -1003,7 +1021,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalHemoglobinResultsValueWithDefault measurement model.labResultsData.hemoglobinTestForm
+                    toHemoglobinResultsValueWithDefault measurement model.labResultsData.hemoglobinTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -1047,7 +1065,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalRandomBloodSugarResultsValueWithDefault measurement model.labResultsData.randomBloodSugarTestForm
+                    toRandomBloodSugarResultsValueWithDefault measurement model.labResultsData.randomBloodSugarTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -1115,7 +1133,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toPrenatalHIVPCRResultsValueWithDefault measurement model.labResultsData.hivPCRTestForm
+                    toHIVPCRRResultsValueWithDefault measurement model.labResultsData.hivPCRTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

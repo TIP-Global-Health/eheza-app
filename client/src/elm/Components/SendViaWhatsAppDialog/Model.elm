@@ -6,14 +6,12 @@ import EverySet exposing (EverySet)
 
 
 type alias Model =
-    { state : Maybe DialogState
-    }
+    { state : Maybe DialogState }
 
 
 emptyModel : Model
 emptyModel =
-    { state = Nothing
-    }
+    { state = Nothing }
 
 
 type DialogState
@@ -58,11 +56,13 @@ type ReportType
     = ReportWellChild
     | ReportAntenatal
     | ReportAcuteIllness
+    | ReportNCD
 
 
 type ReportComponentsList
     = WellChild (EverySet ReportComponentWellChild)
     | Antenatal (EverySet ReportComponentAntenatal)
+    | NCD (EverySet ReportComponentNCD)
 
 
 type ReportComponentWellChild
@@ -81,6 +81,14 @@ type ReportComponentAntenatal
     | ComponentAntenatalPatientProgress
     | ComponentAntenatalLabsResults
     | ComponentAntenatalProgressPhotos
+
+
+type ReportComponentNCD
+    = ComponentNCDRiskFactors
+    | ComponentNCDActiveDiagnosis
+    | ComponentNCDMedicalDiagnosis
+    | ComponentNCDPatientProgress
+    | ComponentNCDLabsResults
 
 
 type Msg msg
