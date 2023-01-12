@@ -1158,6 +1158,9 @@ function makeProgressReportScreenshot(elementId, data) {
 
          reportProgressReportScreenshotResult("success");
         }
+        else {
+          reportProgressReportScreenshotResult("failure");
+        }
       }
       catch (e) {
         reportProgressReportScreenshotResult("failure");

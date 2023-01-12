@@ -228,6 +228,14 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
 
                 TabNCDAScoreboard ->
                     viewNCDAScorecard language currentDate zscores ( childId, child ) db
+
+        actions =
+            if isNothing selectedComponents then
+                viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActionData
+
+            else
+                -- Actions are hidden when viewing for sharing via WhatsApp.
+                []
     in
     div [ class "page-report well-child" ]
         [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
@@ -238,7 +246,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
             ]
           <|
             content
-                ++ viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActionData
+                ++ actions
         ]
 
 

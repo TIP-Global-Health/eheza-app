@@ -15210,7 +15210,7 @@ translationSet trans =
             }
 
         SendViaWhatsAppExecutionResultFailure ->
-            { english = "Action Failed. Please try again. If problem persisits, please contact system administrator."
+            { english = "Action Failed. Please try again. If problem persists, please contact system administrator."
             , kinyarwanda = Nothing
             }
 
