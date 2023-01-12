@@ -641,3 +641,10 @@ function hedley_update_7033() {
 function hedley_update_7034() {
   module_enable(['hedley_ncd']);
 }
+
+/*
+ * Enable the Hedley WhatsApp module.
+ */
+function hedley_update_7035() {
+  module_enable(['hedley_whatsapp']);
+}

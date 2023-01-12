@@ -11,9 +11,42 @@ import Restful.Endpoint exposing (fromEntityUuid)
 
 update : Msg msg -> Model -> ( Model, Cmd msg, ( List msg, List App.Model.Msg ) )
 update msg model =
+    let
+        noChange =
+            ( model, Cmd.none, ( [], [] ) )
+    in
     case msg of
         SetState state ->
             ( { model | state = state }, Cmd.none, ( [], [] ) )
+
+        SetPhoneNumber value ->
+            case model.state of
+                Just (PhoneInput data) ->
+                    let
+                        updatedState =
+                            PhoneInput { data | phone = value }
+                    in
+                    update (SetState <| Just updatedState) model
+
+                _ ->
+                    noChange
+
+        SetCountryCode value ->
+            case model.state of
+                Just (PhoneInput data) ->
+                    countryCodeFromString value
+                        |> Maybe.map
+                            (\code ->
+                                let
+                                    updatedState =
+                                        PhoneInput { data | countryCode = code }
+                                in
+                                update (SetState <| Just updatedState) model
+                            )
+                        |> Maybe.withDefault noChange
+
+                _ ->
+                    noChange
 
         UpdatePhoneAtProfile personId person phoneNumber ->
             ( { model | state = Just <| PhoneUpdateConfirmation phoneNumber }

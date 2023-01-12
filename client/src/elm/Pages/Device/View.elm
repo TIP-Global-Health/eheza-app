@@ -151,7 +151,10 @@ viewPhotosTransferInfo language syncStatus status =
     let
         statusHtml =
             case syncStatus of
-                SyncUploadPhotoAuthority _ _ ->
+                SyncUploadPhoto _ _ ->
+                    div [] [ text <| translate language Translate.Uploading ]
+
+                SyncUploadScreenshot _ _ ->
                     div [] [ text <| translate language Translate.Uploading ]
 
                 _ ->

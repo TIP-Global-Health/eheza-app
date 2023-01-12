@@ -17,9 +17,11 @@ var deviceUuidUrl = '/sw/config/device-uuid';
 
 var photosDownloadCache = "photos";
 var photosUploadCache = "photos-upload";
+var screenshotsUploadCache = "screenshots-upload";
 
 var photosDownloadUrlRegex = /\/system\/files\//;
 var photosUploadUrlRegex = /\/cache-upload\/images/;
+var screenshotsUploadUrlRegex = /\/cache-upload\/screenshots/;
 
 /**
  * The DB version on the backend.

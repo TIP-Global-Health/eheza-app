@@ -3,12 +3,15 @@ module SyncManager.Encoder exposing
     , encodeDeviceStateReport
     , encodeIndexDbQueryUploadAuthorityResultRecord
     , encodeIndexDbQueryUploadGeneralResultRecord
+    , encodeIndexDbQueryUploadWhatsAppResultRecord
     , encodeSyncIncident
     )
 
 import AssocList as Dict
 import Backend.Measurement.Encoder
 import Backend.Person.Encoder
+import Components.SendViaWhatsAppDialog.Encoder exposing (encodeReportType)
+import Gizra.NominalDate
 import Json.Encode exposing (Value, int, list, null, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Maybe.Extra exposing (isJust)
@@ -17,8 +20,10 @@ import SyncManager.Model
         ( BackendAuthorityEntity(..)
         , BackendEntityIdentifier
         , BackendGeneralEntity(..)
+        , BackendWhatsAppEntity
         , IndexDbQueryUploadAuthorityResultRecord
         , IndexDbQueryUploadGeneralResultRecord
+        , IndexDbQueryUploadWhatsAppResultRecord
         , SyncIncidentType(..)
         , UploadMethod(..)
         )
@@ -43,6 +48,32 @@ encodeIndexDbQueryUploadGeneralResultRecord dbVersion record =
     [ ( "changes", list encodeData record.entities )
     , ( "db_version", string <| String.fromInt dbVersion )
     ]
+
+
+encodeIndexDbQueryUploadWhatsAppResultRecord : Int -> IndexDbQueryUploadWhatsAppResultRecord -> List ( String, Value )
+encodeIndexDbQueryUploadWhatsAppResultRecord dbVersion record =
+    let
+        encodeData entity =
+            [ ( "type", string "whatsapp_record" )
+            , ( "method", encodeUploadMethod UploadMethodCreate )
+            , ( "data", encodeBackendWhatsAppEntity entity )
+            ]
+                |> object
+    in
+    [ ( "changes", list encodeData record.entities )
+    , ( "db_version", string <| String.fromInt dbVersion )
+    ]
+
+
+encodeBackendWhatsAppEntity : BackendWhatsAppEntity -> Value
+encodeBackendWhatsAppEntity entity =
+    [ ( "person", string entity.personId )
+    , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD entity.dateMeasured )
+    , ( "report_type", encodeReportType entity.reportType )
+    , ( "phone_number", string entity.phoneNumber )
+    , ( "screenshot", int entity.screenshot )
+    ]
+        |> Json.Encode.object
 
 
 encodeIndexDbQueryUploadAuthorityResultRecord : Int -> IndexDbQueryUploadAuthorityResultRecord -> List ( String, Value )

@@ -2345,6 +2345,7 @@ div.page-report {
   .send-via-whatsapp.ui.active.modal {
 
     .content {
+      color: $color-text;
       padding-top: 30px;
       text-align: left;
 
@@ -2373,6 +2374,18 @@ div.page-report {
           }
         }
       }
+
+      div.phone-inputs {
+        display: flex;
+
+        .phone-number {
+          margin-left: 10px;
+        }
+      }
+    }
+
+    .content.hidden {
+      display: none;
     }
 
     .actions > button {
@@ -3698,10 +3711,6 @@ div.page-report.ncd {
 
   .pane-content {
     background: $color-white;
-
-    &.overflow {
-      overflow-y: scroll;
-    }
 
     .heading.diagnosis {
 
