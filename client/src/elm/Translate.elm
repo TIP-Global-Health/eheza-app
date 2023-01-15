@@ -110,6 +110,7 @@ import Pages.NCD.RecurrentActivity.Types
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
+import Pages.PinCode.Model exposing (MainMenuActivity(..))
 import Pages.Prenatal.Activity.Types
     exposing
         ( EarlyMastitisOrEngorgmentReliefMethod(..)
@@ -868,6 +869,7 @@ type TranslationId
     | LungsCPESign LungsCPESign
     | MainIncomeSource MainIncomeSource
     | MainIncomeSourceQuestion
+    | MainMenuActivity MainMenuActivity
     | MainWaterSource MainWaterSource
     | MainWaterPreparationOption WaterPreparationOption
     | MainWaterSourceQuestion
@@ -1066,7 +1068,6 @@ type TranslationId
     | ParacetamolPrescriptionForAdult
     | ParentsAliveAndHealthyQuestion
     | PartialPlacentaPreviousDelivery
-    | ParticipantDirectory
     | Participants
     | ParticipantReviewed
     | ParticipantSignature
@@ -7720,6 +7721,32 @@ translationSet trans =
             , kinyarwanda = Just "Ese nihe urugo rukura ubushobozi bwo gutunga urugo"
             }
 
+        MainMenuActivity activity ->
+            case activity of
+                MenuClinical ->
+                    translationSet Clinical
+
+                MenuParticipantDirectory ->
+                    { english = "Participant Directory"
+                    , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
+                    }
+
+                MenuDashboards ->
+                    { english = "Dashboards"
+                    , kinyarwanda = Nothing
+                    }
+
+                MenuCaseManagement ->
+                    translationSet CaseManagement
+
+                MenuDeviceStatus ->
+                    translationSet DeviceStatus
+
+                MenuMessagingCenter ->
+                    { english = "Wellbeing"
+                    , kinyarwanda = Nothing
+                    }
+
         MainWaterSource source ->
             case source of
                 PipedWaterToHome ->
@@ -10315,11 +10342,6 @@ translationSet trans =
         PartialPlacentaPreviousDelivery ->
             { english = "Partial Placenta in previous delivery"
             , kinyarwanda = Just "Ubwo aheruka kubyara iya nyuma ntiyavuyeyo  yose (yaje igice)"
-            }
-
-        ParticipantDirectory ->
-            { english = "Participant Directory"
-            , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
             }
 
         Participants ->

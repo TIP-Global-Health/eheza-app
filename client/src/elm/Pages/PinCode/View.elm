@@ -17,7 +17,7 @@ import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..),
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
-import Utils.Html exposing (spinner, viewLogo)
+import Utils.Html exposing (activityCard, spinner, viewLogo)
 
 
 view : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Model -> ModelIndexedDb -> Html Msg
@@ -182,19 +182,6 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
                     , text <| ": " ++ nurse.name
                     ]
 
-            deviceStatusButton =
-                button
-                    [ class "ui primary button"
-                    , Pages.Page.DevicePage
-                        |> SetActivePage
-                        |> SendOutMsg
-                        |> onClick
-                    ]
-                    [ Translate.ActivePage DevicePage
-                        |> translate language
-                        |> text
-                    ]
-
             generalInfo =
                 div [ class "general-info" ]
                     [ deviceInfo
@@ -202,43 +189,60 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
                     , viewLocationName nurse ( healthCenterId, villageId ) db
                     ]
 
-            clinicalButton =
-                button
-                    [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage ClinicalPage
-                    ]
-                    [ text <| translate language Translate.Clinical ]
+            viewCard activity =
+                let
+                    ( activityIcon, navigationPage ) =
+                        case activity of
+                            MenuClinical ->
+                                ( "clinical"
+                                , UserPage ClinicalPage
+                                )
 
-            dashboardButton =
-                button
-                    [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
-                    ]
-                    [ text <| translate language Translate.DashboardLabel
-                    ]
+                            MenuParticipantDirectory ->
+                                ( "participant-directory"
+                                , UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
+                                )
 
-            participantDirectoryButton =
-                button
-                    [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
-                    ]
-                    [ text <| translate language Translate.ParticipantDirectory ]
+                            MenuDashboards ->
+                                ( "dashboards"
+                                , UserPage <| DashboardPage MainPage
+                                )
 
-            caseManagementButton =
-                button
-                    [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage GlobalCaseManagementPage
+                            MenuCaseManagement ->
+                                ( "case-management"
+                                , UserPage GlobalCaseManagementPage
+                                )
+
+                            MenuDeviceStatus ->
+                                ( "device-status"
+                                , DevicePage
+                                )
+
+                            MenuMessagingCenter ->
+                                ( "messaging-center"
+                                , --@todo
+                                  DevicePage
+                                )
+                in
+                activityCard language
+                    (Translate.MainMenuActivity activity)
+                    activityIcon
+                    (SendOutMsg <| SetActivePage navigationPage)
+
+            cards =
+                div [ class "wrap-cards" ]
+                    [ div [ class "ui four cards" ] <|
+                        List.map viewCard
+                            [ MenuClinical
+                            , MenuParticipantDirectory
+                            , MenuDashboards
+                            , MenuCaseManagement
+                            , MenuDeviceStatus
+                            , MenuMessagingCenter
+                            ]
                     ]
-                    [ text <| translate language Translate.CaseManagement ]
         in
-        [ generalInfo
-        , clinicalButton
-        , participantDirectoryButton
-        , dashboardButton
-        , caseManagementButton
-        , deviceStatusButton
-        , logoutButton
-        ]
+        [ generalInfo, cards, logoutButton ]
 
     else
         let
