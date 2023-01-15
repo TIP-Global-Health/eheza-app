@@ -347,6 +347,7 @@ div.page-pincode {
   }
 
   button.ui.logout.button {
+    color: $color-white;
     background: $color-light-background;
     border: 2px solid $color-white;
     margin-bottom: 0;
@@ -358,6 +359,36 @@ div.page-pincode {
   button.health-center:last-child {
     margin-bottom: 6rem !important;
   }
+
+  .wrap-cards {
+    padding: 0;
+
+    .card {
+      margin: 0.75rem 0.75rem 0.75rem 0;
+
+      .image,
+      .content {
+        width: 150px;
+      }
+
+      .image .icon-task {
+        height: 150px;
+        width: 150px;
+      }
+
+      .image .icon-task.icon-task-participant-directory {
+        background-size: 140px 140px;
+      }
+
+      .content p {
+        font-size: 17px;
+        font-weight: 600;
+        text-overflow: unset;
+        white-space: unset;
+      }
+    }
+  }
+
 }
 
 //Device Status Page
