@@ -23,7 +23,7 @@ import Pages.WellChild.Encounter.Model exposing (..)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
+import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
@@ -156,21 +156,10 @@ viewMainPageContent language currentDate zscores id isChw db assembled model =
                 ]
 
         viewCard activity =
-            div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <| NavigateToActivity id activity
-                    ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
-                , div [ class "content" ]
-                    [ p []
-                        [ Translate.WellChildActivityTitle activity
-                            |> translate language
-                            |> String.toUpper
-                            |> text
-                        ]
-                    ]
-                ]
+            activityCard language
+                (Translate.WellChildActivityTitle activity)
+                (getActivityIcon activity)
+                (NavigateToActivity id activity)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of

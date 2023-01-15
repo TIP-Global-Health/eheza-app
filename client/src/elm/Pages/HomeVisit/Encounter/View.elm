@@ -22,7 +22,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem)
+import Utils.Html exposing (activityCard, tabItem)
 import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
 
@@ -105,21 +105,10 @@ viewMainPageContent language currentDate id isChw db data model =
                 ]
 
         viewCard activity =
-            div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| HomeVisitActivityPage id activity
-                    ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
-                , div [ class "content" ]
-                    [ p []
-                        [ Translate.HomeVisitActivityTitle activity
-                            |> translate language
-                            |> String.toUpper
-                            |> text
-                        ]
-                    ]
-                ]
+            activityCard language
+                (Translate.HomeVisitActivityTitle activity)
+                (getActivityIcon activity)
+                (SetActivePage <| UserPage <| HomeVisitActivityPage id activity)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
