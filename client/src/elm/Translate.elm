@@ -13528,7 +13528,7 @@ translationSet trans =
                     }
 
                 PrerequisiteImmediateResult ->
-                    { english = "Where is this test performed"
+                    { english = "Where was this test performed"
                     , kinyarwanda = Just "Iki Kizamini cyakozwe"
                     }
 
@@ -13595,12 +13595,12 @@ translationSet trans =
         RandomBloodSugarResultNormalRange type_ ->
             case type_ of
                 TestRunBeforeMeal _ ->
-                    { english = "74-126 mg/dL"
+                    { english = "74-126 mg/dL (F)"
                     , kinyarwanda = Nothing
                     }
 
                 TestRunAfterMeal _ ->
-                    { english = "74-200 mg/dL"
+                    { english = "74-200 mg/dL (NF)"
                     , kinyarwanda = Nothing
                     }
 
