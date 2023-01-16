@@ -1,5 +1,6 @@
 module Utils.Html exposing
     ( activityCard
+    , activityCardWithCounter
     , debugView
     , divider
     , spinner
@@ -13,7 +14,7 @@ module Utils.Html exposing
     )
 
 import Config.Model exposing (Model)
-import Gizra.Html exposing (showIf, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -53,13 +54,28 @@ tabItem title active taId action =
 
 
 activityCard : Language -> TranslationId -> String -> msg -> Html msg
-activityCard language label icon action =
+activityCard =
+    activityCardWithCounter 0
+
+
+activityCardWithCounter : Int -> Language -> TranslationId -> String -> msg -> Html msg
+activityCardWithCounter counter language label icon action =
+    let
+        counterNode =
+            if counter > 0 then
+                div [ class "counter" ] [ text <| String.fromInt counter ]
+
+            else
+                emptyNode
+    in
     div [ class "card" ]
         [ div
             [ class "image"
             , onClick action
             ]
-            [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
+            [ div [ class <| "icon-task icon-task-" ++ icon ]
+                [ counterNode ]
+            ]
         , div [ class "content" ]
             [ p []
                 [ translate language label

@@ -17,7 +17,7 @@ import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..),
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
-import Utils.Html exposing (activityCard, spinner, viewLogo)
+import Utils.Html exposing (activityCard, activityCardWithCounter, spinner, viewLogo)
 
 
 view : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Model -> ModelIndexedDb -> Html Msg
@@ -223,8 +223,20 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
                                 , --@todo
                                   DevicePage
                                 )
+
+                    viewCardFunc =
+                        if activity == MenuMessagingCenter then
+                            let
+                                unread =
+                                    -- @todo
+                                    8
+                            in
+                            activityCardWithCounter unread
+
+                        else
+                            activityCard
                 in
-                activityCard language
+                viewCardFunc language
                     (Translate.MainMenuActivity activity)
                     activityIcon
                     (SendOutMsg <| SetActivePage navigationPage)

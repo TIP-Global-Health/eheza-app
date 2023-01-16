@@ -374,10 +374,23 @@ div.page-pincode {
       .image .icon-task {
         height: 150px;
         width: 150px;
-      }
 
-      .image .icon-task.icon-task-participant-directory {
-        background-size: 140px 140px;
+        .counter {
+          background-color: $color-velvet;
+          border-radius: 50%;
+          font-size: 18px;
+          font-weight: bold;
+          height: 40px;
+          left: 125px;
+          line-height: 40px;
+          position: relative;
+          top: -15px;
+          width: 40px;
+        }
+
+        &.icon-task-participant-directory {
+          background-size: 140px 140px;
+        }
       }
 
       .content p {
