@@ -240,17 +240,24 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
                     activityIcon
                     (SendOutMsg <| SetActivePage navigationPage)
 
+            activities =
+                [ MenuClinical
+                , MenuParticipantDirectory
+                , MenuDashboards
+                , MenuCaseManagement
+                , MenuDeviceStatus
+                ]
+                    ++ (if nurse.resilienceProgramEnabled then
+                            [ MenuMessagingCenter ]
+
+                        else
+                            []
+                       )
+
             cards =
                 div [ class "wrap-cards" ]
                     [ div [ class "ui four cards" ] <|
-                        List.map viewCard
-                            [ MenuClinical
-                            , MenuParticipantDirectory
-                            , MenuDashboards
-                            , MenuCaseManagement
-                            , MenuDeviceStatus
-                            , MenuMessagingCenter
-                            ]
+                        List.map viewCard activities
                     ]
         in
         [ generalInfo, cards, logoutButton ]
