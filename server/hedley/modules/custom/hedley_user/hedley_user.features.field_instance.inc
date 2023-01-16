@@ -179,6 +179,49 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-nurse-field_resilience_program'.
+  $field_instances['node-nurse-field_resilience_program'] = array(
+    'bundle' => 'nurse',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_resilience_program',
+    'label' => 'Resilience Program',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 7,
+    ),
+  );
+
   // Exported field_instance: 'node-nurse-field_role'.
   $field_instances['node-nurse-field_role'] = array(
     'bundle' => 'nurse',
@@ -252,7 +295,7 @@ function hedley_user_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 7,
+      'weight' => 8,
     ),
   );
 
@@ -590,6 +633,7 @@ function hedley_user_field_default_field_instances() {
   t('PIN code');
   t('Phone');
   t('Profile photo');
+  t('Resilience Program');
   t('Role');
   t('Sync phase');
   t('Total to upload');

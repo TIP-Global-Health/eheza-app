@@ -34,6 +34,10 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       'property' => 'field_role',
     ];
 
+    $public_fields['resilience_program'] = [
+      'property' => 'field_resilience_program',
+    ];
+
     return $public_fields;
   }
 
@@ -46,6 +50,7 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       'field_pin_code',
       'field_health_centers',
       'field_villages',
+      'field_resilience_program',
     ];
 
     foreach ($field_names as $field_name) {
@@ -82,6 +87,8 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
         $item->villages = explode(',', $item->uuids_villages);
       }
       unset($item->uuids_villages);
+
+      $item->resilience_program = (bool) $item->resilience_program;
     }
 
     return $items;
