@@ -11,6 +11,7 @@ type alias Nurse =
     , roles : EverySet Role
     , email : Maybe String
     , pinCode : String
+    , resilienceProgramEnabled : Bool
     }
 
 

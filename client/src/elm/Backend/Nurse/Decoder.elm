@@ -16,6 +16,7 @@ decodeNurse =
         |> optional "role" decodeRoles EverySet.empty
         |> optional "email" (map Just string) Nothing
         |> required "pin_code" string
+        |> optional "resilience_program" bool False
 
 
 decodeRoles : Decoder (EverySet Role)

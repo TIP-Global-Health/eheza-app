@@ -32,7 +32,7 @@ view language currentDate nurseId nurse db model =
             div [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
                     [ translateText language Translate.MessagingCenter
-                    , span [ class "counter" ] [ text "5" ]
+                    , span [ class "counter" ] [ text "8" ]
                     ]
                 , span
                     [ class "link-back"
