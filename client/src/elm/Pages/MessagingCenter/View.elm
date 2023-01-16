@@ -27,4 +27,20 @@ import Utils.WebData exposing (viewWebData)
 
 view : Language -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate nurseId nurse db model =
-    text "Pages.MessagingCenter.View"
+    let
+        header =
+            div [ class "ui basic head segment" ]
+                [ h1 [ class "ui header" ]
+                    [ translateText language Translate.MessagingCenter
+                    , span [ class "counter" ] [ text "5" ]
+                    ]
+                , span
+                    [ class "link-back"
+                    , onClick <| SetActivePage PinCodePage
+                    ]
+                    [ span [ class "icon-back" ] [] ]
+                ]
+    in
+    div [ class "wrap wrap-alt-2 page-messaging-center" ]
+        [ header
+        ]

@@ -4370,7 +4370,6 @@ div.page-activity.patient-record {
   }
 }
 
-
 div.page-activity.ncd {
 
   .ui.full.segment {
@@ -4484,5 +4483,22 @@ div.page-activity.ncd {
         border-left: 1px solid $color-white;
       }
     }
+  }
+}
+
+div.page-messaging-center {
+
+  .ui.head .header .counter {
+    background-color: $color-velvet;
+    border-radius: 50%;
+    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
+    height: 30px;
+    left: 5px;
+    line-height: 30px;
+    position: relative;
+    top: -15px;
+    width: 30px;
   }
 }
