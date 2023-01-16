@@ -17551,6 +17551,11 @@ translateActivePage page =
                     , kinyarwanda = Just "Amakuru ku Bizamini byafashwe"
                     }
 
+                MessagingCenterPage ->
+                    { english = "Messaging Center"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =

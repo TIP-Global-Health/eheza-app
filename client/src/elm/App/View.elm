@@ -37,6 +37,8 @@ import Pages.HomeVisit.Encounter.Model
 import Pages.HomeVisit.Encounter.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
+import Pages.MessagingCenter.Model
+import Pages.MessagingCenter.View
 import Pages.MyAccount.View
 import Pages.NCD.Activity.Model
 import Pages.NCD.Activity.View
@@ -771,6 +773,24 @@ viewUserPage page deviceName model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)
+                            |> flexPageWrapper model
+
+                    MessagingCenterPage ->
+                        let
+                            ( nurseId, nurse ) =
+                                loggedInModel.nurse
+
+                            page_ =
+                                Dict.get nurseId loggedInModel.messagingCenterPages
+                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                        in
+                        Pages.MessagingCenter.View.view model.language
+                            currentDate
+                            nurseId
+                            nurse
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
                             |> flexPageWrapper model
 
             else

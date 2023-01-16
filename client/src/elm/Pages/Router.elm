@@ -57,7 +57,7 @@ pageToFragment current =
         ServiceWorkerPage ->
             Just "deployment"
 
-        -- These are pages that required a logged-in user
+        -- These are pages that require a logged-in user.
         UserPage userPage ->
             case userPage of
                 ClinicalPage ->
@@ -317,6 +317,9 @@ pageToFragment current =
                             ++ "/"
                             ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragment initiator
 
+                MessagingCenterPage ->
+                    Just "messaging-center"
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -372,6 +375,7 @@ parser =
         , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
+        , map (UserPage MessagingCenterPage) (s "messaging-center")
 
         -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top
