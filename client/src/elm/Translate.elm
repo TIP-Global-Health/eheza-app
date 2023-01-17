@@ -851,6 +851,7 @@ type TranslationId
     | LegsCPESign LegsCPESign
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
+    | LevelOfEducationForResilience EducationLevel
     | LinkToMother
     | LipidPanel
     | LiveChildren
@@ -7595,6 +7596,55 @@ translationSet trans =
                     , kinyarwanda = Just "(A1)"
                     }
 
+                -- Not in use.
+                MastersDegree ->
+                    { english = "Masters Degree"
+                    , kinyarwanda = Nothing
+                    }
+
+        LevelOfEducationForResilience educationLevel ->
+            case educationLevel of
+                NoSchooling ->
+                    { english = "No Schooling"
+                    , kinyarwanda = Just "Ntayo"
+                    }
+
+                PrimarySchool ->
+                    { english = "Primary School"
+                    , kinyarwanda = Just "Abanza"
+                    }
+
+                VocationalTrainingSchool ->
+                    { english = "Vocational School"
+                    , kinyarwanda = Nothing
+                    }
+
+                SecondarySchool ->
+                    { english = "Finished Secondary School"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Not it use.
+                DiplomaProgram ->
+                    { english = "Diploma Program (2 years of University)"
+                    , kinyarwanda = Just "Amashuri 2 ya Kaminuza"
+                    }
+
+                AdvancedDiploma ->
+                    { english = "Advanced Diploma (A1)"
+                    , kinyarwanda = Just "(A1)"
+                    }
+
+                HigherEducation ->
+                    { english = "Bachelors Degree (A0)"
+                    , kinyarwanda = Just "(A0)"
+                    }
+
+                MastersDegree ->
+                    { english = "Masters Degree"
+                    , kinyarwanda = Nothing
+                    }
+
         LinkToMother ->
             { english = "Link to mother"
             , kinyarwanda = Just "Guhuza n'amakuru y'umubyeyi"
@@ -7904,6 +7954,16 @@ translationSet trans =
                 Widowed ->
                     { english = "Widowed"
                     , kinyarwanda = Just "Umupfakazi"
+                    }
+
+                LivingWithPartner ->
+                    { english = "Living with partner"
+                    , kinyarwanda = Nothing
+                    }
+
+                Religious ->
+                    { english = "Religious"
+                    , kinyarwanda = Nothing
                     }
 
         MastitisRecommendedTreatmentHeader ->

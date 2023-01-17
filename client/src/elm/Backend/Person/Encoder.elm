@@ -1,11 +1,11 @@
 module Backend.Person.Encoder exposing
-    ( encodeEducationLevel
+    ( educationLevelToInt
     , encodeGender
-    , encodeHivStatus
-    , encodeMaritalStatus
-    , encodeModeOfDelivery
     , encodePerson
-    , encodeUbudehe
+    , hivStatusToString
+    , maritalStatusToString
+    , modeOfDeliveryToString
+    , ubudeheToInt
     )
 
 import Backend.Measurement.Model exposing (Gender(..))
@@ -29,12 +29,12 @@ encodePerson person =
     , ( "birth_date", maybe encodeYYYYMMDD person.birthDate )
     , ( "birth_date_estimated", bool person.isDateOfBirthEstimated )
     , ( "gender", encodeGender person.gender )
-    , ( "hiv_status", maybe (encodeHivStatus >> string) person.hivStatus )
+    , ( "hiv_status", maybe (hivStatusToString >> string) person.hivStatus )
     , ( "number_of_children", maybe int person.numberOfChildren )
-    , ( "mode_of_delivery", maybe (encodeModeOfDelivery >> string) person.modeOfDelivery )
-    , ( "ubudehe", maybe (encodeUbudehe >> int) person.ubudehe )
-    , ( "education_level", maybe (encodeEducationLevel >> int) person.educationLevel )
-    , ( "marital_status", maybe (encodeMaritalStatus >> string) person.maritalStatus )
+    , ( "mode_of_delivery", maybe (modeOfDeliveryToString >> string) person.modeOfDelivery )
+    , ( "ubudehe", maybe (ubudeheToInt >> int) person.ubudehe )
+    , ( "education_level", maybe (educationLevelToInt >> int) person.educationLevel )
+    , ( "marital_status", maybe (maritalStatusToString >> string) person.maritalStatus )
     , ( "province", maybe string person.province )
     , ( "district", maybe string person.district )
     , ( "sector", maybe string person.sector )
@@ -48,8 +48,8 @@ encodePerson person =
         ++ encodeIfExists "shard" person.shard encodeEntityUuid
 
 
-encodeModeOfDelivery : ModeOfDelivery -> String
-encodeModeOfDelivery mode =
+modeOfDeliveryToString : ModeOfDelivery -> String
+modeOfDeliveryToString mode =
     case mode of
         VaginalDelivery vaginal ->
             case vaginal of
@@ -66,8 +66,8 @@ encodeModeOfDelivery mode =
             "cesarean-delivery"
 
 
-encodeHivStatus : HIVStatus -> String
-encodeHivStatus status =
+hivStatusToString : HIVStatus -> String
+hivStatusToString status =
     case status of
         HIVExposedInfant ->
             "hiv-exposed-infant"
@@ -86,13 +86,12 @@ encodeHivStatus status =
 
 
 encodeGender : Gender -> Value
-encodeGender gender =
-    string <|
-        genderToString gender
+encodeGender =
+    genderToString >> string
 
 
-encodeUbudehe : Ubudehe -> Int
-encodeUbudehe ubudehe =
+ubudeheToInt : Ubudehe -> Int
+ubudeheToInt ubudehe =
     case ubudehe of
         Ubudehe1 ->
             1
@@ -107,8 +106,8 @@ encodeUbudehe ubudehe =
             4
 
 
-encodeEducationLevel : EducationLevel -> Int
-encodeEducationLevel educationLevel =
+educationLevelToInt : EducationLevel -> Int
+educationLevelToInt educationLevel =
     case educationLevel of
         NoSchooling ->
             0
@@ -131,9 +130,12 @@ encodeEducationLevel educationLevel =
         AdvancedDiploma ->
             6
 
+        MastersDegree ->
+            7
 
-encodeMaritalStatus : MaritalStatus -> String
-encodeMaritalStatus status =
+
+maritalStatusToString : MaritalStatus -> String
+maritalStatusToString status =
     case status of
         Divorced ->
             "divorced"
@@ -146,3 +148,9 @@ encodeMaritalStatus status =
 
         Widowed ->
             "widowed"
+
+        LivingWithPartner ->
+            "living-with-partner"
+
+        Religious ->
+            "religious"

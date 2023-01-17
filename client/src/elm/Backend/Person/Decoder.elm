@@ -158,6 +158,9 @@ decodeEducationLevel =
                     6 ->
                         succeed AdvancedDiploma
 
+                    7 ->
+                        succeed MastersDegree
+
                     _ ->
                         fail <|
                             String.fromInt educationLevel
@@ -182,6 +185,12 @@ decodeMaritalStatus =
 
                     "widowed" ->
                         succeed Widowed
+
+                    "living-with-partner" ->
+                        succeed LivingWithPartner
+
+                    "religious" ->
+                        succeed Religious
 
                     _ ->
                         fail (status ++ " is not a recognized MaritalStatus")

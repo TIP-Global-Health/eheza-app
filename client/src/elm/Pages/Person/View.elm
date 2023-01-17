@@ -9,11 +9,11 @@ import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder
     exposing
-        ( encodeEducationLevel
-        , encodeHivStatus
-        , encodeMaritalStatus
-        , encodeModeOfDelivery
-        , encodeUbudehe
+        ( educationLevelToInt
+        , hivStatusToString
+        , maritalStatusToString
+        , modeOfDeliveryToString
+        , ubudeheToInt
         )
 import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm, validatePerson)
 import Backend.Person.Model
@@ -842,7 +842,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allEducationLevels
                 |> List.map
                     (\level ->
-                        ( String.fromInt (encodeEducationLevel level)
+                        ( String.fromInt (educationLevelToInt level)
                         , translate language (Translate.LevelOfEducation level)
                         )
                     )
@@ -852,7 +852,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allMaritalStatuses
                 |> List.map
                     (\status ->
-                        ( encodeMaritalStatus status
+                        ( maritalStatusToString status
                         , translate language <| Translate.MaritalStatus status
                         )
                     )
@@ -862,7 +862,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allModesOfDelivery
                 |> List.map
                     (\mode ->
-                        ( encodeModeOfDelivery mode
+                        ( modeOfDeliveryToString mode
                         , translate language <| Translate.ModeOfDelivery mode
                         )
                     )
@@ -872,7 +872,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allHivStatuses
                 |> List.map
                     (\status ->
-                        ( encodeHivStatus status
+                        ( hivStatusToString status
                         , translate language <| Translate.HIVStatus status
                         )
                     )
@@ -991,8 +991,8 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allUbudehes
                 |> List.map
                     (\ubudehe ->
-                        ( String.fromInt (encodeUbudehe ubudehe)
-                        , String.fromInt (encodeUbudehe ubudehe)
+                        ( String.fromInt (ubudeheToInt ubudehe)
+                        , String.fromInt (ubudeheToInt ubudehe)
                         )
                     )
                 |> (::) emptyOption
