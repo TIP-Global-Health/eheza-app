@@ -2863,7 +2863,7 @@ translationSet trans =
 
                 DefectGastroschisis ->
                     { english = "Gastroschisis"
-                    , kinyarwanda = Just "Umwobo ku nda bituma imyanya yo mu nda iba hanze "
+                    , kinyarwanda = Just "Umwobo ku nda bituma imyanya yo mu nda iba hanze"
                     }
 
                 DefectHearingLoss ->
@@ -7030,7 +7030,7 @@ translationSet trans =
 
                 TaskLipidPanelTest ->
                     { english = "Lipid Panel Test Date"
-                    , kinyarwanda = Just "Itariki y'ibizamini bipima ibinure (Lipid Panel"
+                    , kinyarwanda = Just "Itariki y'ibizamini bipima ibinure (Lipid Panel)"
                     }
 
                 TaskHbA1cTest ->
@@ -7108,7 +7108,7 @@ translationSet trans =
 
                 TaskLipidPanelTest ->
                     { english = "Lipid Panel Test Result"
-                    , kinyarwanda = Just "Ibisubizo by'ibizamini bipima ibinure (Lipid Panel )"
+                    , kinyarwanda = Just "Ibisubizo by'ibizamini bipima ibinure (Lipid Panel)"
                     }
 
                 TaskHbA1cTest ->
@@ -7439,7 +7439,7 @@ translationSet trans =
 
                 LabResultsCurrentLipidPanel ->
                     { english = "Lipid Panel Results"
-                    , kinyarwanda = Just "Ibisubizo by'ibizamini bipima ibinure (Lipid Panel )"
+                    , kinyarwanda = Just "Ibisubizo by'ibizamini bipima ibinure (Lipid Panel)"
                     }
 
         LastChecked ->
@@ -7574,7 +7574,7 @@ translationSet trans =
 
         LipidPanel ->
             { english = "Lipid Panel"
-            , kinyarwanda = Just "Itsinda ry'ibizamini bipima ibinure (Lipid Panel )"
+            , kinyarwanda = Just "Itsinda ry'ibizamini bipima ibinure (Lipid Panel)"
             }
 
         LiveChildren ->
@@ -10186,7 +10186,7 @@ translationSet trans =
 
                 DiagnosisPreeclampsiaHighRisk ->
                     { english = "High Risk for Preeclampsia"
-                    , kinyarwanda = Just "afite ibyago byinshi byo kugira Preklampusi"
+                    , kinyarwanda = Just "Afite ibyago byinshi byo kugira Preklampusi"
                     }
 
         OK ->
