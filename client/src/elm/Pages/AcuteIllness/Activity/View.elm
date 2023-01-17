@@ -70,6 +70,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCheckBoxValueInput
         , viewCustomLabel
+        , viewCustomSelectListInput
         , viewInstructionsLabel
         , viewLabel
         , viewPhotoThumbFromPhotoUrl
@@ -1070,26 +1071,14 @@ viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
 viewMalariaTestingForm : Language -> NominalDate -> Person -> MalariaTestingForm -> Html Msg
 viewMalariaTestingForm language currentDate person form =
     let
-        emptyOption =
-            if isNothing form.rapidTestResult then
-                emptySelectOption True
-
-            else
-                emptyNode
-
         resultInput =
-            emptyOption
-                :: ([ RapidTestNegative, RapidTestPositive, RapidTestIndeterminate, RapidTestUnableToRun ]
-                        |> List.map
-                            (\result ->
-                                option
-                                    [ value (malariaRapidTestResultAsString result)
-                                    , selected (form.rapidTestResult == Just result)
-                                    ]
-                                    [ text <| translate language <| Translate.RapidTestResult result ]
-                            )
-                   )
-                |> select [ onInput SetRapidTestResult, class "form-input rapid-test-result" ]
+            viewCustomSelectListInput form.rapidTestResult
+                [ RapidTestNegative, RapidTestPositive, RapidTestIndeterminate, RapidTestUnableToRun ]
+                malariaRapidTestResultAsString
+                SetRapidTestResult
+                (Translate.RapidTestResult >> translate language)
+                "form-input rapid-test-result"
+                (isNothing form.rapidTestResult)
 
         testResultPositive =
             form.rapidTestResult == Just RapidTestPositive || form.rapidTestResult == Just RapidTestPositiveAndPregnant
@@ -2666,27 +2655,18 @@ viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg measuremen
                 totalMissedDosesInput =
                     if missedDoses then
                         let
+                            options =
+                                List.repeat 22 ""
+                                    |> List.indexedMap (\index _ -> index)
+
                             missedDosesInput =
-                                option
-                                    [ value ""
-                                    , selected (form.totalMissedDoses == Nothing)
-                                    ]
-                                    [ text "" ]
-                                    :: (List.repeat 22 ""
-                                            |> List.indexedMap
-                                                (\index _ ->
-                                                    let
-                                                        indexAsString =
-                                                            String.fromInt index
-                                                    in
-                                                    option
-                                                        [ value indexAsString
-                                                        , selected (form.totalMissedDoses == Just index)
-                                                        ]
-                                                        [ text indexAsString ]
-                                                )
-                                       )
-                                    |> select [ onInput setMissedDosesMsg ]
+                                viewCustomSelectListInput form.totalMissedDoses
+                                    options
+                                    String.fromInt
+                                    setMissedDosesMsg
+                                    String.fromInt
+                                    ""
+                                    True
                         in
                         [ div [ class "ui grid" ]
                             [ div [ class "one wide column" ] []

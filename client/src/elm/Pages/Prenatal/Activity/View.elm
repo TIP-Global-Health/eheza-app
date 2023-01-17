@@ -101,6 +101,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewConditionalAlert
         , viewCustomLabel
+        , viewCustomSelectListInput
         , viewEndEncounterDialog
         , viewInstructionsLabel
         , viewLabel
@@ -111,6 +112,7 @@ import Pages.Utils
         , viewRedAlertForBool
         , viewRedAlertForSelect
         , viewSaveAction
+        , viewSelectListInput
         , viewYellowAlertForSelect
         )
 import RemoteData exposing (RemoteData(..), WebData)
@@ -380,22 +382,13 @@ viewPregnancyDatingContent language currentDate assembled data =
             ]
 
         lmpRangeInput =
-            option
-                [ value ""
-                , selected (form.lmpRange == Nothing)
-                ]
-                [ text "" ]
-                :: ([ OneMonth, ThreeMonth, SixMonth ]
-                        |> List.map
-                            (\range ->
-                                option
-                                    [ value (lmpRangeToString range)
-                                    , selected (form.lmpRange == Just range)
-                                    ]
-                                    [ text <| translate language <| Translate.LmpRange range ]
-                            )
-                   )
-                |> select [ onInput SetLmpRange, class "form-input select" ]
+            viewSelectListInput language
+                form.lmpRange
+                [ OneMonth, ThreeMonth, SixMonth ]
+                lmpRangeToString
+                SetLmpRange
+                Translate.LmpRange
+                "select"
 
         lmpdDateForView =
             Maybe.map formatDDMMYYYY form.lmpDate
@@ -1625,26 +1618,14 @@ viewLaboratoryContentForChw language currentDate assembled data =
         tasksCompleted =
             taskCompleted form.pregnancyTestResult
 
-        emptyOption =
-            if isNothing form.pregnancyTestResult then
-                emptySelectOption True
-
-            else
-                emptyNode
-
         resultInput =
-            emptyOption
-                :: ([ PregnancyTestPositive, PregnancyTestNegative, PregnancyTestIndeterminate, PregnancyTestUnableToConduct ]
-                        |> List.map
-                            (\result ->
-                                option
-                                    [ value (pregnancyTestResultToString result)
-                                    , selected (form.pregnancyTestResult == Just result)
-                                    ]
-                                    [ text <| translate language <| Translate.PregnancyTestResult result ]
-                            )
-                   )
-                |> select [ onInput SetPregnancyTestResult, class "form-input select" ]
+            viewCustomSelectListInput form.pregnancyTestResult
+                [ PregnancyTestPositive, PregnancyTestNegative, PregnancyTestIndeterminate, PregnancyTestUnableToConduct ]
+                pregnancyTestResultToString
+                SetPregnancyTestResult
+                (Translate.PregnancyTestResult >> translate language)
+                "form-input select"
+                (isNothing form.pregnancyTestResult)
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -3193,22 +3174,13 @@ viewSocialForm language currentDate showCounselingQuestion showTestingQuestions 
                             [ NoHivTesting, ResultHivNegative, ResultHivPositive ]
                         ]
                     ]
-                , option
-                    [ value ""
-                    , selected (form.partnerTestingResult == Nothing)
-                    ]
-                    [ text "" ]
-                    :: ([ ResultHivNegative, ResultHivPositive, ResultHivIndeterminate ]
-                            |> List.map
-                                (\result ->
-                                    option
-                                        [ value (socialHistoryHivTestingResultToString result)
-                                        , selected (form.partnerTestingResult == Just result)
-                                        ]
-                                        [ text <| translate language <| Translate.SocialHistoryHivTestingResult result ]
-                                )
-                       )
-                    |> select [ onInput SetSocialHivTestingResult, class "form-input hiv-test-result" ]
+                , viewSelectListInput language
+                    form.partnerTestingResult
+                    [ ResultHivNegative, ResultHivPositive, ResultHivIndeterminate ]
+                    socialHistoryHivTestingResultToString
+                    SetSocialHivTestingResult
+                    Translate.SocialHistoryHivTestingResult
+                    "hiv-test-result"
                 ]
 
             else

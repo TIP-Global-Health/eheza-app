@@ -676,16 +676,13 @@ viewCheckBoxValueInputItem language data toggleMsg setMsg translateFunc sign =
             if isChecked then
                 let
                     periodInput =
-                        List.range 1 14
-                            |> List.map
-                                (\number ->
-                                    option
-                                        [ value (String.fromInt number)
-                                        , selected (currentValue == Just number)
-                                        ]
-                                        [ text (String.fromInt number) ]
-                                )
-                            |> select [ onInput (setMsg sign), class "form-input period" ]
+                        viewCustomSelectListInput currentValue
+                            (List.range 1 14)
+                            String.fromInt
+                            (setMsg sign)
+                            String.fromInt
+                            "form-input period"
+                            False
                 in
                 [ div [ class "three wide column" ] [ periodInput ]
                 , div [ class "four wide column" ]
@@ -790,28 +787,56 @@ viewSelectListInput :
     -> String
     -> Html msg
 viewSelectListInput language currentValue options toStringFunc setMsg transId inputClass =
+    viewCustomSelectListInput currentValue
+        options
+        toStringFunc
+        setMsg
+        (transId >> translate language)
+        ("form-input " ++ inputClass)
+        True
+
+
+viewCustomSelectListInput :
+    Maybe a
+    -> List a
+    -> (a -> String)
+    -> (String -> msg)
+    -> (a -> String)
+    -> String
+    -> Bool
+    -> Html msg
+viewCustomSelectListInput currentValue options toStringFunc setMsg transFunc inputClass withEmptyOption =
     let
-        emptyOption isSelected =
-            option
-                [ value ""
-                , selected isSelected
-                ]
-                [ text "" ]
+        emptyOption =
+            if withEmptyOption then
+                emptySelectOption (currentValue == Nothing)
+
+            else
+                emptyNode
     in
-    emptyOption (currentValue == Nothing)
+    emptyOption
         :: List.map
             (\option_ ->
                 option
                     [ value (toStringFunc option_)
                     , selected (currentValue == Just option_)
                     ]
-                    [ text <| translate language <| transId option_ ]
+                    [ text <| transFunc option_ ]
             )
             options
         |> select
             [ onInput setMsg
-            , class <| "form-input " ++ inputClass
+            , class inputClass
             ]
+
+
+emptySelectOption : Bool -> Html any
+emptySelectOption isSelected =
+    option
+        [ value ""
+        , selected isSelected
+        ]
+        [ text "" ]
 
 
 viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
@@ -1119,15 +1144,6 @@ viewSaveAction : Language -> msg -> Bool -> Html msg
 viewSaveAction language saveMsg disabled =
     div [ class "actions" ]
         [ saveButton language (not disabled) saveMsg ]
-
-
-emptySelectOption : Bool -> Html any
-emptySelectOption isSelected =
-    option
-        [ value ""
-        , selected isSelected
-        ]
-        [ text "" ]
 
 
 insertIntoSet : a -> Maybe (EverySet a) -> Maybe (EverySet a)

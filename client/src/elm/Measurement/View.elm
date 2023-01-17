@@ -54,6 +54,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewConditionalAlert
         , viewCustomLabel
+        , viewCustomSelectListInput
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
@@ -2011,27 +2012,18 @@ viewFbfForm :
     -> Html msg
 viewFbfForm language measurement activity clinicType setDistributedAmountMsg setDistributoinNoticeMsg saveMsg form =
     let
+        options =
+            List.repeat 11 ""
+                |> List.indexedMap (\index _ -> toFloat index)
+
         selectQuantityInput =
-            option
-                [ value ""
-                , selected (form.distributedAmount == Nothing)
-                ]
-                [ text "" ]
-                :: (List.repeat 11 ""
-                        |> List.indexedMap
-                            (\index _ ->
-                                let
-                                    indexAsString =
-                                        String.fromInt index
-                                in
-                                option
-                                    [ value indexAsString
-                                    , selected (form.distributedAmount == Just (toFloat index))
-                                    ]
-                                    [ text indexAsString ]
-                            )
-                   )
-                |> select [ onInput setDistributedAmountMsg, class "fbf-distirbution" ]
+            viewCustomSelectListInput form.distributedAmount
+                options
+                String.fromFloat
+                setDistributedAmountMsg
+                String.fromFloat
+                "fbf-distirbution"
+                True
 
         formContentCommon =
             div [ class "form-input measurement quantity" ]

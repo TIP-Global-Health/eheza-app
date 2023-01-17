@@ -51,6 +51,7 @@ import Pages.Utils
         , viewLabel
         , viewMeasurementInput
         , viewQuestionLabel
+        , viewSelectListInput
         )
 import Round
 import Translate exposing (Language, TranslationId, translate)
@@ -4208,22 +4209,13 @@ lipidPanelResultFormAndTasks language currentDate setUnitOfMeasurementMsg setTot
                         |> Maybe.withDefault ( [], 0, 0 )
             in
             ( [ viewQuestionLabel language Translate.LaboratoryLipidPanelUnitOfMeasurementQuestion
-              , option
-                    [ value ""
-                    , selected (form.unitOfMeasurement == Nothing)
-                    ]
-                    [ text "" ]
-                    :: ([ UnitMmolL, UnitMgdL ]
-                            |> List.map
-                                (\unit ->
-                                    option
-                                        [ value (unitOfMeasurementToString unit)
-                                        , selected (form.unitOfMeasurement == Just unit)
-                                        ]
-                                        [ text <| translate language <| Translate.UnitOfMeasurement unit ]
-                                )
-                       )
-                    |> select [ onInput setUnitOfMeasurementMsg, class "form-input select unit-of-measurement" ]
+              , viewSelectListInput language
+                    form.unitOfMeasurement
+                    [ UnitMmolL, UnitMgdL ]
+                    unitOfMeasurementToString
+                    setUnitOfMeasurementMsg
+                    Translate.UnitOfMeasurement
+                    "select unit-of-measurement"
               ]
                 ++ derivedSection
             , taskCompleted form.unitOfMeasurement + derivedTasksCompleted
