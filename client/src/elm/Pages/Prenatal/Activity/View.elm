@@ -414,7 +414,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                                     Date.add Months -3 currentDate
 
                                 SixMonth ->
-                                    Date.add Months -13 currentDate
+                                    Date.add Months -10 currentDate
 
                         dateSelectorConfig =
                             { select = SetLmpDate
