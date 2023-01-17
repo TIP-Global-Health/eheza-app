@@ -70,6 +70,7 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       'field_pin_code',
       'field_health_centers',
       'field_villages',
+      'field_resilience_program',
       'field_resilience_role',
       'field_education_level',
       'field_gender',
