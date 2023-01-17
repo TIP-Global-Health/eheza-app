@@ -4,16 +4,21 @@ import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
-import Backend.Person.Encoder
+import Backend.Person.Model exposing (..)
+import Backend.Person.Utils
     exposing
         ( educationLevelToInt
+        , expectedAgeByPerson
+        , genderToString
+        , generateFullName
         , hivStatusToString
+        , isAdult
+        , isPersonAnAdult
         , maritalStatusToString
         , modeOfDeliveryToString
+        , resolveExpectedAge
         , ubudeheToInt
         )
-import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (expectedAgeByPerson, genderToString, generateFullName, isAdult, isPersonAnAdult, resolveExpectedAge)
 import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)

@@ -1,16 +1,16 @@
-module Backend.Person.Encoder exposing
-    ( educationLevelToInt
-    , encodeGender
-    , encodePerson
-    , hivStatusToString
-    , maritalStatusToString
-    , modeOfDeliveryToString
-    , ubudeheToInt
-    )
+module Backend.Person.Encoder exposing (..)
 
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (genderToString)
+import Backend.Person.Utils
+    exposing
+        ( educationLevelToInt
+        , genderToString
+        , hivStatusToString
+        , maritalStatusToString
+        , modeOfDeliveryToString
+        , ubudeheToInt
+        )
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
@@ -29,12 +29,12 @@ encodePerson person =
     , ( "birth_date", maybe encodeYYYYMMDD person.birthDate )
     , ( "birth_date_estimated", bool person.isDateOfBirthEstimated )
     , ( "gender", encodeGender person.gender )
-    , ( "hiv_status", maybe (hivStatusToString >> string) person.hivStatus )
+    , ( "hiv_status", maybe encodeHIVStatus person.hivStatus )
     , ( "number_of_children", maybe int person.numberOfChildren )
-    , ( "mode_of_delivery", maybe (modeOfDeliveryToString >> string) person.modeOfDelivery )
-    , ( "ubudehe", maybe (ubudeheToInt >> int) person.ubudehe )
-    , ( "education_level", maybe (educationLevelToInt >> int) person.educationLevel )
-    , ( "marital_status", maybe (maritalStatusToString >> string) person.maritalStatus )
+    , ( "mode_of_delivery", maybe encodeModeOfDelivery person.modeOfDelivery )
+    , ( "ubudehe", maybe encodeUbudehe person.ubudehe )
+    , ( "education_level", maybe encodeEducationLevel person.educationLevel )
+    , ( "marital_status", maybe encodeMaritalStatus person.maritalStatus )
     , ( "province", maybe string person.province )
     , ( "district", maybe string person.district )
     , ( "sector", maybe string person.sector )
@@ -48,109 +48,31 @@ encodePerson person =
         ++ encodeIfExists "shard" person.shard encodeEntityUuid
 
 
-modeOfDeliveryToString : ModeOfDelivery -> String
-modeOfDeliveryToString mode =
-    case mode of
-        VaginalDelivery vaginal ->
-            case vaginal of
-                Spontaneous True ->
-                    "svd-episiotomy"
-
-                Spontaneous False ->
-                    "svd-no-episiotomy"
-
-                WithVacuumExtraction ->
-                    "vd-vacuum"
-
-        CesareanDelivery ->
-            "cesarean-delivery"
-
-
-hivStatusToString : HIVStatus -> String
-hivStatusToString status =
-    case status of
-        HIVExposedInfant ->
-            "hiv-exposed-infant"
-
-        Negative ->
-            "negative"
-
-        NegativeDiscordantCouple ->
-            "negative-dc"
-
-        Positive ->
-            "positive"
-
-        Unknown ->
-            "unknown"
-
-
 encodeGender : Gender -> Value
 encodeGender =
     genderToString >> string
 
 
-ubudeheToInt : Ubudehe -> Int
-ubudeheToInt ubudehe =
-    case ubudehe of
-        Ubudehe1 ->
-            1
-
-        Ubudehe2 ->
-            2
-
-        Ubudehe3 ->
-            3
-
-        Ubudehe4 ->
-            4
+encodeModeOfDelivery : ModeOfDelivery -> Value
+encodeModeOfDelivery =
+    modeOfDeliveryToString >> string
 
 
-educationLevelToInt : EducationLevel -> Int
-educationLevelToInt educationLevel =
-    case educationLevel of
-        NoSchooling ->
-            0
-
-        PrimarySchool ->
-            1
-
-        VocationalTrainingSchool ->
-            2
-
-        SecondarySchool ->
-            3
-
-        DiplomaProgram ->
-            4
-
-        HigherEducation ->
-            5
-
-        AdvancedDiploma ->
-            6
-
-        MastersDegree ->
-            7
+encodeHIVStatus : HIVStatus -> Value
+encodeHIVStatus =
+    hivStatusToString >> string
 
 
-maritalStatusToString : MaritalStatus -> String
-maritalStatusToString status =
-    case status of
-        Divorced ->
-            "divorced"
+encodeUbudehe : Ubudehe -> Value
+encodeUbudehe =
+    ubudeheToInt >> int
 
-        Married ->
-            "married"
 
-        Single ->
-            "single"
+encodeEducationLevel : EducationLevel -> Value
+encodeEducationLevel =
+    educationLevelToInt >> int
 
-        Widowed ->
-            "widowed"
 
-        LivingWithPartner ->
-            "living-with-partner"
-
-        Religious ->
-            "religious"
+encodeMaritalStatus : MaritalStatus -> Value
+encodeMaritalStatus =
+    maritalStatusToString >> string

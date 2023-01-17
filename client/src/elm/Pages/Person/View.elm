@@ -7,14 +7,6 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Encoder
-    exposing
-        ( educationLevelToInt
-        , hivStatusToString
-        , maritalStatusToString
-        , modeOfDeliveryToString
-        , ubudeheToInt
-        )
 import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm, validatePerson)
 import Backend.Person.Model
     exposing
@@ -29,7 +21,19 @@ import Backend.Person.Model
         , allModesOfDelivery
         , allUbudehes
         )
-import Backend.Person.Utils exposing (defaultIconForPerson, expectedAgeByPerson, graduatingAgeInMonth, isAdult, isPersonAnAdult)
+import Backend.Person.Utils
+    exposing
+        ( defaultIconForPerson
+        , educationLevelToInt
+        , expectedAgeByPerson
+        , graduatingAgeInMonth
+        , hivStatusToString
+        , isAdult
+        , isPersonAnAdult
+        , maritalStatusToString
+        , modeOfDeliveryToString
+        , ubudeheToInt
+        )
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalActivity.Model
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
