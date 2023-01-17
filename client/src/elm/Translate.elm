@@ -6787,22 +6787,22 @@ translationSet trans =
 
         LaboratoryLipidPanelTotalCholesterolLabel ->
             { english = "Total Cholesterol"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igipimo cy'ibinure byose mu maraso (Total cholesterol)"
             }
 
         LaboratoryLipidPanelLDLCholesterolLabel ->
             { english = "LDL"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ingano y'ibinure bibi mu maraso (LDL)"
             }
 
         LaboratoryLipidPanelHDLCholesterolLabel ->
             { english = "HDL"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ingano y'ibinure byiza mu maraso (HDL)"
             }
 
         LaboratoryLipidPanelTriglyceridesLabel ->
             { english = "Triglycerides"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ingano y'ibinure bibitse mu mubiri (Triglycerides)"
             }
 
         LaboratoryLiverFunctionAltResult ->
@@ -7030,7 +7030,7 @@ translationSet trans =
 
                 TaskLipidPanelTest ->
                     { english = "Lipid Panel Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki y'ibizamini bipima ibinure (Lipid Panel"
                     }
 
                 TaskHbA1cTest ->
@@ -7108,7 +7108,7 @@ translationSet trans =
 
                 TaskLipidPanelTest ->
                     { english = "Lipid Panel Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ibizamini bipima ibinure (Lipid Panel )"
                     }
 
                 TaskHbA1cTest ->
@@ -7256,22 +7256,22 @@ translationSet trans =
 
                 LabResultsHistoryTotalCholesterol _ ->
                     { english = "Total Cholesterol"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igipimo cy'ibinure byose mu maraso (Total cholesterol)"
                     }
 
                 LabResultsHistoryLDLCholesterol _ ->
                     { english = "LDL Cholesterol"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingano y'ibinure bibi mu maraso (LDL Cholesterol)"
                     }
 
                 LabResultsHistoryHDLCholesterol _ ->
                     { english = "HDL Cholesterol"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingano y'ibinure byiza mu maraso (HDL Cholesterol)"
                     }
 
                 LabResultsHistoryTriglycerides _ ->
                     { english = "Triglycerides"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ingano y'ibinure bibitse mu mubiri (Triglycerides)"
                     }
 
         LabResultsNormalRange mode ->
@@ -7439,7 +7439,7 @@ translationSet trans =
 
                 LabResultsCurrentLipidPanel ->
                     { english = "Lipid Panel Results"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ibizamini bipima ibinure (Lipid Panel )"
                     }
 
         LastChecked ->
@@ -7574,7 +7574,7 @@ translationSet trans =
 
         LipidPanel ->
             { english = "Lipid Panel"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itsinda ry'ibizamini bipima ibinure (Lipid Panel )"
             }
 
         LiveChildren ->
