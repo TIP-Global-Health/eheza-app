@@ -44,6 +44,7 @@ features[field_base][] = field_second_name
 features[field_base][] = field_sector
 features[field_base][] = field_ubudehe
 features[field_base][] = field_village
+features[field_instance][] = node-nurse-field_birth_date
 features[field_instance][] = node-nurse-field_education_level
 features[field_instance][] = node-nurse-field_gender
 features[field_instance][] = node-nurse-field_marital_status
