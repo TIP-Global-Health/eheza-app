@@ -88,7 +88,6 @@ import Pages.Prenatal.View exposing (customWarningPopup, viewMedicationDistribut
 import Pages.Utils
     exposing
         ( customSaveButton
-        , emptySelectOption
         , isTaskCompleted
         , maybeToBoolTask
         , saveButton

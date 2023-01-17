@@ -57,8 +57,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.View
 import Pages.Utils
     exposing
-        ( emptySelectOption
-        , getCurrentReasonForMedicationNonAdministration
+        ( getCurrentReasonForMedicationNonAdministration
         , isTaskCompleted
         , nonAdministrationReasonToSign
         , taskAllCompleted
