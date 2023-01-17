@@ -4486,7 +4486,7 @@ div.page-activity.ncd {
   }
 }
 
-div.page-messaging-center {
+div.page-activity.messaging-center {
 
   .ui.head .header .counter {
     background-color: $color-velvet;
@@ -4500,5 +4500,17 @@ div.page-messaging-center {
     position: relative;
     top: -15px;
     width: 30px;
+  }
+
+  .form-input {
+    border: 2px solid $color-light-gray;
+    color: $color-text;
+    height: 2em;
+    padding: 5px;
+    width: 50%;
+  }
+
+  .form-input.date {
+    text-align: center;
   }
 }

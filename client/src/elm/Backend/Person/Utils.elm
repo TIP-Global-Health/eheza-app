@@ -279,6 +279,25 @@ ubudeheToInt ubudehe =
             4
 
 
+ubudeheFromInt : Int -> Maybe Ubudehe
+ubudeheFromInt value =
+    case value of
+        1 ->
+            Just Ubudehe1
+
+        2 ->
+            Just Ubudehe2
+
+        3 ->
+            Just Ubudehe3
+
+        4 ->
+            Just Ubudehe4
+
+        _ ->
+            Nothing
+
+
 educationLevelToInt : EducationLevel -> Int
 educationLevelToInt educationLevel =
     case educationLevel of
@@ -307,6 +326,37 @@ educationLevelToInt educationLevel =
             7
 
 
+educationLevelFromInt : Int -> Maybe EducationLevel
+educationLevelFromInt value =
+    case value of
+        0 ->
+            Just NoSchooling
+
+        1 ->
+            Just PrimarySchool
+
+        2 ->
+            Just VocationalTrainingSchool
+
+        3 ->
+            Just SecondarySchool
+
+        4 ->
+            Just DiplomaProgram
+
+        5 ->
+            Just HigherEducation
+
+        6 ->
+            Just AdvancedDiploma
+
+        7 ->
+            Just MastersDegree
+
+        _ ->
+            Nothing
+
+
 maritalStatusToString : MaritalStatus -> String
 maritalStatusToString status =
     case status of
@@ -327,3 +377,28 @@ maritalStatusToString status =
 
         Religious ->
             "religious"
+
+
+maritalStatusFromString : String -> Maybe MaritalStatus
+maritalStatusFromString value =
+    case value of
+        "divorced" ->
+            Just Divorced
+
+        "married" ->
+            Just Married
+
+        "single" ->
+            Just Single
+
+        "widowed" ->
+            Just Widowed
+
+        "living-with-partner" ->
+            Just LivingWithPartner
+
+        "religious" ->
+            Just Religious
+
+        _ ->
+            Nothing

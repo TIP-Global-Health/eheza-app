@@ -37,26 +37,3 @@ type ResilienceRole
     | ResilienceRoleLineManager
     | ResilienceRoleSupervisor
     | ResilienceRoleDirector
-
-
-allEducationLevels : List EducationLevel
-allEducationLevels =
-    [ NoSchooling
-    , PrimarySchool
-    , VocationalTrainingSchool
-    , SecondarySchool
-    , AdvancedDiploma
-    , HigherEducation
-    , MastersDegree
-    ]
-
-
-allMaritalStatuses : List MaritalStatus
-allMaritalStatuses =
-    [ Divorced
-    , Married
-    , Single
-    , Widowed
-    , LivingWithPartner
-    , Religious
-    ]

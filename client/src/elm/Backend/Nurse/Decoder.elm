@@ -1,6 +1,7 @@
 module Backend.Nurse.Decoder exposing (decodeNurse)
 
 import Backend.Nurse.Model exposing (..)
+import Backend.Nurse.Utils exposing (resilienceRoleFromString)
 import Backend.Person.Decoder
     exposing
         ( decodeEducationLevel
@@ -69,24 +70,11 @@ decodeResilienceRole =
     string
         |> andThen
             (\s ->
-                case s of
-                    "nurse" ->
-                        succeed ResilienceRoleNurse
-
-                    "chw" ->
-                        succeed ResilienceRoleCHW
-
-                    "line-manager" ->
-                        succeed ResilienceRoleLineManager
-
-                    "supervisor" ->
-                        succeed ResilienceRoleSupervisor
-
-                    "director" ->
-                        succeed ResilienceRoleDirector
-
-                    _ ->
-                        fail <|
+                resilienceRoleFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
                             s
                                 ++ " is not a recognized ResilienceRole."
+                        )
             )

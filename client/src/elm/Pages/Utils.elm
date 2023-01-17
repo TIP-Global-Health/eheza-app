@@ -780,6 +780,40 @@ setMultiSelectInputValue getSignsFunc setSignsFunc noValueIndicator value form =
             setSignsFunc (Just [ value ])
 
 
+viewSelectListInput :
+    Language
+    -> Maybe a
+    -> List a
+    -> (a -> String)
+    -> (String -> msg)
+    -> (a -> TranslationId)
+    -> String
+    -> Html msg
+viewSelectListInput language currentValue options toStringFunc setMsg transId inputClass =
+    let
+        emptyOption isSelected =
+            option
+                [ value ""
+                , selected isSelected
+                ]
+                [ text "" ]
+    in
+    emptyOption (currentValue == Nothing)
+        :: List.map
+            (\option_ ->
+                option
+                    [ value (toStringFunc option_)
+                    , selected (currentValue == Just option_)
+                    ]
+                    [ text <| translate language <| transId option_ ]
+            )
+            options
+        |> select
+            [ onInput setMsg
+            , class <| "form-input " ++ inputClass
+            ]
+
+
 viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
 viewEndEncounterDialog language heading message confirmAction cancelAction =
     div [ class "ui tiny active modal" ]

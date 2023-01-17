@@ -1,6 +1,7 @@
 module Backend.Nurse.Encoder exposing (encodeNurse)
 
 import Backend.Nurse.Model exposing (..)
+import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeMaritalStatus, encodeUbudehe)
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
@@ -44,20 +45,5 @@ encodeRole role =
 
 
 encodeResilienceRole : ResilienceRole -> Value
-encodeResilienceRole role =
-    string <|
-        case role of
-            ResilienceRoleNurse ->
-                "nurse"
-
-            ResilienceRoleCHW ->
-                "chw"
-
-            ResilienceRoleLineManager ->
-                "line-manager"
-
-            ResilienceRoleSupervisor ->
-                "supervisor"
-
-            ResilienceRoleDirector ->
-                "director"
+encodeResilienceRole =
+    resilienceRoleToString >> string
