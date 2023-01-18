@@ -129,20 +129,20 @@ while ($processed < $total) {
       // todo: enter namespace.
       // todo: need to set language ?
       $message
-      ->WithChannels([Channels::WHATSAPP])
-      ->WithTemplate(
-        new TemplateMessage(
-          new WhatsappTemplate(
-            'progress_report',
-            'the-namespace-of-template',
-            new Language('en'),
-            [
-              new ComponentHeader([$header_param]),
-              new ComponentBody([$body_param1, $body_param2, $body_param3]),
-            ]
+        ->WithChannels([Channels::WHATSAPP])
+        ->WithTemplate(
+          new TemplateMessage(
+            new WhatsappTemplate(
+              'progress_report',
+              'the-namespace-of-template',
+              new Language('en'),
+              [
+                new ComponentHeader([$header_param]),
+                new ComponentBody([$body_param1, $body_param2, $body_param3]),
+              ]
+            )
           )
-        )
-      );
+        );
       $messages[] = $message;
     }
     catch (Exception $exception) {
