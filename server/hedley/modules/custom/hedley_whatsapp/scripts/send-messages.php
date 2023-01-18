@@ -41,7 +41,7 @@ $nid = drush_get_option('nid', 0);
 // Get the number of nodes to be processed.
 $batch = drush_get_option('batch', 50);
 
-// Get allowed memory limit.
+// Get the allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
 $type = 'whatsapp_record';
