@@ -35,7 +35,6 @@ if (empty($key)) {
 $client = new TextClient($key);
 // todo: delete this.
 // $result = $client->SendMessage('Hi!', 'TIP Health', [ '00972546925278' ]);.
-
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
@@ -123,27 +122,27 @@ while ($processed < $total) {
           )
         );
 
-        $body_param1 = new ComponentParameterText($report_type);
-        $body_param2 = new ComponentParameterText($patient_name);
-        $body_param3 = new ComponentParameterDatetime('', $datetime);
+      $body_param1 = new ComponentParameterText($report_type);
+      $body_param2 = new ComponentParameterText($patient_name);
+      $body_param3 = new ComponentParameterDatetime('', $datetime);
 
-        // todo: enter namespace.
-        // todo: need to set language ?
-        $message
-        ->WithChannels([Channels::WHATSAPP])
-        ->WithTemplate(
-          new TemplateMessage(
-            new WhatsappTemplate(
-              'progress_report',
-              'the-namespace-of-template',
-              new Language('en'),
-              [
-                new ComponentHeader([$header_param]),
-                new ComponentBody([$body_param1, $body_param2, $body_param3]),
-              ]
-            )
+      // todo: enter namespace.
+      // todo: need to set language ?
+      $message
+      ->WithChannels([Channels::WHATSAPP])
+      ->WithTemplate(
+        new TemplateMessage(
+          new WhatsappTemplate(
+            'progress_report',
+            'the-namespace-of-template',
+            new Language('en'),
+            [
+              new ComponentHeader([$header_param]),
+              new ComponentBody([$body_param1, $body_param2, $body_param3]),
+            ]
           )
-        );
+        )
+      );
       $messages[] = $message;
     }
     catch (Exception $exception) {
