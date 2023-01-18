@@ -34,7 +34,7 @@ if (empty($key)) {
 
 $client = new TextClient($key);
 // todo: delete this.
-// $result = $client->SendMessage('!', 'TIP Health', [ '00972546925278' ]);.
+// $result = $client->SendMessage('Hi!', 'TIP Health', [ '00972546925278' ]);.
 
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
