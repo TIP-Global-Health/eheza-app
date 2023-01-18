@@ -34,15 +34,14 @@ if (empty($key)) {
 
 $client = new TextClient($key);
 // todo: delete this.
-// $result = $client->SendMessage('Hello world!', 'TIP Health', [ '00972546925278' ]);
-
+// $result = $client->SendMessage('Hi!', 'TIP Health', [ '00972546925278' ]);.
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
 // Get the number of nodes to be processed.
 $batch = drush_get_option('batch', 50);
 
-// Get allowed memory limit.
+// Get the allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
 $type = 'whatsapp_record';
@@ -112,30 +111,34 @@ while ($processed < $total) {
     $patient_name = "$second_name $first_name";
 
     try {
-      $message = new Message('', 'TIP Health', [ $phone_number ]);
+      $message = new Message('', 'TIP Health', [$phone_number]);
+
+      $header_param =
+        new ComponentParameterImage(
+          new MediaContent(
+            $file->filename,
+            file_create_url($file->uri),
+            $file->filemime
+          )
+        );
+
+      $body_param1 = new ComponentParameterText($report_type);
+      $body_param2 = new ComponentParameterText($patient_name);
+      $body_param3 = new ComponentParameterDatetime('', $datetime);
+
+      // todo: enter namespace.
+      // todo: need to set language ?
       $message
         ->WithChannels([Channels::WHATSAPP])
         ->WithTemplate(
           new TemplateMessage(
             new WhatsappTemplate(
               'progress_report',
-              'the-namespace-of-template', // todo: enter namespace.
-              new Language('en'), // todo: need to set language ?
+              'the-namespace-of-template',
+              new Language('en'),
               [
-                new ComponentHeader([
-                  new ComponentParameterImage(
-                    new MediaContent(
-                      $file->filename,
-                      file_create_url($file->uri),
-                      $file->filemime
-                    )
-                  )
-                ]),
-                new ComponentBody([
-                  new ComponentParameterText($report_type),
-                  new ComponentParameterText($patient_name),
-                  new ComponentParameterDatetime('', $datetime),
-                ])
+                new ComponentHeader([$header_param]),
+                new ComponentBody([$body_param1, $body_param2, $body_param3]),
               ]
             )
           )
@@ -168,4 +171,3 @@ while ($processed < $total) {
 }
 
 drush_print("Done! $processed WhatsApp records processed.");
-
