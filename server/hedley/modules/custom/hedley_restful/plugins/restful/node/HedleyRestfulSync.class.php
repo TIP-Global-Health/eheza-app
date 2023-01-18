@@ -388,6 +388,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'contact_date',
           'last_follow_up_date',
           'execution_date',
+          'resilience_start_date',
         ];
 
         $multiDateFields = [
@@ -423,9 +424,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           }
         }
 
-        // Some properties cannot be set. For `type`, that's fine. For
-        // `status`, we'll need to figure out how to unpublish things through
-        // this route.
+        // Some properties cannot be set.
         $ignored = [
           'type',
           'status',
@@ -439,6 +438,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           // Also, most content types do not have 'field_deleted, and
           // passing 'deleted' indicator will cause error.
           'deleted',
+          'health_centers',
+          'villages',
         ];
 
         // Do not ignore 'health center' field for person,

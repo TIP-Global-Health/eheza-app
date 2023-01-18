@@ -116,6 +116,12 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       unset($item->uuids_villages);
 
       $item->resilience_program = (bool) $item->resilience_program;
+
+      $birth_date = explode(' ', $item->birth_date);
+      $item->birth_date = !empty($birth_date[0]) ? $birth_date[0] : NULL;
+
+      $resilience_start_date = explode(' ', $item->resilience_start_date);
+      $item->resilience_start_date = !empty($resilience_start_date[0]) ? $resilience_start_date[0] : NULL;
     }
 
     return $items;

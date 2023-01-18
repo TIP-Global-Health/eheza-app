@@ -12,11 +12,15 @@ import Restful.Endpoint exposing (encodeEntityUuid)
 
 encodeNurse : Nurse -> List ( String, Value )
 encodeNurse nurse =
+    let
+        email =
+            Maybe.map (\nurseEmail -> [ ( "email", string nurseEmail ) ]) nurse.email
+                |> Maybe.withDefault []
+    in
     [ ( "label", string nurse.name )
     , ( "health_centers", list encodeEntityUuid (EverySet.toList nurse.healthCenters) )
     , ( "villages", list encodeEntityUuid (EverySet.toList nurse.villages) )
     , ( "role", list encodeRole (EverySet.toList nurse.roles) )
-    , ( "email", Json.Encode.Extra.maybe string nurse.email )
     , ( "pin_code", string nurse.pinCode )
     , ( "resilience_program", bool nurse.resilienceProgramEnabled )
     , ( "resilience_start_date", maybe encodeYYYYMMDD nurse.resilienceProgramStartDate )
@@ -29,6 +33,7 @@ encodeNurse nurse =
     , ( "deleted", bool False )
     , ( "type", string "nurse" )
     ]
+        ++ email
 
 
 encodeRole : Role -> Value
