@@ -422,6 +422,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
         }
 
         // Some properties cannot be set.
+        // Therefore, we filter them out for request to succeed.
         $ignored = [
           'type',
           'status',
@@ -435,6 +436,10 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           // Also, most content types do not have 'field_deleted, and
           // passing 'deleted' indicator will cause error.
           'deleted',
+          // Field health_centers and villages are sent when editing a nurse.
+          // They fail the request, because sent as UUIDs. We could try to
+          // convert them to node IDs, but since they can not be edited on
+          // client, we simply ignore them.
           'health_centers',
           'villages',
         ];
