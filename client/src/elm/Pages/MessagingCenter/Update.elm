@@ -4,6 +4,7 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Nurse.Model
 import Backend.Nurse.Utils exposing (resilienceRoleFromString)
 import Backend.Person.Utils
     exposing
@@ -123,4 +124,28 @@ update currentDate msg model =
             ( { model | kickOffForm = updatedForm }
             , Cmd.none
             , []
+            )
+
+        SaveKickOffSurvey nurseId nurse ->
+            let
+                form =
+                    model.kickOffForm
+
+                updatedNurse =
+                    { nurse
+                        | resilienceProgramStartDate = Just currentDate
+                        , resilienceRole = form.role
+                        , resilienceBirthDate = form.birthDate
+                        , resilienceGender = form.gender
+                        , resilienceEducationLevel = form.educationLevel
+                        , resilienceUbudehe = form.ubudehe
+                        , resilienceMaritalStatus = form.maritalStatus
+                    }
+            in
+            ( model
+            , Cmd.none
+            , [ Backend.Nurse.Model.UpdateNurse nurseId updatedNurse
+                    |> Backend.Model.MsgNurse nurseId
+                    |> App.Model.MsgIndexedDb
+              ]
             )

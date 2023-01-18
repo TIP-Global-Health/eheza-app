@@ -186,8 +186,7 @@ viewKickOffSurvey language currentDate nurseId nurse form =
                 , div [ class "actions" ]
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-
-                        --, onClick <| SaveNutrition assembled.participant.person assembled.measurements.nutrition assessment
+                        , onClick <| SaveKickOffSurvey nurseId nurse
                         ]
                         [ text <| translate language Translate.Save ]
                     ]

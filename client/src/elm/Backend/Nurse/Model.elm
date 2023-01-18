@@ -5,6 +5,7 @@ import Backend.Measurement.Model exposing (Gender)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), Ubudehe(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 type alias Nurse =
@@ -37,3 +38,17 @@ type ResilienceRole
     | ResilienceRoleLineManager
     | ResilienceRoleSupervisor
     | ResilienceRoleDirector
+
+
+type alias Model =
+    { updateNurse : WebData () }
+
+
+emptyModel : Model
+emptyModel =
+    { updateNurse = NotAsked }
+
+
+type Msg
+    = UpdateNurse NurseId Nurse
+    | HandleUpdatedNurse (WebData ())

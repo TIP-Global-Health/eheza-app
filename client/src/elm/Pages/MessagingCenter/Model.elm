@@ -3,7 +3,7 @@ module Pages.MessagingCenter.Model exposing (..)
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Gender)
-import Backend.Nurse.Model exposing (ResilienceRole)
+import Backend.Nurse.Model exposing (Nurse, ResilienceRole)
 import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
@@ -59,3 +59,4 @@ type Msg
     | SetEducationLevel String
     | SetUbudehe String
     | SetMaritalStatus String
+    | SaveKickOffSurvey NurseId Nurse

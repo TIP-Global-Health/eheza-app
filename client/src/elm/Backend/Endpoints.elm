@@ -27,6 +27,7 @@ import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
 import Backend.NCDEncounter.Encoder exposing (encodeNCDEncounter)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Nurse.Decoder exposing (decodeNurse)
+import Backend.Nurse.Encoder exposing (encodeNurse)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
 import Backend.NutritionEncounter.Encoder exposing (encodeNutritionEncounter)
@@ -241,9 +242,10 @@ participantFormEndpoint =
         |> withValueEncoder (object << encodeParticipantForm)
 
 
-nurseEndpoint : ReadOnlyEndPoint Error NurseId Nurse NurseParams
+nurseEndpoint : ReadWriteEndPoint Error NurseId Nurse Nurse NurseParams
 nurseEndpoint =
     swEndpoint "nodes/nurse" decodeNurse
+        |> withValueEncoder (object << encodeNurse)
         |> withParamsEncoder encodeNurseParams
 
 
