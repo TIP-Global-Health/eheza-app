@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulResilienceSurvey.
  */
-abstract class HedleyRestfulResilienceSurvey extends HedleyRestfulSyncBase {
+class HedleyRestfulResilienceSurvey extends HedleyRestfulSyncBase {
 
   /**
    * A list of fields that are assigned single value.
