@@ -12,9 +12,9 @@ function hedley_resilience_field_default_field_instances() {
   $field_instances = array();
 
   // Exported field_instance:
-  // 'node-resilience_monthly_survey-field_date_measured'.
-  $field_instances['node-resilience_monthly_survey-field_date_measured'] = array(
-    'bundle' => 'resilience_monthly_survey',
+  // 'node-resilience_survey-field_date_measured'.
+  $field_instances['node-resilience_survey-field_date_measured'] = array(
+    'bundle' => 'resilience_survey',
     'deleted' => 0,
     'description' => '',
     'display' => array(
@@ -68,9 +68,9 @@ function hedley_resilience_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-resilience_monthly_survey-field_nurse'.
-  $field_instances['node-resilience_monthly_survey-field_nurse'] = array(
-    'bundle' => 'resilience_monthly_survey',
+  // Exported field_instance: 'node-resilience_survey-field_nurse'.
+  $field_instances['node-resilience_survey-field_nurse'] = array(
+    'bundle' => 'resilience_survey',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -113,9 +113,9 @@ function hedley_resilience_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-resilience_monthly_survey-field_resilience_survey_signs'.
-  $field_instances['node-resilience_monthly_survey-field_resilience_survey_signs'] = array(
-    'bundle' => 'resilience_monthly_survey',
+  // 'node-resilience_survey-field_resilience_survey_signs'.
+  $field_instances['node-resilience_survey-field_resilience_survey_signs'] = array(
+    'bundle' => 'resilience_survey',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -151,9 +151,9 @@ function hedley_resilience_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-resilience_monthly_survey-field_resilience_survey_type'.
-  $field_instances['node-resilience_monthly_survey-field_resilience_survey_type'] = array(
-    'bundle' => 'resilience_monthly_survey',
+  // 'node-resilience_survey-field_resilience_survey_type'.
+  $field_instances['node-resilience_survey-field_resilience_survey_type'] = array(
+    'bundle' => 'resilience_survey',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -188,9 +188,9 @@ function hedley_resilience_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-resilience_monthly_survey-field_uuid'.
-  $field_instances['node-resilience_monthly_survey-field_uuid'] = array(
-    'bundle' => 'resilience_monthly_survey',
+  // Exported field_instance: 'node-resilience_survey-field_uuid'.
+  $field_instances['node-resilience_survey-field_uuid'] = array(
+    'bundle' => 'resilience_survey',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',

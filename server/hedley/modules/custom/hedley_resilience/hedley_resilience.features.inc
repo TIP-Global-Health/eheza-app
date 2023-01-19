@@ -19,7 +19,7 @@ function hedley_resilience_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_resilience_node_info() {
   $items = array(
-    'resilience_monthly_survey' => array(
+    'resilience_survey' => array(
       'name' => t('Resilience Monthly Survey'),
       'base' => 'node_content',
       'description' => '',
