@@ -35,6 +35,7 @@ import Backend.Person.Model exposing (Initiator, PatchPersonInitator, Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.TraceContact.Model
 import Backend.Village.Model exposing (Village)
@@ -153,6 +154,9 @@ type alias ModelIndexedDb =
     -- Dashboard Statistics.
     , computedDashboards : Dict HealthCenterId ComputedDashboard
     , computedDashboardLastFetched : Time.Posix
+
+    -- Resilience.
+    , resilienceSurveys : Dict NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     }
 
 
@@ -219,6 +223,7 @@ emptyModelIndexedDb =
     , followUpMeasurements = Dict.empty
     , computedDashboards = Dict.empty
     , computedDashboardLastFetched = Time.millisToPosix 0
+    , resilienceSurveys = Dict.empty
     }
 
 
@@ -513,6 +518,7 @@ type Revision
     | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation
     | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest
     | RelationshipRevision RelationshipId Relationship
+    | ResilienceSurveyRevision ResilienceSurveyId ResilienceSurvey
     | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory
