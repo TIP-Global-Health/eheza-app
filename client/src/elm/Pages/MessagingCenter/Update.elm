@@ -149,3 +149,13 @@ update currentDate msg model =
                     |> App.Model.MsgIndexedDb
               ]
             )
+
+        SetMonthlySurveyAnswer updateFunc value ->
+            let
+                updatedForm =
+                    updateFunc value model.monthlySurveyForm
+            in
+            ( { model | monthlySurveyForm = updatedForm }
+            , Cmd.none
+            , []
+            )

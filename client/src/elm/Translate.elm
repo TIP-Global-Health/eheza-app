@@ -61,6 +61,11 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.ResilienceSurvey.Model
+    exposing
+        ( ResilienceSurveyQuestion(..)
+        , ResilienceSurveyQuestionOption(..)
+        )
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
 import Components.SendViaWhatsAppDialog.Model
@@ -1278,6 +1283,7 @@ type TranslationId
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
+    | ResilienceMonthlySurveyQuestion ResilienceSurveyQuestion
     | ResilienceKickOffBirthDateQuestion
     | ResilienceKickOffEducationLevelQuestion
     | ResilienceKickOffGenderQuestion
@@ -1285,6 +1291,7 @@ type TranslationId
     | ResilienceKickOffRoleQuestion
     | ResilienceKickOffUbudeheQuestion
     | ResilienceRole ResilienceRole
+    | ResilienceSurveyQuestionOption ResilienceSurveyQuestionOption
     | ResolveMonth Bool Month
     | ResolveMonthYY Int Bool Month
     | RespiratoryDistress
@@ -14782,6 +14789,34 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Raporo irarangiye"
             }
 
+        ResilienceMonthlySurveyQuestion question ->
+            case question of
+                ResilienceSurveyQuestion1 ->
+                    { english = "I look for creative ways to alter difficult situations"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceSurveyQuestion2 ->
+                    { english = "Regardless of what happens to me, I believe I can control my reaction to it"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceSurveyQuestion3 ->
+                    { english = "I believe I can grow in positive ways by dealing with difficult situations"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceSurveyQuestion4 ->
+                    { english = "I actively look for ways to replace the losses I encounter in life"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    -- Not in use.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
         ResilienceKickOffBirthDateQuestion ->
             { english = "What is your birth date"
             , kinyarwanda = Nothing
@@ -14836,6 +14871,33 @@ translationSet trans =
 
                 ResilienceRoleDirector ->
                     { english = "Director General"
+                    , kinyarwanda = Nothing
+                    }
+
+        ResilienceSurveyQuestionOption option ->
+            case option of
+                ResilienceSurveyQuestionOption0 ->
+                    { english = "Does not describe me at all"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceSurveyQuestionOption1 ->
+                    { english = "Does not describe me"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceSurveyQuestionOption2 ->
+                    { english = "Neutral"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceSurveyQuestionOption3 ->
+                    { english = "Describes me"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceSurveyQuestionOption4 ->
+                    { english = "Describes me very well"
                     , kinyarwanda = Nothing
                     }
 

@@ -9,6 +9,12 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), Ubudehe(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
+import Backend.ResilienceSurvey.Model
+    exposing
+        ( ResilienceSurveyQuestion(..)
+        , ResilienceSurveyQuestionOption(..)
+        )
+import Backend.ResilienceSurvey.Utils exposing (resilienceSurveyQuestionOptionToString)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
@@ -23,7 +29,7 @@ import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.Utils exposing (taskCompleted, viewQuestionLabel, viewSelectListInput)
+import Pages.Utils exposing (taskCompleted, viewCheckBoxSelectInput, viewQuestionLabel, viewSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
@@ -49,7 +55,7 @@ view language currentDate nurseId nurse db model =
         content =
             Maybe.map
                 (\startDate ->
-                    text "@todo"
+                    viewMonthlySurvey language currentDate nurseId model.monthlySurveyForm
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
@@ -187,6 +193,83 @@ viewKickOffSurvey language currentDate nurseId nurse form =
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                         , onClick <| SaveKickOffSurvey nurseId nurse
+                        ]
+                        [ text <| translate language Translate.Save ]
+                    ]
+                ]
+            ]
+        ]
+
+
+viewMonthlySurvey : Language -> NominalDate -> NurseId -> MonthlySurveyForm -> Html Msg
+viewMonthlySurvey language currentDate nurseId form =
+    let
+        questionInput question currentValue updateFunc =
+            [ viewQuestionLabel language <| Translate.ResilienceMonthlySurveyQuestion question
+            , viewCheckBoxSelectInput language
+                [ ResilienceSurveyQuestionOption0
+                , ResilienceSurveyQuestionOption1
+                , ResilienceSurveyQuestionOption2
+                , ResilienceSurveyQuestionOption3
+                , ResilienceSurveyQuestionOption4
+                ]
+                []
+                currentValue
+                (SetMonthlySurveyAnswer updateFunc)
+                Translate.ResilienceSurveyQuestionOption
+            ]
+
+        question1Input =
+            questionInput ResilienceSurveyQuestion1
+                form.answer1
+                (\value form_ ->
+                    { form_ | answer1 = Just value }
+                )
+
+        question2Input =
+            questionInput ResilienceSurveyQuestion2
+                form.answer2
+                (\value form_ ->
+                    { form_ | answer2 = Just value }
+                )
+
+        question3Input =
+            questionInput ResilienceSurveyQuestion3
+                form.answer3
+                (\value form_ ->
+                    { form_ | answer3 = Just value }
+                )
+
+        question4Input =
+            questionInput ResilienceSurveyQuestion4
+                form.answer4
+                (\value form_ ->
+                    { form_ | answer4 = Just value }
+                )
+
+        tasksCompleted =
+            taskCompleted form.answer1
+                + taskCompleted form.answer2
+                + taskCompleted form.answer3
+                + taskCompleted form.answer4
+
+        totalTasks =
+            4
+    in
+    div [ class "ui unstackable items" ]
+        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        , div [ class "ui full segment" ]
+            [ div [ class "full content" ]
+                [ div [ class "ui form monthly-survey" ] <|
+                    question1Input
+                        ++ question2Input
+                        ++ question3Input
+                        ++ question4Input
+                , div [ class "actions" ]
+                    [ button
+                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+
+                        -- , onClick <| SaveMonthlySurvey nurseId nurse
                         ]
                         [ text <| translate language Translate.Save ]
                     ]
