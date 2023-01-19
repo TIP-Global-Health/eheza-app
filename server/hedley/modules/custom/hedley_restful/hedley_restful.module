@@ -22,6 +22,7 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
   'nurse' => 'nurses',
   'participant_form' => 'participants-form',
   'village' => 'villages',
+  'resilience_survey' => 'resilience-survey',
 ];
 
 /**
