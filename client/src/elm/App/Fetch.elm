@@ -23,6 +23,7 @@ import Pages.HomeVisit.Activity.Fetch
 import Pages.HomeVisit.Encounter.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
+import Pages.MessagingCenter.Fetch
 import Pages.NCD.Activity.Fetch
 import Pages.NCD.Encounter.Fetch
 import Pages.NCD.Participant.Fetch
@@ -337,6 +338,10 @@ fetch model =
 
             UserPage (PatientRecordPage _ id) ->
                 Pages.PatientRecord.Fetch.fetch currentDate id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage MessagingCenterPage ->
+                Pages.MessagingCenter.Fetch.fetch currentDate model.indexedDb
                     |> List.map MsgIndexedDb
 
 

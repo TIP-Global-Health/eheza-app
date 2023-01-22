@@ -929,6 +929,7 @@ type TranslationId
     | MedicationTakenAsPrescribedQuestion
     | MentalHealthHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
+    | MessagingCenter
     | MMHGUnit
     | MiddleName
     | Minutes Int
@@ -8467,6 +8468,11 @@ translationSet trans =
         MentalHealthHistory ->
             { english = "History of Mental Health Problems"
             , kinyarwanda = Just "Niba yaragize uburwayi bwo mumutwe"
+            }
+
+        MessagingCenter ->
+            { english = "Messaging Center"
+            , kinyarwanda = Nothing
             }
 
         MMHGUnit ->
@@ -17549,6 +17555,11 @@ translateActivePage page =
                 PrenatalLabsHistoryPage _ _ _ ->
                     { english = "Labs History"
                     , kinyarwanda = Just "Amakuru ku Bizamini byafashwe"
+                    }
+
+                MessagingCenterPage ->
+                    { english = "Messaging Center"
+                    , kinyarwanda = Nothing
                     }
 
 

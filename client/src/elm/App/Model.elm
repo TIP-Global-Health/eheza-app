@@ -31,6 +31,7 @@ import Pages.GlobalCaseManagement.Model
 import Pages.HomeVisit.Activity.Model
 import Pages.HomeVisit.Encounter.Model
 import Pages.IndividualEncounterParticipants.Model
+import Pages.MessagingCenter.Model
 import Pages.NCD.Activity.Model
 import Pages.NCD.Encounter.Model
 import Pages.NCD.ProgressReport.Model
@@ -284,6 +285,7 @@ type alias LoggedInModel =
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
     , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Model
     , patientRecordPages : Dict PersonId Pages.PatientRecord.Model.Model
+    , messagingCenterPages : Dict NurseId Pages.MessagingCenter.Model.Model
     }
 
 
@@ -327,6 +329,7 @@ emptyLoggedInModel villageId nurse =
     , traceContactPages = Dict.empty
     , clinicalProgressReportPages = Dict.empty
     , patientRecordPages = Dict.empty
+    , messagingCenterPages = Dict.empty
     }
 
 
@@ -402,6 +405,7 @@ type MsgLoggedIn
     | MsgPageTraceContact AcuteIllnessTraceContactId Pages.TraceContact.Model.Msg
     | MsgPageClinicalProgressReport PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Msg
     | MsgPagePatientRecord PersonId Pages.PatientRecord.Model.Msg
+    | MsgPageMessagingCenter NurseId Pages.MessagingCenter.Model.Msg
 
 
 type alias Flags =

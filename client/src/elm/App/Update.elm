@@ -48,6 +48,8 @@ import Pages.HomeVisit.Activity.Update
 import Pages.HomeVisit.Encounter.Model
 import Pages.HomeVisit.Encounter.Update
 import Pages.IndividualEncounterParticipants.Update
+import Pages.MessagingCenter.Model
+import Pages.MessagingCenter.Update
 import Pages.NCD.Activity.Model
 import Pages.NCD.Activity.Update
 import Pages.NCD.Encounter.Model
@@ -729,6 +731,18 @@ update msg model =
                             in
                             ( { data | patientRecordPages = Dict.insert id subModel data.patientRecordPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePatientRecord id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageMessagingCenter id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Dict.get id data.messagingCenterPages
+                                        |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                                        |> Pages.MessagingCenter.Update.update currentDate subMsg
+                            in
+                            ( { data | messagingCenterPages = Dict.insert id subModel data.messagingCenterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageMessagingCenter id) subCmd
                             , appMsgs
                             )
                 )

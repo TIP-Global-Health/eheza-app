@@ -220,8 +220,7 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
 
                             MenuMessagingCenter ->
                                 ( "messaging-center"
-                                , --@todo
-                                  DevicePage
+                                , UserPage MessagingCenterPage
                                 )
 
                     viewCardFunc =
