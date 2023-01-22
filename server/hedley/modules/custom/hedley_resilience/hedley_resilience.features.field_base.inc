@@ -14,7 +14,7 @@ function hedley_resilience_field_default_field_bases() {
   // Exported field_base: 'field_resilience_survey_signs'.
   $field_bases['field_resilience_survey_signs'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_id_type' => NULL,
     'entity_types' => array(),

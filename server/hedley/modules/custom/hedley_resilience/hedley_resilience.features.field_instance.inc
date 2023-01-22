@@ -11,8 +11,7 @@
 function hedley_resilience_field_default_field_instances() {
   $field_instances = array();
 
-  // Exported field_instance:
-  // 'node-resilience_survey-field_date_measured'.
+  // Exported field_instance: 'node-resilience_survey-field_date_measured'.
   $field_instances['node-resilience_survey-field_date_measured'] = array(
     'bundle' => 'resilience_survey',
     'deleted' => 0,
