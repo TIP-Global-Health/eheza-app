@@ -8,6 +8,7 @@ import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
+import Time
 
 
 encodeNurse : Nurse -> List ( String, Value )
@@ -15,6 +16,10 @@ encodeNurse nurse =
     let
         email =
             Maybe.map (\nurseEmail -> [ ( "email", string nurseEmail ) ]) nurse.email
+                |> Maybe.withDefault []
+
+        reminder =
+            Maybe.map (\nextReminder -> [ ( "next_reminder", int <| (Time.posixToMillis nextReminder // 1000) ) ]) nurse.resilienceNextReminder
                 |> Maybe.withDefault []
     in
     [ ( "label", string nurse.name )
@@ -34,6 +39,7 @@ encodeNurse nurse =
     , ( "type", string "nurse" )
     ]
         ++ email
+        ++ reminder
 
 
 encodeRole : Role -> Value

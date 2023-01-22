@@ -58,7 +58,6 @@ import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
-import Time exposing (millisToPosix)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
