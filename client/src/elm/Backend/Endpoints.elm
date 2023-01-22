@@ -1212,7 +1212,18 @@ ncdHbA1cTestEndpoint =
         |> withValueEncoder (object << encodeNCDHbA1cTest)
 
 
-resilienceSurveyEndpoint : ReadWriteEndPoint Error ResilienceSurveyId ResilienceSurvey ResilienceSurvey ()
+resilienceSurveyEndpoint : ReadWriteEndPoint Error ResilienceSurveyId ResilienceSurvey ResilienceSurvey (Maybe NurseId)
 resilienceSurveyEndpoint =
     swEndpoint "nodes/resilience_survey" decodeResilienceSurvey
         |> withValueEncoder (object << encodeResilienceSurvey)
+        |> withParamsEncoder encodeResilienceSurveyParams
+
+
+encodeResilienceSurveyParams : Maybe NurseId -> List ( String, String )
+encodeResilienceSurveyParams params =
+    case params of
+        Just id ->
+            [ ( "nurse", fromEntityUuid id ) ]
+
+        Nothing ->
+            []

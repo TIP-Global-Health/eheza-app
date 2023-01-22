@@ -765,7 +765,6 @@
                   'prenatal_encounter',
                   'well_child_encounter'
                 ];
-
                 if (encounterTypes.includes(type)) {
                   var individualSessionId = params.get('individual_participant');
                   if (individualSessionId) {
@@ -810,6 +809,22 @@
                             });
                         });
                     }
+                }
+
+                // Resilience surveys are pulled for a nurse, so we add
+                // criteria to filter by provided nurse ID.
+                if (type === 'resilience_survey') {
+                  var nurseId = params.get('nurse');
+                  if (nurseId) {
+                    modifyQuery = modifyQuery.then(function () {
+                        criteria.nurse = nurseId;
+                        query = table.where(criteria);
+
+                        countQuery = query.clone();
+
+                        return Promise.resolve();
+                    });
+                  }
                 }
 
                 return modifyQuery.then(function () {

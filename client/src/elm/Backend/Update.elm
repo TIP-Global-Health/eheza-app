@@ -1026,6 +1026,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchResilienceSurveysForNurse id ->
+            ( { model | resilienceSurveysByNurse = Dict.insert id Loading model.resilienceSurveysByNurse }
+            , sw.select resilienceSurveyEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedResilienceSurveysForNurse id)
+            , []
+            )
+
+        HandleFetchedResilienceSurveysForNurse id data ->
+            ( { model | resilienceSurveysByNurse = Dict.insert id data model.resilienceSurveysByNurse }
+            , Cmd.none
+            , []
+            )
+
         HandleRevisions revisions ->
             let
                 downloadingContent =
@@ -4283,22 +4296,22 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ResilienceSurveyRevision uuid data ->
             let
                 nurseSurveys =
-                    Dict.get data.nurse model.resilienceSurveys
+                    Dict.get data.nurse model.resilienceSurveysByNurse
                         |> Maybe.andThen RemoteData.toMaybe
 
-                resilienceSurveys =
+                resilienceSurveysByNurse =
                     Maybe.map
                         (\surveys ->
                             let
                                 updatedSurveys =
                                     Dict.insert uuid data surveys
                             in
-                            Dict.insert data.nurse (Success updatedSurveys) model.resilienceSurveys
+                            Dict.insert data.nurse (Success updatedSurveys) model.resilienceSurveysByNurse
                         )
                         nurseSurveys
-                        |> Maybe.withDefault (Dict.insert data.nurse (Success (Dict.singleton uuid data)) model.resilienceSurveys)
+                        |> Maybe.withDefault (Dict.insert data.nurse (Success (Dict.singleton uuid data)) model.resilienceSurveysByNurse)
             in
-            ( { model | resilienceSurveys = resilienceSurveys }
+            ( { model | resilienceSurveysByNurse = resilienceSurveysByNurse }
             , recalc
             )
 

@@ -290,6 +290,11 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchResilienceSurveysForNurse id ->
+            Dict.get id model.resilienceSurveysByNurse
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         -- For other messages, we answer false.
         _ ->
             False
@@ -413,6 +418,9 @@ forget msg model =
 
         FetchSessionsByClinic clinicId ->
             { model | sessionsByClinic = Dict.remove clinicId model.sessionsByClinic }
+
+        FetchResilienceSurveysForNurse id ->
+            { model | resilienceSurveysByNurse = Dict.remove id model.resilienceSurveysByNurse }
 
         -- For other messages, we do nothing.
         _ ->

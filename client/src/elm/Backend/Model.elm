@@ -157,7 +157,7 @@ type alias ModelIndexedDb =
     , computedDashboardLastFetched : Time.Posix
 
     -- Resilience.
-    , resilienceSurveys : Dict NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
+    , resilienceSurveysByNurse : Dict NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     }
 
 
@@ -225,7 +225,7 @@ emptyModelIndexedDb =
     , followUpMeasurements = Dict.empty
     , computedDashboards = Dict.empty
     , computedDashboardLastFetched = Time.millisToPosix 0
-    , resilienceSurveys = Dict.empty
+    , resilienceSurveysByNurse = Dict.empty
     }
 
 
@@ -301,6 +301,7 @@ type MsgIndexedDb
     | FetchPrenatalMeasurements PrenatalEncounterId
     | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchRelationshipsForPerson PersonId
+    | FetchResilienceSurveysForNurse NurseId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchVillages
@@ -344,6 +345,7 @@ type MsgIndexedDb
     | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
     | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
+    | HandleFetchedResilienceSurveysForNurse NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedVillages (WebData (Dict VillageId Village))

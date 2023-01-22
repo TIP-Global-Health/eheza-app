@@ -25,6 +25,7 @@ encodeResilienceSurvey survey =
     , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD survey.dateMeasured )
     , ( "resilience_survey_type", encodeResilienceSurveyType survey.surveyType )
     , ( "resilience_survey_signs", list string signs )
+    , ( "deleted", bool False )
     , ( "type", string "resilience_survey" )
     ]
 

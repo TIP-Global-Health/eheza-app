@@ -10,7 +10,6 @@ import Pages.MessagingCenter.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : NominalDate -> ModelIndexedDb -> List MsgIndexedDb
-fetch currentDate db =
-    -- @todo
-    []
+fetch : NominalDate -> NurseId -> ModelIndexedDb -> List MsgIndexedDb
+fetch currentDate nurseId db =
+    [ FetchResilienceSurveysForNurse nurseId ]

@@ -341,8 +341,17 @@ fetch model =
                     |> List.map MsgIndexedDb
 
             UserPage MessagingCenterPage ->
-                Pages.MessagingCenter.Fetch.fetch currentDate model.indexedDb
-                    |> List.map MsgIndexedDb
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            let
+                                nurseId =
+                                    Tuple.first loggedIn.nurse
+                            in
+                            Pages.MessagingCenter.Fetch.fetch currentDate nurseId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
 
 {-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer
