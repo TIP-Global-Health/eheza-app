@@ -77,12 +77,12 @@ view language currentDate nurseId nurse db model =
                                             |> List.head
                                             |> Maybe.map
                                                 (\survey ->
-                                                    -- Run monthly survey if one months has passed since
+                                                    -- Run monthly survey if one month has passed since
                                                     -- last monthly survey was completed.
                                                     Date.diff Months survey.dateMeasured currentDate >= 1
                                                 )
                                             -- No monthly survey were performed, so we need to run one if
-                                            -- one months has passed since program has started.
+                                            -- one month has passed since program has started.
                                             |> Maybe.withDefault (Date.diff Months programStartDate currentDate >= 1)
                                 in
                                 if runMonthlySurvery then
