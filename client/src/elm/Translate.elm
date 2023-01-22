@@ -35,6 +35,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcom
 import Backend.Measurement.Model exposing (..)
 import Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
+import Backend.Nurse.Model exposing (ResilienceRole(..))
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model
     exposing
@@ -851,6 +852,7 @@ type TranslationId
     | LegsCPESign LegsCPESign
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
+    | LevelOfEducationForResilience EducationLevel
     | LinkToMother
     | LipidPanel
     | LiveChildren
@@ -1276,6 +1278,13 @@ type TranslationId
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
+    | ResilienceKickOffBirthDateQuestion
+    | ResilienceKickOffEducationLevelQuestion
+    | ResilienceKickOffGenderQuestion
+    | ResilienceKickOffMaritalStatusQuestion
+    | ResilienceKickOffRoleQuestion
+    | ResilienceKickOffUbudeheQuestion
+    | ResilienceRole ResilienceRole
     | ResolveMonth Bool Month
     | ResolveMonthYY Int Bool Month
     | RespiratoryDistress
@@ -1518,6 +1527,7 @@ type TranslationId
     | WeekSinglePlural Int
     | Weight
     | WelcomeUser String
+    | Wellbeing
     | WellChildActivityTitle WellChildActivity
     | WellChildDangerSignsTask Pages.WellChild.Activity.Types.DangerSignsTask
     | WellChildEncounterPopup WarningPopupType
@@ -7595,6 +7605,55 @@ translationSet trans =
                     , kinyarwanda = Just "(A1)"
                     }
 
+                -- Not in use.
+                MastersDegree ->
+                    { english = "Masters Degree"
+                    , kinyarwanda = Nothing
+                    }
+
+        LevelOfEducationForResilience educationLevel ->
+            case educationLevel of
+                NoSchooling ->
+                    { english = "No Schooling"
+                    , kinyarwanda = Just "Ntayo"
+                    }
+
+                PrimarySchool ->
+                    { english = "Primary School"
+                    , kinyarwanda = Just "Abanza"
+                    }
+
+                VocationalTrainingSchool ->
+                    { english = "Vocational School"
+                    , kinyarwanda = Nothing
+                    }
+
+                SecondarySchool ->
+                    { english = "Finished Secondary School"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Not it use.
+                DiplomaProgram ->
+                    { english = "Diploma Program (2 years of University)"
+                    , kinyarwanda = Just "Amashuri 2 ya Kaminuza"
+                    }
+
+                AdvancedDiploma ->
+                    { english = "Advanced Diploma (A1)"
+                    , kinyarwanda = Just "(A1)"
+                    }
+
+                HigherEducation ->
+                    { english = "Bachelors Degree (A0)"
+                    , kinyarwanda = Just "(A0)"
+                    }
+
+                MastersDegree ->
+                    { english = "Masters Degree"
+                    , kinyarwanda = Nothing
+                    }
+
         LinkToMother ->
             { english = "Link to mother"
             , kinyarwanda = Just "Guhuza n'amakuru y'umubyeyi"
@@ -7904,6 +7963,16 @@ translationSet trans =
                 Widowed ->
                     { english = "Widowed"
                     , kinyarwanda = Just "Umupfakazi"
+                    }
+
+                LivingWithPartner ->
+                    { english = "Living with partner"
+                    , kinyarwanda = Nothing
+                    }
+
+                Religious ->
+                    { english = "Religious"
+                    , kinyarwanda = Nothing
                     }
 
         MastitisRecommendedTreatmentHeader ->
@@ -14713,6 +14782,63 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Raporo irarangiye"
             }
 
+        ResilienceKickOffBirthDateQuestion ->
+            { english = "What is your birth date"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceKickOffEducationLevelQuestion ->
+            { english = "What is your highest level of schooling"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceKickOffGenderQuestion ->
+            { english = "What is your gender"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceKickOffMaritalStatusQuestion ->
+            { english = "What is your marital status"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceKickOffRoleQuestion ->
+            { english = "What is your role"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceKickOffUbudeheQuestion ->
+            { english = "What is your Ubudehe category"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceRole role ->
+            case role of
+                ResilienceRoleCHW ->
+                    { english = "CHW"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceRoleNurse ->
+                    { english = "Health Care Worker (HC)"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceRoleLineManager ->
+                    { english = "Line Manager"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceRoleSupervisor ->
+                    { english = "Supervisor"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceRoleDirector ->
+                    { english = "Director General"
+                    , kinyarwanda = Nothing
+                    }
+
         ResolveMonth short month ->
             translateMonth month short
 
@@ -16562,6 +16688,11 @@ translationSet trans =
         WelcomeUser name ->
             { english = "Welcome " ++ name
             , kinyarwanda = Just <| "Murakaza neza " ++ name
+            }
+
+        Wellbeing ->
+            { english = "Wellbeing"
+            , kinyarwanda = Nothing
             }
 
         WellChildActivityTitle activity ->

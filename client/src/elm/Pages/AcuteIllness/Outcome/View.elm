@@ -17,7 +17,7 @@ import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.AcuteIllness.Outcome.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel)
+import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel, viewSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -81,22 +81,13 @@ viewAcuteIllnessOutcome : Language -> NominalDate -> AssembledData -> Model -> L
 viewAcuteIllnessOutcome language currentDate data model =
     let
         acuteIllnessOutcomeInput =
-            option
-                [ value ""
-                , selected (model.acuteIllnessOutcome == Nothing)
-                ]
-                [ text "" ]
-                :: (allAcuteIllnessOutcome
-                        |> List.map
-                            (\outcome ->
-                                option
-                                    [ value (acuteIllnessOutcomeToString outcome)
-                                    , selected (model.acuteIllnessOutcome == Just outcome)
-                                    ]
-                                    [ text <| translate language <| Translate.AcuteIllnessOutcome outcome ]
-                            )
-                   )
-                |> select [ onInput SetAcuteIllnessOutcome, class "form-input acuteIllness-outcome" ]
+            viewSelectListInput language
+                model.acuteIllnessOutcome
+                allAcuteIllnessOutcome
+                acuteIllnessOutcomeToString
+                SetAcuteIllnessOutcome
+                Translate.AcuteIllnessOutcome
+                "acuteIllness-outcome"
 
         totalTasks =
             1

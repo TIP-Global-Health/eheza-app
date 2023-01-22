@@ -97,6 +97,7 @@ type EducationLevel
     | DiplomaProgram
     | HigherEducation
     | AdvancedDiploma
+    | MastersDegree
 
 
 allEducationLevels : List EducationLevel
@@ -116,6 +117,8 @@ type MaritalStatus
     | Married
     | Single
     | Widowed
+    | LivingWithPartner
+    | Religious
 
 
 allMaritalStatuses : List MaritalStatus

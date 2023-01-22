@@ -34,8 +34,7 @@ import Measurement.Model exposing (..)
 import Pages.Session.Model
 import Pages.Utils
     exposing
-        ( emptySelectOption
-        , ifEverySetEmpty
+        ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
         , maybeToBoolTask
@@ -48,9 +47,11 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
+        , viewCustomSelectListInput
         , viewLabel
         , viewMeasurementInput
         , viewQuestionLabel
+        , viewSelectListInput
         )
 import Round
 import Translate exposing (Language, TranslationId, translate)
@@ -2250,29 +2251,14 @@ prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed
                         else
                             Maybe.map
                                 (\setResultMsg ->
-                                    let
-                                        emptyOption =
-                                            if isNothing form.testResult then
-                                                emptySelectOption True
-
-                                            else
-                                                emptyNode
-                                    in
                                     ( [ viewLabel language <| Translate.LaboratoryTaskResult task
-                                      , emptyOption
-                                            :: List.map
-                                                (\result ->
-                                                    option
-                                                        [ value (testResultToString result)
-                                                        , selected (form.testResult == Just result)
-                                                        ]
-                                                        [ text <| translate language <| Translate.TestResult result ]
-                                                )
-                                                [ TestPositive, TestNegative, TestIndeterminate ]
-                                            |> select
-                                                [ onInput setResultMsg
-                                                , class "form-input select"
-                                                ]
+                                      , viewCustomSelectListInput form.testResult
+                                            [ TestPositive, TestNegative, TestIndeterminate ]
+                                            testResultToString
+                                            setResultMsg
+                                            (Translate.TestResult >> translate language)
+                                            "form-input select"
+                                            (isNothing form.testResult)
                                       ]
                                     , taskCompleted form.testResult
                                     , 1
@@ -3746,14 +3732,6 @@ hepatitisBResultFormAndTasks :
 hepatitisBResultFormAndTasks language currentDate setHepatitisBTestResultMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            let
-                emptyOption =
-                    if isNothing form.testResult then
-                        emptySelectOption True
-
-                    else
-                        emptyNode
-            in
             ( viewSelectInput language
                 (Translate.LaboratoryTaskResult TaskHepatitisBTest)
                 form.testResult
@@ -4208,22 +4186,13 @@ lipidPanelResultFormAndTasks language currentDate setUnitOfMeasurementMsg setTot
                         |> Maybe.withDefault ( [], 0, 0 )
             in
             ( [ viewQuestionLabel language Translate.LaboratoryLipidPanelUnitOfMeasurementQuestion
-              , option
-                    [ value ""
-                    , selected (form.unitOfMeasurement == Nothing)
-                    ]
-                    [ text "" ]
-                    :: ([ UnitMmolL, UnitMgdL ]
-                            |> List.map
-                                (\unit ->
-                                    option
-                                        [ value (unitOfMeasurementToString unit)
-                                        , selected (form.unitOfMeasurement == Just unit)
-                                        ]
-                                        [ text <| translate language <| Translate.UnitOfMeasurement unit ]
-                                )
-                       )
-                    |> select [ onInput setUnitOfMeasurementMsg, class "form-input select unit-of-measurement" ]
+              , viewSelectListInput language
+                    form.unitOfMeasurement
+                    [ UnitMmolL, UnitMgdL ]
+                    unitOfMeasurementToString
+                    setUnitOfMeasurementMsg
+                    Translate.UnitOfMeasurement
+                    "select unit-of-measurement"
               ]
                 ++ derivedSection
             , taskCompleted form.unitOfMeasurement + derivedTasksCompleted
@@ -4291,30 +4260,14 @@ viewSelectInput :
     -> List (Html msg)
 viewSelectInput language labelTransId formValue valueTransId valueToStringFunc valuesList setMsg =
     [ viewLabel language labelTransId
-    , emptyOptionForSelect formValue
-        :: List.map
-            (\item ->
-                option
-                    [ value (valueToStringFunc item)
-                    , selected (formValue == Just item)
-                    ]
-                    [ text <| translate language <| valueTransId item ]
-            )
-            valuesList
-        |> select
-            [ onInput setMsg
-            , class "form-input select"
-            ]
+    , viewCustomSelectListInput formValue
+        valuesList
+        valueToStringFunc
+        setMsg
+        (valueTransId >> translate language)
+        "form-input select"
+        (isNothing formValue)
     ]
-
-
-emptyOptionForSelect : Maybe a -> Html any
-emptyOptionForSelect value =
-    if isNothing value then
-        emptySelectOption True
-
-    else
-        emptyNode
 
 
 fromNCDAValue : Maybe NCDAValue -> NCDAForm

@@ -52,8 +52,7 @@ import Pages.Prenatal.Utils exposing (..)
 import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
 import Pages.Utils
     exposing
-        ( emptySelectOption
-        , isTaskCompleted
+        ( isTaskCompleted
         , taskCompleted
         , tasksBarId
         , viewBoolInput

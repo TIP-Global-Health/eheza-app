@@ -31,6 +31,7 @@ import Pages.Utils
         , viewBoolInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
+        , viewCustomSelectListInput
         , viewLabel
         , viewPersonDetails
         , viewQuestionLabel
@@ -260,28 +261,20 @@ viewFeedingContent language currentDate assembled db feedingForm =
 
         ( sachetsPerDayInput, eatenWithWaterInput ) =
             if form.receiveSupplement == Just True && form.supplementType == Just Rutf then
+                let
+                    options =
+                        List.repeat 20 0.5
+                            |> List.indexedMap (\index number -> toFloat index * number)
+                in
                 ( [ viewQuestionLabel language Translate.SachetsPerDayQuestion
                   , sachetsPerDayHelper
-                  , option
-                        [ value ""
-                        , selected (form.sachetsPerDay == Nothing)
-                        ]
-                        [ text "" ]
-                        :: (List.repeat 20 0.5
-                                |> List.indexedMap
-                                    (\index number ->
-                                        let
-                                            s =
-                                                String.fromFloat (toFloat index * number)
-                                        in
-                                        option
-                                            [ value s
-                                            , selected (form.sachetsPerDay == Just (toFloat index * number))
-                                            ]
-                                            [ text s ]
-                                    )
-                           )
-                        |> select [ onInput SetSachetsPerDay, class "form-input select" ]
+                  , viewCustomSelectListInput form.sachetsPerDay
+                        options
+                        String.fromFloat
+                        SetSachetsPerDay
+                        String.fromFloat
+                        "form-input select"
+                        True
                   ]
                 , [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion EatenWithWater
                   , viewBoolInput language

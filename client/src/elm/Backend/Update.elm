@@ -39,6 +39,8 @@ import Backend.Model exposing (..)
 import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
 import Backend.NCDEncounter.Update
+import Backend.Nurse.Model
+import Backend.Nurse.Update
 import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
@@ -3165,6 +3167,20 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
         HandleFetchedTraceContact id data ->
             ( { model | traceContacts = Dict.insert id data model.traceContacts }
             , Cmd.none
+            , []
+            )
+
+        MsgNurse updatedNurseId subMsg ->
+            let
+                requests =
+                    Dict.get updatedNurseId model.nurseRequests
+                        |> Maybe.withDefault Backend.Nurse.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.Nurse.Update.update currentDate subMsg requests
+            in
+            ( { model | nurseRequests = Dict.insert updatedNurseId subModel model.nurseRequests }
+            , Cmd.map (MsgNurse updatedNurseId) subCmd
             , []
             )
 

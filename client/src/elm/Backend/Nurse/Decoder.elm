@@ -1,7 +1,16 @@
 module Backend.Nurse.Decoder exposing (decodeNurse)
 
 import Backend.Nurse.Model exposing (..)
+import Backend.Nurse.Utils exposing (resilienceRoleFromString)
+import Backend.Person.Decoder
+    exposing
+        ( decodeEducationLevel
+        , decodeGender
+        , decodeMaritalStatus
+        , decodeUbudehe
+        )
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
@@ -16,6 +25,14 @@ decodeNurse =
         |> optional "role" decodeRoles EverySet.empty
         |> optional "email" (map Just string) Nothing
         |> required "pin_code" string
+        |> optional "resilience_program" bool False
+        |> optional "resilience_start_date" (nullable decodeYYYYMMDD) Nothing
+        |> optional "resilience_role" (nullable decodeResilienceRole) Nothing
+        |> optional "birth_date" (nullable decodeYYYYMMDD) Nothing
+        |> optional "gender" (nullable decodeGender) Nothing
+        |> optional "education_level" (nullable decodeEducationLevel) Nothing
+        |> optional "ubudehe" (nullable decodeUbudehe) Nothing
+        |> optional "marital_status" (nullable decodeMaritalStatus) Nothing
 
 
 decodeRoles : Decoder (EverySet Role)
@@ -32,11 +49,11 @@ decodeRole =
         |> andThen
             (\s ->
                 case s of
-                    "nurse" ->
-                        succeed RoleNurse
-
                     "admin" ->
                         succeed RoleAdministrator
+
+                    "nurse" ->
+                        succeed RoleNurse
 
                     "chw" ->
                         succeed RoleCHW
@@ -44,5 +61,20 @@ decodeRole =
                     _ ->
                         fail <|
                             s
-                                ++ " is not a recognized role."
+                                ++ " is not a recognized Role."
+            )
+
+
+decodeResilienceRole : Decoder ResilienceRole
+decodeResilienceRole =
+    string
+        |> andThen
+            (\s ->
+                resilienceRoleFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
+                            s
+                                ++ " is not a recognized ResilienceRole."
+                        )
             )

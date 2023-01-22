@@ -87,6 +87,7 @@ type alias ModelIndexedDb =
     , wellChildEncounterRequests : Dict WellChildEncounterId Backend.WellChildEncounter.Model.Model
     , ncdEncounterRequests : Dict NCDEncounterId Backend.NCDEncounter.Model.Model
     , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
+    , nurseRequests : Dict NurseId Backend.Nurse.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -208,6 +209,7 @@ emptyModelIndexedDb =
     , ncdEncounterRequests = Dict.empty
     , traceContactRequests = Dict.empty
     , individualSessionRequests = Dict.empty
+    , nurseRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
     , relationshipsByPerson = Dict.empty
@@ -381,6 +383,7 @@ type MsgIndexedDb
     | MsgNCDEncounter NCDEncounterId Backend.NCDEncounter.Model.Msg
     | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
+    | MsgNurse NurseId Backend.Nurse.Model.Msg
     | ResetFailedToFetchAuthorities
 
 
