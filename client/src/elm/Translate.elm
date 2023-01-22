@@ -116,7 +116,7 @@ import Pages.NCD.RecurrentActivity.Types
 import Pages.Nutrition.Activity.Model
 import Pages.Page exposing (..)
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
-import Pages.PinCode.Model exposing (MainMenuActivity(..))
+import Pages.PinCode.Model exposing (MainMenuActivity(..), ResilienceReminderType(..))
 import Pages.Prenatal.Activity.Types
     exposing
         ( EarlyMastitisOrEngorgmentReliefMethod(..)
@@ -1292,6 +1292,10 @@ type TranslationId
     | ResilienceKickOffRoleQuestion
     | ResilienceKickOffUbudeheQuestion
     | ResilienceRole ResilienceRole
+    | ResilienceReminderHeader String ResilienceReminderType
+    | ResilienceReminderParagraph1 ResilienceReminderType
+    | ResilienceReminderParagraph2 ResilienceReminderType
+    | ResilienceReminderFooter ResilienceReminderType
     | ResilienceSurveyQuestionOption ResilienceSurveyQuestionOption
     | ResolveMonth Bool Month
     | ResolveMonthYY Int Bool Month
@@ -14852,6 +14856,54 @@ translationSet trans =
             { english = "What is your Ubudehe category"
             , kinyarwanda = Nothing
             }
+
+        ResilienceReminderHeader name reminderType ->
+            case reminderType of
+                ResilienceReminderDrinkWatter ->
+                    { english = "Hello " ++ name ++ ", You should drink water!"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceReminderTakeBreak ->
+                    { english = "You deserve it! Break time."
+                    , kinyarwanda = Nothing
+                    }
+
+        ResilienceReminderParagraph1 reminderType ->
+            case reminderType of
+                ResilienceReminderDrinkWatter ->
+                    { english = "There are things that can help you manage extreme fatigue and stress. Feeling tired? Drink water! Drinking water helps every part of your body function properly. For example: your brain works better and you are more energized."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceReminderTakeBreak ->
+                    { english = "A short break or time between work can boost your energy and help you do your job better."
+                    , kinyarwanda = Nothing
+                    }
+
+        ResilienceReminderParagraph2 reminderType ->
+            case reminderType of
+                ResilienceReminderDrinkWatter ->
+                    { english = "Then, set a reminder in your phone and it will remind you to drink a glass of water every few hours."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceReminderTakeBreak ->
+                    { english = "Try to take a break between tasks/short breaks. Do a breathing exercise, stretch your shoulders and arms. You will feel calm and ready to do well whatever comes next."
+                    , kinyarwanda = Nothing
+                    }
+
+        ResilienceReminderFooter reminderType ->
+            case reminderType of
+                ResilienceReminderDrinkWatter ->
+                    { english = "Remember: Don’t count the days, make the days count."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceReminderTakeBreak ->
+                    { english = "Remember: The stiller you are, the calmer life is. Take a moment to be still."
+                    , kinyarwanda = Nothing
+                    }
 
         ResilienceRole role ->
             case role of
