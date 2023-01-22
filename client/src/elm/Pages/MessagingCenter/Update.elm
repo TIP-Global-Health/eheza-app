@@ -150,12 +150,18 @@ update currentDate msg model =
               ]
             )
 
-        SetMonthlySurveyAnswer updateFunc value ->
+        SetMonthlySurveyAnswer question answer ->
             let
                 updatedForm =
-                    updateFunc value model.monthlySurveyForm
+                    Dict.insert question answer model.monthlySurveyForm
             in
             ( { model | monthlySurveyForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveResilienceSurvey _ _ ->
+            ( model
             , Cmd.none
             , []
             )

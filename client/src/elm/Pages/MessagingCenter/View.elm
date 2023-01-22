@@ -211,7 +211,7 @@ viewKickOffSurvey language currentDate nurseId nurse form =
 viewMonthlySurvey : Language -> NominalDate -> NurseId -> MonthlySurveyForm -> Html Msg
 viewMonthlySurvey language currentDate nurseId form =
     let
-        questionInput question currentValue updateFunc =
+        questionInput question =
             [ viewCustomLabel language (Translate.ResilienceMonthlySurveyQuestion question) "." "label"
             , viewCustomLabel language Translate.ChooseOne ":" "instructions"
             , viewCheckBoxSelectInput language
@@ -222,57 +222,31 @@ viewMonthlySurvey language currentDate nurseId form =
                 , ResilienceSurveyQuestionOption4
                 ]
                 []
-                currentValue
-                (SetMonthlySurveyAnswer updateFunc)
+                (Dict.get question form)
+                (SetMonthlySurveyAnswer question)
                 Translate.ResilienceSurveyQuestionOption
             ]
 
-        question1Input =
-            questionInput ResilienceSurveyQuestion1
-                form.answer1
-                (\value form_ ->
-                    { form_ | answer1 = Just value }
-                )
-
-        question2Input =
-            questionInput ResilienceSurveyQuestion2
-                form.answer2
-                (\value form_ ->
-                    { form_ | answer2 = Just value }
-                )
-
-        question3Input =
-            questionInput ResilienceSurveyQuestion3
-                form.answer3
-                (\value form_ ->
-                    { form_ | answer3 = Just value }
-                )
-
-        question4Input =
-            questionInput ResilienceSurveyQuestion4
-                form.answer4
-                (\value form_ ->
-                    { form_ | answer4 = Just value }
-                )
+        questions =
+            [ ResilienceSurveyQuestion1
+            , ResilienceSurveyQuestion2
+            , ResilienceSurveyQuestion3
+            , ResilienceSurveyQuestion4
+            ]
 
         tasksCompleted =
-            taskCompleted form.answer1
-                + taskCompleted form.answer2
-                + taskCompleted form.answer3
-                + taskCompleted form.answer4
+            Dict.size form
 
         totalTasks =
-            4
+            List.length questions
     in
     div [ class "ui unstackable items" ]
         [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
         , div [ class "ui full segment" ]
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|
-                    question1Input
-                        ++ question2Input
-                        ++ question3Input
-                        ++ question4Input
+                    List.concat <|
+                        List.map questionInput questions
                 , div [ class "actions" ]
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]

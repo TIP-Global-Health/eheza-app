@@ -1,11 +1,16 @@
 module Pages.MessagingCenter.Model exposing (..)
 
-import AssocList exposing (Dict)
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Gender)
 import Backend.Nurse.Model exposing (Nurse, ResilienceRole)
 import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
-import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption)
+import Backend.ResilienceSurvey.Model
+    exposing
+        ( ResilienceSurvey
+        , ResilienceSurveyQuestion
+        , ResilienceSurveyQuestionOption
+        )
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
@@ -54,20 +59,12 @@ emptyKickOffForm =
 
 
 type alias MonthlySurveyForm =
-    { answer1 : Maybe ResilienceSurveyQuestionOption
-    , answer2 : Maybe ResilienceSurveyQuestionOption
-    , answer3 : Maybe ResilienceSurveyQuestionOption
-    , answer4 : Maybe ResilienceSurveyQuestionOption
-    }
+    Dict ResilienceSurveyQuestion ResilienceSurveyQuestionOption
 
 
 emptyMonthlySurveyForm : MonthlySurveyForm
 emptyMonthlySurveyForm =
-    { answer1 = Nothing
-    , answer2 = Nothing
-    , answer3 = Nothing
-    , answer4 = Nothing
-    }
+    Dict.empty
 
 
 type Msg
@@ -80,4 +77,5 @@ type Msg
     | SetUbudehe String
     | SetMaritalStatus String
     | SaveKickOffSurvey NurseId Nurse
-    | SetMonthlySurveyAnswer (ResilienceSurveyQuestionOption -> MonthlySurveyForm -> MonthlySurveyForm) ResilienceSurveyQuestionOption
+    | SetMonthlySurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
+    | SaveResilienceSurvey NurseId ResilienceSurvey
