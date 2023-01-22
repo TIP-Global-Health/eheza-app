@@ -29,7 +29,14 @@ import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.Utils exposing (taskCompleted, viewCheckBoxSelectInput, viewQuestionLabel, viewSelectListInput)
+import Pages.Utils
+    exposing
+        ( taskCompleted
+        , viewCheckBoxSelectInput
+        , viewCustomLabel
+        , viewQuestionLabel
+        , viewSelectListInput
+        )
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
@@ -205,7 +212,8 @@ viewMonthlySurvey : Language -> NominalDate -> NurseId -> MonthlySurveyForm -> H
 viewMonthlySurvey language currentDate nurseId form =
     let
         questionInput question currentValue updateFunc =
-            [ viewQuestionLabel language <| Translate.ResilienceMonthlySurveyQuestion question
+            [ viewCustomLabel language (Translate.ResilienceMonthlySurveyQuestion question) "." "label"
+            , viewCustomLabel language Translate.ChooseOne ":" "instructions"
             , viewCheckBoxSelectInput language
                 [ ResilienceSurveyQuestionOption0
                 , ResilienceSurveyQuestionOption1

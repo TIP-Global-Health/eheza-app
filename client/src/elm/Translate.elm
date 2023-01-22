@@ -486,6 +486,7 @@ type TranslationId
     | Children
     | ChildrenNames
     | ChildrenNationalId
+    | ChooseOne
     | CHWAction CHWAction
     | ChwActivity
     | Clear
@@ -3362,6 +3363,11 @@ translationSet trans =
         ChildrenNationalId ->
             { english = "Children's National ID"
             , kinyarwanda = Just "Indangamuntu y'umwana"
+            }
+
+        ChooseOne ->
+            { english = "Choose one"
+            , kinyarwanda = Nothing
             }
 
         CHWAction value ->
