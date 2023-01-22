@@ -6,13 +6,14 @@ import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse, ResilienceRole(..))
 import Backend.Nurse.Utils exposing (resilienceRoleToString)
-import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
+import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortEncounterTuplesDesc)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), Ubudehe(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
 import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestion(..)
         , ResilienceSurveyQuestionOption(..)
+        , ResilienceSurveyType(..)
         )
 import Backend.ResilienceSurvey.Utils exposing (resilienceSurveyQuestionOptionToString)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
@@ -61,8 +62,36 @@ view language currentDate nurseId nurse db model =
 
         content =
             Maybe.map
-                (\startDate ->
-                    viewMonthlySurvey language currentDate nurseId model.monthlySurveyForm
+                (\programStartDate ->
+                    Dict.get nurseId db.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (\surveys ->
+                                let
+                                    surveysSorted =
+                                        Dict.values surveys
+                                            |> List.sortWith (sortByDateDesc .dateMeasured)
+
+                                    runMonthlySurvery =
+                                        List.filter (.surveyType >> (==) ResilienceSurveyMonthly) surveysSorted
+                                            |> List.head
+                                            |> Maybe.map
+                                                (\survey ->
+                                                    -- Run monthly survey if one months has passed since
+                                                    -- last monthly survey was completed.
+                                                    Date.diff Months survey.dateMeasured currentDate >= 1
+                                                )
+                                            -- No monthly survey were performed, so we need to run one if
+                                            -- one months has passed since program has started.
+                                            |> Maybe.withDefault (Date.diff Months programStartDate currentDate >= 1)
+                                in
+                                if runMonthlySurvery then
+                                    viewMonthlySurvey language currentDate nurseId model.monthlySurveyForm
+
+                                else
+                                    viewMessagingCenter language currentDate nurseId
+                            )
+                        |> Maybe.withDefault (viewMessagingCenter language currentDate nurseId)
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
@@ -250,3 +279,8 @@ viewMonthlySurvey language currentDate nurseId form =
                 ]
             ]
         ]
+
+
+viewMessagingCenter : Language -> NominalDate -> NurseId -> Html Msg
+viewMessagingCenter language currentDate nurseId =
+    text "@todo viewMessagingCenter"
