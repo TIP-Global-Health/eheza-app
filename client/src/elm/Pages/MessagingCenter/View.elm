@@ -26,7 +26,7 @@ import Html.Events exposing (onClick, onInput)
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (..)
+import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.Utils
@@ -227,18 +227,11 @@ viewMonthlySurvey language currentDate nurseId form =
                 Translate.ResilienceSurveyQuestionOption
             ]
 
-        questions =
-            [ ResilienceSurveyQuestion1
-            , ResilienceSurveyQuestion2
-            , ResilienceSurveyQuestion3
-            , ResilienceSurveyQuestion4
-            ]
-
         tasksCompleted =
             Dict.size form
 
         totalTasks =
-            List.length questions
+            List.length monthlySurveyQuestions
     in
     div [ class "ui unstackable items" ]
         [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
@@ -246,12 +239,11 @@ viewMonthlySurvey language currentDate nurseId form =
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|
                     List.concat <|
-                        List.map questionInput questions
+                        List.map questionInput monthlySurveyQuestions
                 , div [ class "actions" ]
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-
-                        -- , onClick <| SaveMonthlySurvey nurseId nurse
+                        , onClick <| SaveMonthlySurvey nurseId
                         ]
                         [ text <| translate language Translate.Save ]
                     ]

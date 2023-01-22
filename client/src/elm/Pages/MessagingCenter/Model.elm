@@ -78,4 +78,4 @@ type Msg
     | SetMaritalStatus String
     | SaveKickOffSurvey NurseId Nurse
     | SetMonthlySurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
-    | SaveResilienceSurvey NurseId ResilienceSurvey
+    | SaveMonthlySurvey NurseId

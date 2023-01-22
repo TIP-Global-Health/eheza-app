@@ -61,6 +61,8 @@ import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
+import Backend.ResilienceSurvey.Model
+import Backend.ResilienceSurvey.Update
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
@@ -3181,6 +3183,20 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | nurseRequests = Dict.insert updatedNurseId subModel model.nurseRequests }
             , Cmd.map (MsgNurse updatedNurseId) subCmd
+            , []
+            )
+
+        MsgResilienceSurvey surveyNurseId subMsg ->
+            let
+                requests =
+                    Dict.get surveyNurseId model.resilienceSurveyRequests
+                        |> Maybe.withDefault Backend.ResilienceSurvey.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.ResilienceSurvey.Update.update currentDate subMsg requests
+            in
+            ( { model | resilienceSurveyRequests = Dict.insert surveyNurseId subModel model.resilienceSurveyRequests }
+            , Cmd.map (MsgResilienceSurvey surveyNurseId) subCmd
             , []
             )
 

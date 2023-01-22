@@ -42,7 +42,7 @@ type ResilienceSurveyQuestionOption
 
 
 type alias Model =
-    { createResilienceSurvey : WebData () }
+    { createResilienceSurvey : WebData ( ResilienceSurveyId, ResilienceSurvey ) }
 
 
 emptyModel : Model
@@ -51,5 +51,5 @@ emptyModel =
 
 
 type Msg
-    = CreateResilienceSurvey ResilienceSurveyId ResilienceSurvey
-    | HandleCreatedResilienceSurvey (WebData ())
+    = CreateResilienceSurvey ResilienceSurvey
+    | HandleCreatedResilienceSurvey (WebData ( ResilienceSurveyId, ResilienceSurvey ))

@@ -25,5 +25,5 @@ createResilienceSurvey : NominalDate -> ResilienceSurvey -> Model -> ( Model, Cm
 createResilienceSurvey currentDate survey model =
     ( { model | createResilienceSurvey = Loading }
     , sw.post resilienceSurveyEndpoint survey
-        |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandleCreatedResilienceSurvey)
+        |> toCmd (RemoteData.fromResult >> HandleCreatedResilienceSurvey)
     )
