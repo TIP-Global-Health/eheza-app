@@ -1214,5 +1214,5 @@ ncdHbA1cTestEndpoint =
 
 resilienceSurveyEndpoint : ReadWriteEndPoint Error ResilienceSurveyId ResilienceSurvey ResilienceSurvey ()
 resilienceSurveyEndpoint =
-    swEndpoint "nodes/counseling_topic" decodeResilienceSurvey
+    swEndpoint "nodes/resilience_survey" decodeResilienceSurvey
         |> withValueEncoder (object << encodeResilienceSurvey)
