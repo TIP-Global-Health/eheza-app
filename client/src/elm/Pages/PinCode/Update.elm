@@ -35,3 +35,9 @@ update msg model =
             , Cmd.none
             , Nothing
             )
+
+        SetNotifyOfUnreadMessages value ->
+            ( { model | notifyOfUnreadMessages = value }
+            , Cmd.none
+            , Nothing
+            )

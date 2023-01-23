@@ -9,12 +9,16 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { code : String }
+    { code : String
+    , notifyOfUnreadMessages : Bool
+    }
 
 
 emptyModel : Model
 emptyModel =
-    { code = "" }
+    { code = ""
+    , notifyOfUnreadMessages = False
+    }
 
 
 type Msg
@@ -23,6 +27,7 @@ type Msg
     | HandleLogoutClicked
     | SendOutMsg OutMsg
     | SetPinCode String
+    | SetNotifyOfUnreadMessages Bool
 
 
 {-| The message we return when we want to actually attempt a login, or logout.

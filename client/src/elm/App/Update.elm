@@ -931,6 +931,11 @@ update msg model =
                                 |> MsgLoggedIn
                                 |> List.singleton
 
+                        PinCodePage ->
+                            Pages.PinCode.Model.SetNotifyOfUnreadMessages True
+                                |> MsgPagePinCode
+                                |> List.singleton
+
                         _ ->
                             []
             in

@@ -15,6 +15,7 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
 import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -24,7 +25,16 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, activityCardWithCounter, spinner, viewLogo, viewModal)
 
 
-view : Language -> Time.Posix -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Model -> ModelIndexedDb -> Html Msg
+view :
+    Language
+    -> Time.Posix
+    -> Page
+    -> WebData ( NurseId, Nurse )
+    -> ( Maybe HealthCenterId, Maybe VillageId )
+    -> Maybe String
+    -> Model
+    -> ModelIndexedDb
+    -> Html Msg
 view language currentTime activePage nurseData ( healthCenterId, villageId ) deviceName model db =
     let
         ( header, content ) =
@@ -239,12 +249,8 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
 
                     viewCardFunc =
                         if activity == MenuMessagingCenter then
-                            let
-                                unread =
-                                    -- @todo
-                                    8
-                            in
-                            activityCardWithCounter unread
+                            resolveNumberOfUnreadMessages db
+                                |> activityCardWithCounter
 
                         else
                             activityCard
@@ -371,6 +377,48 @@ resilienceReminderDialog language currentTime nurseId nurse =
                     )
         )
         nurse.resilienceProgramStartDate
+
+
+resilienceNotificationDialog : Language -> Nurse -> ModelIndexedDb -> Model -> Maybe (Html Msg)
+resilienceNotificationDialog language nurse db model =
+    if model.notifyOfUnreadMessages then
+        let
+            numberOfUnreadMessages =
+                resolveNumberOfUnreadMessages db
+        in
+        if numberOfUnreadMessages > 0 then
+            Just <|
+                div [ class "ui active modal notification" ]
+                    [ div [ class "header" ]
+                        [ text <|
+                            translate language <|
+                                Translate.ResilienceNotificationHeader nurse.name
+                        ]
+                    , div [ class "content" ]
+                        [ p [] [ text <| translate language <| Translate.ResilienceNotificationNumberOfUnread numberOfUnreadMessages ]
+                        , p [] [ text <| translate language Translate.ResilienceNotificationReadNowQuestion ]
+                        ]
+                    , div [ class "actions" ]
+                        [ div [ class "two ui buttons" ]
+                            [ button
+                                [ class "ui fluid button"
+                                , onClick <| SetNotifyOfUnreadMessages False
+                                ]
+                                [ text <| translate language Translate.Ignore ]
+                            , button
+                                [ class "ui primary fluid button"
+                                , onClick <| SendOutMsg <| SetActivePage <| UserPage MessagingCenterPage
+                                ]
+                                [ text <| translate language Translate.Read ]
+                            ]
+                        ]
+                    ]
+
+        else
+            Nothing
+
+    else
+        Nothing
 
 
 resolveResilienceReminderType : Time.Posix -> NominalDate -> Maybe ResilienceReminderType
