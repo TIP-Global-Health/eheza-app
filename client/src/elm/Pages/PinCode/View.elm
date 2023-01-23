@@ -298,7 +298,7 @@ resilienceReminderDialog language currentTime nurseId nurse =
     Maybe.andThen
         (\programStartDate ->
             resolveResilienceReminderType currentTime programStartDate
-                |> Maybe.map
+                |> Maybe.andThen
                     (\reminderType ->
                         let
                             showReminder =
@@ -337,36 +337,37 @@ resilienceReminderDialog language currentTime nurseId nurse =
                                             resolveTomorrow8AmUTC currentTime
 
                                         ResilienceReminderTakeBreak ->
-                                            Time.Extra.add Time.Extra.Hour 8 Time.utc currentTime
+                                            Time.Extra.add Time.Extra.Hour 1 Time.utc currentTime
 
                                 nurseWithUpdatedReminder =
                                     { nurse | resilienceNextReminder = Just nextReminder }
                             in
-                            div [ class "ui tiny active modal" ]
-                                [ div [ class "header" ]
-                                    [ text <|
-                                        translate language <|
-                                            Translate.ResilienceReminderHeader nurse.name reminderType
-                                    ]
-                                , div
-                                    [ class "content" ]
-                                    [ p [] [ text <| translate language <| Translate.ResilienceReminderParagraph1 reminderType ]
-                                    , p [] [ text <| translate language <| Translate.ResilienceReminderParagraph2 reminderType ]
-                                    ]
-                                , div [ class "footer" ]
-                                    [ text <| translate language <| Translate.ResilienceReminderFooter reminderType ]
-                                , div
-                                    [ class "actions" ]
-                                    [ button
-                                        [ class "ui primary fluid button"
-                                        , onClick <| SendOutMsg <| UpdateNurse nurseId nurseWithUpdatedReminder
+                            Just <|
+                                div [ class "ui active modal reminder" ]
+                                    [ div [ class "header" ]
+                                        [ text <|
+                                            translate language <|
+                                                Translate.ResilienceReminderHeader nurse.name reminderType
                                         ]
-                                        [ text <| translate language Translate.OK ]
+                                    , div
+                                        [ class "content" ]
+                                        [ p [] [ text <| translate language <| Translate.ResilienceReminderParagraph1 reminderType ]
+                                        , p [] [ text <| translate language <| Translate.ResilienceReminderParagraph2 reminderType ]
+                                        ]
+                                    , div [ class "footer" ]
+                                        [ text <| translate language <| Translate.ResilienceReminderFooter reminderType ]
+                                    , div
+                                        [ class "actions" ]
+                                        [ button
+                                            [ class "ui primary fluid button"
+                                            , onClick <| SendOutMsg <| UpdateNurse nurseId nurseWithUpdatedReminder
+                                            ]
+                                            [ text <| translate language Translate.OK ]
+                                        ]
                                     ]
-                                ]
 
                         else
-                            emptyNode
+                            Nothing
                     )
         )
         nurse.resilienceProgramStartDate
