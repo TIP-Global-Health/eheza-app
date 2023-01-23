@@ -15,6 +15,7 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Maybe.Extra
 import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
 import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
@@ -56,7 +57,16 @@ view language currentTime activePage nurseData ( healthCenterId, villageId ) dev
                                     |> Maybe.withDefault False
                     in
                     ( viewLoggedInHeader language nurse selectedAuthorizedLocation
-                    , viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db
+                    , viewLoggedInContent language
+                        currentTime
+                        nurseId
+                        nurse
+                        ( healthCenterId, villageId )
+                        isChw
+                        deviceName
+                        selectedAuthorizedLocation
+                        db
+                        model
                     )
 
                 _ ->
@@ -172,8 +182,9 @@ viewLoggedInContent :
     -> Maybe String
     -> Bool
     -> ModelIndexedDb
+    -> Model
     -> List (Html Msg)
-viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db =
+viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db model =
     let
         logoutButton =
             button
@@ -284,7 +295,9 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
         , cards
         , logoutButton
         , viewModal <|
-            resilienceReminderDialog language currentTime nurseId nurse
+            Maybe.Extra.or
+                (resilienceReminderDialog language currentTime nurseId nurse)
+                (resilienceNotificationDialog language nurse db model)
         ]
 
     else
@@ -401,7 +414,7 @@ resilienceNotificationDialog language nurse db model =
                     , div [ class "actions" ]
                         [ div [ class "two ui buttons" ]
                             [ button
-                                [ class "ui fluid button"
+                                [ class "ui velvet button"
                                 , onClick <| SetNotifyOfUnreadMessages False
                                 ]
                                 [ text <| translate language Translate.Ignore ]
