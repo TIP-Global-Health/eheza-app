@@ -402,6 +402,43 @@ div.page-pincode {
     }
   }
 
+  .ui.active.modal.reminder {
+    border-top: 10px solid $color-velvet;
+    color: $color-text;
+
+    .header {
+      font-size: 22px;
+      padding-left: 20px;
+      padding-right: 20px;
+      text-transform: none;
+    }
+
+    .content,
+    .footer {
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.25;
+      padding-left: 20px;
+      padding-right: 20px;
+
+      p {
+        text-align: left;
+        margin-bottom: 20px;
+      }
+    }
+
+    .content {
+      padding-bottom: 0;
+    }
+
+    .footer {
+      padding-bottom: 20px;
+    }
+
+    .actions button {
+      margin: 0;
+    }
+  }
 }
 
 //Device Status Page
