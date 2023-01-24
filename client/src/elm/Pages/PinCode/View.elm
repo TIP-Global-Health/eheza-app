@@ -15,7 +15,7 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Maybe.Extra
+import Maybe.Extra exposing (isJust)
 import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
 import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
@@ -394,7 +394,7 @@ resilienceReminderDialog language currentTime nurseId nurse =
 
 resilienceNotificationDialog : Language -> Nurse -> ModelIndexedDb -> Model -> Maybe (Html Msg)
 resilienceNotificationDialog language nurse db model =
-    if model.notifyOfUnreadMessages then
+    if model.notifyOfUnreadMessages && isJust nurse.resilienceProgramStartDate then
         let
             numberOfUnreadMessages =
                 resolveNumberOfUnreadMessages db
