@@ -1285,6 +1285,8 @@ type TranslationId
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
+    | ResilienceMessageIntroduction1Title
+    | ResilienceMessageIntroduction1Paragraph1 String
     | ResilienceMessageIntroduction1Paragraph2
     | ResilienceMessageIntroduction1Paragraph3
     | ResilienceMessageIntroduction2Paragraph
@@ -14843,6 +14845,16 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Raporo irarangiye"
             }
 
+        ResilienceMessageIntroduction1Title ->
+            { english = "Welcome to the work based resilience messaging program."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction1Paragraph1 name ->
+            { english = "Hello " ++ name ++ ". Welcome to the work-based resilience program. As healthcare providers, we often face obstacles and challenges; for example: a lot of work, various responsibilities (including those at home), listening to patients with different problems, etc."
+            , kinyarwanda = Nothing
+            }
+
         ResilienceMessageIntroduction1Paragraph2 ->
             { english = "You will be receiving short messages 3 times a week for six months. Those messages will help healthcare workers like us make progress in the quality of our work and learn how to cope with extreme fatigue and stress."
             , kinyarwanda = Nothing
@@ -15053,6 +15065,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        -- @todo: remove this.
         ResilienceMessage message ->
             case message of
                 ResilienceMessageIntroduction1 ->

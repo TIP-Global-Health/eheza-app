@@ -9,6 +9,7 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortEncounterTuplesDesc)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), Ubudehe(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
+import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestion(..)
@@ -284,3 +285,33 @@ viewMonthlySurvey language currentDate nurseId form =
 viewMessagingCenter : Language -> NominalDate -> NurseId -> Html Msg
 viewMessagingCenter language currentDate nurseId =
     text "@todo viewMessagingCenter"
+
+
+viewResilienceMessage : Language -> Nurse -> ResilienceMessage -> Html Msg
+viewResilienceMessage language nurse message =
+    case message.category of
+        ResilienceCategoryIntroduction ->
+            div [ class "resilience-message introduction" ] <|
+                viewIntroductionMessage language nurse message.order
+
+        _ ->
+            --@todo: Add remaining categories.
+            emptyNode
+
+
+viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> List (Html Msg)
+viewIntroductionMessage language nurse order =
+    case order of
+        ResilienceMessage1 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageIntroduction1Title ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language <| Translate.ResilienceMessageIntroduction1Paragraph1 nurse.name ]
+                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction1Paragraph2 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction1Paragraph3 ]
+                ]
+            ]
+
+        _ ->
+            --@todo: Add remaining messages by order.
+            []
