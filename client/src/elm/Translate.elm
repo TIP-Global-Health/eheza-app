@@ -61,6 +61,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.ResilienceMessage.Model exposing (ResilienceMessageType(..))
 import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestion(..)
@@ -1284,6 +1285,49 @@ type TranslationId
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
+    | ResilienceMessageIntroduction1Paragraph2
+    | ResilienceMessageIntroduction1Paragraph3
+    | ResilienceMessageIntroduction2Paragraph
+    | ResilienceMessageIntroduction2Bullet1
+    | ResilienceMessageIntroduction2Bullet2
+    | ResilienceMessageIntroduction2Bullet3
+    | ResilienceMessageIntroduction2Bullet4
+    | ResilienceMessageIntroduction2Bullet5
+    | ResilienceMessageIntroduction3Paragraph1
+    | ResilienceMessageIntroduction3Paragraph2
+    | ResilienceMessageIntroduction4Paragraph1
+    | ResilienceMessageIntroduction4Bullet3
+    | ResilienceMessageIntroduction4Bullet1
+    | ResilienceMessageIntroduction4Bullet2
+    | ResilienceMessageIntroduction4Paragraph2
+    | ResilienceMessageIntroduction7Paragraph1
+    | ResilienceMessageIntroduction8Paragraph1
+    | ResilienceMessageIntroduction8Paragraph2
+    | ResilienceMessageGrowth1Paragraph1
+    | ResilienceMessageGrowth2Paragraph1
+    | ResilienceMessageGrowth2Paragraph2
+    | ResilienceMessageGrowth3Paragraph1
+    | ResilienceMessageGrowth4Paragraph1
+    | ResilienceMessageStressManagement1Paragraph1
+    | ResilienceMessageStressManagement1Paragraph2
+    | ResilienceMessageStressManagement2Paragraph1
+    | ResilienceMessageStressManagement2Paragraph2
+    | ResilienceMessageStressManagement2Paragraph3
+    | ResilienceMessageStressManagement2Bullet1
+    | ResilienceMessageStressManagement2Bullet2
+    | ResilienceMessageStressManagement2Bullet3
+    | ResilienceMessageStressManagement3Paragraph1
+    | ResilienceMessageStressManagement4Paragraph1
+    | ResilienceMessageStressManagement4Paragraph2
+    | ResilienceMessageStressManagement5Paragraph1
+    | ResilienceMessageStressManagement5Paragraph2
+    | ResilienceMessageStressManagement6Paragraph1
+    | ResilienceMessageStressManagement7Paragraph1
+    | ResilienceMessageStressManagement7Bullet1
+    | ResilienceMessageStressManagement7Bullet2
+    | ResilienceMessageStressManagement7Bullet3
+    | ResilienceMessageMindfulness1Paragraph
+    | ResilienceMessage ResilienceMessageType
     | ResilienceMonthlySurveyQuestion ResilienceSurveyQuestion
     | ResilienceKickOffBirthDateQuestion
     | ResilienceKickOffEducationLevelQuestion
@@ -3581,7 +3625,7 @@ translationSet trans =
             }
 
         ContactWithCOVID19SymptomsHelper ->
-            { english = "Symptoms include: fever, dry cough, and shortness of breath"
+            { english = "Symptoms include:!!!! fever, dry cough, and shortness of breath"
             , kinyarwanda = Just "Ibimenyetso birimo: umuriro, inkorora y'akayi no guhumeka nabi"
             }
 
@@ -14798,6 +14842,398 @@ translationSet trans =
             { english = String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Completed"
             , kinyarwanda = Just <| String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Raporo irarangiye"
             }
+
+        ResilienceMessageIntroduction1Paragraph2 ->
+            { english = "You will be receiving short messages 3 times a week for six months. Those messages will help healthcare workers like us make progress in the quality of our work and learn how to cope with extreme fatigue and stress."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction1Paragraph3 ->
+            { english = "The aim of these messages is to help you as a healthcare worker feel better and more confident in your work and your daily life"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction2Paragraph ->
+            { english = "After this six-month journey, we hope that you will be able to"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction2Bullet1 ->
+            { english = "Know what to do when you are under extreme fatigue or stress"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction2Bullet2 ->
+            { english = "Recover after going through difficult times"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction2Bullet3 ->
+            { english = "Find time and learns ways to relax"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction2Bullet4 ->
+            { english = "Know how to get along well with those we live with and work with."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction2Bullet5 ->
+            { english = "Find happiness and enjoy life"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction3Paragraph1 ->
+            { english = "Read the messages in a timely manner and without distraction, think about them and act on them. Every prompt you will help you develop good habits."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction3Paragraph2 ->
+            { english = "Keep notes in your notebook about your thoughts and actions."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction4Paragraph1 ->
+            { english = "In order for this program to benefit you, we encourage you to:"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction4Bullet3 ->
+            { english = "Read all the messages you receive"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction4Bullet1 ->
+            { english = "Try to follow the prompts"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction4Bullet2 ->
+            { english = "Assess what helped you and what did not"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction4Paragraph2 ->
+            { english = "Share what you have learned with others who are in this program"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction7Paragraph1 ->
+            { english = "Remember that the more effort you put into this program, the more successful you will be."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction8Paragraph1 ->
+            { english = "You will be sent messages that will help you cope with extreme fatigue and stress."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction8Paragraph2 ->
+            { english = "Remember: It is not the load that breaks you down. It’s the way you carry it."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageGrowth1Paragraph1 ->
+            { english = "Remember: You don’t have to be great to start, but you do have to start to be great. So, let’s start!"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageGrowth2Paragraph1 ->
+            { english = "Your work is important and your clients appreciates the work you do."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageGrowth2Paragraph2 ->
+            { english = "Remember: Good things take time."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageGrowth3Paragraph1 ->
+            { english = "Remember: If it matters to you, you will find a way to do it."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageGrowth4Paragraph1 ->
+            { english = "Remember: A goal without a plan is just a wish."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement1Paragraph1 ->
+            { english = "What did you do to feel better again? Did you know that you can help yourself? Follow the tips in the messages, you may find some that will help you."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement1Paragraph2 ->
+            { english = "Remember: Sometimes you win, sometimes you learn."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement2Paragraph1 ->
+            { english = "When you are tired, you feel overwhelmed, and you do not get how to control it. During that time, you will feel scared, overloaded, unhappy, and weak."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement2Paragraph2 ->
+            { english = "Here are some simple ways to help you:"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement2Paragraph3 ->
+            { english = "Remember: No act of kindness is ever wasted."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement2Bullet1 ->
+            { english = "Talk to a trusted friend, a family member, or a co-worker"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement2Bullet2 ->
+            { english = "Spend your time doing something you love."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement2Bullet3 ->
+            { english = "Be kind to others."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement3Paragraph1 ->
+            { english = "Remember: One small positive thought in the morning can change your whole day."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement4Paragraph1 ->
+            { english = "These short messages give you advice and strategies for dealing with extreme fatigue and stress. So, choose what you can do and plan to do it in your life."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement4Paragraph2 ->
+            { english = "Remember: Real change happens one step at a time."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement5Paragraph1 ->
+            { english = "This will help you relax and do your work better the next day. Make it a habit to take care of yourself every day."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement5Paragraph2 ->
+            { english = "Remember: Make time to rest and be thankful."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement6Paragraph1 ->
+            { english = "Remember: If you see someone without a smile, give them one of yours."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement7Paragraph1 ->
+            { english = "Remember: When you help yourself, you help everyone around you."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement7Bullet1 ->
+            { english = "Find out what is causing your extreme fatigue and stress"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement7Bullet2 ->
+            { english = "Change what you can change. Small changes will help you learn how to behave."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageStressManagement7Bullet3 ->
+            { english = "Accept what you cannot change. There are things that are beyond your control."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageMindfulness1Paragraph ->
+            { english = "You can take regular breaks of a few minutes. Stretch your arms, take a moment to do a breathing exercise, and smile. Doing this on a regular basis can help you stay productive."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessage message ->
+            case message of
+                ResilienceMessageIntroduction1 ->
+                    { english = "Hello \"First name of the HCW\". Welcome to the work-based resilience program. As healthcare providers, we often face obstacles and challenges; for example: a lot of work, various responsibilities (including those at home), listening to patients with different problems, etc"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageIntroduction2 ->
+                    { english = "There are several things we face at work such as being given too many responsibilities and working overtime. However, we can at least learn how to deal with extreme fatigue and stress."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageIntroduction3 ->
+                    { english = "Prepare a special notebook that you will use for this program. Every message you will receive will help you think and act on a certain thing. Read the messages in a timely manner and without distraction, think about them and act on them. Every prompt you will help you develop good habits.\n Keep notes in your notebook about your thoughts and actions."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageIntroduction4 ->
+                    { english = "The more effort you put into this program, the more benefits you will get, you will learn how to take care of yourself, and how to be better at your job, as the days go by."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageIntroduction5 ->
+                    { english = "Every month, you will have time for self reflection, see what you have done and how it is helping you. It will be time to look through your notebook and think about what worked and what did not."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageIntroduction6 ->
+                    { english = "Some of these messages will be useful to you, and there are others which you might not find helpful. Keep writing in your notebook even though you do not fully understand the message. You might use it again depending on the situation or where you are."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageIntroduction7 ->
+                    { english = "It is good to be in this six-month program because it will help you feel better, get stronger, and give you knowledge/skills that helps you deal with life  and professional problems. This is a personal journey. You are the one to choose when to allocate time for this program.\n Remember that the more effort you put into this program, the more successful you will be."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageIntroduction8 ->
+                    { english = "We know the effort you put into your work and how exhausting it is. That is why these short messages that you receive will help you take care of yourself."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageGrowth1 ->
+                    { english = "Think about what you are good at. Make a list of the things you do well, then ask yourself why they are important to you and why they matter."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageGrowth2 ->
+                    { english = "It may feel like you are not doing well at your job, sometimes you work overtime. Think about how important your work is and how you help your clients. Before you go to bed at night, try to make a list of the good things you did today."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageGrowth3 ->
+                    { english = "In our daily life, we encounter challenges that make us forget what is important to us. Try to find time to think about what matters; is it your family, people you care about, your work/profession, or is it your well-being. Those are your strengths. Think whether you live a life that serve your values."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageGrowth4 ->
+                    { english = "Are there any changes you would like to make in your life? Set a goal of what you want to achieve each week. It does not have to be related to your work. Writing down your goal in a notebook will increase the chance of achieving it. Achieving a short goal will help you feel that you are the master of your life."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageStressManagement1 ->
+                    { english = "Think of a time when you felt bad: angry, sad... Maybe you were tired, restless, had a headache, or felt short of breath. These are all signs of extreme fatigue or stress."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageStressManagement2 ->
+                    { english = "Research has shown that 86% of nurses experience extreme fatigue or stress which means that other workers can experience it too. This does not mean that being stressed or tired is always a bad thing. It can help you solve problems and achieve your goals."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageStressManagement3 ->
+                    { english = "Make a list of things that worries you. Now think about how those things make you feel. Are you feeling angry, frustrated, or stressed? Or it's all three! Do not hesitate to give names to your feelings because it helps you manage them better."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageStressManagement4 ->
+                    { english = "Your work and family life can be challenging, and can make you feel depressed and incapable. If you make a small change in your life, you prepare yourself for difficult times."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageStressManagement5 ->
+                    { english = "To relax is important for building ourselves up. Find something you like to do after work that will help you relax: for example reading books, listening to the radio, physical exercising, dancing,…"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageStressManagement6 ->
+                    { english = "Making small changes in your daily life can help you cope with extreme fatigue and stress. Do a breathing exercise, talk to your friends, or drink water every once in a while. These small changes will help you feel better."
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageStressManagement7 ->
+                    { english = "Sometimes life can be challenging and it is easy to be discouraged. But you have strengths to face those challenges:"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageMindfulness1 ->
+                    { english = "Did you have a lot of work today? Did you know that taking a break between work and doing breathing exercises can prevent you from getting tired quickly"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageMindfulness2 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageMindfulness3 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageMindfulness4 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageMindfulness5 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageMindfulness6 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageConnecting1 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageConnecting2 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageConnecting3 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageConnecting4 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageConnecting5 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageConnecting6 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageSelfCare1 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageSelfCare2 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageSelfCare3 ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageEndOfFirstMonth ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceMessageEndOfSecondMonth ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         ResilienceMonthlySurveyQuestion question ->
             case question of
