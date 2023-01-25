@@ -4293,6 +4293,28 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
+        ResilienceMessageRevision uuid data ->
+            let
+                nurseMessages =
+                    Dict.get data.nurse model.resilienceMessagesByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                resilienceMessagesByNurse =
+                    Maybe.map
+                        (\messages ->
+                            let
+                                updatedMessages =
+                                    Dict.insert uuid data messages
+                            in
+                            Dict.insert data.nurse (Success updatedMessages) model.resilienceMessagesByNurse
+                        )
+                        nurseMessages
+                        |> Maybe.withDefault (Dict.insert data.nurse (Success (Dict.singleton uuid data)) model.resilienceMessagesByNurse)
+            in
+            ( { model | resilienceMessagesByNurse = resilienceMessagesByNurse }
+            , recalc
+            )
+
         ResilienceSurveyRevision uuid data ->
             let
                 nurseSurveys =
