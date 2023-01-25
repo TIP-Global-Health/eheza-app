@@ -1,12 +1,17 @@
 module Backend.ResilienceMessage.Model exposing (..)
 
 import Backend.Entities exposing (..)
+import Time
 
 
 type alias ResilienceMessage =
     { nurse : NurseId
     , category : ResilienceCategory
     , order : ResilienceMessageOrder
+    , displayDay : Int
+    , timeRead : Maybe Time.Posix
+    , nextReminder : Maybe Time.Posix
+    , isFavorite : Bool
     }
 
 
