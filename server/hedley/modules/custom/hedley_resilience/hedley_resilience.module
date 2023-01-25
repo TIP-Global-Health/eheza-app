@@ -6,3 +6,138 @@
  */
 
 include_once 'hedley_resilience.features.inc';
+
+/**
+ * Implements hook_node_insert().
+ */
+function hedley_resilience_node_insert($node) {
+  if ($node->type != 'nurse') {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $resilience_program = $wrapper->field_resilience_program->value();
+
+  if (!$resilience_program) {
+    // Program not enabled - no need to create messages for nurse.
+    return;
+  }
+
+  hedley_resilience_create_messages($node);
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function hedley_resilience_node_update($node) {
+  if ($node->type != 'nurse') {
+    return;
+  }
+
+  $wrapper_orig = entity_metadata_wrapper('node', $node->original);
+  $resilience_program_orig = $wrapper_orig->field_resilience_program->value();
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $resilience_program = $wrapper->field_resilience_program->value();
+
+  if ($resilience_program_orig !== FALSE && $resilience_program !== TRUE) {
+    // Update did not include enabling of resilience program, so,
+    // for sure, messages creation is not required.
+    return;
+  }
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'resilience_message')
+    ->fieldCondition('field_nurse', 'target_id', $node->nid);
+  $count = $query->count()->execute();
+
+  if ($count > 0) {
+    // Messages already exist for nurse. No need to
+    // create new ones.
+    return;
+  }
+
+  hedley_resilience_create_messages($node);
+}
+
+function hedley_resilience_create_messages($node) {
+  $account = user_load($node->uid);
+  if (empty($account)) {
+    global $user;
+    $account = $user;
+  }
+
+  $config = [
+    'introduction' => [
+      '1' => 0,
+      '2' => 0,
+      '3' => 0,
+      '4' => 0,
+      '5' => 2,
+      '6' => 2,
+      '7' => 2,
+      '8' => 2,
+    ],
+    'growth' => [
+      '1' => 5,
+      '2' => 28,
+      '3' => 49,
+      '4' => 61,
+    ],
+    'stress-management' => [
+      '1' => 7,
+      '2' => 9,
+      '3' => 33,
+      '4' => 44,
+      '5' => 54,
+      '6' => 63,
+      '7' => 65,
+    ],
+    'mindfulness' => [
+      '1' => 12,
+      '2' => 14,
+      '3' => 19,
+      '4' => 35,
+      '5' => 37,
+      '6' => 47,
+    ],
+    'connecting' => [
+      '1' => 16,
+      '2' => 23,
+      '3' => 26,
+      '4' => 40,
+      '5' => 51,
+      '6' => 68,
+    ],
+    'self-care' => [
+      '1' => 21,
+      '2' => 42,
+      '3' => 58,
+    ],
+    'end-of-period' => [
+      '1' => 30,
+      '2' => 56,
+    ],
+  ];
+
+  foreach ($config as $category => $values) {
+    foreach ($values as $order => $display_day) {
+      hedley_resilience_create_message($node->nid, $category, $order, $display_day, $account);
+    }
+  }
+}
+
+function hedley_resilience_create_message($nurse_id, $category, $order, $display_day, $account) {
+  $handler = restful_get_restful_handler('resilience-message');
+  $handler->setAccount($account);
+
+  $data = [
+    'nurse' => $nurse_id,
+    'resilience_category' => $category,
+    'resilience_order' => $order,
+    'display_day' => $display_day,
+  ];
+
+  $handler->post('', $data);
+}
