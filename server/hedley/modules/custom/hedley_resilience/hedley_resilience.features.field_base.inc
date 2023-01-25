@@ -76,7 +76,7 @@ function hedley_resilience_field_default_field_bases() {
         'mindfulness' => 'Mindfulness',
         'connecting' => 'Connecting',
         'self-care' => 'Self Care',
-        'end-of-period1' => 'End of Period',
+        'end-of-period' => 'End of Period',
       ),
       'allowed_values_function' => '',
     ),
