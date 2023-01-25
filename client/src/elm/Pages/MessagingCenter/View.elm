@@ -28,7 +28,7 @@ import Html.Events exposing (onClick, onInput)
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions)
+import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions, resolveNumberOfUnreadMessages)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.Utils
@@ -48,11 +48,14 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate nurseId nurse db model =
     let
+        numberOfUnreadMessages =
+            resolveNumberOfUnreadMessages db
+
         header =
             div [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
                     [ translateText language Translate.Wellbeing
-                    , span [ class "counter" ] [ text "8" ]
+                    , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
                     ]
                 , span
                     [ class "link-back"
