@@ -47,6 +47,9 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
+import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
+import Backend.ResilienceMessage.Encoder exposing (encodeResilienceMessage)
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.ResilienceSurvey.Encoder exposing (encodeResilienceSurvey)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
@@ -1216,11 +1219,18 @@ resilienceSurveyEndpoint : ReadWriteEndPoint Error ResilienceSurveyId Resilience
 resilienceSurveyEndpoint =
     swEndpoint "nodes/resilience_survey" decodeResilienceSurvey
         |> withValueEncoder (object << encodeResilienceSurvey)
-        |> withParamsEncoder encodeResilienceSurveyParams
+        |> withParamsEncoder encodeByNurseParam
 
 
-encodeResilienceSurveyParams : Maybe NurseId -> List ( String, String )
-encodeResilienceSurveyParams params =
+resilienceMessageEndpoint : ReadWriteEndPoint Error ResilienceMessageId ResilienceMessage ResilienceMessage (Maybe NurseId)
+resilienceMessageEndpoint =
+    swEndpoint "nodes/resilience_message" decodeResilienceMessage
+        |> withValueEncoder (object << encodeResilienceMessage)
+        |> withParamsEncoder encodeByNurseParam
+
+
+encodeByNurseParam : Maybe NurseId -> List ( String, String )
+encodeByNurseParam params =
     case params of
         Just id ->
             [ ( "nurse", fromEntityUuid id ) ]
