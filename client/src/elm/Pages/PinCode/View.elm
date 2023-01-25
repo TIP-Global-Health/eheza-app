@@ -295,6 +295,8 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
         , cards
         , logoutButton
         , viewModal <|
+            -- If both reminder and notification need to be presented,
+            -- reminder is given a priority.
             Maybe.Extra.or
                 (resilienceReminderDialog language currentTime nurseId nurse)
                 (resilienceNotificationDialog language currentTime nurse db model)
