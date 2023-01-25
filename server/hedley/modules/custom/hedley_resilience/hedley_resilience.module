@@ -61,6 +61,12 @@ function hedley_resilience_node_update($node) {
   hedley_resilience_create_messages($node);
 }
 
+/**
+ * Creates 36 resilience messages for given nurse.
+ *
+ * @param object $node
+ *   Node of Nurse, for whom messages are created.
+ */
 function hedley_resilience_create_messages($node) {
   $account = user_load($node->uid);
   if (empty($account)) {
@@ -128,6 +134,20 @@ function hedley_resilience_create_messages($node) {
   }
 }
 
+/**
+ * Creates resilience message using Restful handler.
+ *
+ * @param int $nurse_id
+ *   Node ID of Nurse, for whom messages are created.
+ * @param string $category
+ *   Message category.
+ * @param string $order
+ *   Message order.
+ * @param int $display_day
+ *   The day on which message is displayed (counting from program start day).
+ * @param object $account
+ *   User account which is set as owner of the message.
+ */
 function hedley_resilience_create_message($nurse_id, $category, $order, $display_day, $account) {
   $handler = restful_get_restful_handler('resilience-message');
   $handler->setAccount($account);
