@@ -25,6 +25,7 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       'field_gender',
       'field_marital_status',
       'field_ubudehe',
+      'field_next_reminder',
     ];
 
     foreach ($standard_fields_names as $field_name) {
@@ -78,6 +79,7 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       'field_ubudehe',
       'field_birth_date',
       'field_resilience_start_date',
+      'field_next_reminder',
     ];
 
     foreach ($field_names as $field_name) {

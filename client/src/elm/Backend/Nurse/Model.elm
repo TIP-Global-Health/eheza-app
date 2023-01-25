@@ -6,6 +6,7 @@ import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), Ubu
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
+import Time
 
 
 type alias Nurse =
@@ -23,6 +24,7 @@ type alias Nurse =
     , resilienceEducationLevel : Maybe EducationLevel
     , resilienceUbudehe : Maybe Ubudehe
     , resilienceMaritalStatus : Maybe MaritalStatus
+    , resilienceNextReminder : Maybe Time.Posix
     }
 
 

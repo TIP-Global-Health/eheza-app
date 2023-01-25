@@ -261,6 +261,7 @@ viewConfiguredModel model configured =
 
             PinCodePage ->
                 Pages.PinCode.View.view model.language
+                    model.currentTime
                     model.activePage
                     (RemoteData.map .nurse configured.loggedIn)
                     ( model.healthCenterId, model.villageId )
@@ -795,6 +796,7 @@ viewUserPage page deviceName model configured =
 
             else
                 Pages.PinCode.View.view model.language
+                    model.currentTime
                     model.activePage
                     (Success loggedInModel.nurse)
                     ( model.healthCenterId, model.villageId )
@@ -806,6 +808,7 @@ viewUserPage page deviceName model configured =
 
         Nothing ->
             Pages.PinCode.View.view model.language
+                model.currentTime
                 model.activePage
                 (RemoteData.map .nurse configured.loggedIn)
                 ( model.healthCenterId, model.villageId )

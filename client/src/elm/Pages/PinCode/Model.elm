@@ -3,7 +3,8 @@ module Pages.PinCode.Model exposing (..)
 {-| This models the PinCode entered by the user.
 -}
 
-import Backend.Entities exposing (HealthCenterId, VillageId)
+import Backend.Entities exposing (HealthCenterId, NurseId, VillageId)
+import Backend.Nurse.Model exposing (Nurse)
 import Pages.Page exposing (Page)
 
 
@@ -33,6 +34,7 @@ type OutMsg
     | SetActivePage Page
     | SetHealthCenter HealthCenterId
     | SetVillage VillageId
+    | UpdateNurse NurseId Nurse
 
 
 type MainMenuActivity
@@ -42,3 +44,8 @@ type MainMenuActivity
     | MenuCaseManagement
     | MenuDeviceStatus
     | MenuMessagingCenter
+
+
+type ResilienceReminderType
+    = ResilienceReminderDrinkWatter
+    | ResilienceReminderTakeBreak
