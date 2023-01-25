@@ -1,6 +1,7 @@
 module Backend.ResilienceMessage.Model exposing (..)
 
 import Backend.Entities exposing (..)
+import RemoteData exposing (RemoteData(..), WebData)
 import Time
 
 
@@ -34,6 +35,20 @@ type ResilienceMessageOrder
     | ResilienceMessage6
     | ResilienceMessage7
     | ResilienceMessage8
+
+
+type alias Model =
+    { updateMessage : WebData () }
+
+
+emptyModel : Model
+emptyModel =
+    { updateMessage = NotAsked }
+
+
+type Msg
+    = UpdateMessage ResilienceMessageId ResilienceMessage
+    | HandleUpdatedMessage (WebData ())
 
 
 
