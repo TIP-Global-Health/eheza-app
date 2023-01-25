@@ -229,11 +229,6 @@ update msg model =
             loggedInData
                 |> Maybe.map (Tuple.second >> .nurse >> Tuple.second >> isCommunityHealthWorker)
                 |> Maybe.withDefault False
-
-        -- Enables notifcation popup about unread resilience messages.
-        enableNotifyOfUnreadMessagesMsg =
-            Pages.PinCode.Model.SetNotifyOfUnreadMessages True
-                |> MsgPagePinCode
     in
     case msg of
         MsgIndexedDb subMsg ->
@@ -936,9 +931,6 @@ update msg model =
                                 |> MsgLoggedIn
                                 |> List.singleton
 
-                        PinCodePage ->
-                            List.singleton enableNotifyOfUnreadMessagesMsg
-
                         _ ->
                             []
             in
@@ -1080,7 +1072,9 @@ update msg model =
                 (\configured ->
                     ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel model.villageId) nurse }
                     , Cmd.none
-                    , [ enableNotifyOfUnreadMessagesMsg ]
+                    , [ Pages.PinCode.Model.SetNextNotification model.currentTime
+                            |> MsgPagePinCode
+                      ]
                     )
                 )
                 model

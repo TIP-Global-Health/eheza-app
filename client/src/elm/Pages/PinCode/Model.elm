@@ -6,18 +6,19 @@ module Pages.PinCode.Model exposing (..)
 import Backend.Entities exposing (HealthCenterId, NurseId, VillageId)
 import Backend.Nurse.Model exposing (Nurse)
 import Pages.Page exposing (Page)
+import Time
 
 
 type alias Model =
     { code : String
-    , notifyOfUnreadMessages : Bool
+    , nextNotification : Maybe Time.Posix
     }
 
 
 emptyModel : Model
 emptyModel =
     { code = ""
-    , notifyOfUnreadMessages = False
+    , nextNotification = Nothing
     }
 
 
@@ -27,7 +28,8 @@ type Msg
     | HandleLogoutClicked
     | SendOutMsg OutMsg
     | SetPinCode String
-    | SetNotifyOfUnreadMessages Bool
+    | SetNextNotification Time.Posix
+    | HandleNotificationResponse Bool
 
 
 {-| The message we return when we want to actually attempt a login, or logout.

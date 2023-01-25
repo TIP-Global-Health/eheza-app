@@ -297,7 +297,7 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
         , viewModal <|
             Maybe.Extra.or
                 (resilienceReminderDialog language currentTime nurseId nurse)
-                (resilienceNotificationDialog language nurse db model)
+                (resilienceNotificationDialog language currentTime nurse db model)
         ]
 
     else
@@ -392,9 +392,18 @@ resilienceReminderDialog language currentTime nurseId nurse =
         nurse.resilienceProgramStartDate
 
 
-resilienceNotificationDialog : Language -> Nurse -> ModelIndexedDb -> Model -> Maybe (Html Msg)
-resilienceNotificationDialog language nurse db model =
-    if model.notifyOfUnreadMessages && isJust nurse.resilienceProgramStartDate then
+resilienceNotificationDialog : Language -> Time.Posix -> Nurse -> ModelIndexedDb -> Model -> Maybe (Html Msg)
+resilienceNotificationDialog language currentTime nurse db model =
+    let
+        notificationTimeReached =
+            Maybe.map
+                (\nextNotification ->
+                    posixToMillis nextNotification <= posixToMillis currentTime
+                )
+                model.nextNotification
+                |> Maybe.withDefault False
+    in
+    if notificationTimeReached && isJust nurse.resilienceProgramStartDate then
         let
             numberOfUnreadMessages =
                 resolveNumberOfUnreadMessages db
@@ -415,12 +424,12 @@ resilienceNotificationDialog language nurse db model =
                         [ div [ class "two ui buttons" ]
                             [ button
                                 [ class "ui velvet button"
-                                , onClick <| SetNotifyOfUnreadMessages False
+                                , onClick <| HandleNotificationResponse False
                                 ]
                                 [ text <| translate language Translate.Ignore ]
                             , button
                                 [ class "ui primary fluid button"
-                                , onClick <| SendOutMsg <| SetActivePage <| UserPage MessagingCenterPage
+                                , onClick <| HandleNotificationResponse True
                                 ]
                                 [ text <| translate language Translate.Read ]
                             ]
