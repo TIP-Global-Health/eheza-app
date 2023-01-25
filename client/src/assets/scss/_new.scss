@@ -402,7 +402,7 @@ div.page-pincode {
     }
   }
 
-  .ui.active.modal.reminder {
+  .ui.active.modal {
     border-top: 10px solid $color-velvet;
     color: $color-text;
 
@@ -439,9 +439,27 @@ div.page-pincode {
       margin: 0;
     }
   }
+
+  .ui.active.modal.notification {
+
+    .header {
+      font-size: 35px;
+      font-weight: 800;
+    }
+
+    .content {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 35px;
+
+      p {
+        text-align: center;
+      }
+    }
+  }
 }
 
-//Device Status Page
+// Device Status Page.
 .device-status {
   button {
     margin-bottom: 20px;

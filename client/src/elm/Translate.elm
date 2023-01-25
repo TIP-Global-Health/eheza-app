@@ -750,6 +750,7 @@ type TranslationId
     | HypertensionRecommendedTreatmentUpdateStartTreatment
     | HypertensionStageAndRenalComplicationsHeader Bool NCDDiagnosis
     | IdleWaitingForSync
+    | Ignore
     | IllnessSymptom IllnessSymptom
     | Immunisation
     | ImmunisationHistory
@@ -1224,6 +1225,7 @@ type TranslationId
     | ProvidedSymtomReliefGuidanceQuestion
     | Province
     | RandomBloodSugarResultNormalRange RandomBloodSugarResult
+    | Read
     | ReasonForCSection
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -1292,6 +1294,9 @@ type TranslationId
     | ResilienceKickOffRoleQuestion
     | ResilienceKickOffUbudeheQuestion
     | ResilienceRole ResilienceRole
+    | ResilienceNotificationHeader String
+    | ResilienceNotificationNumberOfUnread Int
+    | ResilienceNotificationReadNowQuestion
     | ResilienceReminderHeader String ResilienceReminderType
     | ResilienceReminderParagraph1 ResilienceReminderType
     | ResilienceReminderParagraph2 ResilienceReminderType
@@ -5813,6 +5818,11 @@ translationSet trans =
 
         IdleWaitingForSync ->
             { english = "Idle, waiting for next Sync cycle"
+            , kinyarwanda = Nothing
+            }
+
+        Ignore ->
+            { english = "Ignore"
             , kinyarwanda = Nothing
             }
 
@@ -13744,6 +13754,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        Read ->
+            { english = "Read"
+            , kinyarwanda = Nothing
+            }
+
         ReasonForNotBreastfeeding reason ->
             case reason of
                 NotBreastfeedingBreastPain ->
@@ -14854,6 +14869,27 @@ translationSet trans =
 
         ResilienceKickOffUbudeheQuestion ->
             { english = "What is your Ubudehe category"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceNotificationHeader name ->
+            { english = "Hello, " ++ name ++ "!"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceNotificationNumberOfUnread number ->
+            if number == 1 then
+                { english = "You have " ++ String.fromInt number ++ " unread message."
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "You have " ++ String.fromInt number ++ " unread messages."
+                , kinyarwanda = Nothing
+                }
+
+        ResilienceNotificationReadNowQuestion ->
+            { english = "Would you like to read your messages now?"
             , kinyarwanda = Nothing
             }
 

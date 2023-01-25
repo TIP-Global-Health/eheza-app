@@ -19,3 +19,8 @@ monthlySurveyQuestions =
     , ResilienceSurveyQuestion3
     , ResilienceSurveyQuestion4
     ]
+
+
+resolveNumberOfUnreadMessages : ModelIndexedDb -> Int
+resolveNumberOfUnreadMessages db =
+    8
