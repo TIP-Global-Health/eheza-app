@@ -19,6 +19,7 @@ import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import Backend.PrenatalEncounter.Encoder
 import Backend.Relationship.Encoder
+import Backend.ResilienceMessage.Encoder
 import Backend.ResilienceSurvey.Encoder
 import Backend.Session.Encoder
 import Backend.Village.Encoder
@@ -401,6 +402,9 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
 
         BackendGeneralVillage identifier ->
             getIdentifier identifier "village"
+
+        BackendGeneralResilienceMessage identifier ->
+            getIdentifier identifier "resilience_message"
 
         BackendGeneralResilienceSurvey identifier ->
             getIdentifier identifier "resilience_survey"
@@ -1075,6 +1079,9 @@ encodeBackendGeneralEntity backendGeneralEntity =
         BackendGeneralVillage identifier ->
             encode Backend.Village.Encoder.encodeVillage identifier
 
+        BackendGeneralResilienceMessage identifier ->
+            encode Backend.ResilienceMessage.Encoder.encodeResilienceMessage identifier
+
         BackendGeneralResilienceSurvey identifier ->
             encode Backend.ResilienceSurvey.Encoder.encodeResilienceSurvey identifier
 
@@ -1700,6 +1707,9 @@ backendGeneralEntityToRevision backendGeneralEntity =
 
         BackendGeneralVillage identifier ->
             VillageRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendGeneralResilienceMessage identifier ->
+            ResilienceMessageRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendGeneralResilienceSurvey identifier ->
             ResilienceSurveyRevision (toEntityUuid identifier.uuid) identifier.entity

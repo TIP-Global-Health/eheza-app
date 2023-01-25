@@ -295,6 +295,9 @@ viewGeneralEntity language backendGeneralEntity =
             BackendGeneralVillage identifier ->
                 text <| "Village " ++ identifier.entity.name
 
+            BackendGeneralResilienceMessage identifier ->
+                text <| "Resilience Message " ++ identifier.uuid
+
             BackendGeneralResilienceSurvey identifier ->
                 text <| "Resilience Survey " ++ identifier.uuid
         ]

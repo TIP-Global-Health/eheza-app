@@ -18,6 +18,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (Relationship)
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (Session)
 import Backend.Village.Model exposing (Village)
@@ -44,6 +45,7 @@ type BackendGeneralEntity
     | BackendGeneralNurse (BackendEntity Nurse)
     | BackendGeneralParticipantForm (BackendEntity ParticipantForm)
     | BackendGeneralVillage (BackendEntity Village)
+    | BackendGeneralResilienceMessage (BackendEntity ResilienceMessage)
     | BackendGeneralResilienceSurvey (BackendEntity ResilienceSurvey)
 
 
