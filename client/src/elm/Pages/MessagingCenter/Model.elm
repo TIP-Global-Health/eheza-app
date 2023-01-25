@@ -1,10 +1,16 @@
 module Pages.MessagingCenter.Model exposing (..)
 
-import AssocList exposing (Dict)
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Gender)
 import Backend.Nurse.Model exposing (Nurse, ResilienceRole)
 import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
+import Backend.ResilienceSurvey.Model
+    exposing
+        ( ResilienceSurvey
+        , ResilienceSurveyQuestion
+        , ResilienceSurveyQuestionOption
+        )
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
@@ -16,6 +22,7 @@ type alias Model =
     { -- filter : Maybe CaseManagementFilter
       -- , dialogState : Maybe FollowUpEncounterDataType
       kickOffForm : KickOffForm
+    , monthlySurveyForm : MonthlySurveyForm
     }
 
 
@@ -24,6 +31,7 @@ emptyModel =
     { --  filter = Nothing
       -- , dialogState = Nothing
       kickOffForm = emptyKickOffForm
+    , monthlySurveyForm = emptyMonthlySurveyForm
     }
 
 
@@ -50,6 +58,15 @@ emptyKickOffForm =
     }
 
 
+type alias MonthlySurveyForm =
+    Dict ResilienceSurveyQuestion ResilienceSurveyQuestionOption
+
+
+emptyMonthlySurveyForm : MonthlySurveyForm
+emptyMonthlySurveyForm =
+    Dict.empty
+
+
 type Msg
     = SetActivePage Page
     | SetRole String
@@ -60,3 +77,5 @@ type Msg
     | SetUbudehe String
     | SetMaritalStatus String
     | SaveKickOffSurvey NurseId Nurse
+    | SetMonthlySurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
+    | SaveMonthlySurvey NurseId

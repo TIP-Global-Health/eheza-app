@@ -1381,3 +1381,11 @@ type alias NCDHbA1cTestId =
 
 type NCDHbA1cTestUuidType
     = NCDHbA1cTestUuidType
+
+
+type alias ResilienceSurveyId =
+    EntityUuid ResilienceSurveyUuidType
+
+
+type ResilienceSurveyUuidType
+    = ResilienceSurveyUuidType

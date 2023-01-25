@@ -4513,4 +4513,27 @@ div.page-activity.messaging-center {
   .form-input.date {
     text-align: center;
   }
+
+  .ui.form.monthly-survey {
+
+    .instructions {
+      margin-left: 25px;
+      font-style: italic;
+      font-size: 25px;
+      font-weight: 400;
+      margin-bottom: 8px;
+    }
+
+    .checkbox-select-input {
+      margin-bottom: 20px;
+
+      .ui.checkbox.activity label {
+        line-height: 30px;
+
+        &:before {
+          border-width: 1px;
+        }
+      }
+    }
+  }
 }

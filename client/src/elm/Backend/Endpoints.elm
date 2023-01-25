@@ -47,6 +47,9 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
+import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
+import Backend.ResilienceSurvey.Encoder exposing (encodeResilienceSurvey)
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
@@ -1207,3 +1210,20 @@ ncdHbA1cTestEndpoint : ReadWriteEndPoint Error NCDHbA1cTestId NCDHbA1cTest NCDHb
 ncdHbA1cTestEndpoint =
     swEndpoint "nodes/ncd_hba1c_test" decodeNCDHbA1cTest
         |> withValueEncoder (object << encodeNCDHbA1cTest)
+
+
+resilienceSurveyEndpoint : ReadWriteEndPoint Error ResilienceSurveyId ResilienceSurvey ResilienceSurvey (Maybe NurseId)
+resilienceSurveyEndpoint =
+    swEndpoint "nodes/resilience_survey" decodeResilienceSurvey
+        |> withValueEncoder (object << encodeResilienceSurvey)
+        |> withParamsEncoder encodeResilienceSurveyParams
+
+
+encodeResilienceSurveyParams : Maybe NurseId -> List ( String, String )
+encodeResilienceSurveyParams params =
+    case params of
+        Just id ->
+            [ ( "nurse", fromEntityUuid id ) ]
+
+        Nothing ->
+            []

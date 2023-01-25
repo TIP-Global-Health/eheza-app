@@ -13,8 +13,10 @@ import Backend.Person.Utils
         , maritalStatusFromString
         , ubudeheFromInt
         )
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyType(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.MessagingCenter.Model exposing (..)
+import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -148,4 +150,41 @@ update currentDate msg model =
                     |> Backend.Model.MsgNurse nurseId
                     |> App.Model.MsgIndexedDb
               ]
+            )
+
+        SetMonthlySurveyAnswer question answer ->
+            let
+                updatedForm =
+                    Dict.insert question answer model.monthlySurveyForm
+            in
+            ( { model | monthlySurveyForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveMonthlySurvey nurseId ->
+            let
+                msgs =
+                    if Dict.size model.monthlySurveyForm == List.length monthlySurveyQuestions then
+                        -- We need all questions to have answers, to proceed with
+                        -- save operations.
+                        let
+                            survey =
+                                { nurse = nurseId
+                                , dateMeasured = currentDate
+                                , surveyType = ResilienceSurveyMonthly
+                                , signs = model.monthlySurveyForm
+                                }
+                        in
+                        [ Backend.ResilienceSurvey.Model.CreateResilienceSurvey survey
+                            |> Backend.Model.MsgResilienceSurvey nurseId
+                            |> App.Model.MsgIndexedDb
+                        ]
+
+                    else
+                        []
+            in
+            ( model
+            , Cmd.none
+            , msgs
             )

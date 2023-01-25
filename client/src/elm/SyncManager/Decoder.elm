@@ -23,6 +23,7 @@ import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.PrenatalEncounter.Decoder
 import Backend.Relationship.Decoder
+import Backend.ResilienceSurvey.Decoder
 import Backend.Session.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
@@ -353,6 +354,9 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
 
                     "village" ->
                         doDecode Backend.Village.Decoder.decodeVillage BackendGeneralVillage
+
+                    "resilience_survey" ->
+                        doDecode Backend.ResilienceSurvey.Decoder.decodeResilienceSurvey BackendGeneralResilienceSurvey
 
                     _ ->
                         fail <| type_ ++ " is unknown BackendGeneralEntity"

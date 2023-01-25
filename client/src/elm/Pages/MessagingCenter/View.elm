@@ -6,9 +6,16 @@ import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse, ResilienceRole(..))
 import Backend.Nurse.Utils exposing (resilienceRoleToString)
-import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
+import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortEncounterTuplesDesc)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), Ubudehe(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
+import Backend.ResilienceSurvey.Model
+    exposing
+        ( ResilienceSurveyQuestion(..)
+        , ResilienceSurveyQuestionOption(..)
+        , ResilienceSurveyType(..)
+        )
+import Backend.ResilienceSurvey.Utils exposing (resilienceSurveyQuestionOptionToString)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
@@ -20,10 +27,17 @@ import Html.Events exposing (onClick, onInput)
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (..)
+import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
-import Pages.Utils exposing (taskCompleted, viewQuestionLabel, viewSelectListInput)
+import Pages.Utils
+    exposing
+        ( taskCompleted
+        , viewCheckBoxSelectInput
+        , viewCustomLabel
+        , viewQuestionLabel
+        , viewSelectListInput
+        )
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
@@ -48,8 +62,36 @@ view language currentDate nurseId nurse db model =
 
         content =
             Maybe.map
-                (\startDate ->
-                    text "@todo"
+                (\programStartDate ->
+                    Dict.get nurseId db.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (\surveys ->
+                                let
+                                    surveysSorted =
+                                        Dict.values surveys
+                                            |> List.sortWith (sortByDateDesc .dateMeasured)
+
+                                    runMonthlySurvery =
+                                        List.filter (.surveyType >> (==) ResilienceSurveyMonthly) surveysSorted
+                                            |> List.head
+                                            |> Maybe.map
+                                                (\survey ->
+                                                    -- Run monthly survey if one month has passed since
+                                                    -- last monthly survey was completed.
+                                                    Date.diff Months survey.dateMeasured currentDate >= 1
+                                                )
+                                            -- No monthly survey were performed, so we need to run one if
+                                            -- one month has passed since program has started.
+                                            |> Maybe.withDefault (Date.diff Months programStartDate currentDate >= 1)
+                                in
+                                if runMonthlySurvery then
+                                    viewMonthlySurvey language currentDate nurseId model.monthlySurveyForm
+
+                                else
+                                    viewMessagingCenter language currentDate nurseId
+                            )
+                        |> Maybe.withDefault (viewMessagingCenter language currentDate nurseId)
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
@@ -193,3 +235,52 @@ viewKickOffSurvey language currentDate nurseId nurse form =
                 ]
             ]
         ]
+
+
+viewMonthlySurvey : Language -> NominalDate -> NurseId -> MonthlySurveyForm -> Html Msg
+viewMonthlySurvey language currentDate nurseId form =
+    let
+        questionInput question =
+            [ viewCustomLabel language (Translate.ResilienceMonthlySurveyQuestion question) "." "label"
+            , viewCustomLabel language Translate.ChooseOne ":" "instructions"
+            , viewCheckBoxSelectInput language
+                [ ResilienceSurveyQuestionOption0
+                , ResilienceSurveyQuestionOption1
+                , ResilienceSurveyQuestionOption2
+                , ResilienceSurveyQuestionOption3
+                , ResilienceSurveyQuestionOption4
+                ]
+                []
+                (Dict.get question form)
+                (SetMonthlySurveyAnswer question)
+                Translate.ResilienceSurveyQuestionOption
+            ]
+
+        tasksCompleted =
+            Dict.size form
+
+        totalTasks =
+            List.length monthlySurveyQuestions
+    in
+    div [ class "ui unstackable items" ]
+        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        , div [ class "ui full segment" ]
+            [ div [ class "full content" ]
+                [ div [ class "ui form monthly-survey" ] <|
+                    List.concat <|
+                        List.map questionInput monthlySurveyQuestions
+                , div [ class "actions" ]
+                    [ button
+                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                        , onClick <| SaveMonthlySurvey nurseId
+                        ]
+                        [ text <| translate language Translate.Save ]
+                    ]
+                ]
+            ]
+        ]
+
+
+viewMessagingCenter : Language -> NominalDate -> NurseId -> Html Msg
+viewMessagingCenter language currentDate nurseId =
+    text "@todo viewMessagingCenter"

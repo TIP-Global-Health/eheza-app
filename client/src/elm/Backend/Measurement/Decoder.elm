@@ -905,7 +905,7 @@ decodePrenatalMentalHealthQuestionTuple =
                     failure =
                         fail <|
                             s
-                                ++ " is not a recognized decodePrenatalMentalHealthQuestionTuple"
+                                ++ " is not a recognized PrenatalMentalHealthQuestionTuple"
                 in
                 case parts of
                     [ question, answer ] ->
