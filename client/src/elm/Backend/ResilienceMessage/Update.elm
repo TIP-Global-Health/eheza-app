@@ -26,7 +26,7 @@ update currentDate msg model =
 updateMessage : NominalDate -> ResilienceMessageId -> ResilienceMessage -> Model -> ( Model, Cmd Msg )
 updateMessage currentDate messageId message model =
     ( { model | updateMessage = Loading }
-    , sw.patchFull messageEndpoint messageId message
+    , sw.patchFull resilienceMessageEndpoint messageId message
         |> withoutDecoder
         |> toCmd (RemoteData.fromResult >> HandleUpdatedMessage)
     )

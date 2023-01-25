@@ -91,6 +91,7 @@ type alias ModelIndexedDb =
     , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
     , nurseRequests : Dict NurseId Backend.Nurse.Model.Model
     , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
+    , resilienceMessageRequests : Dict NurseId Backend.ResilienceMessage.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -218,6 +219,7 @@ emptyModelIndexedDb =
     , individualSessionRequests = Dict.empty
     , nurseRequests = Dict.empty
     , resilienceSurveyRequests = Dict.empty
+    , resilienceMessageRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
     , relationshipsByPerson = Dict.empty
@@ -304,6 +306,7 @@ type MsgIndexedDb
     | FetchPrenatalMeasurements PrenatalEncounterId
     | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchRelationshipsForPerson PersonId
+    | FetchResilienceMessagesForNurse NurseId
     | FetchResilienceSurveysForNurse NurseId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
@@ -348,6 +351,7 @@ type MsgIndexedDb
     | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
     | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
+    | HandleFetchedResilienceMessagesForNurse NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
     | HandleFetchedResilienceSurveysForNurse NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
@@ -397,6 +401,7 @@ type MsgIndexedDb
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | MsgNurse NurseId Backend.Nurse.Model.Msg
     | MsgResilienceSurvey NurseId Backend.ResilienceSurvey.Model.Msg
+    | MsgResilienceMessage NurseId Backend.ResilienceMessage.Model.Msg
     | ResetFailedToFetchAuthorities
 
 
