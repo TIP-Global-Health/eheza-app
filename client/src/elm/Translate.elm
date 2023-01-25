@@ -15005,7 +15005,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ResilienceMessageIntroduction1Title ->
+        ResilienceMessageIntroduction2Title ->
             { english = "More information about the program"
             , kinyarwanda = Nothing
             }
