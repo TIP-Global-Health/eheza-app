@@ -1289,20 +1289,32 @@ type TranslationId
     | ResilienceMessageIntroduction1Paragraph1 String
     | ResilienceMessageIntroduction1Paragraph2
     | ResilienceMessageIntroduction1Paragraph3
-    | ResilienceMessageIntroduction2Paragraph
+    | ResilienceMessageIntroduction2Title
+    | ResilienceMessageIntroduction2Paragraph1
+    | ResilienceMessageIntroduction2Paragraph2
     | ResilienceMessageIntroduction2Bullet1
     | ResilienceMessageIntroduction2Bullet2
     | ResilienceMessageIntroduction2Bullet3
     | ResilienceMessageIntroduction2Bullet4
     | ResilienceMessageIntroduction2Bullet5
+    | ResilienceMessageIntroduction3Title
     | ResilienceMessageIntroduction3Paragraph1
     | ResilienceMessageIntroduction3Paragraph2
+    | ResilienceMessageIntroduction3Paragraph3
+    | ResilienceMessageIntroduction4Title
     | ResilienceMessageIntroduction4Paragraph1
-    | ResilienceMessageIntroduction4Bullet3
+    | ResilienceMessageIntroduction4Paragraph2
     | ResilienceMessageIntroduction4Bullet1
     | ResilienceMessageIntroduction4Bullet2
-    | ResilienceMessageIntroduction4Paragraph2
+    | ResilienceMessageIntroduction4Bullet3
+    | ResilienceMessageIntroduction4Paragraph3
+    | ResilienceMessageIntroduction5Title
+    | ResilienceMessageIntroduction5Paragraph1
+    | ResilienceMessageIntroduction6Title
+    | ResilienceMessageIntroduction6Paragraph1
+    | ResilienceMessageIntroduction7Title
     | ResilienceMessageIntroduction7Paragraph1
+    | ResilienceMessageIntroduction7Paragraph2
     | ResilienceMessageIntroduction8Paragraph1
     | ResilienceMessageIntroduction8Paragraph2
     | ResilienceMessageGrowth1Paragraph1
@@ -14865,7 +14877,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ResilienceMessageIntroduction2Paragraph ->
+        ResilienceMessageIntroduction1Title ->
+            { english = "More information about the program"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction2Paragraph1 ->
+            { english = "There are several things we face at work such as being given too many responsibilities and working overtime. However, we can at least learn how to deal with extreme fatigue and stress."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction2Paragraph2 ->
             { english = "After this six-month journey, we hope that you will be able to"
             , kinyarwanda = Nothing
             }
@@ -14895,42 +14917,92 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ResilienceMessageIntroduction3Title ->
+            { english = "Get a notebook ready!"
+            , kinyarwanda = Nothing
+            }
+
         ResilienceMessageIntroduction3Paragraph1 ->
+            { english = "Prepare a special notebook that you will use for this program. Every message you will receive will help you think and act on a certain thing."
+                                , kinyarwanda = Nothing
+                                }
+
+        ResilienceMessageIntroduction3Paragraph2 ->
             { english = "Read the messages in a timely manner and without distraction, think about them and act on them. Every prompt you will help you develop good habits."
             , kinyarwanda = Nothing
             }
 
-        ResilienceMessageIntroduction3Paragraph2 ->
+        ResilienceMessageIntroduction3Paragraph3 ->
             { english = "Keep notes in your notebook about your thoughts and actions."
             , kinyarwanda = Nothing
             }
 
+        ResilienceMessageIntroduction4Title ->
+            { english = "Get the most out of the program"
+            , kinyarwanda = Nothing
+            }
+
         ResilienceMessageIntroduction4Paragraph1 ->
-            { english = "In order for this program to benefit you, we encourage you to:"
-            , kinyarwanda = Nothing
-            }
-
-        ResilienceMessageIntroduction4Bullet3 ->
-            { english = "Read all the messages you receive"
-            , kinyarwanda = Nothing
-            }
-
-        ResilienceMessageIntroduction4Bullet1 ->
-            { english = "Try to follow the prompts"
-            , kinyarwanda = Nothing
-            }
-
-        ResilienceMessageIntroduction4Bullet2 ->
-            { english = "Assess what helped you and what did not"
+            { english = "The more effort you put into this program, the more benefits you will get, you will learn how to take care of yourself, and how to be better at your job, as the days go by."
             , kinyarwanda = Nothing
             }
 
         ResilienceMessageIntroduction4Paragraph2 ->
+            { english = "In order for this program to benefit you, we encourage you to:"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction4Bullet1 ->
+            { english = "Read all the messages you receive"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction4Bullet2 ->
+            { english = "Try to follow the prompts"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction4Bullet3 ->
+            { english = "Assess what helped you and what did not"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction4Paragraph3 ->
             { english = "Share what you have learned with others who are in this program"
             , kinyarwanda = Nothing
             }
 
+        ResilienceMessageIntroduction5Title ->
+            { english = "Pause for self-reflection"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction5Paragraph1 ->
+            { english = "Every month, you will have time for self reflection, see what you have done and how it is helping you. It will be time to look through your notebook and think about what worked and what did not."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction6Title ->
+            { english = "A note on messages..."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction6Paragraph1 ->
+            { english = "Some of these messages will be useful to you, and there are others which you might not find helpful. Keep writing in your notebook even though you do not fully understand the message. You might use it again depending on the situation or where you are."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction7Title ->
+            { english = "This a personal journey..."
+            , kinyarwanda = Nothing
+            }
+
         ResilienceMessageIntroduction7Paragraph1 ->
+            { english = "It is good to be in this six-month program because it will help you feel better, get stronger, and give you knowledge/skills that helps you deal with life  and professional problems. This is a personal journey. You are the one to choose when to allocate time for this program."
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceMessageIntroduction7Paragraph2 ->
             { english = "Remember that the more effort you put into this program, the more successful you will be."
             , kinyarwanda = Nothing
             }
@@ -15084,22 +15156,22 @@ translationSet trans =
                     }
 
                 ResilienceMessageIntroduction4 ->
-                    { english = "The more effort you put into this program, the more benefits you will get, you will learn how to take care of yourself, and how to be better at your job, as the days go by."
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
                 ResilienceMessageIntroduction5 ->
-                    { english = "Every month, you will have time for self reflection, see what you have done and how it is helping you. It will be time to look through your notebook and think about what worked and what did not."
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
                 ResilienceMessageIntroduction6 ->
-                    { english = "Some of these messages will be useful to you, and there are others which you might not find helpful. Keep writing in your notebook even though you do not fully understand the message. You might use it again depending on the situation or where you are."
+                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
                 ResilienceMessageIntroduction7 ->
-                    { english = "It is good to be in this six-month program because it will help you feel better, get stronger, and give you knowledge/skills that helps you deal with life  and professional problems. This is a personal journey. You are the one to choose when to allocate time for this program.\n Remember that the more effort you put into this program, the more successful you will be."
+                    { english = "\n Remember that the more effort you put into this program, the more successful you will be."
                     , kinyarwanda = Nothing
                     }
 
