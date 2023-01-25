@@ -15,6 +15,8 @@ import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Maybe.Extra exposing (isJust)
+import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
 import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -24,7 +26,16 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, activityCardWithCounter, spinner, viewLogo, viewModal)
 
 
-view : Language -> Time.Posix -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Model -> ModelIndexedDb -> Html Msg
+view :
+    Language
+    -> Time.Posix
+    -> Page
+    -> WebData ( NurseId, Nurse )
+    -> ( Maybe HealthCenterId, Maybe VillageId )
+    -> Maybe String
+    -> Model
+    -> ModelIndexedDb
+    -> Html Msg
 view language currentTime activePage nurseData ( healthCenterId, villageId ) deviceName model db =
     let
         ( header, content ) =
@@ -46,7 +57,16 @@ view language currentTime activePage nurseData ( healthCenterId, villageId ) dev
                                     |> Maybe.withDefault False
                     in
                     ( viewLoggedInHeader language nurse selectedAuthorizedLocation
-                    , viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db
+                    , viewLoggedInContent language
+                        currentTime
+                        nurseId
+                        nurse
+                        ( healthCenterId, villageId )
+                        isChw
+                        deviceName
+                        selectedAuthorizedLocation
+                        db
+                        model
                     )
 
                 _ ->
@@ -162,8 +182,9 @@ viewLoggedInContent :
     -> Maybe String
     -> Bool
     -> ModelIndexedDb
+    -> Model
     -> List (Html Msg)
-viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db =
+viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db model =
     let
         logoutButton =
             button
@@ -239,12 +260,8 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
 
                     viewCardFunc =
                         if activity == MenuMessagingCenter then
-                            let
-                                unread =
-                                    -- @todo
-                                    8
-                            in
-                            activityCardWithCounter unread
+                            resolveNumberOfUnreadMessages db
+                                |> activityCardWithCounter
 
                         else
                             activityCard
@@ -278,7 +295,11 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
         , cards
         , logoutButton
         , viewModal <|
-            resilienceReminderDialog language currentTime nurseId nurse
+            -- If both reminder and notification need to be presented,
+            -- reminder is given a priority.
+            Maybe.Extra.or
+                (resilienceReminderDialog language currentTime nurseId nurse)
+                (resilienceNotificationDialog language currentTime nurse db model)
         ]
 
     else
@@ -371,6 +392,57 @@ resilienceReminderDialog language currentTime nurseId nurse =
                     )
         )
         nurse.resilienceProgramStartDate
+
+
+resilienceNotificationDialog : Language -> Time.Posix -> Nurse -> ModelIndexedDb -> Model -> Maybe (Html Msg)
+resilienceNotificationDialog language currentTime nurse db model =
+    let
+        notificationTimeReached =
+            Maybe.map
+                (\nextNotification ->
+                    posixToMillis nextNotification <= posixToMillis currentTime
+                )
+                model.nextNotification
+                |> Maybe.withDefault False
+    in
+    if notificationTimeReached && isJust nurse.resilienceProgramStartDate then
+        let
+            numberOfUnreadMessages =
+                resolveNumberOfUnreadMessages db
+        in
+        if numberOfUnreadMessages > 0 then
+            Just <|
+                div [ class "ui active modal notification" ]
+                    [ div [ class "header" ]
+                        [ text <|
+                            translate language <|
+                                Translate.ResilienceNotificationHeader nurse.name
+                        ]
+                    , div [ class "content" ]
+                        [ p [] [ text <| translate language <| Translate.ResilienceNotificationNumberOfUnread numberOfUnreadMessages ]
+                        , p [] [ text <| translate language Translate.ResilienceNotificationReadNowQuestion ]
+                        ]
+                    , div [ class "actions" ]
+                        [ div [ class "two ui buttons" ]
+                            [ button
+                                [ class "ui velvet button"
+                                , onClick <| HandleNotificationResponse False
+                                ]
+                                [ text <| translate language Translate.Ignore ]
+                            , button
+                                [ class "ui primary fluid button"
+                                , onClick <| HandleNotificationResponse True
+                                ]
+                                [ text <| translate language Translate.Read ]
+                            ]
+                        ]
+                    ]
+
+        else
+            Nothing
+
+    else
+        Nothing
 
 
 resolveResilienceReminderType : Time.Posix -> NominalDate -> Maybe ResilienceReminderType

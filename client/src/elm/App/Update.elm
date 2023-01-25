@@ -1072,7 +1072,9 @@ update msg model =
                 (\configured ->
                     ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel model.villageId) nurse }
                     , Cmd.none
-                    , []
+                    , [ Pages.PinCode.Model.SetNextNotification model.currentTime
+                            |> MsgPagePinCode
+                      ]
                     )
                 )
                 model
