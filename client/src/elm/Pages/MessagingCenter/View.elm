@@ -40,7 +40,7 @@ import Pages.Utils
         , viewSelectListInput
         )
 import RemoteData exposing (RemoteData(..))
-import Time
+import Time exposing (posixToMillis)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -297,15 +297,64 @@ viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> Nu
 viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model =
     let
         messages =
-            resolveDeliveredMessages currentDate programStartDate nurseId db
+            resolveInboxMessages currentDate programStartDate nurseId db
+
+        ( unread, read ) =
+            Dict.toList messages
+                |> List.partition
+                    (\( _, message ) ->
+                        case message.timeRead of
+                            Nothing ->
+                                True
+
+                            Just timeRead ->
+                                Maybe.map
+                                    (\nextReminder ->
+                                        let
+                                            nextReminderMillis =
+                                                posixToMillis nextReminder
+                                        in
+                                        -- Reminder was set to latter time than the
+                                        -- time at which message was read.
+                                        (nextReminderMillis > posixToMillis timeRead)
+                                            && -- Scheduled reminder time was reached.
+                                               (posixToMillis currentTime > nextReminderMillis)
+                                    )
+                                    message.nextReminder
+                                    |> Maybe.withDefault False
+                    )
 
         content =
+            let
+                viewMessage =
+                    viewResilienceMessage language nurse
+
+                viewFilteredByCategory category =
+                    List.filter (Tuple.second >> .category >> (==) category) read
+                        |> List.map viewMessage
+            in
             case model.activeTab of
                 TabUnread ->
-                    viewUnreadContent language currentTime nurse messages
+                    List.map viewMessage unread
 
-                _ ->
-                    []
+                TabFavorites ->
+                    List.filter (Tuple.second >> .isFavorite) read
+                        |> List.map viewMessage
+
+                TabGrowth ->
+                    viewFilteredByCategory ResilienceCategoryGrowth
+
+                TabConnecting ->
+                    viewFilteredByCategory ResilienceCategoryConnecting
+
+                TabSelfcare ->
+                    viewFilteredByCategory ResilienceCategorySelfCare
+
+                TabStress ->
+                    viewFilteredByCategory ResilienceCategoryStressManagement
+
+                TabMindfullnes ->
+                    viewFilteredByCategory ResilienceCategoryMindfulness
     in
     div []
         [ viewTabs language model
@@ -370,16 +419,6 @@ viewTabs language model =
         scrollButtonLeft
             :: tabs
             ++ [ scrollRightButton ]
-
-
-viewUnreadContent : Language -> Time.Posix -> Nurse -> Dict ResilienceMessageId ResilienceMessage -> List (Html Msg)
-viewUnreadContent language currentTime nurse messages =
-    let
-        unread =
-            Dict.filter (\_ message -> isNothing message.timeRead) messages
-    in
-    Dict.toList unread
-        |> List.map (viewResilienceMessage language nurse)
 
 
 viewResilienceMessage : Language -> Nurse -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg

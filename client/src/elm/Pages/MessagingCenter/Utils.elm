@@ -34,15 +34,15 @@ resolveUnreadMessages : NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Dic
 resolveUnreadMessages currentDate nurseId nurse db =
     Maybe.map
         (\programStartDate ->
-            resolveDeliveredMessages currentDate programStartDate nurseId db
+            resolveInboxMessages currentDate programStartDate nurseId db
                 |> Dict.filter (\_ message -> isNothing message.timeRead)
         )
         nurse.resilienceProgramStartDate
-        |> Maybe.withDefault (resolveDeliveredMessagesProgramNotStarted currentDate nurseId db)
+        |> Maybe.withDefault (resolveInboxMessagesProgramNotStarted currentDate nurseId db)
 
 
-resolveDeliveredMessages : NominalDate -> NominalDate -> NurseId -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
-resolveDeliveredMessages currentDate programStartDate nurseId db =
+resolveInboxMessages : NominalDate -> NominalDate -> NurseId -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
+resolveInboxMessages currentDate programStartDate nurseId db =
     Dict.get nurseId db.resilienceMessagesByNurse
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
@@ -54,8 +54,8 @@ resolveDeliveredMessages currentDate programStartDate nurseId db =
         |> Maybe.withDefault Dict.empty
 
 
-resolveDeliveredMessagesProgramNotStarted : NominalDate -> NurseId -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
-resolveDeliveredMessagesProgramNotStarted currentDate nurseId db =
+resolveInboxMessagesProgramNotStarted : NominalDate -> NurseId -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
+resolveInboxMessagesProgramNotStarted currentDate nurseId db =
     Dict.get nurseId db.resilienceMessagesByNurse
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map (Dict.filter (\_ message -> message.displayDay == 0))
