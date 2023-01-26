@@ -446,8 +446,20 @@ viewResilienceMessage language nurseId nurse ( messageId, message ) =
                     , viewMindfulnessMessage language message.order
                     )
 
-                _ ->
-                    ( "", [] )
+                ResilienceCategoryConnecting ->
+                    ( "connecting"
+                    , viewConnectingMessage language message.order
+                    )
+
+                ResilienceCategorySelfCare ->
+                    ( "self-care"
+                    , viewSelfCareMessage language message.order
+                    )
+
+                ResilienceCategoryEndOfPeriod ->
+                    ( "end-of-period"
+                    , viewEndOfPeriodMessage language message.order
+                    )
     in
     div
         [ class <| "resilience-message " ++ extraClass
@@ -745,6 +757,155 @@ viewMindfulnessMessage language order =
                 , p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph2 ]
                 , p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph3 ]
                 , p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph4 ]
+                ]
+            ]
+
+        _ ->
+            []
+
+
+viewConnectingMessage : Language -> ResilienceMessageOrder -> List (Html Msg)
+viewConnectingMessage language order =
+    case order of
+        ResilienceMessage1 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageConnecting1Title ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting1Paragraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting1Paragraph2 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting1Paragraph3 ]
+                ]
+            ]
+
+        ResilienceMessage2 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageConnecting2Title ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting2Paragraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting2Paragraph2 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting2Paragraph3 ]
+                ]
+            ]
+
+        ResilienceMessage3 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageConnecting3Title ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting3Paragraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting3Paragraph2 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting3Paragraph3 ]
+                ]
+            ]
+
+        ResilienceMessage4 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageConnecting4Title ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting4Paragraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting4Paragraph2 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting4Paragraph3 ]
+                ]
+            ]
+
+        ResilienceMessage5 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageConnecting5Title ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting5Paragraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting5Paragraph2 ]
+                ]
+            ]
+
+        ResilienceMessage6 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageConnecting6Title ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting6Paragraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting6Paragraph2 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageConnecting6Paragraph3 ]
+                ]
+            ]
+
+        _ ->
+            []
+
+
+viewSelfCareMessage : Language -> ResilienceMessageOrder -> List (Html Msg)
+viewSelfCareMessage language order =
+    case order of
+        ResilienceMessage1 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageSelfCare1Title ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph2 ]
+                , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageSelfCare1Bullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageSelfCare1Bullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageSelfCare1Bullet3 ]
+                    ]
+                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph3 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph4 ]
+                ]
+            ]
+
+        ResilienceMessage2 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageSelfCare2Title ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare2Paragraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare2Paragraph2 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare2Paragraph3 ]
+                ]
+            ]
+
+        ResilienceMessage3 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageSelfCare3Title ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph2 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph3 ]
+                ]
+            ]
+
+        _ ->
+            []
+
+
+viewEndOfPeriodMessage : Language -> ResilienceMessageOrder -> List (Html Msg)
+viewEndOfPeriodMessage language order =
+    case order of
+        ResilienceMessage1 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthTitle ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthParagraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthParagraph2 ]
+                , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthBullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthBullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthBullet3 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthBullet4 ]
+                    ]
+                , p [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthParagraph3 ]
+                ]
+            ]
+
+        ResilienceMessage2 ->
+            [ div [ class "title" ]
+                [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthTitle ]
+            , div [ class "content" ]
+                [ p [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthParagraph1 ]
+                , p [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthParagraph2 ]
+                , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet3 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet4 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet5 ]
+                    ]
+                , p [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthParagraph3 ]
                 ]
             ]
 
