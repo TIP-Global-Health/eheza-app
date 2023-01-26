@@ -4596,7 +4596,7 @@ div.page-activity.messaging-center {
     background-color: $color-white;
     display: flex;
     justify-content: space-around;
-    margin-bottom: 0;
+    margin-bottom: 30px;
     padding: 25px;
 
     button {
@@ -4625,6 +4625,22 @@ div.page-activity.messaging-center {
 
     .action-icon.left {
       transform: rotate(180deg);
+    }
+  }
+
+  .resilience-message {
+    margin-bottom: 30px;
+
+    .title {
+      background-color: $color-velvet;
+      color: $color-white;
+      padding: 20px;
+    }
+
+    .content {
+      background-color: $color-white;
+      color: $color-text;
+      padding: 20px;
     }
   }
 

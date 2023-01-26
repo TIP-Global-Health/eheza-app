@@ -307,9 +307,11 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                 _ ->
                     []
     in
-    div [ class "ui report unstackable items" ] <|
-        viewTabs language model
-            :: content
+    div []
+        [ viewTabs language model
+        , div [ class "ui report unstackable items" ]
+            content
+        ]
 
 
 viewTabs : Language -> Model -> Html Msg
