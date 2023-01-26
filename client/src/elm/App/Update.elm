@@ -740,7 +740,7 @@ update msg model =
                                 ( subModel, subCmd, appMsgs ) =
                                     Dict.get id data.messagingCenterPages
                                         |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
-                                        |> Pages.MessagingCenter.Update.update currentDate subMsg
+                                        |> Pages.MessagingCenter.Update.update model.currentTime currentDate subMsg
                             in
                             ( { data | messagingCenterPages = Dict.insert id subModel data.messagingCenterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageMessagingCenter id) subCmd

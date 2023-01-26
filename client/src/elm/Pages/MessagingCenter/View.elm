@@ -327,7 +327,7 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
         content =
             let
                 viewMessage =
-                    viewResilienceMessage language nurse
+                    viewResilienceMessage language nurseId nurse
 
                 viewFilteredByCategory category =
                     List.filter (Tuple.second >> .category >> (==) category) read
@@ -421,28 +421,39 @@ viewTabs language model =
             ++ [ scrollRightButton ]
 
 
-viewResilienceMessage : Language -> Nurse -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
-viewResilienceMessage language nurse ( messageId, message ) =
-    case message.category of
-        ResilienceCategoryIntroduction ->
-            div [ class "resilience-message introduction" ] <|
-                viewIntroductionMessage language nurse message.order
+viewResilienceMessage : Language -> NurseId -> Nurse -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
+viewResilienceMessage language nurseId nurse ( messageId, message ) =
+    let
+        ( extraClass, content ) =
+            case message.category of
+                ResilienceCategoryIntroduction ->
+                    ( "introduction"
+                    , viewIntroductionMessage language nurse message.order
+                    )
 
-        ResilienceCategoryGrowth ->
-            div [ class "resilience-message growth" ] <|
-                viewGrowthMessage language message.order
+                ResilienceCategoryGrowth ->
+                    ( "growth"
+                    , viewGrowthMessage language message.order
+                    )
 
-        ResilienceCategoryStressManagement ->
-            div [ class "resilience-message stress-management" ] <|
-                viewStressManagementMessage language nurse message.order
+                ResilienceCategoryStressManagement ->
+                    ( "stress-management"
+                    , viewStressManagementMessage language nurse message.order
+                    )
 
-        ResilienceCategoryMindfulness ->
-            div [ class "resilience-message stress-management" ] <|
-                viewMindfulnessMessage language message.order
+                ResilienceCategoryMindfulness ->
+                    ( "mindfulness"
+                    , viewMindfulnessMessage language message.order
+                    )
 
-        _ ->
-            --@todo: Add remaining categories.
-            emptyNode
+                _ ->
+                    ( "", [] )
+    in
+    div
+        [ class <| "resilience-message " ++ extraClass
+        , onClick <| MarkAsRead nurseId messageId message
+        ]
+        content
 
 
 viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> List (Html Msg)

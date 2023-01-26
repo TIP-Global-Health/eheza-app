@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Gender)
 import Backend.Nurse.Model exposing (Nurse, ResilienceRole)
 import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurvey
@@ -91,3 +92,4 @@ type Msg
     | SaveMonthlySurvey NurseId
     | SetActiveTab MessagingTab
     | ScrollTab Int
+    | MarkAsRead NurseId ResilienceMessageId ResilienceMessage
