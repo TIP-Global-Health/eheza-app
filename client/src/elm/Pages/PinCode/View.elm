@@ -198,6 +198,9 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
     in
     if selectedAuthorizedLocation then
         let
+            currentDate =
+                fromLocalDateTime currentTime
+
             deviceInfo =
                 deviceName
                     |> Maybe.map
@@ -260,7 +263,7 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
 
                     viewCardFunc =
                         if activity == MenuMessagingCenter then
-                            resolveNumberOfUnreadMessages nurseId db
+                            resolveNumberOfUnreadMessages currentDate nurseId nurse db
                                 |> activityCardWithCounter
 
                         else
@@ -298,8 +301,8 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
             -- If both reminder and notification need to be presented,
             -- reminder is given a priority.
             Maybe.Extra.or
-                (resilienceReminderDialog language currentTime nurseId nurse)
-                (resilienceNotificationDialog language currentTime nurseId nurse db model)
+                (resilienceReminderDialog language currentTime currentDate nurseId nurse)
+                (resilienceNotificationDialog language currentTime currentDate nurseId nurse db model)
         ]
 
     else
@@ -314,11 +317,11 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
         locationOptions ++ [ logoutButton ]
 
 
-resilienceReminderDialog : Language -> Time.Posix -> NurseId -> Nurse -> Maybe (Html Msg)
-resilienceReminderDialog language currentTime nurseId nurse =
+resilienceReminderDialog : Language -> Time.Posix -> NominalDate -> NurseId -> Nurse -> Maybe (Html Msg)
+resilienceReminderDialog language currentTime currentDate nurseId nurse =
     Maybe.andThen
         (\programStartDate ->
-            resolveResilienceReminderType currentTime programStartDate
+            resolveResilienceReminderType currentDate programStartDate
                 |> Maybe.andThen
                     (\reminderType ->
                         let
@@ -394,8 +397,16 @@ resilienceReminderDialog language currentTime nurseId nurse =
         nurse.resilienceProgramStartDate
 
 
-resilienceNotificationDialog : Language -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Maybe (Html Msg)
-resilienceNotificationDialog language currentTime nurseId nurse db model =
+resilienceNotificationDialog :
+    Language
+    -> Time.Posix
+    -> NominalDate
+    -> NurseId
+    -> Nurse
+    -> ModelIndexedDb
+    -> Model
+    -> Maybe (Html Msg)
+resilienceNotificationDialog language currentTime currentDate nurseId nurse db model =
     let
         notificationTimeReached =
             Maybe.map
@@ -408,7 +419,7 @@ resilienceNotificationDialog language currentTime nurseId nurse db model =
     if notificationTimeReached && isJust nurse.resilienceProgramStartDate then
         let
             numberOfUnreadMessages =
-                resolveNumberOfUnreadMessages nurseId db
+                resolveNumberOfUnreadMessages currentDate nurseId nurse db
         in
         if numberOfUnreadMessages > 0 then
             Just <|
@@ -445,12 +456,8 @@ resilienceNotificationDialog language currentTime nurseId nurse db model =
         Nothing
 
 
-resolveResilienceReminderType : Time.Posix -> NominalDate -> Maybe ResilienceReminderType
-resolveResilienceReminderType currentTime programStartDate =
-    let
-        currentDate =
-            fromLocalDateTime currentTime
-    in
+resolveResilienceReminderType : NominalDate -> NominalDate -> Maybe ResilienceReminderType
+resolveResilienceReminderType currentDate programStartDate =
     case Date.diff Months programStartDate currentDate of
         0 ->
             -- First month of the program.

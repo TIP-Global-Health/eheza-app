@@ -21,14 +21,14 @@ import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions, resolveNumberOfUnreadMessages)
+import Pages.MessagingCenter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.Utils
@@ -40,16 +40,20 @@ import Pages.Utils
         , viewSelectListInput
         )
 import RemoteData exposing (RemoteData(..))
+import Time
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate nurseId nurse db model =
+view : Language -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
+view language currentTime nurseId nurse db model =
     let
+        currentDate =
+            fromLocalDateTime currentTime
+
         numberOfUnreadMessages =
-            resolveNumberOfUnreadMessages nurseId db
+            resolveNumberOfUnreadMessages currentDate nurseId nurse db
 
         header =
             div [ class "ui basic head segment" ]
@@ -67,6 +71,10 @@ view language currentDate nurseId nurse db model =
         content =
             Maybe.map
                 (\programStartDate ->
+                    let
+                        messagingCenterView =
+                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
+                    in
                     Dict.get nurseId db.resilienceSurveysByNurse
                         |> Maybe.andThen RemoteData.toMaybe
                         |> Maybe.map
@@ -93,9 +101,9 @@ view language currentDate nurseId nurse db model =
                                     viewMonthlySurvey language currentDate nurseId model.monthlySurveyForm
 
                                 else
-                                    viewMessagingCenter language currentDate nurseId model
+                                    messagingCenterView
                             )
-                        |> Maybe.withDefault (viewMessagingCenter language currentDate nurseId model)
+                        |> Maybe.withDefault messagingCenterView
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
@@ -285,10 +293,23 @@ viewMonthlySurvey language currentDate nurseId form =
         ]
 
 
-viewMessagingCenter : Language -> NominalDate -> NurseId -> Model -> Html Msg
-viewMessagingCenter language currentDate nurseId model =
-    div [ class "ui report unstackable items" ]
-        [ viewTabs language model ]
+viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
+viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model =
+    let
+        messages =
+            resolveDeliveredMessages currentDate programStartDate nurseId db
+
+        content =
+            case model.activeTab of
+                TabUnread ->
+                    viewUnreadContent language currentTime nurse messages
+
+                _ ->
+                    []
+    in
+    div [ class "ui report unstackable items" ] <|
+        viewTabs language model
+            :: content
 
 
 viewTabs : Language -> Model -> Html Msg
@@ -349,8 +370,18 @@ viewTabs language model =
             ++ [ scrollRightButton ]
 
 
-viewResilienceMessage : Language -> Nurse -> ResilienceMessage -> Html Msg
-viewResilienceMessage language nurse message =
+viewUnreadContent : Language -> Time.Posix -> Nurse -> Dict ResilienceMessageId ResilienceMessage -> List (Html Msg)
+viewUnreadContent language currentTime nurse messages =
+    let
+        unread =
+            Dict.filter (\_ message -> isNothing message.timeRead) messages
+    in
+    Dict.toList unread
+        |> List.map (viewResilienceMessage language nurse)
+
+
+viewResilienceMessage : Language -> Nurse -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
+viewResilienceMessage language nurse ( messageId, message ) =
     case message.category of
         ResilienceCategoryIntroduction ->
             div [ class "resilience-message introduction" ] <|
