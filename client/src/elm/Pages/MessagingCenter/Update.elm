@@ -188,3 +188,15 @@ update currentDate msg model =
             , Cmd.none
             , msgs
             )
+
+        SetActiveTab tab ->
+            ( { model | activeTab = tab }
+            , Cmd.none
+            , []
+            )
+
+        ScrollTab step ->
+            ( { model | tabScrollPosition = model.tabScrollPosition + step }
+            , Cmd.none
+            , []
+            )

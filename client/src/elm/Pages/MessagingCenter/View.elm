@@ -49,7 +49,7 @@ view : Language -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model ->
 view language currentDate nurseId nurse db model =
     let
         numberOfUnreadMessages =
-            resolveNumberOfUnreadMessages db
+            resolveNumberOfUnreadMessages nurseId db
 
         header =
             div [ class "ui basic head segment" ]
@@ -93,9 +93,9 @@ view language currentDate nurseId nurse db model =
                                     viewMonthlySurvey language currentDate nurseId model.monthlySurveyForm
 
                                 else
-                                    viewMessagingCenter language currentDate nurseId
+                                    viewMessagingCenter language currentDate nurseId model
                             )
-                        |> Maybe.withDefault (viewMessagingCenter language currentDate nurseId)
+                        |> Maybe.withDefault (viewMessagingCenter language currentDate nurseId model)
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
@@ -285,9 +285,68 @@ viewMonthlySurvey language currentDate nurseId form =
         ]
 
 
-viewMessagingCenter : Language -> NominalDate -> NurseId -> Html Msg
-viewMessagingCenter language currentDate nurseId =
-    text "@todo viewMessagingCenter"
+viewMessagingCenter : Language -> NominalDate -> NurseId -> Model -> Html Msg
+viewMessagingCenter language currentDate nurseId model =
+    div [ class "ui report unstackable items" ]
+        [ viewTabs language model ]
+
+
+viewTabs : Language -> Model -> Html Msg
+viewTabs language model =
+    let
+        allTabs =
+            [ TabUnread
+            , TabFavorites
+            , TabGrowth
+            , TabConnecting
+            , TabSelfcare
+            , TabStress
+            , TabMindfullnes
+            ]
+
+        numberOfTabsToDsipaly =
+            5
+
+        scrollButtonLeft =
+            if model.tabScrollPosition > 0 then
+                scrollButton "left" (ScrollTab -1)
+
+            else
+                emptyNode
+
+        scrollRightButton =
+            if model.tabScrollPosition + numberOfTabsToDsipaly < List.length allTabs then
+                scrollButton "right" (ScrollTab 1)
+
+            else
+                emptyNode
+
+        scrollButton direction action =
+            span
+                [ class <| "action-icon " ++ direction
+                , onClick action
+                ]
+                []
+
+        tabs =
+            List.drop model.tabScrollPosition allTabs
+                |> List.take numberOfTabsToDsipaly
+                |> List.map renderButton
+
+        renderButton tab =
+            button
+                [ classList
+                    [ ( "active", tab == model.activeTab )
+                    , ( "primary ui button", True )
+                    ]
+                , onClick <| SetActiveTab tab
+                ]
+                [ translateText language <| Translate.MessagingTab tab ]
+    in
+    div [ class "ui segment tabs" ] <|
+        scrollButtonLeft
+            :: tabs
+            ++ [ scrollRightButton ]
 
 
 viewResilienceMessage : Language -> Nurse -> ResilienceMessage -> Html Msg

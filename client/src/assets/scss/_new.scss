@@ -4591,4 +4591,41 @@ div.page-activity.messaging-center {
       }
     }
   }
+
+  .ui.segment.tabs {
+    background-color: $color-white;
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 0;
+    padding: 25px;
+
+    button {
+      background-color: $color-white;
+      border-radius: 3px;
+      color: $color-dark-gray;
+      font-size: 18px;
+      font-weight: 600;
+      padding: 15px;
+      text-transform: none;
+    }
+
+    button.active {
+      background-color: $color-primary;
+      color: $color-white;
+    }
+
+    .action-icon {
+      background: url(#{$img-path}icon-forward-blue.svg) no-repeat center;
+      background-size: 60% 60%;
+      cursor: pointer;
+      display: block;
+      height: 54px;
+      width: 54px;
+    }
+
+    .action-icon.left {
+      transform: rotate(180deg);
+    }
+  }
+
 }

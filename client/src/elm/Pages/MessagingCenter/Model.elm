@@ -19,20 +19,30 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { -- filter : Maybe CaseManagementFilter
-      -- , dialogState : Maybe FollowUpEncounterDataType
-      kickOffForm : KickOffForm
+    { activeTab : MessagingTab
+    , tabScrollPosition : Int
+    , kickOffForm : KickOffForm
     , monthlySurveyForm : MonthlySurveyForm
     }
 
 
 emptyModel : Model
 emptyModel =
-    { --  filter = Nothing
-      -- , dialogState = Nothing
-      kickOffForm = emptyKickOffForm
+    { activeTab = TabUnread
+    , tabScrollPosition = 0
+    , kickOffForm = emptyKickOffForm
     , monthlySurveyForm = emptyMonthlySurveyForm
     }
+
+
+type MessagingTab
+    = TabUnread
+    | TabFavorites
+    | TabGrowth
+    | TabConnecting
+    | TabSelfcare
+    | TabStress
+    | TabMindfullnes
 
 
 type alias KickOffForm =
@@ -79,3 +89,5 @@ type Msg
     | SaveKickOffSurvey NurseId Nurse
     | SetMonthlySurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
     | SaveMonthlySurvey NurseId
+    | SetActiveTab MessagingTab
+    | ScrollTab Int

@@ -110,6 +110,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
+import Pages.MessagingCenter.Model exposing (MessagingTab(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.NCD.ProgressReport.Model exposing (NCDRiskFactor(..))
 import Pages.NCD.RecurrentActivity.Types
@@ -940,6 +941,7 @@ type TranslationId
     | MentalHealthHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MessagingCenter
+    | MessagingTab MessagingTab
     | MMHGUnit
     | MiddleName
     | Minutes Int
@@ -8741,6 +8743,43 @@ translationSet trans =
             { english = "Messaging Center"
             , kinyarwanda = Nothing
             }
+
+        MessagingTab tab ->
+            case tab of
+                TabUnread ->
+                    { english = "Unread"
+                    , kinyarwanda = Nothing
+                    }
+
+                TabFavorites ->
+                    { english = "Favorites"
+                    , kinyarwanda = Nothing
+                    }
+
+                TabGrowth ->
+                    { english = "Growth"
+                    , kinyarwanda = Nothing
+                    }
+
+                TabConnecting ->
+                    { english = "Connecting"
+                    , kinyarwanda = Nothing
+                    }
+
+                TabSelfcare ->
+                    { english = "Selfcare"
+                    , kinyarwanda = Nothing
+                    }
+
+                TabStress ->
+                    { english = "Stress"
+                    , kinyarwanda = Nothing
+                    }
+
+                TabMindfullnes ->
+                    { english = "Mindfullnes"
+                    , kinyarwanda = Nothing
+                    }
 
         MMHGUnit ->
             { english = "mmHG"

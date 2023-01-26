@@ -21,6 +21,11 @@ monthlySurveyQuestions =
     ]
 
 
-resolveNumberOfUnreadMessages : ModelIndexedDb -> Int
-resolveNumberOfUnreadMessages db =
+resolveNumberOfUnreadMessages : NurseId -> ModelIndexedDb -> Int
+resolveNumberOfUnreadMessages nurseId db =
+    let
+        _ =
+            Dict.get nurseId db.resilienceMessagesByNurse
+                |> Debug.log ""
+    in
     8

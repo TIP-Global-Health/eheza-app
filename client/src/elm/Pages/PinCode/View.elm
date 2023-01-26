@@ -260,7 +260,7 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
 
                     viewCardFunc =
                         if activity == MenuMessagingCenter then
-                            resolveNumberOfUnreadMessages db
+                            resolveNumberOfUnreadMessages nurseId db
                                 |> activityCardWithCounter
 
                         else
@@ -299,7 +299,7 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
             -- reminder is given a priority.
             Maybe.Extra.or
                 (resilienceReminderDialog language currentTime nurseId nurse)
-                (resilienceNotificationDialog language currentTime nurse db model)
+                (resilienceNotificationDialog language currentTime nurseId nurse db model)
         ]
 
     else
@@ -394,8 +394,8 @@ resilienceReminderDialog language currentTime nurseId nurse =
         nurse.resilienceProgramStartDate
 
 
-resilienceNotificationDialog : Language -> Time.Posix -> Nurse -> ModelIndexedDb -> Model -> Maybe (Html Msg)
-resilienceNotificationDialog language currentTime nurse db model =
+resilienceNotificationDialog : Language -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Maybe (Html Msg)
+resilienceNotificationDialog language currentTime nurseId nurse db model =
     let
         notificationTimeReached =
             Maybe.map
@@ -408,7 +408,7 @@ resilienceNotificationDialog language currentTime nurse db model =
     if notificationTimeReached && isJust nurse.resilienceProgramStartDate then
         let
             numberOfUnreadMessages =
-                resolveNumberOfUnreadMessages db
+                resolveNumberOfUnreadMessages nurseId db
         in
         if numberOfUnreadMessages > 0 then
             Just <|
