@@ -88,7 +88,9 @@ fetch model =
                 List.map MsgIndexedDb Pages.Device.Fetch.fetch
 
             PinCodePage ->
-                Pages.PinCode.Fetch.fetch model.healthCenterId
+                getLoggedInData model
+                    |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+                    |> Pages.PinCode.Fetch.fetch
                     |> List.map MsgIndexedDb
 
             PageNotFound _ ->
