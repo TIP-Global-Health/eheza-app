@@ -424,7 +424,7 @@ viewTabs language model =
 viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
 viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
-        ( extraClass, content ) =
+        ( extraClass, ( head, body ) ) =
             case message.category of
                 ResilienceCategoryIntroduction ->
                     ( "introduction"
@@ -466,457 +466,418 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
 
         updateTimeRead =
             model.activeTab == TabUnread
+
+        viewOptions =
+            model.activeTab == TabUnread
+
+        messageClickedAction =
+            ResilienceMessageClicked nurseId messageId message updateTimeRead
+
+        title =
+            let
+                plainTitle =
+                    div
+                        [ class "title"
+                        , onClick messageClickedAction
+                        ]
+                        head
+            in
+            if viewOptions then
+                div [ class "title-wrapper" ]
+                    [ plainTitle
+                    , div
+                        [ class "options"
+                        , onClick messageClickedAction
+                        ]
+                        [ text "OP" ]
+                    ]
+
+            else
+                plainTitle
     in
     div
         [ classList
             [ ( "resilience-message " ++ extraClass, True )
             , ( "shrank", shrank )
             ]
-        , onClick <| ResilienceMessageClicked nurseId messageId message updateTimeRead
         ]
-        content
+        [ title
+        , div
+            [ class "content"
+            , onClick messageClickedAction
+            ]
+            body
+        ]
 
 
-viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> List (Html Msg)
+viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewIntroductionMessage language nurse order =
     case order of
         ResilienceMessage1 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageIntroduction1Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language <| Translate.ResilienceMessageIntroduction1Paragraph1 nurse.name ]
-                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction1Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction1Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageIntroduction1Title ]
+            , [ p [] [ text <| translate language <| Translate.ResilienceMessageIntroduction1Paragraph1 nurse.name ]
+              , p [] [ text <| translate language Translate.ResilienceMessageIntroduction1Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageIntroduction1Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage2 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageIntroduction2Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction2Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction2Paragraph2 ]
-                , ul []
+            ( [ text <| translate language Translate.ResilienceMessageIntroduction2Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction2Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageIntroduction2Paragraph2 ]
+              , ul []
                     [ li [] [ text <| translate language Translate.ResilienceMessageIntroduction2Bullet1 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageIntroduction2Bullet2 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageIntroduction2Bullet3 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageIntroduction2Bullet4 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageIntroduction2Bullet5 ]
                     ]
-                ]
-            ]
+              ]
+            )
 
         ResilienceMessage3 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageIntroduction3Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction3Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction3Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction3Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageIntroduction3Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction3Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageIntroduction3Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageIntroduction3Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage4 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageIntroduction4Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction4Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction4Paragraph2 ]
-                , ul []
+            ( [ text <| translate language Translate.ResilienceMessageIntroduction4Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction4Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageIntroduction4Paragraph2 ]
+              , ul []
                     [ li [] [ text <| translate language Translate.ResilienceMessageIntroduction4Bullet1 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageIntroduction4Bullet2 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageIntroduction4Bullet3 ]
                     ]
-                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction4Paragraph3 ]
-                ]
-            ]
+              , p [] [ text <| translate language Translate.ResilienceMessageIntroduction4Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage5 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageIntroduction5Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction5Paragraph1 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageIntroduction5Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction5Paragraph1 ]
+              ]
+            )
 
         ResilienceMessage6 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageIntroduction6Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction6Paragraph1 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageIntroduction6Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction6Paragraph1 ]
+              ]
+            )
 
         ResilienceMessage7 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageIntroduction7Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction7Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction7Paragraph2 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageIntroduction7Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction7Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageIntroduction7Paragraph2 ]
+              ]
+            )
 
         ResilienceMessage8 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageIntroduction8Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction8Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction8Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageIntroduction8Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageIntroduction8Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction8Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageIntroduction8Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageIntroduction8Paragraph3 ]
+              ]
+            )
 
 
-viewGrowthMessage : Language -> ResilienceMessageOrder -> List (Html Msg)
+viewGrowthMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewGrowthMessage language order =
     case order of
         ResilienceMessage1 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageGrowth1Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageGrowth1Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageGrowth1Paragraph2 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageGrowth1Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth1Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth1Paragraph2 ]
+              ]
+            )
 
         ResilienceMessage2 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageGrowth2Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageGrowth2Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageGrowth2Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageGrowth2Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageGrowth2Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth2Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth2Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth2Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage3 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageGrowth3Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageGrowth3Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageGrowth3Paragraph2 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageGrowth3Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth3Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth3Paragraph2 ]
+              ]
+            )
 
         ResilienceMessage4 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageGrowth4Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageGrowth4Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageGrowth4Paragraph2 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageGrowth4Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth4Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth4Paragraph2 ]
+              ]
+            )
 
         _ ->
-            []
+            ( [], [] )
 
 
-viewStressManagementMessage : Language -> Nurse -> ResilienceMessageOrder -> List (Html Msg)
+viewStressManagementMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewStressManagementMessage language nurse order =
     case order of
         ResilienceMessage1 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageStressManagement1Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement1Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement1Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement1Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement1Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement1Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement1Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement1Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage2 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageStressManagement2Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement2Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement2Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement2Paragraph3 ]
-                , ul []
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement2Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement2Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement2Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement2Paragraph3 ]
+              , ul []
                     [ li [] [ text <| translate language Translate.ResilienceMessageStressManagement2Bullet1 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageStressManagement2Bullet2 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageStressManagement2Bullet3 ]
                     ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement2Paragraph4 ]
-                ]
-            ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement2Paragraph4 ]
+              ]
+            )
 
         ResilienceMessage3 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageStressManagement3Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement3Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement3Paragraph2 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement3Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement3Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement3Paragraph2 ]
+              ]
+            )
 
         ResilienceMessage4 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageStressManagement4Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement4Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement4Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement4Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement4Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement4Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement4Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement4Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage5 ->
-            [ div [ class "title" ]
-                [ text <| translate language <| Translate.ResilienceMessageStressManagement5Title nurse.name ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement5Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement5Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement5Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language <| Translate.ResilienceMessageStressManagement5Title nurse.name ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement5Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement5Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement5Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage6 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageStressManagement6Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement6Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement6Paragraph2 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement6Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement6Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement6Paragraph2 ]
+              ]
+            )
 
         ResilienceMessage7 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageStressManagement7Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement7Paragraph1 ]
-                , ul []
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement7Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement7Paragraph1 ]
+              , ul []
                     [ li [] [ text <| translate language Translate.ResilienceMessageStressManagement7Bullet1 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageStressManagement7Bullet2 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageStressManagement7Bullet3 ]
                     ]
-                , p [] [ text <| translate language Translate.ResilienceMessageStressManagement7Paragraph2 ]
-                ]
-            ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement7Paragraph2 ]
+              ]
+            )
 
         _ ->
-            []
+            ( [], [] )
 
 
-viewMindfulnessMessage : Language -> ResilienceMessageOrder -> List (Html Msg)
+viewMindfulnessMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewMindfulnessMessage language order =
     case order of
         ResilienceMessage1 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageMindfulness1Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness1Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness1Paragraph2 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness1Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness1Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness1Paragraph2 ]
+              ]
+            )
 
         ResilienceMessage2 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageMindfulness2Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness2Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness2Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness2Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness2Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness2Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness2Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness2Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage3 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageMindfulness3Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness3Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness3Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness3Paragraph3 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness3Paragraph4 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness3Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness3Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness3Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness3Paragraph3 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness3Paragraph4 ]
+              ]
+            )
 
         ResilienceMessage4 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageMindfulness4Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness4Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness4Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness4Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness4Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness4Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness4Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness4Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage5 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageMindfulness5Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness5Paragraph1 ]
-                , ul []
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness5Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness5Paragraph1 ]
+              , ul []
                     [ li [] [ text <| translate language Translate.ResilienceMessageMindfulness5Bullet1 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageMindfulness5Bullet2 ]
                     ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness5Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness5Paragraph3 ]
-                ]
-            ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness5Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness5Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage6 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageMindfulness6Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph1 ]
-                , ul []
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness6Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph1 ]
+              , ul []
                     [ li [] [ text <| translate language Translate.ResilienceMessageMindfulness6Bullet1 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageMindfulness6Bullet2 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageMindfulness6Bullet3 ]
                     ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph3 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph4 ]
-                ]
-            ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph3 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness6Paragraph4 ]
+              ]
+            )
 
         _ ->
-            []
+            ( [], [] )
 
 
-viewConnectingMessage : Language -> ResilienceMessageOrder -> List (Html Msg)
+viewConnectingMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewConnectingMessage language order =
     case order of
         ResilienceMessage1 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageConnecting1Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting1Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting1Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting1Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageConnecting1Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting1Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting1Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting1Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage2 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageConnecting2Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting2Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting2Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting2Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageConnecting2Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting2Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting2Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting2Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage3 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageConnecting3Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting3Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting3Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting3Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageConnecting3Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting3Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting3Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting3Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage4 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageConnecting4Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting4Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting4Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting4Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageConnecting4Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting4Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting4Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting4Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage5 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageConnecting5Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting5Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting5Paragraph2 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageConnecting5Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting5Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting5Paragraph2 ]
+              ]
+            )
 
         ResilienceMessage6 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageConnecting6Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageConnecting6Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting6Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageConnecting6Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageConnecting6Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting6Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting6Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting6Paragraph3 ]
+              ]
+            )
 
         _ ->
-            []
+            ( [], [] )
 
 
-viewSelfCareMessage : Language -> ResilienceMessageOrder -> List (Html Msg)
+viewSelfCareMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewSelfCareMessage language order =
     case order of
         ResilienceMessage1 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageSelfCare1Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph2 ]
-                , ul []
+            ( [ text <| translate language Translate.ResilienceMessageSelfCare1Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph2 ]
+              , ul []
                     [ li [] [ text <| translate language Translate.ResilienceMessageSelfCare1Bullet1 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageSelfCare1Bullet2 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageSelfCare1Bullet3 ]
                     ]
-                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph3 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph4 ]
-                ]
-            ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph3 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph4 ]
+              ]
+            )
 
         ResilienceMessage2 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageSelfCare2Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare2Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare2Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare2Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageSelfCare2Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare2Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare2Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare2Paragraph3 ]
+              ]
+            )
 
         ResilienceMessage3 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageSelfCare3Title ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph2 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph3 ]
-                ]
-            ]
+            ( [ text <| translate language Translate.ResilienceMessageSelfCare3Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph3 ]
+              ]
+            )
 
         _ ->
-            []
+            ( [], [] )
 
 
-viewEndOfPeriodMessage : Language -> ResilienceMessageOrder -> List (Html Msg)
+viewEndOfPeriodMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewEndOfPeriodMessage language order =
     case order of
         ResilienceMessage1 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthTitle ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthParagraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthParagraph2 ]
-                , ul []
+            ( [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthTitle ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthParagraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthParagraph2 ]
+              , ul []
                     [ li [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthBullet1 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthBullet2 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthBullet3 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthBullet4 ]
                     ]
-                , p [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthParagraph3 ]
-                ]
-            ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfFirstMonthParagraph3 ]
+              ]
+            )
 
         ResilienceMessage2 ->
-            [ div [ class "title" ]
-                [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthTitle ]
-            , div [ class "content" ]
-                [ p [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthParagraph1 ]
-                , p [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthParagraph2 ]
-                , ul []
+            ( [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthTitle ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthParagraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthParagraph2 ]
+              , ul []
                     [ li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet1 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet2 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet3 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet4 ]
                     , li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet5 ]
                     ]
-                , p [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthParagraph3 ]
-                ]
-            ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthParagraph3 ]
+              ]
+            )
 
         _ ->
-            []
+            ( [], [] )

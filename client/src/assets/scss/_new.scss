@@ -4631,10 +4631,20 @@ div.page-activity.messaging-center {
   .resilience-message {
     margin-bottom: 30px;
 
-    .title {
+    .title,
+    .title-wrapper {
       background-color: $color-velvet;
       color: $color-white;
       padding: 20px;
+    }
+
+    .title-wrapper {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .title-wrapper .title {
+      padding: 0;
     }
 
     .content {
