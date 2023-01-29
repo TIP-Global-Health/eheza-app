@@ -29,4 +29,5 @@ then
 
 fi
 
-cd ../../client && gulp $@
+export PATH=~/.nvm/versions/node/v9.0.0/bin:$PATH;
+cd ../../client  && gulp $@
