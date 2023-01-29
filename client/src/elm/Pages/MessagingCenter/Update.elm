@@ -228,3 +228,9 @@ update currentTime currentDate msg model =
             , Cmd.none
             , msgs
             )
+
+        SetMessageOptionsDialogState value ->
+            ( { model | messageOptionsDialogState = value }
+            , Cmd.none
+            , []
+            )

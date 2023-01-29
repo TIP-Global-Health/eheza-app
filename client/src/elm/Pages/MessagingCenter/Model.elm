@@ -23,6 +23,7 @@ type alias Model =
     { activeTab : MessagingTab
     , tabScrollPosition : Int
     , expandedMessages : EverySet ResilienceMessageId
+    , messageOptionsDialogState : Maybe ( ResilienceMessageId, ResilienceMessage )
     , kickOffForm : KickOffForm
     , monthlySurveyForm : MonthlySurveyForm
     }
@@ -33,6 +34,7 @@ emptyModel =
     { activeTab = TabUnread
     , tabScrollPosition = 0
     , expandedMessages = EverySet.empty
+    , messageOptionsDialogState = Nothing
     , kickOffForm = emptyKickOffForm
     , monthlySurveyForm = emptyMonthlySurveyForm
     }
@@ -95,3 +97,4 @@ type Msg
     | SetActiveTab MessagingTab
     | ScrollTab Int
     | ResilienceMessageClicked NurseId ResilienceMessageId ResilienceMessage Bool
+    | SetMessageOptionsDialogState (Maybe ( ResilienceMessageId, ResilienceMessage ))

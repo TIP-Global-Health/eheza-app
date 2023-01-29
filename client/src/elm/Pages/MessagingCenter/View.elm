@@ -360,6 +360,8 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
         [ viewTabs language model
         , div [ class "ui report unstackable items" ]
             content
+        , viewModal <|
+            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId) model.messageOptionsDialogState
         ]
 
 
@@ -487,7 +489,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                     [ plainTitle
                     , div
                         [ class "options"
-                        , onClick messageClickedAction
+                        , onClick <| SetMessageOptionsDialogState <| Just ( messageId, message )
                         ]
                         [ text "OP" ]
                     ]
@@ -881,3 +883,23 @@ viewEndOfPeriodMessage language order =
 
         _ ->
             ( [], [] )
+
+
+messageOptionsDialog : Language -> Time.Posix -> NominalDate -> NurseId -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
+messageOptionsDialog language currentTime currentDate nurseId ( mesageId, message ) =
+    div [ class "ui active modal reminder" ]
+        [ div
+            [ class "content" ]
+            [ text "button 1"
+            , text "button 2"
+            , text "button 3"
+            ]
+        , div
+            [ class "actions" ]
+            [ button
+                [ class "ui primary fluid button"
+                , onClick <| SetMessageOptionsDialogState Nothing
+                ]
+                [ text <| translate language Translate.Close ]
+            ]
+        ]
