@@ -22,6 +22,7 @@ import Pages.Page exposing (Page)
 type alias Model =
     { activeTab : MessagingTab
     , tabScrollPosition : Int
+    , expandedMessages : EverySet ResilienceMessageId
     , kickOffForm : KickOffForm
     , monthlySurveyForm : MonthlySurveyForm
     }
@@ -31,6 +32,7 @@ emptyModel : Model
 emptyModel =
     { activeTab = TabUnread
     , tabScrollPosition = 0
+    , expandedMessages = EverySet.empty
     , kickOffForm = emptyKickOffForm
     , monthlySurveyForm = emptyMonthlySurveyForm
     }
@@ -92,4 +94,4 @@ type Msg
     | SaveMonthlySurvey NurseId
     | SetActiveTab MessagingTab
     | ScrollTab Int
-    | MarkAsRead NurseId ResilienceMessageId ResilienceMessage
+    | ResilienceMessageClicked NurseId ResilienceMessageId ResilienceMessage Bool

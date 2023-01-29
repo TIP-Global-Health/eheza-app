@@ -4644,4 +4644,13 @@ div.page-activity.messaging-center {
     }
   }
 
+  .resilience-message.shrank .content {
+    display: -webkit-box;
+    -webkit-line-clamp: var(--line-clamp, 2);
+    -webkit-box-orient: vertical;
+    word-break: var(--word-break, 'none');
+    overflow: hidden;
+    hyphens: auto;
+    padding-bottom: 5px;
+  }
 }

@@ -15,6 +15,7 @@ import Backend.Person.Utils
         )
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyType(..))
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions)
@@ -203,15 +204,27 @@ update currentTime currentDate msg model =
             , []
             )
 
-        MarkAsRead nurseId messageId message ->
+        ResilienceMessageClicked nurseId messageId message updateTimeRead ->
             let
-                updatedMessage =
-                    { message | timeRead = Just currentTime }
+                ( updatedModel, msgs ) =
+                    if EverySet.member messageId model.expandedMessages then
+                        ( { model | expandedMessages = EverySet.remove messageId model.expandedMessages }
+                        , if updateTimeRead then
+                            [ Backend.ResilienceMessage.Model.UpdateMessage messageId { message | timeRead = Just currentTime }
+                                |> Backend.Model.MsgResilienceMessage nurseId
+                                |> App.Model.MsgIndexedDb
+                            ]
+
+                          else
+                            []
+                        )
+
+                    else
+                        ( { model | expandedMessages = EverySet.insert messageId model.expandedMessages }
+                        , []
+                        )
             in
-            ( model
+            ( updatedModel
             , Cmd.none
-            , [ Backend.ResilienceMessage.Model.UpdateMessage messageId updatedMessage
-                    |> Backend.Model.MsgResilienceMessage nurseId
-                    |> App.Model.MsgIndexedDb
-              ]
+            , msgs
             )

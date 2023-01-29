@@ -327,7 +327,7 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
         content =
             let
                 viewMessage =
-                    viewResilienceMessage language nurseId nurse
+                    viewResilienceMessage language nurseId nurse model
 
                 viewFilteredByCategory category =
                     List.filter (Tuple.second >> .category >> (==) category) read
@@ -421,8 +421,8 @@ viewTabs language model =
             ++ [ scrollRightButton ]
 
 
-viewResilienceMessage : Language -> NurseId -> Nurse -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
-viewResilienceMessage language nurseId nurse ( messageId, message ) =
+viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
+viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
         ( extraClass, content ) =
             case message.category of
@@ -460,10 +460,19 @@ viewResilienceMessage language nurseId nurse ( messageId, message ) =
                     ( "end-of-period"
                     , viewEndOfPeriodMessage language message.order
                     )
+
+        shrank =
+            not <| EverySet.member messageId model.expandedMessages
+
+        updateTimeRead =
+            model.activeTab == TabUnread
     in
     div
-        [ class <| "resilience-message " ++ extraClass
-        , onClick <| MarkAsRead nurseId messageId message
+        [ classList
+            [ ( "resilience-message " ++ extraClass, True )
+            , ( "shrank", shrank )
+            ]
+        , onClick <| ResilienceMessageClicked nurseId messageId message updateTimeRead
         ]
         content
 
