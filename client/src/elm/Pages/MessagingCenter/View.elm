@@ -936,8 +936,7 @@ messageOptionsDialog language currentTime currentDate nurseId state =
                 buttonForView hours =
                     button
                         [ class "ui fluid button primary"
-
-                        -- , onClick <| SetMessageOptionsDialogState Nothing
+                        , onClick <| ScheduleMessageReminder hours nurseId messageId message
                         ]
                         [ text <| translate language <| Translate.HoursSinglePlural hours
                         ]

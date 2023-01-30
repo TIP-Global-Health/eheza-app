@@ -105,3 +105,4 @@ type Msg
     | SetMessageOptionsDialogState (Maybe MessageOptionsDialogState)
     | MarkMessageUnread NurseId ResilienceMessageId ResilienceMessage
     | MarkMessageFavorite NurseId ResilienceMessageId ResilienceMessage
+    | ScheduleMessageReminder Int NurseId ResilienceMessageId ResilienceMessage
