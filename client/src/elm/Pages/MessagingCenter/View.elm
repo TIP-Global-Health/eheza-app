@@ -887,12 +887,30 @@ viewEndOfPeriodMessage language order =
 
 messageOptionsDialog : Language -> Time.Posix -> NominalDate -> NurseId -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
 messageOptionsDialog language currentTime currentDate nurseId ( mesageId, message ) =
-    div [ class "ui active modal reminder" ]
+    div [ class "ui active modal message-options" ]
         [ div
             [ class "content" ]
-            [ text "button 1"
-            , text "button 2"
-            , text "button 3"
+            [ button
+                [ class "ui fluid button cyan"
+                , onClick <| SetMessageOptionsDialogState Nothing
+                ]
+                [ img [ src "assets/images/envelope.svg" ] []
+                , text <| translate language Translate.Unread
+                ]
+            , button
+                [ class "ui fluid button purple"
+                , onClick <| SetMessageOptionsDialogState Nothing
+                ]
+                [ img [ src "assets/images/star.svg" ] []
+                , text <| translate language Translate.Favorite
+                ]
+            , button
+                [ class "ui fluid button velvet"
+                , onClick <| SetMessageOptionsDialogState Nothing
+                ]
+                [ img [ src "assets/images/exclamation-mark.svg" ] []
+                , text <| translate language Translate.RemindMe
+                ]
             ]
         , div
             [ class "actions" ]

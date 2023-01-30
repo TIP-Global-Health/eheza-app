@@ -653,6 +653,7 @@ type TranslationId
     | FatherOrChiefId
     | FatherOrChiefName
     | FatherNationalId
+    | Favorite
     | FbfDistribution ClinicType
     | FbfToReceive Activity Float
     | FetalHeartRate
@@ -1276,6 +1277,7 @@ type TranslationId
     | RemainingForDownloadLabel
     | RemainingForUploadLabel
     | RemainingTotalToUpload
+    | RemindMe
     | RenalDisease
     | ReportAge String
     | ReportComponentAntenatal ReportComponentAntenatal
@@ -1679,6 +1681,7 @@ type TranslationId
     | UnitOfMeasurement UnitOfMeasurement
     | UniversalInterventions
     | Unknown
+    | Unread
     | Update
     | UpdateError
     | Uploading
@@ -5150,6 +5153,11 @@ translationSet trans =
 
         FatherNationalId ->
             { english = "Father's National ID"
+            , kinyarwanda = Nothing
+            }
+
+        Favorite ->
+            { english = "Favorite"
             , kinyarwanda = Nothing
             }
 
@@ -8747,9 +8755,7 @@ translationSet trans =
         MessagingTab tab ->
             case tab of
                 TabUnread ->
-                    { english = "Unread"
-                    , kinyarwanda = Nothing
-                    }
+                    translationSet Unread
 
                 TabFavorites ->
                     { english = "Favorites"
@@ -14867,6 +14873,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        RemindMe ->
+            { english = "Remind Me"
+            , kinyarwanda = Nothing
+            }
+
         ReportAge age ->
             { english = "Age: " ++ age
             , kinyarwanda = Just <| "Imyaka: " ++ age
@@ -17616,6 +17627,11 @@ translationSet trans =
         Unknown ->
             { english = "Unknown"
             , kinyarwanda = Just "Ntabizi"
+            }
+
+        Unread ->
+            { english = "Unread"
+            , kinyarwanda = Nothing
             }
 
         Update ->
