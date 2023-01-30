@@ -1289,6 +1289,13 @@ type TranslationId
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
+    | ResilienceCategoryIntroductionHeader
+    | ResilienceCategoryGrowthHeader
+    | ResilienceCategoryStressManagementHeader
+    | ResilienceCategoryMindfulnessHeader
+    | ResilienceCategoryConnectingHeader
+    | ResilienceCategorySelfCareHeader
+    | ResilienceCategoryEndOfPeriodHeader
     | ResilienceMessageIntroduction1Title
     | ResilienceMessageIntroduction1Paragraph1 String
     | ResilienceMessageIntroduction1Paragraph2
@@ -15022,6 +15029,41 @@ translationSet trans =
         ReportCompleted { pending, completed } ->
             { english = String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Completed"
             , kinyarwanda = Just <| String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Raporo irarangiye"
+            }
+
+        ResilienceCategoryIntroductionHeader ->
+            { english = "Introduction"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceCategoryGrowthHeader ->
+            { english = "Growth"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceCategoryStressManagementHeader ->
+            { english = "Stress Management"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceCategoryMindfulnessHeader ->
+            { english = "Mindfulness"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceCategoryConnectingHeader ->
+            { english = "Connecting"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceCategorySelfCareHeader ->
+            { english = "Self Care"
+            , kinyarwanda = Nothing
+            }
+
+        ResilienceCategoryEndOfPeriodHeader ->
+            { english = ""
+            , kinyarwanda = Nothing
             }
 
         ResilienceMessageIntroduction1Title ->

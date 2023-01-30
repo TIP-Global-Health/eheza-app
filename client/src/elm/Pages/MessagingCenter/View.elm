@@ -512,9 +512,15 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
 
 viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewIntroductionMessage language nurse order =
+    let
+        introductionCategoryHeader =
+            span [] [ text <| translate language <| Translate.ResilienceCategoryIntroductionHeader ]
+    in
     case order of
         ResilienceMessage1 ->
-            ( [ text <| translate language Translate.ResilienceMessageIntroduction1Title ]
+            ( [ introductionCategoryHeader
+              , text <| translate language Translate.ResilienceMessageIntroduction1Title
+              ]
             , [ p [] [ text <| translate language <| Translate.ResilienceMessageIntroduction1Paragraph1 nurse.name ]
               , p [] [ text <| translate language Translate.ResilienceMessageIntroduction1Paragraph2 ]
               , p [] [ text <| translate language Translate.ResilienceMessageIntroduction1Paragraph3 ]
@@ -522,7 +528,9 @@ viewIntroductionMessage language nurse order =
             )
 
         ResilienceMessage2 ->
-            ( [ text <| translate language Translate.ResilienceMessageIntroduction2Title ]
+            ( [ introductionCategoryHeader
+              , text <| translate language Translate.ResilienceMessageIntroduction2Title
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction2Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageIntroduction2Paragraph2 ]
               , ul []
@@ -536,7 +544,9 @@ viewIntroductionMessage language nurse order =
             )
 
         ResilienceMessage3 ->
-            ( [ text <| translate language Translate.ResilienceMessageIntroduction3Title ]
+            ( [ introductionCategoryHeader
+              , text <| translate language Translate.ResilienceMessageIntroduction3Title
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction3Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageIntroduction3Paragraph2 ]
               , p [] [ text <| translate language Translate.ResilienceMessageIntroduction3Paragraph3 ]
@@ -544,7 +554,8 @@ viewIntroductionMessage language nurse order =
             )
 
         ResilienceMessage4 ->
-            ( [ text <| translate language Translate.ResilienceMessageIntroduction4Title ]
+            ( [ introductionCategoryHeader
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction4Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageIntroduction4Paragraph2 ]
               , ul []
@@ -557,26 +568,34 @@ viewIntroductionMessage language nurse order =
             )
 
         ResilienceMessage5 ->
-            ( [ text <| translate language Translate.ResilienceMessageIntroduction5Title ]
+            ( [ introductionCategoryHeader
+              , text <| translate language Translate.ResilienceMessageIntroduction5Title
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction5Paragraph1 ]
               ]
             )
 
         ResilienceMessage6 ->
-            ( [ text <| translate language Translate.ResilienceMessageIntroduction6Title ]
+            ( [ introductionCategoryHeader
+              , text <| translate language Translate.ResilienceMessageIntroduction6Title
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction6Paragraph1 ]
               ]
             )
 
         ResilienceMessage7 ->
-            ( [ text <| translate language Translate.ResilienceMessageIntroduction7Title ]
+            ( [ introductionCategoryHeader
+              , text <| translate language Translate.ResilienceMessageIntroduction7Title
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction7Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageIntroduction7Paragraph2 ]
               ]
             )
 
         ResilienceMessage8 ->
-            ( [ text <| translate language Translate.ResilienceMessageIntroduction8Title ]
+            ( [ introductionCategoryHeader
+              , text <| translate language Translate.ResilienceMessageIntroduction8Title
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageIntroduction8Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageIntroduction8Paragraph2 ]
               , p [] [ text <| translate language Translate.ResilienceMessageIntroduction8Paragraph3 ]
@@ -586,16 +605,24 @@ viewIntroductionMessage language nurse order =
 
 viewGrowthMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewGrowthMessage language order =
+    let
+        growthCategoryHeader =
+            span [] [ text <| translate language <| Translate.ResilienceCategoryGrowthHeader ]
+    in
     case order of
         ResilienceMessage1 ->
-            ( [ text <| translate language Translate.ResilienceMessageGrowth1Title ]
+            ( [ growthCategoryHeader
+              , text <| translate language Translate.ResilienceMessageGrowth1Title
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth1Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageGrowth1Paragraph2 ]
               ]
             )
 
         ResilienceMessage2 ->
-            ( [ text <| translate language Translate.ResilienceMessageGrowth2Title ]
+            ( [ growthCategoryHeader
+              , text <| translate language Translate.ResilienceMessageGrowth2Title
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth2Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageGrowth2Paragraph2 ]
               , p [] [ text <| translate language Translate.ResilienceMessageGrowth2Paragraph3 ]
@@ -603,14 +630,18 @@ viewGrowthMessage language order =
             )
 
         ResilienceMessage3 ->
-            ( [ text <| translate language Translate.ResilienceMessageGrowth3Title ]
+            ( [ growthCategoryHeader
+              , text <| translate language Translate.ResilienceMessageGrowth3Title
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth3Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageGrowth3Paragraph2 ]
               ]
             )
 
         ResilienceMessage4 ->
-            ( [ text <| translate language Translate.ResilienceMessageGrowth4Title ]
+            ( [ growthCategoryHeader
+              , text <| translate language Translate.ResilienceMessageGrowth4Title
+              ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth4Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageGrowth4Paragraph2 ]
               ]
