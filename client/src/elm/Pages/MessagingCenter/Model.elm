@@ -103,4 +103,5 @@ type Msg
     | ScrollTab Int
     | ResilienceMessageClicked NurseId ResilienceMessageId ResilienceMessage Bool
     | SetMessageOptionsDialogState (Maybe MessageOptionsDialogState)
+    | MarkMessageUnread NurseId ResilienceMessageId ResilienceMessage
     | MarkMessageFavorite NurseId ResilienceMessageId ResilienceMessage

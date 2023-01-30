@@ -21,6 +21,7 @@ import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions)
 import RemoteData exposing (RemoteData(..))
 import Time
+import Time.Extra
 
 
 update : Time.Posix -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -233,6 +234,22 @@ update currentTime currentDate msg model =
             ( { model | messageOptionsDialogState = value }
             , Cmd.none
             , []
+            )
+
+        MarkMessageUnread nurseId messageId message ->
+            ( { model
+                | expandedMessages = EverySet.remove messageId model.expandedMessages
+                , messageOptionsDialogState = Nothing
+              }
+            , Cmd.none
+            , [ Backend.ResilienceMessage.Model.UpdateMessage messageId
+                    { message
+                        | nextReminder = Just currentTime
+                        , timeRead = Just <| Time.Extra.add Time.Extra.Second -1 Time.utc currentTime
+                    }
+                    |> Backend.Model.MsgResilienceMessage nurseId
+                    |> App.Model.MsgIndexedDb
+              ]
             )
 
         MarkMessageFavorite nurseId messageId message ->
