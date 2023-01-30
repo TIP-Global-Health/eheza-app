@@ -338,7 +338,8 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                     List.map viewMessage unread
 
                 TabFavorites ->
-                    List.filter (Tuple.second >> .isFavorite) read
+                    Dict.toList messages
+                        |> List.filter (Tuple.second >> .isFavorite)
                         |> List.map viewMessage
 
                 TabGrowth ->
@@ -907,7 +908,7 @@ messageOptionsDialog language currentTime currentDate nurseId state =
                         ]
                     , button
                         [ class "ui fluid button purple"
-                        , onClick <| SetMessageOptionsDialogState Nothing
+                        , onClick <| MarkMessageFavorite nurseId messageId message
                         ]
                         [ img [ src "assets/images/star.svg" ] []
                         , text <| translate language Translate.Favorite

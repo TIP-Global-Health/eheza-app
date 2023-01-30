@@ -234,3 +234,15 @@ update currentTime currentDate msg model =
             , Cmd.none
             , []
             )
+
+        MarkMessageFavorite nurseId messageId message ->
+            ( { model
+                | expandedMessages = EverySet.remove messageId model.expandedMessages
+                , messageOptionsDialogState = Nothing
+              }
+            , Cmd.none
+            , [ Backend.ResilienceMessage.Model.UpdateMessage messageId { message | isFavorite = True }
+                    |> Backend.Model.MsgResilienceMessage nurseId
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
