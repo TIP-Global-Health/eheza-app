@@ -53,7 +53,7 @@ view language currentTime nurseId nurse db model =
             fromLocalDateTime currentTime
 
         numberOfUnreadMessages =
-            resolveNumberOfUnreadMessages currentDate nurseId nurse db
+            resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
 
         header =
             div [ class "ui basic head segment" ]
@@ -901,7 +901,7 @@ messageOptionsDialog language currentTime currentDate nurseId state =
                     [ class "content" ]
                     [ button
                         [ class "ui fluid button cyan"
-                        , onClick <| SetMessageOptionsDialogState Nothing
+                        , onClick <| MarkMessageUnread nurseId messageId message
                         ]
                         [ img [ src "assets/images/envelope.svg" ] []
                         , text <| translate language Translate.Unread

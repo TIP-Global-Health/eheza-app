@@ -13,6 +13,7 @@ import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isNothing)
 import Pages.MessagingCenter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Time exposing (posixToMillis)
 
 
 monthlySurveyQuestions : List ResilienceSurveyQuestion
@@ -24,21 +25,44 @@ monthlySurveyQuestions =
     ]
 
 
-resolveNumberOfUnreadMessages : NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Int
-resolveNumberOfUnreadMessages currentDate nurseId nurse db =
-    resolveUnreadMessages currentDate nurseId nurse db
+resolveNumberOfUnreadMessages : Time.Posix -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Int
+resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db =
+    resolveUnreadMessages currentTime currentDate nurseId nurse db
         |> Dict.size
 
 
-resolveUnreadMessages : NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
-resolveUnreadMessages currentDate nurseId nurse db =
+resolveUnreadMessages : Time.Posix -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
+resolveUnreadMessages currentTime currentDate nurseId nurse db =
     Maybe.map
         (\programStartDate ->
             resolveInboxMessages currentDate programStartDate nurseId db
-                |> Dict.filter (\_ message -> isNothing message.timeRead)
+                |> Dict.filter (\_ message -> isMessageUnread currentTime message)
         )
         nurse.resilienceProgramStartDate
         |> Maybe.withDefault (resolveInboxMessagesProgramNotStarted currentDate nurseId db)
+
+
+isMessageUnread : Time.Posix -> ResilienceMessage -> Bool
+isMessageUnread currentTime message =
+    case message.timeRead of
+        Nothing ->
+            True
+
+        Just timeRead ->
+            Maybe.map
+                (\nextReminder ->
+                    let
+                        nextReminderMillis =
+                            posixToMillis nextReminder
+                    in
+                    -- Reminder was set to latter time than the
+                    -- time at which message was read.
+                    (nextReminderMillis > posixToMillis timeRead)
+                        && -- Scheduled reminder time was reached.
+                           (posixToMillis currentTime >= nextReminderMillis)
+                )
+                message.nextReminder
+                |> Maybe.withDefault False
 
 
 resolveInboxMessages : NominalDate -> NominalDate -> NurseId -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
