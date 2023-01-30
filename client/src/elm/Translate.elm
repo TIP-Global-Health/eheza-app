@@ -739,6 +739,7 @@ type TranslationId
     | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
+    | HoursSinglePlural Int
     | HowManyPerWeek
     | Hypertension
     | HypertensionAndPregnantHeader
@@ -1278,6 +1279,7 @@ type TranslationId
     | RemainingForUploadLabel
     | RemainingTotalToUpload
     | RemindMe
+    | RemindMePhrase
     | RenalDisease
     | ReportAge String
     | ReportComponentAntenatal ReportComponentAntenatal
@@ -5871,6 +5873,17 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        HoursSinglePlural value ->
+            if value == 1 then
+                { english = "1 Hour"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = String.fromInt value ++ " Hours"
+                , kinyarwanda = Nothing
+                }
 
         HowManyPerWeek ->
             { english = "How many per week"
@@ -14875,6 +14888,11 @@ translationSet trans =
 
         RemindMe ->
             { english = "Remind Me"
+            , kinyarwanda = Nothing
+            }
+
+        RemindMePhrase ->
+            { english = "Remind me of this message in:"
             , kinyarwanda = Nothing
             }
 

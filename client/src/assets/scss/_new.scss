@@ -4664,7 +4664,8 @@ div.page-activity.messaging-center {
     padding-bottom: 5px;
   }
 
-  .ui.active.modal {
+  .ui.active.modal.main,
+  .ui.active.modal.reminder {
     border-top: 10px solid $color-primary;
     width: 380px;
 
@@ -4690,4 +4691,25 @@ div.page-activity.messaging-center {
       margin: 0;
     }
   }
+
+  .ui.active.modal.reminder {
+    width: 450px;
+
+    .content {
+      margin-bottom: 40px;
+    }
+
+    .content p {
+      text-align: left;
+      margin-bottom: 10px;
+    }
+
+    .content .button {
+      border-radius: 5px;
+      font-size: 24px;
+      font-weight: normal;
+      margin-bottom: 20px;
+    }
+  }
+
 }
