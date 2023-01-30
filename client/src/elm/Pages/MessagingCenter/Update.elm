@@ -242,7 +242,10 @@ update currentTime currentDate msg model =
                 , messageOptionsDialogState = Nothing
               }
             , Cmd.none
-            , [ Backend.ResilienceMessage.Model.UpdateMessage messageId
+            , -- To mark message as unread, we set reminder to current time,
+              -- and message read time to one second befoe current time.
+              -- In essence, scheduling message reminter to right now.
+              [ Backend.ResilienceMessage.Model.UpdateMessage messageId
                     { message
                         | nextReminder = Just currentTime
                         , timeRead = Just <| Time.Extra.add Time.Extra.Second -1 Time.utc currentTime

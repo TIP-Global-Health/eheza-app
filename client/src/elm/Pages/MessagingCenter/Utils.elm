@@ -46,6 +46,7 @@ isMessageUnread : Time.Posix -> ResilienceMessage -> Bool
 isMessageUnread currentTime message =
     case message.timeRead of
         Nothing ->
+            -- Read time not set => message is unread.
             True
 
         Just timeRead ->
@@ -62,7 +63,9 @@ isMessageUnread currentTime message =
                            (posixToMillis currentTime >= nextReminderMillis)
                 )
                 message.nextReminder
-                |> Maybe.withDefault False
+                |> -- No reminder set but read time was set =>
+                   -- messages was read.
+                   Maybe.withDefault False
 
 
 resolveInboxMessages : NominalDate -> NominalDate -> NurseId -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
