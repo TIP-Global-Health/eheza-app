@@ -1,12 +1,18 @@
 module Backend.ResilienceMessage.Model exposing (..)
 
 import Backend.Entities exposing (..)
+import RemoteData exposing (RemoteData(..), WebData)
+import Time
 
 
 type alias ResilienceMessage =
     { nurse : NurseId
     , category : ResilienceCategory
     , order : ResilienceMessageOrder
+    , displayDay : Int
+    , timeRead : Maybe Time.Posix
+    , nextReminder : Maybe Time.Posix
+    , isFavorite : Bool
     }
 
 
@@ -29,3 +35,17 @@ type ResilienceMessageOrder
     | ResilienceMessage6
     | ResilienceMessage7
     | ResilienceMessage8
+
+
+type alias Model =
+    { updateMessage : WebData () }
+
+
+emptyModel : Model
+emptyModel =
+    { updateMessage = NotAsked }
+
+
+type Msg
+    = UpdateMessage ResilienceMessageId ResilienceMessage
+    | HandleUpdatedMessage (WebData ())

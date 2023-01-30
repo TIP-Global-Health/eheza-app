@@ -10,8 +10,8 @@ import Backend.Person.Decoder
         , decodeUbudehe
         )
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Gizra.TimePosix exposing (decodeSecondsAsPosix)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
@@ -35,11 +35,7 @@ decodeNurse =
         |> optional "education_level" (nullable decodeEducationLevel) Nothing
         |> optional "ubudehe" (nullable decodeUbudehe) Nothing
         |> optional "marital_status" (nullable decodeMaritalStatus) Nothing
-        |> optional "next_reminder" (nullable decodeTimePosix) Nothing
-
-
-decodeTimePosix =
-    map (\value -> value * 1000 |> Time.millisToPosix) decodeInt
+        |> optional "next_reminder" (nullable decodeSecondsAsPosix) Nothing
 
 
 decodeRoles : Decoder (EverySet Role)

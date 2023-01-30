@@ -23,12 +23,12 @@ import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.PrenatalEncounter.Decoder
 import Backend.Relationship.Decoder
+import Backend.ResilienceMessage.Decoder
 import Backend.ResilienceSurvey.Decoder
 import Backend.Session.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
 import Components.SendViaWhatsAppDialog.Decoder exposing (decodeReportType)
-import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
@@ -354,6 +354,9 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
 
                     "village" ->
                         doDecode Backend.Village.Decoder.decodeVillage BackendGeneralVillage
+
+                    "resilience_message" ->
+                        doDecode Backend.ResilienceMessage.Decoder.decodeResilienceMessage BackendGeneralResilienceMessage
 
                     "resilience_survey" ->
                         doDecode Backend.ResilienceSurvey.Decoder.decodeResilienceSurvey BackendGeneralResilienceSurvey

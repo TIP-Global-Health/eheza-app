@@ -35,6 +35,7 @@ import Backend.Person.Model exposing (Initiator, PatchPersonInitator, Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.TraceContact.Model
@@ -90,6 +91,7 @@ type alias ModelIndexedDb =
     , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
     , nurseRequests : Dict NurseId Backend.Nurse.Model.Model
     , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
+    , resilienceMessageRequests : Dict NurseId Backend.ResilienceMessage.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -158,6 +160,7 @@ type alias ModelIndexedDb =
 
     -- Resilience.
     , resilienceSurveysByNurse : Dict NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
+    , resilienceMessagesByNurse : Dict NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
     }
 
 
@@ -216,6 +219,7 @@ emptyModelIndexedDb =
     , individualSessionRequests = Dict.empty
     , nurseRequests = Dict.empty
     , resilienceSurveyRequests = Dict.empty
+    , resilienceMessageRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
     , relationshipsByPerson = Dict.empty
@@ -226,6 +230,7 @@ emptyModelIndexedDb =
     , computedDashboards = Dict.empty
     , computedDashboardLastFetched = Time.millisToPosix 0
     , resilienceSurveysByNurse = Dict.empty
+    , resilienceMessagesByNurse = Dict.empty
     }
 
 
@@ -301,6 +306,7 @@ type MsgIndexedDb
     | FetchPrenatalMeasurements PrenatalEncounterId
     | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchRelationshipsForPerson PersonId
+    | FetchResilienceMessagesForNurse NurseId
     | FetchResilienceSurveysForNurse NurseId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
@@ -345,6 +351,7 @@ type MsgIndexedDb
     | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
     | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
+    | HandleFetchedResilienceMessagesForNurse NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
     | HandleFetchedResilienceSurveysForNurse NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
@@ -394,6 +401,7 @@ type MsgIndexedDb
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | MsgNurse NurseId Backend.Nurse.Model.Msg
     | MsgResilienceSurvey NurseId Backend.ResilienceSurvey.Model.Msg
+    | MsgResilienceMessage NurseId Backend.ResilienceMessage.Model.Msg
     | ResetFailedToFetchAuthorities
 
 
@@ -523,6 +531,7 @@ type Revision
     | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation
     | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest
     | RelationshipRevision RelationshipId Relationship
+    | ResilienceMessageRevision ResilienceMessageId ResilienceMessage
     | ResilienceSurveyRevision ResilienceSurveyId ResilienceSurvey
     | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session

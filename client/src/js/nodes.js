@@ -811,9 +811,9 @@
                     }
                 }
 
-                // Resilience surveys are pulled for a nurse, so we add
-                // criteria to filter by provided nurse ID.
-                if (type === 'resilience_survey') {
+                // Resilience surveys and messages are pulled for a nurse,
+                // so we add criteria to filter by provided nurse ID.
+                if (type === 'resilience_survey' || type === 'resilience_message') {
                   var nurseId = params.get('nurse');
                   if (nurseId) {
                     modifyQuery = modifyQuery.then(function () {

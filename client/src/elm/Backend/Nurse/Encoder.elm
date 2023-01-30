@@ -5,6 +5,7 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeMaritalStatus, encodeUbudehe)
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
+import Gizra.TimePosix exposing (encodePosixAsSeconds)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
@@ -19,7 +20,7 @@ encodeNurse nurse =
                 |> Maybe.withDefault []
 
         reminder =
-            Maybe.map (\nextReminder -> [ ( "next_reminder", int <| (Time.posixToMillis nextReminder // 1000) ) ]) nurse.resilienceNextReminder
+            Maybe.map (\nextReminder -> [ ( "next_reminder", encodePosixAsSeconds nextReminder ) ]) nurse.resilienceNextReminder
                 |> Maybe.withDefault []
     in
     [ ( "label", string nurse.name )

@@ -1389,3 +1389,11 @@ type alias ResilienceSurveyId =
 
 type ResilienceSurveyUuidType
     = ResilienceSurveyUuidType
+
+
+type alias ResilienceMessageId =
+    EntityUuid ResilienceMessageUuidType
+
+
+type ResilienceMessageUuidType
+    = ResilienceMessageUuidType
