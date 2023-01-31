@@ -712,11 +712,44 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                     )
                                 |> Maybe.withDefault []
                     in
-                    diagnosesEntries ++ outsideCareDiagnosesEntries ++ pastDiagnosesEntries ++ healthEducationDiagnosesEntries
+                    diagnosesEntries
+                        ++ outsideCareDiagnosesEntries
+                        ++ pastDiagnosesEntries
+                        ++ healthEducationDiagnosesEntries
                 )
                 allNurseEncountersData
                 |> List.concat
-                |> ul []
+
+        lmpDateNonConfidentEntry =
+            let
+                nursePreviousMeasurements =
+                    List.map .measurements assembled.nursePreviousEncountersData
+
+                chwPreviousMeasurements =
+                    List.map (\( _, _, measurements ) -> measurements)
+                        assembled.chwPreviousMeasurementsWithDates
+            in
+            resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements assembled.measurements
+                |> Maybe.map
+                    (\value ->
+                        if value.confident == False then
+                            Maybe.map
+                                (Translate.LmpDateNotConfidentReasonforReport
+                                    >> translate language
+                                    >> wrapWithLI
+                                )
+                                value.lmpDateNotConfidentReason
+                                |> Maybe.withDefault []
+
+                        else
+                            []
+                    )
+                |> Maybe.withDefault []
+
+        common =
+            ul []
+                dignoses
+                ++ lmpDateNonConfidentEntry
 
         alerts =
             -- Alerts are displayed only for CHW.
@@ -734,7 +767,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
     div [ class "obstetric-diagnosis" ]
         [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
         , div [ class "pane-content" ] <|
-            dignoses
+            common
                 :: alerts
         ]
 

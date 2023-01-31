@@ -872,6 +872,7 @@ type TranslationId
     | LmpDateConfidentHeader
     | LmpDateNotConfidentQuestion
     | LmpDateNotConfidentReason LmpDateNotConfidentReason
+    | LmpDateNotConfidentReasonforReport LmpDateNotConfidentReason
     | LmpDateHeader
     | LmpLabel
     | LmpRangeHeader
@@ -7920,7 +7921,7 @@ translationSet trans =
         LmpDateNotConfidentReason value ->
             case value of
                 ReasonIrregularMenses ->
-                    { english = " Irregular Menses"
+                    { english = "Irregular Menses"
                     , kinyarwanda = Nothing
                     }
 
@@ -7931,6 +7932,23 @@ translationSet trans =
 
                 ReasonCanNotRememberDates ->
                     { english = "Can't remember dates"
+                    , kinyarwanda = Nothing
+                    }
+
+        LmpDateNotConfidentReasonforReport value ->
+            case value of
+                ReasonIrregularMenses ->
+                    { english = "Uncertain dating due to irregular menses"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonOnFamilyPlanningMethod ->
+                    { english = "Uncertain dating since patient is on family planning method"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonCanNotRememberDates ->
+                    { english = "Uncertain dating since patient can't remember dates"
                     , kinyarwanda = Nothing
                     }
 

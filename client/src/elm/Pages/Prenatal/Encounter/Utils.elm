@@ -202,15 +202,9 @@ generatePara value =
         ++ String.fromInt value.liveChildren
 
 
-getLastMenstrualPeriodValue : PrenatalMeasurements -> Maybe LastMenstrualPeriodValue
-getLastMenstrualPeriodValue measurements =
-    measurements.lastMenstrualPeriod
-        |> Maybe.map (Tuple.second >> .value)
-
-
 getLmpDate : PrenatalMeasurements -> Maybe NominalDate
 getLmpDate measurements =
-    getLastMenstrualPeriodValue measurements
+    getMeasurementValueFunc measurements.lastMenstrualPeriod
         |> Maybe.map .date
 
 
@@ -220,20 +214,29 @@ getObstetricHistory measurements =
         |> getMeasurementValueFunc
 
 
-resolveGlobalLmpDate : List PrenatalMeasurements -> List PrenatalMeasurements -> PrenatalMeasurements -> Maybe NominalDate
-resolveGlobalLmpDate nursePreviousMeasurements chwPreviousMeasurements measurements =
+resolveGlobalLmpValue : List PrenatalMeasurements -> List PrenatalMeasurements -> PrenatalMeasurements -> Maybe LastMenstrualPeriodValue
+resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements measurements =
     let
         -- When measurements list is not empty, we know that Lmp date
         -- will be located at head of the list, becuase previous measurements
         -- are sorted ASC by encounter date, and Lmp date is a mandatory
         -- measurement at first encounter.
-        getLmpDateFromList measurementsList =
+        getLmpValueFromList measurementsList =
             List.head measurementsList
-                |> Maybe.andThen getLmpDate
+                |> Maybe.andThen getLmpValue
+
+        getLmpValue =
+            .lastMenstrualPeriod >> getMeasurementValueFunc
     in
-    getLmpDateFromList nursePreviousMeasurements
-        |> orElse (getLmpDate measurements)
-        |> orElse (getLmpDateFromList chwPreviousMeasurements)
+    getLmpValueFromList nursePreviousMeasurements
+        |> orElse (getLmpValue measurements)
+        |> orElse (getLmpValueFromList chwPreviousMeasurements)
+
+
+resolveGlobalLmpDate : List PrenatalMeasurements -> List PrenatalMeasurements -> PrenatalMeasurements -> Maybe NominalDate
+resolveGlobalLmpDate nursePreviousMeasurements chwPreviousMeasurements measurements =
+    resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements measurements
+        |> Maybe.map .date
 
 
 resolveGlobalObstetricHistory : List PrenatalMeasurements -> PrenatalMeasurements -> Maybe ObstetricHistoryValue
