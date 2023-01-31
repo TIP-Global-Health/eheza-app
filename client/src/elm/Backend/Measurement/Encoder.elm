@@ -1411,12 +1411,24 @@ encodeLastMenstrualPeriod =
 
 encodeLastMenstrualPeriodValue : LastMenstrualPeriodValue -> List ( String, Value )
 encodeLastMenstrualPeriodValue value =
+    let
+        notConfidentReason =
+            Maybe.map (\reason -> [ ( "not_confident_reason", encodeLmpDateNotConfidentReason reason ) ])
+                value.lmpDateNotConfidentReason
+                |> Maybe.withDefault []
+    in
     [ ( "last_menstrual_period", Gizra.NominalDate.encodeYYYYMMDD value.date )
     , ( "confident", bool value.confident )
     , ( "confirmation", bool value.confirmation )
     , ( "deleted", bool False )
     , ( "type", string "last_menstrual_period" )
     ]
+        ++ notConfidentReason
+
+
+encodeLmpDateNotConfidentReason : LmpDateNotConfidentReason -> Value
+encodeLmpDateNotConfidentReason =
+    lmpDateNotConfidentReasonToString >> string
 
 
 encodeMedicalHistorySign : MedicalHistorySign -> Value

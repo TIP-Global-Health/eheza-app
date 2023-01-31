@@ -601,8 +601,15 @@ type PostpartumChildDangerSign
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
     , confident : Bool
+    , lmpDateNotConfidentReason : Maybe LmpDateNotConfidentReason
     , confirmation : Bool
     }
+
+
+type LmpDateNotConfidentReason
+    = ReasonIrregularMenses
+    | ReasonOnFamilyPlanningMethod
+    | ReasonCanNotRememberDates
 
 
 type alias LastMenstrualPeriod =

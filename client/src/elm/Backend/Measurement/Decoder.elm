@@ -1703,8 +1703,20 @@ decodeLastMenstrualPeriod =
     succeed LastMenstrualPeriodValue
         |> required "last_menstrual_period" Gizra.NominalDate.decodeYYYYMMDD
         |> required "confident" bool
+        |> optional "not_confident_reason" (nullable decodeLmpDateNotConfidentReason) Nothing
         |> optional "confirmation" (decodeWithFallback False bool) False
         |> decodePrenatalMeasurement
+
+
+decodeLmpDateNotConfidentReason : Decoder LmpDateNotConfidentReason
+decodeLmpDateNotConfidentReason =
+    string
+        |> andThen
+            (\reason ->
+                lmpDateNotConfidentReasonFromString reason
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (reason ++ " is not a recognized LmpDateNotConfidentReason" |> fail)
+            )
 
 
 decodeMedicalHistorySign : Decoder MedicalHistorySign

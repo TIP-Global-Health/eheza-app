@@ -3691,3 +3691,32 @@ expectNCDAActivity currentDate person =
     ageInMonths currentDate person
         |> Maybe.map (\ageMonths -> ageMonths < 24)
         |> Maybe.withDefault False
+
+
+lmpDateNotConfidentReasonToString : LmpDateNotConfidentReason -> String
+lmpDateNotConfidentReasonToString value =
+    case value of
+        ReasonIrregularMenses ->
+            "irregular-menses"
+
+        ReasonOnFamilyPlanningMethod ->
+            "on-family-planning-method"
+
+        ReasonCanNotRememberDates ->
+            "can-not-remember-dates"
+
+
+lmpDateNotConfidentReasonFromString : String -> Maybe LmpDateNotConfidentReason
+lmpDateNotConfidentReasonFromString value =
+    case value of
+        "irregular-menses" ->
+            Just ReasonIrregularMenses
+
+        "on-family-planning-method" ->
+            Just ReasonOnFamilyPlanningMethod
+
+        "can-not-remember-dates" ->
+            Just ReasonCanNotRememberDates
+
+        _ ->
+            Nothing
