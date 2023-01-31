@@ -13,15 +13,17 @@ import Backend.Person.Utils
         , maritalStatusFromString
         , ubudeheFromInt
         )
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyType(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions)
 import RemoteData exposing (RemoteData(..))
+import Time
 
 
-update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate msg model =
+update : Time.Posix -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentTime currentDate msg model =
     case msg of
         SetActivePage page ->
             ( model
@@ -187,4 +189,29 @@ update currentDate msg model =
             ( model
             , Cmd.none
             , msgs
+            )
+
+        SetActiveTab tab ->
+            ( { model | activeTab = tab }
+            , Cmd.none
+            , []
+            )
+
+        ScrollTab step ->
+            ( { model | tabScrollPosition = model.tabScrollPosition + step }
+            , Cmd.none
+            , []
+            )
+
+        MarkAsRead nurseId messageId message ->
+            let
+                updatedMessage =
+                    { message | timeRead = Just currentTime }
+            in
+            ( model
+            , Cmd.none
+            , [ Backend.ResilienceMessage.Model.UpdateMessage messageId updatedMessage
+                    |> Backend.Model.MsgResilienceMessage nurseId
+                    |> App.Model.MsgIndexedDb
+              ]
             )

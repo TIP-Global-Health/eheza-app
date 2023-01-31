@@ -21,14 +21,14 @@ import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions, resolveNumberOfUnreadMessages)
+import Pages.MessagingCenter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.Utils
@@ -40,16 +40,20 @@ import Pages.Utils
         , viewSelectListInput
         )
 import RemoteData exposing (RemoteData(..))
+import Time exposing (posixToMillis)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate nurseId nurse db model =
+view : Language -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
+view language currentTime nurseId nurse db model =
     let
+        currentDate =
+            fromLocalDateTime currentTime
+
         numberOfUnreadMessages =
-            resolveNumberOfUnreadMessages db
+            resolveNumberOfUnreadMessages currentDate nurseId nurse db
 
         header =
             div [ class "ui basic head segment" ]
@@ -67,6 +71,10 @@ view language currentDate nurseId nurse db model =
         content =
             Maybe.map
                 (\programStartDate ->
+                    let
+                        messagingCenterView =
+                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
+                    in
                     Dict.get nurseId db.resilienceSurveysByNurse
                         |> Maybe.andThen RemoteData.toMaybe
                         |> Maybe.map
@@ -93,9 +101,9 @@ view language currentDate nurseId nurse db model =
                                     viewMonthlySurvey language currentDate nurseId model.monthlySurveyForm
 
                                 else
-                                    viewMessagingCenter language currentDate nurseId
+                                    messagingCenterView
                             )
-                        |> Maybe.withDefault (viewMessagingCenter language currentDate nurseId)
+                        |> Maybe.withDefault messagingCenterView
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
@@ -285,41 +293,179 @@ viewMonthlySurvey language currentDate nurseId form =
         ]
 
 
-viewMessagingCenter : Language -> NominalDate -> NurseId -> Html Msg
-viewMessagingCenter language currentDate nurseId =
-    text "@todo viewMessagingCenter"
+viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
+viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model =
+    let
+        messages =
+            resolveInboxMessages currentDate programStartDate nurseId db
+
+        ( unread, read ) =
+            Dict.toList messages
+                |> List.partition
+                    (\( _, message ) ->
+                        case message.timeRead of
+                            Nothing ->
+                                True
+
+                            Just timeRead ->
+                                Maybe.map
+                                    (\nextReminder ->
+                                        let
+                                            nextReminderMillis =
+                                                posixToMillis nextReminder
+                                        in
+                                        -- Reminder was set to latter time than the
+                                        -- time at which message was read.
+                                        (nextReminderMillis > posixToMillis timeRead)
+                                            && -- Scheduled reminder time was reached.
+                                               (posixToMillis currentTime > nextReminderMillis)
+                                    )
+                                    message.nextReminder
+                                    |> Maybe.withDefault False
+                    )
+
+        content =
+            let
+                viewMessage =
+                    viewResilienceMessage language nurseId nurse
+
+                viewFilteredByCategory category =
+                    List.filter (Tuple.second >> .category >> (==) category) read
+                        |> List.map viewMessage
+            in
+            case model.activeTab of
+                TabUnread ->
+                    List.map viewMessage unread
+
+                TabFavorites ->
+                    List.filter (Tuple.second >> .isFavorite) read
+                        |> List.map viewMessage
+
+                TabGrowth ->
+                    viewFilteredByCategory ResilienceCategoryGrowth
+
+                TabConnecting ->
+                    viewFilteredByCategory ResilienceCategoryConnecting
+
+                TabSelfcare ->
+                    viewFilteredByCategory ResilienceCategorySelfCare
+
+                TabStress ->
+                    viewFilteredByCategory ResilienceCategoryStressManagement
+
+                TabMindfullnes ->
+                    viewFilteredByCategory ResilienceCategoryMindfulness
+    in
+    div []
+        [ viewTabs language model
+        , div [ class "ui report unstackable items" ]
+            content
+        ]
 
 
-viewResilienceMessage : Language -> Nurse -> ResilienceMessage -> Html Msg
-viewResilienceMessage language nurse message =
-    case message.category of
-        ResilienceCategoryIntroduction ->
-            div [ class "resilience-message introduction" ] <|
-                viewIntroductionMessage language nurse message.order
+viewTabs : Language -> Model -> Html Msg
+viewTabs language model =
+    let
+        allTabs =
+            [ TabUnread
+            , TabFavorites
+            , TabGrowth
+            , TabConnecting
+            , TabSelfcare
+            , TabStress
+            , TabMindfullnes
+            ]
 
-        ResilienceCategoryGrowth ->
-            div [ class "resilience-message growth" ] <|
-                viewGrowthMessage language message.order
+        numberOfTabsToDsipaly =
+            5
 
-        ResilienceCategoryStressManagement ->
-            div [ class "resilience-message stress-management" ] <|
-                viewStressManagementMessage language nurse message.order
+        scrollButtonLeft =
+            if model.tabScrollPosition > 0 then
+                scrollButton "left" (ScrollTab -1)
 
-        ResilienceCategoryMindfulness ->
-            div [ class "resilience-message mindfulness" ] <|
-                viewMindfulnessMessage language message.order
+            else
+                emptyNode
 
-        ResilienceCategoryConnecting ->
-            div [ class "resilience-message connecting" ] <|
-                viewConnectingMessage language message.order
+        scrollRightButton =
+            if model.tabScrollPosition + numberOfTabsToDsipaly < List.length allTabs then
+                scrollButton "right" (ScrollTab 1)
 
-        ResilienceCategorySelfCare ->
-            div [ class "resilience-message self-care" ] <|
-                viewSelfCareMessage language message.order
+            else
+                emptyNode
 
-        ResilienceCategoryEndOfPeriod ->
-            div [ class "resilience-message end-of-period" ] <|
-                viewEndOfPeriodMessage language message.order
+        scrollButton direction action =
+            span
+                [ class <| "action-icon " ++ direction
+                , onClick action
+                ]
+                []
+
+        tabs =
+            List.drop model.tabScrollPosition allTabs
+                |> List.take numberOfTabsToDsipaly
+                |> List.map renderButton
+
+        renderButton tab =
+            button
+                [ classList
+                    [ ( "active", tab == model.activeTab )
+                    , ( "primary ui button", True )
+                    ]
+                , onClick <| SetActiveTab tab
+                ]
+                [ translateText language <| Translate.MessagingTab tab ]
+    in
+    div [ class "ui segment tabs" ] <|
+        scrollButtonLeft
+            :: tabs
+            ++ [ scrollRightButton ]
+
+
+viewResilienceMessage : Language -> NurseId -> Nurse -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
+viewResilienceMessage language nurseId nurse ( messageId, message ) =
+    let
+        ( extraClass, content ) =
+            case message.category of
+                ResilienceCategoryIntroduction ->
+                    ( "introduction"
+                    , viewIntroductionMessage language nurse message.order
+                    )
+
+                ResilienceCategoryGrowth ->
+                    ( "growth"
+                    , viewGrowthMessage language message.order
+                    )
+
+                ResilienceCategoryStressManagement ->
+                    ( "stress-management"
+                    , viewStressManagementMessage language nurse message.order
+                    )
+
+                ResilienceCategoryMindfulness ->
+                    ( "mindfulness"
+                    , viewMindfulnessMessage language message.order
+                    )
+
+                ResilienceCategoryConnecting ->
+                    ( "connecting"
+                    , viewConnectingMessage language message.order
+                    )
+
+                ResilienceCategorySelfCare ->
+                    ( "self-care"
+                    , viewSelfCareMessage language message.order
+                    )
+
+                ResilienceCategoryEndOfPeriod ->
+                    ( "end-of-period"
+                    , viewEndOfPeriodMessage language message.order
+                    )
+    in
+    div
+        [ class <| "resilience-message " ++ extraClass
+        , onClick <| MarkAsRead nurseId messageId message
+        ]
+        content
 
 
 viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> List (Html Msg)

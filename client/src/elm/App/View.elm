@@ -786,7 +786,7 @@ viewUserPage page deviceName model configured =
                                     |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
                         in
                         Pages.MessagingCenter.View.view model.language
-                            currentDate
+                            model.currentTime
                             nurseId
                             nurse
                             model.indexedDb
