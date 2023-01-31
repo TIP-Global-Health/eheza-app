@@ -4152,6 +4152,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibintu biva mu gitsina by'uruzi"
                     }
 
+                PrematureOnsetContractions ->
+                    { english = "Premature Onset of Contractions"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoDangerSign ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta bimenyetso/nta na kimwe"

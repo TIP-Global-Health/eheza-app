@@ -563,6 +563,7 @@ type DangerSign
     | SevereVomiting
     | Unconscious
     | GushLeakingVaginalFluid
+    | PrematureOnsetContractions
     | NoDangerSign
 
 

@@ -1656,6 +1656,9 @@ decodeDangerSign =
                     "gush-leaking-vaginal-fluid" ->
                         succeed GushLeakingVaginalFluid
 
+                    "premature-onset-contractions" ->
+                        succeed PrematureOnsetContractions
+
                     "none" ->
                         succeed NoDangerSign
 

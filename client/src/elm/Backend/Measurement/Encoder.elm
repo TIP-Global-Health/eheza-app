@@ -1372,6 +1372,9 @@ encodeDangerSign sign =
             GushLeakingVaginalFluid ->
                 "gush-leaking-vaginal-fluid"
 
+            PrematureOnsetContractions ->
+                "premature-onset-contractions"
+
             NoDangerSign ->
                 "none"
 

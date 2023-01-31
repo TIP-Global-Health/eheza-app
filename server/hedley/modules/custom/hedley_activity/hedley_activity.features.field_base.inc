@@ -427,6 +427,7 @@ function hedley_activity_field_default_field_bases() {
         'severe-vomiting' => 'Severe vomiting',
         'unconscious' => 'Unconscious',
         'gush-leaking-vaginal-fluid' => 'Gush or leaking of vaginal fluid',
+        'premature-onset-contractions' => 'Premature onset of contractions',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',

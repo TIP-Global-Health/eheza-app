@@ -1169,8 +1169,22 @@ viewDangerSignsContent language currentDate assembled data =
                 _ ->
                     ( [ viewLabel language Translate.SelectDangerSigns
                       , viewCheckBoxMultipleSelectInput language
-                            [ VaginalBleeding, HeadacheBlurredVision, Convulsions, AbdominalPain, SevereVomiting, Unconscious, GushLeakingVaginalFluid ]
-                            [ DifficultyBreathing, Fever, ExtremeWeakness, LooksVeryIll, Labor, ImminentDelivery ]
+                            [ VaginalBleeding
+                            , HeadacheBlurredVision
+                            , Convulsions
+                            , AbdominalPain
+                            , SevereVomiting
+                            , Unconscious
+                            , GushLeakingVaginalFluid
+                            ]
+                            [ DifficultyBreathing
+                            , Fever
+                            , ExtremeWeakness
+                            , LooksVeryIll
+                            , Labor
+                            , ImminentDelivery
+                            , PrematureOnsetContractions
+                            ]
                             (form.signs |> Maybe.withDefault [])
                             (Just NoDangerSign)
                             SetDangerSign
