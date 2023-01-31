@@ -747,9 +747,9 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                 |> Maybe.withDefault []
 
         common =
-            ul []
+            ul [] <|
                 dignoses
-                ++ lmpDateNonConfidentEntry
+                    ++ lmpDateNonConfidentEntry
 
         alerts =
             -- Alerts are displayed only for CHW.
