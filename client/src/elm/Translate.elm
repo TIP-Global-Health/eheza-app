@@ -870,6 +870,8 @@ type TranslationId
     | LmpDateConfirmationLabel
     | LmpDateConfirmationQuestion
     | LmpDateConfidentHeader
+    | LmpDateNotConfidentQuestion
+    | LmpDateNotConfidentReason LmpDateNotConfidentReason
     | LmpDateHeader
     | LmpLabel
     | LmpRangeHeader
@@ -7909,6 +7911,28 @@ translationSet trans =
             { english = "Is the Patient confident of LMP Date"
             , kinyarwanda = Just "Ese umubyeyi azi neza itariki aherukira mu mihango?"
             }
+
+        LmpDateNotConfidentQuestion ->
+            { english = "What is the reason the patient is unsure"
+            , kinyarwanda = Nothing
+            }
+
+        LmpDateNotConfidentReason value ->
+            case value of
+                ReasonIrregularMenses ->
+                    { english = " Irregular Menses"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonOnFamilyPlanningMethod ->
+                    { english = "On family planning method"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonCanNotRememberDates ->
+                    { english = "Can't remember dates"
+                    , kinyarwanda = Nothing
+                    }
 
         LmpDateHeader ->
             { english = "Last Menstrual Period Date"

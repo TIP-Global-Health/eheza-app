@@ -370,63 +370,89 @@ viewPregnancyDatingContent language currentDate assembled data =
         chwLmpConfirmationTasksCompleted =
             taskCompleted form.chwLmpConfirmation
 
-        newLmpInputSection =
-            [ viewQuestionLabel language Translate.LmpRangeHeader
-            , lmpRangeInput
-            , viewLabel language Translate.LmpDateHeader
-            , lmpDateInput
-            , viewQuestionLabel language Translate.LmpDateConfidentHeader
-            , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
-            , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
-            ]
+        ( newLmpInputSection, newLmpInputTasksCompleted, newLmpInputTasksTotal ) =
+            let
+                ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+                    if form.lmpDateConfident == Just False then
+                        ( [ viewQuestionLabel language Translate.LmpDateNotConfidentQuestion
+                          , viewCheckBoxSelectInput language
+                                [ ReasonIrregularMenses
+                                , ReasonOnFamilyPlanningMethod
+                                , ReasonCanNotRememberDates
+                                ]
+                                []
+                                form.lmpDateNotConfidentReason
+                                SerLmpDateNotConfidentReason
+                                Translate.LmpDateNotConfidentReason
+                          ]
+                        , taskCompleted form.lmpDateNotConfidentReason
+                        , 1
+                        )
 
-        lmpRangeInput =
-            viewSelectListInput language
-                form.lmpRange
-                [ OneMonth, ThreeMonth, SixMonth ]
-                lmpRangeToString
-                SetLmpRange
-                Translate.LmpRange
-                "select"
+                    else
+                        ( [], 0, 0 )
+            in
+            ( let
+                lmpRangeInput =
+                    viewSelectListInput language
+                        form.lmpRange
+                        [ OneMonth, ThreeMonth, SixMonth ]
+                        lmpRangeToString
+                        SetLmpRange
+                        Translate.LmpRange
+                        "select"
 
-        lmpdDateForView =
-            Maybe.map formatDDMMYYYY form.lmpDate
-                |> Maybe.withDefault ""
-
-        lmpDateAction =
-            Maybe.map
-                (\range ->
+                lmpDateInput =
                     let
-                        dateFrom =
-                            case range of
-                                OneMonth ->
-                                    Date.add Months -1 currentDate
+                        lmpDateAction =
+                            Maybe.map
+                                (\range ->
+                                    let
+                                        dateFrom =
+                                            case range of
+                                                OneMonth ->
+                                                    Date.add Months -1 currentDate
 
-                                ThreeMonth ->
-                                    Date.add Months -3 currentDate
+                                                ThreeMonth ->
+                                                    Date.add Months -3 currentDate
 
-                                SixMonth ->
-                                    Date.add Months -6 currentDate
+                                                SixMonth ->
+                                                    Date.add Months -6 currentDate
 
-                        dateSelectorConfig =
-                            { select = SetLmpDate
-                            , close = SetLmpDateSelectorState Nothing
-                            , dateFrom = dateFrom
-                            , dateTo = currentDate
-                            , dateDefault = Just dateFrom
-                            }
+                                        dateSelectorConfig =
+                                            { select = SetLmpDate
+                                            , close = SetLmpDateSelectorState Nothing
+                                            , dateFrom = dateFrom
+                                            , dateTo = currentDate
+                                            , dateDefault = Just dateFrom
+                                            }
+                                    in
+                                    [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
+                                )
+                                form.lmpRange
+                                |> Maybe.withDefault []
+
+                        lmpdDateForView =
+                            Maybe.map formatDDMMYYYY form.lmpDate
+                                |> Maybe.withDefault ""
                     in
-                    [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
-                )
-                form.lmpRange
-                |> Maybe.withDefault []
-
-        lmpDateInput =
-            div (class "form-input date" :: lmpDateAction)
-                [ text lmpdDateForView ]
-
-        newLmpInputTasksCompleted =
-            taskCompleted form.lmpDate + taskCompleted form.lmpDateConfident
+                    div (class "form-input date" :: lmpDateAction)
+                        [ text lmpdDateForView ]
+              in
+              [ viewQuestionLabel language Translate.LmpRangeHeader
+              , lmpRangeInput
+              , viewLabel language Translate.LmpDateHeader
+              , lmpDateInput
+              , viewQuestionLabel language Translate.LmpDateConfidentHeader
+              , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
+              , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
+              ]
+                ++ derivedSection
+            , taskCompleted form.lmpDate
+                + taskCompleted form.lmpDateConfident
+                + derivedTasksCompleted
+            , 2 + derivedTasksTotal
+            )
 
         ( inputs, tasksCompleted, totalTasks ) =
             if assembled.encounter.encounterType == NurseEncounter then
@@ -443,7 +469,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                         if form.chwLmpConfirmation == Just False then
                             ( chwLmpConfirmationSection lmpDateByChw ++ newLmpInputSection
                             , chwLmpConfirmationTasksCompleted + newLmpInputTasksCompleted
-                            , 3
+                            , 1 + newLmpInputTasksTotal
                             )
 
                         else
@@ -456,13 +482,13 @@ viewPregnancyDatingContent language currentDate assembled data =
                     |> Maybe.withDefault
                         ( newLmpInputSection
                         , newLmpInputTasksCompleted
-                        , 2
+                        , newLmpInputTasksTotal
                         )
 
             else
                 ( newLmpInputSection
                 , newLmpInputTasksCompleted
-                , 2
+                , newLmpInputTasksTotal
                 )
 
         ( edd, ega ) =
