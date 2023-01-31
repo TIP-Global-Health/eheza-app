@@ -382,7 +382,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                                 ]
                                 []
                                 form.lmpDateNotConfidentReason
-                                SerLmpDateNotConfidentReason
+                                SetLmpDateNotConfidentReason
                                 Translate.LmpDateNotConfidentReason
                           ]
                         , taskCompleted form.lmpDateNotConfidentReason

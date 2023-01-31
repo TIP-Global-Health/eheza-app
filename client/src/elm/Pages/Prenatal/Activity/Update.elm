@@ -269,7 +269,12 @@ update language currentDate id db msg model =
             let
                 updatedForm =
                     model.pregnancyDatingData.form
-                        |> (\form -> { form | lmpDateConfident = Just value })
+                        |> (\form ->
+                                { form
+                                    | lmpDateConfident = Just value
+                                    , lmpDateNotConfidentReason = Nothing
+                                }
+                           )
 
                 updatedData =
                     model.pregnancyDatingData
@@ -288,6 +293,21 @@ update language currentDate id db msg model =
                 updatedForm =
                     model.pregnancyDatingData.form
                         |> (\form -> { form | lmpRange = range })
+
+                updatedData =
+                    model.pregnancyDatingData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | pregnancyDatingData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLmpDateNotConfidentReason value ->
+            let
+                updatedForm =
+                    model.pregnancyDatingData.form
+                        |> (\form -> { form | lmpDateNotConfidentReason = Just value })
 
                 updatedData =
                     model.pregnancyDatingData

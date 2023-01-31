@@ -3412,7 +3412,7 @@ lastMenstrualPeriodFormWithDefault form saved =
                 { lmpRange = or form.lmpRange (Just SixMonth)
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
-                , lmpDateNotConfidentReason = value.lmpDateNotConfidentReason
+                , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.lmpDateNotConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }

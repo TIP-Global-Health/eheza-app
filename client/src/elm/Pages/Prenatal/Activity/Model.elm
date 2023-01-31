@@ -54,6 +54,7 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
+    | SetLmpDateNotConfidentReason LmpDateNotConfidentReason
     | SavePregnancyDating IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
