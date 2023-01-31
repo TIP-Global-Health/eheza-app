@@ -263,7 +263,7 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
 
                     viewCardFunc =
                         if activity == MenuMessagingCenter then
-                            resolveNumberOfUnreadMessages currentDate nurseId nurse db
+                            resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
                                 |> activityCardWithCounter
 
                         else
@@ -419,7 +419,7 @@ resilienceNotificationDialog language currentTime currentDate nurseId nurse db m
     if notificationTimeReached && isJust nurse.resilienceProgramStartDate then
         let
             numberOfUnreadMessages =
-                resolveNumberOfUnreadMessages currentDate nurseId nurse db
+                resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
         in
         if numberOfUnreadMessages > 0 then
             Just <|

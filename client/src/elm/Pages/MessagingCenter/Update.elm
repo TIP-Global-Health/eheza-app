@@ -15,11 +15,13 @@ import Backend.Person.Utils
         )
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyType(..))
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions)
 import RemoteData exposing (RemoteData(..))
 import Time
+import Time.Extra
 
 
 update : Time.Posix -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -203,14 +205,80 @@ update currentTime currentDate msg model =
             , []
             )
 
-        MarkAsRead nurseId messageId message ->
+        ResilienceMessageClicked nurseId messageId message updateTimeRead ->
             let
-                updatedMessage =
-                    { message | timeRead = Just currentTime }
+                ( updatedModel, msgs ) =
+                    if EverySet.member messageId model.expandedMessages then
+                        ( { model | expandedMessages = EverySet.remove messageId model.expandedMessages }
+                        , if updateTimeRead then
+                            [ Backend.ResilienceMessage.Model.UpdateMessage messageId { message | timeRead = Just currentTime }
+                                |> Backend.Model.MsgResilienceMessage nurseId
+                                |> App.Model.MsgIndexedDb
+                            ]
+
+                          else
+                            []
+                        )
+
+                    else
+                        ( { model | expandedMessages = EverySet.insert messageId model.expandedMessages }
+                        , []
+                        )
             in
-            ( model
+            ( updatedModel
             , Cmd.none
-            , [ Backend.ResilienceMessage.Model.UpdateMessage messageId updatedMessage
+            , msgs
+            )
+
+        SetMessageOptionsDialogState value ->
+            ( { model | messageOptionsDialogState = value }
+            , Cmd.none
+            , []
+            )
+
+        MarkMessageUnread nurseId messageId message ->
+            ( { model
+                | expandedMessages = EverySet.remove messageId model.expandedMessages
+                , messageOptionsDialogState = Nothing
+              }
+            , Cmd.none
+            , -- To mark message as unread, we set reminder to current time,
+              -- and message read time to one second before current time.
+              -- In essence, scheduling message reminder to right now.
+              [ Backend.ResilienceMessage.Model.UpdateMessage messageId
+                    { message
+                        | nextReminder = Just currentTime
+                        , timeRead = Just <| Time.Extra.add Time.Extra.Second -1 Time.utc currentTime
+                    }
+                    |> Backend.Model.MsgResilienceMessage nurseId
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
+
+        MarkMessageFavorite nurseId messageId message ->
+            ( { model
+                | expandedMessages = EverySet.remove messageId model.expandedMessages
+                , messageOptionsDialogState = Nothing
+              }
+            , Cmd.none
+            , [ Backend.ResilienceMessage.Model.UpdateMessage messageId { message | isFavorite = True }
+                    |> Backend.Model.MsgResilienceMessage nurseId
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
+
+        ScheduleMessageReminder hours nurseId messageId message ->
+            ( { model
+                | expandedMessages = EverySet.remove messageId model.expandedMessages
+                , messageOptionsDialogState = Nothing
+              }
+            , Cmd.none
+            , -- Marking message as read, and setting reminder time in X hours.
+              [ Backend.ResilienceMessage.Model.UpdateMessage messageId
+                    { message
+                        | nextReminder = Just <| Time.Extra.add Time.Extra.Hour hours Time.utc currentTime
+                        , timeRead = Just currentTime
+                    }
                     |> Backend.Model.MsgResilienceMessage nurseId
                     |> App.Model.MsgIndexedDb
               ]

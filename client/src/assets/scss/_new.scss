@@ -4631,16 +4631,84 @@ div.page-activity.messaging-center {
   .resilience-message {
     margin-bottom: 30px;
 
-    .title {
+    .title,
+    .title-wrapper {
       background-color: $color-velvet;
       color: $color-white;
       padding: 20px;
+    }
+
+    .title-wrapper {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .title-wrapper .title {
+      padding: 0;
     }
 
     .content {
       background-color: $color-white;
       color: $color-text;
       padding: 20px;
+    }
+  }
+
+  .resilience-message.shrank .content {
+    display: -webkit-box;
+    -webkit-line-clamp: var(--line-clamp, 2);
+    -webkit-box-orient: vertical;
+    word-break: var(--word-break, 'none');
+    overflow: hidden;
+    hyphens: auto;
+    padding-bottom: 5px;
+  }
+
+  .ui.active.modal.main,
+  .ui.active.modal.reminder {
+    border-top: 10px solid $color-primary;
+    width: 380px;
+
+    .content {
+      padding-top: 30px;
+      padding-bottom: 0;
+    }
+
+    .content .button {
+      border-radius: 5px;
+      font-size: 28px;
+      margin-bottom: 30px;
+      text-transform: none;
+
+      img {
+        margin-right: 20px;
+        height: 30px;
+        vertical-align: bottom;
+      }
+    }
+
+    .actions button {
+      margin: 0;
+    }
+  }
+
+  .ui.active.modal.reminder {
+    width: 450px;
+
+    .content {
+      margin-bottom: 40px;
+    }
+
+    .content p {
+      text-align: left;
+      margin-bottom: 10px;
+    }
+
+    .content .button {
+      border-radius: 5px;
+      font-size: 24px;
+      font-weight: normal;
+      margin-bottom: 20px;
     }
   }
 
