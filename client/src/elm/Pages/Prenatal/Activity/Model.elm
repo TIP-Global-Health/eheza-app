@@ -711,23 +711,19 @@ emptyNextStepsData =
 -- FORMS
 
 
-type ObstetricHistoryStep
-    = ObstetricHistoryFirstStep
-    | ObstetricHistorySecondStep
-
-
 type alias PregnancyDatingForm =
     { lmpRange : Maybe LmpRange
     , lmpDate : Maybe Date
     , lmpDateConfident : Maybe Bool
     , chwLmpConfirmation : Maybe Bool
+    , lmpDateNotConfidentReason : Maybe LmpDateNotConfidentReason
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing
+    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 type alias ObstetricFormFirstStep =
@@ -850,35 +846,6 @@ type alias SocialHistoryForm =
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing Nothing
-
-
-lmpRangeToString : LmpRange -> String
-lmpRangeToString range =
-    case range of
-        OneMonth ->
-            "one-month"
-
-        ThreeMonth ->
-            "three-month"
-
-        SixMonth ->
-            "six-month"
-
-
-lmpRangeFromString : String -> Maybe LmpRange
-lmpRangeFromString s =
-    case s of
-        "one-month" ->
-            Just OneMonth
-
-        "three-month" ->
-            Just ThreeMonth
-
-        "six-month" ->
-            Just SixMonth
-
-        _ ->
-            Nothing
 
 
 type alias NutritionAssessmentForm =

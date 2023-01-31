@@ -6308,3 +6308,32 @@ toSpecialityCareValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)
+
+
+lmpRangeToString : LmpRange -> String
+lmpRangeToString range =
+    case range of
+        OneMonth ->
+            "one-month"
+
+        ThreeMonth ->
+            "three-month"
+
+        SixMonth ->
+            "six-month"
+
+
+lmpRangeFromString : String -> Maybe LmpRange
+lmpRangeFromString s =
+    case s of
+        "one-month" ->
+            Just OneMonth
+
+        "three-month" ->
+            Just ThreeMonth
+
+        "six-month" ->
+            Just SixMonth
+
+        _ ->
+            Nothing

@@ -85,3 +85,8 @@ type WarningPopupType msg
     | WarningPopupMentalHealth msg
     | WarningPopupTreatmentReview msg
     | WarningPopupVitaminA msg
+
+
+type ObstetricHistoryStep
+    = ObstetricHistoryFirstStep
+    | ObstetricHistorySecondStep
