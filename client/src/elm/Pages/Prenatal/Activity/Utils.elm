@@ -126,7 +126,6 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
-                                |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
                                 |> not
                            )
@@ -206,7 +205,6 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
-                                |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
                                 |> not
                            )
@@ -1198,8 +1196,12 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         ChwFirstEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    ((not <| expectActivity currentDate assembled PregnancyDating) || activityCompleted currentDate assembled PregnancyDating)
-                        && ((not <| expectActivity currentDate assembled Laboratory) || activityCompleted currentDate assembled Laboratory)
+                    ((not <| expectActivity currentDate assembled PregnancyDating)
+                        || activityCompleted currentDate assembled PregnancyDating
+                    )
+                        && ((not <| expectActivity currentDate assembled Laboratory)
+                                || activityCompleted currentDate assembled Laboratory
+                           )
                         && activityCompleted currentDate assembled DangerSigns
             in
             if dangerSignsPresent assembled then
@@ -3401,16 +3403,6 @@ toDangerSignsValue form =
     Just <| DangerSignsValue signs postpartumMother postpartumChild
 
 
-fromLastMenstrualPeriodValue : Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
-fromLastMenstrualPeriodValue saved =
-    { lmpRange = Nothing
-    , lmpDate = Maybe.map .date saved
-    , lmpDateConfident = Maybe.map .confident saved
-    , chwLmpConfirmation = Maybe.map .confirmation saved
-    , dateSelectorPopupState = Nothing
-    }
-
-
 lastMenstrualPeriodFormWithDefault : PregnancyDatingForm -> Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
 lastMenstrualPeriodFormWithDefault form saved =
     saved
@@ -3420,6 +3412,7 @@ lastMenstrualPeriodFormWithDefault form saved =
                 { lmpRange = or form.lmpRange (Just SixMonth)
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
+                , lmpDateNotConfidentReason = value.lmpDateNotConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }
@@ -3440,6 +3433,7 @@ toLastMenstrualPeriodValue form =
     in
     Maybe.map LastMenstrualPeriodValue form.lmpDate
         |> andMap form.lmpDateConfident
+        |> andMap (Just form.lmpDateNotConfidentReason)
         |> andMap (Just chwLmpConfirmation)
 
 
