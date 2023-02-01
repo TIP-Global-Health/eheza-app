@@ -231,12 +231,19 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetConfirmLmpDate confirmedDate confirmed ->
+        SetConfirmLmpDate confirmedDate notConfidentReason confirmed ->
             let
                 updatedForm =
                     if confirmed then
                         model.pregnancyDatingData.form
-                            |> (\form -> { form | chwLmpConfirmation = Just True, lmpDate = Just confirmedDate, lmpDateConfident = Just True })
+                            |> (\form ->
+                                    { form
+                                        | chwLmpConfirmation = Just True
+                                        , lmpDate = Just confirmedDate
+                                        , lmpDateNotConfidentReason = notConfidentReason
+                                        , lmpDateConfident = Just True
+                                    }
+                               )
 
                     else
                         { emptyPregnancyDatingForm | chwLmpConfirmation = Just False }

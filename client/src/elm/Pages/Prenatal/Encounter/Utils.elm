@@ -202,10 +202,9 @@ generatePara value =
         ++ String.fromInt value.liveChildren
 
 
-getLmpDate : PrenatalMeasurements -> Maybe NominalDate
-getLmpDate measurements =
-    getMeasurementValueFunc measurements.lastMenstrualPeriod
-        |> Maybe.map .date
+getLmpValue : PrenatalMeasurements -> Maybe LastMenstrualPeriodValue
+getLmpValue =
+    .lastMenstrualPeriod >> getMeasurementValueFunc
 
 
 getObstetricHistory : PrenatalMeasurements -> Maybe ObstetricHistoryValue
@@ -224,9 +223,6 @@ resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements measurem
         getLmpValueFromList measurementsList =
             List.head measurementsList
                 |> Maybe.andThen getLmpValue
-
-        getLmpValue =
-            .lastMenstrualPeriod >> getMeasurementValueFunc
     in
     getLmpValueFromList nursePreviousMeasurements
         |> orElse (getLmpValue measurements)

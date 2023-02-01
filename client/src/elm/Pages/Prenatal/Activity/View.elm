@@ -359,12 +359,16 @@ viewPregnancyDatingContent language currentDate assembled data =
                 |> getMeasurementValueFunc
                 |> lastMenstrualPeriodFormWithDefault data.form
 
-        chwLmpConfirmationSection dateToConfirm =
+        chwLmpConfirmationSection lmpValueByChw =
             [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
             , viewLabel language Translate.LmpLabel
-            , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY dateToConfirm ]
+            , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY lmpValueByChw.date ]
             , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
-            , viewBoolInput language form.chwLmpConfirmation (SetConfirmLmpDate dateToConfirm) "confirm-lmp" Nothing
+            , viewBoolInput language
+                form.chwLmpConfirmation
+                (SetConfirmLmpDate lmpValueByChw.date lmpValueByChw.lmpDateNotConfidentReason)
+                "confirm-lmp"
+                Nothing
             ]
 
         chwLmpConfirmationTasksCompleted =
@@ -457,28 +461,28 @@ viewPregnancyDatingContent language currentDate assembled data =
         ( inputs, tasksCompleted, totalTasks ) =
             if assembled.encounter.encounterType == NurseEncounter then
                 let
-                    lmpDateTakenByChw =
+                    lmpValueTakenByChw =
                         List.head assembled.chwPreviousMeasurementsWithDates
                             |> Maybe.andThen
                                 (\( _, _, measurements ) ->
-                                    getLmpDate measurements
+                                    getLmpValue measurements
                                 )
                 in
                 Maybe.map
-                    (\lmpDateByChw ->
+                    (\lmpValueByChw ->
                         if form.chwLmpConfirmation == Just False then
-                            ( chwLmpConfirmationSection lmpDateByChw ++ newLmpInputSection
+                            ( chwLmpConfirmationSection lmpValueByChw ++ newLmpInputSection
                             , chwLmpConfirmationTasksCompleted + newLmpInputTasksCompleted
                             , 1 + newLmpInputTasksTotal
                             )
 
                         else
-                            ( chwLmpConfirmationSection lmpDateByChw
+                            ( chwLmpConfirmationSection lmpValueByChw
                             , chwLmpConfirmationTasksCompleted
                             , 1
                             )
                     )
-                    lmpDateTakenByChw
+                    lmpValueTakenByChw
                     |> Maybe.withDefault
                         ( newLmpInputSection
                         , newLmpInputTasksCompleted
