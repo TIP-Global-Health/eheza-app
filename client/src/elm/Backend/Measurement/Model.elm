@@ -740,6 +740,7 @@ type CSectionReason
     | FailureToProgress
     | None
     | Other
+    | PreviousCSection
 
 
 type PreviousDeliveryPeriod

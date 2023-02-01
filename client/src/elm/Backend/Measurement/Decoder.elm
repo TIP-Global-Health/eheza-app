@@ -2063,6 +2063,9 @@ decodeCSectionReason =
                     "other" ->
                         succeed Other
 
+                    "previous-c-section" ->
+                        succeed PreviousCSection
+
                     _ ->
                         fail <| s ++ " is not a recognized CSectionReason"
             )

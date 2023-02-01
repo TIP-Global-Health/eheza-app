@@ -2797,7 +2797,7 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                                         ]
                                   , viewCheckBoxSelectInput language
                                         [ Breech, Emergency, Other ]
-                                        [ FailureToProgress, None ]
+                                        [ FailureToProgress, PreviousCSection ]
                                         form.cSectionReason
                                         SetCSectionReason
                                         Translate.CSectionReasons

@@ -1719,6 +1719,9 @@ encodeCSectionReason sign =
             Other ->
                 "other"
 
+            PreviousCSection ->
+                "previous-c-section"
+
 
 encodeCSectionScar : CSectionScar -> Value
 encodeCSectionScar sign =
