@@ -2992,6 +2992,12 @@ decodeReferToFacilitySign =
                     "anc-accompany" ->
                         succeed AccompanyToANCServices
 
+                    "us" ->
+                        succeed ReferToUltrasound
+
+                    "us-referral-form" ->
+                        succeed ReferralFormUltrasound
+
                     "none" ->
                         succeed NoReferToFacilitySigns
 
@@ -3048,6 +3054,10 @@ decodeNonReferralSign =
                                         Maybe.map (NonReferralReasonANCServices >> succeed) reasonForNonReferral
                                             |> Maybe.withDefault failure
 
+                                    "us" ->
+                                        Maybe.map (NonReferralReasonUltrasound >> succeed) reasonForNonReferral
+                                            |> Maybe.withDefault failure
+
                                     "none" ->
                                         succeed NoNonReferralSigns
 
@@ -3081,6 +3091,9 @@ decodeReferralFacility =
 
                     "anc" ->
                         succeed FacilityANCServices
+
+                    "us" ->
+                        succeed FacilityUltrasound
 
                     _ ->
                         fail <|

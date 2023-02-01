@@ -366,7 +366,7 @@ viewPregnancyDatingContent language currentDate assembled data =
             , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
             , viewBoolInput language
                 form.chwLmpConfirmation
-                (SetConfirmLmpDate lmpValueByChw.date lmpValueByChw.lmpDateNotConfidentReason)
+                (SetConfirmLmpDate lmpValueByChw.date lmpValueByChw.notConfidentReason)
                 "confirm-lmp"
                 Nothing
             ]

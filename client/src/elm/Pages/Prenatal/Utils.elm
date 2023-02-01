@@ -3063,6 +3063,8 @@ referralFormWithDefault form saved =
                 , referToNCDProgram = or form.referToNCDProgram (resolveFromFacilitySignsValue ReferToNCDProgram)
                 , referralFormNCDProgram = or form.referralFormNCDProgram (resolveFromFacilitySignsValue ReferralFormNCDProgram)
                 , accompanyToNCDProgram = or form.accompanyToNCDProgram (resolveFromFacilitySignsValue AccompanyToNCDProgram)
+                , referToUltrasound = or form.referToUltrasound (resolveFromFacilitySignsValue ReferToUltrasound)
+                , referralFormUltrasound = or form.referralFormUltrasound (resolveFromFacilitySignsValue ReferralFormUltrasound)
                 , facilityNonReferralReasons = or form.facilityNonReferralReasons value.facilityNonReferralReasons
                 }
             )
@@ -3097,6 +3099,8 @@ toPrenatalReferralValue form =
             , ifNullableTrue ReferToNCDProgram form.referToNCDProgram
             , ifNullableTrue ReferralFormNCDProgram form.referralFormNCDProgram
             , ifNullableTrue AccompanyToNCDProgram form.accompanyToNCDProgram
+            , ifNullableTrue ReferToUltrasound form.referToUltrasound
+            , ifNullableTrue ReferralFormUltrasound form.referralFormUltrasound
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty)
@@ -3282,8 +3286,28 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                     -- Not in use at Prenatal
                     Nothing
 
+                FacilityUltrasound ->
+                    Just
+                        { header =
+                            [ div [ class "label" ] [ text <| translate language Translate.PrenatalUltrasoundHeader ]
+                            , viewCustomLabel language Translate.PrenatalUltrasoundInstructions "." "instructions"
+                            ]
+                        , referralField = form.referToUltrasound
+                        , referralUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | referToUltrasound = Just value
+                                    , referralFormUltrasound = Nothing
+                                }
+                        , formField = form.referralFormUltrasound
+                        , formUpdateFunc = \value form_ -> { form_ | referralFormUltrasound = Just value }
+                        , accompanyConfig = Nothing
+                        , reasonToSignFunc = NonReferralReasonUltrasound
+                        }
+
                 FacilityHealthCenter ->
-                    -- Not in use at Prenatal
+                    -- Referral to HC is not supported here as it
+                    -- got special treatment.
                     Nothing
     in
     Maybe.map

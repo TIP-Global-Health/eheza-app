@@ -1016,6 +1016,17 @@ referredToSpecialityCareProgram program assembled =
         |> Maybe.withDefault False
 
 
+referToUltrasound : AssembledData -> Bool
+referToUltrasound assembled =
+    getMeasurementValueFunc assembled.measurements.lastMenstrualPeriod
+        |> Maybe.map
+            (\value ->
+                (value.confident == False)
+                    && isJust value.notConfidentReason
+            )
+        |> Maybe.withDefault False
+
+
 provideNauseaAndVomitingEducation : AssembledData -> Bool
 provideNauseaAndVomitingEducation assembled =
     let
@@ -3412,7 +3423,7 @@ lastMenstrualPeriodFormWithDefault form saved =
                 { lmpRange = or form.lmpRange (Just SixMonth)
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
-                , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.lmpDateNotConfidentReason
+                , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }
@@ -6265,6 +6276,9 @@ matchRequiredReferralFacility assembled facility =
         FacilityANCServices ->
             -- Explicit NCD facility.
             False
+
+        FacilityUltrasound ->
+            referToUltrasound assembled
 
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved

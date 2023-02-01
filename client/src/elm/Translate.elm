@@ -1202,6 +1202,8 @@ type TranslationId
     | PrenatalSymptomQuestionsHeader
     | TestExecutionNote TestExecutionNote
     | TestResult TestResult
+    | PrenatalUltrasoundHeader
+    | PrenatalUltrasoundInstructions
     | PrenatalVaccineLabel PrenatalVaccineType
     | PreTerm
     | PregnancyConcludedLabel
@@ -1849,6 +1851,11 @@ translationSet trans =
                 FacilityANCServices ->
                     { english = "Will you accompany the patient to ANC services"
                     , kinyarwanda = Just "Uzaherekeza umubyeyi muri serivise yita kubuzima bw'umubyeyi utwite"
+                    }
+
+                FacilityUltrasound ->
+                    { english = "Will you accompany the patient to Ultrasound"
+                    , kinyarwanda = Nothing
                     }
 
         AccessDenied ->
@@ -3719,6 +3726,11 @@ translationSet trans =
                 FacilityANCServices ->
                     { english = "Complete an ANC services referral form"
                     , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi muri service serivise yita kubuzima bw'umubyeyi utwite"
+                    }
+
+                FacilityUltrasound ->
+                    { english = "Complete an Ultrasound referral form"
+                    , kinyarwanda = Nothing
                     }
 
         Contacted114 ->
@@ -12866,6 +12878,16 @@ translationSet trans =
             , kinyarwanda = Just "Ohereza umurwayi muri serivisi y'indwara zitandura bamwiteho byimbitse"
             }
 
+        PrenatalUltrasoundHeader ->
+            { english = "This patient is uncertain of LMP dating"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalUltrasoundInstructions ->
+            { english = "Refer patient to ultrasound for further evaluation"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalNextStepsTask isChw task ->
             case task of
                 Pages.Prenatal.Activity.Types.NextStepsAppointmentConfirmation ->
@@ -14747,6 +14769,11 @@ translationSet trans =
                     , kinyarwanda = Just "Wohereje umurwayi muri serivise yita kubuzima bw'umubyeyi utwite"
                     }
 
+                FacilityUltrasound ->
+                    { english = "Have you referred the patient to Ultrasound"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacility facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -14779,6 +14806,11 @@ translationSet trans =
                     , kinyarwanda = Just "Yoherejwe muri serivise yita kubuzima bw'umubyeyi utwite"
                     }
 
+                FacilityUltrasound ->
+                    { english = "Referred to Ultrasound"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacilityNot facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -14809,6 +14841,11 @@ translationSet trans =
                 FacilityANCServices ->
                     { english = "Not referred to ANC services"
                     , kinyarwanda = Just "Ntabwo yoherejwe muri serivise yita kubuzima bw'umubyeyi utwite"
+                    }
+
+                FacilityUltrasound ->
+                    { english = "Not referred to Ultrasound"
+                    , kinyarwanda = Nothing
                     }
 
         ReferredToFacilityPostpartum facility ->
@@ -17197,6 +17234,11 @@ translationSet trans =
 
                 FacilityANCServices ->
                     translationSet (SendPatientToFacility FacilityARVProgram)
+
+                FacilityUltrasound ->
+                    { english = "Refer patient to ultrasound for further evaluation"
+                    , kinyarwanda = Nothing
+                    }
 
         ShowAll ->
             { english = "Show All"

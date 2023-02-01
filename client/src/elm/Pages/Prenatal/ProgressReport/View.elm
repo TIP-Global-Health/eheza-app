@@ -738,7 +738,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                     >> translate language
                                     >> wrapWithLI
                                 )
-                                value.lmpDateNotConfidentReason
+                                value.notConfidentReason
                                 |> Maybe.withDefault []
 
                         else
@@ -1739,6 +1739,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                             -- Explicit NCD facility.
                                             False
 
+                                        FacilityUltrasound ->
+                                            -- @todo
+                                            False
+
                                         FacilityHealthCenter ->
                                             -- We should never get here.
                                             False
@@ -1776,7 +1780,11 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                                 getCurrentReasonForNonReferral NonReferralReasonNCDProgram value.facilityNonReferralReasons
 
                                             FacilityANCServices ->
-                                                getCurrentReasonForNonReferral NonReferralReasonANCServices value.facilityNonReferralReasons
+                                                -- Explicit NCD facility.
+                                                Nothing
+
+                                            FacilityUltrasound ->
+                                                getCurrentReasonForNonReferral NonReferralReasonUltrasound value.facilityNonReferralReasons
 
                                             FacilityHealthCenter ->
                                                 -- We should never get here.

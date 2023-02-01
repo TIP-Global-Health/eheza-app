@@ -1414,7 +1414,7 @@ encodeLastMenstrualPeriodValue value =
     let
         notConfidentReason =
             Maybe.map (\reason -> [ ( "not_confident_reason", encodeLmpDateNotConfidentReason reason ) ])
-                value.lmpDateNotConfidentReason
+                value.notConfidentReason
                 |> Maybe.withDefault []
     in
     [ ( "last_menstrual_period", Gizra.NominalDate.encodeYYYYMMDD value.date )
@@ -2402,6 +2402,12 @@ encodeReferToFacilitySign sign =
             AccompanyToANCServices ->
                 "anc-accompany"
 
+            ReferToUltrasound ->
+                "us"
+
+            ReferralFormUltrasound ->
+                "us-referral-form"
+
             NoReferToFacilitySigns ->
                 "none"
 
@@ -2424,6 +2430,9 @@ encodeNonReferralSign sign =
 
             NonReferralReasonANCServices reason ->
                 "anc-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonUltrasound reason ->
+                "us-" ++ reasonForNonReferralToString reason
 
             NoNonReferralSigns ->
                 "none"
@@ -2450,6 +2459,9 @@ encodeReferralFacility facility =
 
             FacilityANCServices ->
                 "anc"
+
+            FacilityUltrasound ->
+                "us"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )

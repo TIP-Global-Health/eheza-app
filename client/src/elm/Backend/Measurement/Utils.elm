@@ -3434,6 +3434,9 @@ referralToFacilityCompleted referralSigns nonReferralReasons facility =
                 FacilityANCServices ->
                     Just ( ReferToANCServices, NonReferralReasonANCServices )
 
+                FacilityUltrasound ->
+                    Just ( ReferToUltrasound, NonReferralReasonUltrasound )
+
                 FacilityHealthCenter ->
                     -- We should never get here, as referral to HC
                     -- got special treatement, and not supported here.
@@ -3498,6 +3501,9 @@ nonReferralReasonToSign facility reason =
 
         FacilityANCServices ->
             NonReferralReasonANCServices reason
+
+        FacilityUltrasound ->
+            NonReferralReasonUltrasound reason
 
         FacilityHealthCenter ->
             -- We should never get here, as referral to HC
