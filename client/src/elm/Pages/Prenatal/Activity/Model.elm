@@ -50,7 +50,7 @@ type Msg
     | SetWarningPopupState (Maybe (WarningPopupType Msg))
       -- PregnancyDatingMsgs
     | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
-    | SetConfirmLmpDate NominalDate (Maybe LmpDateNotConfidentReason) Bool
+    | SetConfirmLmpDate LastMenstrualPeriodValue Bool
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String

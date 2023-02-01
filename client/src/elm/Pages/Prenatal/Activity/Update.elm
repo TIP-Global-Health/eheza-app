@@ -231,7 +231,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetConfirmLmpDate confirmedDate notConfidentReason confirmed ->
+        SetConfirmLmpDate originalValue confirmed ->
             let
                 updatedForm =
                     if confirmed then
@@ -239,9 +239,9 @@ update language currentDate id db msg model =
                             |> (\form ->
                                     { form
                                         | chwLmpConfirmation = Just True
-                                        , lmpDate = Just confirmedDate
-                                        , lmpDateNotConfidentReason = notConfidentReason
-                                        , lmpDateConfident = Just True
+                                        , lmpDate = Just originalValue.date
+                                        , lmpDateConfident = Just originalValue.confident
+                                        , lmpDateNotConfidentReason = originalValue.notConfidentReason
                                     }
                                )
 

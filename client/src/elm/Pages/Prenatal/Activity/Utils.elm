@@ -1177,81 +1177,79 @@ mandatoryActivitiesForAssessmentCompleted currentDate assembled =
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
-    True
-        || (let
-                mandatoryActivitiesForNurseCompleted =
-                    -- All activities that will appear at
-                    -- current encounter are completed, besides
-                    -- Photo and Next Steps itself.
-                    getAllActivities assembled
-                        |> EverySet.fromList
-                        |> EverySet.remove PrenatalPhoto
-                        |> EverySet.remove NextSteps
-                        |> EverySet.toList
-                        |> List.filter (expectActivity currentDate assembled)
-                        |> List.all (activityCompleted currentDate assembled)
-            in
-            case assembled.encounter.encounterType of
-                NurseEncounter ->
-                    -- If we have emergency diagnosis that require immediate referral,
-                    -- we allow displaying Next steps right away.
-                    diagnosedAnyOf emergencyReferralDiagnoses assembled
-                        || (-- Otherwise, we need all activities that will appear at
-                            -- current encounter completed, besides Photo
-                            -- and Next Steps itself.
-                            mandatoryActivitiesForNurseCompleted
-                           )
-
-                NursePostpartumEncounter ->
+    let
+        mandatoryActivitiesForNurseCompleted =
+            -- All activities that will appear at
+            -- current encounter are completed, besides
+            -- Photo and Next Steps itself.
+            getAllActivities assembled
+                |> EverySet.fromList
+                |> EverySet.remove PrenatalPhoto
+                |> EverySet.remove NextSteps
+                |> EverySet.toList
+                |> List.filter (expectActivity currentDate assembled)
+                |> List.all (activityCompleted currentDate assembled)
+    in
+    case assembled.encounter.encounterType of
+        NurseEncounter ->
+            -- If we have emergency diagnosis that require immediate referral,
+            -- we allow displaying Next steps right away.
+            diagnosedAnyOf emergencyReferralDiagnoses assembled
+                || (-- Otherwise, we need all activities that will appear at
+                    -- current encounter completed, besides Photo
+                    -- and Next Steps itself.
                     mandatoryActivitiesForNurseCompleted
+                   )
 
-                ChwFirstEncounter ->
-                    let
-                        commonMandatoryActivitiesCompleted =
-                            ((not <| expectActivity currentDate assembled PregnancyDating)
-                                || activityCompleted currentDate assembled PregnancyDating
-                            )
-                                && ((not <| expectActivity currentDate assembled Laboratory)
-                                        || activityCompleted currentDate assembled Laboratory
-                                   )
-                                && activityCompleted currentDate assembled DangerSigns
-                    in
-                    if dangerSignsPresent assembled then
-                        commonMandatoryActivitiesCompleted
+        NursePostpartumEncounter ->
+            mandatoryActivitiesForNurseCompleted
 
-                    else
-                        commonMandatoryActivitiesCompleted
-                            && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
-
-                ChwSecondEncounter ->
-                    let
-                        commonMandatoryActivitiesCompleted =
-                            activityCompleted currentDate assembled DangerSigns
-                    in
-                    if dangerSignsPresent assembled then
-                        commonMandatoryActivitiesCompleted
-
-                    else
-                        commonMandatoryActivitiesCompleted
-                            && activityCompleted currentDate assembled BirthPlan
-                            && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
-
-                ChwThirdPlusEncounter ->
-                    let
-                        commonMandatoryActivitiesCompleted =
-                            activityCompleted currentDate assembled DangerSigns
-                    in
-                    if dangerSignsPresent assembled then
-                        commonMandatoryActivitiesCompleted
-
-                    else
-                        commonMandatoryActivitiesCompleted
-                            && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
-
-                ChwPostpartumEncounter ->
-                    activityCompleted currentDate assembled PregnancyOutcome
+        ChwFirstEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    ((not <| expectActivity currentDate assembled PregnancyDating)
+                        || activityCompleted currentDate assembled PregnancyDating
+                    )
+                        && ((not <| expectActivity currentDate assembled Laboratory)
+                                || activityCompleted currentDate assembled Laboratory
+                           )
                         && activityCompleted currentDate assembled DangerSigns
-           )
+            in
+            if dangerSignsPresent assembled then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwSecondEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    activityCompleted currentDate assembled DangerSigns
+            in
+            if dangerSignsPresent assembled then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate assembled BirthPlan
+                    && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwThirdPlusEncounter ->
+            let
+                commonMandatoryActivitiesCompleted =
+                    activityCompleted currentDate assembled DangerSigns
+            in
+            if dangerSignsPresent assembled then
+                commonMandatoryActivitiesCompleted
+
+            else
+                commonMandatoryActivitiesCompleted
+                    && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
+
+        ChwPostpartumEncounter ->
+            activityCompleted currentDate assembled PregnancyOutcome
+                && activityCompleted currentDate assembled DangerSigns
 
 
 expectPrenatalPhoto : NominalDate -> AssembledData -> Bool
