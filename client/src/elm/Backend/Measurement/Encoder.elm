@@ -2328,7 +2328,14 @@ encodePrenatalReferralValue : PrenatalReferralValue -> List ( String, Value )
 encodePrenatalReferralValue value =
     let
         sendToHC =
-            Maybe.map (\signs -> [ ( "send_to_hc", encodeEverySet encodeSendToHCSign signs ) ])
+            Maybe.map
+                (\signs ->
+                    if EverySet.isEmpty signs then
+                        []
+
+                    else
+                        [ ( "send_to_hc", encodeEverySet encodeSendToHCSign signs ) ]
+                )
                 value.sendToHCSigns
                 |> Maybe.withDefault []
 
@@ -2338,12 +2345,26 @@ encodePrenatalReferralValue value =
                 |> Maybe.withDefault []
 
         referToFacilitySigns =
-            Maybe.map (\signs -> [ ( "referrals", encodeEverySet encodeReferToFacilitySign signs ) ])
+            Maybe.map
+                (\signs ->
+                    if EverySet.isEmpty signs then
+                        []
+
+                    else
+                        [ ( "referrals", encodeEverySet encodeReferToFacilitySign signs ) ]
+                )
                 value.referToFacilitySigns
                 |> Maybe.withDefault []
 
         facilityNonReferralReasons =
-            Maybe.map (\reason -> [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ])
+            Maybe.map
+                (\reason ->
+                    if EverySet.isEmpty reason then
+                        []
+
+                    else
+                        [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ]
+                )
                 value.facilityNonReferralReasons
                 |> Maybe.withDefault []
     in

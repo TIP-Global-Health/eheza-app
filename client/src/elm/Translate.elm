@@ -3729,7 +3729,7 @@ translationSet trans =
                     }
 
                 FacilityUltrasound ->
-                    { english = "Complete an Ultrasound referral form"
+                    { english = "Complete an ultrasound referral form"
                     , kinyarwanda = Nothing
                     }
 
@@ -14770,7 +14770,7 @@ translationSet trans =
                     }
 
                 FacilityUltrasound ->
-                    { english = "Have you referred the patient to Ultrasound"
+                    { english = "Have you referred the patient to ultrasound"
                     , kinyarwanda = Nothing
                     }
 
@@ -17236,7 +17236,7 @@ translationSet trans =
                     translationSet (SendPatientToFacility FacilityARVProgram)
 
                 FacilityUltrasound ->
-                    { english = "Refer patient to ultrasound for further evaluation"
+                    { english = "Send patient to ultrasound"
                     , kinyarwanda = Nothing
                     }
 
