@@ -4437,63 +4437,9 @@ historyTasksCompletedFromTotal : AssembledData -> HistoryData -> HistoryTask -> 
 historyTasksCompletedFromTotal assembled data task =
     case task of
         Obstetric ->
-            case data.obstetricHistoryStep of
-                ObstetricHistoryFirstStep ->
-                    let
-                        formStep1_ =
-                            assembled.measurements.obstetricHistory
-                                |> getMeasurementValueFunc
-                                |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-
-                        intInputs =
-                            [ formStep1_.termPregnancy
-                            , formStep1_.preTermPregnancy
-                            , formStep1_.stillbirthsAtTerm
-                            , formStep1_.stillbirthsPreTerm
-                            , formStep1_.abortions
-                            , formStep1_.liveChildren
-                            ]
-                    in
-                    ( (intInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                      )
-                        + taskCompleted formStep1_.currentlyPregnant
-                    , List.length intInputs + 1
-                    )
-
-                ObstetricHistorySecondStep ->
-                    let
-                        formStep2_ =
-                            assembled.measurements.obstetricHistoryStep2
-                                |> getMeasurementValueFunc
-                                |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
-
-                        boolInputs =
-                            [ formStep2_.cSectionInPreviousDelivery
-                            , formStep2_.successiveAbortions
-                            , formStep2_.successivePrematureDeliveries
-                            , formStep2_.stillbornPreviousDelivery
-                            , formStep2_.babyDiedOnDayOfBirthPreviousDelivery
-                            , formStep2_.partialPlacentaPreviousDelivery
-                            , formStep2_.severeHemorrhagingPreviousDelivery
-                            , formStep2_.preeclampsiaPreviousPregnancy
-                            , formStep2_.convulsionsPreviousDelivery
-                            , formStep2_.convulsionsAndUnconsciousPreviousDelivery
-                            , formStep2_.gestationalDiabetesPreviousPregnancy
-                            , formStep2_.incompleteCervixPreviousPregnancy
-                            , formStep2_.rhNegative
-                            ]
-                    in
-                    ( (boolInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                      )
-                        + taskCompleted formStep2_.cSections
-                        + taskCompleted formStep2_.cSectionReason
-                        + taskCompleted formStep2_.previousDeliveryPeriod
-                    , List.length boolInputs + 3
-                    )
+            -- This is not in use, because Obstetric task got
+            -- special treatment at viewHistoryContent().
+            ( 0, 0 )
 
         Medical ->
             let
