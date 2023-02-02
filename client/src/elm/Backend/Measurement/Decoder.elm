@@ -2182,7 +2182,7 @@ decodeObstetricHistoryStep2 : Decoder ObstetricHistoryStep2
 decodeObstetricHistoryStep2 =
     succeed ObstetricHistoryStep2Value
         |> required "c_sections" decodeInt
-        |> required "c_section_reason" (decodeEverySet decodeCSectionReason)
+        |> optional "c_section_reason" (nullable (decodeEverySet decodeCSectionReason)) Nothing
         |> required "previous_delivery" (decodeEverySet decodePreviousDeliverySign)
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)

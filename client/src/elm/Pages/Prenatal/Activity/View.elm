@@ -2814,7 +2814,7 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                         |> Maybe.withDefault ( [], [] )
 
                 cSectionInPreviousDeliveryUpdateFunc value form_ =
-                    { form_ | cSectionInPreviousDelivery = Just value }
+                    { form_ | cSectionInPreviousDelivery = Just value, cSectionInPreviousDeliveryDirty = True }
             in
             ( [ viewNumberInput
                     language

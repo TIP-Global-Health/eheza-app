@@ -1813,14 +1813,23 @@ encodeObstetricHistoryStep2 =
 
 encodeObstetricHistoryStep2Value : ObstetricHistoryStep2Value -> List ( String, Value )
 encodeObstetricHistoryStep2Value value =
+    let
+        cSectionReason =
+            Maybe.map
+                (\reason ->
+                    [ ( "c_section_reason", encodeEverySet encodeCSectionReason reason ) ]
+                )
+                value.cSectionReason
+                |> Maybe.withDefault []
+    in
     [ ( "c_sections", int value.cSections )
-    , ( "c_section_reason", encodeEverySet encodeCSectionReason value.cSectionReason )
     , ( "obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
     , ( "previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
     , ( "previous_delivery_period", encodeEverySet encodePreviousDeliveryPeriod value.previousDeliveryPeriod )
     , ( "deleted", bool False )
     , ( "type", string "obstetric_history_step2" )
     ]
+        ++ cSectionReason
 
 
 encodeBirthPlan : BirthPlan -> List ( String, Value )

@@ -443,7 +443,7 @@ update language currentDate id db msg model =
                         Just reason
 
                 updatedForm =
-                    { form | cSectionReason = updatedReason }
+                    { form | cSectionReason = updatedReason, cSectionReasonDirty = True }
 
                 updatedData =
                     model.historyData
@@ -464,7 +464,14 @@ update language currentDate id db msg model =
                         updatedValue =
                             String.toInt value
                     in
-                    { form | cSections = updatedValue, cSectionsDirty = True }
+                    { form
+                        | cSections = updatedValue
+                        , cSectionsDirty = True
+                        , cSectionInPreviousDelivery = Nothing
+                        , cSectionInPreviousDeliveryDirty = True
+                        , cSectionReason = Nothing
+                        , cSectionReasonDirty = True
+                    }
 
                 updatedData =
                     model.historyData
