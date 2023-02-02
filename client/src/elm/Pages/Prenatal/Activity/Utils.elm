@@ -3333,13 +3333,6 @@ resolvePreviousMaybeValue assembled measurementFunc valueFunc =
         |> List.head
 
 
-fromBreastExamValue : Maybe BreastExamValue -> BreastExamForm
-fromBreastExamValue saved =
-    { breast = Maybe.map (.exam >> EverySet.toList) saved
-    , selfGuidance = Maybe.map .selfGuidance saved
-    }
-
-
 breastExamFormWithDefault : BreastExamForm -> Maybe BreastExamValue -> BreastExamForm
 breastExamFormWithDefault form saved =
     saved
@@ -3347,6 +3340,11 @@ breastExamFormWithDefault form saved =
             form
             (\value ->
                 { breast = or form.breast (value.exam |> EverySet.toList |> Just)
+                , dischargeType =
+                    maybeValueConsideringIsDirtyField form.dischargeTypeDirty
+                        form.dischargeType
+                        value.dischargeType
+                , dischargeTypeDirty = form.dischargeTypeDirty
                 , selfGuidance = or form.selfGuidance (Just value.selfGuidance)
                 }
             )
@@ -3361,6 +3359,7 @@ toBreastExamValueWithDefault saved form =
 toBreastExamValue : BreastExamForm -> Maybe BreastExamValue
 toBreastExamValue form =
     Maybe.map BreastExamValue (Maybe.map EverySet.fromList form.breast)
+        |> andMap (Just form.dischargeType)
         |> andMap form.selfGuidance
 
 
