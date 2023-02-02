@@ -3643,7 +3643,7 @@ breastExamInputsAndTasks language currentDate assembled form =
             Maybe.map
                 (\signs ->
                     if List.member Discharge signs then
-                        ( [ viewQuestionLabel language Translate.BreastExamDischargeQuestion
+                        ( [ viewCustomLabel language Translate.BreastExamDischargeQuestion "?" "label secondary"
                           , viewCheckBoxSelectInput language
                                 [ DischargeMilky
                                 , DischargeClear
@@ -3682,7 +3682,7 @@ breastExamInputsAndTasks language currentDate assembled form =
       ]
         ++ derivedHtml
         ++ [ div [ class "separator double" ] []
-           , viewCustomLabel language Translate.BreastExamQuestion "?" "label self-guidance"
+           , viewCustomLabel language Translate.BreastExamQuestion "?" "label secondary"
            , viewBoolInput
                 language
                 form.selfGuidance
