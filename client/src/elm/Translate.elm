@@ -450,6 +450,8 @@ type TranslationId
     | BreathsPerMinuteUnitLabel
     | BreastExam
     | BreastExamSign BreastExamSign
+    | BreastExamDischargeQuestion
+    | BreastExamDischargeType DischargeType
     | BreastExamQuestion
     | BrittleHair
     | ByMouthDaylyForXDays Int
@@ -3248,6 +3250,38 @@ translationSet trans =
             { english = "Breast Exam"
             , kinyarwanda = Just "Gusuzuma amabere"
             }
+
+        BreastExamDischargeQuestion ->
+            { english = "What kind of discharge"
+            , kinyarwanda = Nothing
+            }
+
+        BreastExamDischargeType value ->
+            case value of
+                DischargeMilky ->
+                    { english = "Milky"
+                    , kinyarwanda = Nothing
+                    }
+
+                DischargeClear ->
+                    { english = "Clear"
+                    , kinyarwanda = Nothing
+                    }
+
+                DischargeBrownOrBloody ->
+                    { english = "Brown or Bloody"
+                    , kinyarwanda = Nothing
+                    }
+
+                DischargeYellow ->
+                    { english = "Yellow"
+                    , kinyarwanda = Nothing
+                    }
+
+                DischargeGreen ->
+                    { english = "Green"
+                    , kinyarwanda = Nothing
+                    }
 
         BreastExamQuestion ->
             { english = "Did you show the patient how to perform a self breast exam"

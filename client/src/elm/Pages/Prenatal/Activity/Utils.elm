@@ -4654,15 +4654,9 @@ examinationTasksCompletedFromTotal assembled data task =
             )
 
         BreastExam ->
-            let
-                form =
-                    assembled.measurements.breastExam
-                        |> getMeasurementValueFunc
-                        |> breastExamFormWithDefault data.breastExamForm
-            in
-            ( taskCompleted form.breast + taskCompleted form.selfGuidance
-            , 2
-            )
+            -- This is not in use, because BreastExam task got
+            -- special treatment at viewExaminationContent().
+            ( 0, 0 )
 
         GUExam ->
             let
