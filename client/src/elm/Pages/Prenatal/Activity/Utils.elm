@@ -3360,8 +3360,6 @@ toBreastExamValueWithDefault saved form =
 
 toBreastExamValue : BreastExamForm -> Maybe BreastExamValue
 toBreastExamValue form =
-    -- The `EverySet.singleton` is temporary, until BresatExamForm is
-    -- redefined to allow more than one.
     Maybe.map BreastExamValue (Maybe.map EverySet.fromList form.breast)
         |> andMap form.selfGuidance
 
