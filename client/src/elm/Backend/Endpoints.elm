@@ -1237,3 +1237,9 @@ encodeByNurseParam params =
 
         Nothing ->
             []
+
+
+prenatalPartnerHIVTestEndpoint : ReadWriteEndPoint Error PrenatalPartnerHIVTestId PrenatalPartnerHIVTest PrenatalPartnerHIVTest ()
+prenatalPartnerHIVTestEndpoint =
+    swEndpoint "nodes/prenatal_partner_hiv_test" decodePrenatalPartnerHIVTest
+        |> withValueEncoder (object << encodePrenatalPartnerHIVTest)
