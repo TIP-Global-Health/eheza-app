@@ -23,7 +23,6 @@ import Backend.Measurement.Model
         , PostpartumMotherDangerSign(..)
         , PrenatalSymptom(..)
         , PreviousDeliveryPeriod(..)
-        , SocialHistoryHivTestingResult(..)
         , VaginalExamSign(..)
         )
 import Backend.Measurement.Utils
@@ -31,7 +30,6 @@ import Backend.Measurement.Utils
         ( getMeasurementValueFunc
         , nonReferralReasonToSign
         , pregnancyTestResultFromString
-        , socialHistoryHivTestingResultFromString
         , testResultFromString
         )
 import Backend.Model exposing (ModelIndexedDb)

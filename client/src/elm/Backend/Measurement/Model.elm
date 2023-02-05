@@ -817,13 +817,6 @@ type SocialHistorySign
     | NoSocialHistorySign
 
 
-type SocialHistoryHivTestingResult
-    = ResultHivPositive
-    | ResultHivNegative
-    | ResultHivIndeterminate
-    | NoHivTesting
-
-
 type alias SocialHistoryValue =
     EverySet SocialHistorySign
 

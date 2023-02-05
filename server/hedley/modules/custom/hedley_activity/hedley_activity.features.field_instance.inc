@@ -13801,7 +13801,7 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 4,
+      'weight' => 2,
     ),
   );
 
@@ -13845,7 +13845,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 5,
+      'weight' => 3,
     ),
   );
 
@@ -13854,7 +13854,7 @@ function hedley_activity_field_default_field_instances() {
     'bundle' => 'social_history',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'Not in use anymore, as Partner HIV lab was added.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -13872,7 +13872,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_partner_hiv_testing',
-    'label' => 'Partner HIV Testing',
+    'label' => 'Partner HIV Testing [Discarded]',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -13882,7 +13882,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 3,
+      'weight' => 8,
     ),
   );
 
@@ -13970,7 +13970,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 6,
+      'weight' => 4,
     ),
   );
 
@@ -14014,7 +14014,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 8,
+      'weight' => 6,
     ),
   );
 
@@ -14051,7 +14051,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 2,
+      'weight' => 7,
     ),
   );
 
@@ -14091,7 +14091,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 7,
+      'weight' => 5,
     ),
   );
 
@@ -15205,12 +15205,13 @@ function hedley_activity_field_default_field_instances() {
   t('NCDA Signs');
   t('Neck');
   t('Not confident reason');
+  t('Not in use anymore, as Partner HIV lab was added.');
   t('Nurse');
   t('Nutrition Assesment');
   t('Nutrition Encounter');
   t('Nutrition Signs');
   t('Obstetric History');
-  t('Partner HIV Testing');
+  t('Partner HIV Testing [Discarded]');
   t('Person');
   t('Photo');
   t('Postpartum child');
