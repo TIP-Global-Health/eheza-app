@@ -19,6 +19,7 @@ import Measurement.Model
         , NonRDTForm
         , OutsideCareForm
         , OutsideCareStep(..)
+        , PartnerHIVTestForm
         , RandomBloodSugarForm
         , SendToHCForm
         , UrineDipstickForm
@@ -31,6 +32,7 @@ import Measurement.Model
         , emptyMalariaTestForm
         , emptyNonRDTForm
         , emptyOutsideCareForm
+        , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarForm
         , emptySendToHCForm
         , emptyUrineDipstickForm
@@ -531,6 +533,7 @@ type alias LaboratoryData =
     , urineDipstickTestForm : UrineDipstickForm Msg
     , hivPCRTestForm : NonRDTForm Msg
     , labsHistoryForm : LabsHistoryForm
+    , partnerHIVTestForm : PartnerHIVTestForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -548,6 +551,7 @@ emptyLaboratoryData =
     , urineDipstickTestForm = emptyUrineDipstickForm
     , hivPCRTestForm = emptyNonRDTForm
     , labsHistoryForm = emptyLabsHistoryForm
+    , partnerHIVTestForm = emptyPartnerHIVTestForm
     , activeTask = Nothing
     }
 

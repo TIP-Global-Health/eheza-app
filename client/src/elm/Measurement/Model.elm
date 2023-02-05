@@ -957,6 +957,25 @@ emptyHIVPCRResultForm =
     HIVPCRResultForm Nothing Nothing Nothing Nothing
 
 
+type alias PartnerHIVTestForm msg =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe TestResult
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyPartnerHIVTestForm : PartnerHIVTestForm msg
+emptyPartnerHIVTestForm =
+    PartnerHIVTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
+
+
 type alias CreatinineResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
