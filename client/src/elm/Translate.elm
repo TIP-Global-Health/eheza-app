@@ -1579,7 +1579,6 @@ type TranslationId
     | SevereHemorrhagingPreviousDelivery
     | Shared
     | SignOnDoorPostedQuestion
-    | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | SpecialityCareHeaderPrefix
     | SpecialityCareHeaderSuffix
     | SpecialityCareSignQuestion SpecialityCareSign
@@ -16855,28 +16854,6 @@ translationSet trans =
             { english = "Have you posted signs on the door indicating that the space is an isolation area"
             , kinyarwanda = Just "Waba washyize ibimenyetso ku rugi byerekana ko iki cyumba ari ikijyamo abantu bari mu kato"
             }
-
-        SocialHistoryHivTestingResult result ->
-            case result of
-                ResultHivPositive ->
-                    { english = "Positive"
-                    , kinyarwanda = Just "Afite Ubwandu"
-                    }
-
-                ResultHivNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
-
-                ResultHivIndeterminate ->
-                    { english = "Indeterminate"
-                    , kinyarwanda = Just "Ntibisobanutse"
-                    }
-
-                NoHivTesting ->
-                    { english = "No HIV Testing"
-                    , kinyarwanda = Just "Ntibibonetse"
-                    }
 
         SpecialityCareHeaderPrefix ->
             { english = "You were diagnosed with"
