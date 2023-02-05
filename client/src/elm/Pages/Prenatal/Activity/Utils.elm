@@ -4421,49 +4421,6 @@ toPregnancyTestValue form =
     form.pregnancyTestResult
 
 
-historyTasksCompletedFromTotal : AssembledData -> HistoryData -> HistoryTask -> ( Int, Int )
-historyTasksCompletedFromTotal assembled data task =
-    case task of
-        Obstetric ->
-            -- This is not in use, because Obstetric task got
-            -- special treatment at viewHistoryContent().
-            ( 0, 0 )
-
-        Medical ->
-            let
-                medicalForm =
-                    assembled.measurements.medicalHistory
-                        |> getMeasurementValueFunc
-                        |> medicalHistoryFormWithDefault data.medicalForm
-
-                boolInputs =
-                    [ medicalForm.uterineMyoma
-                    , medicalForm.diabetes
-                    , medicalForm.cardiacDisease
-                    , medicalForm.renalDisease
-                    , medicalForm.hypertensionBeforePregnancy
-                    , medicalForm.tuberculosisPast
-                    , medicalForm.tuberculosisPresent
-                    , medicalForm.asthma
-                    , medicalForm.bowedLegs
-                    , medicalForm.hiv
-                    ]
-            in
-            ( boolInputs
-                |> List.map taskCompleted
-                |> List.sum
-            , List.length boolInputs
-            )
-
-        Social ->
-            ( 0, 0 )
-
-        OutsideCare ->
-            -- This is not in use, because OutsideCare task got
-            -- special treatment at viewHistoryContent().
-            ( 0, 0 )
-
-
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
 examinationTasksCompletedFromTotal assembled data task =
     case task of
