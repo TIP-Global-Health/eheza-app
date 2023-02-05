@@ -1399,9 +1399,9 @@ type ResilienceMessageUuidType
     = ResilienceMessageUuidType
 
 
-type alias PrenatalPartnerHIVId =
-    EntityUuid PrenatalPartnerHIVUuidType
+type alias PrenatalPartnerHIVTestId =
+    EntityUuid PrenatalPartnerHIVTestUuidType
 
 
-type PrenatalPartnerHIVUuidType
-    = PrenatalPartnerHIVUuidType
+type PrenatalPartnerHIVTestUuidType
+    = PrenatalPartnerHIVTestUuidType
