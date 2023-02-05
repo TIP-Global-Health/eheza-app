@@ -161,6 +161,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalMentalHealth (BackendEntity PrenatalMentalHealth)
     | BackendAuthorityPrenatalNutrition (BackendEntity PrenatalNutrition)
     | BackendAuthorityPrenatalOutsideCare (BackendEntity PrenatalOutsideCare)
+    | BackendAuthorityPrenatalPartnerHIVTest (BackendEntity PrenatalPartnerHIVTest)
     | BackendAuthorityPrenatalPhoto (BackendEntity PrenatalPhoto)
     | BackendAuthorityPrenatalRandomBloodSugarTest (BackendEntity PrenatalRandomBloodSugarTest)
     | BackendAuthorityPrenatalSendToHC (BackendEntity PrenatalSendToHC)

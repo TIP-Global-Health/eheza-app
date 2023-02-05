@@ -744,6 +744,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalOutsideCare identifier ->
             getIdentifier identifier "prenatal_outside_care"
 
+        BackendAuthorityPrenatalPartnerHIVTest identifier ->
+            getIdentifier identifier "prenatal_partner_hiv_test"
+
         BackendAuthorityPrenatalPhoto identifier ->
             getIdentifier identifier "prenatal_photo"
 
@@ -1410,6 +1413,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalOutsideCare identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalOutsideCare identifier
 
+        BackendAuthorityPrenatalPartnerHIVTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalPartnerHIVTest identifier
+
         BackendAuthorityPrenatalPhoto identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
 
@@ -2038,6 +2044,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalOutsideCare identifier ->
             PrenatalOutsideCareRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalPartnerHIVTest identifier ->
+            PrenatalPartnerHIVTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalPhoto identifier ->
             PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity

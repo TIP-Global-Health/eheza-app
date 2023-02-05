@@ -690,6 +690,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalOutsideCare identifier ->
                 viewMeasurement identifier "Prenatal Outside Care"
 
+            BackendAuthorityPrenatalPartnerHIVTest identifier ->
+                viewMeasurement identifier "Prenatal Partner HIV Test"
+
             BackendAuthorityPrenatalPhoto identifier ->
                 viewMeasurement identifier "Prenatal Photo"
 
@@ -700,7 +703,7 @@ viewAuthorityEntity backendAuthorityEntity =
                 viewMeasurement identifier "Prenatal Send to HC"
 
             BackendAuthorityPrenatalSpecialityCare identifier ->
-                viewMeasurement identifier "Prenatal Specialty Care"
+                viewMeasurement identifier "Prenatal Speciality Care"
 
             BackendAuthorityPrenatalSymptomReview identifier ->
                 viewMeasurement identifier "Prenatal Symptom Review"
