@@ -581,6 +581,7 @@ type LaboratoryTask
     | TaskLiverFunctionTest
     | TaskLipidPanelTest
     | TaskHbA1cTest
+    | TaskPartnerHIVTest
     | TaskCompletePreviousTests
 
 
@@ -617,6 +618,9 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
     , setHbA1cTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm msg -> PartnerHIVTestForm msg) -> Bool -> msg
+    , setPartnerHIVTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPartnerHIVTestResultMsg : String -> msg
     , noOpMsg : msg
     }
 
@@ -666,6 +670,9 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setHbA1cTestExecutionDateMsg : NominalDate -> msg
     , setHbA1cTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , setHbA1cTestResultMsg : String -> msg
+    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm msg -> PartnerHIVTestForm msg) -> Bool -> msg
+    , setPartnerHIVTestExecutionDateMsg : NominalDate -> msg
+    , setPartnerHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , noOpMsg : msg
     }
 

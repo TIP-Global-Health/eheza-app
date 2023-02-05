@@ -388,6 +388,16 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             , Cmd.none
             )
 
+        SavePartnerHIVTest personId valueId value ->
+            ( { model | savePartnerHIVTest = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalPartnerHIVTestEndpoint HandleSavedPartnerHIVTest
+            )
+
+        HandleSavedPartnerHIVTest data ->
+            ( { model | savePartnerHIVTest = data }
+            , Cmd.none
+            )
+
         SaveMentalHealth personId valueId value ->
             ( { model | saveMentalHealth = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMentalHealthEndpoint HandleSavedMentalHealth

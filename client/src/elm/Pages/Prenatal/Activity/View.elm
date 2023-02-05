@@ -57,6 +57,7 @@ import Measurement.Utils
         , nonRDTFormWithDefault
         , outsideCareFormInputsAndTasks
         , outsideCareFormWithDefault
+        , partnerHIVTestFormWithDefault
         , randomBloodSugarFormWithDefault
         , urineDipstickFormWithDefault
         , vaccinationFormWithDefault
@@ -64,6 +65,7 @@ import Measurement.Utils
         , viewMalariaTestForm
         , viewNonRDTForm
         , viewNonRDTFormCheckKnownAsPositive
+        , viewPartnerHIVTestForm
         , viewRandomBloodSugarForm
         , viewUrineDipstickForm
         , vitalsFormWithDefault
@@ -1578,6 +1580,15 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     TaskHIVPCRTest
 
+                        TaskPartnerHIVTest ->
+                            measurements.partnerHIVTest
+                                |> getMeasurementValueFunc
+                                |> partnerHIVTestFormWithDefault data.partnerHIVTestForm
+                                |> viewPartnerHIVTestForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+
                         TaskCompletePreviousTests ->
                             viewLabsHistoryForm language currentDate assembled data.labsHistoryForm
 
@@ -1640,6 +1651,9 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRTest personId measurements.hivPCRTest nextTask
+
+                                TaskPartnerHIVTest ->
+                                    SavePartnerHIVTest personId measurements.partnerHIVTest nextTask
 
                                 TaskCompletePreviousTests ->
                                     SaveLabsHistory
@@ -3770,6 +3784,9 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
                     , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
                     , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
+                    , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
+                    , setPartnerHIVTestResultMsg = SetPartnerHIVTestResult
                 }
            )
 
@@ -3807,6 +3824,9 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
                     , setHIVPCRTestExecutionDateMsg = SetHIVPCRTestExecutionDate
                     , setHIVPCRTestDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
+                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
+                    , setPartnerHIVTestExecutionDateMsg = SetPartnerHIVTestExecutionDate
+                    , setPartnerHIVTestDateSelectorStateMsg = SetPartnerHIVTestDateSelectorState
                 }
            )
 

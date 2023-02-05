@@ -2203,6 +2203,26 @@ viewPregnancyTestForm language currentDate configInitial configPerformed form =
     )
 
 
+viewPartnerHIVTestForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
+    -> PartnerHIVTestForm msg
+    -> ( Html msg, Int, Int )
+viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
+    let
+        ( inputs, tasksCompleted, tasksTotal ) =
+            prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed TaskPartnerHIVTest form
+    in
+    ( div [ class "ui form laboratory partner-hiv" ] <|
+        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPartnerHIVTest) "" "label header" ]
+            ++ inputs
+    , tasksCompleted
+    , tasksTotal
+    )
+
+
 prenatalRDTFormInputsAndTasks :
     Language
     -> NominalDate
@@ -2240,6 +2260,9 @@ prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed
 
                             TaskPregnancyTest ->
                                 Just configInitial.setPregnancyTestResultMsg
+
+                            TaskPartnerHIVTest ->
+                                Just configInitial.setPartnerHIVTestResultMsg
 
                             _ ->
                                 Nothing
@@ -2773,6 +2796,11 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     , setExecutionNoteMsg = always config.noOpMsg
                     }
 
+                TaskPartnerHIVTest ->
+                    { setBoolInputMsg = config.setPartnerHIVTestFormBoolInputMsg boolInputUpdateFunc
+                    , setExecutionNoteMsg = config.setPartnerHIVTestExecutionNoteMsg
+                    }
+
                 TaskCompletePreviousTests ->
                     -- Not in use, as this task got a proprietary form.
                     { setBoolInputMsg = always config.noOpMsg
@@ -2948,6 +2976,12 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                         , setDateSelectorStateMsg = always config.noOpMsg
                         }
 
+                    TaskPartnerHIVTest ->
+                        { setBoolInputMsg = config.setPartnerHIVTestFormBoolInputMsg boolInputUpdateFunc
+                        , setExecutionDateMsg = config.setPartnerHIVTestExecutionDateMsg
+                        , setDateSelectorStateMsg = config.setPartnerHIVTestDateSelectorStateMsg
+                        }
+
                     TaskCompletePreviousTests ->
                         -- Not in use, as this task got a proprietary form.
                         { setBoolInputMsg = always config.noOpMsg
@@ -3112,6 +3146,9 @@ emptyContentAndTasksLaboratoryTestInitialConfig noOpMsg =
     , setLipidPanelTestExecutionNoteMsg = always noOpMsg
     , setHbA1cTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setHbA1cTestExecutionNoteMsg = always noOpMsg
+    , setPartnerHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setPartnerHIVTestExecutionNoteMsg = always noOpMsg
+    , setPartnerHIVTestResultMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -3162,6 +3199,9 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
     , setHbA1cTestExecutionDateMsg = always noOpMsg
     , setHbA1cTestDateSelectorStateMsg = always noOpMsg
     , setHbA1cTestResultMsg = always noOpMsg
+    , setPartnerHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setPartnerHIVTestExecutionDateMsg = always noOpMsg
+    , setPartnerHIVTestDateSelectorStateMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -3213,6 +3253,9 @@ laboratoryTaskIconClass task =
 
         TaskHbA1cTest ->
             "hba1c"
+
+        TaskPartnerHIVTest ->
+            "laboratory-hiv"
 
 
 hepatitisBResultFormWithDefault : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId
@@ -3448,14 +3491,14 @@ hivPCRResultFormWithDefault form saved =
             )
 
 
-toHIVPCRRResultsValueWithDefault : Maybe HIVPCRTestValue -> HIVPCRResultForm -> Maybe HIVPCRTestValue
-toHIVPCRRResultsValueWithDefault saved form =
+toHIVPCRResultsValueWithDefault : Maybe HIVPCRTestValue -> HIVPCRResultForm -> Maybe HIVPCRTestValue
+toHIVPCRResultsValueWithDefault saved form =
     hivPCRResultFormWithDefault form saved
-        |> toHIVPCRRResultsValue
+        |> toHIVPCRResultsValue
 
 
-toHIVPCRRResultsValue : HIVPCRResultForm -> Maybe HIVPCRTestValue
-toHIVPCRRResultsValue form =
+toHIVPCRResultsValue : HIVPCRResultForm -> Maybe HIVPCRTestValue
+toHIVPCRResultsValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote

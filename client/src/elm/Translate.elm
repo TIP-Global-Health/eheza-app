@@ -6498,6 +6498,13 @@ translationSet trans =
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
+                TaskPartnerHIVTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -7202,6 +7209,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskCompletePreviousTests ->
                     { english = "History"
                     , kinyarwanda = Just "Amakuru"
@@ -7274,6 +7286,11 @@ translationSet trans =
 
                 TaskHbA1cTest ->
                     { english = "HBA1C"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV"
                     , kinyarwanda = Nothing
                     }
 
@@ -7355,6 +7372,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -7430,6 +7452,11 @@ translationSet trans =
 
                 TaskHbA1cTest ->
                     { english = "HBA1C Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV Test Result"
                     , kinyarwanda = Nothing
                     }
 

@@ -523,7 +523,7 @@ encodePartnerHIVTestValue value =
         :: executionDate
         ++ result
         ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_hiv_test" )
+           , ( "type", string "prenatal_partner_hiv_test" )
            ]
 
 

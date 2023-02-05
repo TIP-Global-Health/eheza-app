@@ -57,6 +57,7 @@ import Measurement.Utils
         , toMalariaTestValueWithDefault
         , toNonRDTValueWithDefault
         , toOutsideCareValueWithDefault
+        , toPartnerHIVTestValueWithDefault
         , toRandomBloodSugarTestValueWithDefault
         , toSendToHCValueWithDefault
         , toSyphilisTestValueWithEmptyResults
@@ -2709,6 +2710,122 @@ update language currentDate id db msg model =
                         |> toNonRDTValueWithDefault measurement toHIVPCRTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetPartnerHIVTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.partnerHIVTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.partnerHIVTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.partnerHIVTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestResult value ->
+            let
+                form =
+                    model.laboratoryData.partnerHIVTestForm
+
+                updatedForm =
+                    { form | testResult = testResultFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.partnerHIVTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SavePartnerHIVTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.partnerHIVTestForm
+                        |> toPartnerHIVTestValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SavePartnerHIVTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

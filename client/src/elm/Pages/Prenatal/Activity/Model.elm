@@ -197,6 +197,12 @@ type Msg
     | SaveHIVPCRTest PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
     | SetLabsHistoryCompleted Bool
     | SaveLabsHistory
+    | SetPartnerHIVTestFormBoolInput (Bool -> PartnerHIVTestForm Msg -> PartnerHIVTestForm Msg) Bool
+    | SetPartnerHIVTestExecutionNote TestExecutionNote
+    | SetPartnerHIVTestExecutionDate NominalDate
+    | SetPartnerHIVTestResult String
+    | SetPartnerHIVTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SavePartnerHIVTest PersonId (Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )) (Maybe LaboratoryTask)
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))

@@ -4655,7 +4655,8 @@ toAppointmentConfirmationValue form =
 
 laboratoryTasks : List LaboratoryTask
 laboratoryTasks =
-    [ TaskHIVTest
+    [ TaskPartnerHIVTest
+    , TaskHIVTest
     , TaskHIVPCRTest
     , TaskSyphilisTest
     , TaskHepatitisBTest
@@ -4704,6 +4705,9 @@ laboratoryTaskCompleted currentDate assembled task =
 
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || isJust measurements.hivPCRTest
+
+        TaskPartnerHIVTest ->
+            (not <| taskExpected TaskPartnerHIVTest) || isJust measurements.partnerHIVTest
 
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
@@ -4810,6 +4814,9 @@ expectLaboratoryTask currentDate assembled task =
                 TaskHIVPCRTest ->
                     isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
 
+                TaskPartnerHIVTest ->
+                    isInitialTest TaskPartnerHIVTest
+
                 TaskCompletePreviousTests ->
                     -- If we got this far, history task was completed.
                     False
@@ -4870,6 +4877,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) (always True) )
     , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest (.hemoglobinCount >> isJust) (always True) )
     , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) (always True) )
+    , ( TaskPartnerHIVTest, generateTestDates .partnerHIVTest (always True) isTestResultValid )
     ]
         |> Dict.fromList
 
