@@ -74,7 +74,6 @@ type Msg
     | SaveMedicalHistory PersonId (Maybe ( MedicalHistoryId, MedicalHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
-    | SetSocialHivTestingResult String
     | SaveSocialHistory PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Outside Care
     | SetOutsideCareStep OutsideCareStep
@@ -844,14 +843,12 @@ emptyMedicalHistoryForm =
 type alias SocialHistoryForm =
     { accompaniedByPartner : Maybe Bool
     , partnerReceivedCounseling : Maybe Bool
-    , partnerReceivedTesting : Maybe Bool
-    , partnerTestingResult : Maybe SocialHistoryHivTestingResult
     }
 
 
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
-    SocialHistoryForm Nothing Nothing Nothing Nothing
+    SocialHistoryForm Nothing Nothing
 
 
 type alias NutritionAssessmentForm =

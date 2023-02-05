@@ -825,9 +825,7 @@ type SocialHistoryHivTestingResult
 
 
 type alias SocialHistoryValue =
-    { socialHistory : EverySet SocialHistorySign
-    , hivTestingResult : SocialHistoryHivTestingResult
-    }
+    EverySet SocialHistorySign
 
 
 type alias SocialHistory =

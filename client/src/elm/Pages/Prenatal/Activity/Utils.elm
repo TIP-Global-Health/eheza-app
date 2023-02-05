@@ -4344,25 +4344,14 @@ toMalariaPreventionValue form =
     Maybe.map (toEverySet MosquitoNet NoMalariaPreventionSigns) form.receivedMosquitoNet
 
 
-fromSocialHistoryValue : Maybe SocialHistoryValue -> SocialHistoryForm
-fromSocialHistoryValue saved =
-    { accompaniedByPartner = Maybe.map (.socialHistory >> EverySet.member AccompaniedByPartner) saved
-    , partnerReceivedCounseling = Maybe.map (.socialHistory >> EverySet.member PartnerHivCounseling) saved
-    , partnerReceivedTesting = Maybe.map (.hivTestingResult >> (==) NoHivTesting >> not) saved
-    , partnerTestingResult = Maybe.map .hivTestingResult saved
-    }
-
-
 socialHistoryFormWithDefault : SocialHistoryForm -> Maybe SocialHistoryValue -> SocialHistoryForm
 socialHistoryFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value.socialHistory |> Just)
-                , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value.socialHistory |> Just)
-                , partnerReceivedTesting = or form.partnerReceivedTesting (value.hivTestingResult == NoHivTesting |> not |> Just)
-                , partnerTestingResult = or form.partnerTestingResult (Just value.hivTestingResult)
+                { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value |> Just)
+                , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value |> Just)
                 }
             )
 
@@ -4375,16 +4364,11 @@ toSocialHistoryValueWithDefault saved form =
 
 toSocialHistoryValue : SocialHistoryForm -> Maybe SocialHistoryValue
 toSocialHistoryValue form =
-    let
-        socialHistory =
-            [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
-            , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSocialHistorySign)
-    in
-    Maybe.map SocialHistoryValue socialHistory
-        |> andMap form.partnerTestingResult
+    [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
+    , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSocialHistorySign)
 
 
 fromPregnancyTestValue : Maybe PregnancyTestResult -> PregnancyTestForm

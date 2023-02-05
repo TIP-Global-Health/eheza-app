@@ -620,25 +620,6 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetSocialHivTestingResult value ->
-            let
-                result =
-                    socialHistoryHivTestingResultFromString value
-
-                updatedData =
-                    let
-                        updatedForm =
-                            model.historyData.socialForm
-                                |> (\form -> { form | partnerTestingResult = result })
-                    in
-                    model.historyData
-                        |> (\data -> { data | socialForm = updatedForm })
-            in
-            ( { model | historyData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SaveSocialHistory personId saved nextTask ->
             let
                 measurementId =
@@ -647,19 +628,11 @@ update language currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                updatedForm =
-                    if isNothing model.historyData.socialForm.partnerTestingResult then
-                        model.historyData.socialForm
-                            |> (\form -> { form | partnerTestingResult = Just NoHivTesting })
-
-                    else
-                        model.historyData.socialForm
-
                 extraMsgs =
                     generateHistoryMsgs nextTask
 
                 appMsgs =
-                    toSocialHistoryValueWithDefault measurement updatedForm
+                    toSocialHistoryValueWithDefault measurement model.historyData.socialForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSocialHistory personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

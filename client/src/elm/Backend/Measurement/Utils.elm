@@ -2623,22 +2623,6 @@ postpartumHealingProblemFromString value =
             Nothing
 
 
-socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
-socialHistoryHivTestingResultToString result =
-    case result of
-        ResultHivPositive ->
-            "positive"
-
-        ResultHivNegative ->
-            "negative"
-
-        ResultHivIndeterminate ->
-            "indeterminate"
-
-        NoHivTesting ->
-            "none"
-
-
 pregnancyTestResultFromString : String -> Maybe PregnancyTestResult
 pregnancyTestResultFromString result =
     case result of

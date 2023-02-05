@@ -2023,34 +2023,10 @@ decodeSocialHistorySign =
             )
 
 
-decodeSocialHistoryHivTestingResult : Decoder SocialHistoryHivTestingResult
-decodeSocialHistoryHivTestingResult =
-    string
-        |> andThen
-            (\s ->
-                case s of
-                    "positive" ->
-                        succeed ResultHivPositive
-
-                    "negative" ->
-                        succeed ResultHivNegative
-
-                    "indeterminate" ->
-                        succeed ResultHivIndeterminate
-
-                    "none" ->
-                        succeed NoHivTesting
-
-                    _ ->
-                        fail <| s ++ " is not a recognized SocialHistorySign"
-            )
-
-
 decodeSocialHistory : Decoder SocialHistory
 decodeSocialHistory =
-    succeed SocialHistoryValue
-        |> required "social_history" (decodeEverySet decodeSocialHistorySign)
-        |> required "partner_hiv_testing" decodeSocialHistoryHivTestingResult
+    decodeEverySet decodeSocialHistorySign
+        |> field "social_history"
         |> decodePrenatalMeasurement
 
 

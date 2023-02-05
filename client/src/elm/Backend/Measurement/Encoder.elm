@@ -1957,11 +1957,6 @@ encodeSocialHistorySign sign =
                 "none"
 
 
-encodeSocialHistoryHivTestingResult : SocialHistoryHivTestingResult -> Value
-encodeSocialHistoryHivTestingResult =
-    socialHistoryHivTestingResultToString >> string
-
-
 encodeSocialHistory : SocialHistory -> List ( String, Value )
 encodeSocialHistory =
     encodePrenatalMeasurement encodeSocialHistoryValue
@@ -1969,8 +1964,7 @@ encodeSocialHistory =
 
 encodeSocialHistoryValue : SocialHistoryValue -> List ( String, Value )
 encodeSocialHistoryValue value =
-    [ ( "social_history", encodeEverySet encodeSocialHistorySign value.socialHistory )
-    , ( "partner_hiv_testing", encodeSocialHistoryHivTestingResult value.hivTestingResult )
+    [ ( "social_history", encodeEverySet encodeSocialHistorySign value )
     , ( "deleted", bool False )
     , ( "type", string "social_history" )
     ]

@@ -11,7 +11,6 @@ import Backend.Measurement.Utils
         , muacIndication
         , muacValueFunc
         , pregnancyTestResultToString
-        , socialHistoryHivTestingResultToString
         , testResultToString
         , weightValueFunc
         )
@@ -3255,10 +3254,7 @@ socialFormInputsAndTasks language currentDate assembled form =
                         (.measurements
                             >> .socialHistory
                             >> getMeasurementValueFunc
-                            >> Maybe.map
-                                (.socialHistory
-                                    >> EverySet.member PartnerHivCounseling
-                                )
+                            >> Maybe.map (EverySet.member PartnerHivCounseling)
                             >> Maybe.withDefault False
                         )
                         assembled.nursePreviousEncountersData
