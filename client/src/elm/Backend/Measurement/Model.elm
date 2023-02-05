@@ -1566,6 +1566,17 @@ type SpecialityCareSign
     | NoSpecialityCareSigns
 
 
+type alias PrenatalPartnerHIVTest =
+    PrenatalMeasurement PartnerHIVTestValue
+
+
+type alias PartnerHIVTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe TestResult
+    }
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -2826,6 +2837,7 @@ type alias PrenatalMeasurements =
     , breastfeeding : Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding )
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
+    , partnerHIVTest : Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )
     }
 
 
@@ -2870,6 +2882,7 @@ emptyPrenatalMeasurements =
     , breastfeeding = Nothing
     , guExam = Nothing
     , specialityCare = Nothing
+    , partnerHIVTest = Nothing
     }
 
 
