@@ -1397,3 +1397,11 @@ type alias ResilienceMessageId =
 
 type ResilienceMessageUuidType
     = ResilienceMessageUuidType
+
+
+type alias PrenatalPartnerHIVId =
+    EntityUuid PrenatalPartnerHIVUuidType
+
+
+type PrenatalPartnerHIVUuidType
+    = PrenatalPartnerHIVUuidType
