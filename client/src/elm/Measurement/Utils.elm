@@ -3467,6 +3467,51 @@ toHIVPCRRResultsValue form =
         form.executionNote
 
 
+partnerHIVTestFormWithDefault : PartnerHIVTestForm msg -> Maybe PartnerHIVTestValue -> PartnerHIVTestForm msg
+partnerHIVTestFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    testPerformedValue =
+                        testPerformedByExecutionNote value.executionNote
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
+                in
+                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
+                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedTodayDirty = form.testPerformedTodayDirty
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , testResult = or form.testResult value.testResult
+                , dateSelectorPopupState = form.dateSelectorPopupState
+                }
+            )
+
+
+toPartnerHIVTestValueWithDefault : Maybe PartnerHIVTestValue -> PartnerHIVTestForm msg -> Maybe PartnerHIVTestValue
+toPartnerHIVTestValueWithDefault saved form =
+    partnerHIVTestFormWithDefault form saved
+        |> toPartnerHIVTestValue
+
+
+toPartnerHIVTestValue : PartnerHIVTestForm msg -> Maybe PartnerHIVTestValue
+toPartnerHIVTestValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testResult = form.testResult
+            }
+        )
+        form.executionNote
+
+
 creatinineResultFormWithDefault : CreatinineResultForm -> Maybe CreatinineTestValue -> CreatinineResultForm
 creatinineResultFormWithDefault form saved =
     saved
