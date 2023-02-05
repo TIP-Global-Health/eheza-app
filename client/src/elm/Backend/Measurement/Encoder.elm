@@ -499,6 +499,34 @@ encodePrenatalHIVSign =
     prenatalHIVSignToString >> string
 
 
+encodePrenatalPartnerHIVTest : PrenatalPartnerHIVTest -> List ( String, Value )
+encodePrenatalPartnerHIVTest =
+    encodePrenatalMeasurement encodePartnerHIVTestValue
+
+
+encodePartnerHIVTestValue : PartnerHIVTestValue -> List ( String, Value )
+encodePartnerHIVTestValue value =
+    let
+        executionDate =
+            Maybe.map
+                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.executionDate
+                |> Maybe.withDefault []
+
+        result =
+            Maybe.map
+                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
+                value.testResult
+                |> Maybe.withDefault []
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: executionDate
+        ++ result
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hiv_test" )
+           ]
+
+
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
 encodePrenatalMalariaTest =
     encodePrenatalMeasurement encodeMalariaTestValue

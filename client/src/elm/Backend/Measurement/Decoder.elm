@@ -141,6 +141,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_breastfeeding" (decodeHead decodePrenatalBreastfeeding) Nothing
         |> optional "prenatal_gu_exam" (decodeHead decodePrenatalGUExam) Nothing
         |> optional "prenatal_speciality_care" (decodeHead decodePrenatalSpecialityCare) Nothing
+        |> optional "prenatal_partner_hiv_test" (decodeHead decodePrenatalPartnerHIVTest) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -523,6 +524,19 @@ decodeHIVPCRTestValue =
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "hiv_viral_load_status" (nullable decodeViralLoadStatus) Nothing
         |> optional "hiv_viral_load" (nullable decodeFloat) Nothing
+
+
+decodePrenatalPartnerHIVTest : Decoder PrenatalPartnerHIVTest
+decodePrenatalPartnerHIVTest =
+    decodePrenatalMeasurement decodePartnerHIVTestValue
+
+
+decodePartnerHIVTestValue : Decoder PartnerHIVTestValue
+decodePartnerHIVTestValue =
+    succeed PartnerHIVTestValue
+        |> required "test_execution_note" decodeTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodeTestResult) Nothing
 
 
 decodeViralLoadStatus : Decoder ViralLoadStatus
