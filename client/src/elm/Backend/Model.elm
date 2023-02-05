@@ -522,6 +522,7 @@ type Revision
     | PrenatalMedicationDistributionRevision PrenatalMedicationDistributionId PrenatalMedicationDistribution
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalOutsideCareRevision PrenatalOutsideCareId PrenatalOutsideCare
+    | PrenatalPartnerHIVTestRevision PrenatalPartnerHIVTestId PrenatalPartnerHIVTest
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | PrenatalRandomBloodSugarTestRevision PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest
     | PrenatalSendToHCRevision PrenatalSendToHCId PrenatalSendToHC
