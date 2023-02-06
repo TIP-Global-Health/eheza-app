@@ -61,6 +61,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..))
 import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestion(..)
@@ -1289,13 +1290,7 @@ type TranslationId
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
-    | ResilienceCategoryIntroductionHeader
-    | ResilienceCategoryGrowthHeader
-    | ResilienceCategoryStressManagementHeader
-    | ResilienceCategoryMindfulnessHeader
-    | ResilienceCategoryConnectingHeader
-    | ResilienceCategorySelfCareHeader
-    | ResilienceCategoryEndOfPeriodHeader
+    | ResilienceCategory ResilienceCategory
     | ResilienceMessageIntroduction1Title
     | ResilienceMessageIntroduction1Paragraph1 String
     | ResilienceMessageIntroduction1Paragraph2
@@ -15031,40 +15026,42 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Raporo irarangiye"
             }
 
-        ResilienceCategoryIntroductionHeader ->
-            { english = "Introduction"
-            , kinyarwanda = Nothing
-            }
+        ResilienceCategory category ->
+            case category of
+                ResilienceCategoryIntroduction ->
+                    { english = "Introduction"
+                    , kinyarwanda = Nothing
+                    }
 
-        ResilienceCategoryGrowthHeader ->
-            { english = "Growth"
-            , kinyarwanda = Nothing
-            }
+                ResilienceCategoryGrowth ->
+                    { english = "Growth"
+                    , kinyarwanda = Nothing
+                    }
 
-        ResilienceCategoryStressManagementHeader ->
-            { english = "Stress Management"
-            , kinyarwanda = Nothing
-            }
+                ResilienceCategoryStressManagement ->
+                    { english = "Stress Management"
+                    , kinyarwanda = Nothing
+                    }
 
-        ResilienceCategoryMindfulnessHeader ->
-            { english = "Mindfulness"
-            , kinyarwanda = Nothing
-            }
+                ResilienceCategoryMindfulness ->
+                    { english = "Mindfulness"
+                    , kinyarwanda = Nothing
+                    }
 
-        ResilienceCategoryConnectingHeader ->
-            { english = "Connecting"
-            , kinyarwanda = Nothing
-            }
+                ResilienceCategoryConnecting ->
+                    { english = "Connecting"
+                    , kinyarwanda = Nothing
+                    }
 
-        ResilienceCategorySelfCareHeader ->
-            { english = "Self Care"
-            , kinyarwanda = Nothing
-            }
+                ResilienceCategorySelfCare ->
+                    { english = "Self Care"
+                    , kinyarwanda = Nothing
+                    }
 
-        ResilienceCategoryEndOfPeriodHeader ->
-            { english = ""
-            , kinyarwanda = Nothing
-            }
+                ResilienceCategoryEndOfPeriod ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         ResilienceMessageIntroduction1Title ->
             { english = "Welcome to the work based resilience messaging program."

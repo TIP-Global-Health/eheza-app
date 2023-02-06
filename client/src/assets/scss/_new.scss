@@ -4640,11 +4640,22 @@ div.page-activity.messaging-center {
 
     .title-wrapper {
       display: flex;
+      flex-flow: row wrap;
       justify-content: space-between;
+    }
+    .options {
+
+    }
+    .category-header {
+      font-weight: bold;
+      font-size: 24px;
     }
 
     .title-wrapper .title {
       padding: 0;
+      flex-basis: 100%;
+      width: 0;
+
     }
 
     .content {
