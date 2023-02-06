@@ -4641,14 +4641,14 @@ div.page-activity.messaging-center {
     .title-wrapper {
       display: flex;
       flex-flow: row wrap;
-      justify-content: space-between;
     }
     .options {
-
+      float: right;
     }
-    .category-header {
+    .category-header{
       font-weight: bold;
       font-size: 24px;
+      flex: 1;
     }
 
     .title-wrapper .title {
@@ -4663,6 +4663,47 @@ div.page-activity.messaging-center {
       color: $color-text;
       padding: 20px;
     }
+    .icon-growth {
+      background: url(#{$img-path}icon-growth.svg) center center no-repeat;
+      background-size: 34px 50px;
+      height: 36px;
+      margin-right: 5px;
+      margin-left: -5px;
+      width: 50px;
+    }
+    .icon-stress-management {
+      background: url(#{$img-path}icon-stress-management.svg) center center no-repeat;
+      background-size: 36px 50px;
+      height: 36px;
+      margin-right: 5px;
+      margin-left: -15px;
+      width: 50px;
+    }
+    .icon-mindfulness {
+      background: url(#{$img-path}icon-mindfulness.svg) center center no-repeat;
+      background-size: 36px 50px;
+      height: 38px;
+      margin-right: 5px;
+      margin-left: -5px;
+      width: 50px;
+    }
+    .icon-connecting {
+      background: url(#{$img-path}icon-connecting-red.svg) center center no-repeat;
+      background-size: 36px 50px;
+      height: 38px;
+      margin-right: 5px;
+      margin-left: -5px;
+      width: 50px;
+    }
+    .icon-self-care {
+      background: url(#{$img-path}icon-selfcare.svg) center center no-repeat;
+      background-size: 36px 50px;
+      height: 38px;
+      margin-right: 5px;
+      margin-left: -5px;
+      width: 50px;
+    }
+
   }
 
   .resilience-message.shrank .content {

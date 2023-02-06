@@ -494,7 +494,8 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             in
             if viewOptions then
                 div [ class "title-wrapper" ]
-                    [ header
+                    [ i [ class <| "icon-" ++ extraClass ] []
+                    , header
                     , div
                         [ class "options"
                         , onClick messageClickedAction
@@ -504,7 +505,11 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                     ]
 
             else
-                plainTitle
+                div [ class "title-wrapper" ]
+                    [ i [ class <| "icon-" ++ extraClass ] []
+                    , header
+                    , plainTitle
+                    ]
     in
     div
         [ classList
