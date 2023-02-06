@@ -9,6 +9,7 @@ type alias LabsResultsDisplayConfig =
     , hemoglobin : Bool
     , hepatitisB : Bool
     , hivPCR : Bool
+    , partnerHIV : Bool
     , malaria : Bool
     , syphilis : Bool
     , creatinine : Bool
@@ -27,6 +28,7 @@ type alias LabsResultsValues encounterId =
     , hemoglobin : List Backend.Measurement.Model.HemoglobinTestValue
     , hepatitisB : List (Backend.Measurement.Model.HepatitisBTestValue encounterId)
     , hivPCR : List Backend.Measurement.Model.HIVPCRTestValue
+    , partnerHIV : List Backend.Measurement.Model.PartnerHIVTestValue
     , malaria : List Backend.Measurement.Model.MalariaTestValue
     , syphilis : List (Backend.Measurement.Model.SyphilisTestValue encounterId)
     , creatinine : List Backend.Measurement.Model.CreatinineTestValue
@@ -52,6 +54,7 @@ type LabResultsCurrentMode
 type LabResultsHistoryMode
     = LabResultsHistoryHIV (List ( NominalDate, Maybe TestReport ))
     | LabResultsHistoryHIVPCR (List ( NominalDate, Maybe HIVPCRResult ))
+    | LabResultsHistoryPartnerHIV (List ( NominalDate, Maybe TestResult ))
     | LabResultsHistorySyphilis (List ( NominalDate, Maybe TestResult ))
     | LabResultsHistoryHepatitisB (List ( NominalDate, Maybe TestReport ))
     | LabResultsHistoryMalaria (List ( NominalDate, Maybe TestResult ))

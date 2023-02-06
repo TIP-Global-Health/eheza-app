@@ -2071,7 +2071,7 @@ viewHIVTestForm language currentDate configInitial configPerformed form =
                                                         , partnerSurpressedViralLoadDirty = True
                                                     }
 
-                                            ( partnerHivStatusSection, partnerHivStatusTasksCompleted, partnerHivStatusTasksTotal ) =
+                                            ( partnerHIVStatusSection, partnerHIVStatusTasksCompleted, partnerHIVStatusTasksTotal ) =
                                                 if form.partnerHIVPositive == Just True then
                                                     let
                                                         partnerTakingARVUpdateFunc =
@@ -2129,9 +2129,9 @@ viewHIVTestForm language currentDate configInitial configPerformed form =
                                                 "partner-hiv-positive"
                                                 Nothing
                                           ]
-                                            ++ partnerHivStatusSection
-                                        , taskCompleted form.partnerHIVPositive + partnerHivStatusTasksCompleted
-                                        , 1 + partnerHivStatusTasksTotal
+                                            ++ partnerHIVStatusSection
+                                        , taskCompleted form.partnerHIVPositive + partnerHIVStatusTasksCompleted
+                                        , 1 + partnerHIVStatusTasksTotal
                                         )
 
                                     TestIndeterminate ->

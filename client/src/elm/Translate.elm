@@ -7488,6 +7488,11 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru ku kizamini cya PCR gipima Virusi itera SIDA"
                     }
 
+                LabResultsHistoryPartnerHIV _ ->
+                    { english = "Partner HIV Test History"
+                    , kinyarwanda = Nothing
+                    }
+
                 LabResultsHistorySyphilis _ ->
                     { english = "Syphilis Test History"
                     , kinyarwanda = Just "Amakuru ku kizamini cya Mburugu"
@@ -7628,6 +7633,11 @@ translationSet trans =
                 LabResultsHistoryHIVPCR _ ->
                     { english = "<20 copies"
                     , kinyarwanda = Just "Munsi ya kopi 20"
+                    }
+
+                LabResultsHistoryPartnerHIV _ ->
+                    { english = "Negative"
+                    , kinyarwanda = Just "Nta bwandu afite"
                     }
 
                 LabResultsHistorySyphilis _ ->

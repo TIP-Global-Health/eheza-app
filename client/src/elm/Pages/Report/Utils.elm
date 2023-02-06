@@ -25,6 +25,11 @@ hivPCRResultNormal =
     (==) ResultSuppressedViralLoad
 
 
+partnerHIVResultNormal : TestResult -> Bool
+partnerHIVResultNormal =
+    testResultNormal
+
+
 syphilisResultNormal : TestResult -> Bool
 syphilisResultNormal =
     testResultNormal

@@ -237,6 +237,7 @@ viewContent language currentDate isChw initiator model assembled =
             let
                 labResultsConfig =
                     { hivPCR = True
+                    , partnerHIV = True
                     , syphilis = True
                     , hepatitisB = True
                     , malaria = True
@@ -1456,6 +1457,7 @@ generateLabsResultsPaneData currentDate assembled =
     , urineDipstick = extractValues .urineDipstickTest
     , randomBloodSugar = extractValues .randomBloodSugarTest
     , hivPCR = extractValues .hivPCRTest
+    , partnerHIV = extractValues .partnerHIVTest
     , syphilis = extractValues .syphilisTest
     , hepatitisB = extractValues .hepatitisBTest
     , malaria = extractValues .malariaTest

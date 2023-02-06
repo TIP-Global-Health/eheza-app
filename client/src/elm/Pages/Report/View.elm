@@ -82,6 +82,21 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                             |> Maybe.withDefault True
                     }
 
+                LabResultsHistoryPartnerHIV assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
+                    { label = Translate.LaboratoryTaskLabel TaskPartnerHIVTest
+                    , recentResult = Maybe.map (Translate.TestResult >> translate language) recentResultValue
+                    , knownAsPositive = False
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
+                    , recentResultNormal =
+                        Maybe.map partnerHIVResultNormal recentResultValue
+                            |> Maybe.withDefault True
+                    }
+
                 LabResultsHistorySyphilis assembled ->
                     let
                         recentResultValue =
@@ -618,6 +633,9 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                         value.hivViralLoadStatus
                 )
 
+        partnerHIVTestResults =
+            getTestResults .partnerHIV .testResult
+
         syphilisTestResults =
             getTestResults .syphilis .testResult
 
@@ -760,6 +778,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                     [ viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHIV hivTestResults)
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
                         |> showIf displayConfig.hivPCR
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryPartnerHIV partnerHIVTestResults)
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistorySyphilis syphilisTestResults)
                         |> showIf displayConfig.syphilis
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHepatitisB hepatitisBTestResults)
@@ -1025,6 +1044,9 @@ viewLabResultsHistoryPane language currentDate mode =
 
                 LabResultsHistoryHIVPCR assembled ->
                     List.map (viewEntry (Translate.HIVPCRResult >> translate language) hivPCRResultNormal) assembled
+
+                LabResultsHistoryPartnerHIV assembled ->
+                    List.map (viewEntry (Translate.TestResult >> translate language) partnerHIVResultNormal) assembled
 
                 LabResultsHistorySyphilis assembled ->
                     List.map (viewEntry (Translate.TestResult >> translate language) syphilisResultNormal) assembled
