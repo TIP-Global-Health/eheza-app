@@ -4045,6 +4045,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibindi"
                     }
 
+                PreviousCSection ->
+                    { english = "Previous c-section"
+                    , kinyarwanda = Nothing
+                    }
+
         CreateGroupEncounter ->
             { english = "Create Group Encounter"
             , kinyarwanda = Just "Tangira igikorwa"

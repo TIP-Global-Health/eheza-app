@@ -247,6 +247,7 @@ function hedley_activity_field_default_field_bases() {
         'failure-to-progress' => 'Failure To Progress',
         'none' => 'None',
         'other' => 'Other',
+        'previous-c-section' => 'Previous c-section',
       ),
       'allowed_values_function' => '',
     ),

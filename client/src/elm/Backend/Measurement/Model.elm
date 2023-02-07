@@ -727,7 +727,7 @@ type alias ObstetricHistory =
 
 type alias ObstetricHistoryStep2Value =
     { cSections : Int
-    , cSectionReason : EverySet CSectionReason
+    , cSectionReason : Maybe (EverySet CSectionReason)
     , previousDelivery : EverySet PreviousDeliverySign
     , previousDeliveryPeriod : EverySet PreviousDeliveryPeriod
     , obstetricHistory : EverySet ObstetricHistorySign
@@ -740,6 +740,7 @@ type CSectionReason
     | FailureToProgress
     | None
     | Other
+    | PreviousCSection
 
 
 type PreviousDeliveryPeriod

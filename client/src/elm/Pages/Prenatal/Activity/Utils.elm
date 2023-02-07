@@ -4236,8 +4236,16 @@ obstetricHistoryStep2FormWithDefault form saved =
             (\value ->
                 { cSections = valueConsideringIsDirtyField form.cSectionsDirty form.cSections value.cSections
                 , cSectionsDirty = form.cSectionsDirty
-                , cSectionInPreviousDelivery = or form.cSectionInPreviousDelivery (EverySet.member CSectionInPreviousDelivery value.previousDelivery |> Just)
-                , cSectionReason = or form.cSectionReason (value.cSectionReason |> EverySet.toList |> List.head)
+                , cSectionInPreviousDelivery =
+                    maybeValueConsideringIsDirtyField form.cSectionInPreviousDeliveryDirty
+                        form.cSectionInPreviousDelivery
+                        (EverySet.member CSectionInPreviousDelivery value.previousDelivery |> Just)
+                , cSectionInPreviousDeliveryDirty = form.cSectionInPreviousDeliveryDirty
+                , cSectionReason =
+                    maybeValueConsideringIsDirtyField form.cSectionReasonDirty
+                        form.cSectionReason
+                        (Maybe.map EverySet.toList value.cSectionReason |> Maybe.andThen List.head)
+                , cSectionReasonDirty = form.cSectionReasonDirty
                 , previousDeliveryPeriod = or form.previousDeliveryPeriod (value.previousDeliveryPeriod |> EverySet.toList |> List.head)
                 , successiveAbortions = or form.successiveAbortions (EverySet.member SuccessiveAbortions value.obstetricHistory |> Just)
                 , successivePrematureDeliveries = or form.successivePrematureDeliveries (EverySet.member SuccessivePrematureDeliveries value.obstetricHistory |> Just)
@@ -4265,7 +4273,7 @@ toObstetricHistoryStep2Value : ObstetricFormSecondStep -> Maybe ObstetricHistory
 toObstetricHistoryStep2Value form =
     let
         previousDeliverySet =
-            [ Maybe.map (ifTrue CSectionInPreviousDelivery) form.cSectionInPreviousDelivery
+            [ ifNullableTrue CSectionInPreviousDelivery form.cSectionInPreviousDelivery
             , Maybe.map (ifTrue StillbornPreviousDelivery) form.stillbornPreviousDelivery
             , Maybe.map (ifTrue BabyDiedOnDayOfBirthPreviousDelivery) form.babyDiedOnDayOfBirthPreviousDelivery
             , Maybe.map (ifTrue PartialPlacentaPreviousDelivery) form.partialPlacentaPreviousDelivery
@@ -4288,7 +4296,7 @@ toObstetricHistoryStep2Value form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoObstetricHistorySign)
     in
     Maybe.map ObstetricHistoryStep2Value form.cSections
-        |> andMap (Maybe.map EverySet.singleton form.cSectionReason)
+        |> andMap (Just <| Maybe.map EverySet.singleton form.cSectionReason)
         |> andMap previousDeliverySet
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
         |> andMap obstetricHistorySet
@@ -4437,63 +4445,9 @@ historyTasksCompletedFromTotal : AssembledData -> HistoryData -> HistoryTask -> 
 historyTasksCompletedFromTotal assembled data task =
     case task of
         Obstetric ->
-            case data.obstetricHistoryStep of
-                ObstetricHistoryFirstStep ->
-                    let
-                        formStep1_ =
-                            assembled.measurements.obstetricHistory
-                                |> getMeasurementValueFunc
-                                |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-
-                        intInputs =
-                            [ formStep1_.termPregnancy
-                            , formStep1_.preTermPregnancy
-                            , formStep1_.stillbirthsAtTerm
-                            , formStep1_.stillbirthsPreTerm
-                            , formStep1_.abortions
-                            , formStep1_.liveChildren
-                            ]
-                    in
-                    ( (intInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                      )
-                        + taskCompleted formStep1_.currentlyPregnant
-                    , List.length intInputs + 1
-                    )
-
-                ObstetricHistorySecondStep ->
-                    let
-                        formStep2_ =
-                            assembled.measurements.obstetricHistoryStep2
-                                |> getMeasurementValueFunc
-                                |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
-
-                        boolInputs =
-                            [ formStep2_.cSectionInPreviousDelivery
-                            , formStep2_.successiveAbortions
-                            , formStep2_.successivePrematureDeliveries
-                            , formStep2_.stillbornPreviousDelivery
-                            , formStep2_.babyDiedOnDayOfBirthPreviousDelivery
-                            , formStep2_.partialPlacentaPreviousDelivery
-                            , formStep2_.severeHemorrhagingPreviousDelivery
-                            , formStep2_.preeclampsiaPreviousPregnancy
-                            , formStep2_.convulsionsPreviousDelivery
-                            , formStep2_.convulsionsAndUnconsciousPreviousDelivery
-                            , formStep2_.gestationalDiabetesPreviousPregnancy
-                            , formStep2_.incompleteCervixPreviousPregnancy
-                            , formStep2_.rhNegative
-                            ]
-                    in
-                    ( (boolInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                      )
-                        + taskCompleted formStep2_.cSections
-                        + taskCompleted formStep2_.cSectionReason
-                        + taskCompleted formStep2_.previousDeliveryPeriod
-                    , List.length boolInputs + 3
-                    )
+            -- This is not in use, because Obstetric task got
+            -- special treatment at viewHistoryContent().
+            ( 0, 0 )
 
         Medical ->
             let

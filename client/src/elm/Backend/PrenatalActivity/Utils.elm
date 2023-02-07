@@ -448,21 +448,17 @@ generateRiskFactorAlertData language currentDate measurements factor =
                     )
 
         FactorCSectionReason ->
-            measurements.obstetricHistoryStep2
+            getMeasurementValueFunc measurements.obstetricHistoryStep2
                 |> Maybe.andThen
-                    (\measurement ->
+                    (\value ->
                         let
-                            value =
+                            reason =
                                 -- There must be only one value.
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .cSectionReason
-                                    |> EverySet.toList
-                                    |> List.head
+                                Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
                                     |> Maybe.withDefault Backend.Measurement.Model.None
                         in
-                        if value /= Backend.Measurement.Model.None then
-                            Just (transAlert factor ++ " " ++ trans (Translate.CSectionReasons value))
+                        if reason /= Backend.Measurement.Model.None then
+                            Just (transAlert factor ++ " " ++ trans (Translate.CSectionReasons reason))
 
                         else
                             Nothing

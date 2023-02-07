@@ -766,7 +766,9 @@ type alias ObstetricFormSecondStep =
     { cSections : Maybe Int
     , cSectionsDirty : Bool
     , cSectionInPreviousDelivery : Maybe Bool
+    , cSectionInPreviousDeliveryDirty : Bool
     , cSectionReason : Maybe CSectionReason
+    , cSectionReasonDirty : Bool
     , previousDeliveryPeriod : Maybe PreviousDeliveryPeriod
     , successiveAbortions : Maybe Bool
     , successivePrematureDeliveries : Maybe Bool
@@ -788,7 +790,9 @@ emptyObstetricFormSecondStep =
     { cSections = Nothing
     , cSectionsDirty = False
     , cSectionInPreviousDelivery = Nothing
+    , cSectionInPreviousDeliveryDirty = False
     , cSectionReason = Nothing
+    , cSectionReasonDirty = False
     , previousDeliveryPeriod = Nothing
     , successiveAbortions = Nothing
     , successivePrematureDeliveries = Nothing
