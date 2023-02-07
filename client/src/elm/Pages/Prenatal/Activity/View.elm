@@ -3540,6 +3540,7 @@ viewObstetricalExamForm language currentDate assembled form =
 
         fundalHeightPreviousValue =
             resolvePreviousValue assembled .obstetricalExam .fundalHeight
+                |> Maybe.Extra.join
                 |> Maybe.map getHeightValue
     in
     div [ class "ui form examination obstetrical-exam" ]

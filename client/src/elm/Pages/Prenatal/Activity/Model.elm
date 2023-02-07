@@ -883,7 +883,8 @@ emptyNutritionAssessmentForm =
 
 
 type alias ObstetricalExamForm =
-    { fundalHeight : Maybe Float
+    { fundalPulpable : Maybe Bool
+    , fundalHeight : Maybe Float
     , fundalHeightDirty : Bool
     , fetalPresentation : Maybe FetalPresentation
     , fetalMovement : Maybe Bool
@@ -895,7 +896,8 @@ type alias ObstetricalExamForm =
 
 emptyObstetricalExamForm : ObstetricalExamForm
 emptyObstetricalExamForm =
-    { fundalHeight = Nothing
+    { fundalPulpable = Nothing
+    , fundalHeight = Nothing
     , fundalHeightDirty = False
     , fetalPresentation = Nothing
     , fetalMovement = Nothing
