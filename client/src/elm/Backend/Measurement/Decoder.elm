@@ -1703,8 +1703,20 @@ decodeLastMenstrualPeriod =
     succeed LastMenstrualPeriodValue
         |> required "last_menstrual_period" Gizra.NominalDate.decodeYYYYMMDD
         |> required "confident" bool
+        |> optional "not_confident_reason" (nullable decodeLmpDateNotConfidentReason) Nothing
         |> optional "confirmation" (decodeWithFallback False bool) False
         |> decodePrenatalMeasurement
+
+
+decodeLmpDateNotConfidentReason : Decoder LmpDateNotConfidentReason
+decodeLmpDateNotConfidentReason =
+    string
+        |> andThen
+            (\reason ->
+                lmpDateNotConfidentReasonFromString reason
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (reason ++ " is not a recognized LmpDateNotConfidentReason" |> fail)
+            )
 
 
 decodeMedicalHistorySign : Decoder MedicalHistorySign
@@ -2980,6 +2992,12 @@ decodeReferToFacilitySign =
                     "anc-accompany" ->
                         succeed AccompanyToANCServices
 
+                    "us" ->
+                        succeed ReferToUltrasound
+
+                    "us-referral-form" ->
+                        succeed ReferralFormUltrasound
+
                     "none" ->
                         succeed NoReferToFacilitySigns
 
@@ -3036,6 +3054,10 @@ decodeNonReferralSign =
                                         Maybe.map (NonReferralReasonANCServices >> succeed) reasonForNonReferral
                                             |> Maybe.withDefault failure
 
+                                    "us" ->
+                                        Maybe.map (NonReferralReasonUltrasound >> succeed) reasonForNonReferral
+                                            |> Maybe.withDefault failure
+
                                     "none" ->
                                         succeed NoNonReferralSigns
 
@@ -3069,6 +3091,9 @@ decodeReferralFacility =
 
                     "anc" ->
                         succeed FacilityANCServices
+
+                    "us" ->
+                        succeed FacilityUltrasound
 
                     _ ->
                         fail <|

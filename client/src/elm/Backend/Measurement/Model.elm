@@ -601,8 +601,15 @@ type PostpartumChildDangerSign
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
     , confident : Bool
+    , notConfidentReason : Maybe LmpDateNotConfidentReason
     , confirmation : Bool
     }
+
+
+type LmpDateNotConfidentReason
+    = ReasonIrregularMenses
+    | ReasonOnFamilyPlanningMethod
+    | ReasonCanNotRememberDates
 
 
 type alias LastMenstrualPeriod =
@@ -944,6 +951,8 @@ type ReferToFacilitySign
     | ReferToANCServices
     | ReferralFormANCServices
     | AccompanyToANCServices
+    | ReferToUltrasound
+    | ReferralFormUltrasound
     | NoReferToFacilitySigns
 
 
@@ -953,6 +962,7 @@ type NonReferralSign
     | NonReferralReasonARVProgram ReasonForNonReferral
     | NonReferralReasonNCDProgram ReasonForNonReferral
     | NonReferralReasonANCServices ReasonForNonReferral
+    | NonReferralReasonUltrasound ReasonForNonReferral
     | NoNonReferralSigns
 
 
@@ -963,6 +973,7 @@ type ReferralFacility
     | FacilityARVProgram
     | FacilityNCDProgram
     | FacilityANCServices
+    | FacilityUltrasound
 
 
 type alias PrenatalAppointmentConfirmationValue =

@@ -560,6 +560,9 @@ matchRequiredReferralFacility assembled facility =
         FacilityANCServices ->
             False
 
+        FacilityUltrasound ->
+            False
+
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved
             -- with resolveReferralInputsAndTasksForCHW.

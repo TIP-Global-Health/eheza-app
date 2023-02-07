@@ -174,6 +174,8 @@ type alias ReferralForm =
     , referToNCDProgram : Maybe Bool
     , referralFormNCDProgram : Maybe Bool
     , accompanyToNCDProgram : Maybe Bool
+    , referToUltrasound : Maybe Bool
+    , referralFormUltrasound : Maybe Bool
     , facilityNonReferralReasons : Maybe (EverySet NonReferralSign)
     }
 
@@ -195,6 +197,8 @@ emptyReferralForm =
     , referToNCDProgram = Nothing
     , referralFormNCDProgram = Nothing
     , accompanyToNCDProgram = Nothing
+    , referToUltrasound = Nothing
+    , referralFormUltrasound = Nothing
     , facilityNonReferralReasons = Nothing
     }
 

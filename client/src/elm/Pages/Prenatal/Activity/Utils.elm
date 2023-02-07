@@ -126,7 +126,6 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
-                                |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
                                 |> not
                            )
@@ -206,7 +205,6 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
-                                |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
                                 |> not
                            )
@@ -1018,6 +1016,17 @@ referredToSpecialityCareProgram program assembled =
         |> Maybe.withDefault False
 
 
+referToUltrasound : AssembledData -> Bool
+referToUltrasound assembled =
+    getMeasurementValueFunc assembled.measurements.lastMenstrualPeriod
+        |> Maybe.map
+            (\value ->
+                (value.confident == False)
+                    && isJust value.notConfidentReason
+            )
+        |> Maybe.withDefault False
+
+
 provideNauseaAndVomitingEducation : AssembledData -> Bool
 provideNauseaAndVomitingEducation assembled =
     let
@@ -1198,8 +1207,12 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         ChwFirstEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    ((not <| expectActivity currentDate assembled PregnancyDating) || activityCompleted currentDate assembled PregnancyDating)
-                        && ((not <| expectActivity currentDate assembled Laboratory) || activityCompleted currentDate assembled Laboratory)
+                    ((not <| expectActivity currentDate assembled PregnancyDating)
+                        || activityCompleted currentDate assembled PregnancyDating
+                    )
+                        && ((not <| expectActivity currentDate assembled Laboratory)
+                                || activityCompleted currentDate assembled Laboratory
+                           )
                         && activityCompleted currentDate assembled DangerSigns
             in
             if dangerSignsPresent assembled then
@@ -3401,16 +3414,6 @@ toDangerSignsValue form =
     Just <| DangerSignsValue signs postpartumMother postpartumChild
 
 
-fromLastMenstrualPeriodValue : Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
-fromLastMenstrualPeriodValue saved =
-    { lmpRange = Nothing
-    , lmpDate = Maybe.map .date saved
-    , lmpDateConfident = Maybe.map .confident saved
-    , chwLmpConfirmation = Maybe.map .confirmation saved
-    , dateSelectorPopupState = Nothing
-    }
-
-
 lastMenstrualPeriodFormWithDefault : PregnancyDatingForm -> Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
 lastMenstrualPeriodFormWithDefault form saved =
     saved
@@ -3420,6 +3423,7 @@ lastMenstrualPeriodFormWithDefault form saved =
                 { lmpRange = or form.lmpRange (Just SixMonth)
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
+                , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }
@@ -3440,6 +3444,7 @@ toLastMenstrualPeriodValue form =
     in
     Maybe.map LastMenstrualPeriodValue form.lmpDate
         |> andMap form.lmpDateConfident
+        |> andMap (Just form.lmpDateNotConfidentReason)
         |> andMap (Just chwLmpConfirmation)
 
 
@@ -6272,6 +6277,9 @@ matchRequiredReferralFacility assembled facility =
             -- Explicit NCD facility.
             False
 
+        FacilityUltrasound ->
+            referToUltrasound assembled
+
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved
             -- with resolveReferralInputsAndTasksForCHW.
@@ -6280,7 +6288,12 @@ matchRequiredReferralFacility assembled facility =
 
 referralFacilities : List ReferralFacility
 referralFacilities =
-    [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram, FacilityNCDProgram ]
+    [ FacilityHospital
+    , FacilityMentalHealthSpecialist
+    , FacilityARVProgram
+    , FacilityNCDProgram
+    , FacilityUltrasound
+    ]
 
 
 specialityCareFormWithDefault : SpecialityCareForm -> Maybe SpecialityCareValue -> SpecialityCareForm
@@ -6308,3 +6321,32 @@ toSpecialityCareValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)
+
+
+lmpRangeToString : LmpRange -> String
+lmpRangeToString range =
+    case range of
+        OneMonth ->
+            "one-month"
+
+        ThreeMonth ->
+            "three-month"
+
+        SixMonth ->
+            "six-month"
+
+
+lmpRangeFromString : String -> Maybe LmpRange
+lmpRangeFromString s =
+    case s of
+        "one-month" ->
+            Just OneMonth
+
+        "three-month" ->
+            Just ThreeMonth
+
+        "six-month" ->
+            Just SixMonth
+
+        _ ->
+            Nothing

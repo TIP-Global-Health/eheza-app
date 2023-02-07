@@ -3063,6 +3063,8 @@ referralFormWithDefault form saved =
                 , referToNCDProgram = or form.referToNCDProgram (resolveFromFacilitySignsValue ReferToNCDProgram)
                 , referralFormNCDProgram = or form.referralFormNCDProgram (resolveFromFacilitySignsValue ReferralFormNCDProgram)
                 , accompanyToNCDProgram = or form.accompanyToNCDProgram (resolveFromFacilitySignsValue AccompanyToNCDProgram)
+                , referToUltrasound = or form.referToUltrasound (resolveFromFacilitySignsValue ReferToUltrasound)
+                , referralFormUltrasound = or form.referralFormUltrasound (resolveFromFacilitySignsValue ReferralFormUltrasound)
                 , facilityNonReferralReasons = or form.facilityNonReferralReasons value.facilityNonReferralReasons
                 }
             )
@@ -3077,7 +3079,7 @@ toPrenatalReferralValueWithDefault saved form =
 toPrenatalReferralValue : ReferralForm -> Maybe PrenatalReferralValue
 toPrenatalReferralValue form =
     let
-        sendToHCSigns =
+        sendToHCSignsByForm =
             [ ifNullableTrue HandReferrerForm form.handReferralForm
             , ifNullableTrue ReferToHealthCenter form.referToHealthCenter
             , ifNullableTrue PrenatalAccompanyToHC form.accompanyToHealthCenter
@@ -3085,7 +3087,20 @@ toPrenatalReferralValue form =
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty)
 
-        referToFacilitySigns =
+        -- We need to handle situation when patient is not referred to HC for a reason -
+        -- no signs are set, but reason is set => update signs to 'none' value.
+        sendToHCSigns =
+            if sendToHCSignsByForm == Just EverySet.empty && isJust form.reasonForNotSendingToHC then
+                Just (EverySet.singleton NoSendToHCSigns)
+
+            else
+                sendToHCSignsByForm
+
+        -- We need to handle situation when patient is not referred to any
+        -- facility (there are multiple facilities), and we have reason set for
+        -- at least one facility.
+        -- In this case, we update signs to 'none' value.
+        referToFacilitySignsByForm =
             [ ifNullableTrue ReferToHospital form.referToHospital
             , ifNullableTrue ReferralFormHospital form.referralFormHospital
             , ifNullableTrue ReferToMentalHealthSpecialist form.referToMentalHealthSpecialist
@@ -3097,11 +3112,24 @@ toPrenatalReferralValue form =
             , ifNullableTrue ReferToNCDProgram form.referToNCDProgram
             , ifNullableTrue ReferralFormNCDProgram form.referralFormNCDProgram
             , ifNullableTrue AccompanyToNCDProgram form.accompanyToNCDProgram
+            , ifNullableTrue ReferToUltrasound form.referToUltrasound
+            , ifNullableTrue ReferralFormUltrasound form.referralFormUltrasound
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty)
+
+        referToFacilitySigns =
+            if referToFacilitySignsByForm == Just EverySet.empty && isSet form.facilityNonReferralReasons then
+                Just (EverySet.singleton NoReferToFacilitySigns)
+
+            else
+                referToFacilitySignsByForm
+
+        isSet maybeSet =
+            Maybe.map (\set -> EverySet.size set > 0) maybeSet
+                |> Maybe.withDefault False
     in
-    if isJust sendToHCSigns || isJust referToFacilitySigns then
+    if isSet sendToHCSigns || isSet referToFacilitySigns then
         Just
             { sendToHCSigns = sendToHCSigns
             , reasonForNotSendingToHC = form.reasonForNotSendingToHC
@@ -3282,8 +3310,28 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                     -- Not in use at Prenatal
                     Nothing
 
+                FacilityUltrasound ->
+                    Just
+                        { header =
+                            [ div [ class "label" ] [ text <| translate language Translate.PrenatalUltrasoundHeader ++ "." ]
+                            , viewCustomLabel language Translate.PrenatalUltrasoundInstructions "." "instructions"
+                            ]
+                        , referralField = form.referToUltrasound
+                        , referralUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | referToUltrasound = Just value
+                                    , referralFormUltrasound = Nothing
+                                }
+                        , formField = form.referralFormUltrasound
+                        , formUpdateFunc = \value form_ -> { form_ | referralFormUltrasound = Just value }
+                        , accompanyConfig = Nothing
+                        , reasonToSignFunc = NonReferralReasonUltrasound
+                        }
+
                 FacilityHealthCenter ->
-                    -- Not in use at Prenatal
+                    -- Referral to HC is not supported here as it
+                    -- got special treatment.
                     Nothing
     in
     Maybe.map

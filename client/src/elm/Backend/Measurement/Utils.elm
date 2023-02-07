@@ -3434,6 +3434,9 @@ referralToFacilityCompleted referralSigns nonReferralReasons facility =
                 FacilityANCServices ->
                     Just ( ReferToANCServices, NonReferralReasonANCServices )
 
+                FacilityUltrasound ->
+                    Just ( ReferToUltrasound, NonReferralReasonUltrasound )
+
                 FacilityHealthCenter ->
                     -- We should never get here, as referral to HC
                     -- got special treatement, and not supported here.
@@ -3498,6 +3501,9 @@ nonReferralReasonToSign facility reason =
 
         FacilityANCServices ->
             NonReferralReasonANCServices reason
+
+        FacilityUltrasound ->
+            NonReferralReasonUltrasound reason
 
         FacilityHealthCenter ->
             -- We should never get here, as referral to HC
@@ -3691,3 +3697,32 @@ expectNCDAActivity currentDate person =
     ageInMonths currentDate person
         |> Maybe.map (\ageMonths -> ageMonths < 24)
         |> Maybe.withDefault False
+
+
+lmpDateNotConfidentReasonToString : LmpDateNotConfidentReason -> String
+lmpDateNotConfidentReasonToString value =
+    case value of
+        ReasonIrregularMenses ->
+            "irregular-menses"
+
+        ReasonOnFamilyPlanningMethod ->
+            "on-family-planning-method"
+
+        ReasonCanNotRememberDates ->
+            "can-not-remember-dates"
+
+
+lmpDateNotConfidentReasonFromString : String -> Maybe LmpDateNotConfidentReason
+lmpDateNotConfidentReasonFromString value =
+    case value of
+        "irregular-menses" ->
+            Just ReasonIrregularMenses
+
+        "on-family-planning-method" ->
+            Just ReasonOnFamilyPlanningMethod
+
+        "can-not-remember-dates" ->
+            Just ReasonCanNotRememberDates
+
+        _ ->
+            Nothing

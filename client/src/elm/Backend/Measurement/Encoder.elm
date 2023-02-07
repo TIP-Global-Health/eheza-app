@@ -1411,12 +1411,24 @@ encodeLastMenstrualPeriod =
 
 encodeLastMenstrualPeriodValue : LastMenstrualPeriodValue -> List ( String, Value )
 encodeLastMenstrualPeriodValue value =
+    let
+        notConfidentReason =
+            Maybe.map (\reason -> [ ( "not_confident_reason", encodeLmpDateNotConfidentReason reason ) ])
+                value.notConfidentReason
+                |> Maybe.withDefault []
+    in
     [ ( "last_menstrual_period", Gizra.NominalDate.encodeYYYYMMDD value.date )
     , ( "confident", bool value.confident )
     , ( "confirmation", bool value.confirmation )
     , ( "deleted", bool False )
     , ( "type", string "last_menstrual_period" )
     ]
+        ++ notConfidentReason
+
+
+encodeLmpDateNotConfidentReason : LmpDateNotConfidentReason -> Value
+encodeLmpDateNotConfidentReason =
+    lmpDateNotConfidentReasonToString >> string
 
 
 encodeMedicalHistorySign : MedicalHistorySign -> Value
@@ -2316,7 +2328,14 @@ encodePrenatalReferralValue : PrenatalReferralValue -> List ( String, Value )
 encodePrenatalReferralValue value =
     let
         sendToHC =
-            Maybe.map (\signs -> [ ( "send_to_hc", encodeEverySet encodeSendToHCSign signs ) ])
+            Maybe.map
+                (\signs ->
+                    if EverySet.isEmpty signs then
+                        []
+
+                    else
+                        [ ( "send_to_hc", encodeEverySet encodeSendToHCSign signs ) ]
+                )
                 value.sendToHCSigns
                 |> Maybe.withDefault []
 
@@ -2326,12 +2345,26 @@ encodePrenatalReferralValue value =
                 |> Maybe.withDefault []
 
         referToFacilitySigns =
-            Maybe.map (\signs -> [ ( "referrals", encodeEverySet encodeReferToFacilitySign signs ) ])
+            Maybe.map
+                (\signs ->
+                    if EverySet.isEmpty signs then
+                        []
+
+                    else
+                        [ ( "referrals", encodeEverySet encodeReferToFacilitySign signs ) ]
+                )
                 value.referToFacilitySigns
                 |> Maybe.withDefault []
 
         facilityNonReferralReasons =
-            Maybe.map (\reason -> [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ])
+            Maybe.map
+                (\reason ->
+                    if EverySet.isEmpty reason then
+                        []
+
+                    else
+                        [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ]
+                )
                 value.facilityNonReferralReasons
                 |> Maybe.withDefault []
     in
@@ -2390,6 +2423,12 @@ encodeReferToFacilitySign sign =
             AccompanyToANCServices ->
                 "anc-accompany"
 
+            ReferToUltrasound ->
+                "us"
+
+            ReferralFormUltrasound ->
+                "us-referral-form"
+
             NoReferToFacilitySigns ->
                 "none"
 
@@ -2412,6 +2451,9 @@ encodeNonReferralSign sign =
 
             NonReferralReasonANCServices reason ->
                 "anc-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonUltrasound reason ->
+                "us-" ++ reasonForNonReferralToString reason
 
             NoNonReferralSigns ->
                 "none"
@@ -2438,6 +2480,9 @@ encodeReferralFacility facility =
 
             FacilityANCServices ->
                 "anc"
+
+            FacilityUltrasound ->
+                "us"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )
