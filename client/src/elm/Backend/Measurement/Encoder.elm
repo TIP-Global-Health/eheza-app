@@ -1724,7 +1724,16 @@ encodeMuacInCm (MuacInCm cm) =
 
 encodeObstetricalExamValue : ObstetricalExamValue -> List ( String, Value )
 encodeObstetricalExamValue value =
-    [ ( "fundal_height", encodeHeightInCm value.fundalHeight )
+    let
+        fundalHeight =
+            Maybe.map
+                (\height ->
+                    [ ( "fundal_height", encodeHeightInCm height ) ]
+                )
+                value.fundalHeight
+                |> Maybe.withDefault []
+    in
+    [ ( "fundal_pulpable", bool value.fundalPulpable )
     , ( "fetal_presentation", encodeFetalPresentation value.fetalPresentation )
     , ( "fetal_movement", bool value.fetalMovement )
     , ( "fetal_heart_rate", int value.fetalHeartRate )
@@ -1732,6 +1741,7 @@ encodeObstetricalExamValue value =
     , ( "deleted", bool False )
     , ( "type", string "obstetrical_exam" )
     ]
+        ++ fundalHeight
 
 
 encodeObstetricalExam : ObstetricalExam -> List ( String, Value )
