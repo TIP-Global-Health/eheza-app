@@ -4123,6 +4123,7 @@ obstetricalExamFormWithDefault form saved =
                 , fetalHeartRate = valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
                 , fetalHeartRateDirty = form.fetalHeartRateDirty
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
+                , displayFundalPulpablePopup = form.displayFundalPulpablePopup
                 }
             )
 
@@ -4490,21 +4491,9 @@ examinationTasksCompletedFromTotal assembled data task =
             )
 
         ObstetricalExam ->
-            let
-                form =
-                    assembled.measurements.obstetricalExam
-                        |> getMeasurementValueFunc
-                        |> obstetricalExamFormWithDefault data.obstetricalExamForm
-            in
-            ( taskCompleted form.fetalPresentation
-                + taskCompleted form.fetalMovement
-                + taskCompleted form.cSectionScar
-                + ([ Maybe.map (always ()) form.fundalHeight, Maybe.map (always ()) form.fetalHeartRate ]
-                    |> List.map taskCompleted
-                    |> List.sum
-                  )
-            , 5
-            )
+            -- This is not in use, because ObstetricalExam task got
+            -- special treatment at viewExaminationContent().
+            ( 0, 0 )
 
         BreastExam ->
             -- This is not in use, because BreastExam task got

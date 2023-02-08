@@ -682,6 +682,7 @@ type TranslationId
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
+    | FundalPulpableQuestion
     | Gender Gender
     | GenderLabel
     | GestationalDiabetesPreviousPregnancy
@@ -5423,6 +5424,11 @@ translationSet trans =
         FundalHeight ->
             { english = "Fundal Height"
             , kinyarwanda = Just "Uburebure bwa Nyababyeyi"
+            }
+
+        FundalPulpableQuestion ->
+            { english = "Is fundal pulpable"
+            , kinyarwanda = Nothing
             }
 
         Gender gender ->

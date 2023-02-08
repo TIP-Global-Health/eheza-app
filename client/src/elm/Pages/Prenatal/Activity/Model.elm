@@ -891,6 +891,7 @@ type alias ObstetricalExamForm =
     , fetalHeartRate : Maybe Int
     , fetalHeartRateDirty : Bool
     , cSectionScar : Maybe CSectionScar
+    , displayFundalPulpablePopup : Bool
     }
 
 
@@ -904,6 +905,7 @@ emptyObstetricalExamForm =
     , fetalHeartRate = Nothing
     , fetalHeartRateDirty = False
     , cSectionScar = Nothing
+    , displayFundalPulpablePopup = False
     }
 
 
