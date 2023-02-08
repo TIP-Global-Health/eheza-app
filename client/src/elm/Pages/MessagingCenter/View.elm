@@ -425,7 +425,7 @@ viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( ResilienceMes
 viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
         messageCategory =
-            p [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]
+            span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]
 
         ( extraClass, header, ( head, body ) ) =
             case message.category of
@@ -483,33 +483,38 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         messageClickedAction =
             ResilienceMessageClicked nurseId messageId message updateTimeRead
 
+        sentDate =
+            case nurse.resilienceProgramStartDate of
+                Just date ->
+                    Just (Date.add Days message.displayDay date)
+
+                Nothing ->
+                    Nothing
+
         title =
             let
                 plainTitle =
-                    div
-                        [ class "title"
-                        , onClick messageClickedAction
+                    div [ class "header", onClick messageClickedAction ]
+                        [ i [ class <| "icon-" ++ extraClass ] []
+                        , header
+                        , span [ class "date-sent" ] [ text <| Maybe.withDefault "" <| Maybe.map formatDDMMYYYY sentDate ]
+                        , div
+                            [ class "title" ]
+                            head
                         ]
-                        head
             in
             if viewOptions then
                 div [ class "title-wrapper" ]
-                    [ i [ class <| "icon-" ++ extraClass ] []
-                    , header
+                    [ plainTitle
                     , div
                         [ class "options"
                         , onClick messageClickedAction
                         ]
                         [ text "OP" ]
-                    , plainTitle
                     ]
 
             else
-                div [ class "title-wrapper" ]
-                    [ i [ class <| "icon-" ++ extraClass ] []
-                    , header
-                    , plainTitle
-                    ]
+                plainTitle
     in
     div
         [ classList

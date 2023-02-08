@@ -15059,7 +15059,7 @@ translationSet trans =
                     }
 
                 ResilienceCategoryEndOfPeriod ->
-                    { english = ""
+                    { english = "End Of Month"
                     , kinyarwanda = Nothing
                     }
 

@@ -4632,30 +4632,39 @@ div.page-activity.messaging-center {
     margin-bottom: 30px;
 
     .title,
-    .title-wrapper {
+    .title-wrapper, .header {
       background-color: $color-velvet;
       color: $color-white;
+
+    }
+    .header {
+      display: flex;
+      flex-flow: row wrap;
       padding: 20px;
     }
 
     .title-wrapper {
       display: flex;
-      flex-flow: row wrap;
+      justify-content: space-between;
+
     }
     .options {
-      float: right;
-    }
+      padding: 20px;
+      }
+
     .category-header{
       font-weight: bold;
       font-size: 24px;
       flex: 1;
     }
 
-    .title-wrapper .title {
+    .header .title {
       padding: 0;
+    }
+
+    .date-sent {
       flex-basis: 100%;
       width: 0;
-
     }
 
     .content {
@@ -4681,11 +4690,11 @@ div.page-activity.messaging-center {
     }
     .icon-mindfulness {
       background: url(#{$img-path}icon-mindfulness.svg) center center no-repeat;
-      background-size: 36px 50px;
-      height: 38px;
+      background-size: 32px 30px;
+      height: 32px;
       margin-right: 5px;
       margin-left: -5px;
-      width: 50px;
+      width: 30px;
     }
     .icon-connecting {
       background: url(#{$img-path}icon-connecting-red.svg) center center no-repeat;
@@ -4697,11 +4706,11 @@ div.page-activity.messaging-center {
     }
     .icon-self-care {
       background: url(#{$img-path}icon-selfcare.svg) center center no-repeat;
-      background-size: 36px 50px;
-      height: 38px;
+      background-size: 32px 30px;
+      height: 32px;
       margin-right: 5px;
       margin-left: -5px;
-      width: 50px;
+      width: 30px;
     }
 
   }
