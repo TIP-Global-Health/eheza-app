@@ -3513,6 +3513,18 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
 
                     else
                         ( [], [] )
+
+                fundalPulpablePopup =
+                    if form.displayFundalPulpablePopup then
+                        Just <|
+                            customWarningPopup language
+                                ( p [] [ text <| translate language Translate.FundalPulpableWarning ]
+                                , emptyNode
+                                , HideFundalPulpablePopup
+                                )
+
+                    else
+                        Nothing
             in
             ( [ div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]
@@ -3529,7 +3541,9 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                     Nothing
               ]
                 ++ derivedHtml
-                ++ [ div [ class "separator" ] [] ]
+                ++ [ viewModal fundalPulpablePopup
+                   , div [ class "separator" ] []
+                   ]
             , [ form.fundalPulpable ] ++ derivedTasks
             )
 

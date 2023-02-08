@@ -683,6 +683,7 @@ type TranslationId
     | FormField String
     | FundalHeight
     | FundalPulpableQuestion
+    | FundalPulpableWarning
     | Gender Gender
     | GenderLabel
     | GestationalDiabetesPreviousPregnancy
@@ -5428,6 +5429,11 @@ translationSet trans =
 
         FundalPulpableQuestion ->
             { english = "Is fundal pulpable"
+            , kinyarwanda = Nothing
+            }
+
+        FundalPulpableWarning ->
+            { english = "Inconsistent with documented gestational age, recommended ultrasound."
             , kinyarwanda = Nothing
             }
 
