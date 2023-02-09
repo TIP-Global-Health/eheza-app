@@ -1702,6 +1702,43 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ diagnosisForProgressReport
                 |> wrapWithLI
 
+        mastitisMessage =
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
+                |> Maybe.map
+                    (EverySet.toList
+                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMastitis)
+                        >> (\treatment ->
+                                if List.isEmpty treatment then
+                                    noTreatmentRecordedMessage
+
+                                else if List.member NoTreatmentForMastitis treatment then
+                                    noTreatmentAdministeredMessage
+
+                                else
+                                    let
+                                        treatedWithMessage =
+                                            List.head treatment
+                                                |> Maybe.map
+                                                    (\medication ->
+                                                        " - "
+                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
+                                                            ++ " "
+                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+                                                    )
+                                                |> Maybe.withDefault ""
+                                    in
+                                    diagnosisForProgressReport
+                                        ++ treatedWithMessage
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                        |> wrapWithLI
+                           )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
         referredToHospitalMessage =
             referredToHospitalMessageWithComplications ""
 
@@ -2418,44 +2455,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
 
         -- Got same treatment options as DiagnosisPostpartumMastitis.
         DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisPostpartumMastitis
+            mastitisMessage
 
         DiagnosisPostpartumMastitis ->
-            getMeasurementValueFunc measurements.medicationDistribution
-                |> Maybe.andThen .recommendedTreatmentSigns
-                |> Maybe.map
-                    (EverySet.toList
-                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMastitis)
-                        >> (\treatment ->
-                                if List.isEmpty treatment then
-                                    noTreatmentRecordedMessage
-
-                                else if List.member NoTreatmentForMastitis treatment then
-                                    noTreatmentAdministeredMessage
-
-                                else
-                                    let
-                                        treatedWithMessage =
-                                            List.head treatment
-                                                |> Maybe.map
-                                                    (\medication ->
-                                                        " - "
-                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
-                                                            ++ " "
-                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
-                                                    )
-                                                |> Maybe.withDefault ""
-                                    in
-                                    diagnosisForProgressReport
-                                        ++ treatedWithMessage
-                                        ++ " "
-                                        ++ (String.toLower <| translate language Translate.On)
-                                        ++ " "
-                                        ++ formatDDMMYYYY date
-                                        |> wrapWithLI
-                           )
-                    )
-                |> Maybe.withDefault noTreatmentRecordedMessage
+            mastitisMessage
 
         DiagnosisOther ->
             -- Other diagnosis is used only at outside care diagnostics.

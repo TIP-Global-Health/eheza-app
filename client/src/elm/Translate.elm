@@ -8296,7 +8296,7 @@ translationSet trans =
 
         MastitisRecommendedTreatmentHeader forEarlyMastitisOrEngorgment ->
             if forEarlyMastitisOrEngorgment then
-                { english = "This patient has Early Mastitis or Engorgment"
+                { english = "This patient shows signs of Early Mastitis or Engorgement"
                 , kinyarwanda = Nothing
                 }
 
