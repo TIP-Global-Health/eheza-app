@@ -2005,13 +2005,6 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         -- If criterias for DiagnosisPostpartumMastitis also matches, this
         -- diagnosis will be filtered out when applying diagnoses hierarchy.
         DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-            -- Per https://github.com/TIP-Global-Health/eheza-app/issues/628,
-            -- this diagnosis is dropped. It's criteria now diagnose Mastitis.
-            -- We do not delete the diagnisis completly, to support previous
-            -- encounters, where this diagnosis was made.
-            False
-
-        DiagnosisPostpartumMastitis ->
             let
                 byBreastfeeding =
                     getMeasurementValueFunc assembled.measurements.breastfeeding
@@ -2036,6 +2029,30 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                         |> Maybe.withDefault False
             in
             (assembled.encounter.encounterType == NursePostpartumEncounter)
+                && (byBreastfeeding || byBreastExam)
+
+        DiagnosisPostpartumMastitis ->
+            let
+                byBreastfeeding =
+                    getMeasurementValueFunc assembled.measurements.breastfeeding
+                        |> Maybe.map
+                            (\signs ->
+                                List.any (\sign -> EverySet.member sign signs)
+                                    [ BreastPain, BreastRedness ]
+                            )
+                        |> Maybe.withDefault False
+
+                byBreastExam =
+                    getMeasurementValueFunc assembled.measurements.breastExam
+                        |> Maybe.map
+                            (\value ->
+                                List.any (\sign -> EverySet.member sign value.exam)
+                                    [ Warmth, Discharge ]
+                            )
+                        |> Maybe.withDefault False
+            in
+            (assembled.encounter.encounterType == NursePostpartumEncounter)
+                && symptomRecorded assembled.measurements PostpartumFever
                 && (byBreastfeeding || byBreastExam)
 
         DiagnosisPostpartumInfection ->
