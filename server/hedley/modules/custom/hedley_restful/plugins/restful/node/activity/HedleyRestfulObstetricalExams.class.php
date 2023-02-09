@@ -14,7 +14,7 @@ class HedleyRestfulObstetricalExams extends HedleyRestfulPrenatalActivityBase {
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_fundal_pulpable',
+    'field_fundal_palpable',
     'field_fundal_height',
     'field_fetal_presentation',
     'field_fetal_movement',
@@ -30,7 +30,7 @@ class HedleyRestfulObstetricalExams extends HedleyRestfulPrenatalActivityBase {
 
     foreach ($items as &$item) {
       $item->fetal_movement = (bool) $item->fetal_movement;
-      $item->fundal_pulpable = (bool) $item->fundal_pulpable;
+      $item->fundal_palpable = (bool) $item->fundal_palpable;
     }
 
     return $items;

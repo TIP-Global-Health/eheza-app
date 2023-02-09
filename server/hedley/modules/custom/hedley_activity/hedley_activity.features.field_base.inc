@@ -736,14 +736,14 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
-  // Exported field_base: 'field_fundal_pulpable'.
-  $field_bases['field_fundal_pulpable'] = array(
+  // Exported field_base: 'field_fundal_palpable'.
+  $field_bases['field_fundal_palpable'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_id_type' => NULL,
     'entity_types' => array(),
-    'field_name' => 'field_fundal_pulpable',
+    'field_name' => 'field_fundal_palpable',
     'indexes' => array(
       'value' => array(
         0 => 'value',

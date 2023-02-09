@@ -682,8 +682,8 @@ type TranslationId
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
-    | FundalPulpableQuestion
-    | FundalPulpableWarning
+    | FundalPalpableQuestion
+    | FundalPalpableWarning
     | Gender Gender
     | GenderLabel
     | GestationalDiabetesPreviousPregnancy
@@ -5427,12 +5427,12 @@ translationSet trans =
             , kinyarwanda = Just "Uburebure bwa Nyababyeyi"
             }
 
-        FundalPulpableQuestion ->
-            { english = "Is fundal pulpable"
+        FundalPalpableQuestion ->
+            { english = "Is fundal palpable"
             , kinyarwanda = Nothing
             }
 
-        FundalPulpableWarning ->
+        FundalPalpableWarning ->
             { english = "Inconsistent with documented gestational age, recommended ultrasound."
             , kinyarwanda = Nothing
             }

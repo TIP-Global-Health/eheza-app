@@ -1733,7 +1733,7 @@ encodeObstetricalExamValue value =
                 value.fundalHeight
                 |> Maybe.withDefault []
     in
-    [ ( "fundal_pulpable", bool value.fundalPulpable )
+    [ ( "fundal_palpable", bool value.fundalPalpable )
     , ( "fetal_presentation", encodeFetalPresentation value.fetalPresentation )
     , ( "fetal_movement", bool value.fetalMovement )
     , ( "fetal_heart_rate", int value.fetalHeartRate )

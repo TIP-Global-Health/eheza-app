@@ -1167,11 +1167,11 @@ update language currentDate id db msg model =
             , []
             )
 
-        HideFundalPulpablePopup ->
+        HideFundalPalpablePopup ->
             let
                 updatedForm =
                     model.examinationData.obstetricalExamForm
-                        |> (\form -> { form | displayFundalPulpablePopup = False })
+                        |> (\form -> { form | displayFundalPalpablePopup = False })
 
                 updatedData =
                     model.examinationData

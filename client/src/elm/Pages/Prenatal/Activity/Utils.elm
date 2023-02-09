@@ -4112,7 +4112,7 @@ obstetricalExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { fundalPulpable = or form.fundalPulpable (Just value.fundalPulpable)
+                { fundalPalpable = or form.fundalPalpable (Just value.fundalPalpable)
                 , fundalHeight =
                     maybeValueConsideringIsDirtyField form.fundalHeightDirty
                         form.fundalHeight
@@ -4123,7 +4123,7 @@ obstetricalExamFormWithDefault form saved =
                 , fetalHeartRate = valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
                 , fetalHeartRateDirty = form.fetalHeartRateDirty
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
-                , displayFundalPulpablePopup = form.displayFundalPulpablePopup
+                , displayFundalPalpablePopup = form.displayFundalPalpablePopup
                 }
             )
 
@@ -4136,7 +4136,7 @@ toObstetricalExamValueWithDefault saved form =
 
 toObstetricalExamValue : ObstetricalExamForm -> Maybe ObstetricalExamValue
 toObstetricalExamValue form =
-    Maybe.map ObstetricalExamValue form.fundalPulpable
+    Maybe.map ObstetricalExamValue form.fundalPalpable
         |> andMap (Just <| Maybe.map HeightInCm form.fundalHeight)
         |> andMap form.fetalPresentation
         |> andMap form.fetalMovement

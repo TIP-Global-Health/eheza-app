@@ -3485,17 +3485,17 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
     let
         ( fundalHeightHtml, fundalHeightTasks ) =
             let
-                fundalPulpableUpdateFunc value form_ =
+                fundalPalpableUpdateFunc value form_ =
                     { form_
-                        | fundalPulpable = Just value
+                        | fundalPalpable = Just value
                         , fundalHeight = Nothing
                         , fundalHeightDirty = True
                         , -- Display popup, if value is set to 'No'.
-                          displayFundalPulpablePopup = not value
+                          displayFundalPalpablePopup = not value
                     }
 
                 ( derivedHtml, derivedTasks ) =
-                    if form.fundalPulpable == Just True then
+                    if form.fundalPalpable == Just True then
                         let
                             fundalHeightUpdateFunc value form_ =
                                 { form_ | fundalHeight = value, fundalHeightDirty = True }
@@ -3514,13 +3514,13 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                     else
                         ( [], [] )
 
-                fundalPulpablePopup =
-                    if form.displayFundalPulpablePopup then
+                fundalPalpablePopup =
+                    if form.displayFundalPalpablePopup then
                         Just <|
                             customWarningPopup language
-                                ( p [] [ text <| translate language Translate.FundalPulpableWarning ]
+                                ( p [] [ text <| translate language Translate.FundalPalpableWarning ]
                                 , emptyNode
-                                , HideFundalPulpablePopup
+                                , HideFundalPalpablePopup
                                 )
 
                     else
@@ -3532,19 +3532,19 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                     , div [ class "four wide column" ]
                         [ alerts.fundalHeight ]
                     ]
-              , viewCustomLabel language Translate.FundalPulpableQuestion "?" "label question"
+              , viewCustomLabel language Translate.FundalPalpableQuestion "?" "label question"
               , viewBoolInput
                     language
-                    form.fundalPulpable
-                    (SetObstetricalExamBoolInput fundalPulpableUpdateFunc)
-                    "fundal-pulpable"
+                    form.fundalPalpable
+                    (SetObstetricalExamBoolInput fundalPalpableUpdateFunc)
+                    "fundal-palpable"
                     Nothing
               ]
                 ++ derivedHtml
-                ++ [ viewModal fundalPulpablePopup
+                ++ [ viewModal fundalPalpablePopup
                    , div [ class "separator" ] []
                    ]
-            , [ form.fundalPulpable ] ++ derivedTasks
+            , [ form.fundalPalpable ] ++ derivedTasks
             )
 
         alerts =

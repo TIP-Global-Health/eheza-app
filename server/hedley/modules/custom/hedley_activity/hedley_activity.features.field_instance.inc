@@ -11149,8 +11149,8 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-obstetrical_exam-field_fundal_pulpable'.
-  $field_instances['node-obstetrical_exam-field_fundal_pulpable'] = array(
+  // Exported field_instance: 'node-obstetrical_exam-field_fundal_palpable'.
+  $field_instances['node-obstetrical_exam-field_fundal_palpable'] = array(
     'bundle' => 'obstetrical_exam',
     'default_value' => NULL,
     'deleted' => 0,
@@ -11171,8 +11171,8 @@ function hedley_activity_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_fundal_pulpable',
-    'label' => 'Fundal Pulpable',
+    'field_name' => 'field_fundal_palpable',
+    'label' => 'Fundal Palpable',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -15213,7 +15213,7 @@ function hedley_activity_field_default_field_instances() {
   t('Fetal Presentation');
   t('Follow up options');
   t('Fundal Height');
-  t('Fundal Pulpable');
+  t('Fundal Palpable');
   t('Group Encounter');
   t('HIV Treatment');
   t('Hands');
