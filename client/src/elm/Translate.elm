@@ -654,6 +654,7 @@ type TranslationId
     | FatherOrChiefId
     | FatherOrChiefName
     | FatherNationalId
+    | Favorite
     | FbfDistribution ClinicType
     | FbfToReceive Activity Float
     | FetalHeartRate
@@ -739,6 +740,7 @@ type TranslationId
     | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
+    | HoursSinglePlural Int
     | HowManyPerWeek
     | Hypertension
     | HypertensionAndPregnantHeader
@@ -1277,6 +1279,8 @@ type TranslationId
     | RemainingForDownloadLabel
     | RemainingForUploadLabel
     | RemainingTotalToUpload
+    | RemindMe
+    | RemindMePhrase
     | RenalDisease
     | ReportAge String
     | ReportComponentAntenatal ReportComponentAntenatal
@@ -1681,6 +1685,7 @@ type TranslationId
     | UnitOfMeasurement UnitOfMeasurement
     | UniversalInterventions
     | Unknown
+    | Unread
     | Update
     | UpdateError
     | Uploading
@@ -5155,6 +5160,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Favorite ->
+            { english = "Favorite"
+            , kinyarwanda = Nothing
+            }
+
         FetalHeartRate ->
             { english = "Fetal Heart Rate"
             , kinyarwanda = Just "Uko umutima w'umwana utera"
@@ -5865,6 +5875,17 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        HoursSinglePlural value ->
+            if value == 1 then
+                { english = "1 Hour"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = String.fromInt value ++ " Hours"
+                , kinyarwanda = Nothing
+                }
 
         HowManyPerWeek ->
             { english = "How many per week"
@@ -8749,9 +8770,7 @@ translationSet trans =
         MessagingTab tab ->
             case tab of
                 TabUnread ->
-                    { english = "Unread"
-                    , kinyarwanda = Nothing
-                    }
+                    translationSet Unread
 
                 TabFavorites ->
                     { english = "Favorites"
@@ -14869,6 +14888,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        RemindMe ->
+            { english = "Remind Me"
+            , kinyarwanda = Nothing
+            }
+
+        RemindMePhrase ->
+            { english = "Remind me of this message in:"
+            , kinyarwanda = Nothing
+            }
+
         ReportAge age ->
             { english = "Age: " ++ age
             , kinyarwanda = Just <| "Imyaka: " ++ age
@@ -17655,6 +17684,11 @@ translationSet trans =
         Unknown ->
             { english = "Unknown"
             , kinyarwanda = Just "Ntabizi"
+            }
+
+        Unread ->
+            { english = "Unread"
+            , kinyarwanda = Nothing
             }
 
         Update ->

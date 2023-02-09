@@ -259,6 +259,14 @@ h3.ui.header {
     background: $color-velvet;
   }
 
+  &.purple {
+    background: $color-purple;
+  }
+
+  &.cyan {
+    background: $color-cyan;
+  }
+
   &.disabled {
     background: $color-background !important;
     color: #fff !important;

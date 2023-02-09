@@ -53,7 +53,7 @@ view language currentTime nurseId nurse db model =
             fromLocalDateTime currentTime
 
         numberOfUnreadMessages =
-            resolveNumberOfUnreadMessages currentDate nurseId nurse db
+            resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
 
         header =
             div [ class "ui basic head segment" ]
@@ -338,7 +338,8 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                     List.map viewMessage unread
 
                 TabFavorites ->
-                    List.filter (Tuple.second >> .isFavorite) read
+                    Dict.toList messages
+                        |> List.filter (Tuple.second >> .isFavorite)
                         |> List.map viewMessage
 
                 TabGrowth ->
@@ -360,6 +361,8 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
         [ viewTabs language model
         , div [ class "ui report unstackable items" ]
             content
+        , viewModal <|
+            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId) model.messageOptionsDialogState
         ]
 
 
@@ -508,7 +511,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                     [ plainTitle
                     , div
                         [ class "options"
-                        , onClick messageClickedAction
+                        , onClick <| SetMessageOptionsDialogState <| Just <| MessageOptionsStateMain ( messageId, message )
                         ]
                         [ text "OP" ]
                     ]
@@ -902,3 +905,77 @@ viewEndOfPeriodMessage language order =
 
         _ ->
             ( [], [] )
+
+
+messageOptionsDialog :
+    Language
+    -> Time.Posix
+    -> NominalDate
+    -> NurseId
+    -> MessageOptionsDialogState
+    -> Html Msg
+messageOptionsDialog language currentTime currentDate nurseId state =
+    case state of
+        MessageOptionsStateMain ( messageId, message ) ->
+            div [ class "ui active modal main" ]
+                [ div
+                    [ class "content" ]
+                    [ button
+                        [ class "ui fluid button cyan"
+                        , onClick <| MarkMessageUnread nurseId messageId message
+                        ]
+                        [ img [ src "assets/images/envelope.svg" ] []
+                        , text <| translate language Translate.Unread
+                        ]
+                    , button
+                        [ class "ui fluid button purple"
+                        , onClick <| MarkMessageFavorite nurseId messageId message
+                        ]
+                        [ img [ src "assets/images/star.svg" ] []
+                        , text <| translate language Translate.Favorite
+                        ]
+                    , button
+                        [ class "ui fluid button velvet"
+                        , onClick <| SetMessageOptionsDialogState <| Just <| MessageOptionsStateReminder ( messageId, message )
+                        ]
+                        [ img [ src "assets/images/exclamation-mark.svg" ] []
+                        , text <| translate language Translate.RemindMe
+                        ]
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| SetMessageOptionsDialogState Nothing
+                        ]
+                        [ text <| translate language Translate.Close ]
+                    ]
+                ]
+
+        MessageOptionsStateReminder ( messageId, message ) ->
+            let
+                buttonForView hours =
+                    button
+                        [ class "ui fluid button primary"
+                        , onClick <| ScheduleMessageReminder hours nurseId messageId message
+                        ]
+                        [ text <| translate language <| Translate.HoursSinglePlural hours
+                        ]
+            in
+            div [ class "ui active modal reminder" ]
+                [ div
+                    [ class "content" ]
+                    [ p [] [ text <| translate language Translate.RemindMePhrase ]
+                    , buttonForView 1
+                    , buttonForView 6
+                    , buttonForView 12
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| SetMessageOptionsDialogState Nothing
+                        ]
+                        [ text <| translate language Translate.Cancel ]
+                    ]
+                ]
