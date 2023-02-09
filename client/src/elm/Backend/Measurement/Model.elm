@@ -465,6 +465,7 @@ type alias NutritionNCDA =
 
 type alias BreastExamValue =
     { exam : EverySet BreastExamSign
+    , dischargeType : Maybe DischargeType
     , selfGuidance : Bool
     }
 
@@ -475,6 +476,14 @@ type BreastExamSign
     | Infection
     | Warmth
     | NormalBreast
+
+
+type DischargeType
+    = DischargeMilky
+    | DischargeClear
+    | DischargeBrownOrBloody
+    | DischargeYellow
+    | DischargeGreen
 
 
 type alias BreastExam =

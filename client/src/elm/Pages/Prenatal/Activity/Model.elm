@@ -114,6 +114,7 @@ type Msg
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
     | SetBreastExamBreast BreastExamSign
+    | SetDischargeType DischargeType
     | SaveBreastExam PersonId (Maybe ( BreastExamId, BreastExam )) (Maybe ExaminationTask)
       -- ExaminationMsgs, GU Exam
     | SetGUExamBoolInput (Bool -> GUExamForm -> GUExamForm) Bool
@@ -898,15 +899,16 @@ emptyObstetricalExamForm =
 
 
 type alias BreastExamForm =
-    -- Should be EverySet, since you can have more than one sign.
     { breast : Maybe (List BreastExamSign)
+    , dischargeType : Maybe DischargeType
+    , dischargeTypeDirty : Bool
     , selfGuidance : Maybe Bool
     }
 
 
 emptyBreastExamForm : BreastExamForm
 emptyBreastExamForm =
-    BreastExamForm Nothing Nothing
+    BreastExamForm Nothing Nothing False Nothing
 
 
 type alias GUExamForm =

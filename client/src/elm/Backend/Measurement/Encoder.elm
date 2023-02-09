@@ -1153,6 +1153,30 @@ encodeLactationSign sign =
             string "none"
 
 
+encodeBreastExam : BreastExam -> List ( String, Value )
+encodeBreastExam =
+    encodePrenatalMeasurement encodeBreastExamValue
+
+
+encodeBreastExamValue : BreastExamValue -> List ( String, Value )
+encodeBreastExamValue value =
+    let
+        dischargeType =
+            Maybe.map
+                (\type_ ->
+                    [ ( "discharge_type", encodeDischargeType type_ ) ]
+                )
+                value.dischargeType
+                |> Maybe.withDefault []
+    in
+    [ ( "breast", encodeEverySet encodeBreastExamSign value.exam )
+    , ( "breast_self_exam", bool value.selfGuidance )
+    , ( "deleted", bool False )
+    , ( "type", string "breast_exam" )
+    ]
+        ++ dischargeType
+
+
 encodeBreastExamSign : BreastExamSign -> Value
 encodeBreastExamSign sign =
     string <|
@@ -1173,18 +1197,24 @@ encodeBreastExamSign sign =
                 "normal"
 
 
-encodeBreastExamValue : BreastExamValue -> List ( String, Value )
-encodeBreastExamValue value =
-    [ ( "breast", encodeEverySet encodeBreastExamSign value.exam )
-    , ( "breast_self_exam", bool value.selfGuidance )
-    , ( "deleted", bool False )
-    , ( "type", string "breast_exam" )
-    ]
+encodeDischargeType : DischargeType -> Value
+encodeDischargeType sign =
+    string <|
+        case sign of
+            DischargeMilky ->
+                "milky"
 
+            DischargeClear ->
+                "clear"
 
-encodeBreastExam : BreastExam -> List ( String, Value )
-encodeBreastExam =
-    encodePrenatalMeasurement encodeBreastExamValue
+            DischargeBrownOrBloody ->
+                "brown-bloody"
+
+            DischargeYellow ->
+                "yellow"
+
+            DischargeGreen ->
+                "green"
 
 
 encodeHairHeadCPESign : HairHeadCPESign -> Value

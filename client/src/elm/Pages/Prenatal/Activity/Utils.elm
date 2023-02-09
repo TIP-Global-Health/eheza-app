@@ -3333,13 +3333,6 @@ resolvePreviousMaybeValue assembled measurementFunc valueFunc =
         |> List.head
 
 
-fromBreastExamValue : Maybe BreastExamValue -> BreastExamForm
-fromBreastExamValue saved =
-    { breast = Maybe.map (.exam >> EverySet.toList) saved
-    , selfGuidance = Maybe.map .selfGuidance saved
-    }
-
-
 breastExamFormWithDefault : BreastExamForm -> Maybe BreastExamValue -> BreastExamForm
 breastExamFormWithDefault form saved =
     saved
@@ -3347,6 +3340,11 @@ breastExamFormWithDefault form saved =
             form
             (\value ->
                 { breast = or form.breast (value.exam |> EverySet.toList |> Just)
+                , dischargeType =
+                    maybeValueConsideringIsDirtyField form.dischargeTypeDirty
+                        form.dischargeType
+                        value.dischargeType
+                , dischargeTypeDirty = form.dischargeTypeDirty
                 , selfGuidance = or form.selfGuidance (Just value.selfGuidance)
                 }
             )
@@ -3360,9 +3358,8 @@ toBreastExamValueWithDefault saved form =
 
 toBreastExamValue : BreastExamForm -> Maybe BreastExamValue
 toBreastExamValue form =
-    -- The `EverySet.singleton` is temporary, until BresatExamForm is
-    -- redefined to allow more than one.
     Maybe.map BreastExamValue (Maybe.map EverySet.fromList form.breast)
+        |> andMap (Just form.dischargeType)
         |> andMap form.selfGuidance
 
 
@@ -4657,15 +4654,9 @@ examinationTasksCompletedFromTotal assembled data task =
             )
 
         BreastExam ->
-            let
-                form =
-                    assembled.measurements.breastExam
-                        |> getMeasurementValueFunc
-                        |> breastExamFormWithDefault data.breastExamForm
-            in
-            ( taskCompleted form.breast + taskCompleted form.selfGuidance
-            , 2
-            )
+            -- This is not in use, because BreastExam task got
+            -- special treatment at viewExaminationContent().
+            ( 0, 0 )
 
         GUExam ->
             let

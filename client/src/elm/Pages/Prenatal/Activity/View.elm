@@ -952,7 +952,17 @@ viewExaminationContent language currentDate assembled data =
         tasksCompletedFromTotalDict =
             List.map
                 (\task ->
-                    ( task, examinationTasksCompletedFromTotal assembled data task )
+                    case task of
+                        BreastExam ->
+                            ( BreastExam
+                            , ( Maybe.Extra.values breastExamTasks
+                                    |> List.length
+                              , List.length breastExamTasks
+                              )
+                            )
+
+                        _ ->
+                            ( task, examinationTasksCompletedFromTotal assembled data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -963,6 +973,11 @@ viewExaminationContent language currentDate assembled data =
 
         measuredHeight =
             resolveMeasuredHeight assembled
+
+        ( breastExamInputs, breastExamTasks ) =
+            getMeasurementValueFunc assembled.measurements.breastExam
+                |> breastExamFormWithDefault data.breastExamForm
+                |> breastExamInputsAndTasks language currentDate assembled
 
         viewForm =
             case activeTask of
@@ -998,9 +1013,8 @@ viewExaminationContent language currentDate assembled data =
                         |> viewObstetricalExamForm language currentDate assembled
 
                 Just BreastExam ->
-                    getMeasurementValueFunc assembled.measurements.breastExam
-                        |> breastExamFormWithDefault data.breastExamForm
-                        |> viewBreastExamForm language currentDate assembled
+                    div [ class "ui form examination breast-exam" ]
+                        breastExamInputs
 
                 Just GUExam ->
                     getMeasurementValueFunc assembled.measurements.guExam
@@ -3604,8 +3618,13 @@ viewObstetricalExamForm language currentDate assembled form =
         ]
 
 
-viewBreastExamForm : Language -> NominalDate -> AssembledData -> BreastExamForm -> Html Msg
-viewBreastExamForm language currentDate assembled form =
+breastExamInputsAndTasks :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> BreastExamForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+breastExamInputsAndTasks language currentDate assembled form =
     let
         selfGuidanceUpdateFunc value form_ =
             { form_ | selfGuidance = Just value }
@@ -3619,9 +3638,32 @@ viewBreastExamForm language currentDate assembled form =
 
         breastExamOptionsRight =
             [ Infection, NormalBreast ]
+
+        ( derivedHtml, derivedTasks ) =
+            Maybe.map
+                (\signs ->
+                    if List.member Discharge signs then
+                        ( [ viewCustomLabel language Translate.BreastExamDischargeQuestion "?" "label secondary"
+                          , viewCheckBoxSelectInput language
+                                [ DischargeMilky
+                                , DischargeClear
+                                , DischargeBrownOrBloody
+                                ]
+                                [ DischargeYellow, DischargeGreen ]
+                                form.dischargeType
+                                SetDischargeType
+                                Translate.BreastExamDischargeType
+                          ]
+                        , [ maybeToBoolTask form.dischargeType ]
+                        )
+
+                    else
+                        ( [], [] )
+                )
+                form.breast
+                |> Maybe.withDefault ( [], [] )
     in
-    div [ class "ui form examination breast-exam" ]
-        [ div [ class "ui grid" ]
+    ( [ div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.BreastExam ]
             , div [ class "four wide column" ]
@@ -3630,22 +3672,26 @@ viewBreastExamForm language currentDate assembled form =
                     [ NormalBreast ]
                 ]
             ]
-        , viewCheckBoxMultipleSelectInput language
+      , viewCheckBoxMultipleSelectInput language
             breastExamOptionsLeft
             breastExamOptionsRight
             (form.breast |> Maybe.withDefault [])
             Nothing
             SetBreastExamBreast
             Translate.BreastExamSign
-        , div [ class "separator double" ] []
-        , viewCustomLabel language Translate.BreastExamQuestion "?" "label self-guidance"
-        , viewBoolInput
-            language
-            form.selfGuidance
-            (SetBreastExamBoolInput selfGuidanceUpdateFunc)
-            "self-guidance"
-            Nothing
-        ]
+      ]
+        ++ derivedHtml
+        ++ [ div [ class "separator double" ] []
+           , viewCustomLabel language Translate.BreastExamQuestion "?" "label secondary"
+           , viewBoolInput
+                language
+                form.selfGuidance
+                (SetBreastExamBoolInput selfGuidanceUpdateFunc)
+                "self-guidance"
+                Nothing
+           ]
+    , [ maybeToBoolTask form.breast, form.selfGuidance ] ++ derivedTasks
+    )
 
 
 viewGUExamForm : Language -> NominalDate -> AssembledData -> GUExamForm -> Html Msg

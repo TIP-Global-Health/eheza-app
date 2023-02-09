@@ -1240,8 +1240,7 @@ update language currentDate id db msg model =
             let
                 form =
                     Dict.get id db.prenatalMeasurements
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
                         |> Maybe.map
                             (.breastExam
                                 >> getMeasurementValueFunc
@@ -1255,6 +1254,28 @@ update language currentDate id db msg model =
                         NormalBreast
                         sign
                         form
+
+                updatedFormConsideringDischarge =
+                    if sign == Discharge then
+                        { updatedForm | dischargeType = Nothing, dischargeTypeDirty = True }
+
+                    else
+                        updatedForm
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | breastExamForm = updatedFormConsideringDischarge })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetDischargeType value ->
+            let
+                updatedForm =
+                    model.examinationData.breastExamForm
+                        |> (\form -> { form | dischargeType = Just value, dischargeTypeDirty = True })
 
                 updatedData =
                     model.examinationData

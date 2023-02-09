@@ -1379,6 +1379,15 @@ decodeDistributionNotice =
             )
 
 
+decodeBreastExam : Decoder BreastExam
+decodeBreastExam =
+    succeed BreastExamValue
+        |> required "breast" (decodeEverySet decodeBreastExamSign)
+        |> optional "discharge_type" (nullable decodeDischargeType) Nothing
+        |> required "breast_self_exam" bool
+        |> decodePrenatalMeasurement
+
+
 decodeBreastExamSign : Decoder BreastExamSign
 decodeBreastExamSign =
     string
@@ -1407,12 +1416,32 @@ decodeBreastExamSign =
             )
 
 
-decodeBreastExam : Decoder BreastExam
-decodeBreastExam =
-    succeed BreastExamValue
-        |> required "breast" (decodeEverySet decodeBreastExamSign)
-        |> required "breast_self_exam" bool
-        |> decodePrenatalMeasurement
+decodeDischargeType : Decoder DischargeType
+decodeDischargeType =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "milky" ->
+                        succeed DischargeMilky
+
+                    "clear" ->
+                        succeed DischargeClear
+
+                    "brown-bloody" ->
+                        succeed DischargeBrownOrBloody
+
+                    "yellow" ->
+                        succeed DischargeYellow
+
+                    "green" ->
+                        succeed DischargeGreen
+
+                    _ ->
+                        fail <|
+                            s
+                                ++ " is not a recognized DischargeType"
+            )
 
 
 decodeHairHeadCPESign : Decoder HairHeadCPESign
