@@ -2416,28 +2416,9 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisPostpartumExcessiveBleeding ->
             referredToHospitalMessage
 
+        -- Got same treatment options as DiagnosisPostpartumMastitis.
         DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-            getMeasurementValueFunc measurements.medicationDistribution
-                |> Maybe.andThen
-                    (\value ->
-                        let
-                            nonAdministrationReasons =
-                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
-                        in
-                        treatmentMessageForMedicationLower value.distributionSigns nonAdministrationReasons Paracetamol
-                            |> Maybe.map
-                                (\message ->
-                                    diagnosisForProgressReport
-                                        ++ " - "
-                                        ++ message
-                                        ++ " "
-                                        ++ (String.toLower <| translate language Translate.On)
-                                        ++ " "
-                                        ++ formatDDMMYYYY date
-                                        |> wrapWithLI
-                                )
-                    )
-                |> Maybe.withDefault noTreatmentRecordedMessage
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisPostpartumMastitis
 
         DiagnosisPostpartumMastitis ->
             getMeasurementValueFunc measurements.medicationDistribution
