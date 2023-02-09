@@ -478,9 +478,6 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         updateTimeRead =
             model.activeTab == TabUnread
 
-        viewOptions =
-            model.activeTab == TabUnread
-
         messageClickedAction =
             ResilienceMessageClicked nurseId messageId message updateTimeRead
 
@@ -504,18 +501,14 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                             head
                         ]
             in
-            if viewOptions then
-                div [ class "title-wrapper" ]
-                    [ plainTitle
-                    , div
-                        [ class "options"
-                        , onClick messageClickedAction
-                        ]
-                        [ text "OP" ]
+            div [ class "title-wrapper" ]
+                [ plainTitle
+                , div
+                    [ class "options"
+                    , onClick messageClickedAction
                     ]
-
-            else
-                plainTitle
+                    [ text "OP" ]
+                ]
     in
     div
         [ classList
