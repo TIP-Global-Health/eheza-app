@@ -338,7 +338,8 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                     List.map viewMessage unread
 
                 TabFavorites ->
-                    List.filter (Tuple.second >> .isFavorite) read
+                    Dict.toList messages
+                        |> List.filter (Tuple.second >> .isFavorite)
                         |> List.map viewMessage
 
                 TabGrowth ->
