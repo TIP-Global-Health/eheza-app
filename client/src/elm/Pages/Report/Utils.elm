@@ -45,6 +45,11 @@ malariaResultNormal =
     testResultNormal
 
 
+bloodSmearResultNormal : BloodSmearResult -> Bool
+bloodSmearResultNormal value =
+    List.member value [ BloodSmearNegative, BloodSmearNotTaken ]
+
+
 proteinResultNormal : ProteinValue -> Bool
 proteinResultNormal =
     (==) Protein0

@@ -58,6 +58,7 @@ type LabResultsHistoryMode
     | LabResultsHistorySyphilis (List ( NominalDate, Maybe TestResult ))
     | LabResultsHistoryHepatitisB (List ( NominalDate, Maybe TestReport ))
     | LabResultsHistoryMalaria (List ( NominalDate, Maybe TestResult ))
+    | LabResultsHistoryBloodSmear (List ( NominalDate, Maybe BloodSmearResult ))
     | LabResultsHistoryProtein (List ( NominalDate, Maybe ProteinValue ))
     | LabResultsHistoryPH (List ( NominalDate, Maybe PHValue ))
     | LabResultsHistoryGlucose (List ( NominalDate, Maybe GlucoseValue ))

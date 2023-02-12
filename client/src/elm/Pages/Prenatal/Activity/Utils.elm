@@ -1708,7 +1708,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map
                     (\value ->
                         (-- Malaria RDT was run, and positive result was recorded.
-                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                         testPerformedByExecutionNote value.executionNote
                             && (value.testResult == Just TestPositive)
                         )
                             || (-- Malaria RDT was not run, but blood smear test
@@ -1737,7 +1737,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> getMeasurementValueFunc
                 |> Maybe.map
                     (\value ->
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        testPerformedByExecutionNote value.executionNote
                             && (value.testResult == Just TestPositive)
                     )
                 |> Maybe.withDefault False

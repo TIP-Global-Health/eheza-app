@@ -440,6 +440,7 @@ type TranslationId
     | BloodPressureDiaLabel
     | BloodPressureSysLabel
     | BloodSmearQuestion
+    | BloodSmearLabel
     | BloodSmearResult BloodSmearResult
     | BMI
     | BMIHelper
@@ -3207,6 +3208,11 @@ translationSet trans =
 
         BloodSmearQuestion ->
             { english = "Did you perform a blood smear"
+            , kinyarwanda = Nothing
+            }
+
+        BloodSmearLabel ->
+            { english = "Blood Smear"
             , kinyarwanda = Nothing
             }
 
@@ -7539,6 +7545,11 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru ku kizamini cya Malariya"
                     }
 
+                LabResultsHistoryBloodSmear _ ->
+                    { english = "Blood Smear Test History"
+                    , kinyarwanda = Nothing
+                    }
+
                 LabResultsHistoryProtein _ ->
                     { english = "Protein Test History"
                     , kinyarwanda = Just "Amakuru ku kizamini cya Proteyine"
@@ -7674,6 +7685,9 @@ translationSet trans =
                     translationSet NegativeLabel
 
                 LabResultsHistoryMalaria _ ->
+                    translationSet NegativeLabel
+
+                LabResultsHistoryBloodSmear _ ->
                     translationSet NegativeLabel
 
                 LabResultsHistoryProtein _ ->
