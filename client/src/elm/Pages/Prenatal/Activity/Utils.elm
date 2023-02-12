@@ -1735,7 +1735,11 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         testedPositiveAt getMeasurementFunc =
             getMeasurementFunc measurements
                 |> getMeasurementValueFunc
-                |> Maybe.andThen (.testResult >> Maybe.map ((==) TestPositive))
+                |> Maybe.map
+                    (\value ->
+                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                            && (value.testResult == Just TestPositive)
+                    )
                 |> Maybe.withDefault False
 
         hemoglobinCount =
