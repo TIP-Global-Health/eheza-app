@@ -1711,6 +1711,9 @@ malariaTestFormWithDefault form saved =
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
+
+                    bloodSmearTakenByValue =
+                        value.bloodSmearResult /= BloodSmearNotTaken
                 in
                 { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
@@ -1721,6 +1724,8 @@ malariaTestFormWithDefault form saved =
                 , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
                 , executionDateDirty = form.executionDateDirty
                 , testResult = or form.testResult value.testResult
+                , bloodSmearTaken = or form.bloodSmearTaken (Just bloodSmearTakenByValue)
+                , bloodSmearResult = or form.bloodSmearResult (Just value.bloodSmearResult)
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
@@ -1739,6 +1744,7 @@ toMalariaTestValue form =
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
+            , bloodSmearResult = Maybe.withDefault BloodSmearNotTaken form.bloodSmearResult
             }
         )
         form.executionNote

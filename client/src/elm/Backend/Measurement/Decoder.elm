@@ -580,6 +580,18 @@ decodeMalariaTestValue =
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodeTestResult) Nothing
+        |> optional "blood_smear_result" decodeBloodSmearResult BloodSmearNotTaken
+
+
+decodeBloodSmearResult : Decoder BloodSmearResult
+decodeBloodSmearResult =
+    string
+        |> andThen
+            (\value ->
+                bloodSmearResultFromString value
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| value ++ " is not a recognized BloodSmearResult")
+            )
 
 
 decodePrenatalRandomBloodSugarTest : Decoder PrenatalRandomBloodSugarTest
