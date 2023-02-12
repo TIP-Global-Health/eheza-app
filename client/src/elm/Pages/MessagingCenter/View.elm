@@ -362,7 +362,8 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
         , div [ class "ui report unstackable items" ]
             content
         , viewModal <|
-            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId) model.messageOptionsDialogState
+            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId model.activeTab)
+                model.messageOptionsDialogState
         ]
 
 
@@ -905,29 +906,46 @@ messageOptionsDialog :
     -> Time.Posix
     -> NominalDate
     -> NurseId
+    -> MessagingTab
     -> MessageOptionsDialogState
     -> Html Msg
-messageOptionsDialog language currentTime currentDate nurseId state =
+messageOptionsDialog language currentTime currentDate nurseId tab state =
     case state of
         MessageOptionsStateMain ( messageId, message ) ->
-            div [ class "ui active modal main" ]
-                [ div
-                    [ class "content" ]
+            let
+                content =
+                    if tab == TabFavorites then
+                        favoriteUnfavorite ++ reminder
+
+                    else
+                        readUnread ++ favoriteUnfavorite ++ reminder
+
+                readUnread =
+                    let
+                        isRead =
+                            tab /= TabUnread
+                    in
                     [ button
                         [ class "ui fluid button cyan"
-                        , onClick <| MarkMessageUnread nurseId messageId message
+                        , onClick <| ToggleMessageRead nurseId messageId message isRead
                         ]
                         [ img [ src "assets/images/envelope.svg" ] []
-                        , text <| translate language Translate.Unread
+                        , text <| translate language <| Translate.ReadToggle isRead
                         ]
-                    , button
+                    ]
+
+                favoriteUnfavorite =
+                    [ button
                         [ class "ui fluid button purple"
-                        , onClick <| MarkMessageFavorite nurseId messageId message
+                        , onClick <| ToggleMessageFavorite nurseId messageId message
                         ]
                         [ img [ src "assets/images/star.svg" ] []
-                        , text <| translate language Translate.Favorite
+                        , text <| translate language <| Translate.FavoriteToggle message.isFavorite
                         ]
-                    , button
+                    ]
+
+                reminder =
+                    [ button
                         [ class "ui fluid button velvet"
                         , onClick <| SetMessageOptionsDialogState <| Just <| MessageOptionsStateReminder ( messageId, message )
                         ]
@@ -935,6 +953,10 @@ messageOptionsDialog language currentTime currentDate nurseId state =
                         , text <| translate language Translate.RemindMe
                         ]
                     ]
+            in
+            div [ class "ui active modal main" ]
+                [ div [ class "content" ]
+                    content
                 , div
                     [ class "actions" ]
                     [ button

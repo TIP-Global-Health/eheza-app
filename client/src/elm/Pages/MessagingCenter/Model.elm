@@ -103,6 +103,6 @@ type Msg
     | ScrollTab Int
     | ResilienceMessageClicked NurseId ResilienceMessageId ResilienceMessage Bool
     | SetMessageOptionsDialogState (Maybe MessageOptionsDialogState)
-    | MarkMessageUnread NurseId ResilienceMessageId ResilienceMessage
-    | MarkMessageFavorite NurseId ResilienceMessageId ResilienceMessage
+    | ToggleMessageRead NurseId ResilienceMessageId ResilienceMessage Bool
+    | ToggleMessageFavorite NurseId ResilienceMessageId ResilienceMessage
     | ScheduleMessageReminder Int NurseId ResilienceMessageId ResilienceMessage
