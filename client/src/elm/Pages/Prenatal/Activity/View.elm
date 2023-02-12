@@ -3842,6 +3842,7 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
                     , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
                     , setMalariaTestResultMsg = SetMalariaTestResult
+                    , setBloodSmearResultMsg = SetBloodSmearResultMsg
                     , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
                     , setBloodGpRsTestExecutionNoteMsg = SetBloodGpRsTestExecutionNote
                     , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput

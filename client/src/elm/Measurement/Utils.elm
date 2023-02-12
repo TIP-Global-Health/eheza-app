@@ -2207,7 +2207,20 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
 
                     ( derivedInputs, derivedTasksCompleted, derivedTasksTotal ) =
                         if form.bloodSmearTaken == Just True then
-                            ( [], 0, 0 )
+                            ( viewSelectInput language
+                                Translate.TestResultQuestion
+                                form.bloodSmearResult
+                                Translate.BloodSmearResult
+                                bloodSmearResultToString
+                                [ BloodSmearNegative
+                                , BloodSmearPlus
+                                , BloodSmearPlusPlus
+                                , BloodSmearPlusPlusPlus
+                                ]
+                                configInitial.setBloodSmearResultMsg
+                            , taskCompleted form.bloodSmearResult
+                            , 1
+                            )
 
                         else
                             ( [], 0, 0 )
@@ -2221,7 +2234,7 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
                         Nothing
                   ]
                     ++ derivedInputs
-                , 1 + derivedTasksCompleted
+                , taskCompleted form.bloodSmearTaken + derivedTasksCompleted
                 , 1 + derivedTasksTotal
                 )
 
@@ -3204,6 +3217,7 @@ emptyContentAndTasksLaboratoryTestInitialConfig noOpMsg =
     , setMalariaTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setMalariaTestExecutionNoteMsg = always noOpMsg
     , setMalariaTestResultMsg = always noOpMsg
+    , setBloodSmearResultMsg = always noOpMsg
     , setBloodGpRsTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setBloodGpRsTestExecutionNoteMsg = always noOpMsg
     , setUrineDipstickTestFormBoolInputMsg = \_ _ -> noOpMsg

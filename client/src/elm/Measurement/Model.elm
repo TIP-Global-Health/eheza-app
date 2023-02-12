@@ -596,6 +596,7 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
     , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
     , setMalariaTestResultMsg : String -> msg
+    , setBloodSmearResultMsg : String -> msg
     , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
     , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg

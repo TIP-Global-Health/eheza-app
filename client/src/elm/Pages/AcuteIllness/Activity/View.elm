@@ -1118,7 +1118,7 @@ viewCovidTestingForm language currentDate person form =
                                 else
                                     []
                         in
-                        [ viewQuestionLabel language Translate.TestResultQuestion
+                        [ viewQuestionLabel language Translate.TestResultsQuestion
                         , viewBoolInput
                             language
                             form.testPositive
