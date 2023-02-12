@@ -439,6 +439,7 @@ type TranslationId
     | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
     | BloodPressureSysLabel
+    | BloodSmearQuestion
     | BMI
     | BMIHelper
     | BodyTemperature
@@ -3200,6 +3201,11 @@ translationSet trans =
         BloodPressureSysLabel ->
             { english = "Systolic"
             , kinyarwanda = Just "Umubare w'umuvuduko w'amaraso wo hejuru"
+            }
+
+        BloodSmearQuestion ->
+            { english = "Did you perform a blood smear"
+            , kinyarwanda = Nothing
             }
 
         BMI ->

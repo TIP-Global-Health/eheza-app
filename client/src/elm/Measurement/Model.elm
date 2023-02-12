@@ -735,14 +735,16 @@ type alias MalariaTestForm msg =
     , executionDateDirty : Bool
     , testResult : Maybe TestResult
     , bloodSmearTaken : Maybe Bool
+    , bloodSmearTakenDirty : Bool
     , bloodSmearResult : Maybe BloodSmearResult
+    , bloodSmearResultDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
     }
 
 
 emptyMalariaTestForm : MalariaTestForm msg
 emptyMalariaTestForm =
-    MalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing Nothing Nothing
+    MalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing False Nothing False Nothing
 
 
 type alias UrineDipstickForm msg =
