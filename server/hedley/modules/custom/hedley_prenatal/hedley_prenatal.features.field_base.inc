@@ -128,6 +128,35 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_blood_smear_result'.
+  $field_bases['field_blood_smear_result'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_blood_smear_result',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'negative' => 'Negative',
+        '+' => '+',
+        '++' => '++',
+        '+++' => '+++',
+        'not-taken' => 'Not taken',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_breastfeeding_signs'.
   $field_bases['field_breastfeeding_signs'] = array(
     'active' => 1,
