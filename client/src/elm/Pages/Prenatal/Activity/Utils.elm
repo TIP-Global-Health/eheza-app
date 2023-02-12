@@ -547,6 +547,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisCandidiasis
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
+                                    , DiagnosisPostpartumEarlyMastitisOrEngorgment
                                     , DiagnosisPostpartumMastitis
                                     ]
                                     assembled
@@ -651,7 +652,13 @@ nextStepsTaskCompleted currentDate assembled task =
                         True
 
                 mastitisTreatmentCompleted =
-                    if diagnosed DiagnosisPostpartumMastitis assembled then
+                    if
+                        diagnosedAnyOf
+                            [ DiagnosisPostpartumEarlyMastitisOrEngorgment
+                            , DiagnosisPostpartumMastitis
+                            ]
+                            assembled
+                    then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMastitis assembled.measurements
 
                     else

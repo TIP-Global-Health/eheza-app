@@ -901,7 +901,7 @@ type TranslationId
     | MalnutritionWithComplications
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
-    | MastitisRecommendedTreatmentHeader
+    | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
     | MeasurementNoChange
     | MeasurementGained Float
@@ -8294,10 +8294,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        MastitisRecommendedTreatmentHeader ->
-            { english = "This patient has Mastitis"
-            , kinyarwanda = Just "Uyu mubyeyi afite uburwayi bw'amabere"
-            }
+        MastitisRecommendedTreatmentHeader forEarlyMastitisOrEngorgment ->
+            if forEarlyMastitisOrEngorgment then
+                { english = "This patient shows signs of Early Mastitis or Engorgement"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "This patient has Mastitis"
+                , kinyarwanda = Just "Uyu mubyeyi afite uburwayi bw'amabere"
+                }
 
         MastitisRecommendedTreatmentHelper ->
             { english = "Select the best treatment option for the patient below"

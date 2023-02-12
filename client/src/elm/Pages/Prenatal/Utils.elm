@@ -750,7 +750,13 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                                 ( [], 0, 0 )
 
                         ( mastitisInputs, mastitisCompleted, mastitisActive ) =
-                            if diagnosed DiagnosisPostpartumMastitis assembled then
+                            if
+                                diagnosedAnyOf
+                                    [ DiagnosisPostpartumEarlyMastitisOrEngorgment
+                                    , DiagnosisPostpartumMastitis
+                                    ]
+                                    assembled
+                            then
                                 resolveRecommendedTreatmentForMastitisInputsAndTasks language
                                     currentDate
                                     setRecommendedTreatmentSignMsg
@@ -1590,6 +1596,9 @@ resolveRecommendedTreatmentForMastitisInputsAndTasks language currentDate setRec
         allowedSigns =
             recommendedTreatmentSignsForMastitis
 
+        forEarlyMastitisOrEngorgment =
+            diagnosed DiagnosisPostpartumEarlyMastitisOrEngorgment assembled
+
         -- Since we may have values set for another diagnosis,
         -- we need to filter them out, to be able to determine the current value.
         currentValue =
@@ -1599,7 +1608,7 @@ resolveRecommendedTreatmentForMastitisInputsAndTasks language currentDate setRec
                 )
                 form.recommendedTreatmentSigns
     in
-    ( [ viewCustomLabel language Translate.MastitisRecommendedTreatmentHeader "." "instructions"
+    ( [ viewCustomLabel language (Translate.MastitisRecommendedTreatmentHeader forEarlyMastitisOrEngorgment) "." "instructions"
       , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
       , div [ class "instructions" ]
             [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MastitisRecommendedTreatmentHelper ++ ".") ]
@@ -1769,17 +1778,14 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                     else
                         Nothing
 
-                -- Only for Postpartum encounter.
+                -- Used to be prescribed for Early Mastitis / Engorgment
+                -- diagnosis. Currently not in use.
+                -- Keeping it's infrastructure for possible future applications.
                 paracetamolSet =
-                    if diagnosed DiagnosisPostpartumEarlyMastitisOrEngorgment assembled then
-                        Just
-                            ( Translate.MedicationDistributionHelperEarlyMastitisOrEngorgment
-                            , [ Paracetamol ]
-                            , []
-                            )
-
-                    else
-                        Nothing
+                    ( Translate.MedicationDistributionHelperEarlyMastitisOrEngorgment
+                    , [ Paracetamol ]
+                    , []
+                    )
             in
             Maybe.Extra.values
                 [ mebendazoleSet
@@ -1788,7 +1794,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 , gonorheaSet
                 , trichomonasOrBVSet
                 , vitaminASet
-                , paracetamolSet
                 ]
 
         PrenatalEncounterPhaseRecurrent ->
