@@ -1704,7 +1704,30 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             assembled.measurements
 
         positiveMalariaTest =
-            testedPositiveAt .malariaTest
+            getMeasurementValueFunc measurements.malariaTest
+                |> Maybe.map
+                    (\value ->
+                        (-- Malaria RDT was run, and positive result was recorded.
+                         List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                            && (value.testResult == Just TestPositive)
+                        )
+                            || (-- Malaria RDT was not run, but blood smear test
+                                -- was taken, and it's result indicates Malaria.
+                                List.member value.executionNote
+                                    [ TestNoteLackOfReagents
+                                    , TestNoteLackOfOtherSupplies
+                                    , TestNoteNoEquipment
+                                    , TestNoteBrokenEquipment
+                                    , TestNoteNotIndicated
+                                    ]
+                                    && List.member value.bloodSmearResult
+                                        [ BloodSmearPlus
+                                        , BloodSmearPlusPlus
+                                        , BloodSmearPlusPlusPlus
+                                        ]
+                               )
+                    )
+                |> Maybe.withDefault False
 
         positiveSyphilisTest =
             testedPositiveAt .syphilisTest
