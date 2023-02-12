@@ -111,6 +111,7 @@ type Msg
     | SetObstetricalExamFloatMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFetalPresentation FetalPresentation
     | SetObstetricalExamCSectionScar CSectionScar
+    | HideFundalPalpablePopup
     | SaveObstetricalExam PersonId (Maybe ( ObstetricalExamId, ObstetricalExam )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
@@ -883,25 +884,29 @@ emptyNutritionAssessmentForm =
 
 
 type alias ObstetricalExamForm =
-    { fundalHeight : Maybe Float
+    { fundalPalpable : Maybe Bool
+    , fundalHeight : Maybe Float
     , fundalHeightDirty : Bool
     , fetalPresentation : Maybe FetalPresentation
     , fetalMovement : Maybe Bool
     , fetalHeartRate : Maybe Int
     , fetalHeartRateDirty : Bool
     , cSectionScar : Maybe CSectionScar
+    , displayFundalPalpablePopup : Bool
     }
 
 
 emptyObstetricalExamForm : ObstetricalExamForm
 emptyObstetricalExamForm =
-    { fundalHeight = Nothing
+    { fundalPalpable = Nothing
+    , fundalHeight = Nothing
     , fundalHeightDirty = False
     , fetalPresentation = Nothing
     , fetalMovement = Nothing
     , fetalHeartRate = Nothing
     , fetalHeartRateDirty = False
     , cSectionScar = Nothing
+    , displayFundalPalpablePopup = False
     }
 
 

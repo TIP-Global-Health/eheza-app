@@ -1956,7 +1956,8 @@ decodeFetalPresentation =
 decodeObstetricalExam : Decoder ObstetricalExam
 decodeObstetricalExam =
     succeed ObstetricalExamValue
-        |> required "fundal_height" (map HeightInCm decodeFloat)
+        |> required "fundal_palpable" bool
+        |> optional "fundal_height" (nullable (map HeightInCm decodeFloat)) Nothing
         |> required "fetal_presentation" decodeFetalPresentation
         |> required "fetal_movement" bool
         |> required "fetal_heart_rate" decodeInt

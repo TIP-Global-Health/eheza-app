@@ -693,7 +693,8 @@ type alias MedicationValue =
 
 
 type alias ObstetricalExamValue =
-    { fundalHeight : HeightInCm
+    { fundalPalpable : Bool
+    , fundalHeight : Maybe HeightInCm
     , fetalPresentation : FetalPresentation
     , fetalMovement : Bool
     , fetalHeartRate : Int

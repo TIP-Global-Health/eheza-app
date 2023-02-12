@@ -4130,31 +4130,24 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
         |> Maybe.withDefault ( [], [] )
 
 
-fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
-fromObstetricalExamValue saved =
-    { fundalHeight = Maybe.map (.fundalHeight >> getHeightValue) saved
-    , fundalHeightDirty = False
-    , fetalPresentation = Maybe.map .fetalPresentation saved
-    , fetalMovement = Maybe.map .fetalMovement saved
-    , fetalHeartRate = Maybe.map .fetalHeartRate saved
-    , fetalHeartRateDirty = False
-    , cSectionScar = Maybe.map .cSectionScar saved
-    }
-
-
 obstetricalExamFormWithDefault : ObstetricalExamForm -> Maybe ObstetricalExamValue -> ObstetricalExamForm
 obstetricalExamFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (getHeightValue value.fundalHeight)
+                { fundalPalpable = or form.fundalPalpable (Just value.fundalPalpable)
+                , fundalHeight =
+                    maybeValueConsideringIsDirtyField form.fundalHeightDirty
+                        form.fundalHeight
+                        (Maybe.map getHeightValue value.fundalHeight)
                 , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
                 , fetalHeartRate = valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
                 , fetalHeartRateDirty = form.fetalHeartRateDirty
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
+                , displayFundalPalpablePopup = form.displayFundalPalpablePopup
                 }
             )
 
@@ -4167,7 +4160,8 @@ toObstetricalExamValueWithDefault saved form =
 
 toObstetricalExamValue : ObstetricalExamForm -> Maybe ObstetricalExamValue
 toObstetricalExamValue form =
-    Maybe.map ObstetricalExamValue (Maybe.map HeightInCm form.fundalHeight)
+    Maybe.map ObstetricalExamValue form.fundalPalpable
+        |> andMap (Just <| Maybe.map HeightInCm form.fundalHeight)
         |> andMap form.fetalPresentation
         |> andMap form.fetalMovement
         |> andMap form.fetalHeartRate
@@ -4521,21 +4515,9 @@ examinationTasksCompletedFromTotal assembled data task =
             )
 
         ObstetricalExam ->
-            let
-                form =
-                    assembled.measurements.obstetricalExam
-                        |> getMeasurementValueFunc
-                        |> obstetricalExamFormWithDefault data.obstetricalExamForm
-            in
-            ( taskCompleted form.fetalPresentation
-                + taskCompleted form.fetalMovement
-                + taskCompleted form.cSectionScar
-                + ([ Maybe.map (always ()) form.fundalHeight, Maybe.map (always ()) form.fetalHeartRate ]
-                    |> List.map taskCompleted
-                    |> List.sum
-                  )
-            , 5
-            )
+            -- This is not in use, because ObstetricalExam task got
+            -- special treatment at viewExaminationContent().
+            ( 0, 0 )
 
         BreastExam ->
             -- This is not in use, because BreastExam task got

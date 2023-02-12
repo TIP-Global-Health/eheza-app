@@ -944,11 +944,19 @@ viewExaminationContent language currentDate assembled data =
             List.map
                 (\task ->
                     case task of
-                        BreastExam ->
-                            ( BreastExam
+                        ObstetricalExam ->
+                            ( ObstetricalExam
                             , ( Maybe.Extra.values breastExamTasks
                                     |> List.length
                               , List.length breastExamTasks
+                              )
+                            )
+
+                        BreastExam ->
+                            ( ObstetricalExam
+                            , ( Maybe.Extra.values obstetricalExamTasks
+                                    |> List.length
+                              , List.length obstetricalExamTasks
                               )
                             )
 
@@ -964,6 +972,11 @@ viewExaminationContent language currentDate assembled data =
 
         measuredHeight =
             resolveMeasuredHeight assembled
+
+        ( obstetricalExamInputs, obstetricalExamTasks ) =
+            getMeasurementValueFunc assembled.measurements.obstetricalExam
+                |> obstetricalExamFormWithDefault data.obstetricalExamForm
+                |> obstetricalExamFormInputsAndTasks language currentDate assembled
 
         ( breastExamInputs, breastExamTasks ) =
             getMeasurementValueFunc assembled.measurements.breastExam
@@ -999,9 +1012,8 @@ viewExaminationContent language currentDate assembled data =
                         |> viewCorePhysicalExamForm language currentDate
 
                 Just ObstetricalExam ->
-                    getMeasurementValueFunc assembled.measurements.obstetricalExam
-                        |> obstetricalExamFormWithDefault data.obstetricalExamForm
-                        |> viewObstetricalExamForm language currentDate assembled
+                    div [ class "ui form examination obstetrical-exam" ]
+                        obstetricalExamInputs
 
                 Just BreastExam ->
                     div [ class "ui form examination breast-exam" ]
@@ -3463,70 +3475,133 @@ viewCorePhysicalExamForm language currentDate form =
     Measurement.View.viewCorePhysicalExamForm language currentDate config form
 
 
-viewObstetricalExamForm : Language -> NominalDate -> AssembledData -> ObstetricalExamForm -> Html Msg
-viewObstetricalExamForm language currentDate assembled form =
+obstetricalExamFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ObstetricalExamForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+obstetricalExamFormInputsAndTasks language currentDate assembled form =
     let
-        alerts =
-            assembled.measurements.lastMenstrualPeriod
-                |> Maybe.map
-                    (\lastMenstrualPeriod ->
+        ( fundalHeightHtml, fundalHeightTasks ) =
+            let
+                fundalPalpableUpdateFunc value form_ =
+                    { form_
+                        | fundalPalpable = Just value
+                        , fundalHeight = Nothing
+                        , fundalHeightDirty = True
+                        , -- Display popup, if value is set to 'No'.
+                          displayFundalPalpablePopup = not value
+                    }
+
+                ( derivedHtml, derivedTasks ) =
+                    if form.fundalPalpable == Just True then
                         let
-                            lmpDate =
-                                Tuple.second lastMenstrualPeriod |> .value |> .date
-
-                            egaInWeeks =
-                                calculateEGAWeeks currentDate lmpDate |> toFloat
-
-                            fundalHeightAlert =
-                                viewConditionalAlert form.fundalHeight
-                                    [ [ (>) (egaInWeeks - 4) ], [ (<=) (egaInWeeks + 4) ] ]
-                                    [ [ (<=) (egaInWeeks - 4), (>) (egaInWeeks - 2) ], [ (<) (egaInWeeks + 2), (>=) (egaInWeeks + 4) ] ]
-
-                            fetalPresentationAlert =
-                                if egaInWeeks > 36 then
-                                    viewConditionalAlert form.fetalPresentation
-                                        [ [ (==) Cephalic ], [ (==) Twins ] ]
-                                        []
-
-                                else if egaInWeeks > 31 then
-                                    viewConditionalAlert form.fetalPresentation
-                                        []
-                                        [ [ (==) Cephalic ], [ (==) Twins ] ]
-
-                                else
-                                    emptyNode
-
-                            fetalMovementAlert =
-                                if egaInWeeks > 19 then
-                                    viewRedAlertForBool form.fetalMovement True
-
-                                else
-                                    emptyNode
-
-                            fetalHeartRateAlert =
-                                if egaInWeeks > 19 then
-                                    viewConditionalAlert form.fetalHeartRate
-                                        [ [ (>) 120 ], [ (<) 160 ] ]
-                                        []
-
-                                else
-                                    emptyNode
+                            fundalHeightUpdateFunc value form_ =
+                                { form_ | fundalHeight = value, fundalHeightDirty = True }
                         in
-                        { fundalHeight = fundalHeightAlert
-                        , fetalPresentation = fetalPresentationAlert
-                        , fetalMovement = fetalMovementAlert
-                        , fetalHeartRate = fetalHeartRateAlert
-                        }
-                    )
+                        ( [ viewMeasurementInput
+                                language
+                                form.fundalHeight
+                                (SetObstetricalExamFloatMeasurement fundalHeightUpdateFunc)
+                                "fundal-height"
+                                Translate.CentimeterShorthand
+                          , viewPreviousMeasurement language fundalHeightPreviousValue Translate.CentimeterShorthand
+                          ]
+                        , [ maybeToBoolTask form.fundalHeight ]
+                        )
+
+                    else
+                        ( [], [] )
+
+                fundalPalpablePopup =
+                    if form.displayFundalPalpablePopup then
+                        Just <|
+                            customWarningPopup language
+                                ( p [] [ text <| translate language Translate.FundalPalpableWarning ]
+                                , emptyNode
+                                , HideFundalPalpablePopup
+                                )
+
+                    else
+                        Nothing
+            in
+            ( [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.FundalHeight ]
+                    , div [ class "four wide column" ]
+                        [ alerts.fundalHeight ]
+                    ]
+              , viewCustomLabel language Translate.FundalPalpableQuestion "?" "label question"
+              , viewBoolInput
+                    language
+                    form.fundalPalpable
+                    (SetObstetricalExamBoolInput fundalPalpableUpdateFunc)
+                    "fundal-palpable"
+                    Nothing
+              ]
+                ++ derivedHtml
+                ++ [ viewModal fundalPalpablePopup
+                   , div [ class "separator" ] []
+                   ]
+            , [ form.fundalPalpable ] ++ derivedTasks
+            )
+
+        alerts =
+            Maybe.map
+                (\lmpDate ->
+                    let
+                        egaInWeeks =
+                            calculateEGAWeeks currentDate lmpDate |> toFloat
+
+                        fundalHeightAlert =
+                            viewConditionalAlert form.fundalHeight
+                                [ [ (>) (egaInWeeks - 4) ], [ (<=) (egaInWeeks + 4) ] ]
+                                [ [ (<=) (egaInWeeks - 4), (>) (egaInWeeks - 2) ], [ (<) (egaInWeeks + 2), (>=) (egaInWeeks + 4) ] ]
+
+                        fetalPresentationAlert =
+                            if egaInWeeks > 36 then
+                                viewConditionalAlert form.fetalPresentation
+                                    [ [ (==) Cephalic ], [ (==) Twins ] ]
+                                    []
+
+                            else if egaInWeeks > 31 then
+                                viewConditionalAlert form.fetalPresentation
+                                    []
+                                    [ [ (==) Cephalic ], [ (==) Twins ] ]
+
+                            else
+                                emptyNode
+
+                        fetalMovementAlert =
+                            if egaInWeeks > 19 then
+                                viewRedAlertForBool form.fetalMovement True
+
+                            else
+                                emptyNode
+
+                        fetalHeartRateAlert =
+                            if egaInWeeks > 19 then
+                                viewConditionalAlert form.fetalHeartRate
+                                    [ [ (>) 120 ], [ (<) 160 ] ]
+                                    []
+
+                            else
+                                emptyNode
+                    in
+                    { fundalHeight = fundalHeightAlert
+                    , fetalPresentation = fetalPresentationAlert
+                    , fetalMovement = fetalMovementAlert
+                    , fetalHeartRate = fetalHeartRateAlert
+                    }
+                )
+                assembled.globalLmpDate
                 |> Maybe.withDefault
                     { fundalHeight = emptyNode
                     , fetalPresentation = emptyNode
                     , fetalMovement = emptyNode
                     , fetalHeartRate = emptyNode
                     }
-
-        fundalHeightUpdateFunc value form_ =
-            { form_ | fundalHeight = value, fundalHeightDirty = True }
 
         fetalHeartRateUpdateFunc value form_ =
             { form_ | fetalHeartRate = value, fetalHeartRateDirty = True }
@@ -3540,71 +3615,65 @@ viewObstetricalExamForm language currentDate assembled form =
 
         fundalHeightPreviousValue =
             resolvePreviousValue assembled .obstetricalExam .fundalHeight
+                |> Maybe.Extra.join
                 |> Maybe.map getHeightValue
     in
-    div [ class "ui form examination obstetrical-exam" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.FundalHeight ]
-            , div [ class "four wide column" ]
-                [ alerts.fundalHeight ]
-            ]
-        , viewMeasurementInput
-            language
-            form.fundalHeight
-            (SetObstetricalExamFloatMeasurement fundalHeightUpdateFunc)
-            "fundal-height"
-            Translate.CentimeterShorthand
-        , viewPreviousMeasurement language fundalHeightPreviousValue Translate.CentimeterShorthand
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.FetalPresentationLabel ]
-            , div [ class "four wide column" ]
-                [ alerts.fetalPresentation ]
-            ]
-        , viewCheckBoxSelectInput language
-            [ Transverse, Cephalic, Unknown ]
-            [ FetalBreech, Twins ]
-            form.fetalPresentation
-            SetObstetricalExamFetalPresentation
-            Translate.FetalPresentation
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.FetalMovement ]
-            , div [ class "four wide column" ]
-                [ alerts.fetalMovement ]
-            ]
-        , viewBoolInput
-            language
-            form.fetalMovement
-            (SetObstetricalExamBoolInput fetalMovementUpdateFunc)
-            "fetal-movement"
-            Nothing
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.FetalHeartRate ]
-            , div [ class "four wide column" ]
-                [ alerts.fetalHeartRate ]
-            ]
-        , viewMeasurementInput
-            language
-            (Maybe.map toFloat form.fetalHeartRate)
-            (SetObstetricalExamIntMeasurement fetalHeartRateUpdateFunc)
-            "fetal-heart-rate"
-            Translate.BeatsPerMinuteUnitLabel
-        , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
-        , div [ class "separator" ] []
-        , viewLabel language Translate.PreviousCSectionScar
-        , viewCheckBoxSelectInput language
-            [ Vertical, Horizontal ]
-            [ NoScar ]
-            form.cSectionScar
-            SetObstetricalExamCSectionScar
-            Translate.CSectionScar
-        ]
+    ( fundalHeightHtml
+        ++ [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.FetalPresentationLabel ]
+                , div [ class "four wide column" ]
+                    [ alerts.fetalPresentation ]
+                ]
+           , viewCheckBoxSelectInput language
+                [ Transverse, Cephalic, Unknown ]
+                [ FetalBreech, Twins ]
+                form.fetalPresentation
+                SetObstetricalExamFetalPresentation
+                Translate.FetalPresentation
+           , div [ class "separator" ] []
+           , div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.FetalMovement ]
+                , div [ class "four wide column" ]
+                    [ alerts.fetalMovement ]
+                ]
+           , viewBoolInput
+                language
+                form.fetalMovement
+                (SetObstetricalExamBoolInput fetalMovementUpdateFunc)
+                "fetal-movement"
+                Nothing
+           , div [ class "separator" ] []
+           , div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.FetalHeartRate ]
+                , div [ class "four wide column" ]
+                    [ alerts.fetalHeartRate ]
+                ]
+           , viewMeasurementInput
+                language
+                (Maybe.map toFloat form.fetalHeartRate)
+                (SetObstetricalExamIntMeasurement fetalHeartRateUpdateFunc)
+                "fetal-heart-rate"
+                Translate.BeatsPerMinuteUnitLabel
+           , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
+           , div [ class "separator" ] []
+           , viewLabel language Translate.PreviousCSectionScar
+           , viewCheckBoxSelectInput language
+                [ Vertical, Horizontal ]
+                [ NoScar ]
+                form.cSectionScar
+                SetObstetricalExamCSectionScar
+                Translate.CSectionScar
+           ]
+    , fundalHeightTasks
+        ++ [ maybeToBoolTask form.fetalPresentation
+           , form.fetalMovement
+           , maybeToBoolTask form.fetalHeartRate
+           , maybeToBoolTask form.cSectionScar
+           ]
+    )
 
 
 breastExamInputsAndTasks :

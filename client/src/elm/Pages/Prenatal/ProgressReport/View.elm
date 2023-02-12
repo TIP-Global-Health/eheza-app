@@ -28,7 +28,7 @@ import Backend.Measurement.Model
         , TestVariant(..)
         , ViralLoadStatus(..)
         )
-import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc, labExpirationPeriod)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc, labExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortTuplesByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
@@ -1193,27 +1193,26 @@ viewPatientProgressPane language currentDate isChw assembled =
                     )
 
         egaFundalHeightValues =
-            allNurseEncountersData
-                |> List.filterMap
-                    (\( date, measurements ) ->
-                        assembled.globalLmpDate
-                            |> Maybe.map
-                                (\lmpDate ->
-                                    let
-                                        fundalHeight =
-                                            measurements.obstetricalExam
-                                                |> Maybe.map
-                                                    (\measurement ->
-                                                        Tuple.second measurement
-                                                            |> .value
-                                                            |> .fundalHeight
-                                                            |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
-                                                    )
-                                                |> Maybe.withDefault 0
-                                    in
-                                    ( diffDays lmpDate date, fundalHeight )
-                                )
-                    )
+            Maybe.map
+                (\lmpDate ->
+                    List.filterMap
+                        (\( date, measurements ) ->
+                            measurements.obstetricalExam
+                                |> Maybe.andThen
+                                    (Tuple.second
+                                        >> .value
+                                        >> .fundalHeight
+                                        >> Maybe.map getHeightValue
+                                    )
+                                |> Maybe.map
+                                    (\fundalHeight ->
+                                        ( diffDays lmpDate date, fundalHeight )
+                                    )
+                        )
+                        allNurseEncountersData
+                )
+                assembled.globalLmpDate
+                |> Maybe.withDefault []
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -1407,16 +1406,18 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
                             |> List.map
                                 (Tuple.second
                                     >> .obstetricalExam
-                                    >> Maybe.map
-                                        (\measurement ->
-                                            let
-                                                height =
-                                                    Tuple.second measurement
-                                                        |> .value
-                                                        |> .fundalHeight
-                                                        |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
-                                            in
-                                            [ text <| String.fromFloat height ++ translate language Translate.CentimeterShorthand ]
+                                    >> Maybe.andThen
+                                        (Tuple.second
+                                            >> .value
+                                            >> .fundalHeight
+                                            >> Maybe.map
+                                                (\heightInCm ->
+                                                    [ text <|
+                                                        String.fromFloat
+                                                            (getHeightValue heightInCm)
+                                                            ++ translate language Translate.CentimeterShorthand
+                                                    ]
+                                                )
                                         )
                                     >> Maybe.withDefault [ text "--" ]
                                     >> td [ class "center aligned" ]

@@ -1167,6 +1167,21 @@ update language currentDate id db msg model =
             , []
             )
 
+        HideFundalPalpablePopup ->
+            let
+                updatedForm =
+                    model.examinationData.obstetricalExamForm
+                        |> (\form -> { form | displayFundalPalpablePopup = False })
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | obstetricalExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveObstetricalExam personId saved nextTask ->
             let
                 measurementId =
