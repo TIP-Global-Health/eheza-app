@@ -150,6 +150,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'prenatal_mental_health' => 'prenatal-mental-health',
   'prenatal_nutrition' => 'prenatal-nutritions',
   'prenatal_outside_care' => 'prenatal-outside-care',
+  'prenatal_partner_hiv_test' => 'prenatal-partner-hiv-test',
   'prenatal_photo' => 'prenatal-photos',
   'prenatal_random_blood_sugar_test' => 'prenatal-random-blood-sugar-test',
   'prenatal_send_to_hc' => 'prenatal-send-to-hc',

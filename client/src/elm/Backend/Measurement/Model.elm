@@ -817,17 +817,8 @@ type SocialHistorySign
     | NoSocialHistorySign
 
 
-type SocialHistoryHivTestingResult
-    = ResultHivPositive
-    | ResultHivNegative
-    | ResultHivIndeterminate
-    | NoHivTesting
-
-
 type alias SocialHistoryValue =
-    { socialHistory : EverySet SocialHistorySign
-    , hivTestingResult : SocialHistoryHivTestingResult
-    }
+    EverySet SocialHistorySign
 
 
 type alias SocialHistory =
@@ -1573,6 +1564,17 @@ type SpecialityCareSign
     = EnrolledToARVProgram
     | EnrolledToNCDProgram
     | NoSpecialityCareSigns
+
+
+type alias PrenatalPartnerHIVTest =
+    PrenatalMeasurement PartnerHIVTestValue
+
+
+type alias PartnerHIVTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe TestResult
+    }
 
 
 
@@ -2835,6 +2837,7 @@ type alias PrenatalMeasurements =
     , breastfeeding : Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding )
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
+    , partnerHIVTest : Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )
     }
 
 
@@ -2879,6 +2882,7 @@ emptyPrenatalMeasurements =
     , breastfeeding = Nothing
     , guExam = Nothing
     , specialityCare = Nothing
+    , partnerHIVTest = Nothing
     }
 
 

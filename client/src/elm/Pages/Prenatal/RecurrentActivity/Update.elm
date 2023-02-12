@@ -21,7 +21,7 @@ import Measurement.Utils
         , randomBloodSugarResultFormWithDefault
         , syphilisResultFormWithDefault
         , toBloodGpRsResultsValueWithDefault
-        , toHIVPCRRResultsValueWithDefault
+        , toHIVPCRResultsValueWithDefault
         , toHemoglobinResultsValueWithDefault
         , toHepatitisBResultsValueWithDefault
         , toRandomBloodSugarResultsValueWithDefault
@@ -480,7 +480,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    toHIVPCRRResultsValueWithDefault measurement data.hivPCRTestForm
+                    toHIVPCRResultsValueWithDefault measurement data.hivPCRTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -1133,7 +1133,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toHIVPCRRResultsValueWithDefault measurement model.labResultsData.hivPCRTestForm
+                    toHIVPCRResultsValueWithDefault measurement model.labResultsData.hivPCRTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

@@ -1579,7 +1579,6 @@ type TranslationId
     | SevereHemorrhagingPreviousDelivery
     | Shared
     | SignOnDoorPostedQuestion
-    | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | SpecialityCareHeaderPrefix
     | SpecialityCareHeaderSuffix
     | SpecialityCareSignQuestion SpecialityCareSign
@@ -6499,6 +6498,13 @@ translationSet trans =
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
+                TaskPartnerHIVTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -7203,6 +7209,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskCompletePreviousTests ->
                     { english = "History"
                     , kinyarwanda = Just "Amakuru"
@@ -7275,6 +7286,11 @@ translationSet trans =
 
                 TaskHbA1cTest ->
                     { english = "HBA1C"
+                    , kinyarwanda = Nothing
+                    }
+
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV"
                     , kinyarwanda = Nothing
                     }
 
@@ -7356,6 +7372,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -7434,6 +7455,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -7460,6 +7486,11 @@ translationSet trans =
                 LabResultsHistoryHIVPCR _ ->
                     { english = "HIV PCR Test History"
                     , kinyarwanda = Just "Amakuru ku kizamini cya PCR gipima Virusi itera SIDA"
+                    }
+
+                LabResultsHistoryPartnerHIV _ ->
+                    { english = "Partner HIV Test History"
+                    , kinyarwanda = Nothing
                     }
 
                 LabResultsHistorySyphilis _ ->
@@ -7602,6 +7633,11 @@ translationSet trans =
                 LabResultsHistoryHIVPCR _ ->
                     { english = "<20 copies"
                     , kinyarwanda = Just "Munsi ya kopi 20"
+                    }
+
+                LabResultsHistoryPartnerHIV _ ->
+                    { english = "Negative"
+                    , kinyarwanda = Just "Nta bwandu afite"
                     }
 
                 LabResultsHistorySyphilis _ ->
@@ -16861,28 +16897,6 @@ translationSet trans =
             { english = "Have you posted signs on the door indicating that the space is an isolation area"
             , kinyarwanda = Just "Waba washyize ibimenyetso ku rugi byerekana ko iki cyumba ari ikijyamo abantu bari mu kato"
             }
-
-        SocialHistoryHivTestingResult result ->
-            case result of
-                ResultHivPositive ->
-                    { english = "Positive"
-                    , kinyarwanda = Just "Afite Ubwandu"
-                    }
-
-                ResultHivNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
-
-                ResultHivIndeterminate ->
-                    { english = "Indeterminate"
-                    , kinyarwanda = Just "Ntibisobanutse"
-                    }
-
-                NoHivTesting ->
-                    { english = "No HIV Testing"
-                    , kinyarwanda = Just "Ntibibonetse"
-                    }
 
         SpecialityCareHeaderPrefix ->
             { english = "You were diagnosed with"

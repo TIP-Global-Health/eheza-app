@@ -2557,25 +2557,6 @@ reasonForNonReferralToString value =
             "none"
 
 
-socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
-socialHistoryHivTestingResultFromString result =
-    case result of
-        "positive" ->
-            Just ResultHivPositive
-
-        "negative" ->
-            Just ResultHivNegative
-
-        "indeterminate" ->
-            Just ResultHivIndeterminate
-
-        "none" ->
-            Just NoHivTesting
-
-        _ ->
-            Nothing
-
-
 postpartumHealingProblemToString : PostpartumHealingProblem -> String
 postpartumHealingProblemToString value =
     case value of
@@ -2621,22 +2602,6 @@ postpartumHealingProblemFromString value =
 
         _ ->
             Nothing
-
-
-socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
-socialHistoryHivTestingResultToString result =
-    case result of
-        ResultHivPositive ->
-            "positive"
-
-        ResultHivNegative ->
-            "negative"
-
-        ResultHivIndeterminate ->
-            "indeterminate"
-
-        NoHivTesting ->
-            "none"
 
 
 pregnancyTestResultFromString : String -> Maybe PregnancyTestResult

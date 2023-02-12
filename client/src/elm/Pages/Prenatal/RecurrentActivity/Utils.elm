@@ -132,6 +132,9 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
 
+        TaskPartnerHIVTest ->
+            not <| taskExpected TaskPartnerHIVTest
+
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
 
@@ -177,6 +180,9 @@ expectLaboratoryResultTask currentDate assembled task =
 
         TaskHIVPCRTest ->
             wasTestPerformed .hivPCRTest
+
+        TaskPartnerHIVTest ->
+            False
 
         TaskCompletePreviousTests ->
             False

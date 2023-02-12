@@ -11,7 +11,6 @@ import Backend.Measurement.Utils
         , muacIndication
         , muacValueFunc
         , pregnancyTestResultToString
-        , socialHistoryHivTestingResultToString
         , testResultToString
         , weightValueFunc
         )
@@ -58,6 +57,7 @@ import Measurement.Utils
         , nonRDTFormWithDefault
         , outsideCareFormInputsAndTasks
         , outsideCareFormWithDefault
+        , partnerHIVTestFormWithDefault
         , randomBloodSugarFormWithDefault
         , urineDipstickFormWithDefault
         , vaccinationFormWithDefault
@@ -65,6 +65,7 @@ import Measurement.Utils
         , viewMalariaTestForm
         , viewNonRDTForm
         , viewNonRDTFormCheckKnownAsPositive
+        , viewPartnerHIVTestForm
         , viewRandomBloodSugarForm
         , viewUrineDipstickForm
         , vitalsFormWithDefault
@@ -597,6 +598,22 @@ viewHistoryContent language currentDate assembled data =
                                     )
                             )
 
+                        Medical ->
+                            ( Medical
+                            , ( Maybe.Extra.values medicalFormTasks
+                                    |> List.length
+                              , List.length medicalFormTasks
+                              )
+                            )
+
+                        Social ->
+                            ( Social
+                            , ( Maybe.Extra.values socialFormTasks
+                                    |> List.length
+                              , List.length socialFormTasks
+                              )
+                            )
+
                         OutsideCare ->
                             ( OutsideCare
                             , ( Maybe.Extra.values outsideCareTasks
@@ -604,9 +621,6 @@ viewHistoryContent language currentDate assembled data =
                               , List.length outsideCareTasks
                               )
                             )
-
-                        _ ->
-                            ( task, historyTasksCompletedFromTotal assembled data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -636,6 +650,18 @@ viewHistoryContent language currentDate assembled data =
             getMeasurementValueFunc assembled.measurements.obstetricHistoryStep2
                 |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
                 |> obstetricFormSecondStepInputsAndTasks language currentDate assembled
+
+        ( medicalFormInputs, medicalFormTasks ) =
+            assembled.measurements.medicalHistory
+                |> getMeasurementValueFunc
+                |> medicalHistoryFormWithDefault data.medicalForm
+                |> medicalFormInputsAndTasks language currentDate assembled
+
+        ( socialFormInputs, socialFormTasks ) =
+            assembled.measurements.socialHistory
+                |> getMeasurementValueFunc
+                |> socialHistoryFormWithDefault data.socialForm
+                |> socialFormInputsAndTasks language currentDate assembled
 
         outsideCareForm =
             assembled.measurements.outsideCare
@@ -703,47 +729,12 @@ viewHistoryContent language currentDate assembled data =
                                 obstetricFormSecondStepInputs
 
                 Just Medical ->
-                    assembled.measurements.medicalHistory
-                        |> getMeasurementValueFunc
-                        |> medicalHistoryFormWithDefault data.medicalForm
-                        |> viewMedicalForm language currentDate assembled
+                    div [ class "form history medical" ]
+                        medicalFormInputs
 
                 Just Social ->
-                    let
-                        socialForm =
-                            assembled.measurements.socialHistory
-                                |> getMeasurementValueFunc
-                                |> socialHistoryFormWithDefault data.socialForm
-
-                        showCounselingQuestion =
-                            assembled.nursePreviousEncountersData
-                                |> List.filter
-                                    (.measurements
-                                        >> .socialHistory
-                                        >> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
-                                        >> Maybe.withDefault False
-                                    )
-                                |> List.isEmpty
-
-                        showTestingQuestions =
-                            assembled.nursePreviousEncountersData
-                                |> List.filter
-                                    (.measurements
-                                        >> .socialHistory
-                                        >> Maybe.map
-                                            (\socialHistory ->
-                                                let
-                                                    value =
-                                                        Tuple.second socialHistory |> .value
-                                                in
-                                                (value.hivTestingResult == ResultHivPositive)
-                                                    || (value.hivTestingResult == ResultHivNegative)
-                                            )
-                                        >> Maybe.withDefault False
-                                    )
-                                |> List.isEmpty
-                    in
-                    viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
+                    div [ class "form history social" ]
+                        socialFormInputs
 
                 Just OutsideCare ->
                     div [ class "ui form history outside-care" ]
@@ -1589,6 +1580,15 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     TaskHIVPCRTest
 
+                        TaskPartnerHIVTest ->
+                            measurements.partnerHIVTest
+                                |> getMeasurementValueFunc
+                                |> partnerHIVTestFormWithDefault data.partnerHIVTestForm
+                                |> viewPartnerHIVTestForm language
+                                    currentDate
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
+
                         TaskCompletePreviousTests ->
                             viewLabsHistoryForm language currentDate assembled data.labsHistoryForm
 
@@ -1651,6 +1651,9 @@ viewLaboratoryContentForNurse language currentDate assembled data =
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRTest personId measurements.hivPCRTest nextTask
+
+                                TaskPartnerHIVTest ->
+                                    SavePartnerHIVTest personId measurements.partnerHIVTest nextTask
 
                                 TaskCompletePreviousTests ->
                                     SaveLabsHistory
@@ -3057,8 +3060,13 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
     )
 
 
-viewMedicalForm : Language -> NominalDate -> AssembledData -> MedicalHistoryForm -> Html Msg
-viewMedicalForm language currentDate assembled form =
+medicalFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> MedicalHistoryForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+medicalFormInputsAndTasks language currentDate assembled form =
     let
         uterineMyomaUpdateFunc value form_ =
             { form_ | uterineMyoma = Just value }
@@ -3093,238 +3101,219 @@ viewMedicalForm language currentDate assembled form =
         mentalHealthHistoryUpdateFunc value form_ =
             { form_ | mentalHealthHistory = Just value }
     in
-    div [ class "form history medical" ]
-        [ viewCustomLabel language Translate.MedicalFormHelper ":" "label helper"
-        , div [ class "ui grid" ]
+    ( [ viewCustomLabel language Translate.MedicalFormHelper ":" "label helper"
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.UterineMyoma ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.uterineMyoma False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.uterineMyoma
             (SetMedicalBoolInput uterineMyomaUpdateFunc)
             "uterine-myoma"
             Nothing
-        , div [ class "ui grid" ]
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Diabetes ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.diabetes False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.diabetes
             (SetMedicalBoolInput diabetesUpdateFunc)
             "diabetes"
             Nothing
-        , div [ class "ui grid" ]
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.CardiacDisease ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.cardiacDisease False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.cardiacDisease
             (SetMedicalBoolInput cardiacDiseaseUpdateFunc)
             "cardiac-disease"
             Nothing
-        , div [ class "ui grid" ]
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.RenalDisease ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.renalDisease False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.renalDisease
             (SetMedicalBoolInput renalDiseaseUpdateFunc)
             "renal-disease"
             Nothing
-        , div [ class "ui grid" ]
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HypertensionBeforePregnancy ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.hypertensionBeforePregnancy False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.hypertensionBeforePregnancy
             (SetMedicalBoolInput hypertensionBeforePregnancyUpdateFunc)
             "hypertension-before-pregnancy"
             Nothing
-        , div [ class "ui grid" ]
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.TuberculosisPast ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.tuberculosisPast False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.tuberculosisPast
             (SetMedicalBoolInput tuberculosisPastUpdateFunc)
             "tuberculosis-past"
             Nothing
-        , div [ class "ui grid" ]
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.TuberculosisPresent ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.tuberculosisPresent False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.tuberculosisPresent
             (SetMedicalBoolInput tuberculosisPresentUpdateFunc)
             "tuberculosis-present"
             Nothing
-        , div [ class "ui grid" ]
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Asthma ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.asthma False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.asthma
             (SetMedicalBoolInput asthmaUpdateFunc)
             "asthma"
             Nothing
-        , div [ class "ui grid" ]
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.BowedLegs ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.bowedLegs False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.bowedLegs
             (SetMedicalBoolInput bowedLegsUpdateFunc)
             "bowed-legs"
             Nothing
-        , div [ class "ui grid" ]
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HIV ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.hiv False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.hiv
             (SetMedicalBoolInput hivUpdateFunc)
             "hiv"
             Nothing
-        , div [ class "ui grid" ]
+      , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.MentalHealthHistory ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.mentalHealthHistory False ]
             ]
-        , viewBoolInput
+      , viewBoolInput
             language
             form.mentalHealthHistory
             (SetMedicalBoolInput mentalHealthHistoryUpdateFunc)
             "mental-health-history"
             Nothing
-        ]
+      ]
+    , [ form.uterineMyoma
+      , form.diabetes
+      , form.cardiacDisease
+      , form.renalDisease
+      , form.hypertensionBeforePregnancy
+      , form.tuberculosisPast
+      , form.tuberculosisPresent
+      , form.asthma
+      , form.hiv
+      , form.mentalHealthHistory
+      ]
+    )
 
 
-viewSocialForm : Language -> NominalDate -> Bool -> Bool -> SocialHistoryForm -> Html Msg
-viewSocialForm language currentDate showCounselingQuestion showTestingQuestions form =
+socialFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> SocialHistoryForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+socialFormInputsAndTasks language currentDate assembled form =
     let
         accompaniedByPartnerUpdateFunc value form_ =
             { form_ | accompaniedByPartner = Just value }
 
-        accompaniedQuestion =
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewQuestionLabel language Translate.AccompaniedByPartner ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.accompaniedByPartner True ]
-                ]
-            , viewBoolInput
-                language
-                form.accompaniedByPartner
-                (SetSocialBoolInput accompaniedByPartnerUpdateFunc)
-                "accompanied-by-partner"
-                Nothing
-            ]
-
-        counselingQuestion =
+        ( counselingHtml, counselingTasks ) =
+            let
+                showCounselingQuestion =
+                    -- Show the question until we get a positive answer for it.
+                    List.filter
+                        (.measurements
+                            >> .socialHistory
+                            >> getMeasurementValueFunc
+                            >> Maybe.map (EverySet.member PartnerHivCounseling)
+                            >> Maybe.withDefault False
+                        )
+                        assembled.nursePreviousEncountersData
+                        |> List.isEmpty
+            in
             if showCounselingQuestion then
                 let
                     partnerReceivedCounselingUpdateFunc value form_ =
                         { form_ | partnerReceivedCounseling = Just value }
                 in
-                [ div [ class "ui grid" ]
-                    [ div [ class "twelve wide column" ]
-                        [ viewQuestionLabel language Translate.PartnerReceivedHivCounseling ]
-                    , div [ class "four wide column" ]
-                        [ viewRedAlertForBool form.partnerReceivedCounseling True ]
-                    ]
-                , viewBoolInput
-                    language
-                    form.partnerReceivedCounseling
-                    (SetSocialBoolInput partnerReceivedCounselingUpdateFunc)
-                    "partner-received-counseling"
-                    Nothing
-                ]
-
-            else
-                []
-
-        testingReceivedQuestion =
-            if showTestingQuestions then
-                let
-                    partnerReceivedTestingUpdateFunc value form_ =
-                        { form_ | partnerReceivedTesting = Just value }
-                in
-                [ div [ class "ui grid" ]
-                    [ div [ class "twelve wide column" ]
-                        [ viewQuestionLabel language Translate.PartnerReceivedHivTesting ]
-                    , div [ class "four wide column" ]
-                        [ viewRedAlertForBool form.partnerReceivedTesting True ]
-                    ]
-                , viewBoolInput
-                    language
-                    form.partnerReceivedTesting
-                    (SetSocialBoolInput partnerReceivedTestingUpdateFunc)
-                    "partner-received-testing"
-                    Nothing
-                ]
-
-            else
-                []
-
-        testingResultQuestion =
-            if showTestingQuestions && form.partnerReceivedTesting == Just True then
-                [ div [ class "ui grid" ]
-                    [ div [ class "twelve wide column" ]
-                        [ viewQuestionLabel language Translate.PartnerHivTestResult ]
-                    , div [ class "four wide column" ]
-                        [ viewRedAlertForSelect
-                            (form.partnerTestingResult |> Maybe.map List.singleton |> Maybe.withDefault [])
-                            [ NoHivTesting, ResultHivNegative, ResultHivIndeterminate ]
-                        , viewYellowAlertForSelect
-                            (form.partnerTestingResult |> Maybe.map List.singleton |> Maybe.withDefault [])
-                            [ NoHivTesting, ResultHivNegative, ResultHivPositive ]
+                ( [ div [ class "ui grid" ]
+                        [ div [ class "twelve wide column" ]
+                            [ viewQuestionLabel language Translate.PartnerReceivedHivCounseling ]
+                        , div [ class "four wide column" ]
+                            [ viewRedAlertForBool form.partnerReceivedCounseling True ]
                         ]
-                    ]
-                , viewSelectListInput language
-                    form.partnerTestingResult
-                    [ ResultHivNegative, ResultHivPositive, ResultHivIndeterminate ]
-                    socialHistoryHivTestingResultToString
-                    SetSocialHivTestingResult
-                    Translate.SocialHistoryHivTestingResult
-                    "hiv-test-result"
-                ]
+                  , viewBoolInput
+                        language
+                        form.partnerReceivedCounseling
+                        (SetSocialBoolInput partnerReceivedCounselingUpdateFunc)
+                        "partner-received-counseling"
+                        Nothing
+                  ]
+                , [ form.partnerReceivedCounseling ]
+                )
 
             else
-                []
+                ( [], [] )
     in
-    (accompaniedQuestion ++ counselingQuestion ++ testingReceivedQuestion ++ testingResultQuestion)
-        |> div [ class "form history social" ]
+    ( [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewQuestionLabel language Translate.AccompaniedByPartner ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.accompaniedByPartner True ]
+            ]
+      , viewBoolInput
+            language
+            form.accompaniedByPartner
+            (SetSocialBoolInput accompaniedByPartnerUpdateFunc)
+            "accompanied-by-partner"
+            Nothing
+      ]
+        ++ counselingHtml
+    , [ form.accompaniedByPartner ] ++ counselingTasks
+    )
 
 
 viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
@@ -3795,6 +3784,9 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
                     , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
                     , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
+                    , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
+                    , setPartnerHIVTestResultMsg = SetPartnerHIVTestResult
                 }
            )
 
@@ -3832,6 +3824,9 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
                     , setHIVPCRTestExecutionDateMsg = SetHIVPCRTestExecutionDate
                     , setHIVPCRTestDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
+                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
+                    , setPartnerHIVTestExecutionDateMsg = SetPartnerHIVTestExecutionDate
+                    , setPartnerHIVTestDateSelectorStateMsg = SetPartnerHIVTestDateSelectorState
                 }
            )
 

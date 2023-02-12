@@ -395,6 +395,9 @@ viewLabResultsContent language currentDate assembled model =
                                 |> hivPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
                                 |> hivPCRResultFormAndTasks language currentDate SetHIVViralLoad SetHIVViralLoadUndetectable
 
+                        TaskPartnerHIVTest ->
+                            ( emptyNode, 0, 0 )
+
                         TaskCompletePreviousTests ->
                             ( emptyNode, 0, 0 )
 
@@ -457,6 +460,9 @@ viewLabResultsContent language currentDate assembled model =
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRResult personId measurements.hivPCRTest nextTask |> Just
+
+                                TaskPartnerHIVTest ->
+                                    Nothing
 
                                 TaskCompletePreviousTests ->
                                     Nothing

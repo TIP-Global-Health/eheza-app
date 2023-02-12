@@ -19,6 +19,7 @@ import Measurement.Model
         , NonRDTForm
         , OutsideCareForm
         , OutsideCareStep(..)
+        , PartnerHIVTestForm
         , RandomBloodSugarForm
         , SendToHCForm
         , UrineDipstickForm
@@ -31,6 +32,7 @@ import Measurement.Model
         , emptyMalariaTestForm
         , emptyNonRDTForm
         , emptyOutsideCareForm
+        , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarForm
         , emptySendToHCForm
         , emptyUrineDipstickForm
@@ -74,7 +76,6 @@ type Msg
     | SaveMedicalHistory PersonId (Maybe ( MedicalHistoryId, MedicalHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
-    | SetSocialHivTestingResult String
     | SaveSocialHistory PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Outside Care
     | SetOutsideCareStep OutsideCareStep
@@ -196,6 +197,12 @@ type Msg
     | SaveHIVPCRTest PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
     | SetLabsHistoryCompleted Bool
     | SaveLabsHistory
+    | SetPartnerHIVTestFormBoolInput (Bool -> PartnerHIVTestForm Msg -> PartnerHIVTestForm Msg) Bool
+    | SetPartnerHIVTestExecutionNote TestExecutionNote
+    | SetPartnerHIVTestExecutionDate NominalDate
+    | SetPartnerHIVTestResult String
+    | SetPartnerHIVTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SavePartnerHIVTest PersonId (Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )) (Maybe LaboratoryTask)
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
@@ -532,6 +539,7 @@ type alias LaboratoryData =
     , urineDipstickTestForm : UrineDipstickForm Msg
     , hivPCRTestForm : NonRDTForm Msg
     , labsHistoryForm : LabsHistoryForm
+    , partnerHIVTestForm : PartnerHIVTestForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -549,6 +557,7 @@ emptyLaboratoryData =
     , urineDipstickTestForm = emptyUrineDipstickForm
     , hivPCRTestForm = emptyNonRDTForm
     , labsHistoryForm = emptyLabsHistoryForm
+    , partnerHIVTestForm = emptyPartnerHIVTestForm
     , activeTask = Nothing
     }
 
@@ -844,14 +853,12 @@ emptyMedicalHistoryForm =
 type alias SocialHistoryForm =
     { accompaniedByPartner : Maybe Bool
     , partnerReceivedCounseling : Maybe Bool
-    , partnerReceivedTesting : Maybe Bool
-    , partnerTestingResult : Maybe SocialHistoryHivTestingResult
     }
 
 
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
-    SocialHistoryForm Nothing Nothing Nothing Nothing
+    SocialHistoryForm Nothing Nothing
 
 
 type alias NutritionAssessmentForm =

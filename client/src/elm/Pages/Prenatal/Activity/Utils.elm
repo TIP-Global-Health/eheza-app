@@ -4368,25 +4368,14 @@ toMalariaPreventionValue form =
     Maybe.map (toEverySet MosquitoNet NoMalariaPreventionSigns) form.receivedMosquitoNet
 
 
-fromSocialHistoryValue : Maybe SocialHistoryValue -> SocialHistoryForm
-fromSocialHistoryValue saved =
-    { accompaniedByPartner = Maybe.map (.socialHistory >> EverySet.member AccompaniedByPartner) saved
-    , partnerReceivedCounseling = Maybe.map (.socialHistory >> EverySet.member PartnerHivCounseling) saved
-    , partnerReceivedTesting = Maybe.map (.hivTestingResult >> (==) NoHivTesting >> not) saved
-    , partnerTestingResult = Maybe.map .hivTestingResult saved
-    }
-
-
 socialHistoryFormWithDefault : SocialHistoryForm -> Maybe SocialHistoryValue -> SocialHistoryForm
 socialHistoryFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value.socialHistory |> Just)
-                , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value.socialHistory |> Just)
-                , partnerReceivedTesting = or form.partnerReceivedTesting (value.hivTestingResult == NoHivTesting |> not |> Just)
-                , partnerTestingResult = or form.partnerTestingResult (Just value.hivTestingResult)
+                { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value |> Just)
+                , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value |> Just)
                 }
             )
 
@@ -4399,16 +4388,11 @@ toSocialHistoryValueWithDefault saved form =
 
 toSocialHistoryValue : SocialHistoryForm -> Maybe SocialHistoryValue
 toSocialHistoryValue form =
-    let
-        socialHistory =
-            [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
-            , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSocialHistorySign)
-    in
-    Maybe.map SocialHistoryValue socialHistory
-        |> andMap form.partnerTestingResult
+    [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
+    , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSocialHistorySign)
 
 
 fromPregnancyTestValue : Maybe PregnancyTestResult -> PregnancyTestForm
@@ -4443,113 +4427,6 @@ toPregnancyTestValueWithDefault saved form =
 toPregnancyTestValue : PregnancyTestForm -> Maybe PregnancyTestResult
 toPregnancyTestValue form =
     form.pregnancyTestResult
-
-
-historyTasksCompletedFromTotal : AssembledData -> HistoryData -> HistoryTask -> ( Int, Int )
-historyTasksCompletedFromTotal assembled data task =
-    case task of
-        Obstetric ->
-            -- This is not in use, because Obstetric task got
-            -- special treatment at viewHistoryContent().
-            ( 0, 0 )
-
-        Medical ->
-            let
-                medicalForm =
-                    assembled.measurements.medicalHistory
-                        |> getMeasurementValueFunc
-                        |> medicalHistoryFormWithDefault data.medicalForm
-
-                boolInputs =
-                    [ medicalForm.uterineMyoma
-                    , medicalForm.diabetes
-                    , medicalForm.cardiacDisease
-                    , medicalForm.renalDisease
-                    , medicalForm.hypertensionBeforePregnancy
-                    , medicalForm.tuberculosisPast
-                    , medicalForm.tuberculosisPresent
-                    , medicalForm.asthma
-                    , medicalForm.bowedLegs
-                    , medicalForm.hiv
-                    ]
-            in
-            ( boolInputs
-                |> List.map taskCompleted
-                |> List.sum
-            , List.length boolInputs
-            )
-
-        Social ->
-            let
-                socialForm =
-                    assembled.measurements.socialHistory
-                        |> getMeasurementValueFunc
-                        |> socialHistoryFormWithDefault data.socialForm
-
-                showCounselingQuestion =
-                    assembled.nursePreviousEncountersData
-                        |> List.filter
-                            (.measurements
-                                >> .socialHistory
-                                >> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
-                                >> Maybe.withDefault False
-                            )
-                        |> List.isEmpty
-
-                partnerReceivedCounselingInput =
-                    if showCounselingQuestion then
-                        [ socialForm.partnerReceivedCounseling ]
-
-                    else
-                        []
-
-                showTestingQuestions =
-                    assembled.nursePreviousEncountersData
-                        |> List.filter
-                            (.measurements
-                                >> .socialHistory
-                                >> Maybe.map
-                                    (\socialHistory ->
-                                        let
-                                            value =
-                                                Tuple.second socialHistory |> .value
-                                        in
-                                        (value.hivTestingResult == ResultHivPositive)
-                                            || (value.hivTestingResult == ResultHivNegative)
-                                    )
-                                >> Maybe.withDefault False
-                            )
-                        |> List.isEmpty
-
-                partnerReceivedTestingInput =
-                    if showTestingQuestions then
-                        [ socialForm.partnerReceivedTesting ]
-
-                    else
-                        []
-
-                boolInputs =
-                    (socialForm.accompaniedByPartner
-                        :: partnerReceivedCounselingInput
-                    )
-                        ++ partnerReceivedTestingInput
-
-                listInputs =
-                    if socialForm.partnerReceivedTesting == Just True then
-                        [ socialForm.partnerTestingResult ]
-
-                    else
-                        []
-            in
-            ( (boolInputs |> List.map taskCompleted |> List.sum)
-                + (listInputs |> List.map taskCompleted |> List.sum)
-            , List.length boolInputs + List.length listInputs
-            )
-
-        OutsideCare ->
-            -- This is not in use, because OutsideCare task got
-            -- special treatment at viewHistoryContent().
-            ( 0, 0 )
 
 
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
@@ -4802,7 +4679,8 @@ toAppointmentConfirmationValue form =
 
 laboratoryTasks : List LaboratoryTask
 laboratoryTasks =
-    [ TaskHIVTest
+    [ TaskPartnerHIVTest
+    , TaskHIVTest
     , TaskHIVPCRTest
     , TaskSyphilisTest
     , TaskHepatitisBTest
@@ -4851,6 +4729,9 @@ laboratoryTaskCompleted currentDate assembled task =
 
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || isJust measurements.hivPCRTest
+
+        TaskPartnerHIVTest ->
+            (not <| taskExpected TaskPartnerHIVTest) || isJust measurements.partnerHIVTest
 
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
@@ -4957,6 +4838,9 @@ expectLaboratoryTask currentDate assembled task =
                 TaskHIVPCRTest ->
                     isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
 
+                TaskPartnerHIVTest ->
+                    isInitialTest TaskPartnerHIVTest
+
                 TaskCompletePreviousTests ->
                     -- If we got this far, history task was completed.
                     False
@@ -5017,6 +4901,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) (always True) )
     , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest (.hemoglobinCount >> isJust) (always True) )
     , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) (always True) )
+    , ( TaskPartnerHIVTest, generateTestDates .partnerHIVTest (always True) isTestResultValid )
     ]
         |> Dict.fromList
 

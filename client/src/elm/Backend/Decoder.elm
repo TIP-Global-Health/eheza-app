@@ -370,6 +370,9 @@ decodeRevision =
                     "prenatal_outside_care" ->
                         decodeWithUuid PrenatalOutsideCareRevision decodePrenatalOutsideCare
 
+                    "prenatal_partner_hiv_test" ->
+                        decodeWithUuid PrenatalPartnerHIVTestRevision decodePrenatalPartnerHIVTest
+
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
 
