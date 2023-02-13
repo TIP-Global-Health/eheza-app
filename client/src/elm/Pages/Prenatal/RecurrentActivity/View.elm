@@ -286,6 +286,10 @@ viewActivity language currentDate activity assembled db model =
         RecurrentExamination ->
             viewExaminationContent language currentDate assembled model.examinationData
 
+        RecurrentMalariaPrevention ->
+            -- @todo:
+            []
+
 
 viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewLabResultsContent language currentDate assembled model =

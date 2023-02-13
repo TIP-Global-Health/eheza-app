@@ -52,6 +52,10 @@ expectActivity currentDate assembled activity =
                 |> List.isEmpty
                 |> not
 
+        RecurrentMalariaPrevention ->
+            -- @todo:
+            True
+
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
 activityCompleted currentDate assembled activity =
@@ -73,6 +77,11 @@ activityCompleted currentDate assembled activity =
                 || (resolveExaminationTasks currentDate assembled
                         |> List.all (examinationMeasurementTaken assembled)
                    )
+
+        RecurrentMalariaPrevention ->
+            (not <| expectActivity currentDate assembled RecurrentMalariaPrevention)
+                || -- @todo:
+                   False
 
 
 laboratoryResultTasks : List LaboratoryTask
