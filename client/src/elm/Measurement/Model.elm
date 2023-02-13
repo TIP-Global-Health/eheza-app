@@ -732,6 +732,10 @@ type alias MalariaTestForm msg =
     , testPerformedTodayDirty : Bool
     , executionNote : Maybe TestExecutionNote
     , executionNoteDirty : Bool
+
+    -- Holds the date of Malaria RDT execution.
+    -- If Malaria RDT was not performed, but blood smear was,
+    -- will hold the date of blood smear.
     , executionDate : Maybe NominalDate
     , executionDateDirty : Bool
     , testResult : Maybe TestResult
