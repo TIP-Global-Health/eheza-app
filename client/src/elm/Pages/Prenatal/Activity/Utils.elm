@@ -100,7 +100,7 @@ expectActivity currentDate assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.MalariaPrevention ->
-                    expectMalariaPreventionActivity assembled
+                    expectMalariaPreventionActivityByPastEncounters assembled
 
                 Backend.PrenatalActivity.Model.Medication ->
                     True
@@ -4369,8 +4369,6 @@ malariaPreventionFormWithDefault form saved =
             form
             (\value ->
                 { receivedMosquitoNet = or form.receivedMosquitoNet (EverySet.member MosquitoNet value.resources |> Just)
-
-                -- , phaseRecorded = or form.phaseRecorded value.phaseRecorded
                 }
             )
 

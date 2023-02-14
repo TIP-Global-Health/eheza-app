@@ -3550,8 +3550,8 @@ applyGeneralDiagnosesHierarchy diagnoses =
         diagnoses
 
 
-expectMalariaPreventionActivity : AssembledData -> Bool
-expectMalariaPreventionActivity =
+expectMalariaPreventionActivityByPastEncounters : AssembledData -> Bool
+expectMalariaPreventionActivityByPastEncounters =
     .nursePreviousEncountersData
         >> List.filter
             (.measurements

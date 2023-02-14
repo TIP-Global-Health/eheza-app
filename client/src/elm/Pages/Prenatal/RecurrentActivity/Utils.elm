@@ -53,8 +53,18 @@ expectActivity currentDate assembled activity =
                 |> not
 
         RecurrentMalariaPrevention ->
-            -- @todo:
-            True
+            -- Measurement should be taken at current encounter.
+            expectMalariaPreventionActivityByPastEncounters assembled
+                && (getMeasurementValueFunc assembled.measurements.malariaPrevention
+                        |> Maybe.map
+                            (\value ->
+                                value.phaseRecorded == PhaseRecurrent
+                            )
+                        |> -- No measurement taken on initial
+                           -- phase of current encounter.
+                           -- Need to take it recurrent phase.
+                           Maybe.withDefault True
+                   )
 
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
@@ -80,8 +90,7 @@ activityCompleted currentDate assembled activity =
 
         RecurrentMalariaPrevention ->
             (not <| expectActivity currentDate assembled RecurrentMalariaPrevention)
-                || -- @todo:
-                   False
+                || isJust assembled.measurements.malariaPrevention
 
 
 laboratoryResultTasks : List LaboratoryTask
