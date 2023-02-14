@@ -1780,8 +1780,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                             False
 
                                         FacilityUltrasound ->
-                                            -- @todo
-                                            False
+                                            EverySet.member ReferToUltrasound referToFacilitySigns
 
                                         FacilityHealthCenter ->
                                             -- We should never get here.
