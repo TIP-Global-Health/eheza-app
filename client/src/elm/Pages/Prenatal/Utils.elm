@@ -3548,3 +3548,15 @@ applyGeneralDiagnosesHierarchy diagnoses =
 
     else
         diagnoses
+
+
+expectMalariaPreventionActivity : AssembledData -> Bool
+expectMalariaPreventionActivity =
+    .nursePreviousEncountersData
+        >> List.filter
+            (.measurements
+                >> .malariaPrevention
+                >> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
+                >> Maybe.withDefault False
+            )
+        >> List.isEmpty

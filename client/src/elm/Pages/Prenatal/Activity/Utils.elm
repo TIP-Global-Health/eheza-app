@@ -100,14 +100,7 @@ expectActivity currentDate assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.MalariaPrevention ->
-                    assembled.nursePreviousEncountersData
-                        |> List.filter
-                            (.measurements
-                                >> .malariaPrevention
-                                >> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
-                                >> Maybe.withDefault False
-                            )
-                        |> List.isEmpty
+                    expectMalariaPreventionActivity assembled
 
                 Backend.PrenatalActivity.Model.Medication ->
                     True
