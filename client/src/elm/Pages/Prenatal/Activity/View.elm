@@ -85,7 +85,13 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (customWarningPopup, viewMedicationDistributionForm, viewPauseEncounterButton)
+import Pages.Prenatal.View
+    exposing
+        ( customWarningPopup
+        , viewMalariaPreventionContent
+        , viewMedicationDistributionForm
+        , viewPauseEncounterButton
+        )
 import Pages.Utils
     exposing
         ( customSaveButton
@@ -318,7 +324,12 @@ viewActivity language currentDate isChw activity assembled db model =
             viewBirthPlanContent language currentDate assembled model.birthPlanData
 
         Backend.PrenatalActivity.Model.MalariaPrevention ->
-            viewMalariaPreventionContent language currentDate assembled model.malariaPreventionData
+            viewMalariaPreventionContent language
+                currentDate
+                assembled
+                SetMalariaPreventionBoolInput
+                SaveMalariaPrevention
+                model.malariaPreventionData
 
         Backend.PrenatalActivity.Model.Medication ->
             viewMedicationContent language currentDate assembled model.medicationData
@@ -1155,47 +1166,6 @@ viewMedicationContent language currentDate assembled data =
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                 , onClick <| SaveMedication assembled.participant.person assembled.measurements.medication
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
-        ]
-    ]
-
-
-viewMalariaPreventionContent : Language -> NominalDate -> AssembledData -> MalariaPreventionData -> List (Html Msg)
-viewMalariaPreventionContent language currentDate assembled data =
-    let
-        form =
-            assembled.measurements.malariaPrevention
-                |> getMeasurementValueFunc
-                |> malariaPreventionFormWithDefault data.form
-
-        tasksCompleted =
-            taskCompleted form.receivedMosquitoNet
-
-        totalTasks =
-            1
-
-        receivedMosquitoNetUpdateFunc value form_ =
-            { form_ | receivedMosquitoNet = Just value }
-    in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-    , div [ class "ui full segment" ]
-        [ div [ class "full content" ]
-            [ div [ class "ui form malaria-prevention" ]
-                [ viewQuestionLabel language Translate.ReceivedMosquitoNet
-                , viewBoolInput
-                    language
-                    form.receivedMosquitoNet
-                    (SetMalariaPreventionBoolInput receivedMosquitoNetUpdateFunc)
-                    "mosquito-net"
-                    Nothing
-                ]
-            ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveMalariaPrevention assembled.participant.person assembled.measurements.malariaPrevention
                 ]
                 [ text <| translate language Translate.Save ]
             ]

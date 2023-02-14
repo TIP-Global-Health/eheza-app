@@ -390,27 +390,6 @@ emptyFamilyPlanningData =
     }
 
 
-type alias MalariaPreventionData =
-    { form : MalariaPreventionForm
-    }
-
-
-emptyMalariaPreventionData : MalariaPreventionData
-emptyMalariaPreventionData =
-    { form = emptyMalariaPreventionForm
-    }
-
-
-type alias MalariaPreventionForm =
-    { receivedMosquitoNet : Maybe Bool
-    }
-
-
-emptyMalariaPreventionForm : MalariaPreventionForm
-emptyMalariaPreventionForm =
-    MalariaPreventionForm Nothing
-
-
 type alias MedicationData =
     { form : MedicationForm
     }

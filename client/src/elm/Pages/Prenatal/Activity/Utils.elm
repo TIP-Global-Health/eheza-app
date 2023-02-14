@@ -100,7 +100,7 @@ expectActivity currentDate assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.MalariaPrevention ->
-                    expectMalariaPreventionActivityByPastEncounters assembled
+                    expectMalariaPreventionActivity PhaseInitial assembled
 
                 Backend.PrenatalActivity.Model.Medication ->
                     True
@@ -4360,34 +4360,6 @@ toPrenatalNutritionValue form =
     Maybe.map PrenatalNutritionValue (Maybe.map HeightInCm form.height)
         |> andMap (Maybe.map WeightInKg form.weight)
         |> andMap (Maybe.map MuacInCm form.muac)
-
-
-malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe MalariaPreventionValue -> MalariaPreventionForm
-malariaPreventionFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { receivedMosquitoNet = or form.receivedMosquitoNet (EverySet.member MosquitoNet value.resources |> Just)
-                }
-            )
-
-
-toMalariaPreventionValueWithDefault : PhaseRecorded -> Maybe MalariaPreventionValue -> MalariaPreventionForm -> Maybe MalariaPreventionValue
-toMalariaPreventionValueWithDefault phaseRecorded saved form =
-    malariaPreventionFormWithDefault form saved
-        |> toMalariaPreventionValue phaseRecorded
-
-
-toMalariaPreventionValue : PhaseRecorded -> MalariaPreventionForm -> Maybe MalariaPreventionValue
-toMalariaPreventionValue phaseRecorded form =
-    Maybe.map
-        (\receivedMosquitoNet ->
-            { resources = toEverySet MosquitoNet NoMalariaPreventionSigns receivedMosquitoNet
-            , phaseRecorded = phaseRecorded
-            }
-        )
-        form.receivedMosquitoNet
 
 
 socialHistoryFormWithDefault : SocialHistoryForm -> Maybe SocialHistoryValue -> SocialHistoryForm

@@ -49,7 +49,7 @@ import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Prenatal.View exposing (viewMedicationDistributionForm)
+import Pages.Prenatal.View exposing (viewMalariaPreventionContent, viewMedicationDistributionForm)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -287,8 +287,12 @@ viewActivity language currentDate activity assembled db model =
             viewExaminationContent language currentDate assembled model.examinationData
 
         RecurrentMalariaPrevention ->
-            -- @todo:
-            []
+            viewMalariaPreventionContent language
+                currentDate
+                assembled
+                SetMalariaPreventionBoolInput
+                SaveMalariaPrevention
+                model.malariaPreventionData
 
 
 viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)

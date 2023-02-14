@@ -1477,11 +1477,10 @@ update language currentDate id db msg model =
 
         SetMalariaPreventionBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.malariaPreventionData.form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.malariaPreventionData.form
-                    in
                     model.malariaPreventionData
                         |> (\data -> { data | form = updatedForm })
             in
