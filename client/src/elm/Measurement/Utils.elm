@@ -2203,6 +2203,8 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
                                 , bloodSmearTakenDirty = True
                                 , bloodSmearResult = Nothing
                                 , bloodSmearResultDirty = True
+                                , executionDate = Nothing
+                                , executionDateDirty = True
                             }
 
                     ( derivedInputs, derivedTasksCompleted, derivedTasksTotal ) =

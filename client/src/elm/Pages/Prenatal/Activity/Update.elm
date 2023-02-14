@@ -2167,7 +2167,12 @@ update language currentDate id db msg model =
                     model.laboratoryData.malariaTestForm
 
                 updatedForm =
-                    { form | bloodSmearResult = bloodSmearResultFromString value }
+                    { form
+                        | bloodSmearResult = bloodSmearResultFromString value
+                        , bloodSmearResultDirty = True
+                        , executionDate = Just currentDate
+                        , executionDateDirty = True
+                    }
 
                 updatedData =
                     model.laboratoryData
