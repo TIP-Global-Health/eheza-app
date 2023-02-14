@@ -596,6 +596,7 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
     , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
     , setMalariaTestResultMsg : String -> msg
+    , setBloodSmearResultMsg : String -> msg
     , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
     , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
@@ -731,16 +732,24 @@ type alias MalariaTestForm msg =
     , testPerformedTodayDirty : Bool
     , executionNote : Maybe TestExecutionNote
     , executionNoteDirty : Bool
+
+    -- Holds the date of Malaria RDT execution.
+    -- If Malaria RDT was not performed, but blood smear was,
+    -- will hold the date of blood smear.
     , executionDate : Maybe NominalDate
     , executionDateDirty : Bool
     , testResult : Maybe TestResult
+    , bloodSmearTaken : Maybe Bool
+    , bloodSmearTakenDirty : Bool
+    , bloodSmearResult : Maybe BloodSmearResult
+    , bloodSmearResultDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
     }
 
 
 emptyMalariaTestForm : MalariaTestForm msg
 emptyMalariaTestForm =
-    MalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
+    MalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing False Nothing False Nothing
 
 
 type alias UrineDipstickForm msg =

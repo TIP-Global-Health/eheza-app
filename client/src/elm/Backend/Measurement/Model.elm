@@ -995,6 +995,7 @@ type alias MalariaTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe TestResult
+    , bloodSmearResult : BloodSmearResult
     }
 
 
@@ -1014,6 +1015,14 @@ type TestResult
     = TestPositive
     | TestNegative
     | TestIndeterminate
+
+
+type BloodSmearResult
+    = BloodSmearNegative
+    | BloodSmearPlus
+    | BloodSmearPlusPlus
+    | BloodSmearPlusPlusPlus
+    | BloodSmearNotTaken
 
 
 type alias PrenatalHIVTest =

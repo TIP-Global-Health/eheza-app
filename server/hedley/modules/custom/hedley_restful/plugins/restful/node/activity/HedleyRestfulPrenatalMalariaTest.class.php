@@ -17,6 +17,7 @@ class HedleyRestfulPrenatalMalariaTest extends HedleyRestfulPrenatalActivityBase
     'field_test_execution_note',
     'field_execution_date',
     'field_test_result',
+    'field_blood_smear_result',
   ];
 
   /**

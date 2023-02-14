@@ -439,6 +439,9 @@ type TranslationId
     | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
     | BloodPressureSysLabel
+    | BloodSmearQuestion
+    | BloodSmearLabel
+    | BloodSmearResult BloodSmearResult
     | BMI
     | BMIHelper
     | BodyTemperature
@@ -1642,6 +1645,7 @@ type TranslationId
     | TestPerformedTodayQuestion
     | TestPrerequisiteQuestion TestPrerequisite
     | TestResultQuestion
+    | TestResultsQuestion
     | TestVariantUrineDipstickQuestion
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
@@ -3201,6 +3205,41 @@ translationSet trans =
             { english = "Systolic"
             , kinyarwanda = Just "Umubare w'umuvuduko w'amaraso wo hejuru"
             }
+
+        BloodSmearQuestion ->
+            { english = "Did you perform a blood smear"
+            , kinyarwanda = Nothing
+            }
+
+        BloodSmearLabel ->
+            { english = "Blood Smear"
+            , kinyarwanda = Nothing
+            }
+
+        BloodSmearResult value ->
+            case value of
+                BloodSmearNegative ->
+                    translationSet NegativeLabel
+
+                BloodSmearPlus ->
+                    { english = "+"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodSmearPlusPlus ->
+                    { english = "++"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodSmearPlusPlusPlus ->
+                    { english = "+++"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodSmearNotTaken ->
+                    { english = "Not taken"
+                    , kinyarwanda = Nothing
+                    }
 
         BMI ->
             { english = "BMI"
@@ -5847,9 +5886,7 @@ translationSet trans =
                     }
 
                 Negative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 NegativeDiscordantCouple ->
                     { english = "Negative - discordant couple"
@@ -6612,9 +6649,7 @@ translationSet trans =
                     }
 
                 RhesusNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Afite Resisi negatifu"
-                    }
+                    translationSet NegativeLabel
 
         LaboratoryProteinLabel ->
             { english = "Protein"
@@ -6760,9 +6795,7 @@ translationSet trans =
         LaboratoryLeukocytesValue value ->
             case value of
                 LeukocytesNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta Kibazo afite"
-                    }
+                    translationSet NegativeLabel
 
                 LeukocytesSmall ->
                     { english = "Small (+)"
@@ -6792,9 +6825,7 @@ translationSet trans =
         LaboratoryNitriteValue value ->
             case value of
                 NitriteNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta kibazo afite"
-                    }
+                    translationSet NegativeLabel
 
                 NitritePlus ->
                     { english = "+"
@@ -6856,9 +6887,7 @@ translationSet trans =
         LaboratoryHaemoglobinValue value ->
             case value of
                 HaemoglobinNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta kibazo afite"
-                    }
+                    translationSet NegativeLabel
 
                 HaemoglobinNonHemolyzedTrace ->
                     { english = "Non-Hemolyzed Trace"
@@ -6903,9 +6932,7 @@ translationSet trans =
         LaboratoryKetoneValue value ->
             case value of
                 KetoneNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta Kibazo afite"
-                    }
+                    translationSet NegativeLabel
 
                 Ketone5 ->
                     { english = "5"
@@ -6950,9 +6977,7 @@ translationSet trans =
         LaboratoryBilirubinValue value ->
             case value of
                 BilirubinNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta kibazo afite"
-                    }
+                    translationSet NegativeLabel
 
                 BilirubinSmall ->
                     { english = "Small (+)"
@@ -7520,6 +7545,11 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru ku kizamini cya Malariya"
                     }
 
+                LabResultsHistoryBloodSmear _ ->
+                    { english = "Blood Smear Test History"
+                    , kinyarwanda = Nothing
+                    }
+
                 LabResultsHistoryProtein _ ->
                     { english = "Protein Test History"
                     , kinyarwanda = Just "Amakuru ku kizamini cya Proteyine"
@@ -7638,9 +7668,7 @@ translationSet trans =
         LabResultsNormalRange mode ->
             case mode of
                 LabResultsHistoryHIV _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryHIVPCR _ ->
                     { english = "<20 copies"
@@ -7648,24 +7676,19 @@ translationSet trans =
                     }
 
                 LabResultsHistoryPartnerHIV _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistorySyphilis _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryHepatitisB _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryMalaria _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
+
+                LabResultsHistoryBloodSmear _ ->
+                    translationSet NegativeLabel
 
                 LabResultsHistoryProtein _ ->
                     { english = "0"
@@ -7683,14 +7706,10 @@ translationSet trans =
                     }
 
                 LabResultsHistoryLeukocytes _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryNitrite _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryUrobilinogen _ ->
                     { english = "1 mg/dL or less"
@@ -7698,19 +7717,13 @@ translationSet trans =
                     }
 
                 LabResultsHistoryHaemoglobin _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryKetone _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryBilirubin _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryRandomBloodSugar _ ->
                     -- This one is not in use, because normal range
@@ -7757,9 +7770,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryPregnancy _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryHbA1c _ ->
                     { english = "Below 6%"
@@ -8271,9 +8282,7 @@ translationSet trans =
         RapidTestResult result ->
             case result of
                 RapidTestNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 RapidTestPositive ->
                     { english = "Positive"
@@ -11359,9 +11368,7 @@ translationSet trans =
                     }
 
                 PregnancyTestNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Ntago Atwite"
-                    }
+                    translationSet NegativeLabel
 
                 PregnancyTestIndeterminate ->
                     { english = "Indeterminate"
@@ -13884,9 +13891,7 @@ translationSet trans =
                     }
 
                 TestNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 TestIndeterminate ->
                     { english = "Indeterminate"
@@ -14084,6 +14089,11 @@ translationSet trans =
             }
 
         TestResultQuestion ->
+            { english = "What was the result of the test"
+            , kinyarwanda = Nothing
+            }
+
+        TestResultsQuestion ->
             { english = "What were the results of the test"
             , kinyarwanda = Just "Ibisubizo by'ikizamini byabaye ibihe"
             }

@@ -3691,3 +3691,44 @@ lmpDateNotConfidentReasonFromString value =
 
         _ ->
             Nothing
+
+
+bloodSmearResultToString : BloodSmearResult -> String
+bloodSmearResultToString value =
+    case value of
+        BloodSmearNegative ->
+            "negative"
+
+        BloodSmearPlus ->
+            "+"
+
+        BloodSmearPlusPlus ->
+            "++"
+
+        BloodSmearPlusPlusPlus ->
+            "+++"
+
+        BloodSmearNotTaken ->
+            "not-taken"
+
+
+bloodSmearResultFromString : String -> Maybe BloodSmearResult
+bloodSmearResultFromString value =
+    case value of
+        "negative" ->
+            Just BloodSmearNegative
+
+        "+" ->
+            Just BloodSmearPlus
+
+        "++" ->
+            Just BloodSmearPlusPlus
+
+        "+++" ->
+            Just BloodSmearPlusPlusPlus
+
+        "not-taken" ->
+            Just BloodSmearNotTaken
+
+        _ ->
+            Nothing

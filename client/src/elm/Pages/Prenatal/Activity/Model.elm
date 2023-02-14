@@ -167,6 +167,7 @@ type Msg
     | SetMalariaTestExecutionNote TestExecutionNote
     | SetMalariaTestExecutionDate NominalDate
     | SetMalariaTestResult String
+    | SetBloodSmearResultMsg String
     | SetMalariaTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveMalariaTest PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
     | SetBloodGpRsTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool

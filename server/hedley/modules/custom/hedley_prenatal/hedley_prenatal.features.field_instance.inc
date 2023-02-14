@@ -4245,6 +4245,44 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_malaria_test-field_blood_smear_result'.
+  $field_instances['node-prenatal_malaria_test-field_blood_smear_result'] = array(
+    'bundle' => 'prenatal_malaria_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_blood_smear_result',
+    'label' => 'Blood Smear Result',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 12,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_malaria_test-field_date_measured'.
   $field_instances['node-prenatal_malaria_test-field_date_measured'] = array(
     'bundle' => 'prenatal_malaria_test',
@@ -9594,6 +9632,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Avoiding Guidance reason');
   t('Bilirubin');
   t('Blood Group');
+  t('Blood Smear Result');
   t('Breastfeeding Signs');
   t('Completed Tests');
   t('Date Measured');

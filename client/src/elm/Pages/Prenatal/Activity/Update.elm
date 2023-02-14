@@ -27,7 +27,8 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils
     exposing
-        ( getMeasurementValueFunc
+        ( bloodSmearResultFromString
+        , getMeasurementValueFunc
         , nonReferralReasonToSign
         , pregnancyTestResultFromString
         , testResultFromString
@@ -2150,6 +2151,28 @@ update language currentDate id db msg model =
 
                 updatedForm =
                     { form | testResult = testResultFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBloodSmearResultMsg value ->
+            let
+                form =
+                    model.laboratoryData.malariaTestForm
+
+                updatedForm =
+                    { form
+                        | bloodSmearResult = bloodSmearResultFromString value
+                        , bloodSmearResultDirty = True
+                        , executionDate = Just currentDate
+                        , executionDateDirty = True
+                    }
 
                 updatedData =
                     model.laboratoryData

@@ -547,12 +547,19 @@ encodeMalariaTestValue value =
                 value.testResult
                 |> Maybe.withDefault []
     in
-    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
+    [ ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+    , ( "blood_smear_result", encodeBloodSmearResult value.bloodSmearResult )
+    ]
+        ++ executionDate
         ++ result
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_malaria_test" )
            ]
+
+
+encodeBloodSmearResult : BloodSmearResult -> Value
+encodeBloodSmearResult =
+    bloodSmearResultToString >> string
 
 
 encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )

@@ -1711,16 +1711,41 @@ malariaTestFormWithDefault form saved =
 
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
+
+                    bloodSmearTakenByValue =
+                        value.bloodSmearResult /= BloodSmearNotTaken
                 in
-                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                { testPerformed =
+                    valueConsideringIsDirtyField form.testPerformedDirty
+                        form.testPerformed
+                        testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
-                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
+                , testPerformedToday =
+                    valueConsideringIsDirtyField form.testPerformedTodayDirty
+                        form.testPerformedToday
+                        testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
-                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNote =
+                    valueConsideringIsDirtyField form.executionNoteDirty
+                        form.executionNote
+                        value.executionNote
                 , executionNoteDirty = form.executionNoteDirty
-                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDate =
+                    maybeValueConsideringIsDirtyField form.executionDateDirty
+                        form.executionDate
+                        value.executionDate
                 , executionDateDirty = form.executionDateDirty
                 , testResult = or form.testResult value.testResult
+                , bloodSmearTaken =
+                    maybeValueConsideringIsDirtyField form.bloodSmearTakenDirty
+                        form.bloodSmearTaken
+                        (Just bloodSmearTakenByValue)
+                , bloodSmearTakenDirty = form.bloodSmearTakenDirty
+                , bloodSmearResult =
+                    maybeValueConsideringIsDirtyField form.bloodSmearResultDirty
+                        form.bloodSmearResult
+                        (Just value.bloodSmearResult)
+                , bloodSmearResultDirty = form.bloodSmearResultDirty
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }
             )
@@ -1739,6 +1764,7 @@ toMalariaTestValue form =
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testResult = form.testResult
+            , bloodSmearResult = Maybe.withDefault BloodSmearNotTaken form.bloodSmearResult
             }
         )
         form.executionNote
@@ -2164,14 +2190,65 @@ viewMalariaTestForm :
     -> ( Html msg, Int, Int )
 viewMalariaTestForm language currentDate configInitial configPerformed form =
     let
-        ( inputs, tasksCompleted, tasksTotal ) =
+        ( rdtInputs, rdtTasksCompleted, rdtTasksTotal ) =
             prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed TaskMalariaTest form
+
+        ( bloodSmearInputs, bloodSmearTasksCompleted, bloodSmearTasksTotal ) =
+            if form.testPerformed == Just False && isJust form.executionNote then
+                let
+                    updateFunc =
+                        \value form_ ->
+                            { form_
+                                | bloodSmearTaken = Just value
+                                , bloodSmearTakenDirty = True
+                                , bloodSmearResult = Nothing
+                                , bloodSmearResultDirty = True
+                                , executionDate = Nothing
+                                , executionDateDirty = True
+                            }
+
+                    ( derivedInputs, derivedTasksCompleted, derivedTasksTotal ) =
+                        if form.bloodSmearTaken == Just True then
+                            ( viewSelectInput language
+                                Translate.TestResultQuestion
+                                form.bloodSmearResult
+                                Translate.BloodSmearResult
+                                bloodSmearResultToString
+                                [ BloodSmearNegative
+                                , BloodSmearPlus
+                                , BloodSmearPlusPlus
+                                , BloodSmearPlusPlusPlus
+                                ]
+                                configInitial.setBloodSmearResultMsg
+                            , taskCompleted form.bloodSmearResult
+                            , 1
+                            )
+
+                        else
+                            ( [], 0, 0 )
+                in
+                ( [ viewQuestionLabel language Translate.BloodSmearQuestion
+                  , viewBoolInput
+                        language
+                        form.bloodSmearTaken
+                        (configInitial.setMalariaTestFormBoolInputMsg updateFunc)
+                        "got-results-previously"
+                        Nothing
+                  ]
+                    ++ derivedInputs
+                , taskCompleted form.bloodSmearTaken + derivedTasksCompleted
+                , 1 + derivedTasksTotal
+                )
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory malaria" ] <|
         [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskMalariaTest) "" "label header" ]
-            ++ inputs
-    , tasksCompleted
-    , tasksTotal
+            ++ rdtInputs
+            ++ bloodSmearInputs
+    , rdtTasksCompleted + bloodSmearTasksCompleted
+    , rdtTasksTotal + bloodSmearTasksTotal
     )
 
 
@@ -2723,6 +2800,24 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     }
 
                 TaskMalariaTest ->
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedDirty = True
+                                    , testPerformedToday = Nothing
+                                    , testPerformedTodayDirty = True
+                                    , executionNote = Nothing
+                                    , executionNoteDirty = True
+                                    , executionDate = Nothing
+                                    , executionDateDirty = True
+                                    , bloodSmearTaken = Nothing
+                                    , bloodSmearTakenDirty = True
+                                    , bloodSmearResult = Nothing
+                                    , bloodSmearResultDirty = True
+                                }
+                    in
                     { setBoolInputMsg = config.setMalariaTestFormBoolInputMsg boolInputUpdateFunc
                     , setExecutionNoteMsg = config.setMalariaTestExecutionNoteMsg
                     }
@@ -3124,6 +3219,7 @@ emptyContentAndTasksLaboratoryTestInitialConfig noOpMsg =
     , setMalariaTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setMalariaTestExecutionNoteMsg = always noOpMsg
     , setMalariaTestResultMsg = always noOpMsg
+    , setBloodSmearResultMsg = always noOpMsg
     , setBloodGpRsTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setBloodGpRsTestExecutionNoteMsg = always noOpMsg
     , setUrineDipstickTestFormBoolInputMsg = \_ _ -> noOpMsg
