@@ -3,7 +3,6 @@
 ## Description: Run robo commands inside the web container for the client app.
 ## Usage: client-install
 ## Example: "ddev client-install".
-export PATH=~/.nvm/versions/node/v9.0.0/bin:$PATH;
 
 npm install -g bower
 
