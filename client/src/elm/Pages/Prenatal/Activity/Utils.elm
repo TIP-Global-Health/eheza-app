@@ -1181,9 +1181,11 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         mandatoryActivitiesForNurseCompleted =
             -- All activities that will appear at
             -- current encounter are completed, besides
-            -- Photo and Next Steps itself.
+            -- Malaria Prevention and Photo (optional)
+            --and the Next Steps itself.
             getAllActivities assembled
                 |> EverySet.fromList
+                |> EverySet.remove Backend.PrenatalActivity.Model.MalariaPrevention
                 |> EverySet.remove PrenatalPhoto
                 |> EverySet.remove NextSteps
                 |> EverySet.toList
