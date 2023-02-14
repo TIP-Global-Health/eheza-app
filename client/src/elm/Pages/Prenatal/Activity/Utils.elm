@@ -4360,26 +4360,34 @@ toPrenatalNutritionValue form =
         |> andMap (Maybe.map MuacInCm form.muac)
 
 
-malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm
+malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe MalariaPreventionValue -> MalariaPreventionForm
 malariaPreventionFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { receivedMosquitoNet = or form.receivedMosquitoNet (EverySet.member MosquitoNet value |> Just)
+                { receivedMosquitoNet = or form.receivedMosquitoNet (EverySet.member MosquitoNet value.resources |> Just)
+
+                -- , phaseRecorded = or form.phaseRecorded value.phaseRecorded
                 }
             )
 
 
-toMalariaPreventionValueWithDefault : Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign)
-toMalariaPreventionValueWithDefault saved form =
+toMalariaPreventionValueWithDefault : PhaseRecorded -> Maybe MalariaPreventionValue -> MalariaPreventionForm -> Maybe MalariaPreventionValue
+toMalariaPreventionValueWithDefault phaseRecorded saved form =
     malariaPreventionFormWithDefault form saved
-        |> toMalariaPreventionValue
+        |> toMalariaPreventionValue phaseRecorded
 
 
-toMalariaPreventionValue : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign)
-toMalariaPreventionValue form =
-    Maybe.map (toEverySet MosquitoNet NoMalariaPreventionSigns) form.receivedMosquitoNet
+toMalariaPreventionValue : PhaseRecorded -> MalariaPreventionForm -> Maybe MalariaPreventionValue
+toMalariaPreventionValue phaseRecorded form =
+    Maybe.map
+        (\receivedMosquitoNet ->
+            { resources = toEverySet MosquitoNet NoMalariaPreventionSigns receivedMosquitoNet
+            , phaseRecorded = phaseRecorded
+            }
+        )
+        form.receivedMosquitoNet
 
 
 socialHistoryFormWithDefault : SocialHistoryForm -> Maybe SocialHistoryValue -> SocialHistoryForm

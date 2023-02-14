@@ -17,6 +17,7 @@ import Backend.Measurement.Model
         , LungsCPESign(..)
         , NeckCPESign(..)
         , OutsideCareMedication(..)
+        , PhaseRecorded(..)
         , PhotoUrl(..)
         , PostpartumChildDangerSign(..)
         , PostpartumHealingProblem(..)
@@ -1499,7 +1500,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.malariaPreventionData.form
-                        |> toMalariaPreventionValueWithDefault measurement
+                        |> toMalariaPreventionValueWithDefault PhaseInitial measurement
                         |> unwrap
                             []
                             (\value ->

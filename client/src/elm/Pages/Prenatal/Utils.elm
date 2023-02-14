@@ -3556,7 +3556,7 @@ expectMalariaPreventionActivity =
         >> List.filter
             (.measurements
                 >> .malariaPrevention
-                >> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
+                >> Maybe.map (Tuple.second >> .value >> .resources >> EverySet.member MosquitoNet)
                 >> Maybe.withDefault False
             )
         >> List.isEmpty
