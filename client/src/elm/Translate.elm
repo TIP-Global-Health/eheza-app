@@ -19098,6 +19098,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                StockManagementPage ->
+                    { english = "Stock Management"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =

@@ -263,7 +263,7 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
 
                             MenuStockManagement ->
                                 ( "stock-management"
-                                , UserPage MessagingCenterPage
+                                , UserPage StockManagementPage
                                 )
 
                     viewCardFunc =
