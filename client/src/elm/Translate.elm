@@ -1588,6 +1588,7 @@ type TranslationId
     | SpecialityCareHeaderSuffix
     | SpecialityCareSignQuestion SpecialityCareSign
     | StillbornPreviousDelivery
+    | StockManagement
     | SubsequentAntenatalVisit
     | SubsequentEncounter
     | SubsequentEncounterReferral AcuteIllnessEncounterType
@@ -16960,6 +16961,11 @@ translationSet trans =
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
             , kinyarwanda = Just "Aheruka kubyara umwana upfuye"
+            }
+
+        StockManagement ->
+            { english = "Stock Management"
+            , kinyarwanda = Nothing
             }
 
         SubsequentEncounter ->
