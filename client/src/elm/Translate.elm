@@ -139,6 +139,7 @@ import Pages.Report.Model
         , RandomBloodSugarResult(..)
         , ReportTab(..)
         )
+import Pages.StockManagement.Model exposing (StockManagementMenu(..))
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
@@ -1589,6 +1590,7 @@ type TranslationId
     | SpecialityCareSignQuestion SpecialityCareSign
     | StillbornPreviousDelivery
     | StockManagement
+    | StockManagementMenu StockManagementMenu
     | SubsequentAntenatalVisit
     | SubsequentEncounter
     | SubsequentEncounterReferral AcuteIllnessEncounterType
@@ -16967,6 +16969,23 @@ translationSet trans =
             { english = "Stock Management"
             , kinyarwanda = Nothing
             }
+
+        StockManagementMenu value ->
+            case value of
+                MenuReceiveStock ->
+                    { english = "Receive Stock"
+                    , kinyarwanda = Nothing
+                    }
+
+                MenuViewMonthDetails ->
+                    { english = "View current month details"
+                    , kinyarwanda = Nothing
+                    }
+
+                MenuCorrectEntry ->
+                    { english = "Correct entry"
+                    , kinyarwanda = Nothing
+                    }
 
         SubsequentEncounter ->
             { english = "Subsequent Encounter"

@@ -19,5 +19,12 @@ emptyModel =
     {}
 
 
+type StockManagementMenu
+    = MenuReceiveStock
+    | MenuViewMonthDetails
+    | MenuCorrectEntry
+
+
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page

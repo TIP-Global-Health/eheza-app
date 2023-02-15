@@ -16,6 +16,12 @@ import Time.Extra
 update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg model =
     case msg of
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none
