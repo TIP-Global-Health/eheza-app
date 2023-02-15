@@ -8185,6 +8185,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MenuStockManagement ->
+                    { english = "Stock Management"
+                    , kinyarwanda = Nothing
+                    }
+
         MainWaterSource source ->
             case source of
                 PipedWaterToHome ->
