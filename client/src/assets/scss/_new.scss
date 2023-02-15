@@ -4631,7 +4631,6 @@ div.page-activity.messaging-center {
   .resilience-message {
     margin-bottom: 30px;
 
-
     .title-wrapper, .header {
       background-color: $color-velvet;
       color: $color-white;
@@ -4652,12 +4651,15 @@ div.page-activity.messaging-center {
     .title-wrapper {
       display: flex;
       justify-content: space-between;
-
-
-
     }
-    .options {
+
+    .icon-options {
+      margin-top: 20px;
       padding: 20px;
+      background: url(#{$img-path}icon-options.svg) center center no-repeat;
+      background-size: 32px 30px;
+      height: 32px;
+      width: 30px;
       }
 
     .category-header{
@@ -4673,6 +4675,7 @@ div.page-activity.messaging-center {
     .date-sent {
       flex-basis: 100%;
       width: 0;
+      font-size: 22px;
     }
 
     .content {
@@ -4680,57 +4683,63 @@ div.page-activity.messaging-center {
       color: $color-text;
       padding: 20px;
     }
+
     .icon-growth {
       background: url(#{$img-path}icon-growth.svg) center center no-repeat;
-      background-size: 34px 50px;
-      height: 36px;
+      background-size: 28px 40px;
+      height: 30px;
       margin-right: 5px;
       margin-left: -5px;
-      width: 50px;
+      margin-top: -5px;
+      width: 40px;
     }
+
     .icon-stress-management {
       background: url(#{$img-path}icon-stress-management.svg) center center no-repeat;
-      background-size: 36px 50px;
-      height: 36px;
+      background-size: 30px 40px;
+      height: 30px;
       margin-right: 5px;
-      margin-left: -15px;
-      width: 50px;
+      margin-left: -10px;
+      width: 40px;
     }
+
     .icon-mindfulness {
       background: url(#{$img-path}icon-mindfulness.svg) center center no-repeat;
-      background-size: 32px 30px;
-      height: 32px;
+      background-size: 28px 40px;
+      height: 30px;
       margin-right: 5px;
       margin-left: -5px;
-      width: 30px;
+      margin-top: -5px;
+      width: 40px;
     }
+
     .icon-connecting {
-        background: url(#{$img-path}icon-connecting-red.svg) center center no-repeat;
-        background-size: 36px 50px;
-        height: 38px;
-        margin-right: 5px;
-        margin-left: -5px;
-        width: 50px;
+      background: url(#{$img-path}icon-connecting-red.svg) center center no-repeat;
+      background-size: 30px 30px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -1px;
+      margin-top: -1px;
+      width: 30px;
       }
 
     .icon-connecting.blue {
-        background: url(#{$img-path}icon-connecting-blue.svg) center center no-repeat;
+      background: url(#{$img-path}icon-connecting-blue.svg) center center no-repeat;
       }
 
     .icon-connecting.purple {
         background: url(#{$img-path}icon-connecting-purple.svg) center center no-repeat;
       }
 
-
     .icon-self-care {
       background: url(#{$img-path}icon-selfcare.svg) center center no-repeat;
-      background-size: 32px 30px;
-      height: 32px;
+      background-size: 28px 40px;
+      height: 30px;
       margin-right: 5px;
       margin-left: -5px;
-      width: 30px;
+      margin-top: -2px;
+      width: 40px;
     }
-
   }
 
   .resilience-message.shrank .content {
@@ -4790,5 +4799,4 @@ div.page-activity.messaging-center {
       margin-bottom: 20px;
     }
   }
-
 }

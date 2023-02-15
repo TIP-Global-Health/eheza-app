@@ -43,6 +43,7 @@ import RemoteData exposing (RemoteData(..))
 import Time exposing (posixToMillis)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
+import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -511,7 +512,11 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                     div [ class <| "header " ++ titleWrapperClass, onClick messageClickedAction ]
                         [ i [ class <| "icon-" ++ extraClass ++ titleWrapperClass ] []
                         , header
-                        , span [ class "date-sent" ] [ text <| Maybe.withDefault "" <| Maybe.map formatDDMMYYYY sentDate ]
+                        , span [ class "date-sent" ]
+                            [ sentDate
+                                |> Maybe.map (renderDate language >> text)
+                                |> showMaybe
+                            ]
                         , div
                             [ class "title" ]
                             head
@@ -521,10 +526,10 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                 div [ class "title-wrapper" ]
                     [ plainTitle
                     , div
-                        [ class "options"
+                        [ class "icon-options"
                         , onClick <| SetMessageOptionsDialogState <| Just <| MessageOptionsStateMain ( messageId, message )
                         ]
-                        [ text "OP" ]
+                        []
                     ]
 
             else
