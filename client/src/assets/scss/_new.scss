@@ -4631,7 +4631,7 @@ div.page-activity.messaging-center {
   .resilience-message {
     margin-bottom: 30px;
 
-    .title,
+
     .title-wrapper, .header {
       background-color: $color-velvet;
       color: $color-white;
@@ -4641,11 +4641,19 @@ div.page-activity.messaging-center {
       display: flex;
       flex-flow: row wrap;
       padding: 20px;
+      &.blue {
+        background-color: $color-primary;
+      }
+      &.purple {
+        background-color: $color-purple;
+      }
     }
 
     .title-wrapper {
       display: flex;
       justify-content: space-between;
+
+
 
     }
     .options {
@@ -4697,13 +4705,23 @@ div.page-activity.messaging-center {
       width: 30px;
     }
     .icon-connecting {
-      background: url(#{$img-path}icon-connecting-red.svg) center center no-repeat;
-      background-size: 36px 50px;
-      height: 38px;
-      margin-right: 5px;
-      margin-left: -5px;
-      width: 50px;
-    }
+        background: url(#{$img-path}icon-connecting-red.svg) center center no-repeat;
+        background-size: 36px 50px;
+        height: 38px;
+        margin-right: 5px;
+        margin-left: -5px;
+        width: 50px;
+      }
+
+    .icon-connecting.blue {
+        background: url(#{$img-path}icon-connecting-blue.svg) center center no-repeat;
+      }
+
+    .icon-connecting.purple {
+        background: url(#{$img-path}icon-connecting-purple.svg) center center no-repeat;
+      }
+
+
     .icon-self-care {
       background: url(#{$img-path}icon-selfcare.svg) center center no-repeat;
       background-size: 32px 30px;

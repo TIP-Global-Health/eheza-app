@@ -439,37 +439,37 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                     )
 
                 ResilienceCategoryGrowth ->
-                    ( "growth"
+                    ( "growth "
                     , messageCategory
                     , viewGrowthMessage language message.order
                     )
 
                 ResilienceCategoryStressManagement ->
-                    ( "stress-management"
+                    ( "stress-management "
                     , messageCategory
                     , viewStressManagementMessage language nurse message.order
                     )
 
                 ResilienceCategoryMindfulness ->
-                    ( "mindfulness"
+                    ( "mindfulness "
                     , messageCategory
                     , viewMindfulnessMessage language message.order
                     )
 
                 ResilienceCategoryConnecting ->
-                    ( "connecting"
+                    ( "connecting "
                     , messageCategory
                     , viewConnectingMessage language message.order
                     )
 
                 ResilienceCategorySelfCare ->
-                    ( "self-care"
+                    ( "self-care "
                     , messageCategory
                     , viewSelfCareMessage language message.order
                     )
 
                 ResilienceCategoryEndOfPeriod ->
-                    ( "end-of-period"
+                    ( "end-of-period "
                     , messageCategory
                     , viewEndOfPeriodMessage language message.order
                     )
@@ -494,11 +494,22 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                 Nothing ->
                     Nothing
 
+        titleWrapperClass =
+            case model.activeTab of
+                TabUnread ->
+                    ""
+
+                TabFavorites ->
+                    "purple"
+
+                _ ->
+                    "blue"
+
         title =
             let
                 plainTitle =
-                    div [ class "header", onClick messageClickedAction ]
-                        [ i [ class <| "icon-" ++ extraClass ] []
+                    div [ class <| "header " ++ titleWrapperClass, onClick messageClickedAction ]
+                        [ i [ class <| "icon-" ++ extraClass ++ titleWrapperClass ] []
                         , header
                         , span [ class "date-sent" ] [ text <| Maybe.withDefault "" <| Maybe.map formatDDMMYYYY sentDate ]
                         , div
