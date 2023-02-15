@@ -100,14 +100,7 @@ expectActivity currentDate assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.MalariaPrevention ->
-                    assembled.nursePreviousEncountersData
-                        |> List.filter
-                            (.measurements
-                                >> .malariaPrevention
-                                >> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
-                                >> Maybe.withDefault False
-                            )
-                        |> List.isEmpty
+                    expectMalariaPreventionActivity PhaseInitial assembled
 
                 Backend.PrenatalActivity.Model.Medication ->
                     True
@@ -1188,9 +1181,11 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         mandatoryActivitiesForNurseCompleted =
             -- All activities that will appear at
             -- current encounter are completed, besides
-            -- Photo and Next Steps itself.
+            -- Malaria Prevention and Photo (optional)
+            --and the Next Steps itself.
             getAllActivities assembled
                 |> EverySet.fromList
+                |> EverySet.remove Backend.PrenatalActivity.Model.MalariaPrevention
                 |> EverySet.remove PrenatalPhoto
                 |> EverySet.remove NextSteps
                 |> EverySet.toList
@@ -4365,28 +4360,6 @@ toPrenatalNutritionValue form =
     Maybe.map PrenatalNutritionValue (Maybe.map HeightInCm form.height)
         |> andMap (Maybe.map WeightInKg form.weight)
         |> andMap (Maybe.map MuacInCm form.muac)
-
-
-malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm
-malariaPreventionFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { receivedMosquitoNet = or form.receivedMosquitoNet (EverySet.member MosquitoNet value |> Just)
-                }
-            )
-
-
-toMalariaPreventionValueWithDefault : Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign)
-toMalariaPreventionValueWithDefault saved form =
-    malariaPreventionFormWithDefault form saved
-        |> toMalariaPreventionValue
-
-
-toMalariaPreventionValue : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign)
-toMalariaPreventionValue form =
-    Maybe.map (toEverySet MosquitoNet NoMalariaPreventionSigns) form.receivedMosquitoNet
 
 
 socialHistoryFormWithDefault : SocialHistoryForm -> Maybe SocialHistoryValue -> SocialHistoryForm

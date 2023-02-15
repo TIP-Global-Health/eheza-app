@@ -17,6 +17,7 @@ import Backend.Measurement.Model
         , LungsCPESign(..)
         , NeckCPESign(..)
         , OutsideCareMedication(..)
+        , PhaseRecorded(..)
         , PhotoUrl(..)
         , PostpartumChildDangerSign(..)
         , PostpartumHealingProblem(..)
@@ -1476,11 +1477,10 @@ update language currentDate id db msg model =
 
         SetMalariaPreventionBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.malariaPreventionData.form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.malariaPreventionData.form
-                    in
                     model.malariaPreventionData
                         |> (\data -> { data | form = updatedForm })
             in
@@ -1499,7 +1499,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.malariaPreventionData.form
-                        |> toMalariaPreventionValueWithDefault measurement
+                        |> toMalariaPreventionValueWithDefault PhaseInitial measurement
                         |> unwrap
                             []
                             (\value ->

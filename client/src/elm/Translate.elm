@@ -11521,6 +11521,11 @@ translationSet trans =
                     , kinyarwanda = Just "Gusuzuma"
                     }
 
+                RecurrentMalariaPrevention ->
+                    { english = "Malaria Prevention"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalAssesment assesment ->
             case assesment of
                 AssesmentNormalPregnancy ->

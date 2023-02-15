@@ -799,17 +799,28 @@ type alias PrenatalNutrition =
     PrenatalMeasurement PrenatalNutritionValue
 
 
-type MalariaPreventionSign
-    = MosquitoNet
-    | NoMalariaPreventionSigns
-
-
 type alias PrenatalPhoto =
     PrenatalMeasurement PhotoUrl
 
 
 type alias MalariaPrevention =
-    PrenatalMeasurement (EverySet MalariaPreventionSign)
+    PrenatalMeasurement MalariaPreventionValue
+
+
+type alias MalariaPreventionValue =
+    { resources : EverySet MalariaPreventionSign
+    , phaseRecorded : PhaseRecorded
+    }
+
+
+type MalariaPreventionSign
+    = MosquitoNet
+    | NoMalariaPreventionSigns
+
+
+type PhaseRecorded
+    = PhaseInitial
+    | PhaseRecurrent
 
 
 type SocialHistorySign

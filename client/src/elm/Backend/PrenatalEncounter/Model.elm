@@ -188,7 +188,7 @@ type Msg
     | HandleSavedFamilyPlanning (WebData ())
     | SaveNutrition PersonId (Maybe PrenatalNutritionId) PrenatalNutritionValue
     | HandleSavedNutrition (WebData ())
-    | SaveMalariaPrevention PersonId (Maybe MalariaPreventionId) (EverySet MalariaPreventionSign)
+    | SaveMalariaPrevention PersonId (Maybe MalariaPreventionId) MalariaPreventionValue
     | HandleSavedMalariaPrevention (WebData ())
     | SaveSocialHistory PersonId (Maybe SocialHistoryId) SocialHistoryValue
     | HandleSavedSocialHistory (WebData ())

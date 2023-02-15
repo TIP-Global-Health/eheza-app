@@ -1964,6 +1964,20 @@ encodePrenatalNutritionValue value =
     ]
 
 
+encodeMalariaPrevention : MalariaPrevention -> List ( String, Value )
+encodeMalariaPrevention =
+    encodePrenatalMeasurement encodeMalariaPreventionValue
+
+
+encodeMalariaPreventionValue : MalariaPreventionValue -> List ( String, Value )
+encodeMalariaPreventionValue value =
+    [ ( "resources", encodeEverySet encodeMalariaPreventionSign value.resources )
+    , ( "phase_recorded", encodePhaseRecorded value.phaseRecorded )
+    , ( "deleted", bool False )
+    , ( "type", string "resource" )
+    ]
+
+
 encodeMalariaPreventionSign : MalariaPreventionSign -> Value
 encodeMalariaPreventionSign sign =
     string <|
@@ -1975,17 +1989,15 @@ encodeMalariaPreventionSign sign =
                 "none"
 
 
-encodeMalariaPrevention : MalariaPrevention -> List ( String, Value )
-encodeMalariaPrevention =
-    encodePrenatalMeasurement encodeMalariaPreventionValue
+encodePhaseRecorded : PhaseRecorded -> Value
+encodePhaseRecorded value =
+    string <|
+        case value of
+            PhaseInitial ->
+                "initial"
 
-
-encodeMalariaPreventionValue : EverySet MalariaPreventionSign -> List ( String, Value )
-encodeMalariaPreventionValue value =
-    [ ( "resources", encodeEverySet encodeMalariaPreventionSign value )
-    , ( "deleted", bool False )
-    , ( "type", string "resource" )
-    ]
+            PhaseRecurrent ->
+                "recurrent"
 
 
 encodeSocialHistorySign : SocialHistorySign -> Value

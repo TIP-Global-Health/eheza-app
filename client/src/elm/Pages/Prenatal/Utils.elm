@@ -16,7 +16,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (SendToHCForm)
-import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, toEverySet, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage, viewTreatmentWithDosage)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
@@ -3548,3 +3548,58 @@ applyGeneralDiagnosesHierarchy diagnoses =
 
     else
         diagnoses
+
+
+expectMalariaPreventionActivity : PhaseRecorded -> AssembledData -> Bool
+expectMalariaPreventionActivity phaseRecorded assembled =
+    -- Measurement should be taken at current encounter.
+    expectMalariaPreventionActivityByPastEncounters assembled
+        && (-- Measurement was taken at current phase.
+            -- We need to expect the activity to allow editing.
+            getMeasurementValueFunc assembled.measurements.malariaPrevention
+                |> Maybe.map (.phaseRecorded >> (==) phaseRecorded)
+                |> -- No measurement taken on initial
+                   -- phase of current encounter.
+                   -- Need to take it current phase.
+                   Maybe.withDefault True
+           )
+
+
+expectMalariaPreventionActivityByPastEncounters : AssembledData -> Bool
+expectMalariaPreventionActivityByPastEncounters =
+    .nursePreviousEncountersData
+        >> List.filter
+            (.measurements
+                >> .malariaPrevention
+                >> Maybe.map (Tuple.second >> .value >> .resources >> EverySet.member MosquitoNet)
+                >> Maybe.withDefault False
+            )
+        >> List.isEmpty
+
+
+malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe MalariaPreventionValue -> MalariaPreventionForm
+malariaPreventionFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { receivedMosquitoNet = or form.receivedMosquitoNet (EverySet.member MosquitoNet value.resources |> Just)
+                }
+            )
+
+
+toMalariaPreventionValueWithDefault : PhaseRecorded -> Maybe MalariaPreventionValue -> MalariaPreventionForm -> Maybe MalariaPreventionValue
+toMalariaPreventionValueWithDefault phaseRecorded saved form =
+    malariaPreventionFormWithDefault form saved
+        |> toMalariaPreventionValue phaseRecorded
+
+
+toMalariaPreventionValue : PhaseRecorded -> MalariaPreventionForm -> Maybe MalariaPreventionValue
+toMalariaPreventionValue phaseRecorded form =
+    Maybe.map
+        (\receivedMosquitoNet ->
+            { resources = toEverySet MosquitoNet NoMalariaPreventionSigns receivedMosquitoNet
+            , phaseRecorded = phaseRecorded
+            }
+        )
+        form.receivedMosquitoNet

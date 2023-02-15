@@ -2006,6 +2006,18 @@ decodePrenatalNutrition =
         |> decodePrenatalMeasurement
 
 
+decodeMalariaPrevention : Decoder MalariaPrevention
+decodeMalariaPrevention =
+    decodePrenatalMeasurement decodeMalariaPreventionValue
+
+
+decodeMalariaPreventionValue : Decoder MalariaPreventionValue
+decodeMalariaPreventionValue =
+    succeed MalariaPreventionValue
+        |> required "resources" (decodeEverySet decodeMalariaPreventionSign)
+        |> optional "phase_recorded" decodePhaseRecorded PhaseInitial
+
+
 decodeMalariaPreventionSign : Decoder MalariaPreventionSign
 decodeMalariaPreventionSign =
     string
@@ -2023,11 +2035,21 @@ decodeMalariaPreventionSign =
             )
 
 
-decodeMalariaPrevention : Decoder MalariaPrevention
-decodeMalariaPrevention =
-    decodeEverySet decodeMalariaPreventionSign
-        |> field "resources"
-        |> decodePrenatalMeasurement
+decodePhaseRecorded : Decoder PhaseRecorded
+decodePhaseRecorded =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "initial" ->
+                        succeed PhaseInitial
+
+                    "recurrent" ->
+                        succeed PhaseRecurrent
+
+                    _ ->
+                        fail <| s ++ " is not a recognized PhaseRecorded"
+            )
 
 
 decodeSocialHistorySign : Decoder SocialHistorySign
