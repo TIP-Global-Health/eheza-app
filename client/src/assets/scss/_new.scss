@@ -1446,10 +1446,10 @@ div.page-activity.trace-contact  {
   }
 }
 
-// Prenatal, Nutrition and Home Visit activity pages
 div.page-activity.prenatal,
 div.page-activity.nutrition,
-div.page-activity.home-visit {
+div.page-activity.home-visit,
+div.page-activity.stock-management {
 
   .ui.full.segment {
 
@@ -4730,7 +4730,7 @@ div.page-activity.messaging-center {
 
 div.stock-management {
 
-  .ui.primary.button {
+  .navigation-buttons .ui.primary.button {
       padding: 0;
       width: 100%;
 
@@ -4747,5 +4747,16 @@ div.stock-management {
       margin-top: 17px;
       transform: rotate(180deg);
     }
+  }
+
+  .label.logged-in span {
+    color: $color-primary;
+    font-size: 25px;
+    margin-left: 10px;
+  }
+
+  .overlay .ui.modal {
+    margin-left: -250px;
+    width: 500px;
   }
 }

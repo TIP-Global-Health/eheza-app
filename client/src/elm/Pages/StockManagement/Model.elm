@@ -11,12 +11,16 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { displayMode : DisplayMode }
+    { displayMode : DisplayMode
+    , receiveStockForm : ReceiveStockForm
+    }
 
 
 emptyModel : Model
 emptyModel =
-    { displayMode = ModeMain }
+    { displayMode = ModeMain
+    , receiveStockForm = emptyReceiveStockForm
+    }
 
 
 type DisplayMode
@@ -31,6 +35,21 @@ type StockManagementMenu
     | MenuCorrectEntry
 
 
+type alias ReceiveStockForm =
+    { confirmIdentity : Maybe Bool
+    , displayIdentityPopup : Bool
+    }
+
+
+emptyReceiveStockForm : ReceiveStockForm
+emptyReceiveStockForm =
+    { confirmIdentity = Nothing
+    , displayIdentityPopup = False
+    }
+
+
 type Msg
-    = NoOp
-    | SetActivePage Page
+    = SetActivePage Page
+    | SetDisplayMode DisplayMode
+    | SetConfirmIdentity Bool
+    | HideIdentityPopup

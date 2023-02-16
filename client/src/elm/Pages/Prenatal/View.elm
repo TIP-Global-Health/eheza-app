@@ -13,7 +13,8 @@ import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( taskCompleted
+        ( customPopup
+        , taskCompleted
         , viewBoolInput
         , viewCheckBoxSelectInputWithRecommendation
         , viewCustomLabel
@@ -106,24 +107,5 @@ viewPauseEncounterButton language enabled pauseAction =
 
 
 customWarningPopup : Language -> ( Html msg, Html msg, msg ) -> Html msg
-customWarningPopup language ( topMessage, bottomMessage, action ) =
-    div [ class "ui active modal diagnosis-popup" ]
-        [ div [ class "content" ] <|
-            [ div [ class "popup-heading-wrapper" ]
-                [ img [ src "assets/images/exclamation-red.png" ] []
-                , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
-                ]
-            , div [ class "popup-title" ]
-                [ topMessage
-                , bottomMessage
-                ]
-            ]
-        , div
-            [ class "actions" ]
-            [ button
-                [ class "ui primary fluid button"
-                , onClick action
-                ]
-                [ text <| translate language Translate.Continue ]
-            ]
-        ]
+customWarningPopup language =
+    customPopup language True Translate.Continue

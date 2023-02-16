@@ -762,6 +762,8 @@ type TranslationId
     | HypertensionRecommendedTreatmentUpdateNoCurrentTreatment
     | HypertensionRecommendedTreatmentUpdateStartTreatment
     | HypertensionStageAndRenalComplicationsHeader Bool NCDDiagnosis
+    | IdentityPopupHeader
+    | IdentityPopupInstructions
     | IdleWaitingForSync
     | Ignore
     | IllnessSymptom IllnessSymptom
@@ -784,6 +786,7 @@ type TranslationId
     | InstructionsChooseTwoMedications
     | IsCurrentlyBreastfeeding
     | IsolatedAtHome
+    | IsThisYouQuestion
     | KilogramShorthand
     | KilogramsPerMonth
     | KnownAsPositiveQuestion LaboratoryTask
@@ -886,6 +889,7 @@ type TranslationId
     | LmpLabel
     | LmpRangeHeader
     | LmpRange LmpRange
+    | LoggedInAsPhrase
     | Location
     | LoginPhrase LoginPhrase
     | Low
@@ -6123,6 +6127,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        IdentityPopupHeader ->
+            { english = "You are not properly logged in to E-Heza."
+            , kinyarwanda = Nothing
+            }
+
+        IdentityPopupInstructions ->
+            { english = "To proceed, you must log out and log back in as then correct user."
+            , kinyarwanda = Nothing
+            }
+
         IdleWaitingForSync ->
             { english = "Idle, waiting for next Sync cycle"
             , kinyarwanda = Nothing
@@ -6449,6 +6463,11 @@ translationSet trans =
         IsolatedAtHome ->
             { english = "Isolated at home"
             , kinyarwanda = Just "Yashyizwe mu kato mu rugo"
+            }
+
+        IsThisYouQuestion ->
+            { english = "Is this you"
+            , kinyarwanda = Nothing
             }
 
         KilogramShorthand ->
@@ -8099,6 +8118,11 @@ translationSet trans =
                     { english = "Within 6 months"
                     , kinyarwanda = Just "Mu mezi atandatu"
                     }
+
+        LoggedInAsPhrase ->
+            { english = "You are logged in as"
+            , kinyarwanda = Nothing
+            }
 
         Location ->
             { english = "Location"
