@@ -62,6 +62,7 @@ dependencies[] = hedley_view_export
 dependencies[] = hedley_well_child
 dependencies[] = hedley_whatsapp
 dependencies[] = hedley_resilience
+dependencies[] = hedley_stock_management
 
 ; Base class for SimpleTests.
 files[] = HedleyWebTestBase.inc
