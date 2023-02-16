@@ -20,6 +20,7 @@ import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
 import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
+import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
 import Json.Decode exposing (..)
@@ -420,6 +421,9 @@ decodeRevision =
 
                     "statistics" ->
                         decodeWithUuid DashboardStatsRevision decodeDashboardStatsRaw
+
+                    "stock_update" ->
+                        decodeWithUuid StockUpdateRevision decodeStockUpdate
 
                     "symptoms_general" ->
                         decodeWithUuid SymptomsGeneralRevision decodeSymptomsGeneral

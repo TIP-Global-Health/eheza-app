@@ -38,6 +38,7 @@ import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
+import Backend.StockUpdate.Model exposing (StockUpdate)
 import Backend.TraceContact.Model
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
@@ -161,6 +162,9 @@ type alias ModelIndexedDb =
     -- Resilience.
     , resilienceSurveysByNurse : Dict NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     , resilienceMessagesByNurse : Dict NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
+
+    -- Stock Management.
+    , stockUpdates : WebData (Dict StockUpdateId StockUpdate)
     }
 
 
@@ -231,6 +235,7 @@ emptyModelIndexedDb =
     , computedDashboardLastFetched = Time.millisToPosix 0
     , resilienceSurveysByNurse = Dict.empty
     , resilienceMessagesByNurse = Dict.empty
+    , stockUpdates = NotAsked
     }
 
 
@@ -537,6 +542,7 @@ type Revision
     | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory
+    | StockUpdateRevision StockUpdateId StockUpdate
     | SymptomsGeneralRevision SymptomsGeneralId SymptomsGeneral
     | SymptomsGIRevision SymptomsGIId SymptomsGI
     | SymptomsRespiratoryRevision SymptomsRespiratoryId SymptomsRespiratory

@@ -4417,6 +4417,11 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        StockUpdateRevision uuid data ->
+            ( { model | stockUpdates = RemoteData.map (Dict.insert uuid data) model.stockUpdates }
+            , recalc
+            )
+
         SymptomsGeneralRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
