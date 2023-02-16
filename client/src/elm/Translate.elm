@@ -66,6 +66,7 @@ import Backend.ResilienceSurvey.Model
         ( ResilienceSurveyQuestion(..)
         , ResilienceSurveyQuestionOption(..)
         )
+import Backend.StockUpdate.Model exposing (StockCorrectionReason(..), StockSupplier(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
 import Components.SendViaWhatsAppDialog.Model
@@ -1589,8 +1590,10 @@ type TranslationId
     | SpecialityCareHeaderSuffix
     | SpecialityCareSignQuestion SpecialityCareSign
     | StillbornPreviousDelivery
+    | StockCorrectionReason StockCorrectionReason
     | StockManagement
     | StockManagementMenu StockManagementMenu
+    | StockSupplier StockSupplier
     | SubsequentAntenatalVisit
     | SubsequentEncounter
     | SubsequentEncounterReferral AcuteIllnessEncounterType
@@ -16965,6 +16968,28 @@ translationSet trans =
             , kinyarwanda = Just "Aheruka kubyara umwana upfuye"
             }
 
+        StockCorrectionReason value ->
+            case value of
+                ReasonInputError ->
+                    { english = "Error in input"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonExpiration ->
+                    { english = "Expired stock"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonMissing ->
+                    { english = "Missing stock / unaccounted for"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
         StockManagement ->
             { english = "Stock Management"
             , kinyarwanda = Nothing
@@ -16984,6 +17009,38 @@ translationSet trans =
 
                 MenuCorrectEntry ->
                     { english = "Correct entry"
+                    , kinyarwanda = Nothing
+                    }
+
+        StockSupplier value ->
+            case value of
+                SupplierMOH ->
+                    { english = "MOH (Ministry of Health)"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRBC ->
+                    { english = "RBC (Rwanda Biomedical Center)"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierUNICEF ->
+                    { english = "UNICEF"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRMSCentral ->
+                    { english = "RWANDA MEDICAL SUPPLY (RMS)-Central Level"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRMSDistrict ->
+                    { english = "RWANDA MEDICAL SUPPLY (RMS)-District Level"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierBUFMAR ->
+                    { english = "BUFMAR (Le Bureau des Formations Médicales agréées du Rwanda)"
                     , kinyarwanda = Nothing
                     }
 
