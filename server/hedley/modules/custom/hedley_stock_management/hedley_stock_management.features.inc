@@ -19,8 +19,8 @@ function hedley_stock_management_ctools_plugin_api($module = NULL, $api = NULL) 
  */
 function hedley_stock_management_node_info() {
   $items = array(
-    'nurse_signature' => array(
-      'name' => t('Nurse Signature'),
+    'stock_update' => array(
+      'name' => t('Stock Update'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

@@ -11,9 +11,49 @@
 function hedley_stock_management_field_default_field_instances() {
   $field_instances = array();
 
-  // Exported field_instance: 'node-nurse_signature-field_date_measured'.
-  $field_instances['node-nurse_signature-field_date_measured'] = array(
-    'bundle' => 'nurse_signature',
+  // Exported field_instance: 'node-stock_update-field_batch_number'.
+  $field_instances['node-stock_update-field_batch_number'] = array(
+    'bundle' => 'stock_update',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_batch_number',
+    'label' => 'Batch number',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance: 'node-stock_update-field_date_measured'.
+  $field_instances['node-stock_update-field_date_measured'] = array(
+    'bundle' => 'stock_update',
     'deleted' => 0,
     'description' => '',
     'display' => array(
@@ -63,13 +103,125 @@ function hedley_stock_management_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
-  // Exported field_instance: 'node-nurse_signature-field_nurse'.
-  $field_instances['node-nurse_signature-field_nurse'] = array(
-    'bundle' => 'nurse_signature',
+  // Exported field_instance: 'node-stock_update-field_execution_date'.
+  $field_instances['node-stock_update-field_execution_date'] = array(
+    'bundle' => 'stock_update',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_execution_date',
+    'label' => 'Execution Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-stock_update-field_expiration_date'.
+  $field_instances['node-stock_update-field_expiration_date'] = array(
+    'bundle' => 'stock_update',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_expiration_date',
+    'label' => 'Expiration Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-stock_update-field_nurse'.
+  $field_instances['node-stock_update-field_nurse'] = array(
+    'bundle' => 'stock_update',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -107,13 +259,59 @@ function hedley_stock_management_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
-  // Exported field_instance: 'node-nurse_signature-field_shards'.
-  $field_instances['node-nurse_signature-field_shards'] = array(
-    'bundle' => 'nurse_signature',
+  // Exported field_instance: 'node-stock_update-field_quantity'.
+  $field_instances['node-stock_update-field_quantity'] = array(
+    'bundle' => 'stock_update',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_quantity',
+    'label' => 'Quantity',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-stock_update-field_shards'.
+  $field_instances['node-stock_update-field_shards'] = array(
+    'bundle' => 'stock_update',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -151,13 +349,13 @@ function hedley_stock_management_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
-  // Exported field_instance: 'node-nurse_signature-field_signature'.
-  $field_instances['node-nurse_signature-field_signature'] = array(
-    'bundle' => 'nurse_signature',
+  // Exported field_instance: 'node-stock_update-field_signature'.
+  $field_instances['node-stock_update-field_signature'] = array(
+    'bundle' => 'stock_update',
     'deleted' => 0,
     'description' => '',
     'display' => array(
@@ -169,7 +367,7 @@ function hedley_stock_management_field_default_field_instances() {
           'image_style' => '',
         ),
         'type' => 'image',
-        'weight' => 4,
+        'weight' => 10,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -201,13 +399,124 @@ function hedley_stock_management_field_default_field_instances() {
         'progress_indicator' => 'throbber',
       ),
       'type' => 'image_image',
-      'weight' => 4,
+      'weight' => 12,
     ),
   );
 
-  // Exported field_instance: 'node-nurse_signature-field_uuid'.
-  $field_instances['node-nurse_signature-field_uuid'] = array(
-    'bundle' => 'nurse_signature',
+  // Exported field_instance: 'node-stock_update-field_stock_correction_reason'.
+  $field_instances['node-stock_update-field_stock_correction_reason'] = array(
+    'bundle' => 'stock_update',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_stock_correction_reason',
+    'label' => 'Stock correction reason',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance: 'node-stock_update-field_stock_supplier'.
+  $field_instances['node-stock_update-field_stock_supplier'] = array(
+    'bundle' => 'stock_update',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_stock_supplier',
+    'label' => 'Stock Supplier',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance: 'node-stock_update-field_stock_update_type'.
+  $field_instances['node-stock_update-field_stock_update_type'] = array(
+    'bundle' => 'stock_update',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_stock_update_type',
+    'label' => 'Stock Update Type',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-stock_update-field_uuid'.
+  $field_instances['node-stock_update-field_uuid'] = array(
+    'bundle' => 'stock_update',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -241,16 +550,23 @@ function hedley_stock_management_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('Batch number');
   t('Date Measured');
+  t('Execution Date');
+  t('Expiration Date');
   t('Nurse');
+  t('Quantity');
   t('Shards');
   t('Signature');
+  t('Stock Supplier');
+  t('Stock Update Type');
+  t('Stock correction reason');
   t('UUID');
 
   return $field_instances;
