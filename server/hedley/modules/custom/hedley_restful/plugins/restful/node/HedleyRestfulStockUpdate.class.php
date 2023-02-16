@@ -22,18 +22,10 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
     'field_expiration_date',
     'field_batch_number',
     'field_quantity',
-    'field_signature',
-  ];
-
-  /**
-   * A list of fields that are assigned multiple values.
-   *
-   * @var array
-   */
-  protected $multiFields = [
     'field_stock_correction_reason',
     'field_stock_supplier',
     'field_stock_update_type',
+    'field_signature',
   ];
 
   /**

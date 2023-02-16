@@ -179,7 +179,7 @@ function hedley_stock_management_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'receive-supply' => ' Receiving supplies',
+        'receive-supply' => 'Receiving supplies',
         'correction' => 'Stock correction',
       ),
       'allowed_values_function' => '',
