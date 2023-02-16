@@ -22,6 +22,7 @@ import Backend.Relationship.Encoder
 import Backend.ResilienceMessage.Encoder
 import Backend.ResilienceSurvey.Encoder
 import Backend.Session.Encoder
+import Backend.StockUpdate.Encoder
 import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
@@ -786,6 +787,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthoritySocialHistory identifier ->
             getIdentifier identifier "social_history"
 
+        BackendAuthorityStockUpdate identifier ->
+            getIdentifier identifier "stock_update"
+
         BackendAuthoritySymptomsGeneral identifier ->
             getIdentifier identifier "symptoms_general"
 
@@ -1455,6 +1459,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthoritySocialHistory identifier ->
             encode Backend.Measurement.Encoder.encodeSocialHistory identifier
 
+        BackendAuthorityStockUpdate identifier ->
+            encode Backend.StockUpdate.Encoder.encodeStockUpdate identifier
+
         BackendAuthoritySymptomsGeneral identifier ->
             encode Backend.Measurement.Encoder.encodeSymptomsGeneral identifier
 
@@ -2086,6 +2093,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthoritySocialHistory identifier ->
             SocialHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityStockUpdate identifier ->
+            StockUpdateRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthoritySymptomsGeneral identifier ->
             SymptomsGeneralRevision (toEntityUuid identifier.uuid) identifier.entity
