@@ -431,47 +431,40 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         messageCategory =
             span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]
 
-        ( extraClass, header, ( head, body ) ) =
+        ( extraClass, ( head, body ) ) =
             case message.category of
                 ResilienceCategoryIntroduction ->
                     ( "introduction"
-                    , messageCategory
                     , viewIntroductionMessage language nurse message.order
                     )
 
                 ResilienceCategoryGrowth ->
                     ( "growth "
-                    , messageCategory
                     , viewGrowthMessage language message.order
                     )
 
                 ResilienceCategoryStressManagement ->
                     ( "stress-management "
-                    , messageCategory
                     , viewStressManagementMessage language nurse message.order
                     )
 
                 ResilienceCategoryMindfulness ->
                     ( "mindfulness "
-                    , messageCategory
                     , viewMindfulnessMessage language message.order
                     )
 
                 ResilienceCategoryConnecting ->
                     ( "connecting "
-                    , messageCategory
                     , viewConnectingMessage language message.order
                     )
 
                 ResilienceCategorySelfCare ->
                     ( "self-care "
-                    , messageCategory
                     , viewSelfCareMessage language message.order
                     )
 
                 ResilienceCategoryEndOfPeriod ->
                     ( "end-of-period "
-                    , messageCategory
                     , viewEndOfPeriodMessage language message.order
                     )
 
@@ -488,12 +481,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             ResilienceMessageClicked nurseId messageId message updateTimeRead
 
         sentDate =
-            case nurse.resilienceProgramStartDate of
-                Just date ->
-                    Just (Date.add Days message.displayDay date)
-
-                Nothing ->
-                    Nothing
+            Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
 
         titleWrapperClass =
             case model.activeTab of
@@ -511,7 +499,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                 plainTitle =
                     div [ class <| "header " ++ titleWrapperClass, onClick messageClickedAction ]
                         [ i [ class <| "icon-" ++ extraClass ++ titleWrapperClass ] []
-                        , header
+                        , messageCategory
                         , span [ class "date-sent" ]
                             [ sentDate
                                 |> Maybe.map (renderDate language >> text)

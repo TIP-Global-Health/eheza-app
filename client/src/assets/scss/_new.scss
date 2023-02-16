@@ -4634,15 +4634,17 @@ div.page-activity.messaging-center {
     .title-wrapper, .header {
       background-color: $color-velvet;
       color: $color-white;
-
     }
+
     .header {
       display: flex;
       flex-flow: row wrap;
       padding: 20px;
+
       &.blue {
         background-color: $color-primary;
       }
+
       &.purple {
         background-color: $color-purple;
       }
@@ -4657,9 +4659,6 @@ div.page-activity.messaging-center {
       margin-top: 20px;
       padding: 20px;
       background: url(#{$img-path}icon-options.svg) center center no-repeat;
-      background-size: 32px 30px;
-      height: 32px;
-      width: 30px;
       }
 
     .category-header{
@@ -4673,8 +4672,6 @@ div.page-activity.messaging-center {
     }
 
     .date-sent {
-      flex-basis: 100%;
-      width: 0;
       font-size: 22px;
     }
 
@@ -4718,17 +4715,6 @@ div.page-activity.messaging-center {
       background-size: 30px 30px;
       height: 30px;
       margin-right: 5px;
-      margin-left: -1px;
-      margin-top: -1px;
-      width: 30px;
-      }
-
-    .icon-connecting.blue {
-      background: url(#{$img-path}icon-connecting-blue.svg) center center no-repeat;
-      }
-
-    .icon-connecting.purple {
-        background: url(#{$img-path}icon-connecting-purple.svg) center center no-repeat;
       }
 
     .icon-self-care {
