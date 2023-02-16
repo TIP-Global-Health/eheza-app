@@ -28,5 +28,5 @@ then
   cp ../../eheza-infra/elm/Config.Deploy.elm ${CLIENT_PATH}/src/elm/
 
 fi
-export PATH=~/.nvm/versions/node/v9.0.0/bin:$PATH;
+
 cd ../../client && gulp $@
