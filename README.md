@@ -7,6 +7,8 @@
 TIP’s E-Heza Data Solutions is a digital app designed by and for the frontline health worker that can be used on a smartphone or tablet.
 E-Heza captures essential data at the point of care to improve the health of mother and child by providing frontline health workers with immediate insights to help personalize information and advice, and help the mother track the well-being of her child.
 
+E-Heza has been added to the Digital Public Goods Alliance [DPG Registry](http://digitalpublicgoods.net/registry/). The goal of the DPGA and its registry is to promote digital public goods in order to create a more equitable world. Being recognised as a DPG increases the visibility, support for, and prominence of open projects that have the potential to tackle global challenges. To become a digital public good, all projects are required to meet the [DPG Standard](http://digitalpublicgoods.net/standard/) to ensure that projects truly encapsulate open source principles. 
+
 ## Technical stack
  - [Elm](https://elm-lang.org/) for the mobile frontend
  - [Drupal](https://www.drupal.org/) for the backend
