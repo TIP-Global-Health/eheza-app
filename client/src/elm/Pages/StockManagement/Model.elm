@@ -11,12 +11,18 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    {}
+    { displayMode : DisplayMode }
 
 
 emptyModel : Model
 emptyModel =
-    {}
+    { displayMode = ModeMain }
+
+
+type DisplayMode
+    = ModeMain
+    | ModeReceiveStock
+    | ModeCorrectEntry
 
 
 type StockManagementMenu

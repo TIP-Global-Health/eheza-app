@@ -46,20 +46,32 @@ view language currentDate nurseId nurse db model =
                     [ span [ class "icon-back" ] [] ]
                 ]
 
-        viewButton label action =
-            button
-                [ class "ui primary button"
-                , onClick action
-                ]
-                [ span [ class "text" ] [ text <| translate language label ]
-                , span [ class "icon-back" ] []
-                ]
+        content =
+            case model.displayMode of
+                ModeMain ->
+                    let
+                        viewButton label action =
+                            button
+                                [ class "ui primary button"
+                                , onClick action
+                                ]
+                                [ span [ class "text" ] [ text <| translate language label ]
+                                , span [ class "icon-back" ] []
+                                ]
+                    in
+                    [ div [ class "navigation-buttons" ]
+                        [ viewButton (Translate.StockManagementMenu MenuReceiveStock) NoOp
+                        , viewButton (Translate.StockManagementMenu MenuViewMonthDetails) NoOp
+                        , viewButton (Translate.StockManagementMenu MenuCorrectEntry) NoOp
+                        ]
+                    ]
+
+                ModeReceiveStock ->
+                    []
+
+                ModeCorrectEntry ->
+                    []
     in
-    div [ class "page-activity stock-management" ]
-        [ header
-        , div [ class "navigation-buttons" ]
-            [ viewButton (Translate.StockManagementMenu MenuReceiveStock) NoOp
-            , viewButton (Translate.StockManagementMenu MenuViewMonthDetails) NoOp
-            , viewButton (Translate.StockManagementMenu MenuCorrectEntry) NoOp
-            ]
-        ]
+    div [ class "page-activity stock-management" ] <|
+        header
+            :: content
