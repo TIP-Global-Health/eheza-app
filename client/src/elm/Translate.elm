@@ -1260,6 +1260,11 @@ type TranslationId
     | ReceivedMebendazole
     | ReceivedMosquitoNet
     | ReceivedVitaminA
+    | ReceiveStockBatchNumberQuestion
+    | ReceiveStockDateExpiresQuestion
+    | ReceiveStockQuantityAddedQuestion
+    | ReceiveStockSelectDateLabel
+    | ReceiveStockSupplierQuestion
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
     | Recommended
@@ -14356,6 +14361,31 @@ translationSet trans =
         ReceivedVitaminA ->
             { english = "Have you received Vitamin A"
             , kinyarwanda = Just "Wahawe Vitamine A"
+            }
+
+        ReceiveStockBatchNumberQuestion ->
+            { english = "What is the batch number"
+            , kinyarwanda = Nothing
+            }
+
+        ReceiveStockDateExpiresQuestion ->
+            { english = "What is the expiration date"
+            , kinyarwanda = Nothing
+            }
+
+        ReceiveStockQuantityAddedQuestion ->
+            { english = "How much stock is being received"
+            , kinyarwanda = Nothing
+            }
+
+        ReceiveStockSelectDateLabel ->
+            { english = "Select a date for this entry"
+            , kinyarwanda = Nothing
+            }
+
+        ReceiveStockSupplierQuestion ->
+            { english = "Where was this received from"
+            , kinyarwanda = Nothing
             }
 
         Recommendation114 recommendation ->
