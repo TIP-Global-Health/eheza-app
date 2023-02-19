@@ -30,7 +30,7 @@ update currentDate msg model =
             , []
             )
 
-        SetConfirmIdentity confirmed ->
+        SetReceiveStockConfirmIdentity confirmed ->
             let
                 form =
                     model.receiveStockForm
@@ -150,7 +150,7 @@ update currentDate msg model =
             , []
             )
 
-        HideIdentityPopup ->
+        HideReceiveStockIdentityPopup ->
             let
                 form =
                     model.receiveStockForm
@@ -159,6 +159,42 @@ update currentDate msg model =
                     { form | displayIdentityPopup = False }
             in
             ( { model | receiveStockForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetCorrectEntryConfirmIdentity confirmed ->
+            let
+                _ =
+                    Debug.log "confirmed" confirmed
+
+                form =
+                    model.correctEntryForm
+
+                updatedForm =
+                    { form | confirmIdentity = Just confirmed, displayIdentityPopup = not confirmed }
+            in
+            ( { model | correctEntryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        HideCorrectEntryIdentityPopup ->
+            let
+                form =
+                    model.correctEntryForm
+
+                updatedForm =
+                    { form | displayIdentityPopup = False }
+            in
+            ( { model | correctEntryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveCorrectEntry ->
+            -- @todo
+            ( model
             , Cmd.none
             , []
             )

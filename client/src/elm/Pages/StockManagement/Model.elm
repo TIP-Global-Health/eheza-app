@@ -14,6 +14,7 @@ import Pages.Page exposing (Page)
 type alias Model =
     { displayMode : DisplayMode
     , receiveStockForm : ReceiveStockForm
+    , correctEntryForm : CorrectEntryForm
     }
 
 
@@ -21,6 +22,7 @@ emptyModel : Model
 emptyModel =
     { displayMode = ModeMain
     , receiveStockForm = emptyReceiveStockForm
+    , correctEntryForm = emptyCorrectEntryForm
     }
 
 
@@ -61,10 +63,29 @@ emptyReceiveStockForm =
     }
 
 
+type alias CorrectEntryForm =
+    { confirmIdentity : Maybe Bool
+    , displayIdentityPopup : Bool
+    , dateRecorded : Maybe Date
+    , quantity : Maybe Int
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    }
+
+
+emptyCorrectEntryForm : CorrectEntryForm
+emptyCorrectEntryForm =
+    { confirmIdentity = Nothing
+    , displayIdentityPopup = False
+    , dateRecorded = Nothing
+    , quantity = Nothing
+    , dateSelectorPopupState = Nothing
+    }
+
+
 type Msg
     = SetActivePage Page
     | SetDisplayMode DisplayMode
-    | SetConfirmIdentity Bool
+    | SetReceiveStockConfirmIdentity Bool
     | SetDateRecorded Date
     | SetDateRecordedSelectorState (Maybe (DateSelectorConfig Msg))
     | SetStockSupplier String
@@ -73,4 +94,7 @@ type Msg
     | SetDateExpiresSelectorState (Maybe (DateSelectorConfig Msg))
     | SetQuantityAdded String
     | SaveReceiveStock
-    | HideIdentityPopup
+    | HideReceiveStockIdentityPopup
+    | SetCorrectEntryConfirmIdentity Bool
+    | HideCorrectEntryIdentityPopup
+    | SaveCorrectEntry

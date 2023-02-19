@@ -68,6 +68,36 @@ view language currentDate nurseId nurse db model =
                 ]
 
         content =
+            let
+                loggedInAsPhrase =
+                    p [ class "label logged-in" ]
+                        [ text <| translate language Translate.LoggedInAsPhrase
+                        , span [] [ text nurse.name ]
+                        , text ". "
+                        , text <| translate language Translate.IsThisYouQuestion
+                        , text "?"
+                        ]
+
+                viewStockManagementContent confirmIdentity formForView saveMsg displayPopup hidePopupMsg tasksCompleted totalTasks =
+                    [ div [ class "ui unstackable items" ]
+                        [ div [ class "tasks-count" ]
+                            [ text <|
+                                translate language <|
+                                    Translate.TasksCompleted tasksCompleted totalTasks
+                            ]
+                        , div [ class "ui full segment" ]
+                            [ div [ class "ui full content" ] <|
+                                formForView
+                                    ++ [ viewSaveAction language
+                                            saveMsg
+                                            (confirmIdentity == Just True && tasksCompleted == totalTasks)
+                                       ]
+                            ]
+                        , viewModal <|
+                            identityPopup language displayPopup hidePopupMsg
+                        ]
+                    ]
+            in
             case model.displayMode of
                 ModeMain ->
                     let
@@ -94,104 +124,105 @@ view language currentDate nurseId nurse db model =
 
                         ( inputs, tasks ) =
                             let
-                                loggedInAsPhrase =
-                                    p [ class "label logged-in" ]
-                                        [ text <| translate language Translate.LoggedInAsPhrase
-                                        , span [] [ text nurse.name ]
-                                        , text ". "
-                                        , text <| translate language Translate.IsThisYouQuestion
-                                        , text "?"
-                                        ]
-
-                                dateRecordedSelectorConfig =
+                                ( derivedInputs, derivedTasks ) =
                                     let
-                                        fromDate =
-                                            Date.add Years -5 currentDate
+                                        dateRecordedSelectorConfig =
+                                            let
+                                                fromDate =
+                                                    Date.add Years -5 currentDate
+                                            in
+                                            { select = SetDateRecorded
+                                            , close = SetDateRecordedSelectorState Nothing
+                                            , dateFrom = fromDate
+                                            , dateTo = currentDate
+                                            , dateDefault = Just fromDate
+                                            }
+
+                                        dateRecordedForView =
+                                            Maybe.map formatDDMMYYYY form.dateRecorded
+                                                |> Maybe.withDefault ""
+
+                                        dateExpiresSelectorConfig =
+                                            let
+                                                toDate =
+                                                    Date.add Years 10 currentDate
+                                            in
+                                            { select = SetDateExpires
+                                            , close = SetDateExpiresSelectorState Nothing
+                                            , dateFrom = currentDate
+                                            , dateTo = toDate
+                                            , dateDefault = Just toDate
+                                            }
+
+                                        dateExpiresForView =
+                                            Maybe.map formatDDMMYYYY form.dateExpires
+                                                |> Maybe.withDefault ""
                                     in
-                                    { select = SetDateRecorded
-                                    , close = SetDateRecordedSelectorState Nothing
-                                    , dateFrom = fromDate
-                                    , dateTo = currentDate
-                                    , dateDefault = Just fromDate
-                                    }
+                                    if form.confirmIdentity == Just True then
+                                        ( [ viewLabel language Translate.ReceiveStockSelectDateLabel
+                                          , div
+                                                [ class "form-input date"
+                                                , onClick <| SetDateRecordedSelectorState (Just dateRecordedSelectorConfig)
+                                                ]
+                                                [ text dateRecordedForView ]
+                                          , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.dateRecorded
+                                          , viewQuestionLabel language Translate.ReceiveStockSupplierQuestion
+                                          , viewSelectListInput language
+                                                form.supplier
+                                                [ SupplierMOH
+                                                , SupplierRBC
+                                                , SupplierUNICEF
+                                                , SupplierRMSCentral
+                                                , SupplierRMSDistrict
+                                                , SupplierBUFMAR
+                                                ]
+                                                stockSupplierToString
+                                                SetStockSupplier
+                                                Translate.StockSupplier
+                                                "select"
+                                          , viewQuestionLabel language Translate.ReceiveStockBatchNumberQuestion
+                                          , viewTextInput language
+                                                form.batchNumber
+                                                SetBatchNumber
+                                                Nothing
+                                                (Just "batch-number")
+                                          , viewQuestionLabel language Translate.ReceiveStockDateExpiresQuestion
+                                          , div
+                                                [ class "form-input date"
+                                                , onClick <| SetDateExpiresSelectorState (Just dateExpiresSelectorConfig)
+                                                ]
+                                                [ text dateExpiresForView ]
+                                          , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.dateExpires
+                                          , viewQuestionLabel language Translate.ReceiveStockQuantityAddedQuestion
+                                          , viewNumberInput language
+                                                form.quantity
+                                                SetQuantityAdded
+                                                "quantity"
+                                          ]
+                                        , [ maybeToBoolTask form.dateRecorded
+                                          , maybeToBoolTask form.supplier
+                                          , if String.isEmpty form.batchNumber then
+                                                Nothing
 
-                                dateRecordedForView =
-                                    Maybe.map formatDDMMYYYY form.dateRecorded
-                                        |> Maybe.withDefault ""
+                                            else
+                                                Just True
+                                          , maybeToBoolTask form.dateExpires
+                                          , maybeToBoolTask form.quantity
+                                          ]
+                                        )
 
-                                dateExpiresSelectorConfig =
-                                    let
-                                        toDate =
-                                            Date.add Years 10 currentDate
-                                    in
-                                    { select = SetDateExpires
-                                    , close = SetDateExpiresSelectorState Nothing
-                                    , dateFrom = currentDate
-                                    , dateTo = toDate
-                                    , dateDefault = Just toDate
-                                    }
-
-                                dateExpiresForView =
-                                    Maybe.map formatDDMMYYYY form.dateExpires
-                                        |> Maybe.withDefault ""
+                                    else
+                                        ( [], [] )
                             in
                             ( [ loggedInAsPhrase
                               , viewBoolInput language
                                     form.confirmIdentity
-                                    SetConfirmIdentity
+                                    SetReceiveStockConfirmIdentity
                                     "confirm-identity"
                                     Nothing
-                              , viewLabel language Translate.ReceiveStockSelectDateLabel
-                              , div
-                                    [ class "form-input date"
-                                    , onClick <| SetDateRecordedSelectorState (Just dateRecordedSelectorConfig)
-                                    ]
-                                    [ text dateRecordedForView ]
-                              , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.dateRecorded
-                              , viewQuestionLabel language Translate.ReceiveStockSupplierQuestion
-                              , viewSelectListInput language
-                                    form.supplier
-                                    [ SupplierMOH
-                                    , SupplierRBC
-                                    , SupplierUNICEF
-                                    , SupplierRMSCentral
-                                    , SupplierRMSDistrict
-                                    , SupplierBUFMAR
-                                    ]
-                                    stockSupplierToString
-                                    SetStockSupplier
-                                    Translate.StockSupplier
-                                    "select"
-                              , viewQuestionLabel language Translate.ReceiveStockBatchNumberQuestion
-                              , viewTextInput language
-                                    form.batchNumber
-                                    SetBatchNumber
-                                    Nothing
-                                    (Just "batch-number")
-                              , viewQuestionLabel language Translate.ReceiveStockDateExpiresQuestion
-                              , div
-                                    [ class "form-input date"
-                                    , onClick <| SetDateExpiresSelectorState (Just dateExpiresSelectorConfig)
-                                    ]
-                                    [ text dateExpiresForView ]
-                              , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.dateExpires
-                              , viewQuestionLabel language Translate.ReceiveStockQuantityAddedQuestion
-                              , viewNumberInput language
-                                    form.quantity
-                                    SetQuantityAdded
-                                    "quantity"
                               ]
-                            , [ form.confirmIdentity
-                              , maybeToBoolTask form.dateRecorded
-                              , maybeToBoolTask form.supplier
-                              , if String.isEmpty form.batchNumber then
-                                    Nothing
-
-                                else
-                                    Just True
-                              , maybeToBoolTask form.dateExpires
-                              , maybeToBoolTask form.quantity
-                              ]
+                                ++ derivedInputs
+                            , [ form.confirmIdentity ] ++ derivedTasks
                             )
 
                         ( tasksCompleted, totalTasks ) =
@@ -200,35 +231,56 @@ view language currentDate nurseId nurse db model =
                             , List.length tasks
                             )
                     in
-                    [ div [ class "ui unstackable items" ]
-                        [ div [ class "tasks-count" ]
-                            [ text <|
-                                translate language <|
-                                    Translate.TasksCompleted tasksCompleted totalTasks
-                            ]
-                        , div [ class "ui full segment" ]
-                            [ div [ class "ui full content" ] <|
-                                inputs
-                                    ++ [ viewSaveAction language
-                                            SaveReceiveStock
-                                            (form.confirmIdentity == Just True && tasksCompleted == totalTasks)
-                                       ]
-                            ]
-                        , viewModal <|
-                            identityPopup language form.displayIdentityPopup
-                        ]
-                    ]
+                    viewStockManagementContent form.confirmIdentity
+                        inputs
+                        SaveReceiveStock
+                        form.displayIdentityPopup
+                        HideReceiveStockIdentityPopup
+                        tasksCompleted
+                        totalTasks
 
                 ModeCorrectEntry ->
-                    []
+                    let
+                        form =
+                            model.correctEntryForm
+
+                        ( inputs, tasks ) =
+                            let
+                                ( derivedInputs, derivedTasks ) =
+                                    ( [], [] )
+                            in
+                            ( [ loggedInAsPhrase
+                              , viewBoolInput language
+                                    form.confirmIdentity
+                                    SetCorrectEntryConfirmIdentity
+                                    "confirm-identity"
+                                    Nothing
+                              ]
+                                ++ derivedInputs
+                            , [ form.confirmIdentity ] ++ derivedTasks
+                            )
+
+                        ( tasksCompleted, totalTasks ) =
+                            ( Maybe.Extra.values tasks
+                                |> List.length
+                            , List.length tasks
+                            )
+                    in
+                    viewStockManagementContent form.confirmIdentity
+                        inputs
+                        SaveCorrectEntry
+                        form.displayIdentityPopup
+                        HideCorrectEntryIdentityPopup
+                        tasksCompleted
+                        totalTasks
     in
     div [ class "page-activity stock-management" ] <|
         header
             :: content
 
 
-identityPopup : Language -> Bool -> Maybe (Html Msg)
-identityPopup language displayed =
+identityPopup : Language -> Bool -> Msg -> Maybe (Html Msg)
+identityPopup language displayed hideMsg =
     if displayed then
         Just <|
             customPopup language
@@ -236,7 +288,7 @@ identityPopup language displayed =
                 Translate.OK
                 ( p [] [ text <| translate language Translate.IdentityPopupHeader ]
                 , p [] [ text <| translate language Translate.IdentityPopupInstructions ]
-                , HideIdentityPopup
+                , hideMsg
                 )
 
     else
