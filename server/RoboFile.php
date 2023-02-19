@@ -423,6 +423,16 @@ class RoboFile extends Tasks {
     $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-closed-pregnancies-report.php --limit_date=$limit_date");
   }
 
+/**
+   * Generates the CHIC report.
+   */
+  public function reportCHIC($start_date = NULL, $end_date = NULL) {
+    if (empty($start_date)) {
+      $start_date = date('Y-m-d');
+      $end_date = date('Y-m-d');
+    }
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-chic-report.php --start_date=$start_date --end_date=$end_date");
+  }
   /**
    * Generates the nutrition report.
    */
