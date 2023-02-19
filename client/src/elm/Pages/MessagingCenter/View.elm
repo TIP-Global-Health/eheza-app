@@ -439,32 +439,32 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                     )
 
                 ResilienceCategoryGrowth ->
-                    ( "growth "
+                    ( "growth"
                     , viewGrowthMessage language message.order
                     )
 
                 ResilienceCategoryStressManagement ->
-                    ( "stress-management "
+                    ( "stress-management"
                     , viewStressManagementMessage language nurse message.order
                     )
 
                 ResilienceCategoryMindfulness ->
-                    ( "mindfulness "
+                    ( "mindfulness"
                     , viewMindfulnessMessage language message.order
                     )
 
                 ResilienceCategoryConnecting ->
-                    ( "connecting "
+                    ( "connecting"
                     , viewConnectingMessage language message.order
                     )
 
                 ResilienceCategorySelfCare ->
-                    ( "self-care "
+                    ( "self-care"
                     , viewSelfCareMessage language message.order
                     )
 
                 ResilienceCategoryEndOfPeriod ->
-                    ( "end-of-period "
+                    ( "end-of-period"
                     , viewEndOfPeriodMessage language message.order
                     )
 
@@ -489,10 +489,10 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                     ""
 
                 TabFavorites ->
-                    "purple"
+                    " purple"
 
                 _ ->
-                    "blue"
+                    " blue"
 
         title =
             let
