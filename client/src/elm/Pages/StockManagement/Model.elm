@@ -66,7 +66,7 @@ emptyReceiveStockForm =
 type alias CorrectEntryForm =
     { confirmIdentity : Maybe Bool
     , displayIdentityPopup : Bool
-    , dateRecorded : Maybe Date
+    , date : Maybe Date
     , quantity : Maybe Int
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
@@ -76,7 +76,7 @@ emptyCorrectEntryForm : CorrectEntryForm
 emptyCorrectEntryForm =
     { confirmIdentity = Nothing
     , displayIdentityPopup = False
-    , dateRecorded = Nothing
+    , date = Nothing
     , quantity = Nothing
     , dateSelectorPopupState = Nothing
     }
@@ -85,6 +85,7 @@ emptyCorrectEntryForm =
 type Msg
     = SetActivePage Page
     | SetDisplayMode DisplayMode
+      --  ReceiveStock form.
     | SetReceiveStockConfirmIdentity Bool
     | SetDateRecorded Date
     | SetDateRecordedSelectorState (Maybe (DateSelectorConfig Msg))
@@ -93,8 +94,12 @@ type Msg
     | SetDateExpires Date
     | SetDateExpiresSelectorState (Maybe (DateSelectorConfig Msg))
     | SetQuantityAdded String
-    | SaveReceiveStock
     | HideReceiveStockIdentityPopup
+    | SaveReceiveStock
+      --  CorrectEntry form.
     | SetCorrectEntryConfirmIdentity Bool
+    | SetDate Date
+    | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetQuantityDeducted String
     | HideCorrectEntryIdentityPopup
     | SaveCorrectEntry

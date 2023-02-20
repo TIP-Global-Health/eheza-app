@@ -78,7 +78,7 @@ view language currentDate nurseId nurse db model =
                         , text "?"
                         ]
 
-                viewStockManagementContent confirmIdentity formForView saveMsg displayPopup hidePopupMsg tasksCompleted totalTasks =
+                viewStockUpdateContent confirmIdentity formForView saveMsg displayPopup hidePopupMsg tasksCompleted totalTasks =
                     [ div [ class "ui unstackable items" ]
                         [ div [ class "tasks-count" ]
                             [ text <|
@@ -231,7 +231,7 @@ view language currentDate nurseId nurse db model =
                             , List.length tasks
                             )
                     in
-                    viewStockManagementContent form.confirmIdentity
+                    viewStockUpdateContent form.confirmIdentity
                         inputs
                         SaveReceiveStock
                         form.displayIdentityPopup
@@ -247,7 +247,44 @@ view language currentDate nurseId nurse db model =
                         ( inputs, tasks ) =
                             let
                                 ( derivedInputs, derivedTasks ) =
-                                    ( [], [] )
+                                    let
+                                        dateSelectorConfig =
+                                            let
+                                                fromDate =
+                                                    Date.add Years -5 currentDate
+                                            in
+                                            { select = SetDate
+                                            , close = SetDateSelectorState Nothing
+                                            , dateFrom = fromDate
+                                            , dateTo = currentDate
+                                            , dateDefault = Just fromDate
+                                            }
+
+                                        dateForView =
+                                            Maybe.map formatDDMMYYYY form.date
+                                                |> Maybe.withDefault ""
+                                    in
+                                    if form.confirmIdentity == Just True then
+                                        ( [ viewLabel language Translate.ReceiveStockSelectDateLabel
+                                          , div
+                                                [ class "form-input date"
+                                                , onClick <| SetDateSelectorState (Just dateSelectorConfig)
+                                                ]
+                                                [ text dateForView ]
+                                          , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.date
+                                          , viewQuestionLabel language Translate.ReceiveStockQuantityDeductedQuestion
+                                          , viewNumberInput language
+                                                form.quantity
+                                                SetQuantityDeducted
+                                                "quantity"
+                                          ]
+                                        , [ maybeToBoolTask form.date
+                                          , maybeToBoolTask form.quantity
+                                          ]
+                                        )
+
+                                    else
+                                        ( [], [] )
                             in
                             ( [ loggedInAsPhrase
                               , viewBoolInput language
@@ -266,7 +303,7 @@ view language currentDate nurseId nurse db model =
                             , List.length tasks
                             )
                     in
-                    viewStockManagementContent form.confirmIdentity
+                    viewStockUpdateContent form.confirmIdentity
                         inputs
                         SaveCorrectEntry
                         form.displayIdentityPopup

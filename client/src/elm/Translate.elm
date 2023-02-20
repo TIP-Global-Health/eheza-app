@@ -1263,6 +1263,7 @@ type TranslationId
     | ReceiveStockBatchNumberQuestion
     | ReceiveStockDateExpiresQuestion
     | ReceiveStockQuantityAddedQuestion
+    | ReceiveStockQuantityDeductedQuestion
     | ReceiveStockSelectDateLabel
     | ReceiveStockSupplierQuestion
     | Recommendation114 Recommendation114
@@ -14375,6 +14376,11 @@ translationSet trans =
 
         ReceiveStockQuantityAddedQuestion ->
             { english = "How much stock is being received"
+            , kinyarwanda = Nothing
+            }
+
+        ReceiveStockQuantityDeductedQuestion ->
+            { english = "How much stock was deducted"
             , kinyarwanda = Nothing
             }
 

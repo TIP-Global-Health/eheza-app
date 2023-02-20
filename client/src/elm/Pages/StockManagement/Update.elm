@@ -143,13 +143,6 @@ update currentDate msg model =
             , []
             )
 
-        SaveReceiveStock ->
-            -- @todo
-            ( model
-            , Cmd.none
-            , []
-            )
-
         HideReceiveStockIdentityPopup ->
             let
                 form =
@@ -163,16 +156,62 @@ update currentDate msg model =
             , []
             )
 
+        SaveReceiveStock ->
+            -- @todo
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetCorrectEntryConfirmIdentity confirmed ->
             let
-                _ =
-                    Debug.log "confirmed" confirmed
-
                 form =
                     model.correctEntryForm
 
                 updatedForm =
                     { form | confirmIdentity = Just confirmed, displayIdentityPopup = not confirmed }
+            in
+            ( { model | correctEntryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetDate value ->
+            let
+                form =
+                    model.correctEntryForm
+
+                updatedForm =
+                    { form | date = Just value }
+            in
+            ( { model | correctEntryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetDateSelectorState state ->
+            let
+                form =
+                    model.correctEntryForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.date (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, date = defaultSelection }
+            in
+            ( { model | correctEntryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetQuantityDeducted value ->
+            let
+                form =
+                    model.correctEntryForm
+
+                updatedForm =
+                    { form | quantity = String.toInt value }
             in
             ( { model | correctEntryForm = updatedForm }
             , Cmd.none
