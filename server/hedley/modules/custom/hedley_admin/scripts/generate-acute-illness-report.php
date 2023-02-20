@@ -60,7 +60,9 @@ foreach ($first_encounters as $first_encounter) {
 
   $query = 'SELECT field_acute_illness_diagnosis_value FROM field_data_field_acute_illness_diagnosis di WHERE entity_id = ' .$first_encounter;
   $result = db_query($query)->fetchField();
-  $diagnoses[] = $result;
+  if($result) {
+    $diagnoses[] = $result;
+  }
 }
 
 // Return an array of the diagnoses and their counts.
