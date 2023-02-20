@@ -111,7 +111,11 @@ function impacted_count($age, $gender, $region) {
  */
 function encounter_all_count($type, $filter = NULL, $limit = NULL, $region = NULL) {
   
-  $region_clause = ($region === false) ?  "" : "AND field_district_value LIKE '%$region%'";
+  if ($region === FALSE) {
+    $region_clause = "AND field_district_value LIKE '%$region%'";
+  } else {
+    $region_clause = "";
+  }
 
   if ($filter === 'hc' && $type == 'prenatal') {
     // Health center ANC.
