@@ -3,7 +3,7 @@ module Pages.StockManagement.Model exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.StockUpdate.Model exposing (StockSupplier)
+import Backend.StockUpdate.Model exposing (StockCorrectionReason, StockSupplier)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
@@ -68,6 +68,7 @@ type alias CorrectEntryForm =
     , displayIdentityPopup : Bool
     , date : Maybe Date
     , quantity : Maybe Int
+    , reason : Maybe StockCorrectionReason
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
@@ -78,6 +79,7 @@ emptyCorrectEntryForm =
     , displayIdentityPopup = False
     , date = Nothing
     , quantity = Nothing
+    , reason = Nothing
     , dateSelectorPopupState = Nothing
     }
 
@@ -101,5 +103,6 @@ type Msg
     | SetDate Date
     | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetQuantityDeducted String
+    | SetCorrectionReason StockCorrectionReason
     | HideCorrectEntryIdentityPopup
     | SaveCorrectEntry

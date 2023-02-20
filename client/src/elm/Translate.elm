@@ -1260,12 +1260,6 @@ type TranslationId
     | ReceivedMebendazole
     | ReceivedMosquitoNet
     | ReceivedVitaminA
-    | ReceiveStockBatchNumberQuestion
-    | ReceiveStockDateExpiresQuestion
-    | ReceiveStockQuantityAddedQuestion
-    | ReceiveStockQuantityDeductedQuestion
-    | ReceiveStockSelectDateLabel
-    | ReceiveStockSupplierQuestion
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
     | Recommended
@@ -1603,6 +1597,12 @@ type TranslationId
     | StockCorrectionReason StockCorrectionReason
     | StockManagement
     | StockManagementMenu StockManagementMenu
+    | StockManagementBatchNumberQuestion
+    | StockManagementDateExpiresQuestion
+    | StockManagementQuantityAddedQuestion
+    | StockManagementQuantityDeductedQuestion
+    | StockManagementSelectDateLabel
+    | StockManagementSupplierQuestion
     | StockSupplier StockSupplier
     | SubsequentAntenatalVisit
     | SubsequentEncounter
@@ -14364,36 +14364,6 @@ translationSet trans =
             , kinyarwanda = Just "Wahawe Vitamine A"
             }
 
-        ReceiveStockBatchNumberQuestion ->
-            { english = "What is the batch number"
-            , kinyarwanda = Nothing
-            }
-
-        ReceiveStockDateExpiresQuestion ->
-            { english = "What is the expiration date"
-            , kinyarwanda = Nothing
-            }
-
-        ReceiveStockQuantityAddedQuestion ->
-            { english = "How much stock is being received"
-            , kinyarwanda = Nothing
-            }
-
-        ReceiveStockQuantityDeductedQuestion ->
-            { english = "How much stock was deducted"
-            , kinyarwanda = Nothing
-            }
-
-        ReceiveStockSelectDateLabel ->
-            { english = "Select a date for this entry"
-            , kinyarwanda = Nothing
-            }
-
-        ReceiveStockSupplierQuestion ->
-            { english = "Where was this received from"
-            , kinyarwanda = Nothing
-            }
-
         Recommendation114 recommendation ->
             case recommendation of
                 SendToHealthCenter ->
@@ -17071,6 +17041,36 @@ translationSet trans =
                     { english = "Correct entry"
                     , kinyarwanda = Nothing
                     }
+
+        StockManagementBatchNumberQuestion ->
+            { english = "What is the batch number"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementDateExpiresQuestion ->
+            { english = "What is the expiration date"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementQuantityAddedQuestion ->
+            { english = "How much stock is being received"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementQuantityDeductedQuestion ->
+            { english = "How much stock was deducted"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementSelectDateLabel ->
+            { english = "Select a date for this entry"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementSupplierQuestion ->
+            { english = "Where was this received from"
+            , kinyarwanda = Nothing
+            }
 
         StockSupplier value ->
             case value of

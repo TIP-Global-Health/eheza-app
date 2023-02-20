@@ -218,6 +218,19 @@ update currentDate msg model =
             , []
             )
 
+        SetCorrectionReason value ->
+            let
+                form =
+                    model.correctEntryForm
+
+                updatedForm =
+                    { form | reason = Just value }
+            in
+            ( { model | correctEntryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
         HideCorrectEntryIdentityPopup ->
             let
                 form =

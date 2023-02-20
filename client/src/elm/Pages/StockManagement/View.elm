@@ -6,7 +6,7 @@ import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortEncounterTuplesDesc)
-import Backend.StockUpdate.Model exposing (StockSupplier(..))
+import Backend.StockUpdate.Model exposing (StockCorrectionReason(..), StockSupplier(..))
 import Backend.StockUpdate.Utils exposing (stockSupplierToString)
 import Date exposing (Month, Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -159,14 +159,14 @@ view language currentDate nurseId nurse db model =
                                                 |> Maybe.withDefault ""
                                     in
                                     if form.confirmIdentity == Just True then
-                                        ( [ viewLabel language Translate.ReceiveStockSelectDateLabel
+                                        ( [ viewLabel language Translate.StockManagementSelectDateLabel
                                           , div
                                                 [ class "form-input date"
                                                 , onClick <| SetDateRecordedSelectorState (Just dateRecordedSelectorConfig)
                                                 ]
                                                 [ text dateRecordedForView ]
                                           , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.dateRecorded
-                                          , viewQuestionLabel language Translate.ReceiveStockSupplierQuestion
+                                          , viewQuestionLabel language Translate.StockManagementSupplierQuestion
                                           , viewSelectListInput language
                                                 form.supplier
                                                 [ SupplierMOH
@@ -180,20 +180,20 @@ view language currentDate nurseId nurse db model =
                                                 SetStockSupplier
                                                 Translate.StockSupplier
                                                 "select"
-                                          , viewQuestionLabel language Translate.ReceiveStockBatchNumberQuestion
+                                          , viewQuestionLabel language Translate.StockManagementBatchNumberQuestion
                                           , viewTextInput language
                                                 form.batchNumber
                                                 SetBatchNumber
                                                 Nothing
                                                 (Just "batch-number")
-                                          , viewQuestionLabel language Translate.ReceiveStockDateExpiresQuestion
+                                          , viewQuestionLabel language Translate.StockManagementDateExpiresQuestion
                                           , div
                                                 [ class "form-input date"
                                                 , onClick <| SetDateExpiresSelectorState (Just dateExpiresSelectorConfig)
                                                 ]
                                                 [ text dateExpiresForView ]
                                           , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.dateExpires
-                                          , viewQuestionLabel language Translate.ReceiveStockQuantityAddedQuestion
+                                          , viewQuestionLabel language Translate.StockManagementQuantityAddedQuestion
                                           , viewNumberInput language
                                                 form.quantity
                                                 SetQuantityAdded
@@ -265,21 +265,33 @@ view language currentDate nurseId nurse db model =
                                                 |> Maybe.withDefault ""
                                     in
                                     if form.confirmIdentity == Just True then
-                                        ( [ viewLabel language Translate.ReceiveStockSelectDateLabel
+                                        ( [ viewLabel language Translate.StockManagementSelectDateLabel
                                           , div
                                                 [ class "form-input date"
                                                 , onClick <| SetDateSelectorState (Just dateSelectorConfig)
                                                 ]
                                                 [ text dateForView ]
                                           , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.date
-                                          , viewQuestionLabel language Translate.ReceiveStockQuantityDeductedQuestion
+                                          , viewQuestionLabel language Translate.StockManagementQuantityDeductedQuestion
                                           , viewNumberInput language
                                                 form.quantity
                                                 SetQuantityDeducted
                                                 "quantity"
+                                          , viewQuestionLabel language Translate.StockManagementQuantityDeductedQuestion
+                                          , viewCheckBoxSelectInput language
+                                                [ ReasonInputError
+                                                , ReasonExpiration
+                                                , ReasonMissing
+                                                , ReasonOther
+                                                ]
+                                                []
+                                                form.reason
+                                                SetCorrectionReason
+                                                Translate.StockCorrectionReason
                                           ]
                                         , [ maybeToBoolTask form.date
                                           , maybeToBoolTask form.quantity
+                                          , maybeToBoolTask form.reason
                                           ]
                                         )
 
