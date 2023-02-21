@@ -654,7 +654,7 @@ type TranslationId
     | FatherOrChiefId
     | FatherOrChiefName
     | FatherNationalId
-    | Favorite
+    | FavoriteToggle Bool
     | FbfDistribution ClinicType
     | FbfToReceive Activity Float
     | FetalHeartRate
@@ -1232,6 +1232,7 @@ type TranslationId
     | Province
     | RandomBloodSugarResultNormalRange RandomBloodSugarResult
     | Read
+    | ReadToggle Bool
     | ReasonForCSection
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -1685,7 +1686,6 @@ type TranslationId
     | UnitOfMeasurement UnitOfMeasurement
     | UniversalInterventions
     | Unknown
-    | Unread
     | Update
     | UpdateError
     | Uploading
@@ -5160,10 +5160,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        Favorite ->
-            { english = "Favorite"
-            , kinyarwanda = Nothing
-            }
+        FavoriteToggle isFavorite ->
+            if isFavorite then
+                { english = "Unfavorite"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Favorite"
+                , kinyarwanda = Nothing
+                }
 
         FetalHeartRate ->
             { english = "Fetal Heart Rate"
@@ -8770,7 +8776,7 @@ translationSet trans =
         MessagingTab tab ->
             case tab of
                 TabUnread ->
-                    translationSet Unread
+                    translationSet (ReadToggle True)
 
                 TabFavorites ->
                     { english = "Favorites"
@@ -13968,6 +13974,17 @@ translationSet trans =
             , kinyarwanda = Just "Intara"
             }
 
+        ReadToggle isRead ->
+            if isRead then
+                { english = "Unread"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Read"
+                , kinyarwanda = Nothing
+                }
+
         ReasonForCSection ->
             { english = "Reason for C-section"
             , kinyarwanda = Nothing
@@ -17684,11 +17701,6 @@ translationSet trans =
         Unknown ->
             { english = "Unknown"
             , kinyarwanda = Just "Ntabizi"
-            }
-
-        Unread ->
-            { english = "Unread"
-            , kinyarwanda = Nothing
             }
 
         Update ->
