@@ -489,16 +489,16 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                     ""
 
                 TabFavorites ->
-                    " purple"
+                    "purple"
 
                 _ ->
-                    " blue"
+                    "blue"
 
         title =
             let
                 plainTitle =
                     div [ class <| "header " ++ titleWrapperClass, onClick messageClickedAction ]
-                        [ i [ class <| "icon-" ++ extraClass ++ titleWrapperClass ] []
+                        [ i [ class <| "icon-" ++ extraClass ++ " " ++ titleWrapperClass ] []
                         , messageCategory
                         , span [ class "date-sent" ]
                             [ sentDate
