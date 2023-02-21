@@ -4644,11 +4644,23 @@ div.page-activity.messaging-center {
   .resilience-message {
     margin-bottom: 30px;
 
-    .title,
-    .title-wrapper {
+    .title-wrapper, .header {
       background-color: $color-velvet;
       color: $color-white;
+    }
+
+    .header {
+      display: flex;
+      flex-flow: row wrap;
       padding: 20px;
+
+      &.blue {
+        background-color: $color-primary;
+      }
+
+      &.purple {
+        background-color: $color-purple;
+      }
     }
 
     .title-wrapper {
@@ -4656,14 +4668,92 @@ div.page-activity.messaging-center {
       justify-content: space-between;
     }
 
-    .title-wrapper .title {
+    .icon-options {
+      margin-top: 20px;
+      padding: 20px;
+      background: url(#{$img-path}icon-options.svg) center center no-repeat;
+      background-size: 32px 30px;
+      height: 32px;
+      width: 30px;
+    }
+
+    .category-header{
+      font-weight: bold;
+      font-size: 24px;
+      flex: 1;
+      line-height: 32px;
+    }
+
+    .header .title {
       padding: 0;
+    }
+
+    .date-sent {
+      width: 100%;
+      font-size: 22px;
     }
 
     .content {
       background-color: $color-white;
       color: $color-text;
       padding: 20px;
+    }
+
+    .icon-growth {
+      background: url(#{$img-path}icon-growth.svg) center center no-repeat;
+      background-size: 28px 40px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -5px;
+      margin-top: -5px;
+      width: 40px;
+    }
+
+    .icon-stress-management {
+      background: url(#{$img-path}icon-stress-management.svg) center center no-repeat;
+      background-size: 30px 40px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -10px;
+      width: 40px;
+    }
+
+    .icon-mindfulness {
+      background: url(#{$img-path}icon-mindfulness.svg) center center no-repeat;
+      background-size: 28px 40px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -5px;
+      margin-top: -5px;
+      width: 40px;
+    }
+
+    .icon-connecting {
+      background: url(#{$img-path}icon-connecting-red.svg) center center no-repeat;
+      background-size: 30px 30px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -1px;
+      margin-top: -1px;
+      width: 30px;
+    }
+
+    .icon-connecting.blue {
+      background: url(#{$img-path}icon-connecting-blue.svg) center center no-repeat;
+    }
+
+    .icon-connecting.purple {
+      background: url(#{$img-path}icon-connecting-purple.svg) center center no-repeat;
+    }
+
+    .icon-self-care {
+      background: url(#{$img-path}icon-selfcare.svg) center center no-repeat;
+      background-size: 28px 40px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -5px;
+      margin-top: -2px;
+      width: 40px;
     }
   }
 
@@ -4724,5 +4814,4 @@ div.page-activity.messaging-center {
       margin-bottom: 20px;
     }
   }
-
 }

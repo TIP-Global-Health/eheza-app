@@ -61,6 +61,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..))
 import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestion(..)
@@ -658,7 +659,7 @@ type TranslationId
     | FatherOrChiefId
     | FatherOrChiefName
     | FatherNationalId
-    | Favorite
+    | FavoriteToggle Bool
     | FbfDistribution ClinicType
     | FbfToReceive Activity Float
     | FetalHeartRate
@@ -1243,6 +1244,7 @@ type TranslationId
     | Province
     | RandomBloodSugarResultNormalRange RandomBloodSugarResult
     | Read
+    | ReadToggle Bool
     | ReasonForCSection
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
@@ -1305,6 +1307,7 @@ type TranslationId
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
+    | ResilienceCategory ResilienceCategory
     | ResilienceMessageIntroduction1Title
     | ResilienceMessageIntroduction1Paragraph1 String
     | ResilienceMessageIntroduction1Paragraph2
@@ -1695,7 +1698,6 @@ type TranslationId
     | UnitOfMeasurement UnitOfMeasurement
     | UniversalInterventions
     | Unknown
-    | Unread
     | Update
     | UpdateError
     | Uploading
@@ -5257,10 +5259,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        Favorite ->
-            { english = "Favorite"
-            , kinyarwanda = Nothing
-            }
+        FavoriteToggle isFavorite ->
+            if isFavorite then
+                { english = "Unfavorite"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Favorite"
+                , kinyarwanda = Nothing
+                }
 
         FetalHeartRate ->
             { english = "Fetal Heart Rate"
@@ -8929,7 +8937,7 @@ translationSet trans =
         MessagingTab tab ->
             case tab of
                 TabUnread ->
-                    translationSet Unread
+                    translationSet (ReadToggle True)
 
                 TabFavorites ->
                     { english = "Favorites"
@@ -14143,6 +14151,17 @@ translationSet trans =
             , kinyarwanda = Just "Intara"
             }
 
+        ReadToggle isRead ->
+            if isRead then
+                { english = "Unread"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "Read"
+                , kinyarwanda = Nothing
+                }
+
         ReasonForCSection ->
             { english = "Reason for C-section"
             , kinyarwanda = Nothing
@@ -15244,6 +15263,43 @@ translationSet trans =
             { english = String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Completed"
             , kinyarwanda = Just <| String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Raporo irarangiye"
             }
+
+        ResilienceCategory category ->
+            case category of
+                ResilienceCategoryIntroduction ->
+                    { english = "Introduction"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategoryGrowth ->
+                    { english = "Growth"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategoryStressManagement ->
+                    { english = "Stress Management"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategoryMindfulness ->
+                    { english = "Mindfulness"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategoryConnecting ->
+                    { english = "Connecting"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategorySelfCare ->
+                    { english = "Self Care"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategoryEndOfPeriod ->
+                    { english = "End Of Month"
+                    , kinyarwanda = Nothing
+                    }
 
         ResilienceMessageIntroduction1Title ->
             { english = "Welcome to the work based resilience messaging program."
@@ -17820,11 +17876,6 @@ translationSet trans =
         Unknown ->
             { english = "Unknown"
             , kinyarwanda = Just "Ntabizi"
-            }
-
-        Unread ->
-            { english = "Unread"
-            , kinyarwanda = Nothing
             }
 
         Update ->

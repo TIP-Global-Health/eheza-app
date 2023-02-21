@@ -43,6 +43,7 @@ import RemoteData exposing (RemoteData(..))
 import Time exposing (posixToMillis)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
+import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -362,7 +363,8 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
         , div [ class "ui report unstackable items" ]
             content
         , viewModal <|
-            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId) model.messageOptionsDialogState
+            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId model.activeTab)
+                model.messageOptionsDialogState
         ]
 
 
@@ -427,6 +429,9 @@ viewTabs language model =
 viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
 viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
+        messageCategory =
+            span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]
+
         ( extraClass, ( head, body ) ) =
             case message.category of
                 ResilienceCategoryIntroduction ->
@@ -470,33 +475,47 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         updateTimeRead =
             model.activeTab == TabUnread
 
-        viewOptions =
-            model.activeTab == TabUnread
-
         messageClickedAction =
             ResilienceMessageClicked nurseId messageId message updateTimeRead
+
+        sentDate =
+            Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
+
+        titleWrapperClass =
+            case model.activeTab of
+                TabUnread ->
+                    ""
+
+                TabFavorites ->
+                    "purple"
+
+                _ ->
+                    "blue"
 
         title =
             let
                 plainTitle =
-                    div
-                        [ class "title"
-                        , onClick messageClickedAction
+                    div [ class <| "header " ++ titleWrapperClass, onClick messageClickedAction ]
+                        [ i [ class <| "icon-" ++ extraClass ++ " " ++ titleWrapperClass ] []
+                        , messageCategory
+                        , span [ class "date-sent" ]
+                            [ sentDate
+                                |> Maybe.map (renderDate language >> text)
+                                |> showMaybe
+                            ]
+                        , div
+                            [ class "title" ]
+                            head
                         ]
-                        head
             in
-            if viewOptions then
-                div [ class "title-wrapper" ]
-                    [ plainTitle
-                    , div
-                        [ class "options"
-                        , onClick <| SetMessageOptionsDialogState <| Just <| MessageOptionsStateMain ( messageId, message )
-                        ]
-                        [ text "OP" ]
+            div [ class "title-wrapper" ]
+                [ plainTitle
+                , div
+                    [ class "icon-options"
+                    , onClick <| SetMessageOptionsDialogState <| Just <| MessageOptionsStateMain ( messageId, message )
                     ]
-
-            else
-                plainTitle
+                    []
+                ]
     in
     div
         [ classList
@@ -817,7 +836,7 @@ viewSelfCareMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), L
 viewSelfCareMessage language order =
     case order of
         ResilienceMessage1 ->
-            ( [ text <| translate language Translate.ResilienceMessageSelfCare1Title ]
+            ( [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Title ] ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph2 ]
               , ul []
@@ -891,29 +910,46 @@ messageOptionsDialog :
     -> Time.Posix
     -> NominalDate
     -> NurseId
+    -> MessagingTab
     -> MessageOptionsDialogState
     -> Html Msg
-messageOptionsDialog language currentTime currentDate nurseId state =
+messageOptionsDialog language currentTime currentDate nurseId tab state =
     case state of
         MessageOptionsStateMain ( messageId, message ) ->
-            div [ class "ui active modal main" ]
-                [ div
-                    [ class "content" ]
+            let
+                content =
+                    if tab == TabFavorites then
+                        favoriteUnfavorite ++ reminder
+
+                    else
+                        readUnread ++ favoriteUnfavorite ++ reminder
+
+                readUnread =
+                    let
+                        isRead =
+                            tab /= TabUnread
+                    in
                     [ button
                         [ class "ui fluid button cyan"
-                        , onClick <| MarkMessageUnread nurseId messageId message
+                        , onClick <| ToggleMessageRead nurseId messageId message isRead
                         ]
                         [ img [ src "assets/images/envelope.svg" ] []
-                        , text <| translate language Translate.Unread
+                        , text <| translate language <| Translate.ReadToggle isRead
                         ]
-                    , button
+                    ]
+
+                favoriteUnfavorite =
+                    [ button
                         [ class "ui fluid button purple"
-                        , onClick <| MarkMessageFavorite nurseId messageId message
+                        , onClick <| ToggleMessageFavorite nurseId messageId message
                         ]
                         [ img [ src "assets/images/star.svg" ] []
-                        , text <| translate language Translate.Favorite
+                        , text <| translate language <| Translate.FavoriteToggle message.isFavorite
                         ]
-                    , button
+                    ]
+
+                reminder =
+                    [ button
                         [ class "ui fluid button velvet"
                         , onClick <| SetMessageOptionsDialogState <| Just <| MessageOptionsStateReminder ( messageId, message )
                         ]
@@ -921,6 +957,10 @@ messageOptionsDialog language currentTime currentDate nurseId state =
                         , text <| translate language Translate.RemindMe
                         ]
                     ]
+            in
+            div [ class "ui active modal main" ]
+                [ div [ class "content" ]
+                    content
                 , div
                     [ class "actions" ]
                     [ button
