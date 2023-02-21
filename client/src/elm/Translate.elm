@@ -61,6 +61,7 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..))
 import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestion(..)
@@ -1293,6 +1294,7 @@ type TranslationId
     | Reports
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
+    | ResilienceCategory ResilienceCategory
     | ResilienceMessageIntroduction1Title
     | ResilienceMessageIntroduction1Paragraph1 String
     | ResilienceMessageIntroduction1Paragraph2
@@ -15052,6 +15054,43 @@ translationSet trans =
             { english = String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Completed"
             , kinyarwanda = Just <| String.fromInt completed ++ " / " ++ String.fromInt (pending + completed) ++ " Raporo irarangiye"
             }
+
+        ResilienceCategory category ->
+            case category of
+                ResilienceCategoryIntroduction ->
+                    { english = "Introduction"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategoryGrowth ->
+                    { english = "Growth"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategoryStressManagement ->
+                    { english = "Stress Management"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategoryMindfulness ->
+                    { english = "Mindfulness"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategoryConnecting ->
+                    { english = "Connecting"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategorySelfCare ->
+                    { english = "Self Care"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResilienceCategoryEndOfPeriod ->
+                    { english = "End Of Month"
+                    , kinyarwanda = Nothing
+                    }
 
         ResilienceMessageIntroduction1Title ->
             { english = "Welcome to the work based resilience messaging program."

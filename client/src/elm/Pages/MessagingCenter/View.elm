@@ -43,6 +43,7 @@ import RemoteData exposing (RemoteData(..))
 import Time exposing (posixToMillis)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
+import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -427,6 +428,9 @@ viewTabs language model =
 viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
 viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
+        messageCategory =
+            span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]
+
         ( extraClass, ( head, body ) ) =
             case message.category of
                 ResilienceCategoryIntroduction ->
@@ -476,23 +480,44 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         messageClickedAction =
             ResilienceMessageClicked nurseId messageId message updateTimeRead
 
+        sentDate =
+            Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
+
+        titleWrapperClass =
+            case model.activeTab of
+                TabUnread ->
+                    ""
+
+                TabFavorites ->
+                    "purple"
+
+                _ ->
+                    "blue"
+
         title =
             let
                 plainTitle =
-                    div
-                        [ class "title"
-                        , onClick messageClickedAction
+                    div [ class <| "header " ++ titleWrapperClass, onClick messageClickedAction ]
+                        [ i [ class <| "icon-" ++ extraClass ++ " " ++ titleWrapperClass ] []
+                        , messageCategory
+                        , span [ class "date-sent" ]
+                            [ sentDate
+                                |> Maybe.map (renderDate language >> text)
+                                |> showMaybe
+                            ]
+                        , div
+                            [ class "title" ]
+                            head
                         ]
-                        head
             in
             if viewOptions then
                 div [ class "title-wrapper" ]
                     [ plainTitle
                     , div
-                        [ class "options"
+                        [ class "icon-options"
                         , onClick <| SetMessageOptionsDialogState <| Just <| MessageOptionsStateMain ( messageId, message )
                         ]
-                        [ text "OP" ]
+                        []
                     ]
 
             else
@@ -817,7 +842,7 @@ viewSelfCareMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), L
 viewSelfCareMessage language order =
     case order of
         ResilienceMessage1 ->
-            ( [ text <| translate language Translate.ResilienceMessageSelfCare1Title ]
+            ( [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Title ] ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageSelfCare1Paragraph2 ]
               , ul []

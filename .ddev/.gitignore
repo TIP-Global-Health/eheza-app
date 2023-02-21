@@ -28,5 +28,6 @@
 /postgres/postgresql.conf
 /providers/platform.yaml
 /sequelpro.spf
+/traefik
 /xhprof
 /**/README.*
