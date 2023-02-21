@@ -490,22 +490,22 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                 Nothing ->
                     emptyNode
 
-        titleWrapperClass =
-            case model.activeTab of
-                TabUnread ->
-                    ""
-
-                TabFavorites ->
-                    "purple"
-
-                _ ->
-                    "blue"
-
         title =
             let
+                titleWrapperClass =
+                    case model.activeTab of
+                        TabUnread ->
+                            "velvet"
+
+                        TabFavorites ->
+                            "purple"
+
+                        _ ->
+                            "blue"
+
                 plainTitle =
-                    div [ class <| "header " ++ titleWrapperClass, onClick messageClickedAction ]
-                        [ i [ class <| "icon-" ++ extraClass ++ " " ++ titleWrapperClass ] []
+                    div [ class <| "header", onClick messageClickedAction ]
+                        [ i [ class <| "icon-" ++ extraClass ] []
                         , messageCategory
                         , dateSentSpan
                         , div
@@ -513,7 +513,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                             head
                         ]
             in
-            div [ class "title-wrapper" ]
+            div [ class <| "title-wrapper " ++ titleWrapperClass ]
                 [ plainTitle
                 , div
                     [ class "icon-options"
