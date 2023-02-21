@@ -4644,53 +4644,53 @@ div.page-activity.messaging-center {
   .resilience-message {
     margin-bottom: 30px;
 
-    .title-wrapper, .header {
-      background-color: $color-velvet;
-      color: $color-white;
-    }
-
-    .header {
-      display: flex;
-      flex-flow: row wrap;
-      padding: 20px;
-
-      &.blue {
-        background-color: $color-primary;
-      }
-
-      &.purple {
-        background-color: $color-purple;
-      }
-    }
-
     .title-wrapper {
+      color: $color-white;
       display: flex;
       justify-content: space-between;
+
+      .header {
+        display: flex;
+        flex-flow: row wrap;
+        padding: 20px;
+
+        .category-header {
+          font-weight: bold;
+          font-size: 24px;
+          flex: 1;
+          line-height: 32px;
+        }
+
+        .title {
+          padding: 0;
+        }
+
+        .date-sent {
+          width: 100%;
+          font-size: 22px;
+        }
+      }
+
+      .icon-options {
+        margin-top: 20px;
+        padding: 20px;
+        background: url(#{$img-path}icon-options.svg) center center no-repeat;
+        background-size: 32px 30px;
+        height: 32px;
+        width: 30px;
+      }
     }
 
-    .icon-options {
-      margin-top: 20px;
-      padding: 20px;
-      background: url(#{$img-path}icon-options.svg) center center no-repeat;
-      background-size: 32px 30px;
-      height: 32px;
-      width: 30px;
+    .title-wrapper.velvet {
+      background-color: $color-velvet;
     }
 
-    .category-header{
-      font-weight: bold;
-      font-size: 24px;
-      flex: 1;
-      line-height: 32px;
+    .title-wrapper.blue {
+      background-color: $color-primary;
     }
 
-    .header .title {
-      padding: 0;
-    }
-
-    .date-sent {
-      width: 100%;
-      font-size: 22px;
+    .title-wrapper.purple {
+      background-color: $color-purple;
     }
 
     .content {
