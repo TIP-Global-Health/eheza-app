@@ -482,13 +482,13 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
 
         dateSentSpan =
-            case sentDate of
-                Just date ->
-                    span [ class "date-sent" ]
-                        [ renderDate language date |> text ]
-
-                Nothing ->
-                    emptyNode
+            sentDate
+                |> Maybe.map
+                    (\date ->
+                        span [ class "date-sent" ]
+                            [ text <| renderDate language date ]
+                    )
+                |> Maybe.withDefault emptyNode
 
         title =
             let
