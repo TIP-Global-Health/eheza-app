@@ -41,10 +41,10 @@ type StockManagementMenu
 type alias ReceiveStockForm =
     { confirmIdentity : Maybe Bool
     , displayIdentityPopup : Bool
-    , dateRecorded : Maybe Date
+    , dateRecorded : Maybe NominalDate
     , supplier : Maybe StockSupplier
     , batchNumber : Maybe String
-    , dateExpires : Maybe Date
+    , dateExpires : Maybe NominalDate
     , quantity : Maybe Int
     , notes : Maybe String
     , dateRecordedSelectorPopupState : Maybe (DateSelectorConfig Msg)
@@ -102,7 +102,7 @@ type Msg
     | SetQuantityAdded String
     | SetNotes String
     | HideReceiveStockIdentityPopup
-    | SaveReceiveStock
+    | SaveReceiveStock NurseId
       --  CorrectEntry form.
     | SetCorrectEntryConfirmIdentity Bool
     | SetDate Date

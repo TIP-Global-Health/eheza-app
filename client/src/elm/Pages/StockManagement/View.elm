@@ -90,7 +90,7 @@ view language currentDate nurseId nurse db model =
                                 formForView
                             , viewSaveAction language
                                 saveMsg
-                                (tasksCompleted == totalTasks)
+                                (tasksCompleted /= totalTasks)
                                 |> showIf (confirmIdentity == Just True)
                             ]
                         , viewModal <|
@@ -239,7 +239,7 @@ view language currentDate nurseId nurse db model =
                     in
                     viewStockUpdateContent form.confirmIdentity
                         inputs
-                        SaveReceiveStock
+                        (SaveReceiveStock nurseId)
                         form.displayIdentityPopup
                         HideReceiveStockIdentityPopup
                         tasksCompleted

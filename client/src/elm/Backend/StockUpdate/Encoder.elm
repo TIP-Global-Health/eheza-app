@@ -8,63 +8,28 @@ import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Restful.Endpoint exposing (encodeEntityUuid)
+import Utils.Json exposing (encodeIfExists)
 
 
 encodeStockUpdate : StockUpdate -> List ( String, Value )
 encodeStockUpdate stockUpdate =
-    let
-        (PhotoUrl url) =
-            stockUpdate.signature
-
-        recorded =
-            Maybe.map
-                (\dateRecorded ->
-                    [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD dateRecorded ) ]
-                )
-                stockUpdate.dateRecorded
-                |> Maybe.withDefault []
-
-        expiration =
-            Maybe.map
-                (\dateExpires ->
-                    [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD dateExpires ) ]
-                )
-                stockUpdate.dateExpires
-                |> Maybe.withDefault []
-
-        batch =
-            Maybe.map (\batchNumber -> [ ( "batch_number", string batchNumber ) ]) stockUpdate.batchNumber
-                |> Maybe.withDefault []
-
-        supplier =
-            Maybe.map
-                (\stockSupplier ->
-                    [ ( "stock_supplier", encodeStockSupplier stockSupplier ) ]
-                )
-                stockUpdate.supplier
-                |> Maybe.withDefault []
-
-        correction =
-            Maybe.map
-                (\correctionReason ->
-                    [ ( "stock_correction_reason", encodeStockCorrectionReason correctionReason ) ]
-                )
-                stockUpdate.correctionReason
-                |> Maybe.withDefault []
-    in
     [ ( "nurse", encodeEntityUuid stockUpdate.nurse )
     , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD stockUpdate.dateMeasured )
     , ( "stock_update_type", encodeStockUpdateType stockUpdate.updateType )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD stockUpdate.dateRecorded )
     , ( "quantity", int stockUpdate.quantity )
-    , ( "signature", string url )
+    , ( "health_center", encodeEntityUuid stockUpdate.healthCenter )
+    , ( "shard", encodeEntityUuid stockUpdate.healthCenter )
+
+    --  , ( "signature", string url )
     , ( "deleted", bool False )
     , ( "type", string "stock_update" )
     ]
-        ++ recorded
-        ++ expiration
-        ++ batch
-        ++ supplier
-        ++ correction
+        ++ encodeIfExists "expiration_date" stockUpdate.dateExpires Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeIfExists "batch_number" stockUpdate.batchNumber string
+        ++ encodeIfExists "stock_supplier" stockUpdate.supplier encodeStockSupplier
+        ++ encodeIfExists "notes" stockUpdate.notes string
+        ++ encodeIfExists "stock_correction_reason" stockUpdate.correctionReason encodeStockCorrectionReason
 
 
 encodeStockUpdateType : StockUpdateType -> Value

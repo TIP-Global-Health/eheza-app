@@ -68,6 +68,8 @@ import Backend.ResilienceSurvey.Update
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
+import Backend.StockUpdate.Model
+import Backend.StockUpdate.Update
 import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.Utils exposing (..)
@@ -3239,6 +3241,20 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | resilienceMessageRequests = Dict.insert messageNurseId subModel model.resilienceMessageRequests }
             , Cmd.map (MsgResilienceMessage messageNurseId) subCmd
+            , []
+            )
+
+        MsgStockUpdate updateNurseId subMsg ->
+            let
+                requests =
+                    Dict.get updateNurseId model.stockUpdateRequests
+                        |> Maybe.withDefault Backend.StockUpdate.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.StockUpdate.Update.update currentDate subMsg requests
+            in
+            ( { model | stockUpdateRequests = Dict.insert updateNurseId subModel model.stockUpdateRequests }
+            , Cmd.map (MsgStockUpdate updateNurseId) subCmd
             , []
             )
 

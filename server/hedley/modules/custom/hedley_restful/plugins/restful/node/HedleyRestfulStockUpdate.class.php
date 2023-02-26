@@ -17,6 +17,7 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
    */
   protected $fields = [
     'field_nurse',
+    'field_health_center',
     'field_date_measured',
     'field_execution_date',
     'field_expiration_date',
@@ -25,8 +26,16 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
     'field_stock_correction_reason',
     'field_stock_supplier',
     'field_stock_update_type',
+    'field_notes',
     'field_signature',
   ];
+
+  /**
+   * A list of fields that are assigned multiple values.
+   *
+   * @var array
+   */
+  protected $multiFields = [];
 
   /**
    * A list of fields that are dates. This is a sub list of $fields.
@@ -46,6 +55,7 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
    */
   protected $entityFields = [
     'field_nurse',
+    'field_health_center'
   ];
 
   /**

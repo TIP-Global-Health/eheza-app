@@ -3,8 +3,10 @@ module Pages.StockManagement.Update exposing (update)
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model
+import Backend.StockUpdate.Model exposing (StockUpdateType(..))
 import Backend.StockUpdate.Utils exposing (stockSupplierFromString)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -15,8 +17,8 @@ import Time
 import Time.Extra
 
 
-update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate msg model =
+update : NominalDate -> Maybe HealthCenterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate maybeHealthCenterId msg model =
     case msg of
         SetActivePage page ->
             ( model
@@ -169,11 +171,46 @@ update currentDate msg model =
             , []
             )
 
-        SaveReceiveStock ->
-            -- @todo
-            ( model
+        SaveReceiveStock nurseId ->
+            let
+                form =
+                    model.receiveStockForm
+
+                ( action, updatedModel ) =
+                    Maybe.map3
+                        (\healthCenterId dateRecorded quantity ->
+                            let
+                                record =
+                                    { nurse = nurseId
+                                    , dateMeasured = currentDate
+                                    , updateType = UpdateReceivingSupplies
+                                    , quantity = quantity
+                                    , dateRecorded = dateRecorded
+                                    , dateExpires = form.dateExpires
+                                    , batchNumber = form.batchNumber
+                                    , supplier = form.supplier
+                                    , notes = form.notes
+                                    , correctionReason = Nothing
+                                    , healthCenter = healthCenterId
+                                    , shard = Just healthCenterId
+                                    , signature = Nothing
+                                    }
+                            in
+                            ( [ Backend.StockUpdate.Model.CreateStockUpdate record
+                                    |> Backend.Model.MsgStockUpdate nurseId
+                                    |> App.Model.MsgIndexedDb
+                              ]
+                            , emptyModel
+                            )
+                        )
+                        maybeHealthCenterId
+                        form.dateRecorded
+                        form.quantity
+                        |> Maybe.withDefault ( [], model )
+            in
+            ( updatedModel
             , Cmd.none
-            , []
+            , action
             )
 
         SetCorrectEntryConfirmIdentity confirmed ->
@@ -259,7 +296,7 @@ update currentDate msg model =
 
         SaveCorrectEntry ->
             -- @todo
-            ( model
+            ( emptyModel
             , Cmd.none
             , []
             )

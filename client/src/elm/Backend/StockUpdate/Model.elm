@@ -2,6 +2,7 @@ module Backend.StockUpdate.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (PhotoUrl)
+import Date exposing (Date)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -11,14 +12,17 @@ type alias StockUpdate =
     , dateMeasured : NominalDate
     , updateType : StockUpdateType
     , quantity : Int
-    , dateRecorded : Maybe NominalDate
+    , dateRecorded : NominalDate
     , dateExpires : Maybe NominalDate
     , batchNumber : Maybe String
     , supplier : Maybe StockSupplier
+    , notes : Maybe String
     , correctionReason : Maybe StockCorrectionReason
+    , healthCenter : HealthCenterId
+    , shard : Maybe HealthCenterId
 
     -- @todo: Change to ImageUrl.
-    , signature : PhotoUrl
+    , signature : Maybe PhotoUrl
     }
 
 
@@ -44,7 +48,7 @@ type StockCorrectionReason
 
 
 type alias Model =
-    { requestState : WebData () }
+    { requestState : WebData ( StockUpdateId, StockUpdate ) }
 
 
 emptyModel : Model
