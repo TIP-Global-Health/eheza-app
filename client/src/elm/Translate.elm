@@ -1077,6 +1077,7 @@ type TranslationId
     | NutritionNextStepsTask Measurement.Model.NextStepsTask
     | NitritionSigns
     | NutritionSupplementType NutritionSupplementType
+    | Observations
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -10706,6 +10707,11 @@ translationSet trans =
         NitritionSigns ->
             { english = "Nutrition Signs"
             , kinyarwanda = Just "Ibimenyetso by'imirire"
+            }
+
+        Observations ->
+            { english = "Observations"
+            , kinyarwanda = Nothing
             }
 
         ObstetricalDiagnosis ->

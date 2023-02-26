@@ -65,7 +65,7 @@ update currentDate msg model =
                     Maybe.Extra.or form.dateRecorded (Maybe.andThen .dateDefault state)
 
                 updatedForm =
-                    { form | dateSelectorPopupState = state, dateRecorded = defaultSelection }
+                    { form | dateRecordedSelectorPopupState = state, dateRecorded = defaultSelection }
             in
             ( { model | receiveStockForm = updatedForm }
             , Cmd.none
@@ -94,7 +94,7 @@ update currentDate msg model =
                     model.receiveStockForm
 
                 updatedForm =
-                    { form | batchNumber = value }
+                    { form | batchNumber = Just value }
             in
             ( { model | receiveStockForm = updatedForm }
             , Cmd.none
@@ -136,7 +136,20 @@ update currentDate msg model =
                     Maybe.Extra.or form.dateExpires (Maybe.andThen .dateDefault state)
 
                 updatedForm =
-                    { form | dateSelectorPopupState = state, dateExpires = defaultSelection }
+                    { form | dateExpiresSelectorPopupState = state, dateExpires = defaultSelection }
+            in
+            ( { model | receiveStockForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetNotes value ->
+            let
+                form =
+                    model.receiveStockForm
+
+                updatedForm =
+                    { form | notes = Just value }
             in
             ( { model | receiveStockForm = updatedForm }
             , Cmd.none

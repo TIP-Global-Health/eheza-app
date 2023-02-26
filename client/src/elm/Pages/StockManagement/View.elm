@@ -11,7 +11,7 @@ import Backend.StockUpdate.Utils exposing (stockSupplierToString)
 import Date exposing (Month, Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -86,12 +86,12 @@ view language currentDate nurseId nurse db model =
                                     Translate.TasksCompleted tasksCompleted totalTasks
                             ]
                         , div [ class "ui full segment" ]
-                            [ div [ class "ui full content" ] <|
+                            [ div [ class "ui full content" ]
                                 formForView
-                                    ++ [ viewSaveAction language
-                                            saveMsg
-                                            (confirmIdentity == Just True && tasksCompleted == totalTasks)
-                                       ]
+                            , viewSaveAction language
+                                saveMsg
+                                (tasksCompleted == totalTasks)
+                                |> showIf (confirmIdentity == Just True)
                             ]
                         , viewModal <|
                             identityPopup language displayPopup hidePopupMsg
@@ -125,47 +125,47 @@ view language currentDate nurseId nurse db model =
                         ( inputs, tasks ) =
                             let
                                 ( derivedInputs, derivedTasks ) =
-                                    let
-                                        dateRecordedSelectorConfig =
-                                            let
-                                                fromDate =
-                                                    Date.add Years -5 currentDate
-                                            in
-                                            { select = SetDateRecorded
-                                            , close = SetDateRecordedSelectorState Nothing
-                                            , dateFrom = fromDate
-                                            , dateTo = currentDate
-                                            , dateDefault = Just fromDate
-                                            }
-
-                                        dateRecordedForView =
-                                            Maybe.map formatDDMMYYYY form.dateRecorded
-                                                |> Maybe.withDefault ""
-
-                                        dateExpiresSelectorConfig =
-                                            let
-                                                toDate =
-                                                    Date.add Years 10 currentDate
-                                            in
-                                            { select = SetDateExpires
-                                            , close = SetDateExpiresSelectorState Nothing
-                                            , dateFrom = currentDate
-                                            , dateTo = toDate
-                                            , dateDefault = Just toDate
-                                            }
-
-                                        dateExpiresForView =
-                                            Maybe.map formatDDMMYYYY form.dateExpires
-                                                |> Maybe.withDefault ""
-                                    in
                                     if form.confirmIdentity == Just True then
+                                        let
+                                            dateRecordedSelectorConfig =
+                                                let
+                                                    fromDate =
+                                                        Date.add Years -5 currentDate
+                                                in
+                                                { select = SetDateRecorded
+                                                , close = SetDateRecordedSelectorState Nothing
+                                                , dateFrom = fromDate
+                                                , dateTo = currentDate
+                                                , dateDefault = Just currentDate
+                                                }
+
+                                            dateRecordedForView =
+                                                Maybe.map formatDDMMYYYY form.dateRecorded
+                                                    |> Maybe.withDefault ""
+
+                                            dateExpiresSelectorConfig =
+                                                let
+                                                    toDate =
+                                                        Date.add Years 10 currentDate
+                                                in
+                                                { select = SetDateExpires
+                                                , close = SetDateExpiresSelectorState Nothing
+                                                , dateFrom = currentDate
+                                                , dateTo = toDate
+                                                , dateDefault = Just toDate
+                                                }
+
+                                            dateExpiresForView =
+                                                Maybe.map formatDDMMYYYY form.dateExpires
+                                                    |> Maybe.withDefault ""
+                                        in
                                         ( [ viewLabel language Translate.StockManagementSelectDateLabel
                                           , div
                                                 [ class "form-input date"
                                                 , onClick <| SetDateRecordedSelectorState (Just dateRecordedSelectorConfig)
                                                 ]
                                                 [ text dateRecordedForView ]
-                                          , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.dateRecorded
+                                          , viewModal <| viewCalendarPopup language form.dateRecordedSelectorPopupState form.dateRecorded
                                           , viewQuestionLabel language Translate.StockManagementSupplierQuestion
                                           , viewSelectListInput language
                                                 form.supplier
@@ -182,32 +182,38 @@ view language currentDate nurseId nurse db model =
                                                 "select"
                                           , viewQuestionLabel language Translate.StockManagementBatchNumberQuestion
                                           , viewTextInput language
-                                                form.batchNumber
+                                                (Maybe.withDefault "" form.batchNumber)
                                                 SetBatchNumber
                                                 Nothing
-                                                (Just "batch-number")
+                                                (Just "form-input batch-number")
                                           , viewQuestionLabel language Translate.StockManagementDateExpiresQuestion
                                           , div
                                                 [ class "form-input date"
                                                 , onClick <| SetDateExpiresSelectorState (Just dateExpiresSelectorConfig)
                                                 ]
                                                 [ text dateExpiresForView ]
-                                          , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.dateExpires
+                                          , viewModal <| viewCalendarPopup language form.dateExpiresSelectorPopupState form.dateExpires
                                           , viewQuestionLabel language Translate.StockManagementQuantityAddedQuestion
                                           , viewNumberInput language
                                                 form.quantity
                                                 SetQuantityAdded
                                                 "quantity"
+                                          , viewLabel language Translate.Observations
+                                          , textarea
+                                                [ rows 5
+                                                , cols 50
+                                                , class "form-input textarea"
+                                                , value <| Maybe.withDefault "" form.notes
+                                                , onInput SetNotes
+                                                ]
+                                                []
                                           ]
                                         , [ maybeToBoolTask form.dateRecorded
                                           , maybeToBoolTask form.supplier
-                                          , if String.isEmpty form.batchNumber then
-                                                Nothing
-
-                                            else
-                                                Just True
+                                          , maybeToBoolTask form.batchNumber
                                           , maybeToBoolTask form.dateExpires
                                           , maybeToBoolTask form.quantity
+                                          , maybeToBoolTask form.notes
                                           ]
                                         )
 
@@ -247,24 +253,24 @@ view language currentDate nurseId nurse db model =
                         ( inputs, tasks ) =
                             let
                                 ( derivedInputs, derivedTasks ) =
-                                    let
-                                        dateSelectorConfig =
-                                            let
-                                                fromDate =
-                                                    Date.add Years -5 currentDate
-                                            in
-                                            { select = SetDate
-                                            , close = SetDateSelectorState Nothing
-                                            , dateFrom = fromDate
-                                            , dateTo = currentDate
-                                            , dateDefault = Just fromDate
-                                            }
-
-                                        dateForView =
-                                            Maybe.map formatDDMMYYYY form.date
-                                                |> Maybe.withDefault ""
-                                    in
                                     if form.confirmIdentity == Just True then
+                                        let
+                                            dateSelectorConfig =
+                                                let
+                                                    fromDate =
+                                                        Date.add Years -5 currentDate
+                                                in
+                                                { select = SetDate
+                                                , close = SetDateSelectorState Nothing
+                                                , dateFrom = fromDate
+                                                , dateTo = currentDate
+                                                , dateDefault = Just fromDate
+                                                }
+
+                                            dateForView =
+                                                Maybe.map formatDDMMYYYY form.date
+                                                    |> Maybe.withDefault ""
+                                        in
                                         ( [ viewLabel language Translate.StockManagementSelectDateLabel
                                           , div
                                                 [ class "form-input date"

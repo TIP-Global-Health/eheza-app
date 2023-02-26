@@ -43,10 +43,12 @@ type alias ReceiveStockForm =
     , displayIdentityPopup : Bool
     , dateRecorded : Maybe Date
     , supplier : Maybe StockSupplier
-    , batchNumber : String
+    , batchNumber : Maybe String
     , dateExpires : Maybe Date
     , quantity : Maybe Int
-    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    , notes : Maybe String
+    , dateRecordedSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    , dateExpiresSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
@@ -56,10 +58,12 @@ emptyReceiveStockForm =
     , displayIdentityPopup = False
     , dateRecorded = Nothing
     , supplier = Nothing
-    , batchNumber = ""
+    , batchNumber = Nothing
     , dateExpires = Nothing
     , quantity = Nothing
-    , dateSelectorPopupState = Nothing
+    , notes = Nothing
+    , dateRecordedSelectorPopupState = Nothing
+    , dateExpiresSelectorPopupState = Nothing
     }
 
 
@@ -96,6 +100,7 @@ type Msg
     | SetDateExpires Date
     | SetDateExpiresSelectorState (Maybe (DateSelectorConfig Msg))
     | SetQuantityAdded String
+    | SetNotes String
     | HideReceiveStockIdentityPopup
     | SaveReceiveStock
       --  CorrectEntry form.

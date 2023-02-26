@@ -4726,7 +4726,7 @@ div.page-activity.messaging-center {
   }
 }
 
-div.stock-management {
+div.page-activity.stock-management {
 
   .navigation-buttons .ui.primary.button {
       padding: 0;
@@ -4753,8 +4753,40 @@ div.stock-management {
     margin-left: 10px;
   }
 
-  .overlay .ui.modal {
-    margin-left: -250px;
-    width: 500px;
+  .ui.full.segment {
+
+    .form-input.batch-number {
+      background: $color-white;
+      border: 2px solid $color-light-gray;
+      color: $color-text;
+      padding: 5px;
+      text-align: center;
+      width: 50%;
+    }
+
+    .form-input.quantity {
+      border: 2px solid $color-light-gray;
+      margin-bottom: 30px;
+      width: 50%;
+    }
+
+    .form-input.quantity input {
+      background: $color-white;
+      border: none;
+      color: $color-text;
+      height: 100%;
+    }
+
+    .form-input.textarea {
+      background: $color-white;
+      border: 2px solid $color-light-gray;
+      color: $color-text;
+      padding: 10px;
+    }
   }
+
+  // .overlay .ui.modal.diagnosis-popup {
+  //   margin-left: -250px;
+  //   width: 500px;
+  // }
 }
