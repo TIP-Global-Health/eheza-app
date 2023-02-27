@@ -12,6 +12,7 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
 import Pages.StockManagement.Model exposing (..)
+import Pages.StockManagement.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Time
 import Time.Extra
@@ -249,6 +250,19 @@ update currentDate maybeHealthCenterId msg model =
 
                 updatedForm =
                     { form | dateSelectorPopupState = state, date = defaultSelection }
+            in
+            ( { model | correctEntryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetCorrectionEntryType value ->
+            let
+                form =
+                    model.correctEntryForm
+
+                updatedForm =
+                    { form | entryType = correctionEntryTypeFromString value }
             in
             ( { model | correctEntryForm = updatedForm }
             , Cmd.none

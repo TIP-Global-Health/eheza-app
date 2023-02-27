@@ -71,6 +71,7 @@ type alias CorrectEntryForm =
     { confirmIdentity : Maybe Bool
     , displayIdentityPopup : Bool
     , date : Maybe Date
+    , entryType : Maybe CorrectionEntryType
     , quantity : Maybe Int
     , reason : Maybe StockCorrectionReason
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
@@ -82,10 +83,16 @@ emptyCorrectEntryForm =
     { confirmIdentity = Nothing
     , displayIdentityPopup = False
     , date = Nothing
+    , entryType = Nothing
     , quantity = Nothing
     , reason = Nothing
     , dateSelectorPopupState = Nothing
     }
+
+
+type CorrectionEntryType
+    = EntryAddition
+    | EntrySubstraction
 
 
 type Msg
@@ -107,6 +114,7 @@ type Msg
     | SetCorrectEntryConfirmIdentity Bool
     | SetDate Date
     | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetCorrectionEntryType String
     | SetQuantityDeducted String
     | SetCorrectionReason StockCorrectionReason
     | HideCorrectEntryIdentityPopup

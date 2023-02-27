@@ -20,6 +20,7 @@ import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.StockManagement.Model exposing (..)
+import Pages.StockManagement.Utils exposing (..)
 import Pages.Utils
     exposing
         ( customPopup
@@ -254,6 +255,38 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                             dateForView =
                                 Maybe.map formatDDMMYYYY form.date
                                     |> Maybe.withDefault ""
+
+                            ( correctionReasonInputs, correctionReasonTasks ) =
+                                Maybe.map
+                                    (\entryType ->
+                                        let
+                                            reasons =
+                                                case entryType of
+                                                    EntryAddition ->
+                                                        [ ReasonInputError
+                                                        , ReasonOther
+                                                        ]
+
+                                                    EntrySubstraction ->
+                                                        [ ReasonInputError
+                                                        , ReasonExpiration
+                                                        , ReasonMissing
+                                                        , ReasonOther
+                                                        ]
+                                        in
+                                        ( [ viewQuestionLabel language Translate.StockManagementCorrectionReasonLabel
+                                          , viewCheckBoxSelectInput language
+                                                reasons
+                                                []
+                                                form.reason
+                                                SetCorrectionReason
+                                                Translate.StockCorrectionReason
+                                          ]
+                                        , [ maybeToBoolTask form.reason ]
+                                        )
+                                    )
+                                    form.entryType
+                                    |> Maybe.withDefault ( [], [] )
                         in
                         ( [ viewLabel language Translate.StockManagementSelectDateLabel
                           , div
@@ -262,27 +295,26 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                                 ]
                                 [ text dateForView ]
                           , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.date
-                          , viewQuestionLabel language Translate.StockManagementQuantityDeductedQuestion
+                          , viewLabel language Translate.StockManagementCorrectionTypeLabel
+                          , viewSelectListInput language
+                                form.entryType
+                                [ EntryAddition, EntrySubstraction ]
+                                correctionEntryTypeToString
+                                SetCorrectionEntryType
+                                Translate.StockManagementCorrectionEntryType
+                                "correction-reason"
+                          , viewLabel language Translate.StockManagementQuantityCorrectionLabel
                           , viewNumberInput language
                                 form.quantity
                                 SetQuantityDeducted
                                 "quantity"
-                          , viewQuestionLabel language Translate.StockManagementQuantityDeductedQuestion
-                          , viewCheckBoxSelectInput language
-                                [ ReasonInputError
-                                , ReasonExpiration
-                                , ReasonMissing
-                                , ReasonOther
-                                ]
-                                []
-                                form.reason
-                                SetCorrectionReason
-                                Translate.StockCorrectionReason
                           ]
+                            ++ correctionReasonInputs
                         , [ maybeToBoolTask form.date
+                          , maybeToBoolTask form.entryType
                           , maybeToBoolTask form.quantity
-                          , maybeToBoolTask form.reason
                           ]
+                            ++ correctionReasonTasks
                         )
 
                     else

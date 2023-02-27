@@ -4755,7 +4755,8 @@ div.page-activity.stock-management {
 
   .ui.full.segment {
 
-    .form-input.batch-number {
+    .form-input.batch-number,
+    .form-input.correction-reason {
       background: $color-white;
       border: 2px solid $color-light-gray;
       color: $color-text;

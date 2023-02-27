@@ -140,7 +140,7 @@ import Pages.Report.Model
         , RandomBloodSugarResult(..)
         , ReportTab(..)
         )
-import Pages.StockManagement.Model exposing (StockManagementMenu(..))
+import Pages.StockManagement.Model exposing (CorrectionEntryType(..), StockManagementMenu(..))
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
@@ -1599,9 +1599,12 @@ type TranslationId
     | StockManagement
     | StockManagementMenu StockManagementMenu
     | StockManagementBatchNumberQuestion
+    | StockManagementCorrectionTypeLabel
+    | StockManagementCorrectionEntryType CorrectionEntryType
+    | StockManagementCorrectionReasonLabel
     | StockManagementDateExpiresQuestion
     | StockManagementQuantityAddedQuestion
-    | StockManagementQuantityDeductedQuestion
+    | StockManagementQuantityCorrectionLabel
     | StockManagementSelectDateLabel
     | StockManagementSupplierQuestion
     | StockSupplier StockSupplier
@@ -17053,6 +17056,28 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        StockManagementCorrectionTypeLabel ->
+            { english = "Please select the type of the correct"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementCorrectionEntryType value ->
+            case value of
+                EntryAddition ->
+                    { english = "Addition"
+                    , kinyarwanda = Nothing
+                    }
+
+                EntrySubstraction ->
+                    { english = "Substraction"
+                    , kinyarwanda = Nothing
+                    }
+
+        StockManagementCorrectionReasonLabel ->
+            { english = "Please select the reason for the correct"
+            , kinyarwanda = Nothing
+            }
+
         StockManagementDateExpiresQuestion ->
             { english = "What is the expiration date"
             , kinyarwanda = Nothing
@@ -17063,8 +17088,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        StockManagementQuantityDeductedQuestion ->
-            { english = "How much stock was deducted"
+        StockManagementQuantityCorrectionLabel ->
+            { english = "Please enter the quantity"
             , kinyarwanda = Nothing
             }
 
