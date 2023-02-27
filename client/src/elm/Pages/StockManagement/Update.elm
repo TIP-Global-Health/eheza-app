@@ -314,14 +314,20 @@ update currentDate maybeHealthCenterId msg model =
                     model.correctEntryForm
 
                 ( action, updatedModel ) =
-                    Maybe.map3
-                        (\healthCenterId dateRecorded quantity ->
+                    Maybe.map4
+                        (\healthCenterId dateRecorded quantity entryType ->
                             let
                                 record =
                                     { nurse = nurseId
                                     , dateMeasured = currentDate
                                     , updateType = UpdateCorrection
-                                    , quantity = quantity
+                                    , quantity =
+                                        case entryType of
+                                            EntryAddition ->
+                                                quantity
+
+                                            EntrySubstraction ->
+                                                -1 * quantity
                                     , dateRecorded = dateRecorded
                                     , dateExpires = Nothing
                                     , batchNumber = Nothing
@@ -343,6 +349,7 @@ update currentDate maybeHealthCenterId msg model =
                         maybeHealthCenterId
                         form.date
                         form.quantity
+                        form.entryType
                         |> Maybe.withDefault ( [], model )
             in
             ( updatedModel

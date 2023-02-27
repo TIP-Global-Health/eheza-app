@@ -11,6 +11,17 @@
 class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
 
   /**
+   * A list of fields that are dates. This is a sub list of $fields.
+   *
+   * @var array
+   */
+  protected $dateFields = [
+    'field_date_measured',
+    'field_execution_date',
+    'field_expiration_date',
+  ];
+
+  /**
    * A list of fields that are assigned single value.
    *
    * @var array
@@ -36,17 +47,6 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
    * @var array
    */
   protected $multiFields = [];
-
-  /**
-   * A list of fields that are dates. This is a sub list of $fields.
-   *
-   * @var array
-   */
-  protected $dateFields = [
-    'field_date_measured',
-    'field_execution_date',
-    'field_expiration_date',
-  ];
 
   /**
    * Fields that represent Entity References. This is a sub list of $fields.
