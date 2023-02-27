@@ -340,7 +340,7 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
     viewStockUpdateContent language
         form.confirmIdentity
         inputs
-        SaveCorrectEntry
+        (SaveCorrectEntry nurseId)
         form.displayIdentityPopup
         HideCorrectEntryIdentityPopup
         tasksCompleted

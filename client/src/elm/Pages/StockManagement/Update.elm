@@ -308,9 +308,44 @@ update currentDate maybeHealthCenterId msg model =
             , []
             )
 
-        SaveCorrectEntry ->
-            -- @todo
-            ( emptyModel
+        SaveCorrectEntry nurseId ->
+            let
+                form =
+                    model.correctEntryForm
+
+                ( action, updatedModel ) =
+                    Maybe.map3
+                        (\healthCenterId dateRecorded quantity ->
+                            let
+                                record =
+                                    { nurse = nurseId
+                                    , dateMeasured = currentDate
+                                    , updateType = UpdateCorrection
+                                    , quantity = quantity
+                                    , dateRecorded = dateRecorded
+                                    , dateExpires = Nothing
+                                    , batchNumber = Nothing
+                                    , supplier = Nothing
+                                    , notes = Nothing
+                                    , correctionReason = form.reason
+                                    , healthCenter = healthCenterId
+                                    , shard = Just healthCenterId
+                                    , signature = Nothing
+                                    }
+                            in
+                            ( [ Backend.StockUpdate.Model.CreateStockUpdate record
+                                    |> Backend.Model.MsgStockUpdate nurseId
+                                    |> App.Model.MsgIndexedDb
+                              ]
+                            , emptyModel
+                            )
+                        )
+                        maybeHealthCenterId
+                        form.date
+                        form.quantity
+                        |> Maybe.withDefault ( [], model )
+            in
+            ( updatedModel
             , Cmd.none
-            , []
+            , action
             )

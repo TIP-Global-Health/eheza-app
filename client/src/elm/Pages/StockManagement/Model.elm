@@ -118,4 +118,4 @@ type Msg
     | SetQuantityDeducted String
     | SetCorrectionReason StockCorrectionReason
     | HideCorrectEntryIdentityPopup
-    | SaveCorrectEntry
+    | SaveCorrectEntry NurseId
