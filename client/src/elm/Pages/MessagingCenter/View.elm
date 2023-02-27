@@ -481,7 +481,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         sentDate =
             Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
 
-        dateSentSpan =
+        dateSent =
             sentDate
                 |> Maybe.map
                     (\date ->
@@ -507,7 +507,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                     div [ class <| "header", onClick messageClickedAction ]
                         [ i [ class <| "icon-" ++ extraClass ] []
                         , messageCategory
-                        , dateSentSpan
+                        , dateSent
                         , div
                             [ class "title" ]
                             head
