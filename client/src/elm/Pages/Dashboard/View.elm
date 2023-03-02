@@ -1,4 +1,4 @@
-module Pages.Dashboard.View exposing (view)
+module Pages.Dashboard.View exposing (chwCard, view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
@@ -898,10 +898,20 @@ viewAntenatalPage language currentDate assembled db model =
     ]
 
 
-chwCard : Language -> TranslationId -> String -> Html Msg
+chwCard : Language -> TranslationId -> String -> Html any
 chwCard language titleTransId value =
     div [ class "column" ]
         [ viewChwCard language titleTransId value ]
+
+
+viewChwCard : Language -> TranslationId -> String -> Html any
+viewChwCard language titleTransId value =
+    div [ class "ui segment dashboard-card chw" ]
+        [ div [ class "content" ]
+            [ div [ class "header" ] [ text <| translate language titleTransId ]
+            , div [ class "value this-year" ] [ text value ]
+            ]
+        ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
@@ -1278,16 +1288,6 @@ viewCard language statsCard =
                             ]
                     )
                 |> showMaybe
-            ]
-        ]
-
-
-viewChwCard : Language -> TranslationId -> String -> Html Msg
-viewChwCard language titleTransId value =
-    div [ class "ui segment dashboard-card chw" ]
-        [ div [ class "content" ]
-            [ div [ class "header" ] [ text <| translate language titleTransId ]
-            , div [ class "value this-year" ] [ text value ]
             ]
         ]
 

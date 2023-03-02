@@ -4726,6 +4726,118 @@ div.page-activity.messaging-center {
   }
 }
 
+div.dashboard,
+div.page-activity.stock-management {
+
+  .dashboard-card {
+    padding: 15px 5px 20px;
+    border-radius: 1px;
+    min-height: 130px;
+
+    .header {
+      font-size: 20px;
+      text-align: center;
+      font-weight: bolder;
+      line-height: 20px;
+      height: 65px;
+    }
+
+    .this-year {
+      font-size: 40px;
+      line-height: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .last-year {
+      position: absolute;
+      right: 20px;
+      top: 60px;
+      max-width: 80px;
+
+      .percentage {
+        display: block;
+        text-align: center;
+        font-size: 20px;
+        line-height: 16px;
+        position: relative;
+
+        .arrow {
+          display: inline-block;
+          height: 15px;
+          margin-right: 2px;
+        }
+      }
+
+      .percentage-label {
+        display: block;
+        font-size: 12px;
+        line-height: 12px;
+        color: $color-background;
+      }
+    }
+
+    .new-cases {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-size: 12px;
+      line-height: 13px;
+      margin: 15px 0 -15px;
+
+      .new-cases-value {
+
+        &:before {
+          content: ":";
+          margin-right: 2px;
+        }
+      }
+    }
+
+    &.link {
+      cursor: pointer;
+      background: white url(#{$img-path}icon-card-link.svg) no-repeat 97% 7px;
+    }
+
+    &.stats-card {
+      min-height: 135px;
+      padding: 1.5rem 2.5rem;
+
+      .header {
+        padding: 0 10px;
+      }
+
+      .last-year {
+        right: 5px;
+        top: 76px;
+        max-width: 65px;
+        text-align: center;
+
+        .percentage {
+          font-size: 16px;
+        }
+
+        .percentage-label {
+          font-size: 10px;
+          line-height: 10px;
+        }
+      }
+    }
+  }
+
+  .dashboard-card.chw {
+    min-height: 150px;
+    padding: 20px 10px 20px;
+    border-top:4px solid $color-primary;
+
+    .value {
+      color: $color-light-background;
+    }
+  }
+
+}
+
 div.page-activity.stock-management {
 
   .navigation-buttons .ui.primary.button {
@@ -4790,4 +4902,9 @@ div.page-activity.stock-management {
   //   margin-left: -250px;
   //   width: 500px;
   // }
+
+  .navigation-buttons {
+    margin-top: 30px;
+  }
+
 }

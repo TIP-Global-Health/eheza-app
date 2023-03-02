@@ -18,6 +18,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
+import Pages.Dashboard.View exposing (chwCard)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.StockManagement.Model exposing (..)
 import Pages.StockManagement.Utils exposing (..)
@@ -96,7 +97,15 @@ viewModeMain language currentDate nurseId nurse =
                 , span [ class "icon-back" ] []
                 ]
     in
-    [ div [ class "navigation-buttons" ]
+    [ div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.MTDIn (String.fromInt 0)
+            , chwCard language Translate.MTDOut (String.fromInt 0)
+            , chwCard language Translate.CurrentStock (String.fromInt 0)
+            ]
+        ]
+    , div
+        [ class "navigation-buttons" ]
         [ viewButton (Translate.StockManagementMenu MenuReceiveStock) (SetDisplayMode ModeReceiveStock)
         , viewButton (Translate.StockManagementMenu MenuViewMonthDetails) (SetDisplayMode ModeCorrectEntry)
         , viewButton (Translate.StockManagementMenu MenuCorrectEntry) (SetDisplayMode ModeCorrectEntry)

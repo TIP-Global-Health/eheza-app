@@ -554,6 +554,7 @@ type TranslationId
     | ChwDashboardLabel
     | CurrentlyPregnant
     | CurrentlyPregnantQuestion
+    | CurrentStock
     | DangerSign DangerSign
     | DangerSignsLabelForChw
     | DangerSignsLabelForNurse
@@ -980,6 +981,8 @@ type TranslationId
     | MotherNameLabel
     | MotherNationalId
     | Mothers
+    | MTDIn
+    | MTDOut
     | MUAC
     | MuacHelper
     | MyAccount
@@ -4167,6 +4170,11 @@ translationSet trans =
         CurrentlyPregnantQuestion ->
             { english = "Is the patient currently pregnant"
             , kinyarwanda = Just "Umurwayi aratwite"
+            }
+
+        CurrentStock ->
+            { english = "Current Stock"
+            , kinyarwanda = Nothing
             }
 
         ChwDashboardLabel ->
@@ -9154,6 +9162,16 @@ translationSet trans =
         Mothers ->
             { english = "Mothers"
             , kinyarwanda = Just "Ababyeyi"
+            }
+
+        MTDIn ->
+            { english = "MTD in"
+            , kinyarwanda = Nothing
+            }
+
+        MTDOut ->
+            { english = "MTD out"
+            , kinyarwanda = Nothing
             }
 
         MUAC ->
