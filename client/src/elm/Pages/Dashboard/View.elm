@@ -50,7 +50,13 @@ import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..))
 import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
-import Pages.Utils exposing (calculatePercentage, viewCustomSelectListInput)
+import Pages.Utils
+    exposing
+        ( calculatePercentage
+        , resolveSelectedDateForMonthSelector
+        , viewCustomSelectListInput
+        , viewMonthSelector
+        )
 import Path
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -182,7 +188,7 @@ viewChwMainPage : Language -> NominalDate -> HealthCenterId -> AssembledData -> 
 viewChwMainPage language currentDate healthCenterId assembled db model =
     let
         selectedDate =
-            getSelectedDate currentDate model
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         -- ANC
         encountersForSelectedMonth =
@@ -623,7 +629,7 @@ viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> A
 viewAcuteIllnessPage language currentDate activePage assembled db model =
     let
         selectedDate =
-            getSelectedDate currentDate model
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         encountersForSelectedMonth =
             getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
@@ -860,7 +866,7 @@ viewAntenatalPage : Language -> NominalDate -> AssembledData -> ModelIndexedDb -
 viewAntenatalPage language currentDate assembled db model =
     let
         selectedDate =
-            getSelectedDate currentDate model
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         newlyIdentifiedPreganancies =
             countNewlyIdentifiedPregananciesForSelectedMonth selectedDate assembled.prenatalData
@@ -2101,33 +2107,4 @@ resolvePreviousMonth thisMonth =
 
 monthSelector : Language -> NominalDate -> Model -> Html Msg
 monthSelector language selectedDate model =
-    let
-        monthNumber =
-            Date.monthNumber selectedDate
-
-        month =
-            Date.numberToMonth monthNumber
-
-        year =
-            Date.year selectedDate
-    in
-    div [ class "month-selector" ]
-        [ span
-            [ classList
-                [ ( "icon-back", True )
-                , ( "hidden", model.monthGap == maxMonthGap )
-                ]
-            , onClick <| ChangeMonthGap 1
-            ]
-            []
-        , span [ class "label" ]
-            [ text <| translate language (Translate.ResolveMonth False month) ++ " " ++ String.fromInt year ]
-        , span
-            [ classList
-                [ ( "icon-back rotate-180", True )
-                , ( "hidden", model.monthGap == 0 )
-                ]
-            , onClick <| ChangeMonthGap -1
-            ]
-            []
-        ]
+    viewMonthSelector language selectedDate model.monthGap maxMonthGap ChangeMonthGap

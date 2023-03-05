@@ -15,6 +15,11 @@ type alias Model =
     { displayMode : DisplayMode
     , receiveStockForm : ReceiveStockForm
     , correctEntryForm : CorrectEntryForm
+
+    -- This is used by month selector to determine
+    -- the gap from current month. We allow to go back
+    -- 12 months, so, valid values are between 0 and 11.
+    , monthGap : Int
     }
 
 
@@ -23,7 +28,13 @@ emptyModel =
     { displayMode = ModeMain
     , receiveStockForm = emptyReceiveStockForm
     , correctEntryForm = emptyCorrectEntryForm
+    , monthGap = 0
     }
+
+
+maxMonthGap : Int
+maxMonthGap =
+    11
 
 
 type DisplayMode
@@ -98,6 +109,8 @@ type CorrectionEntryType
 type Msg
     = SetActivePage Page
     | SetDisplayMode DisplayMode
+      -- Main menu.
+    | ChangeMonthGap Int
       --  ReceiveStock form.
     | SetReceiveStockConfirmIdentity Bool
     | SetDateRecorded Date

@@ -119,7 +119,7 @@ type alias Model =
     -- This is used by month selector to determine
     -- the gap from current month. We allow to go back
     -- 6 months, so, valid values are between 0 and 5.
-    , monthGap : MonthGap
+    , monthGap : Int
     }
 
 
@@ -152,11 +152,7 @@ emptyModel maybeSelectedVillage =
     }
 
 
-type alias MonthGap =
-    Int
-
-
-maxMonthGap : MonthGap
+maxMonthGap : Int
 maxMonthGap =
     5
 

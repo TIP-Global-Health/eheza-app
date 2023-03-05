@@ -26,11 +26,13 @@ import Pages.Utils
     exposing
         ( customPopup
         , maybeToBoolTask
+        , resolveSelectedDateForMonthSelector
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewLabel
+        , viewMonthSelector
         , viewNumberInput
         , viewQuestionLabel
         , viewSaveAction
@@ -72,7 +74,7 @@ view language currentDate nurseId nurse db model =
         content =
             case model.displayMode of
                 ModeMain ->
-                    viewModeMain language currentDate nurseId nurse
+                    viewModeMain language currentDate nurseId nurse model
 
                 ModeReceiveStock ->
                     viewModeReceiveStock language currentDate nurseId nurse model.receiveStockForm
@@ -85,8 +87,8 @@ view language currentDate nurseId nurse db model =
             :: content
 
 
-viewModeMain : Language -> NominalDate -> NurseId -> Nurse -> List (Html Msg)
-viewModeMain language currentDate nurseId nurse =
+viewModeMain : Language -> NominalDate -> NurseId -> Nurse -> Model -> List (Html Msg)
+viewModeMain language currentDate nurseId nurse model =
     let
         viewButton label action =
             button
@@ -96,8 +98,12 @@ viewModeMain language currentDate nurseId nurse =
                 [ span [ class "text" ] [ text <| translate language label ]
                 , span [ class "icon-back" ] []
                 ]
+
+        selectedDate =
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
     in
-    [ div [ class "ui grid" ]
+    [ viewMonthSelector language selectedDate model.monthGap maxMonthGap ChangeMonthGap
+    , div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language Translate.MTDIn (String.fromInt 0)
             , chwCard language Translate.MTDOut (String.fromInt 0)

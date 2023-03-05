@@ -33,6 +33,12 @@ update currentDate maybeHealthCenterId msg model =
             , []
             )
 
+        ChangeMonthGap value ->
+            ( { model | monthGap = model.monthGap + value }
+            , Cmd.none
+            , []
+            )
+
         SetReceiveStockConfirmIdentity confirmed ->
             let
                 form =
