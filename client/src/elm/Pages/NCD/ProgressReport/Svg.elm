@@ -114,13 +114,13 @@ viewBloodGlucoseByTime : Language -> List RandomBloodSugarResult -> Html any
 viewBloodGlucoseByTime language results =
     let
         verticalParts =
-            20
+            14
 
         verticalMin =
-            40
+            30
 
         verticalMax =
-            440
+            450
 
         verticalStep =
             heightPx / toFloat (verticalMax - verticalMin)
@@ -187,8 +187,8 @@ viewBloodGlucoseByTime language results =
         , g []
             [ drawPolyline measurements "data black" ]
         , (referenceVerticalLines verticalParts
-            ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.left - 21.5 |> String.fromFloat)
-            ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.right + 7.5 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 30 (dimensionsPx.left - 21.5 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 30 (dimensionsPx.right + 7.5 |> String.fromFloat)
           )
             |> g []
         , referenceHorizontalLines 13 ++ referenceHorizontalNumbers 13 0 1 |> g []
