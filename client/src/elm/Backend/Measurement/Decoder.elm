@@ -8,6 +8,7 @@ import Backend.Measurement.Utils exposing (..)
 import Backend.Person.Decoder exposing (decodeGender)
 import Backend.Person.Utils exposing (genderFromString)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
+import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
@@ -266,6 +267,14 @@ decodeNCDMeasurements =
         |> optional "ncd_symptom_review" (decodeHead decodeNCDSymptomReview) Nothing
         |> optional "ncd_urine_dipstick_test" (decodeHead decodeNCDUrineDipstickTest) Nothing
         |> optional "ncd_vitals" (decodeHead decodeNCDVitals) Nothing
+
+
+decodeStockManagementMeasurements : Decoder StockManagementMeasurements
+decodeStockManagementMeasurements =
+    succeed StockManagementMeasurements
+        |> optional "child_fbf" (map Dict.fromList <| list (decodeWithEntityUuid decodeFbf)) Dict.empty
+        |> optional "mother_fbf" (map Dict.fromList <| list (decodeWithEntityUuid decodeFbf)) Dict.empty
+        |> optional "stock_update" (map Dict.fromList <| list (decodeWithEntityUuid decodeStockUpdate)) Dict.empty
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))

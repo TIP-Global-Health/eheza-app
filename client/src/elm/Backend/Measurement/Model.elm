@@ -2733,6 +2733,50 @@ type alias HbA1cTestValue =
 
 
 
+-- Stock Management:
+
+
+type alias StockUpdate =
+    { nurse : NurseId
+    , dateMeasured : NominalDate
+    , updateType : StockUpdateType
+    , quantity : Int
+    , dateRecorded : NominalDate
+    , dateExpires : Maybe NominalDate
+    , batchNumber : Maybe String
+    , supplier : Maybe StockSupplier
+    , notes : Maybe String
+    , correctionReason : Maybe StockCorrectionReason
+    , healthCenter : HealthCenterId
+    , shard : Maybe HealthCenterId
+
+    -- @todo: Change to ImageUrl.
+    , signature : Maybe PhotoUrl
+    }
+
+
+type StockUpdateType
+    = UpdateReceivingSupplies
+    | UpdateCorrection
+
+
+type StockSupplier
+    = SupplierMOH
+    | SupplierRBC
+    | SupplierUNICEF
+    | SupplierRMSCentral
+    | SupplierRMSDistrict
+    | SupplierBUFMAR
+
+
+type StockCorrectionReason
+    = ReasonInputError
+    | ReasonExpiration
+    | ReasonMissing
+    | ReasonOther
+
+
+
 -- LISTS OF MEASUREMENTS
 
 
@@ -3034,6 +3078,16 @@ type alias NCDMeasurements =
     , symptomReview : Maybe ( NCDSymptomReviewId, NCDSymptomReview )
     , urineDipstickTest : Maybe ( NCDUrineDipstickTestId, NCDUrineDipstickTest )
     , vitals : Maybe ( NCDVitalsId, NCDVitals )
+    }
+
+
+{-| A set of measurements that includes all required data for
+Stock management data presentation.
+-}
+type alias StockManagementMeasurements =
+    { childFbf : Dict ChildFbfId Fbf
+    , motherFbf : Dict MotherFbfId Fbf
+    , stockUpdate : Dict StockUpdateId StockUpdate
     }
 
 

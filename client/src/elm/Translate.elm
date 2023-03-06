@@ -66,7 +66,6 @@ import Backend.ResilienceSurvey.Model
         ( ResilienceSurveyQuestion(..)
         , ResilienceSurveyQuestionOption(..)
         )
-import Backend.StockUpdate.Model exposing (StockCorrectionReason(..), StockSupplier(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
 import Components.SendViaWhatsAppDialog.Model

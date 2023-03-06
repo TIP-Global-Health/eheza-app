@@ -645,6 +645,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchStockManagementMeasurements id ->
+            ( { model | stockManagementMeasurements = Dict.insert id Loading model.stockManagementMeasurements }
+            , sw.get stockManagementMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedStockManagementMeasurements id)
+            , []
+            )
+
+        HandleFetchedStockManagementMeasurements id data ->
+            ( { model | stockManagementMeasurements = Dict.insert id data model.stockManagementMeasurements }
+            , Cmd.none
+            , []
+            )
+
         FetchHomeVisitMeasurements id ->
             ( { model | homeVisitMeasurements = Dict.insert id Loading model.homeVisitMeasurements }
             , sw.get homeVisitMeasurementsEndpoint id
@@ -3411,10 +3424,17 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             noChange
 
         ChildFbfRevision uuid data ->
+            let
+                modelWithMappedStockManagement =
+                    mapStockManagementMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | childFbf = Dict.insert uuid data measurements.childFbf })
+                        model
+            in
             ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
-                model
+                modelWithMappedStockManagement
             , True
             )
 
@@ -3680,10 +3700,17 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         MotherFbfRevision uuid data ->
+            let
+                modelWithMappedStockManagement =
+                    mapStockManagementMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | motherFbf = Dict.insert uuid data measurements.motherFbf })
+                        model
+            in
             ( mapMotherMeasurements
                 data.participantId
                 (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
-                model
+                modelWithMappedStockManagement
             , True
             )
 
@@ -4434,7 +4461,18 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         StockUpdateRevision uuid data ->
-            ( { model | stockUpdates = RemoteData.map (Dict.insert uuid data) model.stockUpdates }
+            let
+                modelWithMappedStockManagement =
+                    mapStockManagementMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | stockUpdate = Dict.insert uuid data measurements.stockUpdate })
+                        model
+            in
+            ( { modelWithMappedStockManagement
+                | stockUpdates =
+                    RemoteData.map (Dict.insert uuid data)
+                        modelWithMappedStockManagement.stockUpdates
+              }
             , recalc
             )
 

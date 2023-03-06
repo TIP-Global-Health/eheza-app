@@ -260,6 +260,11 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchStockManagementMeasurements id ->
+            Dict.get id model.stockManagementMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
@@ -411,6 +416,9 @@ forget msg model =
 
         FetchNCDMeasurements id ->
             { model | ncdMeasurements = Dict.remove id model.ncdMeasurements }
+
+        FetchStockManagementMeasurements id ->
+            { model | stockManagementMeasurements = Dict.remove id model.stockManagementMeasurements }
 
         FetchIndividualEncounterParticipant id ->
             { model | individualParticipants = Dict.remove id model.individualParticipants }

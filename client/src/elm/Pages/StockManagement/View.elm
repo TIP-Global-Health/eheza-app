@@ -2,11 +2,17 @@ module Pages.StockManagement.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Measurement.Model
+    exposing
+        ( Gender(..)
+        , StockCorrectionReason(..)
+        , StockSupplier(..)
+        , StockUpdate
+        , StockUpdateType(..)
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortEncounterTuplesDesc)
-import Backend.StockUpdate.Model exposing (StockCorrectionReason(..), StockSupplier(..))
 import Backend.StockUpdate.Utils exposing (stockSupplierToString)
 import Date exposing (Month, Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)

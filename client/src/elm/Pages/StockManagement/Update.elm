@@ -3,10 +3,10 @@ module Pages.StockManagement.Update exposing (update)
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Measurement.Model exposing (PhotoUrl(..), StockUpdateType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model
-import Backend.StockUpdate.Model exposing (StockUpdateType(..))
+import Backend.StockUpdate.Model
 import Backend.StockUpdate.Utils exposing (stockSupplierFromString)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
