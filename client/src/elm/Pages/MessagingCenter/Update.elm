@@ -211,10 +211,7 @@ update currentTime currentDate msg model =
                     if EverySet.member messageId model.expandedMessages then
                         ( { model | expandedMessages = EverySet.remove messageId model.expandedMessages }
                         , if updateTimeRead then
-                            [ Backend.ResilienceMessage.Model.UpdateMessage messageId { message | timeRead = Just currentTime }
-                                |> Backend.Model.MsgResilienceMessage nurseId
-                                |> App.Model.MsgIndexedDb
-                            ]
+                            [ markMessageReadAction currentTime nurseId messageId message ]
 
                           else
                             []
@@ -236,32 +233,40 @@ update currentTime currentDate msg model =
             , []
             )
 
-        MarkMessageUnread nurseId messageId message ->
+        ToggleMessageRead nurseId messageId message isRead ->
+            let
+                action =
+                    if isRead then
+                        -- To mark message as unread, we set reminder to current time,
+                        -- and message read time to one second before current time.
+                        -- In essence, scheduling message reminder to right now.
+                        [ Backend.ResilienceMessage.Model.UpdateMessage messageId
+                            { message
+                                | nextReminder = Just currentTime
+                                , timeRead = Just <| Time.Extra.add Time.Extra.Second -1 Time.utc currentTime
+                            }
+                            |> Backend.Model.MsgResilienceMessage nurseId
+                            |> App.Model.MsgIndexedDb
+                        ]
+
+                    else
+                        [ markMessageReadAction currentTime nurseId messageId message ]
+            in
             ( { model
                 | expandedMessages = EverySet.remove messageId model.expandedMessages
                 , messageOptionsDialogState = Nothing
               }
             , Cmd.none
-            , -- To mark message as unread, we set reminder to current time,
-              -- and message read time to one second before current time.
-              -- In essence, scheduling message reminder to right now.
-              [ Backend.ResilienceMessage.Model.UpdateMessage messageId
-                    { message
-                        | nextReminder = Just currentTime
-                        , timeRead = Just <| Time.Extra.add Time.Extra.Second -1 Time.utc currentTime
-                    }
-                    |> Backend.Model.MsgResilienceMessage nurseId
-                    |> App.Model.MsgIndexedDb
-              ]
+            , action
             )
 
-        MarkMessageFavorite nurseId messageId message ->
+        ToggleMessageFavorite nurseId messageId message ->
             ( { model
                 | expandedMessages = EverySet.remove messageId model.expandedMessages
                 , messageOptionsDialogState = Nothing
               }
             , Cmd.none
-            , [ Backend.ResilienceMessage.Model.UpdateMessage messageId { message | isFavorite = True }
+            , [ Backend.ResilienceMessage.Model.UpdateMessage messageId { message | isFavorite = not message.isFavorite }
                     |> Backend.Model.MsgResilienceMessage nurseId
                     |> App.Model.MsgIndexedDb
               ]
@@ -283,3 +288,10 @@ update currentTime currentDate msg model =
                     |> App.Model.MsgIndexedDb
               ]
             )
+
+
+markMessageReadAction : Time.Posix -> NurseId -> ResilienceMessageId -> ResilienceMessage -> App.Model.Msg
+markMessageReadAction currentTime nurseId messageId message =
+    Backend.ResilienceMessage.Model.UpdateMessage messageId { message | timeRead = Just currentTime }
+        |> Backend.Model.MsgResilienceMessage nurseId
+        |> App.Model.MsgIndexedDb

@@ -74,6 +74,13 @@ function hedley_resilience_create_messages($node) {
     $account = $user;
   }
 
+  // Resilience messages are divided into 7 categories,
+  // For each category, there are several messages which need to be
+  // presented on day X, counting from the start date of the program.
+  // If X = 0, the message is immediate.
+  // So, the keys of config array are the categories, and value are
+  // arrays, where key is the number of the message, and value is the
+  // day on which messages should be displayed.
   $config = [
     'introduction' => [
       '1' => 0,
