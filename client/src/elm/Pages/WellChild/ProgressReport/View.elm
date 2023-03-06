@@ -239,6 +239,8 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
     in
     div [ class "page-report well-child" ]
         [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
+
+        -- Not viewing tabs, because NCDA feature is on hold for now.
         , viewTabs language setActiveTabMsg activeTab
         , div
             [ class "ui report unstackable items"
