@@ -136,6 +136,8 @@ expectNextStepsTask currentDate assembled task =
                 -- Not diagnosed any Diaberes / RenalComplications diagnoses at current or previous encounters.
                 && (not <| diagnosedAnyOf [ DiagnosisRenalComplications, DiagnosisDiabetesInitial ] assembled)
                 && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled.previousEncountersData)
+                && -- Pregnant women always get Methyldopa treatment, so, no health education is provided.
+                   (not <| patientIsPregnant assembled.measurements)
 
         TaskMedicationDistribution ->
             medicateForDiabetes NCDEncounterPhaseInitial assembled
