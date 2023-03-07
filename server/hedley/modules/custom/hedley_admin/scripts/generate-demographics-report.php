@@ -306,6 +306,14 @@ drush_print("## ENCOUNTERS");
  *   Associative array, keyed by type.
  */
 function group_encounter_all($measurement_types_list, $limit = NULL, $region = NULL) {
+
+  if ($region === FALSE) {
+    $region_clause = "AND field_district_value LIKE '%$region%'";
+  } else {
+    $region_clause = "";
+  }
+
+
   return db_query("
   SELECT
   field_group_type_value as type, COUNT(*) as counter
@@ -327,7 +335,7 @@ FROM
         sess_rel.bundle IN ($measurement_types_list)
         AND field_group_type_value IS NOT NULL
         AND class.entity_id IS NOT NULL
-        AND field_district_value LIKE '%$region%'
+        {$region_clause}
         AND FROM_UNIXTIME(node.created) < '$limit'
     GROUP BY
       field_group_type_value, field_person_target_id, field_session_target_id

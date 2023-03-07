@@ -35,8 +35,8 @@ SELECT
     field_data_field_scheduled_date sd ON ip.entity_id = sd.entity_id
   WHERE
     ip.bundle = 'acute_illness_encounter'
-     AND field_scheduled_date_value > :start_date
-     AND field_scheduled_date_value < :end_date
+     AND field_scheduled_date_value >= :start_date
+     AND field_scheduled_date_value <= :end_date
   ", [':start_date' => $start_date, 'end_date' => $end_date])->fetchAll(PDO::FETCH_ASSOC);
 
 // Check each paticipation to see that we have the first encounter.
@@ -46,7 +46,7 @@ foreach ($result as $item) {
   $data = db_query($query)->fetchCol();
 
   // If this enounter is equal to the smallest ID, it's the first.
-  if ($item['encounter'] = min($data)) {
+  if ($item['encounter'] == min($data)) {
     $first_encounters[] = $item['encounter'];
   }
 }
@@ -85,3 +85,36 @@ $data[] = [
 
 $table = new HedleyAdminTextTable(['Initial Diagnosis', 'Count']);
 drush_print($table->render($data));
+
+
+$result = db_query("
+  SELECT 
+    field_prenatal_diagnoses_value
+  FROM 
+    field_data_field_prenatal_diagnoses pd
+  LEFT JOIN node on pd.entity_id = node.nid 
+  WHERE 
+    FROM_UNIXTIME(node.created) > '$start_date'
+    AND FROM_UNIXTIME(node.created) < '$end_date'")->fetchCol();
+
+$diagnosis_count = array_count_values($result);
+
+$data = [];
+foreach ($diagnosis_count as $label => $value) {
+  $data[] = [
+    $label,
+    $value,
+  ];
+}
+
+// Put the list of disgnoses in alpha order.
+sort($data);
+
+// Add the total diagnoses.
+$data[] = [
+  'Total',
+  count($diagnoses),
+];
+
+//$table = new HedleyAdminTextTable(['Initial Diagnosis', 'Count']);
+//drush_print($table->render($data));
