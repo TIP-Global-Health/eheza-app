@@ -9420,7 +9420,7 @@ translationSet trans =
         NCDAFillTheBlanksItemLabel item ->
             case item of
                 HeightToAge ->
-                    { english = "Level of stunting using child length mat"
+                    { english = "Level of stuning using child length mat"
                     , kinyarwanda = Just "Ikigero cyo kugwingira hakoreshejwe agasambi"
                     }
 
