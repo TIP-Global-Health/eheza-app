@@ -3214,7 +3214,7 @@ translationSet trans =
             }
 
         BloodSmearLabel ->
-            { english = "Blood Smear"
+            { english = "Malaria Blood Smear"
             , kinyarwanda = Nothing
             }
 
@@ -7554,7 +7554,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryBloodSmear _ ->
-                    { english = "Blood Smear Test History"
+                    { english = "Malaria Blood Smear Test History"
                     , kinyarwanda = Nothing
                     }
 
