@@ -86,33 +86,45 @@ expectActivity currentDate assembled activity =
 
 activityCompleted : NominalDate -> AssembledData -> NCDActivity -> Bool
 activityCompleted currentDate assembled activity =
+    let
+        notExpected activityToCheck =
+            not <| expectActivity currentDate assembled activityToCheck
+    in
     case activity of
         DangerSigns ->
-            isJust assembled.measurements.dangerSigns
+            notExpected DangerSigns
+                || isJust assembled.measurements.dangerSigns
 
         SymptomReview ->
-            isJust assembled.measurements.symptomReview
+            notExpected SymptomReview
+                || isJust assembled.measurements.symptomReview
 
         Examination ->
-            isJust assembled.measurements.coreExam
-                && isJust assembled.measurements.vitals
+            notExpected Examination
+                || (isJust assembled.measurements.coreExam
+                        && isJust assembled.measurements.vitals
+                   )
 
         FamilyPlanning ->
-            (not <| expectActivity currentDate assembled FamilyPlanning)
+            notExpected FamilyPlanning
                 || isJust assembled.measurements.familyPlanning
 
         MedicalHistory ->
-            isJust assembled.measurements.coMorbidities
-                && isJust assembled.measurements.medicationHistory
-                && isJust assembled.measurements.socialHistory
-                && isJust assembled.measurements.familyHistory
-                && isJust assembled.measurements.outsideCare
+            notExpected MedicalHistory
+                || (isJust assembled.measurements.coMorbidities
+                        && isJust assembled.measurements.medicationHistory
+                        && isJust assembled.measurements.socialHistory
+                        && isJust assembled.measurements.familyHistory
+                        && isJust assembled.measurements.outsideCare
+                   )
 
         Laboratory ->
-            List.all (laboratoryTaskCompleted currentDate assembled) laboratoryTasks
+            notExpected Laboratory
+                || List.all (laboratoryTaskCompleted currentDate assembled) laboratoryTasks
 
         OutsideCare ->
-            isJust assembled.measurements.outsideCare
+            notExpected OutsideCare
+                || isJust assembled.measurements.outsideCare
 
         NextSteps ->
             resolveNextStepsTasks currentDate assembled
