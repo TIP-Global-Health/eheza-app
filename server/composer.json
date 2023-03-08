@@ -1,5 +1,6 @@
 {
     "require": {
-        "consolidation/robo": "^2.0"
+        "consolidation/robo": "^2.0",
+        "firebase/php-jwt": "^6.2"
     }
 }
