@@ -938,7 +938,7 @@ messageOptionsDialog language currentTime currentDate nurseId tab state =
                         [ class "ui fluid button cyan"
                         , onClick <| ToggleMessageRead nurseId messageId message isRead
                         ]
-                        [ img [ src "assets/images/envelope.svg" ] []
+                        [ img [ src "assets/images/wellbeing.svg" ] []
                         , text <| translate language <| Translate.ReadToggle isRead
                         ]
                     ]
