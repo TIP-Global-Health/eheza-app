@@ -7256,7 +7256,7 @@ translationSet trans =
 
                 TaskPartnerHIVTest ->
                     { english = "Partner HIV"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cya Virusi itera SIDA k'umugabo we"
                     }
 
                 TaskCompletePreviousTests ->
@@ -7336,7 +7336,7 @@ translationSet trans =
 
                 TaskPartnerHIVTest ->
                     { english = "Partner HIV"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cya Virusi itera SIDA k'umugabo we"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -7419,7 +7419,7 @@ translationSet trans =
 
                 TaskPartnerHIVTest ->
                     { english = "Partner HIV Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki y'ikizamini cya Virusi itera SIDA k'umugabo we"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -7502,7 +7502,7 @@ translationSet trans =
 
                 TaskPartnerHIVTest ->
                     { english = "Partner HIV Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cya Virusi itera SIDA k'umugabo we"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -7535,7 +7535,7 @@ translationSet trans =
 
                 LabResultsHistoryPartnerHIV _ ->
                     { english = "Partner HIV Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya Virusi itera SIDA k'umugabo we"
                     }
 
                 LabResultsHistorySyphilis _ ->
@@ -10881,7 +10881,7 @@ translationSet trans =
 
         PartnerReceivedHivCounseling ->
             { english = "Did partner receive HIV Counseling during this pregnancy"
-            , kinyarwanda = Just "Umugabo yahawe ubujyanama kuri Virusi itera SIDA? "
+            , kinyarwanda = Just "Umugabo yahawe ubujyanama kuri Virusi itera SIDA"
             }
 
         PartnerReceivedHivTesting ->
