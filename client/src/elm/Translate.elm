@@ -3072,7 +3072,7 @@ translationSet trans =
                     }
 
         BeatsPerMinuteUnitLabel ->
-            { english = "bpm"
+            { english = "Beats per minute"
             , kinyarwanda = Just "Inshuro umutima utera ku munota"
             }
 
@@ -3284,7 +3284,7 @@ translationSet trans =
             }
 
         BreathsPerMinuteUnitLabel ->
-            { english = "bpm"
+            { english = "Breaths per minute"
             , kinyarwanda = Just "Inshuro ahumeka ku munota"
             }
 
@@ -3898,12 +3898,12 @@ translationSet trans =
 
         ConvulsionsAndUnconsciousPreviousDelivery ->
             { english = "Experienced convulsions and resulted in becoming unconscious after delivery"
-            , kinyarwanda = Just "Ubushize yahinze umushyitsi bimuviramo kutumva akimara kubyara"
+            , kinyarwanda = Just "Ubushize yaragagaye bimuviramo kutumva akimara kubyara"
             }
 
         ConvulsionsPreviousDelivery ->
             { english = "Experienced convulsions in previous delivery"
-            , kinyarwanda = Just "Ubushize yahinze umushyitsi abyara"
+            , kinyarwanda = Just "Ubushize yaragagaye abyara"
             }
 
         CurrentIllnessBegan ->
@@ -5871,7 +5871,7 @@ translationSet trans =
 
         HIV ->
             { english = "HIV"
-            , kinyarwanda = Just "Amaguru atameze neza(yagize imitego)"
+            , kinyarwanda = Just "Virusi itera SIDA"
             }
 
         HIVPCRResult result ->
