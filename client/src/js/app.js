@@ -272,6 +272,10 @@ dbSync.version(19).stores({
   whatsAppUploads: '++localId,screenshot,report_type,person,phone_number,fileId,syncStage',
 });
 
+dbSync.version(20).stores({
+    nodes: '&uuid,type,vid,status,[type+pin_code],[type+nurse]'
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -328,7 +332,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 19;
+const dbVersion = 20;
 
 /**
  * Return saved info for General sync.

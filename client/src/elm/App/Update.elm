@@ -9,6 +9,7 @@ import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
+import Backend.Nurse.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator(..))
@@ -48,6 +49,8 @@ import Pages.HomeVisit.Activity.Update
 import Pages.HomeVisit.Encounter.Model
 import Pages.HomeVisit.Encounter.Update
 import Pages.IndividualEncounterParticipants.Update
+import Pages.MessagingCenter.Model
+import Pages.MessagingCenter.Update
 import Pages.NCD.Activity.Model
 import Pages.NCD.Activity.Update
 import Pages.NCD.Encounter.Model
@@ -731,6 +734,18 @@ update msg model =
                             , Cmd.map (MsgLoggedIn << MsgPagePatientRecord id) subCmd
                             , appMsgs
                             )
+
+                        MsgPageMessagingCenter id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Dict.get id data.messagingCenterPages
+                                        |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                                        |> Pages.MessagingCenter.Update.update model.currentTime currentDate subMsg
+                            in
+                            ( { data | messagingCenterPages = Dict.insert id subModel data.messagingCenterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageMessagingCenter id) subCmd
+                            , appMsgs
+                            )
                 )
                 model
 
@@ -798,46 +813,54 @@ update msg model =
                             Pages.PinCode.Update.update subMsg configured.pinCodePage
 
                         ( extraMsgs, extraCmds ) =
-                            outMsg
-                                |> Maybe.map
-                                    (\out ->
-                                        case out of
-                                            Pages.PinCode.Model.TryPinCode code ->
-                                                ( [ TryPinCode code ], [] )
+                            Maybe.map
+                                (\out ->
+                                    case out of
+                                        Pages.PinCode.Model.TryPinCode code ->
+                                            ( [ TryPinCode code ], [] )
 
-                                            Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked
-                                                  , MsgIndexedDb Backend.Model.HandleLogout
-                                                  , SetHealthCenter Nothing
-                                                  , SetVillage Nothing
-                                                  ]
-                                                , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
-                                                )
+                                        Pages.PinCode.Model.Logout ->
+                                            ( [ SetLoggedIn NotAsked
+                                              , MsgIndexedDb Backend.Model.HandleLogout
+                                              , SetHealthCenter Nothing
+                                              , SetVillage Nothing
+                                              ]
+                                            , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
+                                            )
 
-                                            Pages.PinCode.Model.SetActivePage page ->
-                                                let
-                                                    resetDashboardMsg =
-                                                        case page of
-                                                            -- When accessing Dashboard page, reset
-                                                            -- the page to initial state - selected month,
-                                                            -- for example will be set to current month.
-                                                            UserPage (DashboardPage MainPage) ->
-                                                                Pages.Dashboard.Model.Reset model.villageId
-                                                                    |> MsgPageDashboard MainPage
-                                                                    |> MsgLoggedIn
-                                                                    |> List.singleton
+                                        Pages.PinCode.Model.SetActivePage page ->
+                                            let
+                                                resetDashboardMsg =
+                                                    case page of
+                                                        -- When accessing Dashboard page, reset
+                                                        -- the page to initial state - selected month,
+                                                        -- for example will be set to current month.
+                                                        UserPage (DashboardPage MainPage) ->
+                                                            Pages.Dashboard.Model.Reset model.villageId
+                                                                |> MsgPageDashboard MainPage
+                                                                |> MsgLoggedIn
+                                                                |> List.singleton
 
-                                                            _ ->
-                                                                []
-                                                in
-                                                ( SetActivePage page :: resetDashboardMsg, [] )
+                                                        _ ->
+                                                            []
+                                            in
+                                            ( SetActivePage page :: resetDashboardMsg, [] )
 
-                                            Pages.PinCode.Model.SetHealthCenter id ->
-                                                ( [ SetHealthCenter (Just id) ], [] )
+                                        Pages.PinCode.Model.SetHealthCenter id ->
+                                            ( [ SetHealthCenter (Just id) ], [] )
 
-                                            Pages.PinCode.Model.SetVillage id ->
-                                                ( [ SetVillage (Just id) ], [] )
-                                    )
+                                        Pages.PinCode.Model.SetVillage id ->
+                                            ( [ SetVillage (Just id) ], [] )
+
+                                        Pages.PinCode.Model.UpdateNurse nurseId nurse ->
+                                            ( [ Backend.Nurse.Model.UpdateNurse nurseId nurse
+                                                    |> Backend.Model.MsgNurse nurseId
+                                                    |> MsgIndexedDb
+                                              ]
+                                            , []
+                                            )
+                                )
+                                outMsg
                                 |> Maybe.withDefault ( [], [] )
                     in
                     ( { configured | pinCodePage = subModel }
@@ -1049,7 +1072,9 @@ update msg model =
                 (\configured ->
                     ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel model.villageId) nurse }
                     , Cmd.none
-                    , []
+                    , [ Pages.PinCode.Model.SetNextNotification model.currentTime
+                            |> MsgPagePinCode
+                      ]
                     )
                 )
                 model

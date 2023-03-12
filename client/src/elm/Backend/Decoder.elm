@@ -17,6 +17,8 @@ import Backend.Person.Decoder exposing (decodePerson)
 import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
+import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
+import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
@@ -394,6 +396,12 @@ decodeRevision =
 
                     "relationship" ->
                         decodeWithUuid RelationshipRevision decodeRelationship
+
+                    "resilience_message" ->
+                        decodeWithUuid ResilienceMessageRevision decodeResilienceMessage
+
+                    "resilience_survey" ->
+                        decodeWithUuid ResilienceSurveyRevision decodeResilienceSurvey
 
                     "resource" ->
                         decodeWithUuid MalariaPreventionRevision decodeMalariaPrevention

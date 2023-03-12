@@ -26,7 +26,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -113,22 +113,10 @@ viewMainPageContent language currentDate assembled model =
                 ]
 
         viewCard activity =
-            let
-                ( label, icon ) =
-                    ( Translate.NCDRecurrentActivitiesTitle activity, getRecurrentActivityIcon activity )
-            in
-            div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <|
-                        SetActivePage <|
-                            UserPage <|
-                                NCDRecurrentActivityPage assembled.id activity
-                    ]
-                    [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
-                , div [ class "content" ]
-                    [ p [] [ text <| String.toUpper <| translate language label ] ]
-                ]
+            activityCard language
+                (Translate.NCDRecurrentActivitiesTitle activity)
+                (getRecurrentActivityIcon activity)
+                (SetActivePage <| UserPage <| NCDRecurrentActivityPage assembled.id activity)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of

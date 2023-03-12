@@ -37,6 +37,8 @@ import Pages.HomeVisit.Encounter.Model
 import Pages.HomeVisit.Encounter.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
+import Pages.MessagingCenter.Model
+import Pages.MessagingCenter.View
 import Pages.MyAccount.View
 import Pages.NCD.Activity.Model
 import Pages.NCD.Activity.View
@@ -259,6 +261,7 @@ viewConfiguredModel model configured =
 
             PinCodePage ->
                 Pages.PinCode.View.view model.language
+                    model.currentTime
                     model.activePage
                     (RemoteData.map .nurse configured.loggedIn)
                     ( model.healthCenterId, model.villageId )
@@ -773,8 +776,27 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)
                             |> flexPageWrapper model
 
+                    MessagingCenterPage ->
+                        let
+                            ( nurseId, nurse ) =
+                                loggedInModel.nurse
+
+                            page_ =
+                                Dict.get nurseId loggedInModel.messagingCenterPages
+                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                        in
+                        Pages.MessagingCenter.View.view model.language
+                            model.currentTime
+                            nurseId
+                            nurse
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                            |> flexPageWrapper model
+
             else
                 Pages.PinCode.View.view model.language
+                    model.currentTime
                     model.activePage
                     (Success loggedInModel.nurse)
                     ( model.healthCenterId, model.villageId )
@@ -786,6 +808,7 @@ viewUserPage page deviceName model configured =
 
         Nothing ->
             Pages.PinCode.View.view model.language
+                model.currentTime
                 model.activePage
                 (RemoteData.map .nurse configured.loggedIn)
                 ( model.healthCenterId, model.villageId )

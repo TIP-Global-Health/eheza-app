@@ -21,7 +21,7 @@ import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Outcome.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel)
+import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel, viewSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
@@ -117,22 +117,13 @@ viewPregnancyOutcome language currentDate initiator data model =
             }
 
         pregnancyOutcomeInput =
-            option
-                [ value ""
-                , selected (form.pregnancyOutcome == Nothing)
-                ]
-                [ text "" ]
-                :: (allPregnancyOutcome
-                        |> List.map
-                            (\outcome ->
-                                option
-                                    [ value (pregnancyOutcomeToString outcome)
-                                    , selected (form.pregnancyOutcome == Just outcome)
-                                    ]
-                                    [ text <| translate language <| Translate.PregnancyOutcome outcome ]
-                            )
-                   )
-                |> select [ onInput SetPregnancyOutcome, class "form-input pregnancy-outcome" ]
+            viewSelectListInput language
+                form.pregnancyOutcome
+                allPregnancyOutcome
+                pregnancyOutcomeToString
+                SetPregnancyOutcome
+                Translate.PregnancyOutcome
+                "pregnancy-outcome"
 
         pregnancyConcludedDateForView =
             Maybe.map formatDDMMYYYY form.pregnancyConcludedDate

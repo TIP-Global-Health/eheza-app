@@ -195,6 +195,7 @@ type UserPage
     | NCDProgressReportPage NCDProgressReportInitiator
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
+    | MessagingCenterPage
 
 
 {-| We group together the pages that can only be viewed in the Dashboard

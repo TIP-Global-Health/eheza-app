@@ -9,7 +9,7 @@ import Backend.NutritionEncounter.Utils exposing (getNutritionEncountersForParti
 import Backend.Person.Utils exposing (ageInMonths)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Nutrition.Encounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)

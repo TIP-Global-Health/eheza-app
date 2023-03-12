@@ -41,7 +41,7 @@ import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButto
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
 import Utils.WebData exposing (viewWebData)
 
@@ -402,28 +402,15 @@ viewMainPageContent language currentDate assembled model =
                 ( label, icon ) =
                     generateActivityData activity assembled
 
-                navigationAction =
+                navigationPage =
                     case activity of
                         PregnancyOutcome ->
-                            [ onClick <|
-                                SetActivePage <|
-                                    UserPage <|
-                                        PregnancyOutcomePage (InitiatorPostpartumEncounter assembled.id) assembled.encounter.participant
-                            ]
+                            PregnancyOutcomePage (InitiatorPostpartumEncounter assembled.id) assembled.encounter.participant
 
                         _ ->
-                            [ onClick <|
-                                SetActivePage <|
-                                    UserPage <|
-                                        PrenatalActivityPage assembled.id activity
-                            ]
+                            PrenatalActivityPage assembled.id activity
             in
-            div [ class "card" ]
-                [ div (class "image" :: navigationAction)
-                    [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
-                , div [ class "content" ]
-                    [ p [] [ text <| String.toUpper <| translate language label ] ]
-                ]
+            activityCard language label icon (SetActivePage <| UserPage navigationPage)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of

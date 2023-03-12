@@ -66,7 +66,7 @@ update currentDate zscores isChw db msg model =
                 extraMsgs =
                     [ SetActivePage (UserPage (WellChildActivityPage encounterId activity)) ]
 
-                -- View Assessment popu when mavigating to Next Steps activity.
+                -- View Assessment popup when navigating to Next Steps activity.
                 appMsgs =
                     if activity == WellChildNextSteps then
                         Pages.WellChild.Encounter.Utils.generateAssembledData encounterId db

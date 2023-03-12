@@ -30,7 +30,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
 
@@ -327,21 +327,10 @@ viewMainPageContent language currentDate id isChw assembled model =
                 ]
 
         viewCard activity =
-            div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| AcuteIllnessActivityPage id activity
-                    ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
-                , div [ class "content" ]
-                    [ p []
-                        [ Translate.AcuteIllnessActivityTitle activity
-                            |> translate language
-                            |> String.toUpper
-                            |> text
-                        ]
-                    ]
-                ]
+            activityCard language
+                (Translate.AcuteIllnessActivityTitle activity)
+                (getActivityIcon activity)
+                (SetActivePage <| UserPage <| AcuteIllnessActivityPage id activity)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of

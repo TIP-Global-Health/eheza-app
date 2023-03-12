@@ -347,6 +347,7 @@ div.page-pincode {
   }
 
   button.ui.logout.button {
+    color: $color-white;
     background: $color-light-background;
     border: 2px solid $color-white;
     margin-bottom: 0;
@@ -358,9 +359,107 @@ div.page-pincode {
   button.health-center:last-child {
     margin-bottom: 6rem !important;
   }
+
+  .wrap-cards {
+    padding: 0;
+
+    .card {
+      margin: 0.75rem 0.75rem 0.75rem 0;
+
+      .image,
+      .content {
+        width: 150px;
+      }
+
+      .image .icon-task {
+        height: 150px;
+        width: 150px;
+
+        .counter {
+          background-color: $color-velvet;
+          border-radius: 50%;
+          font-size: 18px;
+          font-weight: bold;
+          height: 40px;
+          left: 125px;
+          line-height: 40px;
+          position: relative;
+          top: -15px;
+          width: 40px;
+        }
+
+        &.icon-task-participant-directory {
+          background-size: 140px 140px;
+        }
+      }
+
+      .content p {
+        font-size: 17px;
+        font-weight: 600;
+        text-overflow: unset;
+        white-space: unset;
+      }
+    }
+  }
+
+  .ui.active.modal {
+    border-top: 10px solid $color-velvet;
+    color: $color-text;
+
+    .header {
+      font-size: 22px;
+      padding-left: 20px;
+      padding-right: 20px;
+      text-transform: none;
+    }
+
+    .content,
+    .footer {
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.25;
+      padding-left: 20px;
+      padding-right: 20px;
+
+      p {
+        text-align: left;
+        margin-bottom: 20px;
+      }
+    }
+
+    .content {
+      padding-bottom: 0;
+    }
+
+    .footer {
+      padding-bottom: 20px;
+    }
+
+    .actions button {
+      margin: 0;
+    }
+  }
+
+  .ui.active.modal.notification {
+
+    .header {
+      font-size: 35px;
+      font-weight: 800;
+    }
+
+    .content {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 35px;
+
+      p {
+        text-align: center;
+      }
+    }
+  }
 }
 
-//Device Status Page
+// Device Status Page.
 .device-status {
   button {
     margin-bottom: 20px;
@@ -4326,7 +4425,6 @@ div.page-activity.patient-record {
   }
 }
 
-
 div.page-activity.ncd {
 
   .ui.full.segment {
@@ -4439,6 +4537,268 @@ div.page-activity.ncd {
       &.active {
         border-left: 1px solid $color-white;
       }
+    }
+  }
+}
+
+div.page-activity.messaging-center {
+
+  .ui.head .header .counter {
+    background-color: $color-velvet;
+    border-radius: 50%;
+    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
+    height: 30px;
+    left: 5px;
+    line-height: 30px;
+    position: relative;
+    top: -15px;
+    width: 30px;
+  }
+
+  .form-input {
+    border: 2px solid $color-light-gray;
+    color: $color-text;
+    height: 2em;
+    padding: 5px;
+    width: 50%;
+  }
+
+  .form-input.date {
+    text-align: center;
+  }
+
+  .ui.form.monthly-survey {
+
+    .instructions {
+      margin-left: 25px;
+      font-style: italic;
+      font-size: 25px;
+      font-weight: 400;
+      margin-bottom: 8px;
+    }
+
+    .checkbox-select-input {
+      margin-bottom: 20px;
+
+      .ui.checkbox.activity label {
+        line-height: 30px;
+
+        &:before {
+          border-width: 1px;
+        }
+      }
+    }
+  }
+
+  .ui.segment.tabs {
+    background-color: $color-white;
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 30px;
+    padding: 25px;
+
+    button {
+      background-color: $color-white;
+      border-radius: 3px;
+      color: $color-dark-gray;
+      font-size: 18px;
+      font-weight: 600;
+      padding: 15px;
+      text-transform: none;
+    }
+
+    button.active {
+      background-color: $color-primary;
+      color: $color-white;
+    }
+
+    .action-icon {
+      background: url(#{$img-path}icon-forward-blue.svg) no-repeat center;
+      background-size: 60% 60%;
+      cursor: pointer;
+      display: block;
+      height: 54px;
+      width: 54px;
+    }
+
+    .action-icon.left {
+      transform: rotate(180deg);
+    }
+  }
+
+  .resilience-message {
+    margin-bottom: 30px;
+
+    .title-wrapper {
+      color: $color-white;
+      display: flex;
+      justify-content: space-between;
+
+      .header {
+        display: flex;
+        flex-flow: row wrap;
+        padding: 20px;
+
+        .category-header {
+          font-weight: bold;
+          font-size: 24px;
+          flex: 1;
+          line-height: 32px;
+        }
+
+        .title {
+          padding: 0;
+        }
+
+        .date-sent {
+          width: 100%;
+          font-size: 22px;
+        }
+      }
+
+      .icon-options {
+        margin-top: 20px;
+        padding: 20px;
+        background: url(#{$img-path}icon-options.svg) center center no-repeat;
+        background-size: 32px 30px;
+        height: 32px;
+        width: 30px;
+      }
+    }
+
+    .title-wrapper.velvet {
+      background-color: $color-velvet;
+    }
+
+    .title-wrapper.blue {
+      background-color: $color-primary;
+    }
+
+    .title-wrapper.purple {
+      background-color: $color-purple;
+    }
+
+    .content {
+      background-color: $color-white;
+      color: $color-text;
+      padding: 20px;
+    }
+
+    .icon-growth {
+      background: url(#{$img-path}icon-growth.svg) center center no-repeat;
+      background-size: 28px 40px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -5px;
+      margin-top: -5px;
+      width: 40px;
+    }
+
+    .icon-stress-management {
+      background: url(#{$img-path}icon-stress-management.svg) center center no-repeat;
+      background-size: 30px 40px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -10px;
+      width: 40px;
+    }
+
+    .icon-mindfulness {
+      background: url(#{$img-path}icon-mindfulness.svg) center center no-repeat;
+      background-size: 28px 40px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -5px;
+      margin-top: -5px;
+      width: 40px;
+    }
+
+    .icon-connecting {
+      background: url(#{$img-path}icon-connecting-red.svg) center center no-repeat;
+      background-size: 30px 30px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -1px;
+      margin-top: -1px;
+      width: 30px;
+    }
+
+    .icon-connecting.blue {
+      background: url(#{$img-path}icon-connecting-blue.svg) center center no-repeat;
+    }
+
+    .icon-connecting.purple {
+      background: url(#{$img-path}icon-connecting-purple.svg) center center no-repeat;
+    }
+
+    .icon-self-care {
+      background: url(#{$img-path}icon-selfcare.svg) center center no-repeat;
+      background-size: 28px 40px;
+      height: 30px;
+      margin-right: 5px;
+      margin-left: -5px;
+      margin-top: -2px;
+      width: 40px;
+    }
+  }
+
+  .resilience-message.shrank .content {
+    display: -webkit-box;
+    -webkit-line-clamp: var(--line-clamp, 2);
+    -webkit-box-orient: vertical;
+    word-break: var(--word-break, 'none');
+    overflow: hidden;
+    hyphens: auto;
+    padding-bottom: 5px;
+  }
+
+  .ui.active.modal.main,
+  .ui.active.modal.reminder {
+    border-top: 10px solid $color-primary;
+    width: 380px;
+
+    .content {
+      padding-top: 30px;
+      padding-bottom: 0;
+    }
+
+    .content .button {
+      border-radius: 5px;
+      font-size: 28px;
+      margin-bottom: 30px;
+      text-transform: none;
+
+      img {
+        margin-right: 20px;
+        height: 30px;
+        vertical-align: bottom;
+      }
+    }
+
+    .actions button {
+      margin: 0;
+    }
+  }
+
+  .ui.active.modal.reminder {
+    width: 450px;
+
+    .content {
+      margin-bottom: 40px;
+    }
+
+    .content p {
+      text-align: left;
+      margin-bottom: 10px;
+    }
+
+    .content .button {
+      border-radius: 5px;
+      font-size: 24px;
+      font-weight: normal;
+      margin-bottom: 20px;
     }
   }
 }

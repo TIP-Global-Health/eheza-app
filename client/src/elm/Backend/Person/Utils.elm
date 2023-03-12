@@ -6,7 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
+import Backend.Person.Model exposing (..)
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
 import Maybe.Extra exposing (isJust)
@@ -221,6 +221,184 @@ genderFromString s =
 
         "male" ->
             Just Male
+
+        _ ->
+            Nothing
+
+
+modeOfDeliveryToString : ModeOfDelivery -> String
+modeOfDeliveryToString mode =
+    case mode of
+        VaginalDelivery vaginal ->
+            case vaginal of
+                Spontaneous True ->
+                    "svd-episiotomy"
+
+                Spontaneous False ->
+                    "svd-no-episiotomy"
+
+                WithVacuumExtraction ->
+                    "vd-vacuum"
+
+        CesareanDelivery ->
+            "cesarean-delivery"
+
+
+hivStatusToString : HIVStatus -> String
+hivStatusToString status =
+    case status of
+        HIVExposedInfant ->
+            "hiv-exposed-infant"
+
+        Negative ->
+            "negative"
+
+        NegativeDiscordantCouple ->
+            "negative-dc"
+
+        Positive ->
+            "positive"
+
+        Unknown ->
+            "unknown"
+
+
+ubudeheToInt : Ubudehe -> Int
+ubudeheToInt ubudehe =
+    case ubudehe of
+        Ubudehe1 ->
+            1
+
+        Ubudehe2 ->
+            2
+
+        Ubudehe3 ->
+            3
+
+        Ubudehe4 ->
+            4
+
+
+ubudeheFromInt : Int -> Maybe Ubudehe
+ubudeheFromInt value =
+    case value of
+        1 ->
+            Just Ubudehe1
+
+        2 ->
+            Just Ubudehe2
+
+        3 ->
+            Just Ubudehe3
+
+        4 ->
+            Just Ubudehe4
+
+        _ ->
+            Nothing
+
+
+educationLevelToInt : EducationLevel -> Int
+educationLevelToInt educationLevel =
+    case educationLevel of
+        NoSchooling ->
+            0
+
+        PrimarySchool ->
+            1
+
+        VocationalTrainingSchool ->
+            2
+
+        SecondarySchool ->
+            3
+
+        DiplomaProgram ->
+            4
+
+        HigherEducation ->
+            5
+
+        AdvancedDiploma ->
+            6
+
+        MastersDegree ->
+            7
+
+
+educationLevelFromInt : Int -> Maybe EducationLevel
+educationLevelFromInt value =
+    case value of
+        0 ->
+            Just NoSchooling
+
+        1 ->
+            Just PrimarySchool
+
+        2 ->
+            Just VocationalTrainingSchool
+
+        3 ->
+            Just SecondarySchool
+
+        4 ->
+            Just DiplomaProgram
+
+        5 ->
+            Just HigherEducation
+
+        6 ->
+            Just AdvancedDiploma
+
+        7 ->
+            Just MastersDegree
+
+        _ ->
+            Nothing
+
+
+maritalStatusToString : MaritalStatus -> String
+maritalStatusToString status =
+    case status of
+        Divorced ->
+            "divorced"
+
+        Married ->
+            "married"
+
+        Single ->
+            "single"
+
+        Widowed ->
+            "widowed"
+
+        LivingWithPartner ->
+            "living-with-partner"
+
+        Religious ->
+            "religious"
+
+
+maritalStatusFromString : String -> Maybe MaritalStatus
+maritalStatusFromString value =
+    case value of
+        "divorced" ->
+            Just Divorced
+
+        "married" ->
+            Just Married
+
+        "single" ->
+            Just Single
+
+        "widowed" ->
+            Just Widowed
+
+        "living-with-partner" ->
+            Just LivingWithPartner
+
+        "religious" ->
+            Just Religious
 
         _ ->
             Nothing

@@ -27,6 +27,7 @@ import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
 import Backend.NCDEncounter.Encoder exposing (encodeNCDEncounter)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Nurse.Decoder exposing (decodeNurse)
+import Backend.Nurse.Encoder exposing (encodeNurse)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
 import Backend.NutritionEncounter.Encoder exposing (encodeNutritionEncounter)
@@ -46,6 +47,12 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
+import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
+import Backend.ResilienceMessage.Encoder exposing (encodeResilienceMessage)
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
+import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
+import Backend.ResilienceSurvey.Encoder exposing (encodeResilienceSurvey)
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
@@ -241,9 +248,10 @@ participantFormEndpoint =
         |> withValueEncoder (object << encodeParticipantForm)
 
 
-nurseEndpoint : ReadOnlyEndPoint Error NurseId Nurse NurseParams
+nurseEndpoint : ReadWriteEndPoint Error NurseId Nurse Nurse NurseParams
 nurseEndpoint =
     swEndpoint "nodes/nurse" decodeNurse
+        |> withValueEncoder (object << encodeNurse)
         |> withParamsEncoder encodeNurseParams
 
 
@@ -1205,3 +1213,27 @@ ncdHbA1cTestEndpoint : ReadWriteEndPoint Error NCDHbA1cTestId NCDHbA1cTest NCDHb
 ncdHbA1cTestEndpoint =
     swEndpoint "nodes/ncd_hba1c_test" decodeNCDHbA1cTest
         |> withValueEncoder (object << encodeNCDHbA1cTest)
+
+
+resilienceSurveyEndpoint : ReadWriteEndPoint Error ResilienceSurveyId ResilienceSurvey ResilienceSurvey (Maybe NurseId)
+resilienceSurveyEndpoint =
+    swEndpoint "nodes/resilience_survey" decodeResilienceSurvey
+        |> withValueEncoder (object << encodeResilienceSurvey)
+        |> withParamsEncoder encodeByNurseParam
+
+
+resilienceMessageEndpoint : ReadWriteEndPoint Error ResilienceMessageId ResilienceMessage ResilienceMessage (Maybe NurseId)
+resilienceMessageEndpoint =
+    swEndpoint "nodes/resilience_message" decodeResilienceMessage
+        |> withValueEncoder (object << encodeResilienceMessage)
+        |> withParamsEncoder encodeByNurseParam
+
+
+encodeByNurseParam : Maybe NurseId -> List ( String, String )
+encodeByNurseParam params =
+    case params of
+        Just id ->
+            [ ( "nurse", fromEntityUuid id ) ]
+
+        Nothing ->
+            []

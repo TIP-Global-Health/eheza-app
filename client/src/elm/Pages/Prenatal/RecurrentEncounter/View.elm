@@ -40,7 +40,7 @@ import Pages.Prenatal.RecurrentEncounter.Utils exposing (..)
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -127,18 +127,7 @@ viewMainPageContent language currentDate assembled model =
                 ( label, icon ) =
                     ( Translate.PrenatalRecurrentActivitiesTitle activity, getRecurrentActivityIcon activity )
             in
-            div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <|
-                        SetActivePage <|
-                            UserPage <|
-                                PrenatalRecurrentActivityPage assembled.id activity
-                    ]
-                    [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
-                , div [ class "content" ]
-                    [ p [] [ text <| String.toUpper <| translate language label ] ]
-                ]
+            activityCard language label icon (SetActivePage <| UserPage <| PrenatalRecurrentActivityPage assembled.id activity)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of

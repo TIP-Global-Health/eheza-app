@@ -35,6 +35,8 @@ import Backend.Person.Model exposing (Initiator, PatchPersonInitator, Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.TraceContact.Model
 import Backend.Village.Model exposing (Village)
@@ -87,6 +89,9 @@ type alias ModelIndexedDb =
     , wellChildEncounterRequests : Dict WellChildEncounterId Backend.WellChildEncounter.Model.Model
     , ncdEncounterRequests : Dict NCDEncounterId Backend.NCDEncounter.Model.Model
     , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
+    , nurseRequests : Dict NurseId Backend.Nurse.Model.Model
+    , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
+    , resilienceMessageRequests : Dict NurseId Backend.ResilienceMessage.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -152,6 +157,10 @@ type alias ModelIndexedDb =
     -- Dashboard Statistics.
     , computedDashboards : Dict HealthCenterId ComputedDashboard
     , computedDashboardLastFetched : Time.Posix
+
+    -- Resilience.
+    , resilienceSurveysByNurse : Dict NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
+    , resilienceMessagesByNurse : Dict NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
     }
 
 
@@ -208,6 +217,9 @@ emptyModelIndexedDb =
     , ncdEncounterRequests = Dict.empty
     , traceContactRequests = Dict.empty
     , individualSessionRequests = Dict.empty
+    , nurseRequests = Dict.empty
+    , resilienceSurveyRequests = Dict.empty
+    , resilienceMessageRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
     , relationshipsByPerson = Dict.empty
@@ -217,6 +229,8 @@ emptyModelIndexedDb =
     , followUpMeasurements = Dict.empty
     , computedDashboards = Dict.empty
     , computedDashboardLastFetched = Time.millisToPosix 0
+    , resilienceSurveysByNurse = Dict.empty
+    , resilienceMessagesByNurse = Dict.empty
     }
 
 
@@ -292,6 +306,8 @@ type MsgIndexedDb
     | FetchPrenatalMeasurements PrenatalEncounterId
     | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchRelationshipsForPerson PersonId
+    | FetchResilienceMessagesForNurse NurseId
+    | FetchResilienceSurveysForNurse NurseId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchVillages
@@ -335,6 +351,8 @@ type MsgIndexedDb
     | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
     | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
+    | HandleFetchedResilienceMessagesForNurse NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
+    | HandleFetchedResilienceSurveysForNurse NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedVillages (WebData (Dict VillageId Village))
@@ -381,6 +399,9 @@ type MsgIndexedDb
     | MsgNCDEncounter NCDEncounterId Backend.NCDEncounter.Model.Msg
     | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
+    | MsgNurse NurseId Backend.Nurse.Model.Msg
+    | MsgResilienceSurvey NurseId Backend.ResilienceSurvey.Model.Msg
+    | MsgResilienceMessage NurseId Backend.ResilienceMessage.Model.Msg
     | ResetFailedToFetchAuthorities
 
 
@@ -510,6 +531,8 @@ type Revision
     | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation
     | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest
     | RelationshipRevision RelationshipId Relationship
+    | ResilienceMessageRevision ResilienceMessageId ResilienceMessage
+    | ResilienceSurveyRevision ResilienceSurveyId ResilienceSurvey
     | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory

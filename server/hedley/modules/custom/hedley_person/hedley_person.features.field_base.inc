@@ -169,6 +169,7 @@ function hedley_person_field_default_field_bases() {
         4 => 'Diploma Programs (2 years of University)',
         5 => 'Higher Education (University)',
         6 => 'Advanced Diploma',
+        7 => 'Masters Degree',
       ),
       'allowed_values_function' => '',
     ),
@@ -291,6 +292,8 @@ function hedley_person_field_default_field_bases() {
         'married' => 'Married',
         'single' => 'Single',
         'widowed' => 'Widowed',
+        'living-with-partner' => 'Living with Partner',
+        'religious' => 'Religious',
       ),
       'allowed_values_function' => '',
     ),
@@ -518,6 +521,67 @@ function hedley_person_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_resilience_role'.
+  $field_bases['field_resilience_role'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_resilience_role',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'nurse' => 'Nurse',
+        'chw' => 'Community Health Worker',
+        'line-manager' => 'Line Manager',
+        'supervisor' => 'Supervisor',
+        'director' => 'Director',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_resilience_start_date'.
+  $field_bases['field_resilience_start_date'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_resilience_start_date',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'date',
+    'settings' => array(
+      'granularity' => array(
+        'day' => 'day',
+        'hour' => 0,
+        'minute' => 0,
+        'month' => 'month',
+        'second' => 0,
+        'year' => 'year',
+      ),
+      'timezone_db' => '',
+      'todate' => '',
+      'tz_handling' => 'none',
+    ),
+    'translatable' => 0,
+    'type' => 'datetime',
   );
 
   // Exported field_base: 'field_second_name'.

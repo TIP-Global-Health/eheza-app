@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 19);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 20);
 define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
@@ -22,6 +22,8 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
   'nurse' => 'nurses',
   'participant_form' => 'participants-form',
   'village' => 'villages',
+  'resilience_survey' => 'resilience-survey',
+  'resilience_message' => 'resilience-message',
 ];
 
 /**

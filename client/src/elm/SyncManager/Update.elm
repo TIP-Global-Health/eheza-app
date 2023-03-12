@@ -1351,7 +1351,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                         in
                         SubModelReturn
                             (SyncManager.Utils.determineSyncStatus activePage modelUpdated)
-                            setSyncInfoGeneralCmd
+                            (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
                             noError
                             []
 

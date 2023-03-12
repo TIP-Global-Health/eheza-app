@@ -648,3 +648,10 @@ function hedley_update_7034() {
 function hedley_update_7035() {
   module_enable(['hedley_whatsapp']);
 }
+
+/**
+ * Enable the Hedley Resilience module.
+ */
+function hedley_update_7036() {
+  module_enable(['hedley_resilience']);
+}

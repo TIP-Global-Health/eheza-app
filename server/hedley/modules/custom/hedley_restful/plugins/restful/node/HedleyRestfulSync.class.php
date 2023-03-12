@@ -289,9 +289,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     return [
       'base_revision' => $base,
-      // We temporary leave last_timestamp, until all
-      // clients update the APP, and do not expect to decode it.
-      'last_timestamp' => time(),
       'revision_count' => $count,
       'batch' => $output,
     ];
@@ -388,6 +385,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'contact_date',
           'last_follow_up_date',
           'execution_date',
+          'resilience_start_date',
         ];
 
         $multiDateFields = [
@@ -423,9 +421,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           }
         }
 
-        // Some properties cannot be set. For `type`, that's fine. For
-        // `status`, we'll need to figure out how to unpublish things through
-        // this route.
+        // Some properties cannot be set.
+        // Therefore, we filter them out for request to succeed.
         $ignored = [
           'type',
           'status',
@@ -439,6 +436,12 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           // Also, most content types do not have 'field_deleted, and
           // passing 'deleted' indicator will cause error.
           'deleted',
+          // Field health_centers and villages are sent when editing a nurse.
+          // They fail the request, because sent as UUIDs. We could try to
+          // convert them to node IDs, but since they can not be edited on
+          // client, we simply ignore them.
+          'health_centers',
+          'villages',
         ];
 
         // Do not ignore 'health center' field for person,

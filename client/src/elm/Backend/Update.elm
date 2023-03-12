@@ -39,6 +39,8 @@ import Backend.Model exposing (..)
 import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
 import Backend.NCDEncounter.Update
+import Backend.Nurse.Model
+import Backend.Nurse.Update
 import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
@@ -59,6 +61,10 @@ import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
+import Backend.ResilienceMessage.Model
+import Backend.ResilienceMessage.Update
+import Backend.ResilienceSurvey.Model
+import Backend.ResilienceSurvey.Update
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
@@ -1018,6 +1024,32 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedSessionsByClinic clinicId data ->
             ( { model | sessionsByClinic = Dict.insert clinicId data model.sessionsByClinic }
+            , Cmd.none
+            , []
+            )
+
+        FetchResilienceSurveysForNurse id ->
+            ( { model | resilienceSurveysByNurse = Dict.insert id Loading model.resilienceSurveysByNurse }
+            , sw.select resilienceSurveyEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedResilienceSurveysForNurse id)
+            , []
+            )
+
+        HandleFetchedResilienceSurveysForNurse id data ->
+            ( { model | resilienceSurveysByNurse = Dict.insert id data model.resilienceSurveysByNurse }
+            , Cmd.none
+            , []
+            )
+
+        FetchResilienceMessagesForNurse id ->
+            ( { model | resilienceMessagesByNurse = Dict.insert id Loading model.resilienceMessagesByNurse }
+            , sw.select resilienceMessageEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedResilienceMessagesForNurse id)
+            , []
+            )
+
+        HandleFetchedResilienceMessagesForNurse id data ->
+            ( { model | resilienceMessagesByNurse = Dict.insert id data model.resilienceMessagesByNurse }
             , Cmd.none
             , []
             )
@@ -3168,6 +3200,48 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        MsgNurse updatedNurseId subMsg ->
+            let
+                requests =
+                    Dict.get updatedNurseId model.nurseRequests
+                        |> Maybe.withDefault Backend.Nurse.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.Nurse.Update.update currentDate subMsg requests
+            in
+            ( { model | nurseRequests = Dict.insert updatedNurseId subModel model.nurseRequests }
+            , Cmd.map (MsgNurse updatedNurseId) subCmd
+            , []
+            )
+
+        MsgResilienceSurvey surveyNurseId subMsg ->
+            let
+                requests =
+                    Dict.get surveyNurseId model.resilienceSurveyRequests
+                        |> Maybe.withDefault Backend.ResilienceSurvey.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.ResilienceSurvey.Update.update currentDate subMsg requests
+            in
+            ( { model | resilienceSurveyRequests = Dict.insert surveyNurseId subModel model.resilienceSurveyRequests }
+            , Cmd.map (MsgResilienceSurvey surveyNurseId) subCmd
+            , []
+            )
+
+        MsgResilienceMessage messageNurseId subMsg ->
+            let
+                requests =
+                    Dict.get messageNurseId model.resilienceMessageRequests
+                        |> Maybe.withDefault Backend.ResilienceMessage.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.ResilienceMessage.Update.update currentDate subMsg requests
+            in
+            ( { model | resilienceMessageRequests = Dict.insert messageNurseId subModel model.resilienceMessageRequests }
+            , Cmd.map (MsgResilienceMessage messageNurseId) subCmd
+            , []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
@@ -4246,6 +4320,50 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         RelationshipRevision uuid data ->
             ( { model | relationshipsByPerson = Dict.empty }
             , True
+            )
+
+        ResilienceMessageRevision uuid data ->
+            let
+                nurseMessages =
+                    Dict.get data.nurse model.resilienceMessagesByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                resilienceMessagesByNurse =
+                    Maybe.map
+                        (\messages ->
+                            let
+                                updatedMessages =
+                                    Dict.insert uuid data messages
+                            in
+                            Dict.insert data.nurse (Success updatedMessages) model.resilienceMessagesByNurse
+                        )
+                        nurseMessages
+                        |> Maybe.withDefault (Dict.insert data.nurse (Success (Dict.singleton uuid data)) model.resilienceMessagesByNurse)
+            in
+            ( { model | resilienceMessagesByNurse = resilienceMessagesByNurse }
+            , recalc
+            )
+
+        ResilienceSurveyRevision uuid data ->
+            let
+                nurseSurveys =
+                    Dict.get data.nurse model.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                resilienceSurveysByNurse =
+                    Maybe.map
+                        (\surveys ->
+                            let
+                                updatedSurveys =
+                                    Dict.insert uuid data surveys
+                            in
+                            Dict.insert data.nurse (Success updatedSurveys) model.resilienceSurveysByNurse
+                        )
+                        nurseSurveys
+                        |> Maybe.withDefault (Dict.insert data.nurse (Success (Dict.singleton uuid data)) model.resilienceSurveysByNurse)
+            in
+            ( { model | resilienceSurveysByNurse = resilienceSurveysByNurse }
+            , recalc
             )
 
         MalariaPreventionRevision uuid data ->

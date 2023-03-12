@@ -23,6 +23,7 @@ import Pages.HomeVisit.Activity.Fetch
 import Pages.HomeVisit.Encounter.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
+import Pages.MessagingCenter.Fetch
 import Pages.NCD.Activity.Fetch
 import Pages.NCD.Encounter.Fetch
 import Pages.NCD.Participant.Fetch
@@ -87,7 +88,9 @@ fetch model =
                 List.map MsgIndexedDb Pages.Device.Fetch.fetch
 
             PinCodePage ->
-                Pages.PinCode.Fetch.fetch model.healthCenterId
+                getLoggedInData model
+                    |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+                    |> Pages.PinCode.Fetch.fetch
                     |> List.map MsgIndexedDb
 
             PageNotFound _ ->
@@ -338,6 +341,19 @@ fetch model =
             UserPage (PatientRecordPage _ id) ->
                 Pages.PatientRecord.Fetch.fetch currentDate id model.indexedDb
                     |> List.map MsgIndexedDb
+
+            UserPage MessagingCenterPage ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            let
+                                nurseId =
+                                    Tuple.first loggedIn.nurse
+                            in
+                            Pages.MessagingCenter.Fetch.fetch currentDate nurseId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
 
 {-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer
