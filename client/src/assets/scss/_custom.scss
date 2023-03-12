@@ -255,6 +255,10 @@ h3.ui.header {
     background: $color-primary;
   }
 
+  &.velvet {
+    background: $color-velvet;
+  }
+
   &.disabled {
     background: $color-background !important;
     color: #fff !important;

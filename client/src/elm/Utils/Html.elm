@@ -4,6 +4,7 @@ module Utils.Html exposing
     , spinner
     , tabItem
     , thumbnailImage
+    , viewCustomModal
     , viewLoading
     , viewLogo
     , viewModal
@@ -96,7 +97,18 @@ Or, if nothing, shows an emptyNode.
 -}
 viewModal : Maybe (Html msg) -> Html msg
 viewModal =
-    showMaybe << Maybe.map (\modal -> div [ class "overlay" ] [ modal ])
+    viewCustomModal []
+
+
+viewCustomModal : List String -> Maybe (Html msg) -> Html msg
+viewCustomModal extraClasses =
+    let
+        classes =
+            "overlay"
+                :: extraClasses
+                |> String.join " "
+    in
+    showMaybe << Maybe.map (\modal -> div [ class classes ] [ modal ])
 
 
 {-| Take some HTML and wrap it in some standard HTML to make a page that

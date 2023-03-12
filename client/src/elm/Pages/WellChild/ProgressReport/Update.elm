@@ -3,6 +3,9 @@ module Pages.WellChild.ProgressReport.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.WellChildEncounter.Model
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.Update
+import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..))
 import Pages.WellChild.ProgressReport.Model exposing (..)
 
@@ -31,6 +34,32 @@ update msg model =
 
         SetDiagnosisMode mode ->
             ( { model | diagnosisMode = mode }, Cmd.none, [] )
+
+        MsgSendViaWhatsAppDialog subMsg ->
+            let
+                ( dialogUpdated, cmd, ( extraMsgs, appMsgs ) ) =
+                    Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
+            in
+            ( { model | sendViaWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
+                |> sequenceExtra update extraMsgs
+
+        SetReportComponents maybeComponents ->
+            let
+                updatedModel =
+                    Maybe.map
+                        (\components ->
+                            case components of
+                                Components.SendViaWhatsAppDialog.Model.WellChild wellChildComponents ->
+                                    { model | components = Just wellChildComponents }
+
+                                -- We should never get here.
+                                _ ->
+                                    model
+                        )
+                        maybeComponents
+                        |> Maybe.withDefault { model | components = Nothing }
+            in
+            ( updatedModel, Cmd.none, [] )
 
         SetActiveTab tab ->
             ( { model | activeTab = tab }, Cmd.none, [] )

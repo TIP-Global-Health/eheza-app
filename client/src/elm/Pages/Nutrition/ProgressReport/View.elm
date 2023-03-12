@@ -7,6 +7,8 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.View
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -82,6 +84,9 @@ view language currentDate zscores id isChw db model =
 
         initiator =
             InitiatorNutritionIndividual id
+
+        componentsConfig =
+            Just { setReportComponentsMsg = SetReportComponents }
     in
     viewWebData language
         (viewProgressReport language
@@ -92,10 +97,14 @@ view language currentDate zscores id isChw db model =
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
+            model.sendViaWhatsAppDialog
             model.reportTab
             SetActivePage
             SetReportTab
             SetDiagnosisMode
+            MsgSendViaWhatsAppDialog
+            componentsConfig
+            model.components
             bottomActionData
         )
         identity

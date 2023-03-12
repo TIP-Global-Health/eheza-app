@@ -471,14 +471,24 @@ update currentDate currentTime activePage dbVersion device msg model =
                         -- We send state report when we begin the sync.
                         |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
-                SyncUploadPhotoAuthority _ _ ->
+                SyncUploadPhoto _ _ ->
                     update
                         currentDate
                         currentTime
                         activePage
                         dbVersion
                         device
-                        BackendPhotoUploadAuthority
+                        BackendPhotoUpload
+                        model
+
+                SyncUploadScreenshot _ _ ->
+                    update
+                        currentDate
+                        currentTime
+                        activePage
+                        dbVersion
+                        device
+                        BackendScreenshotUpload
                         model
 
                 SyncUploadGeneral _ ->
@@ -489,6 +499,16 @@ update currentDate currentTime activePage dbVersion device msg model =
                         dbVersion
                         device
                         FetchFromIndexDbUploadGeneral
+                        model
+
+                SyncUploadWhatsApp _ ->
+                    update
+                        currentDate
+                        currentTime
+                        activePage
+                        dbVersion
+                        device
+                        FetchFromIndexDbUploadWhatsApp
                         model
 
                 SyncUploadAuthority _ ->
@@ -928,6 +948,37 @@ update currentDate currentTime activePage dbVersion device msg model =
                 _ ->
                     noChange
 
+        FetchFromIndexDbUploadWhatsApp ->
+            -- Get a entities for upload from IndexDB.
+            case model.syncStatus of
+                SyncUploadWhatsApp record ->
+                    if
+                        RemoteData.isLoading record.indexDbRemoteData
+                            || RemoteData.isLoading record.backendRemoteData
+                    then
+                        -- We are already loading.
+                        noChange
+
+                    else
+                        let
+                            recordUpdated =
+                                { record
+                                    | indexDbRemoteData = RemoteData.Loading
+                                    , backendRemoteData = RemoteData.NotAsked
+                                }
+                        in
+                        update
+                            currentDate
+                            currentTime
+                            activePage
+                            dbVersion
+                            device
+                            (QueryIndexDb IndexDbQueryUploadWhatsApp)
+                            { model | syncStatus = SyncUploadWhatsApp recordUpdated }
+
+                _ ->
+                    noChange
+
         FetchFromIndexDbUploadAuthority ->
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
@@ -967,9 +1018,9 @@ update currentDate currentTime activePage dbVersion device msg model =
                 _ ->
                     noChange
 
-        BackendPhotoUploadAuthority ->
+        BackendPhotoUpload ->
             case model.syncStatus of
-                SyncUploadPhotoAuthority errorsCount webData ->
+                SyncUploadPhoto errorsCount webData ->
                     if RemoteData.isLoading webData then
                         noChange
 
@@ -980,20 +1031,58 @@ update currentDate currentTime activePage dbVersion device msg model =
                             activePage
                             dbVersion
                             device
-                            (QueryIndexDb IndexDbQueryUploadPhotoAuthority)
-                            { model | syncStatus = SyncUploadPhotoAuthority errorsCount RemoteData.Loading }
+                            (QueryIndexDb IndexDbQueryUploadPhoto)
+                            { model | syncStatus = SyncUploadPhoto errorsCount RemoteData.Loading }
 
                 _ ->
                     noChange
 
-        BackendUploadPhotoAuthorityHandle remoteData ->
+        BackendUploadPhotoHandle remoteData ->
             -- Uploading of photos happened through JS, since it involves working
             -- with file blobs. This handler however is for post upload attempt
             -- (success or not), to set RemoteData accordingly.
             case model.syncStatus of
-                SyncUploadPhotoAuthority errorsCount _ ->
+                SyncUploadPhoto errorsCount _ ->
                     SubModelReturn
-                        (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = SyncUploadPhotoAuthority errorsCount remoteData })
+                        (SyncManager.Utils.determineSyncStatus activePage
+                            { model | syncStatus = SyncUploadPhoto errorsCount remoteData }
+                        )
+                        Cmd.none
+                        noError
+                        []
+
+                _ ->
+                    noChange
+
+        BackendScreenshotUpload ->
+            case model.syncStatus of
+                SyncUploadScreenshot errorsCount webData ->
+                    if RemoteData.isLoading webData then
+                        noChange
+
+                    else
+                        update
+                            currentDate
+                            currentTime
+                            activePage
+                            dbVersion
+                            device
+                            (QueryIndexDb IndexDbQueryUploadScreenshot)
+                            { model | syncStatus = SyncUploadScreenshot errorsCount RemoteData.Loading }
+
+                _ ->
+                    noChange
+
+        BackendUploadScreenshotHandle remoteData ->
+            -- Uploading of screenshots happened through JS, since it involves working
+            -- with file blobs. This handler however is for post upload attempt
+            -- (success or not), to set RemoteData accordingly.
+            case model.syncStatus of
+                SyncUploadScreenshot errorsCount _ ->
+                    SubModelReturn
+                        (SyncManager.Utils.determineSyncStatus activePage
+                            { model | syncStatus = SyncUploadScreenshot errorsCount remoteData }
+                        )
                         Cmd.none
                         noError
                         []
@@ -1341,6 +1430,142 @@ update currentDate currentTime activePage dbVersion device msg model =
                 _ ->
                     noChange
 
+        BackendUploadWhatsApp Nothing ->
+            let
+                syncStatus =
+                    -- There are no entities for upload.
+                    case model.syncStatus of
+                        SyncUploadWhatsApp record ->
+                            SyncUploadWhatsApp { record | indexDbRemoteData = RemoteData.Success Nothing }
+
+                        _ ->
+                            model.syncStatus
+            in
+            SubModelReturn
+                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus })
+                Cmd.none
+                noError
+                []
+
+        BackendUploadWhatsApp (Just result) ->
+            case model.syncStatus of
+                SyncUploadWhatsApp record ->
+                    if RemoteData.isLoading record.backendRemoteData then
+                        -- We are already POSTing to the backend.
+                        noChange
+
+                    else
+                        let
+                            recordUpdated =
+                                { record
+                                    | backendRemoteData =
+                                        if List.isEmpty result.entities then
+                                            -- There were no entities for upload.
+                                            RemoteData.NotAsked
+
+                                        else
+                                            RemoteData.Loading
+                                    , indexDbRemoteData = RemoteData.Success (Just result)
+                                }
+
+                            syncInfoGeneral =
+                                if model.syncInfoGeneral.status == Uploading then
+                                    model.syncInfoGeneral
+
+                                else
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | status = Uploading })
+
+                            setSyncInfoGeneralCmd =
+                                if model.syncInfoGeneral.status == Uploading then
+                                    Cmd.none
+
+                                else
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
+
+                            cmd =
+                                if List.isEmpty result.entities then
+                                    -- There were no entities for upload.
+                                    Cmd.none
+
+                                else
+                                    HttpBuilder.post (device.backendUrl ++ "/api/sync")
+                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadWhatsAppResultRecord dbVersion result)
+                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadWhatsAppHandle result)
+
+                            modelUpdated =
+                                { model | syncStatus = SyncUploadWhatsApp recordUpdated, syncInfoGeneral = syncInfoGeneral }
+                        in
+                        SubModelReturn
+                            (SyncManager.Utils.determineSyncStatus activePage modelUpdated)
+                            (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
+                            noError
+                            []
+
+                _ ->
+                    noChange
+
+        BackendUploadWhatsAppHandle result webData ->
+            case model.syncStatus of
+                SyncUploadWhatsApp record ->
+                    case webData of
+                        RemoteData.Failure error ->
+                            let
+                                syncStatus =
+                                    SyncUploadWhatsApp { record | backendRemoteData = RemoteData.Failure error }
+
+                                syncInfoGeneral =
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | status = Error })
+
+                                setSyncInfoGeneralCmd =
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
+                            in
+                            SubModelReturn
+                                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
+                                setSyncInfoGeneralCmd
+                                (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadWhatsAppHandle")
+                                []
+
+                        RemoteData.Success _ ->
+                            let
+                                syncStatus =
+                                    SyncUploadWhatsApp { record | backendRemoteData = RemoteData.Success () }
+
+                                syncInfoGeneral =
+                                    let
+                                        status =
+                                            if result.remaining == 0 then
+                                                Success
+
+                                            else
+                                                model.syncInfoGeneral.status
+                                    in
+                                    model.syncInfoGeneral
+                                        |> (\info -> { info | remainingToUpload = result.remaining, status = status })
+
+                                setSyncInfoGeneralCmd =
+                                    sendSyncInfoGeneralCmd syncInfoGeneral
+
+                                -- We have successfully uploaded the entities, so
+                                -- we can mark them as `isSynced`.
+                                cmd =
+                                    deleteEntitiesThatWereUploaded { type_ = "WhatsApp", localId = List.map .localId result.entities }
+                            in
+                            SubModelReturn
+                                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
+                                (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
+                                noError
+                                []
+
+                        _ ->
+                            -- Satisfy the compiler.
+                            noChange
+
+                _ ->
+                    noChange
+
         BackendDeferredPhotoFetch Nothing ->
             let
                 downloadPhotosStatus =
@@ -1509,7 +1734,7 @@ update currentDate currentTime activePage dbVersion device msg model =
             let
                 record =
                     case indexDbQueryType of
-                        IndexDbQueryUploadPhotoAuthority ->
+                        IndexDbQueryUploadPhoto ->
                             let
                                 -- Send the device info so on JS, we'd know how
                                 -- to contact the backend.
@@ -1517,12 +1742,29 @@ update currentDate currentTime activePage dbVersion device msg model =
                                     Device.Encoder.encode device
                                         |> Json.Encode.encode 0
                             in
-                            { queryType = "IndexDbQueryUploadPhotoAuthority"
+                            { queryType = "IndexDbQueryUploadPhoto"
+                            , data = Just encodedData
+                            }
+
+                        IndexDbQueryUploadScreenshot ->
+                            let
+                                -- Send the device info so on JS, we'd know how
+                                -- to contact the backend.
+                                encodedData =
+                                    Device.Encoder.encode device
+                                        |> Json.Encode.encode 0
+                            in
+                            { queryType = "IndexDbQueryUploadScreenshot"
                             , data = Just encodedData
                             }
 
                         IndexDbQueryUploadGeneral ->
                             { queryType = "IndexDbQueryUploadGeneral"
+                            , data = Nothing
+                            }
+
+                        IndexDbQueryUploadWhatsApp ->
+                            { queryType = "IndexDbQueryUploadWhatsApp"
                             , data = Nothing
                             }
 
@@ -1582,14 +1824,24 @@ update currentDate currentTime activePage dbVersion device msg model =
             case decodeValue SyncManager.Decoder.decodeIndexDbQueryTypeResult val of
                 Ok indexDbQueryTypeResult ->
                     case indexDbQueryTypeResult of
-                        IndexDbQueryUploadPhotoAuthorityResult remoteData ->
+                        IndexDbQueryUploadPhotoResult remoteData ->
                             update
                                 currentDate
                                 currentTime
                                 activePage
                                 dbVersion
                                 device
-                                (BackendUploadPhotoAuthorityHandle remoteData)
+                                (BackendUploadPhotoHandle remoteData)
+                                model
+
+                        IndexDbQueryUploadScreenshotResult remoteData ->
+                            update
+                                currentDate
+                                currentTime
+                                activePage
+                                dbVersion
+                                device
+                                (BackendUploadScreenshotHandle remoteData)
                                 model
 
                         IndexDbQueryUploadAuthorityResult result ->
@@ -1610,6 +1862,16 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 dbVersion
                                 device
                                 (BackendUploadGeneral result)
+                                model
+
+                        IndexDbQueryUploadWhatsAppResult result ->
+                            update
+                                currentDate
+                                currentTime
+                                activePage
+                                dbVersion
+                                device
+                                (BackendUploadWhatsApp result)
                                 model
 
                         IndexDbQueryDeferredPhotoResult result ->

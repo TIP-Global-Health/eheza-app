@@ -841,6 +841,29 @@ viewEncounterActionButton language label allowAction action =
         ]
 
 
+viewEndEncounterMenuForProgressReport : Language -> Bool -> (Bool -> msg) -> msg -> Html msg
+viewEndEncounterMenuForProgressReport language allowEndEncounter setDialogStateMsg setSendViaWhatsAppDialogStateMsg =
+    let
+        attributes =
+            if allowEndEncounter then
+                [ class "ui fluid velvet button"
+                , onClick <| setDialogStateMsg True
+                ]
+
+            else
+                [ class "ui fluid velvet button disabled" ]
+    in
+    div [ class "actions two" ]
+        [ button attributes
+            [ text <| translate language Translate.EndEncounter ]
+        , button
+            [ class "ui fluid primary button"
+            , onClick setSendViaWhatsAppDialogStateMsg
+            ]
+            [ text <| translate language Translate.SendViaWhatsApp ]
+        ]
+
+
 viewRedAlertForSelect : List a -> List a -> Html any
 viewRedAlertForSelect actual normal =
     viewAlertForSelect "red" actual normal

@@ -17,9 +17,11 @@ var deviceUuidUrl = '/sw/config/device-uuid';
 
 var photosDownloadCache = "photos";
 var photosUploadCache = "photos-upload";
+var screenshotsUploadCache = "screenshots-upload";
 
 var photosDownloadUrlRegex = /\/system\/files\//;
 var photosUploadUrlRegex = /\/cache-upload\/images/;
+var screenshotsUploadUrlRegex = /\/cache-upload\/screenshots/;
 
 /**
  * The DB version on the backend.
@@ -29,7 +31,7 @@ var photosUploadUrlRegex = /\/cache-upload\/images/;
  *
  * @type {number}
  */
-var dbVerno = 18;
+var dbVerno = 19;
 
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for

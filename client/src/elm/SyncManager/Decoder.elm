@@ -26,8 +26,10 @@ import Backend.Relationship.Decoder
 import Backend.Session.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
+import Components.SendViaWhatsAppDialog.Decoder exposing (decodeReportType)
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
+import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
@@ -41,9 +43,13 @@ decodeIndexDbQueryTypeResult =
         |> andThen
             (\queryType ->
                 case queryType of
-                    "IndexDbQueryUploadPhotoAuthorityResult" ->
+                    "IndexDbQueryUploadPhotoResult" ->
                         decodeIndexDbQueryUploadPhotoResultRecordRemoteData
-                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoAuthorityResult val))
+                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoResult val))
+
+                    "IndexDbQueryUploadScreenshotResult" ->
+                        decodeIndexDbQueryUploadScreenshotResultRecordRemoteData
+                            |> andThen (\val -> succeed (IndexDbQueryUploadScreenshotResult val))
 
                     "IndexDbQueryUploadAuthorityResult" ->
                         oneOf
@@ -61,6 +67,15 @@ decodeIndexDbQueryTypeResult =
 
                             -- In case we have no entities to upload.
                             , succeed (IndexDbQueryUploadGeneralResult Nothing)
+                            ]
+
+                    "IndexDbQueryUploadWhatsAppResult" ->
+                        oneOf
+                            [ field "data" decodeIndexDbQueryUploadWhatsAppResultRecord
+                                |> andThen (\record -> succeed (IndexDbQueryUploadWhatsAppResult (Just record)))
+
+                            -- In case we have no entities to upload.
+                            , succeed (IndexDbQueryUploadWhatsAppResult Nothing)
                             ]
 
                     "IndexDbQueryDeferredPhotoResult" ->
@@ -81,7 +96,7 @@ decodeIndexDbQueryTypeResult =
             )
 
 
-decodeIndexDbQueryUploadPhotoResultRecordRemoteData : Decoder (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+decodeIndexDbQueryUploadPhotoResultRecordRemoteData : Decoder (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
 decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
     at [ "data", "tag" ] string
         |> andThen
@@ -90,6 +105,47 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                     "Success" ->
                         oneOf
                             [ at [ "data", "result" ] decodeIndexDbQueryUploadPhotoResultRecord
+                                |> andThen (\record -> succeed (RemoteData.Success (Just record)))
+
+                            -- In case we have no photos to upload.
+                            , succeed (RemoteData.Success Nothing)
+                            ]
+
+                    "Error" ->
+                        (succeed (\a b -> ( a, b ))
+                            |> requiredAt [ "data", "error" ] string
+                            |> optionalAt [ "data", "reason" ] (nullable string) Nothing
+                        )
+                            |> andThen
+                                (\( error, maybeReason ) ->
+                                    case error of
+                                        "BadJson" ->
+                                            succeed (RemoteData.Failure <| BadJson (Maybe.withDefault "" maybeReason))
+
+                                        "NetworkError" ->
+                                            succeed (RemoteData.Failure <| NetworkError (Maybe.withDefault "" maybeReason))
+
+                                        "UploadError" ->
+                                            succeed (RemoteData.Failure <| UploadError (Maybe.withDefault "" maybeReason))
+
+                                        _ ->
+                                            fail <| error ++ " is not a recognized Error tag IndexDbQueryUploadPhotoResultRecord"
+                                )
+
+                    _ ->
+                        fail <| tag ++ " is not a recognized Error for decodeIndexDbQueryUploadPhotoResultRecordRemoteData"
+            )
+
+
+decodeIndexDbQueryUploadScreenshotResultRecordRemoteData : Decoder (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
+decodeIndexDbQueryUploadScreenshotResultRecordRemoteData =
+    at [ "data", "tag" ] string
+        |> andThen
+            (\tag ->
+                case tag of
+                    "Success" ->
+                        oneOf
+                            [ at [ "data", "result" ] decodeIndexDbQueryUploadFileResultRecord
                                 |> andThen (\record -> succeed (RemoteData.Success (Just record)))
 
                             -- In case we have no photos to upload.
@@ -131,11 +187,36 @@ decodeIndexDbQueryUploadPhotoResultRecord =
         |> optional "fileId" (nullable int) Nothing
 
 
+decodeIndexDbQueryUploadFileResultRecord : Decoder IndexDbQueryUploadFileResultRecord
+decodeIndexDbQueryUploadFileResultRecord =
+    succeed IndexDbQueryUploadFileResultRecord
+        |> required "localId" int
+        |> optional "fileId" (nullable int) Nothing
+
+
 decodeIndexDbQueryUploadGeneralResultRecord : Decoder IndexDbQueryUploadGeneralResultRecord
 decodeIndexDbQueryUploadGeneralResultRecord =
     succeed IndexDbQueryUploadGeneralResultRecord
         |> required "entities" (list <| decodeBackendEntityAndUploadMethod (\uuid localId -> decodeBackendGeneralEntity (hardcoded uuid) (hardcoded localId)))
         |> required "remaining" decodeInt
+
+
+decodeIndexDbQueryUploadWhatsAppResultRecord : Decoder IndexDbQueryUploadWhatsAppResultRecord
+decodeIndexDbQueryUploadWhatsAppResultRecord =
+    succeed IndexDbQueryUploadWhatsAppResultRecord
+        |> required "entities" (list decodeBackendWhatsAppEntity)
+        |> required "remaining" decodeInt
+
+
+decodeBackendWhatsAppEntity : Decoder BackendWhatsAppEntity
+decodeBackendWhatsAppEntity =
+    succeed BackendWhatsAppEntity
+        |> required "localId" decodeInt
+        |> required "person" string
+        |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "report_type" decodeReportType
+        |> required "phone_number" string
+        |> required "fileId" decodeInt
 
 
 decodeIndexDbQueryUploadAuthorityResultRecord : Decoder IndexDbQueryUploadAuthorityResultRecord

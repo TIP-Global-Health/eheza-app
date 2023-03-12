@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 18);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 19);
 define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
@@ -22,6 +22,13 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
   'nurse' => 'nurses',
   'participant_form' => 'participants-form',
   'village' => 'villages',
+];
+
+/**
+ * Nodes that are uploaded, but not synced to devices.
+ */
+const HEDLEY_RESTFUL_FOR_UPLOAD = [
+  'whatsapp_record' => 'whatsapp-record',
 ];
 
 /**

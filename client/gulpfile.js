@@ -174,7 +174,7 @@ gulp.task("copy:fonts", function() {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon",
+gulp.task("copy:dev", ["copy:bower", "copy:html2canvas", "copy:images", "copy:favicon",
   "copy:fonts"
 ], function() {
   return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
@@ -186,7 +186,6 @@ gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon",
 
 // Copy bower.
 gulp.task("copy:bower", function() {
-  // There are unused Dexie files that causes trouble for uglify later
   return gulp.src([
       "bower_components/**/*",
       "!bower_components/**/*.es.js",
@@ -194,6 +193,16 @@ gulp.task("copy:bower", function() {
     ]).pipe(gulp.dest("serve/bower_components"))
     .pipe($.size({
       title: "Bower"
+    }))
+});
+
+// Copy html2canvas.
+gulp.task("copy:html2canvas", function() {
+  return gulp.src([
+      "node_modules/html2canvas/dist/*",
+    ]).pipe(gulp.dest("serve/node_modules/html2canvas/dist"))
+    .pipe($.size({
+      title: "html2canvas"
     }))
 });
 
@@ -394,7 +403,8 @@ var precacheLocalDev = [
   'bower_components/dropzone/dist/min/dropzone.min.js',
   'bower_components/dexie/dist/dexie.min.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.css'
+  'bower_components/semantic/dist/semantic.min.css',
+  'node_modules/html2canvas/dist/html2canvas.min.js'
 ];
 
 // There may be a better way to do this, but for the moment we have some
@@ -407,7 +417,8 @@ var precacheProd = [
   'bower_components/dropzone/dist/min/dropzone.min.*.js',
   'bower_components/dexie/dist/dexie.min.*.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.*.css'
+  'bower_components/semantic/dist/semantic.min.*.css',
+  'node_modules/html2canvas/dist/html2canvas.min.*.js'
 ];
 
 // For offline use while developing

@@ -3,6 +3,8 @@ module Pages.Prenatal.ProgressReport.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Components.SendViaWhatsAppDialog.Model
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..))
@@ -12,6 +14,8 @@ type alias Model =
     { labResultsMode : Maybe LabResultsMode
     , labResultsHistoryOrigin : Maybe LabResultsMode
     , showEndEncounterDialog : Bool
+    , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
+    , components : Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentAntenatal)
     }
 
 
@@ -20,6 +24,8 @@ emptyModel =
     { labResultsMode = Nothing
     , labResultsHistoryOrigin = Nothing
     , showEndEncounterDialog = False
+    , sendViaWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , components = Nothing
     }
 
 
@@ -126,3 +132,5 @@ type Msg
     | SetActivePage Page
     | SetLabResultsMode (Maybe LabResultsMode)
     | SetEndEncounterDialogState Bool
+    | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
+    | SetReportComponents (Maybe Components.SendViaWhatsAppDialog.Model.ReportComponentsList)

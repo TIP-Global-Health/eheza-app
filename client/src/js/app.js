@@ -268,6 +268,10 @@ dbSync.version(18).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 });
 
+dbSync.version(19).stores({
+  whatsAppUploads: '++localId,screenshot,report_type,person,phone_number,fileId,syncStage',
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -324,7 +328,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 18;
+const dbVersion = 19;
 
 /**
  * Return saved info for General sync.
@@ -460,6 +464,7 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
   waitForElement(elementId, scrollToElement, null);
 });
 
+
 function scrollToElement(elementId) {
   var element = document.getElementById(elementId);
 
@@ -570,7 +575,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const data = info.data;
   switch (queryType) {
 
-    case 'IndexDbQueryUploadPhotoAuthority':
+    case 'IndexDbQueryUploadPhoto':
       (async () => {
 
         let result = await dbSync
@@ -675,6 +680,103 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
       break;
 
+    case 'IndexDbQueryUploadScreenshot':
+      (async () => {
+
+        let result = await dbSync
+            .whatsAppUploads
+            .where('syncStage')
+            // On stage 0, we upload the file to backend.
+            .equals(0)
+            // We upload screenshots one by one.
+            .limit(1)
+            .toArray();
+
+        if (!result[0]) {
+          // No screenshots to upload.
+          return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: null});
+        }
+
+        const screenshotsUploadCache = "screenshots-upload";
+        const cache = await caches.open(screenshotsUploadCache);
+
+        result.forEach(async function(row, index) {
+            const cachedResponse = await cache.match(row.screenshot);
+
+            if (cachedResponse) {
+              const blob = await cachedResponse.blob();
+              const formData = new FormData();
+              const imageName = 'whatsapp-upload-' + getRandom8Digits() + '.png';
+
+              formData.set('file', blob, imageName);
+
+              const dataArr = JSON.parse(data);
+
+              const backendUrl = dataArr.backend_url;
+              const accessToken = dataArr.access_token;
+
+              const uploadUrl = [
+                backendUrl,
+                '/api/file-upload?access_token=',
+                accessToken,
+              ].join('');
+
+              try {
+                var response = await fetch(uploadUrl, {
+                  method: 'POST',
+                  body: formData,
+                  // This prevents attaching cookies to request, to prevent
+                  // sending authentication cookie, as our desired
+                  // authentication method is token.
+                  credentials: 'omit'
+                });
+              }
+              catch (e) {
+                  // Network error.
+                  return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'NetworkError', reason: e.toString()});
+              }
+
+              if (!response.ok) {
+                return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'UploadError', reason: row.screenshot});
+              }
+
+              // Response indicated success.
+              try {
+                var json = await response.json();
+              }
+              catch (e) {
+                // Bad JSON.
+                return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'BadJson', reason: row.screenshot});
+              }
+
+              const changes = {
+                'fileId': parseInt(json.data[0].id),
+                'syncStage': 1,
+              }
+
+              await dbSync.whatsAppUploads.where('screenshot').equals(row.screenshot).modify(changes);
+            }
+            else {
+              // Screenshot is registered in IndexDB, but doesn't appear in the cache.
+              // For the sync not to get stuck, we set the data of default image instead.
+              const changes = {
+                'fileId': 5002,
+                'syncStage': 1,
+              }
+
+              // Update IndexDb to hold the fileId. As there could have been multiple
+              // operations on the same entity, we replace all the screenshot occurrences.
+              // For example, lets say a person's screenshot was changed, and later also
+              // their name. So on the two records there were created on the
+              // screenshotUploadChanges table, the same screenshot local URL will appear.
+              await dbSync.authorityPhotoUploadChanges.where('screenshot').equals(row.screenshot).modify(changes);
+            }
+
+            return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
+        });
+      })();
+      break;
+
     case 'IndexDbQueryUploadGeneral':
       (async () => {
 
@@ -696,6 +798,38 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .where('isSynced')
             // Don't include items that were already synced.
             .notEqual(1)
+            .limit(batchSize)
+            .toArray();
+
+        const resultToSend = {
+          'entities': entitiesResult,
+          'remaining': totalEntites - entitiesResult.length
+        };
+
+        return sendIndexedDbFetchResult(queryType, resultToSend);
+      })();
+      break;
+
+
+    case 'IndexDbQueryUploadWhatsApp':
+      (async () => {
+        const batchSize = 50;
+
+        let totalEntites = await dbSync
+            .whatsAppUploads
+            .where('syncStage')
+            .equals(1)
+            .count();
+
+        if (totalEntites == 0) {
+          // No entities for upload found.
+          return sendIndexedDbFetchResult(queryType, null);
+        }
+
+        let entitiesResult = await dbSync
+            .whatsAppUploads
+            .where('syncStage')
+            .equals(1)
             .limit(batchSize)
             .toArray();
 
@@ -877,6 +1011,10 @@ elmApp.ports.deleteEntitiesThatWereUploaded.subscribe(async function(info) {
       table = dbSync.nodeChanges;
       break;
 
+    case 'WhatsApp':
+      table = dbSync.whatsAppUploads;
+      break;
+
     case 'Authority':
       table = dbSync.shardChanges;
       break;
@@ -951,6 +1089,97 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   const cache = await caches.open('photos-upload');
   await cache.delete(row.data.photo);
 });
+
+
+elmApp.ports.makeProgressReportScreenshot.subscribe(function(data) {
+  waitForElement('report-content', makeProgressReportScreenshot, data);
+});
+
+
+function makeProgressReportScreenshot(elementId, data) {
+  var element = document.getElementById(elementId);
+
+  (async () => {
+    const screenshotsUploadCache = 'screenshots-upload';
+    const cache = await caches.open(screenshotsUploadCache);
+
+    let totalHeight = 0;
+    let children = element.childNodes;
+
+    for (let i = 0; i < children.length; i++) {
+      if (children[i].clientHeight == undefined) {
+        continue;
+      }
+
+      totalHeight += parseInt(children[i].clientHeight);
+    }
+
+    // Adding height to make sure we capture complete page.
+    // Without this, antenatal reports gets cut off at the top.
+    totalHeight += 500;
+
+    const canvas = await html2canvas(element, {
+        width: element.clientWidth,
+        windowHeight: totalHeight
+      });
+
+    canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      const imageName = 'whatsapp-upload-' + getRandom8Digits() + '.png';
+      formData.set('file', blob, imageName);
+
+      const url = "cache-upload/screenshots/" + Date.now();
+
+      try {
+        var response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          // This prevents attaching cookies to request, to prevent
+          // sending authentication cookie, as our desired
+          // authentication method is token.
+          credentials: 'omit'
+        });
+
+        if (response.ok) {
+         var json = await response.json();
+         var today = new Date();
+
+         var entry = {
+             screenshot: json.url,
+             person: data.personId,
+             date_measured: today.toISOString().split('T')[0],
+             report_type: data.reportType,
+             phone_number: data.phoneNumber,
+             syncStage: 0,
+             fileId: null
+         };
+
+         await dbSync.whatsAppUploads.add(entry);
+
+         reportProgressReportScreenshotResult("success");
+        }
+        else {
+          reportProgressReportScreenshotResult("failure");
+        }
+      }
+      catch (e) {
+        reportProgressReportScreenshotResult("failure");
+      }
+    });
+   })();
+}
+
+function reportProgressReportScreenshotResult(result) {
+  var element = document.getElementById('execution-response');
+  if (element) {
+    var event = makeCustomEvent("screenshotcomplete", {
+      result: result
+    });
+
+    element.dispatchEvent(event);
+  }
+}
+
 
 function getRandom8Digits () {
   var timestamp = String(performance.timeOrigin + performance.now());

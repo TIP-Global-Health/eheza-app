@@ -43,7 +43,7 @@ import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
-import Backend.Person.Model exposing (Initiator(..), Person)
+import Backend.Person.Model exposing (Initiator(..), PatchPersonInitator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalActivity.Model
@@ -2842,30 +2842,35 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
                 |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
 
-        PatchPerson personId person ->
+        PatchPerson origin personId person ->
             ( { model | postPerson = Loading }
             , sw.patchFull personEndpoint personId person
-                |> toCmd (RemoteData.fromResult >> HandlePatchedPerson personId)
+                |> toCmd (RemoteData.fromResult >> HandlePatchedPerson origin personId)
             , []
             )
 
-        HandlePatchedPerson personId data ->
+        HandlePatchedPerson origin personId data ->
             let
                 appMsgs =
-                    -- If we succeed, we reset the form, and go to the page
-                    -- showing the new person.
-                    data
-                        |> RemoteData.map
-                            (\person ->
-                                [ Pages.Person.Model.ResetEditForm
-                                    |> App.Model.MsgPageEditPerson personId
-                                    |> App.Model.MsgLoggedIn
-                                , PersonPage personId ParticipantDirectoryOrigin
-                                    |> UserPage
-                                    |> App.Model.SetActivePage
-                                ]
-                            )
-                        |> RemoteData.withDefault []
+                    case origin of
+                        InitiatorEditForm ->
+                            -- If we succeed, we reset the form, and go to the page
+                            -- showing the new person.
+                            RemoteData.map
+                                (\person ->
+                                    [ Pages.Person.Model.ResetEditForm
+                                        |> App.Model.MsgPageEditPerson personId
+                                        |> App.Model.MsgLoggedIn
+                                    , PersonPage personId ParticipantDirectoryOrigin
+                                        |> UserPage
+                                        |> App.Model.SetActivePage
+                                    ]
+                                )
+                                data
+                                |> RemoteData.withDefault []
+
+                        InitiatorProgressReport ->
+                            []
             in
             ( { model | postPerson = Success personId }
             , Cmd.none

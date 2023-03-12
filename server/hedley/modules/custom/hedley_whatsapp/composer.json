@@ -1,0 +1,5 @@
+{
+  "require": {
+    "cmdotcom/text-sdk-php": "^2.2.1"
+  }
+}
