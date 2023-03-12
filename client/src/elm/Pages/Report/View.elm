@@ -29,6 +29,10 @@ import Utils.WebData exposing (viewWebData)
 
 viewLabsPane : Language -> NominalDate -> (Maybe LabResultsMode -> msg) -> Html msg
 viewLabsPane language currentDate setLabResultsModeMsg =
+    let
+        _ =
+            Debug.log "viewLabsPane" ""
+    in
     div [ class "labs" ] <|
         [ viewItemHeading language Translate.LabResults "blue"
         , div [ class "pane-content" ]
