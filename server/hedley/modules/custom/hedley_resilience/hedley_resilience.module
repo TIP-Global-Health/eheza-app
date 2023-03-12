@@ -78,10 +78,9 @@ function hedley_resilience_node_presave($node) {
   // field, and will verify that program start date and next reminder
   // fields are empty only for newly created nurses.
   $wrapper->field_resilience_program->set(FALSE);
-  $wrapper->field_resilience_start_date->set(null);
-  $wrapper->field_next_reminder->set(null);
+  $wrapper->field_resilience_start_date->set(NULL);
+  $wrapper->field_next_reminder->set(NULL);
 }
-
 
 /**
  * Creates 36 resilience messages for given nurse.
