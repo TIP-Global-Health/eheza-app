@@ -664,13 +664,9 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
             data.malaria
                 |> List.filterMap
                     (\value ->
-                        let
-                            _ =
-                                Debug.log "value" value
-                        in
                         if
                             (not <| testPerformedByExecutionNote value.executionNote)
-                                && (value.bloodSmearResult /= BloodSmearNegative)
+                                && (value.bloodSmearResult /= BloodSmearNotTaken)
                         then
                             Maybe.map (\executionDate -> ( executionDate, Just value.bloodSmearResult ))
                                 value.executionDate
@@ -806,9 +802,6 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
 
         triglyceridesResults =
             List.map (Tuple.mapSecond .triglycerides) lipidPanelTestResults
-
-        _ =
-            Debug.log "bloodSmearTestResults" bloodSmearTestResults
 
         content =
             case mode of

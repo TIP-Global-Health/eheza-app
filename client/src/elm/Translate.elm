@@ -3214,7 +3214,7 @@ translationSet trans =
             }
 
         BloodSmearLabel ->
-            { english = "Blood Smear"
+            { english = "Malaria Blood Smear"
             , kinyarwanda = Nothing
             }
 
@@ -7554,7 +7554,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryBloodSmear _ ->
-                    { english = "Blood Smear Test History"
+                    { english = "Malaria Blood Smear Test History"
                     , kinyarwanda = Nothing
                     }
 
@@ -9420,7 +9420,7 @@ translationSet trans =
         NCDAFillTheBlanksItemLabel item ->
             case item of
                 HeightToAge ->
-                    { english = "Level of stunting using child length mat"
+                    { english = "Level of stuning using child length mat"
                     , kinyarwanda = Just "Ikigero cyo kugwingira hakoreshejwe agasambi"
                     }
 
