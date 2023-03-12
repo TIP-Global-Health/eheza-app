@@ -5476,12 +5476,12 @@ translationSet trans =
 
         FundalPalpableQuestion ->
             { english = "Is fundal palpable"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ese nyababyeyi irumvikana igihe usuzuma umubyeyi"
             }
 
         FundalPalpableWarning ->
             { english = "Inconsistent with documented gestational age, recommended ultrasound."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ntibihura n'ibyumweru by'inda byanditswe, urasabwa guca mu cyuma gisuzuma ababyeyi batwite."
             }
 
         Gender gender ->
