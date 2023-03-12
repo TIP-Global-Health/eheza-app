@@ -284,9 +284,34 @@ viewContent language currentDate isChw initiator model assembled =
                                             getAllActivities assembled
                                                 |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
                                                 |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
+
+                                        sendViaWhatsAppEnabled =
+                                            -- For now, we disabled 'Send via WhatsApp' feature.
+                                            False
+
+                                        ( actionsClass, actionButtonColor, sendViaWhatsAppButton ) =
+                                            if sendViaWhatsAppEnabled then
+                                                ( "actions two"
+                                                , "velvet"
+                                                , button
+                                                    [ class "ui fluid primary button"
+                                                    , onClick <|
+                                                        MsgSendViaWhatsAppDialog <|
+                                                            Components.SendViaWhatsAppDialog.Model.SetState <|
+                                                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                                                    ]
+                                                    [ text <| translate language Translate.SendViaWhatsApp ]
+                                                )
+
+                                            else
+                                                ( "actions"
+                                                , "primary"
+                                                , emptyNode
+                                                )
                                     in
-                                    div [ class "actions two" ]
+                                    div [ class actionsClass ]
                                         [ viewActionButton language
+                                            actionButtonColor
                                             pendingActivities
                                             completedActivities
                                             -- When pausing, we close the encounter.
@@ -295,14 +320,7 @@ viewContent language currentDate isChw initiator model assembled =
                                             (CloseEncounter id)
                                             SetEndEncounterDialogState
                                             assembled
-                                        , button
-                                            [ class "ui fluid primary button"
-                                            , onClick <|
-                                                MsgSendViaWhatsAppDialog <|
-                                                    Components.SendViaWhatsAppDialog.Model.SetState <|
-                                                        Just Components.SendViaWhatsAppDialog.Model.Consent
-                                            ]
-                                            [ text <| translate language Translate.SendViaWhatsApp ]
+                                        , sendViaWhatsAppButton
                                         ]
 
                                 InitiatorRecurrentEncounterPage _ ->
