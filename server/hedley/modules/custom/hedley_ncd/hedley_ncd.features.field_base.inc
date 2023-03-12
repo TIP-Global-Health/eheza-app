@@ -428,8 +428,8 @@ function hedley_ncd_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'hypertension-stage1' => 'Stage 1 Hypertension',
-        'hypertension-stage2' => 'Stage 1 Hypertension',
-        'hypertension-stage3' => 'Stage 2 Hypertension',
+        'hypertension-stage2' => 'Stage 2 Hypertension',
+        'hypertension-stage3' => 'Stage 3 Hypertension',
         'diabetes-initial' => 'Diabetes on inital phase of encounter',
         'diabetes-recurrent' => 'Diabetes on recurrent phase of encounter',
         'renal-complications' => 'Renal Complications',

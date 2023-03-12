@@ -28,7 +28,7 @@ import Backend.Measurement.Model
         , TestVariant(..)
         , ViralLoadStatus(..)
         )
-import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc, labExpirationPeriod)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc, labExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortTuplesByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
@@ -237,6 +237,7 @@ viewContent language currentDate isChw initiator model assembled =
             let
                 labResultsConfig =
                     { hivPCR = True
+                    , partnerHIV = True
                     , syphilis = True
                     , hepatitisB = True
                     , malaria = True
@@ -712,11 +713,44 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                     )
                                 |> Maybe.withDefault []
                     in
-                    diagnosesEntries ++ outsideCareDiagnosesEntries ++ pastDiagnosesEntries ++ healthEducationDiagnosesEntries
+                    diagnosesEntries
+                        ++ outsideCareDiagnosesEntries
+                        ++ pastDiagnosesEntries
+                        ++ healthEducationDiagnosesEntries
                 )
                 allNurseEncountersData
                 |> List.concat
-                |> ul []
+
+        lmpDateNonConfidentEntry =
+            let
+                nursePreviousMeasurements =
+                    List.map .measurements assembled.nursePreviousEncountersData
+
+                chwPreviousMeasurements =
+                    List.map (\( _, _, measurements ) -> measurements)
+                        assembled.chwPreviousMeasurementsWithDates
+            in
+            resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements assembled.measurements
+                |> Maybe.map
+                    (\value ->
+                        if value.confident == False then
+                            Maybe.map
+                                (Translate.LmpDateNotConfidentReasonforReport
+                                    >> translate language
+                                    >> wrapWithLI
+                                )
+                                value.notConfidentReason
+                                |> Maybe.withDefault []
+
+                        else
+                            []
+                    )
+                |> Maybe.withDefault []
+
+        common =
+            ul [] <|
+                dignoses
+                    ++ lmpDateNonConfidentEntry
 
         alerts =
             -- Alerts are displayed only for CHW.
@@ -734,7 +768,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
     div [ class "obstetric-diagnosis" ]
         [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
         , div [ class "pane-content" ] <|
-            dignoses
+            common
                 :: alerts
         ]
 
@@ -1159,27 +1193,26 @@ viewPatientProgressPane language currentDate isChw assembled =
                     )
 
         egaFundalHeightValues =
-            allNurseEncountersData
-                |> List.filterMap
-                    (\( date, measurements ) ->
-                        assembled.globalLmpDate
-                            |> Maybe.map
-                                (\lmpDate ->
-                                    let
-                                        fundalHeight =
-                                            measurements.obstetricalExam
-                                                |> Maybe.map
-                                                    (\measurement ->
-                                                        Tuple.second measurement
-                                                            |> .value
-                                                            |> .fundalHeight
-                                                            |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
-                                                    )
-                                                |> Maybe.withDefault 0
-                                    in
-                                    ( diffDays lmpDate date, fundalHeight )
-                                )
-                    )
+            Maybe.map
+                (\lmpDate ->
+                    List.filterMap
+                        (\( date, measurements ) ->
+                            measurements.obstetricalExam
+                                |> Maybe.andThen
+                                    (Tuple.second
+                                        >> .value
+                                        >> .fundalHeight
+                                        >> Maybe.map getHeightValue
+                                    )
+                                |> Maybe.map
+                                    (\fundalHeight ->
+                                        ( diffDays lmpDate date, fundalHeight )
+                                    )
+                        )
+                        allNurseEncountersData
+                )
+                assembled.globalLmpDate
+                |> Maybe.withDefault []
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -1373,16 +1406,18 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
                             |> List.map
                                 (Tuple.second
                                     >> .obstetricalExam
-                                    >> Maybe.map
-                                        (\measurement ->
-                                            let
-                                                height =
-                                                    Tuple.second measurement
-                                                        |> .value
-                                                        |> .fundalHeight
-                                                        |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
-                                            in
-                                            [ text <| String.fromFloat height ++ translate language Translate.CentimeterShorthand ]
+                                    >> Maybe.andThen
+                                        (Tuple.second
+                                            >> .value
+                                            >> .fundalHeight
+                                            >> Maybe.map
+                                                (\heightInCm ->
+                                                    [ text <|
+                                                        String.fromFloat
+                                                            (getHeightValue heightInCm)
+                                                            ++ translate language Translate.CentimeterShorthand
+                                                    ]
+                                                )
                                         )
                                     >> Maybe.withDefault [ text "--" ]
                                     >> td [ class "center aligned" ]
@@ -1423,6 +1458,7 @@ generateLabsResultsPaneData currentDate assembled =
     , urineDipstick = extractValues .urineDipstickTest
     , randomBloodSugar = extractValues .randomBloodSugarTest
     , hivPCR = extractValues .hivPCRTest
+    , partnerHIV = extractValues .partnerHIVTest
     , syphilis = extractValues .syphilisTest
     , hepatitisB = extractValues .hepatitisBTest
     , malaria = extractValues .malariaTest
@@ -1669,6 +1705,43 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ diagnosisForProgressReport
                 |> wrapWithLI
 
+        mastitisMessage =
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen .recommendedTreatmentSigns
+                |> Maybe.map
+                    (EverySet.toList
+                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMastitis)
+                        >> (\treatment ->
+                                if List.isEmpty treatment then
+                                    noTreatmentRecordedMessage
+
+                                else if List.member NoTreatmentForMastitis treatment then
+                                    noTreatmentAdministeredMessage
+
+                                else
+                                    let
+                                        treatedWithMessage =
+                                            List.head treatment
+                                                |> Maybe.map
+                                                    (\medication ->
+                                                        " - "
+                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
+                                                            ++ " "
+                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
+                                                    )
+                                                |> Maybe.withDefault ""
+                                    in
+                                    diagnosisForProgressReport
+                                        ++ treatedWithMessage
+                                        ++ " "
+                                        ++ (String.toLower <| translate language Translate.On)
+                                        ++ " "
+                                        ++ formatDDMMYYYY date
+                                        |> wrapWithLI
+                           )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
         referredToHospitalMessage =
             referredToHospitalMessageWithComplications ""
 
@@ -1705,6 +1778,9 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         FacilityANCServices ->
                                             -- Explicit NCD facility.
                                             False
+
+                                        FacilityUltrasound ->
+                                            EverySet.member ReferToUltrasound referToFacilitySigns
 
                                         FacilityHealthCenter ->
                                             -- We should never get here.
@@ -1743,7 +1819,11 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                                 getCurrentReasonForNonReferral NonReferralReasonNCDProgram value.facilityNonReferralReasons
 
                                             FacilityANCServices ->
-                                                getCurrentReasonForNonReferral NonReferralReasonANCServices value.facilityNonReferralReasons
+                                                -- Explicit NCD facility.
+                                                Nothing
+
+                                            FacilityUltrasound ->
+                                                getCurrentReasonForNonReferral NonReferralReasonUltrasound value.facilityNonReferralReasons
 
                                             FacilityHealthCenter ->
                                                 -- We should never get here.
@@ -2375,65 +2455,12 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisPostpartumExcessiveBleeding ->
             referredToHospitalMessage
 
+        -- Got same treatment options as DiagnosisPostpartumMastitis.
         DiagnosisPostpartumEarlyMastitisOrEngorgment ->
-            getMeasurementValueFunc measurements.medicationDistribution
-                |> Maybe.andThen
-                    (\value ->
-                        let
-                            nonAdministrationReasons =
-                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
-                        in
-                        treatmentMessageForMedicationLower value.distributionSigns nonAdministrationReasons Paracetamol
-                            |> Maybe.map
-                                (\message ->
-                                    diagnosisForProgressReport
-                                        ++ " - "
-                                        ++ message
-                                        ++ " "
-                                        ++ (String.toLower <| translate language Translate.On)
-                                        ++ " "
-                                        ++ formatDDMMYYYY date
-                                        |> wrapWithLI
-                                )
-                    )
-                |> Maybe.withDefault noTreatmentRecordedMessage
+            mastitisMessage
 
         DiagnosisPostpartumMastitis ->
-            getMeasurementValueFunc measurements.medicationDistribution
-                |> Maybe.andThen .recommendedTreatmentSigns
-                |> Maybe.map
-                    (EverySet.toList
-                        >> List.filter (\sign -> List.member sign recommendedTreatmentSignsForMastitis)
-                        >> (\treatment ->
-                                if List.isEmpty treatment then
-                                    noTreatmentRecordedMessage
-
-                                else if List.member NoTreatmentForMastitis treatment then
-                                    noTreatmentAdministeredMessage
-
-                                else
-                                    let
-                                        treatedWithMessage =
-                                            List.head treatment
-                                                |> Maybe.map
-                                                    (\medication ->
-                                                        " - "
-                                                            ++ (String.toLower <| translate language Translate.TreatedWith)
-                                                            ++ " "
-                                                            ++ (translate language <| Translate.RecommendedTreatmentSignLabel medication)
-                                                    )
-                                                |> Maybe.withDefault ""
-                                    in
-                                    diagnosisForProgressReport
-                                        ++ treatedWithMessage
-                                        ++ " "
-                                        ++ (String.toLower <| translate language Translate.On)
-                                        ++ " "
-                                        ++ formatDDMMYYYY date
-                                        |> wrapWithLI
-                           )
-                    )
-                |> Maybe.withDefault noTreatmentRecordedMessage
+            mastitisMessage
 
         DiagnosisOther ->
             -- Other diagnosis is used only at outside care diagnostics.

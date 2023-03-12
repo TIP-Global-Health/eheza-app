@@ -440,6 +440,9 @@ type TranslationId
     | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
     | BloodPressureSysLabel
+    | BloodSmearQuestion
+    | BloodSmearLabel
+    | BloodSmearResult BloodSmearResult
     | BMI
     | BMIHelper
     | BodyTemperature
@@ -451,6 +454,8 @@ type TranslationId
     | BreathsPerMinuteUnitLabel
     | BreastExam
     | BreastExamSign BreastExamSign
+    | BreastExamDischargeQuestion
+    | BreastExamDischargeType DischargeType
     | BreastExamQuestion
     | BrittleHair
     | ByMouthDaylyForXDays Int
@@ -681,6 +686,8 @@ type TranslationId
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
+    | FundalPalpableQuestion
+    | FundalPalpableWarning
     | Gender Gender
     | GenderLabel
     | GestationalDiabetesPreviousPregnancy
@@ -871,6 +878,9 @@ type TranslationId
     | LmpDateConfirmationLabel
     | LmpDateConfirmationQuestion
     | LmpDateConfidentHeader
+    | LmpDateNotConfidentQuestion
+    | LmpDateNotConfidentReason LmpDateNotConfidentReason
+    | LmpDateNotConfidentReasonforReport LmpDateNotConfidentReason
     | LmpDateHeader
     | LmpLabel
     | LmpRangeHeader
@@ -897,7 +907,7 @@ type TranslationId
     | MalnutritionWithComplications
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
-    | MastitisRecommendedTreatmentHeader
+    | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
     | MeasurementNoChange
     | MeasurementGained Float
@@ -1200,6 +1210,8 @@ type TranslationId
     | PrenatalSymptomQuestionsHeader
     | TestExecutionNote TestExecutionNote
     | TestResult TestResult
+    | PrenatalUltrasoundHeader
+    | PrenatalUltrasoundInstructions
     | PrenatalVaccineLabel PrenatalVaccineType
     | PreTerm
     | PregnancyConcludedLabel
@@ -1575,7 +1587,6 @@ type TranslationId
     | SevereHemorrhagingPreviousDelivery
     | Shared
     | SignOnDoorPostedQuestion
-    | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | SpecialityCareHeaderPrefix
     | SpecialityCareHeaderSuffix
     | SpecialityCareSignQuestion SpecialityCareSign
@@ -1637,6 +1648,7 @@ type TranslationId
     | TestPerformedTodayQuestion
     | TestPrerequisiteQuestion TestPrerequisite
     | TestResultQuestion
+    | TestResultsQuestion
     | TestVariantUrineDipstickQuestion
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
@@ -1848,6 +1860,11 @@ translationSet trans =
                 FacilityANCServices ->
                     { english = "Will you accompany the patient to ANC services"
                     , kinyarwanda = Just "Uzaherekeza umubyeyi muri serivise yita kubuzima bw'umubyeyi utwite"
+                    }
+
+                FacilityUltrasound ->
+                    { english = "Will you accompany the patient to Ultrasound"
+                    , kinyarwanda = Nothing
                     }
 
         AccessDenied ->
@@ -3191,6 +3208,41 @@ translationSet trans =
             , kinyarwanda = Just "Umubare w'umuvuduko w'amaraso wo hejuru"
             }
 
+        BloodSmearQuestion ->
+            { english = "Did you perform a blood smear"
+            , kinyarwanda = Nothing
+            }
+
+        BloodSmearLabel ->
+            { english = "Malaria Blood Smear"
+            , kinyarwanda = Nothing
+            }
+
+        BloodSmearResult value ->
+            case value of
+                BloodSmearNegative ->
+                    translationSet NegativeLabel
+
+                BloodSmearPlus ->
+                    { english = "+"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodSmearPlusPlus ->
+                    { english = "++"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodSmearPlusPlusPlus ->
+                    { english = "+++"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodSmearNotTaken ->
+                    { english = "Not taken"
+                    , kinyarwanda = Nothing
+                    }
+
         BMI ->
             { english = "BMI"
             , kinyarwanda = Nothing
@@ -3240,6 +3292,38 @@ translationSet trans =
             { english = "Breast Exam"
             , kinyarwanda = Just "Gusuzuma amabere"
             }
+
+        BreastExamDischargeQuestion ->
+            { english = "What kind of discharge"
+            , kinyarwanda = Nothing
+            }
+
+        BreastExamDischargeType value ->
+            case value of
+                DischargeMilky ->
+                    { english = "Milky"
+                    , kinyarwanda = Nothing
+                    }
+
+                DischargeClear ->
+                    { english = "Clear"
+                    , kinyarwanda = Nothing
+                    }
+
+                DischargeBrownOrBloody ->
+                    { english = "Brown or Bloody"
+                    , kinyarwanda = Nothing
+                    }
+
+                DischargeYellow ->
+                    { english = "Yellow"
+                    , kinyarwanda = Nothing
+                    }
+
+                DischargeGreen ->
+                    { english = "Green"
+                    , kinyarwanda = Nothing
+                    }
 
         BreastExamQuestion ->
             { english = "Did you show the patient how to perform a self breast exam"
@@ -3720,6 +3804,11 @@ translationSet trans =
                     , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi muri service serivise yita kubuzima bw'umubyeyi utwite"
                     }
 
+                FacilityUltrasound ->
+                    { english = "Complete an ultrasound referral form"
+                    , kinyarwanda = Nothing
+                    }
+
         Contacted114 ->
             { english = "Contacted 114"
             , kinyarwanda = Just "Namenyesheje 114"
@@ -4032,6 +4121,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibindi"
                     }
 
+                PreviousCSection ->
+                    { english = "Previous c-section"
+                    , kinyarwanda = Nothing
+                    }
+
         CreateGroupEncounter ->
             { english = "Create Group Encounter"
             , kinyarwanda = Just "Tangira igikorwa"
@@ -4152,6 +4246,11 @@ translationSet trans =
                 GushLeakingVaginalFluid ->
                     { english = "Gush or leaking of vaginal fluid"
                     , kinyarwanda = Just "Ibintu biva mu gitsina by'uruzi"
+                    }
+
+                PrematureOnsetContractions ->
+                    { english = "Premature Onset of Contractions"
+                    , kinyarwanda = Nothing
                     }
 
                 NoDangerSign ->
@@ -5375,6 +5474,16 @@ translationSet trans =
             , kinyarwanda = Just "Uburebure bwa Nyababyeyi"
             }
 
+        FundalPalpableQuestion ->
+            { english = "Is fundal palpable"
+            , kinyarwanda = Nothing
+            }
+
+        FundalPalpableWarning ->
+            { english = "Inconsistent with documented gestational age, recommended ultrasound."
+            , kinyarwanda = Nothing
+            }
+
         Gender gender ->
             case gender of
                 Male ->
@@ -5785,9 +5894,7 @@ translationSet trans =
                     }
 
                 Negative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 NegativeDiscordantCouple ->
                     { english = "Negative - discordant couple"
@@ -6448,6 +6555,13 @@ translationSet trans =
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
+                TaskPartnerHIVTest ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -6543,9 +6657,7 @@ translationSet trans =
                     }
 
                 RhesusNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Afite Resisi negatifu"
-                    }
+                    translationSet NegativeLabel
 
         LaboratoryProteinLabel ->
             { english = "Protein"
@@ -6691,9 +6803,7 @@ translationSet trans =
         LaboratoryLeukocytesValue value ->
             case value of
                 LeukocytesNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta Kibazo afite"
-                    }
+                    translationSet NegativeLabel
 
                 LeukocytesSmall ->
                     { english = "Small (+)"
@@ -6723,9 +6833,7 @@ translationSet trans =
         LaboratoryNitriteValue value ->
             case value of
                 NitriteNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta kibazo afite"
-                    }
+                    translationSet NegativeLabel
 
                 NitritePlus ->
                     { english = "+"
@@ -6787,9 +6895,7 @@ translationSet trans =
         LaboratoryHaemoglobinValue value ->
             case value of
                 HaemoglobinNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta kibazo afite"
-                    }
+                    translationSet NegativeLabel
 
                 HaemoglobinNonHemolyzedTrace ->
                     { english = "Non-Hemolyzed Trace"
@@ -6834,9 +6940,7 @@ translationSet trans =
         LaboratoryKetoneValue value ->
             case value of
                 KetoneNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta Kibazo afite"
-                    }
+                    translationSet NegativeLabel
 
                 Ketone5 ->
                     { english = "5"
@@ -6881,9 +6985,7 @@ translationSet trans =
         LaboratoryBilirubinValue value ->
             case value of
                 BilirubinNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta kibazo afite"
-                    }
+                    translationSet NegativeLabel
 
                 BilirubinSmall ->
                     { english = "Small (+)"
@@ -7152,6 +7254,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
                     }
 
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV"
+                    , kinyarwanda = Nothing
+                    }
+
                 TaskCompletePreviousTests ->
                     { english = "History"
                     , kinyarwanda = Just "Amakuru"
@@ -7225,6 +7332,11 @@ translationSet trans =
                 TaskHbA1cTest ->
                     { english = "HBA1C"
                     , kinyarwanda = Just "Ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
+                    }
+
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV"
+                    , kinyarwanda = Nothing
                     }
 
                 -- Not in use, so no translation is needed.
@@ -7305,6 +7417,11 @@ translationSet trans =
                     , kinyarwanda = Just "Itariki y'ikizamini cy'ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
                     }
 
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV Test Date"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -7383,6 +7500,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibisubizo by'ikizamini cy'ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
                     }
 
+                TaskPartnerHIVTest ->
+                    { english = "Partner HIV Test Result"
+                    , kinyarwanda = Nothing
+                    }
+
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
                     { english = ""
@@ -7411,6 +7533,11 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru ku kizamini cya PCR gipima Virusi itera SIDA"
                     }
 
+                LabResultsHistoryPartnerHIV _ ->
+                    { english = "Partner HIV Test History"
+                    , kinyarwanda = Nothing
+                    }
+
                 LabResultsHistorySyphilis _ ->
                     { english = "Syphilis Test History"
                     , kinyarwanda = Just "Amakuru ku kizamini cya Mburugu"
@@ -7424,6 +7551,11 @@ translationSet trans =
                 LabResultsHistoryMalaria _ ->
                     { english = "Malaria Test History"
                     , kinyarwanda = Just "Amakuru ku kizamini cya Malariya"
+                    }
+
+                LabResultsHistoryBloodSmear _ ->
+                    { english = "Malaria Blood Smear Test History"
+                    , kinyarwanda = Nothing
                     }
 
                 LabResultsHistoryProtein _ ->
@@ -7544,29 +7676,27 @@ translationSet trans =
         LabResultsNormalRange mode ->
             case mode of
                 LabResultsHistoryHIV _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryHIVPCR _ ->
                     { english = "<20 copies"
                     , kinyarwanda = Just "Munsi ya kopi 20"
                     }
 
+                LabResultsHistoryPartnerHIV _ ->
+                    translationSet NegativeLabel
+
                 LabResultsHistorySyphilis _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryHepatitisB _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryMalaria _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
+
+                LabResultsHistoryBloodSmear _ ->
+                    translationSet NegativeLabel
 
                 LabResultsHistoryProtein _ ->
                     { english = "0"
@@ -7584,14 +7714,10 @@ translationSet trans =
                     }
 
                 LabResultsHistoryLeukocytes _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryNitrite _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryUrobilinogen _ ->
                     { english = "1 mg/dL or less"
@@ -7599,19 +7725,13 @@ translationSet trans =
                     }
 
                 LabResultsHistoryHaemoglobin _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryKetone _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryBilirubin _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryRandomBloodSugar _ ->
                     -- This one is not in use, because normal range
@@ -7658,9 +7778,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryPregnancy _ ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 LabResultsHistoryHbA1c _ ->
                     { english = "Below 6%"
@@ -7913,6 +8031,45 @@ translationSet trans =
             , kinyarwanda = Just "Ese umubyeyi azi neza itariki aherukira mu mihango?"
             }
 
+        LmpDateNotConfidentQuestion ->
+            { english = "What is the reason the patient is unsure"
+            , kinyarwanda = Nothing
+            }
+
+        LmpDateNotConfidentReason value ->
+            case value of
+                ReasonIrregularMenses ->
+                    { english = "Irregular Menses"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonOnFamilyPlanningMethod ->
+                    { english = "On family planning method"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonCanNotRememberDates ->
+                    { english = "Can't remember dates"
+                    , kinyarwanda = Nothing
+                    }
+
+        LmpDateNotConfidentReasonforReport value ->
+            case value of
+                ReasonIrregularMenses ->
+                    { english = "Uncertain dating due to irregular menses"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonOnFamilyPlanningMethod ->
+                    { english = "Uncertain dating since patient is on family planning method"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonCanNotRememberDates ->
+                    { english = "Uncertain dating since patient can't remember dates"
+                    , kinyarwanda = Nothing
+                    }
+
         LmpDateHeader ->
             { english = "Last Menstrual Period Date"
             , kinyarwanda = Just "Itariki aherukira mu mihango"
@@ -8133,9 +8290,7 @@ translationSet trans =
         RapidTestResult result ->
             case result of
                 RapidTestNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 RapidTestPositive ->
                     { english = "Positive"
@@ -8204,10 +8359,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        MastitisRecommendedTreatmentHeader ->
-            { english = "This patient has Mastitis"
-            , kinyarwanda = Just "Uyu mubyeyi afite uburwayi bw'amabere"
-            }
+        MastitisRecommendedTreatmentHeader forEarlyMastitisOrEngorgment ->
+            if forEarlyMastitisOrEngorgment then
+                { english = "This patient shows signs of Early Mastitis or Engorgement"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "This patient has Mastitis"
+                , kinyarwanda = Just "Uyu mubyeyi afite uburwayi bw'amabere"
+                }
 
         MastitisRecommendedTreatmentHelper ->
             { english = "Select the best treatment option for the patient below"
@@ -9259,7 +9420,7 @@ translationSet trans =
         NCDAFillTheBlanksItemLabel item ->
             case item of
                 HeightToAge ->
-                    { english = "Level of stunting using child length mat"
+                    { english = "Level of stuning using child length mat"
                     , kinyarwanda = Just "Ikigero cyo kugwingira hakoreshejwe agasambi"
                     }
 
@@ -11215,9 +11376,7 @@ translationSet trans =
                     }
 
                 PregnancyTestNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Ntago Atwite"
-                    }
+                    translationSet NegativeLabel
 
                 PregnancyTestIndeterminate ->
                     { english = "Indeterminate"
@@ -11368,6 +11527,11 @@ translationSet trans =
                 RecurrentExamination ->
                     { english = "Examination"
                     , kinyarwanda = Just "Gusuzuma"
+                    }
+
+                RecurrentMalariaPrevention ->
+                    { english = "Malaria Prevention"
+                    , kinyarwanda = Nothing
                     }
 
         PrenatalAssesment assesment ->
@@ -12827,6 +12991,16 @@ translationSet trans =
             , kinyarwanda = Just "Ohereza umurwayi muri serivisi y'indwara zitandura bamwiteho byimbitse"
             }
 
+        PrenatalUltrasoundHeader ->
+            { english = "This patient is uncertain of LMP dating"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalUltrasoundInstructions ->
+            { english = "Refer patient to ultrasound for further evaluation"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalNextStepsTask isChw task ->
             case task of
                 Pages.Prenatal.Activity.Types.NextStepsAppointmentConfirmation ->
@@ -13730,9 +13904,7 @@ translationSet trans =
                     }
 
                 TestNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
+                    translationSet NegativeLabel
 
                 TestIndeterminate ->
                     { english = "Indeterminate"
@@ -13930,6 +14102,11 @@ translationSet trans =
             }
 
         TestResultQuestion ->
+            { english = "What was the result of the test"
+            , kinyarwanda = Nothing
+            }
+
+        TestResultsQuestion ->
             { english = "What were the results of the test"
             , kinyarwanda = Just "Ibisubizo by'ikizamini byabaye ibihe"
             }
@@ -14719,6 +14896,11 @@ translationSet trans =
                     , kinyarwanda = Just "Wohereje umurwayi muri serivise yita kubuzima bw'umubyeyi utwite"
                     }
 
+                FacilityUltrasound ->
+                    { english = "Have you referred the patient to ultrasound"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacility facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -14751,6 +14933,11 @@ translationSet trans =
                     , kinyarwanda = Just "Yoherejwe muri serivise yita kubuzima bw'umubyeyi utwite"
                     }
 
+                FacilityUltrasound ->
+                    { english = "Referred to Ultrasound"
+                    , kinyarwanda = Nothing
+                    }
+
         ReferredToFacilityNot facility ->
             case facility of
                 FacilityHealthCenter ->
@@ -14781,6 +14968,11 @@ translationSet trans =
                 FacilityANCServices ->
                     { english = "Not referred to ANC services"
                     , kinyarwanda = Just "Ntabwo yoherejwe muri serivise yita kubuzima bw'umubyeyi utwite"
+                    }
+
+                FacilityUltrasound ->
+                    { english = "Not referred to Ultrasound"
+                    , kinyarwanda = Nothing
                     }
 
         ReferredToFacilityPostpartum facility ->
@@ -16789,28 +16981,6 @@ translationSet trans =
             , kinyarwanda = Just "Waba washyize ibimenyetso ku rugi byerekana ko iki cyumba ari ikijyamo abantu bari mu kato"
             }
 
-        SocialHistoryHivTestingResult result ->
-            case result of
-                ResultHivPositive ->
-                    { english = "Positive"
-                    , kinyarwanda = Just "Afite Ubwandu"
-                    }
-
-                ResultHivNegative ->
-                    { english = "Negative"
-                    , kinyarwanda = Just "Nta bwandu afite"
-                    }
-
-                ResultHivIndeterminate ->
-                    { english = "Indeterminate"
-                    , kinyarwanda = Just "Ntibisobanutse"
-                    }
-
-                NoHivTesting ->
-                    { english = "No HIV Testing"
-                    , kinyarwanda = Just "Ntibibonetse"
-                    }
-
         SpecialityCareHeaderPrefix ->
             { english = "You were diagnosed with"
             , kinyarwanda = Just "Wasuzumwe uburwayi bwa"
@@ -17206,6 +17376,11 @@ translationSet trans =
 
                 FacilityANCServices ->
                     translationSet (SendPatientToFacility FacilityARVProgram)
+
+                FacilityUltrasound ->
+                    { english = "Send patient to ultrasound"
+                    , kinyarwanda = Nothing
+                    }
 
         ShowAll ->
             { english = "Show All"

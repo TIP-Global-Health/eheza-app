@@ -150,6 +150,7 @@ var tableForType = {
     prenatal_mental_health: 'shards',
     prenatal_nutrition: 'shards',
     prenatal_outside_care: 'shards',
+    prenatal_partner_hiv_test: 'shards',
     prenatal_photo: 'shards',
     prenatal_random_blood_sugar_test: 'shards',
     prenatal_send_to_hc: 'shards',

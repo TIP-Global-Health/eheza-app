@@ -465,6 +465,7 @@ type alias NutritionNCDA =
 
 type alias BreastExamValue =
     { exam : EverySet BreastExamSign
+    , dischargeType : Maybe DischargeType
     , selfGuidance : Bool
     }
 
@@ -475,6 +476,14 @@ type BreastExamSign
     | Infection
     | Warmth
     | NormalBreast
+
+
+type DischargeType
+    = DischargeMilky
+    | DischargeClear
+    | DischargeBrownOrBloody
+    | DischargeYellow
+    | DischargeGreen
 
 
 type alias BreastExam =
@@ -563,6 +572,7 @@ type DangerSign
     | SevereVomiting
     | Unconscious
     | GushLeakingVaginalFluid
+    | PrematureOnsetContractions
     | NoDangerSign
 
 
@@ -600,8 +610,15 @@ type PostpartumChildDangerSign
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
     , confident : Bool
+    , notConfidentReason : Maybe LmpDateNotConfidentReason
     , confirmation : Bool
     }
+
+
+type LmpDateNotConfidentReason
+    = ReasonIrregularMenses
+    | ReasonOnFamilyPlanningMethod
+    | ReasonCanNotRememberDates
 
 
 type alias LastMenstrualPeriod =
@@ -676,7 +693,8 @@ type alias MedicationValue =
 
 
 type alias ObstetricalExamValue =
-    { fundalHeight : HeightInCm
+    { fundalPalpable : Bool
+    , fundalHeight : Maybe HeightInCm
     , fetalPresentation : FetalPresentation
     , fetalMovement : Bool
     , fetalHeartRate : Int
@@ -719,7 +737,7 @@ type alias ObstetricHistory =
 
 type alias ObstetricHistoryStep2Value =
     { cSections : Int
-    , cSectionReason : EverySet CSectionReason
+    , cSectionReason : Maybe (EverySet CSectionReason)
     , previousDelivery : EverySet PreviousDeliverySign
     , previousDeliveryPeriod : EverySet PreviousDeliveryPeriod
     , obstetricHistory : EverySet ObstetricHistorySign
@@ -732,6 +750,7 @@ type CSectionReason
     | FailureToProgress
     | None
     | Other
+    | PreviousCSection
 
 
 type PreviousDeliveryPeriod
@@ -780,17 +799,28 @@ type alias PrenatalNutrition =
     PrenatalMeasurement PrenatalNutritionValue
 
 
-type MalariaPreventionSign
-    = MosquitoNet
-    | NoMalariaPreventionSigns
-
-
 type alias PrenatalPhoto =
     PrenatalMeasurement PhotoUrl
 
 
 type alias MalariaPrevention =
-    PrenatalMeasurement (EverySet MalariaPreventionSign)
+    PrenatalMeasurement MalariaPreventionValue
+
+
+type alias MalariaPreventionValue =
+    { resources : EverySet MalariaPreventionSign
+    , phaseRecorded : PhaseRecorded
+    }
+
+
+type MalariaPreventionSign
+    = MosquitoNet
+    | NoMalariaPreventionSigns
+
+
+type PhaseRecorded
+    = PhaseInitial
+    | PhaseRecurrent
 
 
 type SocialHistorySign
@@ -799,17 +829,8 @@ type SocialHistorySign
     | NoSocialHistorySign
 
 
-type SocialHistoryHivTestingResult
-    = ResultHivPositive
-    | ResultHivNegative
-    | ResultHivIndeterminate
-    | NoHivTesting
-
-
 type alias SocialHistoryValue =
-    { socialHistory : EverySet SocialHistorySign
-    , hivTestingResult : SocialHistoryHivTestingResult
-    }
+    EverySet SocialHistorySign
 
 
 type alias SocialHistory =
@@ -943,6 +964,8 @@ type ReferToFacilitySign
     | ReferToANCServices
     | ReferralFormANCServices
     | AccompanyToANCServices
+    | ReferToUltrasound
+    | ReferralFormUltrasound
     | NoReferToFacilitySigns
 
 
@@ -952,6 +975,7 @@ type NonReferralSign
     | NonReferralReasonARVProgram ReasonForNonReferral
     | NonReferralReasonNCDProgram ReasonForNonReferral
     | NonReferralReasonANCServices ReasonForNonReferral
+    | NonReferralReasonUltrasound ReasonForNonReferral
     | NoNonReferralSigns
 
 
@@ -962,6 +986,7 @@ type ReferralFacility
     | FacilityARVProgram
     | FacilityNCDProgram
     | FacilityANCServices
+    | FacilityUltrasound
 
 
 type alias PrenatalAppointmentConfirmationValue =
@@ -981,6 +1006,7 @@ type alias MalariaTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , testResult : Maybe TestResult
+    , bloodSmearResult : BloodSmearResult
     }
 
 
@@ -1000,6 +1026,14 @@ type TestResult
     = TestPositive
     | TestNegative
     | TestIndeterminate
+
+
+type BloodSmearResult
+    = BloodSmearNegative
+    | BloodSmearPlus
+    | BloodSmearPlusPlus
+    | BloodSmearPlusPlusPlus
+    | BloodSmearNotTaken
 
 
 type alias PrenatalHIVTest =
@@ -1551,6 +1585,17 @@ type SpecialityCareSign
     = EnrolledToARVProgram
     | EnrolledToNCDProgram
     | NoSpecialityCareSigns
+
+
+type alias PrenatalPartnerHIVTest =
+    PrenatalMeasurement PartnerHIVTestValue
+
+
+type alias PartnerHIVTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe TestResult
+    }
 
 
 
@@ -2813,6 +2858,7 @@ type alias PrenatalMeasurements =
     , breastfeeding : Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding )
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
+    , partnerHIVTest : Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )
     }
 
 
@@ -2857,6 +2903,7 @@ emptyPrenatalMeasurements =
     , breastfeeding = Nothing
     , guExam = Nothing
     , specialityCare = Nothing
+    , partnerHIVTest = Nothing
     }
 
 

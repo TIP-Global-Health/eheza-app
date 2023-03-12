@@ -32,6 +32,7 @@ type PrenatalRecurrentActivity
     = LabResults
     | RecurrentNextSteps
     | RecurrentExamination
+    | RecurrentMalariaPrevention
 
 
 type RiskFactor

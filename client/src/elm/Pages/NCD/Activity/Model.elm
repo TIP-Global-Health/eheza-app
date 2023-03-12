@@ -12,7 +12,6 @@ import Measurement.Model
         , HIVTestForm
         , HbA1cTestForm
         , LaboratoryTask
-        , MalariaTestForm
         , NonRDTForm
         , OutsideCareForm
         , OutsideCareStep(..)

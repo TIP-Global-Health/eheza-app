@@ -105,6 +105,7 @@ type alias Model =
     , saveSymptomReview : WebData ()
     , saveOutsideCare : WebData ()
     , saveHIVPCRTest : WebData ()
+    , savePartnerHIVTest : WebData ()
     , saveMentalHealth : WebData ()
     , saveTetanusImmunisation : WebData ()
     , saveBreastfeeding : WebData ()
@@ -150,6 +151,7 @@ emptyModel =
     , saveSymptomReview = NotAsked
     , saveOutsideCare = NotAsked
     , saveHIVPCRTest = NotAsked
+    , savePartnerHIVTest = NotAsked
     , saveMentalHealth = NotAsked
     , saveTetanusImmunisation = NotAsked
     , saveBreastfeeding = NotAsked
@@ -186,7 +188,7 @@ type Msg
     | HandleSavedFamilyPlanning (WebData ())
     | SaveNutrition PersonId (Maybe PrenatalNutritionId) PrenatalNutritionValue
     | HandleSavedNutrition (WebData ())
-    | SaveMalariaPrevention PersonId (Maybe MalariaPreventionId) (EverySet MalariaPreventionSign)
+    | SaveMalariaPrevention PersonId (Maybe MalariaPreventionId) MalariaPreventionValue
     | HandleSavedMalariaPrevention (WebData ())
     | SaveSocialHistory PersonId (Maybe SocialHistoryId) SocialHistoryValue
     | HandleSavedSocialHistory (WebData ())
@@ -232,6 +234,8 @@ type Msg
     | HandleSavedOutsideCare (WebData ())
     | SaveHIVPCRTest PersonId (Maybe PrenatalHIVPCRTestId) HIVPCRTestValue
     | HandleSavedHIVPCRTest (WebData ())
+    | SavePartnerHIVTest PersonId (Maybe PrenatalPartnerHIVTestId) PartnerHIVTestValue
+    | HandleSavedPartnerHIVTest (WebData ())
     | SaveMentalHealth PersonId (Maybe PrenatalMentalHealthId) PrenatalMentalHealthValue
     | HandleSavedMentalHealth (WebData ())
     | SaveTetanusImmunisation PersonId (Maybe PrenatalTetanusImmunisationId) VaccinationValue
