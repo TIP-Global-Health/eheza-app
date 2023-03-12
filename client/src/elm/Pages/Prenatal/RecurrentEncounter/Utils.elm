@@ -20,4 +20,4 @@ import Translate exposing (Language, translate)
 
 allActivities : List PrenatalRecurrentActivity
 allActivities =
-    [ RecurrentExamination, LabResults, RecurrentNextSteps ]
+    [ RecurrentExamination, RecurrentMalariaPrevention, LabResults, RecurrentNextSteps ]

@@ -11,8 +11,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Utils exposing (vitalsFormWithDefault)
-import Pages.Prenatal.Activity.Types exposing (LaboratoryTask(..))
+import Measurement.Model exposing (LaboratoryTask(..))
+import Measurement.Utils exposing (expectRandomBloodSugarResultTask, testPerformedByValue, vitalsFormWithDefault)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
@@ -52,6 +52,9 @@ expectActivity currentDate assembled activity =
                 |> List.isEmpty
                 |> not
 
+        RecurrentMalariaPrevention ->
+            expectMalariaPreventionActivity PhaseRecurrent assembled
+
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
 activityCompleted currentDate assembled activity =
@@ -73,6 +76,10 @@ activityCompleted currentDate assembled activity =
                 || (resolveExaminationTasks currentDate assembled
                         |> List.all (examinationMeasurementTaken assembled)
                    )
+
+        RecurrentMalariaPrevention ->
+            (not <| expectActivity currentDate assembled RecurrentMalariaPrevention)
+                || isJust assembled.measurements.malariaPrevention
 
 
 laboratoryResultTasks : List LaboratoryTask
@@ -132,8 +139,15 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
 
+        TaskPartnerHIVTest ->
+            not <| taskExpected TaskPartnerHIVTest
+
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
+
+        -- Others are not in use for Prenatal.
+        _ ->
+            False
 
 
 expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
@@ -142,11 +156,7 @@ expectLaboratoryResultTask currentDate assembled task =
         wasTestPerformed getMeasurementFunc =
             getMeasurementFunc assembled.measurements
                 |> getMeasurementValueFunc
-                |> Maybe.map
-                    (\value ->
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-                    )
-                |> Maybe.withDefault False
+                |> testPerformedByValue
     in
     case task of
         TaskHIVTest ->
@@ -171,232 +181,22 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .hemoglobinTest
 
         TaskRandomBloodSugarTest ->
-            wasTestPerformed .randomBloodSugarTest
+            getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
+                |> Maybe.map expectRandomBloodSugarResultTask
+                |> Maybe.withDefault False
 
         TaskHIVPCRTest ->
             wasTestPerformed .hivPCRTest
 
+        TaskPartnerHIVTest ->
+            False
+
         TaskCompletePreviousTests ->
             False
 
-
-hepatitisBFormWithDefault : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm
-hepatitisBFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
-                , executionDate = or form.executionDate value.executionDate
-                , testResult = or form.testResult value.testResult
-                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
-                }
-            )
-
-
-toHepatitisBValueWithDefault : Maybe PrenatalHepatitisBTestValue -> HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue
-toHepatitisBValueWithDefault saved form =
-    hepatitisBFormWithDefault form saved
-        |> toHepatitisBValue
-
-
-toHepatitisBValue : HepatitisBResultForm -> Maybe PrenatalHepatitisBTestValue
-toHepatitisBValue form =
-    Maybe.map
-        (\executionNote ->
-            { executionNote = executionNote
-            , executionDate = form.executionDate
-            , testResult = form.testResult
-            , originatingEncounter = form.originatingEncounter
-            }
-        )
-        form.executionNote
-
-
-syphilisResultFormWithDefault : SyphilisResultForm -> Maybe PrenatalSyphilisTestValue -> SyphilisResultForm
-syphilisResultFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
-                , executionDate = or form.executionDate value.executionDate
-                , testResult = or form.testResult value.testResult
-                , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms (Maybe.map EverySet.toList value.symptoms)
-                , symptomsDirty = form.symptomsDirty
-                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
-                }
-            )
-
-
-toSyphilisResultValueWithDefault : Maybe PrenatalSyphilisTestValue -> SyphilisResultForm -> Maybe PrenatalSyphilisTestValue
-toSyphilisResultValueWithDefault saved form =
-    syphilisResultFormWithDefault form saved
-        |> toSyphilisResultValue
-
-
-toSyphilisResultValue : SyphilisResultForm -> Maybe PrenatalSyphilisTestValue
-toSyphilisResultValue form =
-    Maybe.map
-        (\executionNote ->
-            { executionNote = executionNote
-            , executionDate = form.executionDate
-            , testResult = form.testResult
-            , symptoms = Maybe.map EverySet.fromList form.symptoms
-            , originatingEncounter = form.originatingEncounter
-            }
-        )
-        form.executionNote
-
-
-prenatalBloodGpRsResultFormWithDefault : PrenatalBloodGpRsResultForm -> Maybe PrenatalBloodGpRsTestValue -> PrenatalBloodGpRsResultForm
-prenatalBloodGpRsResultFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
-                , executionDate = or form.executionDate value.executionDate
-                , bloodGroup = or form.bloodGroup value.bloodGroup
-                , rhesus = or form.rhesus value.rhesus
-                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
-                }
-            )
-
-
-toPrenatalBloodGpRsResultsValueWithDefault : Maybe PrenatalBloodGpRsTestValue -> PrenatalBloodGpRsResultForm -> Maybe PrenatalBloodGpRsTestValue
-toPrenatalBloodGpRsResultsValueWithDefault saved form =
-    prenatalBloodGpRsResultFormWithDefault form saved
-        |> toPrenatalBloodGpRsResultsValue
-
-
-toPrenatalBloodGpRsResultsValue : PrenatalBloodGpRsResultForm -> Maybe PrenatalBloodGpRsTestValue
-toPrenatalBloodGpRsResultsValue form =
-    Maybe.map
-        (\executionNote ->
-            { executionNote = executionNote
-            , executionDate = form.executionDate
-            , bloodGroup = form.bloodGroup
-            , rhesus = form.rhesus
-            , originatingEncounter = form.originatingEncounter
-            }
-        )
-        form.executionNote
-
-
-prenatalHemoglobinResultFormWithDefault : PrenatalHemoglobinResultForm -> Maybe PrenatalHemoglobinTestValue -> PrenatalHemoglobinResultForm
-prenatalHemoglobinResultFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
-                , executionDate = or form.executionDate value.executionDate
-                , hemoglobinCount = or form.hemoglobinCount value.hemoglobinCount
-                }
-            )
-
-
-toPrenatalHemoglobinResultsValueWithDefault : Maybe PrenatalHemoglobinTestValue -> PrenatalHemoglobinResultForm -> Maybe PrenatalHemoglobinTestValue
-toPrenatalHemoglobinResultsValueWithDefault saved form =
-    prenatalHemoglobinResultFormWithDefault form saved
-        |> toPrenatalHemoglobinResultsValue
-
-
-toPrenatalHemoglobinResultsValue : PrenatalHemoglobinResultForm -> Maybe PrenatalHemoglobinTestValue
-toPrenatalHemoglobinResultsValue form =
-    Maybe.map
-        (\executionNote ->
-            { executionNote = executionNote
-            , executionDate = form.executionDate
-            , hemoglobinCount = form.hemoglobinCount
-            }
-        )
-        form.executionNote
-
-
-prenatalRandomBloodSugarResultFormWithDefault : PrenatalRandomBloodSugarResultForm -> Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarResultForm
-prenatalRandomBloodSugarResultFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
-                , executionDate = or form.executionDate value.executionDate
-                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
-                , sugarCount = or form.sugarCount value.sugarCount
-                , originatingEncounter = or form.originatingEncounter value.originatingEncounter
-                }
-            )
-
-
-toPrenatalRandomBloodSugarResultsValueWithDefault : Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarResultForm -> Maybe PrenatalRandomBloodSugarTestValue
-toPrenatalRandomBloodSugarResultsValueWithDefault saved form =
-    prenatalRandomBloodSugarResultFormWithDefault form saved
-        |> toPrenatalRandomBloodSugarResultsValue
-
-
-toPrenatalRandomBloodSugarResultsValue : PrenatalRandomBloodSugarResultForm -> Maybe PrenatalRandomBloodSugarTestValue
-toPrenatalRandomBloodSugarResultsValue form =
-    Maybe.map
-        (\executionNote ->
-            { executionNote = executionNote
-            , executionDate = form.executionDate
-            , testPrerequisites = form.testPrerequisites
-            , sugarCount = form.sugarCount
-            , originatingEncounter = form.originatingEncounter
-            }
-        )
-        form.executionNote
-
-
-prenatalUrineDipstickResultFormWithDefault : PrenatalUrineDipstickResultForm -> Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickResultForm
-prenatalUrineDipstickResultFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { testVariant = or form.testVariant value.testVariant
-                , executionNote = or form.executionNote (Just value.executionNote)
-                , executionDate = or form.executionDate value.executionDate
-                , protein = or form.protein value.protein
-                , ph = or form.ph value.ph
-                , glucose = or form.glucose value.glucose
-                , leukocytes = or form.leukocytes value.leukocytes
-                , nitrite = or form.nitrite value.nitrite
-                , urobilinogen = or form.urobilinogen value.urobilinogen
-                , haemoglobin = or form.haemoglobin value.haemoglobin
-                , ketone = or form.ketone value.ketone
-                , bilirubin = or form.bilirubin value.bilirubin
-                }
-            )
-
-
-toPrenatalUrineDipstickResultsValueWithDefault : Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickResultForm -> Maybe PrenatalUrineDipstickTestValue
-toPrenatalUrineDipstickResultsValueWithDefault saved form =
-    prenatalUrineDipstickResultFormWithDefault form saved
-        |> toPrenatalUrineDipstickResultsValue
-
-
-toPrenatalUrineDipstickResultsValue : PrenatalUrineDipstickResultForm -> Maybe PrenatalUrineDipstickTestValue
-toPrenatalUrineDipstickResultsValue form =
-    Maybe.map
-        (\executionNote ->
-            { testVariant = form.testVariant
-            , executionNote = executionNote
-            , executionDate = form.executionDate
-            , protein = form.protein
-            , ph = form.ph
-            , glucose = form.glucose
-            , leukocytes = form.leukocytes
-            , nitrite = form.nitrite
-            , urobilinogen = form.urobilinogen
-            , haemoglobin = form.haemoglobin
-            , ketone = form.ketone
-            , bilirubin = form.bilirubin
-            }
-        )
-        form.executionNote
+        -- Others are not in use for Prenatal.
+        _ ->
+            False
 
 
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
@@ -562,7 +362,7 @@ expectExaminationTask currentDate assembled task =
             -- of pregnancy. If diagnised, we do not need to recheck the BP.
             -- Measurement taken at initial phase of encounter is sufficient.
             (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (not <| diagnosedAnyOf hierarchalBloodPreasureDiagnoses assembled)
+                && (not <| diagnosedAnyOf hierarchalBloodPressureDiagnoses assembled)
                 && (getMeasurementValueFunc assembled.measurements.vitals
                         |> Maybe.andThen
                             (\value ->
@@ -601,39 +401,6 @@ examinationTasksCompletedFromTotal assembled data task =
             ( taskAllCompleted [ form.sysRepeated, form.diaRepeated ]
             , 1
             )
-
-
-prenatalHIVPCRResultFormWithDefault : PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue -> PrenatalHIVPCRResultForm
-prenatalHIVPCRResultFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
-                , executionDate = or form.executionDate value.executionDate
-                , hivViralLoadStatus = or form.hivViralLoadStatus value.hivViralLoadStatus
-                , hivViralLoad = or form.hivViralLoad value.hivViralLoad
-                }
-            )
-
-
-toPrenatalHIVPCRResultsValueWithDefault : Maybe PrenatalHIVPCRTestValue -> PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue
-toPrenatalHIVPCRResultsValueWithDefault saved form =
-    prenatalHIVPCRResultFormWithDefault form saved
-        |> toPrenatalHIVPCRResultsValue
-
-
-toPrenatalHIVPCRResultsValue : PrenatalHIVPCRResultForm -> Maybe PrenatalHIVPCRTestValue
-toPrenatalHIVPCRResultsValue form =
-    Maybe.map
-        (\executionNote ->
-            { executionNote = executionNote
-            , executionDate = form.executionDate
-            , hivViralLoadStatus = form.hivViralLoadStatus
-            , hivViralLoad = form.hivViralLoad
-            }
-        )
-        form.executionNote
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -800,6 +567,13 @@ matchRequiredReferralFacility assembled facility =
             False
 
         FacilityNCDProgram ->
+            False
+
+        -- Explicit NCD facility.
+        FacilityANCServices ->
+            False
+
+        FacilityUltrasound ->
             False
 
         FacilityHealthCenter ->

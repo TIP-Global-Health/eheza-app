@@ -60,6 +60,10 @@ type alias WellChildMeasurement value =
     Measurement WellChildEncounterId value
 
 
+type alias NCDMeasurement value =
+    Measurement NCDEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -102,6 +106,10 @@ type alias Height =
 
 type WeightInKg
     = WeightInKg Float
+
+
+type WeightInGrm
+    = WeightInGrm Float
 
 
 type alias Weight =
@@ -255,6 +263,38 @@ type FollowUpOption
     | OneMonths
     | TwoMonths
     | ThreeMonths
+
+
+type alias GroupNCDA =
+    GroupMeasurement NCDAValue
+
+
+type alias NCDAValue =
+    { signs : EverySet NCDASign
+    , birthWeight : Maybe WeightInGrm
+    }
+
+
+type NCDASign
+    = NCDABornWithBirthDefect
+    | NCDABreastfedForSixMonths
+    | NCDAAppropriateComplementaryFeeding
+    | NCDAOngeraMNP
+    | NCDAFiveFoodGroups
+    | NCDAMealFrequency6to8Months
+    | NCDAMealFrequency9to11Months
+    | NCDAMealFrequency12MonthsOrMore
+    | NCDASupportChildWithDisability
+    | NCDAConditionalCashTransfer
+    | NCDAConditionalFoodItems
+    | NCDAHasCleanWater
+    | NCDAHasHandwashingFacility
+    | NCDAHasToilets
+    | NCDAHasKitchenGarden
+    | NCDARegularPrenatalVisits
+    | NCDAIronSupplementsDuringPregnancy
+    | NCDAInsecticideTreatedBednetsDuringPregnancy
+    | NoNCDASigns
 
 
 
@@ -415,12 +455,17 @@ type CaringOption
     | CaredByDaycare
 
 
+type alias NutritionNCDA =
+    NutritionMeasurement NCDAValue
+
+
 
 -- PRENATAL MEASUREMENTS
 
 
 type alias BreastExamValue =
     { exam : EverySet BreastExamSign
+    , dischargeType : Maybe DischargeType
     , selfGuidance : Bool
     }
 
@@ -431,6 +476,14 @@ type BreastExamSign
     | Infection
     | Warmth
     | NormalBreast
+
+
+type DischargeType
+    = DischargeMilky
+    | DischargeClear
+    | DischargeBrownOrBloody
+    | DischargeYellow
+    | DischargeGreen
 
 
 type alias BreastExam =
@@ -519,6 +572,7 @@ type DangerSign
     | SevereVomiting
     | Unconscious
     | GushLeakingVaginalFluid
+    | PrematureOnsetContractions
     | NoDangerSign
 
 
@@ -556,8 +610,15 @@ type PostpartumChildDangerSign
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
     , confident : Bool
+    , notConfidentReason : Maybe LmpDateNotConfidentReason
     , confirmation : Bool
     }
+
+
+type LmpDateNotConfidentReason
+    = ReasonIrregularMenses
+    | ReasonOnFamilyPlanningMethod
+    | ReasonCanNotRememberDates
 
 
 type alias LastMenstrualPeriod =
@@ -632,7 +693,8 @@ type alias MedicationValue =
 
 
 type alias ObstetricalExamValue =
-    { fundalHeight : HeightInCm
+    { fundalPalpable : Bool
+    , fundalHeight : Maybe HeightInCm
     , fetalPresentation : FetalPresentation
     , fetalMovement : Bool
     , fetalHeartRate : Int
@@ -675,7 +737,7 @@ type alias ObstetricHistory =
 
 type alias ObstetricHistoryStep2Value =
     { cSections : Int
-    , cSectionReason : EverySet CSectionReason
+    , cSectionReason : Maybe (EverySet CSectionReason)
     , previousDelivery : EverySet PreviousDeliverySign
     , previousDeliveryPeriod : EverySet PreviousDeliveryPeriod
     , obstetricHistory : EverySet ObstetricHistorySign
@@ -688,6 +750,7 @@ type CSectionReason
     | FailureToProgress
     | None
     | Other
+    | PreviousCSection
 
 
 type PreviousDeliveryPeriod
@@ -736,17 +799,28 @@ type alias PrenatalNutrition =
     PrenatalMeasurement PrenatalNutritionValue
 
 
-type MalariaPreventionSign
-    = MosquitoNet
-    | NoMalariaPreventionSigns
-
-
 type alias PrenatalPhoto =
     PrenatalMeasurement PhotoUrl
 
 
 type alias MalariaPrevention =
-    PrenatalMeasurement (EverySet MalariaPreventionSign)
+    PrenatalMeasurement MalariaPreventionValue
+
+
+type alias MalariaPreventionValue =
+    { resources : EverySet MalariaPreventionSign
+    , phaseRecorded : PhaseRecorded
+    }
+
+
+type MalariaPreventionSign
+    = MosquitoNet
+    | NoMalariaPreventionSigns
+
+
+type PhaseRecorded
+    = PhaseInitial
+    | PhaseRecurrent
 
 
 type SocialHistorySign
@@ -755,17 +829,8 @@ type SocialHistorySign
     | NoSocialHistorySign
 
 
-type SocialHistoryHivTestingResult
-    = ResultHivPositive
-    | ResultHivNegative
-    | ResultHivIndeterminate
-    | NoHivTesting
-
-
 type alias SocialHistoryValue =
-    { socialHistory : EverySet SocialHistorySign
-    , hivTestingResult : SocialHistoryHivTestingResult
-    }
+    EverySet SocialHistorySign
 
 
 type alias SocialHistory =
@@ -896,6 +961,11 @@ type ReferToFacilitySign
     | ReferToNCDProgram
     | ReferralFormNCDProgram
     | AccompanyToNCDProgram
+    | ReferToANCServices
+    | ReferralFormANCServices
+    | AccompanyToANCServices
+    | ReferToUltrasound
+    | ReferralFormUltrasound
     | NoReferToFacilitySigns
 
 
@@ -904,6 +974,8 @@ type NonReferralSign
     | NonReferralReasonMentalHealthSpecialist ReasonForNonReferral
     | NonReferralReasonARVProgram ReasonForNonReferral
     | NonReferralReasonNCDProgram ReasonForNonReferral
+    | NonReferralReasonANCServices ReasonForNonReferral
+    | NonReferralReasonUltrasound ReasonForNonReferral
     | NoNonReferralSigns
 
 
@@ -913,6 +985,8 @@ type ReferralFacility
     | FacilityMentalHealthSpecialist
     | FacilityARVProgram
     | FacilityNCDProgram
+    | FacilityANCServices
+    | FacilityUltrasound
 
 
 type alias PrenatalAppointmentConfirmationValue =
@@ -925,17 +999,18 @@ type alias PrenatalAppointmentConfirmation =
 
 
 type alias PrenatalMalariaTest =
-    PrenatalMeasurement PrenatalMalariaTestValue
+    PrenatalMeasurement MalariaTestValue
 
 
-type alias PrenatalMalariaTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias MalariaTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
+    , bloodSmearResult : BloodSmearResult
     }
 
 
-type PrenatalTestExecutionNote
+type TestExecutionNote
     = TestNoteRunToday
     | TestNoteRunPreviously
     | TestNoteLackOfReagents
@@ -944,22 +1019,31 @@ type PrenatalTestExecutionNote
     | TestNoteBrokenEquipment
     | TestNoteNotIndicated
     | TestNoteKnownAsPositive
+    | TestNoteToBeDoneAtHospital
 
 
-type PrenatalTestResult
-    = PrenatalTestPositive
-    | PrenatalTestNegative
-    | PrenatalTestIndeterminate
+type TestResult
+    = TestPositive
+    | TestNegative
+    | TestIndeterminate
+
+
+type BloodSmearResult
+    = BloodSmearNegative
+    | BloodSmearPlus
+    | BloodSmearPlusPlus
+    | BloodSmearPlusPlusPlus
+    | BloodSmearNotTaken
 
 
 type alias PrenatalHIVTest =
-    PrenatalMeasurement PrenatalHIVTestValue
+    PrenatalMeasurement HIVTestValue
 
 
-type alias PrenatalHIVTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias HIVTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
 
@@ -973,7 +1057,7 @@ type PrenatalHIVSign
 
 
 type alias PrenatalHIVPCRTest =
-    PrenatalMeasurement PrenatalHIVPCRTestValue
+    PrenatalMeasurement HIVPCRTestValue
 
 
 type HIVPCRResult
@@ -981,12 +1065,8 @@ type HIVPCRResult
     | ResultDetectibleViralLoad Float
 
 
-type alias PrenatalHepatitisBTest =
-    PrenatalMeasurement PrenatalHepatitisBTestValue
-
-
-type alias PrenatalHIVPCRTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias HIVPCRTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , hivViralLoadStatus : Maybe ViralLoadStatus
     , hivViralLoad : Maybe Float
@@ -998,24 +1078,28 @@ type ViralLoadStatus
     | ViralLoadUndetectable
 
 
-type alias PrenatalHepatitisBTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias PrenatalHepatitisBTest =
+    PrenatalMeasurement (HepatitisBTestValue PrenatalEncounterId)
+
+
+type alias HepatitisBTestValue encounterId =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
-    , originatingEncounter : Maybe PrenatalEncounterId
+    , testResult : Maybe TestResult
+    , originatingEncounter : Maybe encounterId
     }
 
 
 type alias PrenatalSyphilisTest =
-    PrenatalMeasurement PrenatalSyphilisTestValue
+    PrenatalMeasurement (SyphilisTestValue PrenatalEncounterId)
 
 
-type alias PrenatalSyphilisTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias SyphilisTestValue encounterId =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
-    , testResult : Maybe PrenatalTestResult
+    , testResult : Maybe TestResult
     , symptoms : Maybe (EverySet IllnessSymptom)
-    , originatingEncounter : Maybe PrenatalEncounterId
+    , originatingEncounter : Maybe encounterId
     }
 
 
@@ -1029,44 +1113,45 @@ type IllnessSymptom
 
 
 type alias PrenatalHemoglobinTest =
-    PrenatalMeasurement PrenatalHemoglobinTestValue
+    PrenatalMeasurement HemoglobinTestValue
 
 
-type alias PrenatalHemoglobinTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias HemoglobinTestValue =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , hemoglobinCount : Maybe Float
     }
 
 
 type alias PrenatalRandomBloodSugarTest =
-    PrenatalMeasurement PrenatalRandomBloodSugarTestValue
+    PrenatalMeasurement (RandomBloodSugarTestValue PrenatalEncounterId)
 
 
-type alias PrenatalRandomBloodSugarTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias RandomBloodSugarTestValue encounterId =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
-    , originatingEncounter : Maybe PrenatalEncounterId
+    , originatingEncounter : Maybe encounterId
     }
 
 
 type TestPrerequisite
     = PrerequisiteFastFor12h
+    | PrerequisiteImmediateResult
     | NoTestPrerequisites
 
 
 type alias PrenatalBloodGpRsTest =
-    PrenatalMeasurement PrenatalBloodGpRsTestValue
+    PrenatalMeasurement (BloodGpRsTestValue PrenatalEncounterId)
 
 
-type alias PrenatalBloodGpRsTestValue =
-    { executionNote : PrenatalTestExecutionNote
+type alias BloodGpRsTestValue encounterId =
+    { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
-    , originatingEncounter : Maybe PrenatalEncounterId
+    , originatingEncounter : Maybe encounterId
     }
 
 
@@ -1083,12 +1168,12 @@ type Rhesus
 
 
 type alias PrenatalUrineDipstickTest =
-    PrenatalMeasurement PrenatalUrineDipstickTestValue
+    PrenatalMeasurement UrineDipstickTestValue
 
 
-type alias PrenatalUrineDipstickTestValue =
-    { testVariant : Maybe PrenatalTestVariant
-    , executionNote : PrenatalTestExecutionNote
+type alias UrineDipstickTestValue =
+    { testVariant : Maybe TestVariant
+    , executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
     , protein : Maybe ProteinValue
     , ph : Maybe PHValue
@@ -1102,7 +1187,7 @@ type alias PrenatalUrineDipstickTestValue =
     }
 
 
-type PrenatalTestVariant
+type TestVariant
     = VariantShortTest
     | VariantLongTest
 
@@ -1184,18 +1269,18 @@ type BilirubinValue
 
 
 type alias PrenatalLabsResults =
-    PrenatalMeasurement PrenatalLabsResultsValue
+    PrenatalMeasurement LabsResultsValue
 
 
-type alias PrenatalLabsResultsValue =
-    { performedTests : EverySet PrenatalLaboratoryTest
-    , completedTests : EverySet PrenatalLaboratoryTest
+type alias LabsResultsValue =
+    { performedTests : EverySet LaboratoryTest
+    , completedTests : EverySet LaboratoryTest
     , resolutionDate : NominalDate
     , patientNotified : Bool
     }
 
 
-type PrenatalLaboratoryTest
+type LaboratoryTest
     = TestBloodGpRs
     | TestHemoglobin
     | TestHepatitisB
@@ -1204,6 +1289,9 @@ type PrenatalLaboratoryTest
     | TestUrineDipstick
     | TestVitalsRecheck
     | TestHIVPCR
+    | TestCreatinine
+    | TestLiverFunction
+    | TestLipidPanel
 
 
 type alias PrenatalMedicationDistribution =
@@ -1232,12 +1320,20 @@ type RecommendedTreatmentSign
     | TreatmentAzithromycin
     | TreatmentCeftriaxon
     | NoTreatmentForSyphilis
-      -- For Hypertension:
+      -- For Hypertension, NCD + Prenatal:
     | TreatmentMethyldopa2
+      -- For Hypertension, only Prenatal:
     | TreatmentMethyldopa3
     | TreatmentMethyldopa4
     | TreatmentHypertensionAddCarvedilol
     | TreatmentHypertensionAddAmlodipine
+      -- For Hypertension, only NCD:
+    | TreatmentHydrochlorothiazide
+    | TreatmentAmlodipine
+    | TreatmentNifedipine
+    | TreatmentCaptopril
+    | TreatmentLisinopril
+    | TreatmentAtenlol
     | NoTreatmentForHypertension
       -- For Heartburn:
     | TreatmentAluminiumHydroxide
@@ -1255,6 +1351,16 @@ type RecommendedTreatmentSign
     | TreatmentParacetamol
     | TreatmentIbuprofen
     | NoTreatmentForMastitis
+      -- For Diabetes (NCD):
+    | TreatmentMetformin1m1e
+    | TreatmentGlipenclamide1m1e
+    | TreatmentMetformin2m1e
+    | TreatmentGlipenclamide2m1e
+    | TreatmentMetformin2m2e
+    | TreatmentGlipenclamide2m2e
+    | TreatmentMetformin2m2eGlipenclamide1m1e
+    | TreatmentGlipenclamide2m2eMetformin1m1e
+    | NoTreatmentForDiabetes
 
 
 type AvoidingGuidanceReason
@@ -1328,25 +1434,25 @@ type PrenatalFlankPainSign
 
 
 type alias PrenatalOutsideCare =
-    PrenatalMeasurement PrenatalOutsideCareValue
+    PrenatalMeasurement (OutsideCareValue PrenatalDiagnosis)
 
 
-type alias PrenatalOutsideCareValue =
-    { signs : EverySet PrenatalOutsideCareSign
-    , diagnoses : Maybe (EverySet PrenatalDiagnosis)
-    , medications : Maybe (EverySet PrenatalOutsideCareMedication)
+type alias OutsideCareValue diagnosis =
+    { signs : EverySet OutsideCareSign
+    , diagnoses : Maybe (EverySet diagnosis)
+    , medications : Maybe (EverySet OutsideCareMedication)
     }
 
 
-type PrenatalOutsideCareSign
+type OutsideCareSign
     = SeenAtAnotherFacility
     | GivenNewDiagnoses
     | GivenMedicine
     | PlannedFollowUpCareWithSpecialist
-    | NoPrenatalOutsideCareSigns
+    | NoOutsideCareSigns
 
 
-type PrenatalOutsideCareMedication
+type OutsideCareMedication
     = -- For Malaria:
       OutsideCareMedicationQuinineSulphate
     | OutsideCareMedicationCoartem
@@ -1374,7 +1480,7 @@ type PrenatalOutsideCareMedication
     | OutsideCareMedicationIron2
     | OutsideCareMedicationFolicAcid
     | NoOutsideCareMedicationForAnemia
-    | NoPrenatalOutsideCareMedications
+    | NoOutsideCareMedications
 
 
 type alias PrenatalMentalHealth =
@@ -1479,6 +1585,17 @@ type SpecialityCareSign
     = EnrolledToARVProgram
     | EnrolledToNCDProgram
     | NoSpecialityCareSigns
+
+
+type alias PrenatalPartnerHIVTest =
+    PrenatalMeasurement PartnerHIVTestValue
+
+
+type alias PartnerHIVTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe TestResult
+    }
 
 
 
@@ -2182,7 +2299,19 @@ type alias WellChildPregnancySummary =
 type alias PregnancySummaryValue =
     { expectedDateConcluded : NominalDate
     , deliveryComplications : EverySet DeliveryComplication
+    , signs : EverySet PregnancySummarySign
+    , apgarOneMin : Maybe Float
+    , apgarFiveMin : Maybe Float
+    , birthWeight : Maybe WeightInGrm
+    , birthLength : Maybe HeightInCm
+    , birthDefects : EverySet BirthDefect
     }
+
+
+type PregnancySummarySign
+    = ApgarScores
+    | BirthLength
+    | NoPregnancySummarySigns
 
 
 type DeliveryComplication
@@ -2194,6 +2323,26 @@ type DeliveryComplication
     | ComplicationMaternalDeath
     | ComplicationOther
     | NoDeliveryComplications
+
+
+type BirthDefect
+    = DefectBirthInjury
+    | DefectCleftLipWithCleftPalate
+    | DefectCleftPalate
+    | DefectClubFoot
+    | DefectMacrocephaly
+    | DefectGastroschisis
+    | DefectHearingLoss
+    | DefectUndescendedTestes
+    | DefectHypospadias
+    | DefectInguinalHernia
+    | DefectMicrocephaly
+    | DefectNeuralTubes
+    | DefectDownSyndrome
+    | DefectCongenitalHeart
+    | DefectVentricalSeptal
+    | DefectPulmonaryValveAtresiaAndStenosis
+    | NoBirthDefects
 
 
 type alias WellChildNextVisit =
@@ -2245,6 +2394,344 @@ type alias VaccinationValue =
     }
 
 
+type alias WellChildNCDA =
+    WellChildMeasurement NCDAValue
+
+
+
+-- NCD MEASUREMENTS
+
+
+type alias NCDCoMorbidities =
+    NCDMeasurement NCDCoMorbiditiesValue
+
+
+type alias NCDCoMorbiditiesValue =
+    EverySet MedicalCondition
+
+
+type MedicalCondition
+    = MedicalConditionHIV
+    | MedicalConditionDiabetes
+    | MedicalConditionKidneyDisease
+    | MedicalConditionPregnancy
+    | MedicalConditionHypertension
+    | MedicalConditionGestationalDiabetes
+    | MedicalConditionPregnancyRelatedHypertension
+    | MedicalConditionNeuropathy
+    | MedicalConditionRentalComplications
+    | MedicalConditionMalaria
+    | MedicalConditionTuberculosis
+    | MedicalConditionHepatitisB
+    | MedicalConditionSyphilis
+    | MedicalConditionEyeComplications
+    | MedicalConditionAnemia
+    | MedicalConditionOther
+    | NoMedicalConditions
+
+
+type alias NCDCoreExam =
+    NCDMeasurement CorePhysicalExamValue
+
+
+type alias NCDCreatinineTest =
+    NCDMeasurement CreatinineTestValue
+
+
+type alias CreatinineTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , creatinineResult : Maybe Float
+    , bunResult : Maybe Float
+    }
+
+
+type alias NCDDangerSigns =
+    NCDMeasurement NCDDangerSignsValue
+
+
+type alias NCDDangerSignsValue =
+    EverySet NCDDangerSign
+
+
+type NCDDangerSign
+    = Dyspnea
+    | VisionChanges
+    | ChestPain
+    | FlankPain
+    | Hematuria
+    | SevereHeadaches
+    | LossOfConciousness
+    | NoNCDDangerSigns
+
+
+type alias NCDFamilyHistory =
+    NCDMeasurement NCDFamilyHistoryValue
+
+
+type alias NCDFamilyHistoryValue =
+    { signs : EverySet NCDFamilyHistorySign
+    , hypertensionPredecessors : Maybe (EverySet Predecessor)
+    , heartProblemPredecessors : Maybe (EverySet Predecessor)
+    , diabetesPredecessors : Maybe (EverySet Predecessor)
+    }
+
+
+type NCDFamilyHistorySign
+    = SignHypertensionHistory
+    | SignHeartProblemHistory
+    | SignDiabetesHistory
+    | NoNCDFamilyHistorySigns
+
+
+type Predecessor
+    = PredecessorFather
+    | PredecessorMother
+    | PredecessorGrandFather
+    | PredecessorGrandMother
+    | NoPredecessors
+
+
+type alias NCDFamilyPlanning =
+    NCDMeasurement NCDFamilyPlanningValue
+
+
+type alias NCDFamilyPlanningValue =
+    EverySet FamilyPlanningSign
+
+
+type alias NCDHealthEducation =
+    NCDMeasurement NCDHealthEducationValue
+
+
+type alias NCDHealthEducationValue =
+    EverySet NCDHealthEducationSign
+
+
+type NCDHealthEducationSign
+    = EducationHypertension
+    | NoNCDHealthEducationSigns
+
+
+type alias NCDHIVTest =
+    NCDMeasurement HIVTestValue
+
+
+type alias NCDLiverFunctionTest =
+    NCDMeasurement LiverFunctionTestValue
+
+
+type alias LiverFunctionTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , altResult : Maybe Float
+    , astResult : Maybe Float
+    }
+
+
+type alias NCDMedicationDistribution =
+    NCDMeasurement NCDMedicationDistributionValue
+
+
+type alias NCDMedicationDistributionValue =
+    { recommendedTreatmentSigns : EverySet RecommendedTreatmentSign
+    , guidanceSigns : EverySet NCDGuidanceSign
+    }
+
+
+type NCDGuidanceSign
+    = ReturnInOneMonth
+    | NoNCDGuidanceSigns
+
+
+type alias NCDMedicationHistory =
+    NCDMeasurement NCDMedicationHistoryValue
+
+
+type alias NCDMedicationHistoryValue =
+    { medicationsCausingHypertension : EverySet MedicationCausingHypertension
+    , medicationsTreatingHypertension : EverySet MedicationTreatingHypertension
+    , medicationsTreatingDiabetes : EverySet MedicationTreatingDiabetes
+    }
+
+
+type MedicationCausingHypertension
+    = MedicationOestrogens
+    | MedicationSteroids
+    | MedicationAmitriptyline
+    | MedicationIbuprofen
+    | NoMedicationCausingHypertension
+
+
+type MedicationTreatingHypertension
+    = MedicationAceInhibitors
+    | MedicationARBs
+    | MedicationHCTZ
+    | MedicationCalciumChannelBlockers
+    | MedicationMethyldopa
+    | MedicationBetaBlockers
+    | MedicationHydralazine
+    | NoMedicationTreatingHypertension
+
+
+type MedicationTreatingDiabetes
+    = MedicationMetformin
+    | MedicationGlibenclamide
+    | MedicationInsulin
+    | NoMedicationTreatingDiabetes
+
+
+type alias NCDOutsideCare =
+    NCDMeasurement (OutsideCareValue MedicalCondition)
+
+
+type alias NCDPregnancyTest =
+    NCDMeasurement PregnancyTestValue
+
+
+type alias PregnancyTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe TestResult
+    }
+
+
+type alias NCDRandomBloodSugarTest =
+    NCDMeasurement (RandomBloodSugarTestValue NCDEncounterId)
+
+
+type alias NCDReferral =
+    NCDMeasurement ReferralValue
+
+
+type alias ReferralValue =
+    { referralSigns : EverySet ReferToFacilitySign
+    , nonReferralReasons : Maybe (EverySet NonReferralSign)
+    }
+
+
+type alias NCDSocialHistory =
+    NCDMeasurement NCDSocialHistoryValue
+
+
+type alias NCDSocialHistoryValue =
+    { signs : EverySet NCDSocialHistorySign
+    , foodGroup : FoodGroup
+    , beveragesPerWeek : Maybe Int
+    , cigarettesPerWeek : Maybe Int
+    }
+
+
+type NCDSocialHistorySign
+    = SignDrinkAlcohol
+    | SignSmokeCigarettes
+    | SignConsumeSalt
+    | SignDifficult4TimesAYear
+    | SignHelpWithTreatmentAtHome
+    | NoNCDSocialHistorySigns
+
+
+type FoodGroup
+    = FoodGroupVegetables
+    | FoodGroupCarbohydrates
+    | FoodGroupProtein
+
+
+type alias NCDSymptomReview =
+    NCDMeasurement NCDSymptomReviewValue
+
+
+type alias NCDSymptomReviewValue =
+    { group1Symptoms : EverySet NCDGroup1Symptom
+    , group2Symptoms : EverySet NCDGroup2Symptom
+    , painSymptoms : EverySet NCDPainSymptom
+    }
+
+
+type NCDGroup1Symptom
+    = SwellingInLegs
+    | UrinaryFrequency
+    | Anxiety
+    | WeightLoss
+    | Palpitations
+    | Tremor
+    | SwellingInFace
+    | SwellingInAbdomen
+    | DizzinessWithChangingPosition
+    | MildHeadache
+    | NoNCDGroup1Symptoms
+
+
+type NCDPainSymptom
+    = PainFlank
+    | PainLowerBack
+    | PainFeet
+    | PainNeck
+    | PainAbdomen
+    | NoNCDPainSymptoms
+
+
+type NCDGroup2Symptom
+    = WeaknessOfOneSideOfTheBody
+    | ProblemsWithWalking
+    | ProblemsWithTalking
+    | DecreasedVision
+    | BlurryVision
+    | IncreasedFatigueWithDailyActivities
+    | ShortOfBreathWhenLayingDown
+    | ShortOfBreathAtNight
+    | KidneyProblems
+    | NCDIncreasedThirst
+    | NoNCDGroup2Symptoms
+
+
+type alias NCDUrineDipstickTest =
+    NCDMeasurement UrineDipstickTestValue
+
+
+type alias NCDVitals =
+    NCDMeasurement VitalsValue
+
+
+type alias NCDLabsResults =
+    NCDMeasurement LabsResultsValue
+
+
+type alias NCDLipidPanelTest =
+    NCDMeasurement LipidPanelTestValue
+
+
+type alias LipidPanelTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+
+    -- Indicates what unit of measurement was used while results were recorded.
+    , unitOfMeasurement : Maybe UnitOfMeasurement
+
+    -- All results are stored in mg/dL unit.
+    , totalCholesterolResult : Maybe Float
+    , ldlCholesterolResult : Maybe Float
+    , hdlCholesterolResult : Maybe Float
+    , triglyceridesResult : Maybe Float
+    }
+
+
+type UnitOfMeasurement
+    = UnitMmolL
+    | UnitMgdL
+
+
+type alias NCDHbA1cTest =
+    NCDMeasurement HbA1cTestValue
+
+
+type alias HbA1cTestValue =
+    { executionNote : TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hba1cResult : Maybe Float
+    }
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -2288,6 +2775,7 @@ type alias ChildMeasurementList =
     , followUp : Dict FollowUpId FollowUp
     , healthEducation : Dict GroupHealthEducationId GroupHealthEducation
     , sendToHC : Dict GroupSendToHCId GroupSendToHC
+    , ncda : Dict GroupNCDAId GroupNCDA
     }
 
 
@@ -2304,6 +2792,7 @@ emptyChildMeasurementList =
     , followUp = Dict.empty
     , healthEducation = Dict.empty
     , sendToHC = Dict.empty
+    , ncda = Dict.empty
     }
 
 
@@ -2369,6 +2858,7 @@ type alias PrenatalMeasurements =
     , breastfeeding : Maybe ( PrenatalBreastfeedingId, PrenatalBreastfeeding )
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
+    , partnerHIVTest : Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )
     }
 
 
@@ -2413,6 +2903,7 @@ emptyPrenatalMeasurements =
     , breastfeeding = Nothing
     , guExam = Nothing
     , specialityCare = Nothing
+    , partnerHIVTest = Nothing
     }
 
 
@@ -2428,6 +2919,7 @@ type alias NutritionMeasurements =
     , healthEducation : Maybe ( NutritionHealthEducationId, NutritionHealthEducation )
     , contributingFactors : Maybe ( NutritionContributingFactorsId, NutritionContributingFactors )
     , followUp : Maybe ( NutritionFollowUpId, NutritionFollowUp )
+    , ncda : Maybe ( NutritionNCDAId, NutritionNCDA )
     }
 
 
@@ -2470,6 +2962,7 @@ type alias FollowUpMeasurements =
     , wellChild : Dict WellChildFollowUpId WellChildFollowUp
     , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
+    , ncdLabs : Dict NCDLabsResultsId NCDLabsResults
     }
 
 
@@ -2512,6 +3005,35 @@ type alias WellChildMeasurements =
     , opvImmunisation : Maybe ( WellChildOPVImmunisationId, WellChildOPVImmunisation )
     , pcv13Immunisation : Maybe ( WellChildPCV13ImmunisationId, WellChildPCV13Immunisation )
     , rotarixImmunisation : Maybe ( WellChildRotarixImmunisationId, WellChildRotarixImmunisation )
+    , ncda : Maybe ( WellChildNCDAId, WellChildNCDA )
+    }
+
+
+{-| A set of NCD measurements that correspond to the same NCD encounter.
+-}
+type alias NCDMeasurements =
+    { coMorbidities : Maybe ( NCDCoMorbiditiesId, NCDCoMorbidities )
+    , coreExam : Maybe ( NCDCoreExamId, NCDCoreExam )
+    , creatinineTest : Maybe ( NCDCreatinineTestId, NCDCreatinineTest )
+    , dangerSigns : Maybe ( NCDDangerSignsId, NCDDangerSigns )
+    , familyHistory : Maybe ( NCDFamilyHistoryId, NCDFamilyHistory )
+    , familyPlanning : Maybe ( NCDFamilyPlanningId, NCDFamilyPlanning )
+    , hba1cTest : Maybe ( NCDHbA1cTestId, NCDHbA1cTest )
+    , healthEducation : Maybe ( NCDHealthEducationId, NCDHealthEducation )
+    , hivTest : Maybe ( NCDHIVTestId, NCDHIVTest )
+    , labsResults : Maybe ( NCDLabsResultsId, NCDLabsResults )
+    , lipidPanelTest : Maybe ( NCDLipidPanelTestId, NCDLipidPanelTest )
+    , liverFunctionTest : Maybe ( NCDLiverFunctionTestId, NCDLiverFunctionTest )
+    , medicationDistribution : Maybe ( NCDMedicationDistributionId, NCDMedicationDistribution )
+    , medicationHistory : Maybe ( NCDMedicationHistoryId, NCDMedicationHistory )
+    , outsideCare : Maybe ( NCDOutsideCareId, NCDOutsideCare )
+    , pregnancyTest : Maybe ( NCDPregnancyTestId, NCDPregnancyTest )
+    , randomBloodSugarTest : Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )
+    , referral : Maybe ( NCDReferralId, NCDReferral )
+    , socialHistory : Maybe ( NCDSocialHistoryId, NCDSocialHistory )
+    , symptomReview : Maybe ( NCDSymptomReviewId, NCDSymptomReview )
+    , urineDipstickTest : Maybe ( NCDUrineDipstickTestId, NCDUrineDipstickTest )
+    , vitals : Maybe ( NCDVitalsId, NCDVitals )
     }
 
 
@@ -2534,6 +3056,7 @@ type alias ChildMeasurements =
     , followUp : Maybe ( FollowUpId, FollowUp )
     , healthEducation : Maybe ( GroupHealthEducationId, GroupHealthEducation )
     , sendToHC : Maybe ( GroupSendToHCId, GroupSendToHC )
+    , ncda : Maybe ( GroupNCDAId, GroupNCDA )
     }
 
 
@@ -2550,6 +3073,7 @@ emptyChildMeasurements =
     , followUp = Nothing
     , healthEducation = Nothing
     , sendToHC = Nothing
+    , ncda = Nothing
     }
 
 

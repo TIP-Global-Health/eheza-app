@@ -6,6 +6,8 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild)
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.View
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -32,6 +34,9 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
 
         mandatoryNutritionAssessmentMeasurementsTaken =
             mandatoryActivitiesCompleted currentDate zscores session.offlineSession childId isChw db
+
+        componentsConfig =
+            Just { setReportComponentsMsg = SetReportComponents }
     in
     viewWebData language
         (viewProgressReport
@@ -43,8 +48,14 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
+            model.sendViaWhatsAppDialog
+            model.reportTab
             SetActivePage
+            SetReportTab
             SetDiagnosisMode
+            MsgSendViaWhatsAppDialog
+            componentsConfig
+            model.components
             Nothing
         )
         identity

@@ -1,21 +1,4 @@
-module Backend.Person.Model exposing
-    ( EducationLevel(..)
-    , ExpectedAge(..)
-    , ExpectedGender(..)
-    , HIVStatus(..)
-    , Initiator(..)
-    , MaritalStatus(..)
-    , ModeOfDelivery(..)
-    , ParticipantDirectoryOperation(..)
-    , Person
-    , Ubudehe(..)
-    , VaginalDelivery(..)
-    , allEducationLevels
-    , allHivStatuses
-    , allMaritalStatuses
-    , allModesOfDelivery
-    , allUbudehes
-    )
+module Backend.Person.Model exposing (..)
 
 import Backend.Entities exposing (AcuteIllnessEncounterId, HealthCenterId, PersonId, PrenatalEncounterId, SessionId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
@@ -114,6 +97,7 @@ type EducationLevel
     | DiplomaProgram
     | HigherEducation
     | AdvancedDiploma
+    | MastersDegree
 
 
 allEducationLevels : List EducationLevel
@@ -133,6 +117,8 @@ type MaritalStatus
     | Married
     | Single
     | Widowed
+    | LivingWithPartner
+    | Religious
 
 
 allMaritalStatuses : List MaritalStatus
@@ -175,3 +161,8 @@ type ExpectedGender
     = ExpectMale
     | ExpectFemale
     | ExpectMaleOrFemale
+
+
+type PatchPersonInitator
+    = InitiatorEditForm
+    | InitiatorProgressReport

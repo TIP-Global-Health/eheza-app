@@ -90,7 +90,7 @@ a {
   }
 
   &.head {
-    margin: 0 -35px 30px -35px;
+    margin: 0 -30px 30px -30px;
     padding: 25px 0;
     z-index: 100;
     position: relative;
@@ -122,6 +122,7 @@ a {
 }
 
 .actions {
+  height: 63px;
   margin: 2.5rem -3rem -2.5rem -3rem;
 }
 
@@ -252,6 +253,18 @@ h3.ui.header {
 
   &.primary {
     background: $color-primary;
+  }
+
+  &.velvet {
+    background: $color-velvet;
+  }
+
+  &.purple {
+    background: $color-purple;
+  }
+
+  &.cyan {
+    background: $color-cyan;
   }
 
   &.disabled {
@@ -402,12 +415,14 @@ h3.ui.header {
   background-size: 122px 122px;
 }
 
+.icon-task-case-management,
 .icon-task-history {
-  background-image: url(#{$img-path}icon-task-history.svg);
+  background-image: url(#{$img-path}icon-history-white.svg);
   background-size: 122px 122px;
 }
 
-.icon-task-patient-provisions {
+.icon-task-patient-provisions,
+.icon-task-outside-care {
   background-image: url(#{$img-path}icon-task-patient-provisions.svg);
   background-size: 122px 122px;
 }
@@ -422,6 +437,7 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-clinical,
 .icon-task-physical-exam {
   background-image: url(#{$img-path}icon-physical-exam.svg);
   background-size: 78px 78px;
@@ -525,6 +541,26 @@ h3.ui.header {
 
 .icon-task-mental-health {
   background-image: url(#{$img-path}icon-mental-health-white.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-participant-directory {
+  background-image: url(#{$img-path}icon-exposure-white.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-dashboards {
+  background-image: url(#{$img-path}icon-dashboards.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-device-status {
+  background-image: url(#{$img-path}icon-device-status.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-messaging-center {
+  background-image: url(#{$img-path}icon-envelope.svg);
   background-size: 92px 92px;
 }
 
@@ -707,6 +743,11 @@ h3.ui.header {
 .icon-item-fbf {
   background-image: url(#{$img-path}icon-fbf-blue.svg);
   background-size: 168px 168px;
+}
+
+.icon-item-history {
+  background-image: url(#{$img-path}icon-history-blue.svg);
+  background-size: 122px;
 }
 
 // Form
@@ -1261,6 +1302,25 @@ input::placeholder {
     height: 820px;
     margin-left: -365px;
     width: 730px;
+  }
+
+  &.ncda-helper-popup {
+    margin-left: -300px;
+    width: 600px;
+
+    .header {
+      text-align: left;
+      text-transform: none;
+    }
+
+    .content {
+      color: $color-text;
+      text-align: left;
+    }
+
+    .actions .button {
+      margin-left: 0;
+    }
   }
 
   &.diagnosis-popup,
@@ -1976,17 +2036,18 @@ input::placeholder {
   }
 }
 
+.icon-pregnancy,
 .icon-obstetrical-exam {
   .active &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-white.svg);
+    background-image: url(#{$img-path}icon-pregnancy-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-pregnancy-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-gray.svg);
+    background-image: url(#{$img-path}icon-pregnancy-gray.svg);
   }
 }
 
@@ -2004,17 +2065,18 @@ input::placeholder {
   }
 }
 
+.icon-creatinine,
 .icon-gu-exam {
   .active &:after {
-    background-image: url(#{$img-path}icon-gu-exam-white.svg);
+    background-image: url(#{$img-path}icon-uterus-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-gu-exam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-uterus-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-gu-exam-gray.svg);
+    background-image: url(#{$img-path}icon-uterus-gray.svg);
   }
 }
 
@@ -2144,7 +2206,8 @@ input::placeholder {
   }
 }
 
-.icon-laboratory-blood-sugar {
+.icon-laboratory-blood-sugar,
+.icon-hba1c {
   .active &:after {
     background-image: url(#{$img-path}icon-blood-sugar-white-blue.svg);
   }
@@ -2186,17 +2249,32 @@ input::placeholder {
   }
 }
 
+.icon-liver-function,
 .icon-laboratory-hepatitis-b {
   .active &:after {
-    background-image: url(#{$img-path}icon-hepatitis-b-white.svg);
+    background-image: url(#{$img-path}icon-liver-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-hepatitis-b-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-liver-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-hepatitis-b-gray.svg);
+    background-image: url(#{$img-path}icon-liver-gray.svg);
+  }
+}
+
+.icon-lipid-panel {
+  .active &:after {
+    background-image: url(#{$img-path}icon-lipid-panel-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-lipid-panel-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-lipid-panel-gray.svg);
   }
 }
 
@@ -2428,7 +2506,6 @@ input::placeholder {
 .icon-danger-signs {
   .active &:after {
     background-image: url(#{$img-path}icon-danger-signs-white.svg);
-    background-size: 83px 83px;
   }
 
   .completed &:after {
@@ -2437,7 +2514,6 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-danger-signs-gray.svg);
-    background-size: 83px 83px;
   }
 }
 
@@ -2719,6 +2795,35 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-tetanus-gray.svg);
+  }
+}
+
+.icon-family {
+  .active &:after {
+    background-image: url(#{$img-path}icon-family-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-family-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-family-gray.svg);
+  }
+}
+
+
+.icon-history {
+  .active &:after {
+    background-image: url(#{$img-path}icon-history-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-history-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-history-gray.svg);
   }
 }
 

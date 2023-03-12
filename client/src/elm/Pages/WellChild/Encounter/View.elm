@@ -1,4 +1,4 @@
-module Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionActivities, thumbnailDimensions, view, viewPersonDetails)
+module Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionActivities, view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -17,12 +17,13 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Utils exposing (viewPersonDetailsExtended)
 import Pages.WellChild.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.WellChild.Encounter.Model exposing (..)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
+import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
@@ -81,7 +82,7 @@ viewHeader language isChw assembled =
 
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate zscores id isChw db model assembled =
-    ((viewPersonDetails language currentDate assembled.person |> div [ class "item" ])
+    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
         :: viewMainPageContent language currentDate zscores id isChw db assembled model
     )
         |> div [ class "ui unstackable items" ]
@@ -132,83 +133,6 @@ warningPopup language childId encounterId warningPopupState =
             )
 
 
-thumbnailDimensions : { width : Int, height : Int }
-thumbnailDimensions =
-    { width = 140
-    , height = 140
-    }
-
-
-viewPersonDetails : Language -> NominalDate -> Person -> List (Html any)
-viewPersonDetails language currentDate person =
-    let
-        isAdult =
-            isPersonAnAdult currentDate person
-                |> Maybe.withDefault True
-
-        isAboveAgeOf2Years =
-            ageInYears currentDate person
-                |> Maybe.map (\age -> age >= 2)
-                |> Maybe.withDefault False
-
-        ( thumbnailClass, ageEntry ) =
-            if isAdult then
-                ( "mother"
-                , ageInYears currentDate person
-                    |> Maybe.map (\ageYears -> viewEntry Translate.AgeWord (Translate.YearsOld ageYears |> translate language))
-                    |> Maybe.withDefault emptyNode
-                )
-
-            else
-                let
-                    renderAgeFunc =
-                        if isAboveAgeOf2Years then
-                            renderAgeYearsMonths
-
-                        else
-                            renderAgeMonthsDays
-                in
-                ( "child"
-                , person.birthDate
-                    |> Maybe.map
-                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate))
-                    |> Maybe.withDefault emptyNode
-                )
-
-        dateOfBirthEntry =
-            Maybe.map
-                (\birthDate ->
-                    viewEntry Translate.DateOfBirth (formatDDMMYYYY birthDate)
-                )
-                person.birthDate
-                |> Maybe.withDefault emptyNode
-
-        genderEntry =
-            viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)
-
-        villageEntry =
-            Maybe.map (viewEntry Translate.Village) person.village
-                |> Maybe.withDefault emptyNode
-
-        viewEntry labelTransId content =
-            p []
-                [ span [ class "label" ] [ text <| translate language labelTransId ++ ": " ]
-                , span [] [ text content ]
-                ]
-    in
-    [ div [ class "ui image" ]
-        [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
-    , div [ class "details" ]
-        [ h2 [ class "ui header" ]
-            [ text person.name ]
-        , ageEntry
-        , dateOfBirthEntry
-        , genderEntry
-        , villageEntry
-        ]
-    ]
-
-
 viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
 viewMainPageContent language currentDate zscores id isChw db assembled model =
     let
@@ -232,21 +156,10 @@ viewMainPageContent language currentDate zscores id isChw db assembled model =
                 ]
 
         viewCard activity =
-            div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <| NavigateToActivity id activity
-                    ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
-                , div [ class "content" ]
-                    [ p []
-                        [ Translate.WellChildActivityTitle activity
-                            |> translate language
-                            |> String.toUpper
-                            |> text
-                        ]
-                    ]
-                ]
+            activityCard language
+                (Translate.WellChildActivityTitle activity)
+                (getActivityIcon activity)
+                (NavigateToActivity id activity)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
@@ -258,18 +171,6 @@ viewMainPageContent language currentDate zscores id isChw db assembled model =
 
                 Reports ->
                     ( [], "" )
-
-        viewReportLink labelTransId redirectPage =
-            div
-                [ class "report-wrapper"
-                , onClick <| SetActivePage redirectPage
-                ]
-                [ div [ class "icon-progress-report" ] []
-                , div [ class "report-text" ]
-                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
-                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
-                    ]
-                ]
 
         innerContent =
             div [ class "full content" ]
@@ -283,11 +184,11 @@ viewMainPageContent language currentDate zscores id isChw db assembled model =
                     ]
                 ]
 
-        allowEndEcounter =
+        allowEndEncounter =
             allowEndingEcounter pendingActivities
 
         endEcounterButtonAttributes =
-            if allowEndEcounter then
+            if allowEndEncounter then
                 [ class "ui fluid primary button"
                 , onClick <| CloseEncounter id
                 ]

@@ -3,6 +3,9 @@ module Pages.AcuteIllness.ProgressReport.Update exposing (update)
 import App.Model
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Model
+import Components.SendViaWhatsAppDialog.Model
+import Components.SendViaWhatsAppDialog.Update
+import Gizra.Update exposing (sequenceExtra)
 import Pages.AcuteIllness.ProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..))
 
@@ -25,3 +28,11 @@ update msg model =
 
         SetEndEncounterDialogState isOpen ->
             ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )
+
+        MsgSendViaWhatsAppDialog subMsg ->
+            let
+                ( dialogUpdated, cmd, ( extraMsgs, appMsgs ) ) =
+                    Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
+            in
+            ( { model | sendViaWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
+                |> sequenceExtra update extraMsgs

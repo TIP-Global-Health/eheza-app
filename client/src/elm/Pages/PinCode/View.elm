@@ -8,24 +8,39 @@ import Backend.Nurse.Model exposing (Nurse, Role(..))
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
+import Date exposing (Unit(..))
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf)
+import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Maybe.Extra exposing (isJust)
+import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
 import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Time exposing (posixToMillis)
+import Time.Extra
 import Translate exposing (Language, translate)
-import Utils.Html exposing (spinner, viewLogo)
+import Utils.Html exposing (activityCard, activityCardWithCounter, spinner, viewLogo, viewModal)
 
 
-view : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Model -> ModelIndexedDb -> Html Msg
-view language activePage nurseData ( healthCenterId, villageId ) deviceName model db =
+view :
+    Language
+    -> Time.Posix
+    -> Page
+    -> WebData ( NurseId, Nurse )
+    -> ( Maybe HealthCenterId, Maybe VillageId )
+    -> Maybe String
+    -> Model
+    -> ModelIndexedDb
+    -> Html Msg
+view language currentTime activePage nurseData ( healthCenterId, villageId ) deviceName model db =
     let
         ( header, content ) =
             case nurseData of
-                Success ( _, nurse ) ->
+                Success ( nurseId, nurse ) ->
                     let
                         isChw =
                             isCommunityHealthWorker nurse
@@ -42,7 +57,16 @@ view language activePage nurseData ( healthCenterId, villageId ) deviceName mode
                                     |> Maybe.withDefault False
                     in
                     ( viewLoggedInHeader language nurse selectedAuthorizedLocation
-                    , viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db
+                    , viewLoggedInContent language
+                        currentTime
+                        nurseId
+                        nurse
+                        ( healthCenterId, villageId )
+                        isChw
+                        deviceName
+                        selectedAuthorizedLocation
+                        db
+                        model
                     )
 
                 _ ->
@@ -148,8 +172,19 @@ viewAnonymousContent language activePage nurseData model =
     ]
 
 
-viewLoggedInContent : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Bool -> Maybe String -> Bool -> ModelIndexedDb -> List (Html Msg)
-viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db =
+viewLoggedInContent :
+    Language
+    -> Time.Posix
+    -> NurseId
+    -> Nurse
+    -> ( Maybe HealthCenterId, Maybe VillageId )
+    -> Bool
+    -> Maybe String
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db model =
     let
         logoutButton =
             button
@@ -163,6 +198,9 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
     in
     if selectedAuthorizedLocation then
         let
+            currentDate =
+                fromLocalDateTime currentTime
+
             deviceInfo =
                 deviceName
                     |> Maybe.map
@@ -182,19 +220,6 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
                     , text <| ": " ++ nurse.name
                     ]
 
-            deviceStatusButton =
-                button
-                    [ class "ui primary button"
-                    , Pages.Page.DevicePage
-                        |> SetActivePage
-                        |> SendOutMsg
-                        |> onClick
-                    ]
-                    [ Translate.ActivePage DevicePage
-                        |> translate language
-                        |> text
-                    ]
-
             generalInfo =
                 div [ class "general-info" ]
                     [ deviceInfo
@@ -202,42 +227,82 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
                     , viewLocationName nurse ( healthCenterId, villageId ) db
                     ]
 
-            clinicalButton =
-                button
-                    [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage ClinicalPage
-                    ]
-                    [ text <| translate language Translate.Clinical ]
+            viewCard activity =
+                let
+                    ( activityIcon, navigationPage ) =
+                        case activity of
+                            MenuClinical ->
+                                ( "clinical"
+                                , UserPage ClinicalPage
+                                )
 
-            dashboardButton =
-                button
-                    [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
-                    ]
-                    [ text <| translate language Translate.DashboardLabel
-                    ]
+                            MenuParticipantDirectory ->
+                                ( "participant-directory"
+                                , UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
+                                )
 
-            participantDirectoryButton =
-                button
-                    [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
-                    ]
-                    [ text <| translate language Translate.ParticipantDirectory ]
+                            MenuDashboards ->
+                                ( "dashboards"
+                                , UserPage <| DashboardPage MainPage
+                                )
 
-            caseManagementButton =
-                button
-                    [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage GlobalCaseManagementPage
+                            MenuCaseManagement ->
+                                ( "case-management"
+                                , UserPage GlobalCaseManagementPage
+                                )
+
+                            MenuDeviceStatus ->
+                                ( "device-status"
+                                , DevicePage
+                                )
+
+                            MenuMessagingCenter ->
+                                ( "messaging-center"
+                                , UserPage MessagingCenterPage
+                                )
+
+                    viewCardFunc =
+                        if activity == MenuMessagingCenter then
+                            resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
+                                |> activityCardWithCounter
+
+                        else
+                            activityCard
+                in
+                viewCardFunc language
+                    (Translate.MainMenuActivity activity)
+                    activityIcon
+                    (SendOutMsg <| SetActivePage navigationPage)
+
+            activities =
+                [ MenuClinical
+                , MenuParticipantDirectory
+                , MenuDashboards
+                , MenuCaseManagement
+                , MenuDeviceStatus
+                ]
+                    ++ (if nurse.resilienceProgramEnabled then
+                            [ MenuMessagingCenter ]
+
+                        else
+                            []
+                       )
+
+            cards =
+                div [ class "wrap-cards" ]
+                    [ div [ class "ui four cards" ] <|
+                        List.map viewCard activities
                     ]
-                    [ text <| translate language Translate.CaseManagement ]
         in
         [ generalInfo
-        , clinicalButton
-        , participantDirectoryButton
-        , dashboardButton
-        , caseManagementButton
-        , deviceStatusButton
+        , cards
         , logoutButton
+        , viewModal <|
+            -- If both reminder and notification need to be presented,
+            -- reminder is given a priority.
+            Maybe.Extra.or
+                (resilienceReminderDialog language currentTime currentDate nurseId nurse)
+                (resilienceNotificationDialog language currentTime currentDate nurseId nurse db model)
         ]
 
     else
@@ -250,6 +315,166 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) isChw deviceNam
                     selectHeathCenterOptions language nurse db
         in
         locationOptions ++ [ logoutButton ]
+
+
+resilienceReminderDialog : Language -> Time.Posix -> NominalDate -> NurseId -> Nurse -> Maybe (Html Msg)
+resilienceReminderDialog language currentTime currentDate nurseId nurse =
+    Maybe.andThen
+        (\programStartDate ->
+            resolveResilienceReminderType currentDate programStartDate
+                |> Maybe.andThen
+                    (\reminderType ->
+                        let
+                            showReminder =
+                                Maybe.map
+                                    (\scheduledTime ->
+                                        posixToMillis scheduledTime < posixToMillis currentTime
+                                    )
+                                    nurse.resilienceNextReminder
+                                    |> Maybe.withDefault
+                                        (case reminderType of
+                                            ResilienceReminderDrinkWatter ->
+                                                let
+                                                    scheduledTime =
+                                                        Time.Extra.partsToPosix Time.utc
+                                                            { year = Date.year programStartDate
+                                                            , month = Date.month programStartDate
+                                                            , day = Date.day programStartDate
+                                                            , hour = 0
+                                                            , minute = 0
+                                                            , second = 0
+                                                            , millisecond = 0
+                                                            }
+                                                            |> resolveTomorrow8AmUTC
+                                                in
+                                                posixToMillis scheduledTime < posixToMillis currentTime
+
+                                            ResilienceReminderTakeBreak ->
+                                                Time.toHour Time.utc currentTime >= 10
+                                        )
+                        in
+                        if showReminder then
+                            let
+                                nextReminder =
+                                    case reminderType of
+                                        ResilienceReminderDrinkWatter ->
+                                            resolveTomorrow8AmUTC currentTime
+
+                                        ResilienceReminderTakeBreak ->
+                                            Time.Extra.add Time.Extra.Hour 1 Time.utc currentTime
+
+                                nurseWithUpdatedReminder =
+                                    { nurse | resilienceNextReminder = Just nextReminder }
+                            in
+                            Just <|
+                                div [ class "ui active modal reminder" ]
+                                    [ div [ class "header" ]
+                                        [ text <|
+                                            translate language <|
+                                                Translate.ResilienceReminderHeader nurse.name reminderType
+                                        ]
+                                    , div
+                                        [ class "content" ]
+                                        [ p [] [ text <| translate language <| Translate.ResilienceReminderParagraph1 reminderType ]
+                                        , p [] [ text <| translate language <| Translate.ResilienceReminderParagraph2 reminderType ]
+                                        ]
+                                    , div [ class "footer" ]
+                                        [ text <| translate language <| Translate.ResilienceReminderFooter reminderType ]
+                                    , div
+                                        [ class "actions" ]
+                                        [ button
+                                            [ class "ui primary fluid button"
+                                            , onClick <| SendOutMsg <| UpdateNurse nurseId nurseWithUpdatedReminder
+                                            ]
+                                            [ text <| translate language Translate.OK ]
+                                        ]
+                                    ]
+
+                        else
+                            Nothing
+                    )
+        )
+        nurse.resilienceProgramStartDate
+
+
+resilienceNotificationDialog :
+    Language
+    -> Time.Posix
+    -> NominalDate
+    -> NurseId
+    -> Nurse
+    -> ModelIndexedDb
+    -> Model
+    -> Maybe (Html Msg)
+resilienceNotificationDialog language currentTime currentDate nurseId nurse db model =
+    let
+        notificationTimeReached =
+            Maybe.map
+                (\nextNotification ->
+                    posixToMillis nextNotification <= posixToMillis currentTime
+                )
+                model.nextNotification
+                |> Maybe.withDefault False
+    in
+    if notificationTimeReached && isJust nurse.resilienceProgramStartDate then
+        let
+            numberOfUnreadMessages =
+                resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
+        in
+        if numberOfUnreadMessages > 0 then
+            Just <|
+                div [ class "ui active modal notification" ]
+                    [ div [ class "header" ]
+                        [ text <|
+                            translate language <|
+                                Translate.ResilienceNotificationHeader nurse.name
+                        ]
+                    , div [ class "content" ]
+                        [ p [] [ text <| translate language <| Translate.ResilienceNotificationNumberOfUnread numberOfUnreadMessages ]
+                        , p [] [ text <| translate language Translate.ResilienceNotificationReadNowQuestion ]
+                        ]
+                    , div [ class "actions" ]
+                        [ div [ class "two ui buttons" ]
+                            [ button
+                                [ class "ui velvet button"
+                                , onClick <| HandleNotificationResponse False
+                                ]
+                                [ text <| translate language Translate.Ignore ]
+                            , button
+                                [ class "ui primary fluid button"
+                                , onClick <| HandleNotificationResponse True
+                                ]
+                                [ text <| translate language Translate.Read ]
+                            ]
+                        ]
+                    ]
+
+        else
+            Nothing
+
+    else
+        Nothing
+
+
+resolveResilienceReminderType : NominalDate -> NominalDate -> Maybe ResilienceReminderType
+resolveResilienceReminderType currentDate programStartDate =
+    case Date.diff Months programStartDate currentDate of
+        0 ->
+            -- First month of the program.
+            Just ResilienceReminderDrinkWatter
+
+        1 ->
+            -- Second month of the program.
+            Just ResilienceReminderTakeBreak
+
+        _ ->
+            Nothing
+
+
+resolveTomorrow8AmUTC : Time.Posix -> Time.Posix
+resolveTomorrow8AmUTC =
+    Time.Extra.ceiling Time.Extra.Day Time.utc
+        >> Time.Extra.add Time.Extra.Hour 8 Time.utc
 
 
 viewLocationName : Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> ModelIndexedDb -> Html Msg

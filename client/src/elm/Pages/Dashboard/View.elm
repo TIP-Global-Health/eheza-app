@@ -50,7 +50,7 @@ import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..))
 import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
-import Pages.Utils exposing (calculatePercentage)
+import Pages.Utils exposing (calculatePercentage, viewCustomSelectListInput)
 import Path
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -58,7 +58,6 @@ import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
-import Time exposing (millisToPosix)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
@@ -1900,29 +1899,20 @@ viewFiltersModal language isChw nurse stats db model =
 
             else
                 let
-                    allOptions =
-                        [ FilterAllPrograms
-                        , FilterProgramFbf
-                        , FilterProgramPmtct
-                        , FilterProgramSorwathe
-                        , FilterProgramAchi
-                        , FilterProgramCommunity
-                        ]
-
                     programTypeFilterInput =
-                        allOptions
-                            |> List.map
-                                (\programTypeFilter ->
-                                    option
-                                        [ value (filterProgramTypeToString programTypeFilter)
-                                        , selected (model.programTypeFilter == programTypeFilter)
-                                        ]
-                                        [ text <| translate language <| Translate.Dashboard <| Translate.FilterProgramType programTypeFilter ]
-                                )
-                            |> select
-                                [ onInput SetFilterProgramType
-                                , class "select-input"
-                                ]
+                        viewCustomSelectListInput (Just model.programTypeFilter)
+                            [ FilterAllPrograms
+                            , FilterProgramFbf
+                            , FilterProgramPmtct
+                            , FilterProgramSorwathe
+                            , FilterProgramAchi
+                            , FilterProgramCommunity
+                            ]
+                            filterProgramTypeToString
+                            SetFilterProgramType
+                            (Translate.FilterProgramType >> Translate.Dashboard >> translate language)
+                            "select-input"
+                            False
                 in
                 [ div [ class "helper" ] [ text <| translate language <| Translate.Dashboard Translate.ProgramType ]
                 , programTypeFilterInput

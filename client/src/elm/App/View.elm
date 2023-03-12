@@ -3,6 +3,7 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
@@ -36,7 +37,20 @@ import Pages.HomeVisit.Encounter.Model
 import Pages.HomeVisit.Encounter.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
+import Pages.MessagingCenter.Model
+import Pages.MessagingCenter.View
 import Pages.MyAccount.View
+import Pages.NCD.Activity.Model
+import Pages.NCD.Activity.View
+import Pages.NCD.Encounter.Model
+import Pages.NCD.Encounter.View
+import Pages.NCD.Participant.View
+import Pages.NCD.ProgressReport.Model
+import Pages.NCD.ProgressReport.View
+import Pages.NCD.RecurrentActivity.Model
+import Pages.NCD.RecurrentActivity.View
+import Pages.NCD.RecurrentEncounter.Model
+import Pages.NCD.RecurrentEncounter.View
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.View
 import Pages.Nutrition.Encounter.Model
@@ -247,6 +261,7 @@ viewConfiguredModel model configured =
 
             PinCodePage ->
                 Pages.PinCode.View.view model.language
+                    model.currentTime
                     model.activePage
                     (RemoteData.map .nurse configured.loggedIn)
                     ( model.healthCenterId, model.villageId )
@@ -420,6 +435,7 @@ viewUserPage page deviceName model configured =
 
                     NutritionParticipantPage initiator id ->
                         Pages.Nutrition.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb
+                            |> flexPageWrapper model
 
                     WellChildParticipantPage initiator id ->
                         Pages.WellChild.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb
@@ -433,6 +449,10 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.AcuteIllness.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id)
+                            |> flexPageWrapper model
+
+                    NCDParticipantPage initiator id ->
+                        Pages.NCD.Participant.View.view model.language currentDate healthCenterId id initiator model.indexedDb
                             |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->
@@ -667,6 +687,64 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
                             |> flexPageWrapper model
 
+                    NCDEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.ncdEncounterPages
+                                    |> Maybe.withDefault Pages.NCD.Encounter.Model.emptyModel
+                        in
+                        Pages.NCD.Encounter.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNCDEncounter id)
+                            |> flexPageWrapper model
+
+                    NCDActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.ncdActivityPages
+                                    |> Maybe.withDefault Pages.NCD.Activity.Model.emptyModel
+                        in
+                        Pages.NCD.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNCDActivity id activity)
+                            |> flexPageWrapper model
+
+                    NCDRecurrentEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.ncdRecurrentEncounterPages
+                                    |> Maybe.withDefault Pages.NCD.RecurrentEncounter.Model.emptyModel
+                        in
+                        Pages.NCD.RecurrentEncounter.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNCDRecurrentEncounter id)
+                            |> flexPageWrapper model
+
+                    NCDRecurrentActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.ncdRecurrentActivityPages
+                                    |> Maybe.withDefault Pages.NCD.RecurrentActivity.Model.emptyModel
+                        in
+                        Pages.NCD.RecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNCDRecurrentActivity id activity)
+                            |> flexPageWrapper model
+
+                    NCDProgressReportPage initiator ->
+                        let
+                            encounterId =
+                                case initiator of
+                                    InitiatorEncounterPage id ->
+                                        id
+
+                                    InitiatorRecurrentEncounterPage id ->
+                                        id
+
+                            page_ =
+                                Dict.get encounterId loggedInModel.ncdProgressReportPages
+                                    |> Maybe.withDefault Pages.NCD.ProgressReport.Model.emptyModel
+                        in
+                        Pages.NCD.ProgressReport.View.view model.language currentDate encounterId initiator model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNCDProgressReport encounterId)
+                            |> flexPageWrapper model
+
                     TraceContactPage traceContactId ->
                         let
                             page_ =
@@ -698,8 +776,27 @@ viewUserPage page deviceName model configured =
                             |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)
                             |> flexPageWrapper model
 
+                    MessagingCenterPage ->
+                        let
+                            ( nurseId, nurse ) =
+                                loggedInModel.nurse
+
+                            page_ =
+                                Dict.get nurseId loggedInModel.messagingCenterPages
+                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                        in
+                        Pages.MessagingCenter.View.view model.language
+                            model.currentTime
+                            nurseId
+                            nurse
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                            |> flexPageWrapper model
+
             else
                 Pages.PinCode.View.view model.language
+                    model.currentTime
                     model.activePage
                     (Success loggedInModel.nurse)
                     ( model.healthCenterId, model.villageId )
@@ -711,6 +808,7 @@ viewUserPage page deviceName model configured =
 
         Nothing ->
             Pages.PinCode.View.view model.language
+                model.currentTime
                 model.activePage
                 (RemoteData.map .nurse configured.loggedIn)
                 ( model.healthCenterId, model.villageId )

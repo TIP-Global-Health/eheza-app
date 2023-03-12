@@ -27,13 +27,16 @@ import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantExtraData)
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
-import Backend.Person.Model exposing (Initiator, Person)
+import Backend.Person.Model exposing (Initiator, PatchPersonInitator, Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.TraceContact.Model
 import Backend.Village.Model exposing (Village)
@@ -84,7 +87,11 @@ type alias ModelIndexedDb =
     , individualSessionRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
     , homeVisitEncounterRequests : Dict HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Model
     , wellChildEncounterRequests : Dict WellChildEncounterId Backend.WellChildEncounter.Model.Model
+    , ncdEncounterRequests : Dict NCDEncounterId Backend.NCDEncounter.Model.Model
     , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
+    , nurseRequests : Dict NurseId Backend.Nurse.Model.Model
+    , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
+    , resilienceMessageRequests : Dict NurseId Backend.ResilienceMessage.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -107,6 +114,7 @@ type alias ModelIndexedDb =
     , acuteIllnessEncounters : Dict AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     , homeVisitEncounters : Dict HomeVisitEncounterId (WebData HomeVisitEncounter)
     , wellChildEncounters : Dict WellChildEncounterId (WebData WellChildEncounter)
+    , ncdEncounters : Dict NCDEncounterId (WebData NCDEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     , traceContacts : Dict AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
 
@@ -117,12 +125,14 @@ type alias ModelIndexedDb =
     , acuteIllnessEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     , homeVisitEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict HomeVisitEncounterId HomeVisitEncounter))
     , wellChildEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict WellChildEncounterId WellChildEncounter))
+    , ncdEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict NCDEncounterId NCDEncounter))
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
     , acuteIllnessMeasurements : Dict AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     , followUpMeasurements : Dict HealthCenterId (WebData FollowUpMeasurements)
     , homeVisitMeasurements : Dict HomeVisitEncounterId (WebData HomeVisitMeasurements)
     , wellChildMeasurements : Dict WellChildEncounterId (WebData WellChildMeasurements)
+    , ncdMeasurements : Dict NCDEncounterId (WebData NCDMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -142,10 +152,15 @@ type alias ModelIndexedDb =
     , postAcuteIllnessEncounter : Dict IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
     , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
     , postWellChildEncounter : Dict IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
+    , postNCDEncounter : Dict IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
 
     -- Dashboard Statistics.
     , computedDashboards : Dict HealthCenterId ComputedDashboard
     , computedDashboardLastFetched : Time.Posix
+
+    -- Resilience.
+    , resilienceSurveysByNurse : Dict NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
+    , resilienceMessagesByNurse : Dict NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
     }
 
 
@@ -175,6 +190,9 @@ emptyModelIndexedDb =
     , wellChildEncounters = Dict.empty
     , wellChildEncountersByParticipant = Dict.empty
     , wellChildMeasurements = Dict.empty
+    , ncdEncounters = Dict.empty
+    , ncdEncountersByParticipant = Dict.empty
+    , ncdMeasurements = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
@@ -188,6 +206,7 @@ emptyModelIndexedDb =
     , postHomeVisitEncounter = Dict.empty
     , postWellChildEncounter = Dict.empty
     , postAcuteIllnessEncounter = Dict.empty
+    , postNCDEncounter = Dict.empty
     , postRelationship = Dict.empty
     , postSession = NotAsked
     , prenatalEncounterRequests = Dict.empty
@@ -195,8 +214,12 @@ emptyModelIndexedDb =
     , acuteIllnessEncounterRequests = Dict.empty
     , homeVisitEncounterRequests = Dict.empty
     , wellChildEncounterRequests = Dict.empty
+    , ncdEncounterRequests = Dict.empty
     , traceContactRequests = Dict.empty
     , individualSessionRequests = Dict.empty
+    , nurseRequests = Dict.empty
+    , resilienceSurveyRequests = Dict.empty
+    , resilienceMessageRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
     , relationshipsByPerson = Dict.empty
@@ -206,6 +229,8 @@ emptyModelIndexedDb =
     , followUpMeasurements = Dict.empty
     , computedDashboards = Dict.empty
     , computedDashboardLastFetched = Time.millisToPosix 0
+    , resilienceSurveysByNurse = Dict.empty
+    , resilienceMessagesByNurse = Dict.empty
     }
 
 
@@ -268,6 +293,9 @@ type MsgIndexedDb
     | FetchWellChildEncounter WellChildEncounterId
     | FetchWellChildEncountersForParticipant IndividualEncounterParticipantId
     | FetchWellChildMeasurements WellChildEncounterId
+    | FetchNCDEncounter NCDEncounterId
+    | FetchNCDEncountersForParticipant IndividualEncounterParticipantId
+    | FetchNCDMeasurements NCDEncounterId
     | FetchParticipantForms
     | FetchParticipantsForPerson PersonId
     | FetchPeopleByName String
@@ -278,6 +306,8 @@ type MsgIndexedDb
     | FetchPrenatalMeasurements PrenatalEncounterId
     | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchRelationshipsForPerson PersonId
+    | FetchResilienceMessagesForNurse NurseId
+    | FetchResilienceSurveysForNurse NurseId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchVillages
@@ -308,6 +338,9 @@ type MsgIndexedDb
     | HandleFetchedWellChildEncounter WellChildEncounterId (WebData WellChildEncounter)
     | HandleFetchedWellChildEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict WellChildEncounterId WellChildEncounter))
     | HandleFetchedWellChildMeasurements WellChildEncounterId (WebData WellChildMeasurements)
+    | HandleFetchedNCDEncounter NCDEncounterId (WebData NCDEncounter)
+    | HandleFetchedNCDEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict NCDEncounterId NCDEncounter))
+    | HandleFetchedNCDMeasurements NCDEncounterId (WebData NCDMeasurements)
     | HandleFetchedParticipantForms (WebData (Dict ParticipantFormId ParticipantForm))
     | HandleFetchedParticipantsForPerson PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))
@@ -318,13 +351,15 @@ type MsgIndexedDb
     | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
     | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
+    | HandleFetchedResilienceMessagesForNurse NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
+    | HandleFetchedResilienceSurveysForNurse NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedVillages (WebData (Dict VillageId Village))
     | HandleFetchedTraceContact AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) Initiator Person -- The first person is a person we ought to offer setting a relationship to.
-    | PatchPerson PersonId Person
+    | PatchPerson PatchPersonInitator PersonId Person
     | PostRelationship PersonId MyRelationship (Maybe ClinicId) Initiator
     | PostPmtctParticipant Initiator PmtctParticipant
     | PostSession Session
@@ -334,9 +369,10 @@ type MsgIndexedDb
     | PostAcuteIllnessEncounter AcuteIllnessEncounter
     | PostHomeVisitEncounter HomeVisitEncounter
     | PostWellChildEncounter WellChildEncounter
+    | PostNCDEncounter NCDEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
-    | HandlePatchedPerson PersonId (WebData Person)
+    | HandlePatchedPerson PatchPersonInitator PersonId (WebData Person)
     | HandlePostedRelationship PersonId Initiator (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId Initiator (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession ClinicType (WebData SessionId)
@@ -346,6 +382,7 @@ type MsgIndexedDb
     | HandlePostedAcuteIllnessEncounter IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
     | HandlePostedHomeVisitEncounter IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
     | HandlePostedWellChildEncounter IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
+    | HandlePostedNCDEncounter IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout
       -- Process some revisions we've received from the backend. In some cases,
@@ -359,8 +396,12 @@ type MsgIndexedDb
     | MsgAcuteIllnessEncounter AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Msg
     | MsgHomeVisitEncounter HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Msg
     | MsgWellChildEncounter WellChildEncounterId Backend.WellChildEncounter.Model.Msg
+    | MsgNCDEncounter NCDEncounterId Backend.NCDEncounter.Model.Msg
     | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
+    | MsgNurse NurseId Backend.Nurse.Model.Msg
+    | MsgResilienceSurvey NurseId Backend.ResilienceSurvey.Model.Msg
+    | MsgResilienceMessage NurseId Backend.ResilienceMessage.Model.Msg
     | ResetFailedToFetchAuthorities
 
 
@@ -398,6 +439,7 @@ type Revision
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | FollowUpRevision FollowUpId FollowUp
     | GroupHealthEducationRevision GroupHealthEducationId GroupHealthEducation
+    | GroupNCDARevision GroupNCDAId GroupNCDA
     | GroupSendToHCRevision GroupSendToHCId GroupSendToHC
     | HCContactRevision HCContactId HCContact
     | HealthCenterRevision HealthCenterId HealthCenter
@@ -415,6 +457,29 @@ type Revision
     | MedicationDistributionRevision MedicationDistributionId MedicationDistribution
     | MotherFbfRevision MotherFbfId Fbf
     | MuacRevision MuacId Muac
+    | NCDCoMorbiditiesRevision NCDCoMorbiditiesId NCDCoMorbidities
+    | NCDCoreExamRevision NCDCoreExamId NCDCoreExam
+    | NCDCreatinineTestRevision NCDCreatinineTestId NCDCreatinineTest
+    | NCDDangerSignsRevision NCDDangerSignsId NCDDangerSigns
+    | NCDEncounterRevision NCDEncounterId NCDEncounter
+    | NCDFamilyHistoryRevision NCDFamilyHistoryId NCDFamilyHistory
+    | NCDFamilyPlanningRevision NCDFamilyPlanningId NCDFamilyPlanning
+    | NCDHbA1cTestRevision NCDHbA1cTestId NCDHbA1cTest
+    | NCDHealthEducationRevision NCDHealthEducationId NCDHealthEducation
+    | NCDHIVTestRevision NCDHIVTestId NCDHIVTest
+    | NCDLabsResultsRevision NCDLabsResultsId NCDLabsResults
+    | NCDLipidPanelTestRevision NCDLipidPanelTestId NCDLipidPanelTest
+    | NCDLiverFunctionTestRevision NCDLiverFunctionTestId NCDLiverFunctionTest
+    | NCDMedicationDistributionRevision NCDMedicationDistributionId NCDMedicationDistribution
+    | NCDMedicationHistoryRevision NCDMedicationHistoryId NCDMedicationHistory
+    | NCDOutsideCareRevision NCDOutsideCareId NCDOutsideCare
+    | NCDPregnancyTestRevision NCDPregnancyTestId NCDPregnancyTest
+    | NCDRandomBloodSugarTestRevision NCDRandomBloodSugarTestId NCDRandomBloodSugarTest
+    | NCDReferralRevision NCDReferralId NCDReferral
+    | NCDSocialHistoryRevision NCDSocialHistoryId NCDSocialHistory
+    | NCDSymptomReviewRevision NCDSymptomReviewId NCDSymptomReview
+    | NCDUrineDipstickTestRevision NCDUrineDipstickTestId NCDUrineDipstickTest
+    | NCDVitalsRevision NCDVitalsId NCDVitals
     | NurseRevision NurseId Nurse
     | NutritionCaringRevision NutritionCaringId NutritionCaring
     | NutritionContributingFactorsRevision NutritionContributingFactorsId NutritionContributingFactors
@@ -426,6 +491,7 @@ type Revision
     | NutritionHeightRevision NutritionHeightId NutritionHeight
     | NutritionHygieneRevision NutritionHygieneId NutritionHygiene
     | NutritionMuacRevision NutritionMuacId NutritionMuac
+    | NutritionNCDARevision NutritionNCDAId NutritionNCDA
     | NutritionNutritionRevision NutritionNutritionId NutritionNutrition
     | NutritionPhotoRevision NutritionPhotoId NutritionPhoto
     | NutritionSendToHCRevision NutritionSendToHCId NutritionSendToHC
@@ -456,6 +522,7 @@ type Revision
     | PrenatalMedicationDistributionRevision PrenatalMedicationDistributionId PrenatalMedicationDistribution
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalOutsideCareRevision PrenatalOutsideCareId PrenatalOutsideCare
+    | PrenatalPartnerHIVTestRevision PrenatalPartnerHIVTestId PrenatalPartnerHIVTest
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | PrenatalRandomBloodSugarTestRevision PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest
     | PrenatalSendToHCRevision PrenatalSendToHCId PrenatalSendToHC
@@ -465,6 +532,8 @@ type Revision
     | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation
     | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest
     | RelationshipRevision RelationshipId Relationship
+    | ResilienceMessageRevision ResilienceMessageId ResilienceMessage
+    | ResilienceSurveyRevision ResilienceSurveyId ResilienceSurvey
     | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory
@@ -492,6 +561,7 @@ type Revision
     | WellChildMebendezoleRevision WellChildMebendezoleId WellChildMebendezole
     | WellChildMRImmunisationRevision WellChildMRImmunisationId WellChildMRImmunisation
     | WellChildMuacRevision WellChildMuacId WellChildMuac
+    | WellChildNCDARevision WellChildNCDAId WellChildNCDA
     | WellChildNextVisitRevision WellChildNextVisitId WellChildNextVisit
     | WellChildNutritionRevision WellChildNutritionId WellChildNutrition
     | WellChildOPVImmunisationRevision WellChildOPVImmunisationId WellChildOPVImmunisation

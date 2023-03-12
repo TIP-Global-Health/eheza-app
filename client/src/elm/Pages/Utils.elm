@@ -19,7 +19,7 @@ import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -36,6 +36,20 @@ thumbnailDimensions =
     { width = 120
     , height = 120
     }
+
+
+viewReportLink : Language -> TranslationId -> msg -> Html msg
+viewReportLink language labelTransId action =
+    div
+        [ class "report-wrapper"
+        , onClick action
+        ]
+        [ div [ class "icon-progress-report" ] []
+        , div [ class "report-text" ]
+            [ div [ class "report-label" ] [ text <| translate language labelTransId ]
+            , div [ class "report-link" ] [ text <| translate language Translate.View ]
+            ]
+        ]
 
 
 viewPersonDetails : Language -> NominalDate -> Person -> Maybe TranslationId -> List (Html msg)
@@ -100,6 +114,76 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
                         ]
                 )
             |> Maybe.withDefault emptyNode
+        ]
+    ]
+
+
+viewPersonDetailsExtended : Language -> NominalDate -> Person -> List (Html any)
+viewPersonDetailsExtended language currentDate person =
+    let
+        isAdult =
+            isPersonAnAdult currentDate person
+                |> Maybe.withDefault True
+
+        isAboveAgeOf2Years =
+            ageInYears currentDate person
+                |> Maybe.map (\age -> age >= 2)
+                |> Maybe.withDefault False
+
+        ( thumbnailClass, ageEntry ) =
+            if isAdult then
+                ( "mother"
+                , ageInYears currentDate person
+                    |> Maybe.map (\ageYears -> viewEntry Translate.AgeWord (Translate.YearsOld ageYears |> translate language))
+                    |> Maybe.withDefault emptyNode
+                )
+
+            else
+                let
+                    renderAgeFunc =
+                        if isAboveAgeOf2Years then
+                            renderAgeYearsMonths
+
+                        else
+                            renderAgeMonthsDays
+                in
+                ( "child"
+                , person.birthDate
+                    |> Maybe.map
+                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate))
+                    |> Maybe.withDefault emptyNode
+                )
+
+        dateOfBirthEntry =
+            Maybe.map
+                (\birthDate ->
+                    viewEntry Translate.DateOfBirth (formatDDMMYYYY birthDate)
+                )
+                person.birthDate
+                |> Maybe.withDefault emptyNode
+
+        genderEntry =
+            viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)
+
+        villageEntry =
+            Maybe.map (viewEntry Translate.Village) person.village
+                |> Maybe.withDefault emptyNode
+
+        viewEntry labelTransId content =
+            p []
+                [ span [ class "label" ] [ text <| translate language labelTransId ++ ": " ]
+                , span [] [ text content ]
+                ]
+    in
+    [ div [ class "ui image" ]
+        [ thumbnailImage thumbnailClass person.avatarUrl person.name 140 140 ]
+    , div [ class "details" ]
+        [ h2 [ class "ui header" ]
+            [ text person.name ]
+        , ageEntry
+        , dateOfBirthEntry
+        , genderEntry
+        , villageEntry
         ]
     ]
 
@@ -289,7 +373,7 @@ nonAdministrationReasonToSign sign reason =
         VitaminA ->
             MedicationVitaminA reason
 
-        -- Bellow are not in use, but we specify them explicitly to make
+        -- Below are not in use, but we specify them explicitly to make
         -- sure that compile arets if we forget to address new
         -- MedicationDistributionSign, when added.
         Albendazole ->
@@ -438,7 +522,8 @@ viewCheckBoxSelectCustomInput : Language -> List a -> List a -> Maybe a -> (a ->
 viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc =
     let
         checkedOptions =
-            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
+            Maybe.map List.singleton currentValue
+                |> Maybe.withDefault []
     in
     viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions Nothing setMsg viewOptionFunc
 
@@ -507,6 +592,24 @@ viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc option
         ]
 
 
+viewNumberInput : Language -> Maybe Int -> (String -> msg) -> String -> Html msg
+viewNumberInput language maybeCurrentValue setMsg inputClass =
+    let
+        currentValue =
+            Maybe.map String.fromInt maybeCurrentValue
+                |> Maybe.withDefault ""
+
+        inputAttrs =
+            [ type_ "number"
+            , Html.Attributes.min "0"
+            , onInput setMsg
+            , value currentValue
+            ]
+    in
+    div [ class <| "form-input number " ++ inputClass ]
+        [ input inputAttrs [] ]
+
+
 viewMeasurementInput : Language -> Maybe Float -> (String -> msg) -> String -> TranslationId -> Html msg
 viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslationId =
     let
@@ -573,16 +676,13 @@ viewCheckBoxValueInputItem language data toggleMsg setMsg translateFunc sign =
             if isChecked then
                 let
                     periodInput =
-                        List.range 1 14
-                            |> List.map
-                                (\number ->
-                                    option
-                                        [ value (String.fromInt number)
-                                        , selected (currentValue == Just number)
-                                        ]
-                                        [ text (String.fromInt number) ]
-                                )
-                            |> select [ onInput (setMsg sign), class "form-input period" ]
+                        viewCustomSelectListInput currentValue
+                            (List.range 1 14)
+                            String.fromInt
+                            (setMsg sign)
+                            String.fromInt
+                            "form-input period"
+                            False
                 in
                 [ div [ class "three wide column" ] [ periodInput ]
                 , div [ class "four wide column" ]
@@ -677,6 +777,68 @@ setMultiSelectInputValue getSignsFunc setSignsFunc noValueIndicator value form =
             setSignsFunc (Just [ value ])
 
 
+viewSelectListInput :
+    Language
+    -> Maybe a
+    -> List a
+    -> (a -> String)
+    -> (String -> msg)
+    -> (a -> TranslationId)
+    -> String
+    -> Html msg
+viewSelectListInput language currentValue options toStringFunc setMsg transId inputClass =
+    viewCustomSelectListInput currentValue
+        options
+        toStringFunc
+        setMsg
+        (transId >> translate language)
+        ("form-input " ++ inputClass)
+        True
+
+
+viewCustomSelectListInput :
+    Maybe a
+    -> List a
+    -> (a -> String)
+    -> (String -> msg)
+    -> (a -> String)
+    -> String
+    -> Bool
+    -> Html msg
+viewCustomSelectListInput currentValue options toStringFunc setMsg transFunc inputClass withEmptyOption =
+    let
+        emptyOption =
+            if withEmptyOption then
+                emptySelectOption (currentValue == Nothing)
+
+            else
+                emptyNode
+    in
+    emptyOption
+        :: List.map
+            (\option_ ->
+                option
+                    [ value (toStringFunc option_)
+                    , selected (currentValue == Just option_)
+                    ]
+                    [ text <| transFunc option_ ]
+            )
+            options
+        |> select
+            [ onInput setMsg
+            , class inputClass
+            ]
+
+
+emptySelectOption : Bool -> Html any
+emptySelectOption isSelected =
+    option
+        [ value ""
+        , selected isSelected
+        ]
+        [ text "" ]
+
+
 viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
 viewEndEncounterDialog language heading message confirmAction cancelAction =
     div [ class "ui tiny active modal" ]
@@ -706,30 +868,74 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
 
 viewStartEncounterButton : Language -> msg -> Html msg
 viewStartEncounterButton language action =
-    div [ class "actions" ]
-        [ button
-            [ class "ui fluid primary button"
-            , onClick action
-            ]
-            [ text <| translate language Translate.StartEncounter ]
-        ]
+    viewEncounterActionButton language Translate.StartEncounter "primary" True action
 
 
 viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
-viewEndEncounterButton language allowEndEcounter setDialogStateMsgs =
+viewEndEncounterButton language =
+    viewEndEncounterButtonCustomColor language "primary"
+
+
+viewEndEncounterButtonCustomColor : Language -> String -> Bool -> (Bool -> msg) -> Html msg
+viewEndEncounterButtonCustomColor language buttonColor allowEndEncounter setDialogStateMsgs =
+    viewEncounterActionButton language Translate.EndEncounter buttonColor allowEndEncounter (setDialogStateMsgs True)
+
+
+viewEncounterActionButton : Language -> TranslationId -> String -> Bool -> msg -> Html msg
+viewEncounterActionButton language label buttonColor allowAction action =
     let
         attributes =
-            if allowEndEcounter then
-                [ class "ui fluid primary button"
-                , onClick <| setDialogStateMsgs True
+            if allowAction then
+                [ class <| "ui fluid button " ++ buttonColor
+                , onClick action
                 ]
 
             else
-                [ class "ui fluid primary button disabled" ]
+                [ class <| "ui fluid button disabled " ++ buttonColor ]
     in
     div [ class "actions" ]
         [ button attributes
+            [ text <| translate language label ]
+        ]
+
+
+viewEndEncounterMenuForProgressReport : Language -> Bool -> (Bool -> msg) -> msg -> Html msg
+viewEndEncounterMenuForProgressReport language allowEndEncounter setDialogStateMsg setSendViaWhatsAppDialogStateMsg =
+    let
+        sendViaWhatsAppEnabled =
+            -- For now, we disabled 'Send via WhatsApp' feature.
+            False
+
+        ( actionsClass, endEncounterButtonColor, sendViaWhatsAppButton ) =
+            if sendViaWhatsAppEnabled then
+                ( "actions two"
+                , "velvet"
+                , button
+                    [ class "ui fluid primary button"
+                    , onClick setSendViaWhatsAppDialogStateMsg
+                    ]
+                    [ text <| translate language Translate.SendViaWhatsApp ]
+                )
+
+            else
+                ( "actions"
+                , "primary"
+                , emptyNode
+                )
+
+        attributes =
+            if allowEndEncounter then
+                [ class <| "ui fluid button " ++ endEncounterButtonColor
+                , onClick <| setDialogStateMsg True
+                ]
+
+            else
+                [ class <| "ui fluid button disabled " ++ endEncounterButtonColor ]
+    in
+    div [ class actionsClass ]
+        [ button attributes
             [ text <| translate language Translate.EndEncounter ]
+        , sendViaWhatsAppButton
         ]
 
 
@@ -936,6 +1142,15 @@ isTaskCompleted dict task =
         |> Maybe.withDefault False
 
 
+maybeToBoolTask : Maybe a -> Maybe Bool
+maybeToBoolTask maybe =
+    if isJust maybe then
+        Just True
+
+    else
+        Nothing
+
+
 tasksBarId : String
 tasksBarId =
     "tasks-bar"
@@ -944,21 +1159,7 @@ tasksBarId =
 viewSaveAction : Language -> msg -> Bool -> Html msg
 viewSaveAction language saveMsg disabled =
     div [ class "actions" ]
-        [ button
-            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-            , onClick saveMsg
-            ]
-            [ text <| translate language Translate.Save ]
-        ]
-
-
-emptySelectOption : Bool -> Html any
-emptySelectOption isSelected =
-    option
-        [ value ""
-        , selected isSelected
-        ]
-        [ text "" ]
+        [ saveButton language (not disabled) saveMsg ]
 
 
 insertIntoSet : a -> Maybe (EverySet a) -> Maybe (EverySet a)
@@ -966,3 +1167,21 @@ insertIntoSet value set =
     Maybe.map (EverySet.insert value) set
         |> Maybe.withDefault (EverySet.singleton value)
         |> Just
+
+
+saveButton : Language -> Bool -> msg -> Html msg
+saveButton language active msg =
+    customSaveButton language active msg Translate.Save
+
+
+customSaveButton : Language -> Bool -> msg -> Translate.TranslationId -> Html msg
+customSaveButton language active msg label =
+    button
+        [ classList
+            [ ( "ui fluid primary button", True )
+            , ( "active", active )
+            , ( "disabled", not active )
+            ]
+        , onClick msg
+        ]
+        [ text <| translate language label ]

@@ -14,7 +14,7 @@ import Backend.Measurement.Model
         , NutritionMeasurements
         , WeightInKg(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
@@ -61,11 +61,15 @@ generateNutritionAssessment currentDate zscores db assembled =
 expectActivity : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
 expectActivity currentDate zscores isChw assembled db activity =
     case activity of
-        -- Show for children that are at least 6 month old.
+        -- Show for children that are at least 6 months old.
         Muac ->
             ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
+
+        -- Show for children under age of 24 months.
+        NCDA ->
+            expectNCDAActivity currentDate assembled.person
 
         NextSteps ->
             if mandatoryActivitiesCompleted currentDate zscores assembled.person isChw assembled db then
@@ -105,6 +109,9 @@ activityCompleted currentDate zscores isChw assembled db activity =
 
         Weight ->
             isJust measurements.weight
+
+        NCDA ->
+            isJust measurements.ncda
 
         NextSteps ->
             (not <| expectActivity currentDate zscores isChw assembled db NextSteps)

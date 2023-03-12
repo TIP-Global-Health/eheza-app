@@ -38,10 +38,10 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButton)
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails)
+import Pages.Utils exposing (viewEndEncounterButtonCustomColor, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
 import Utils.WebData exposing (viewWebData)
 
@@ -402,28 +402,15 @@ viewMainPageContent language currentDate assembled model =
                 ( label, icon ) =
                     generateActivityData activity assembled
 
-                navigationAction =
+                navigationPage =
                     case activity of
                         PregnancyOutcome ->
-                            [ onClick <|
-                                SetActivePage <|
-                                    UserPage <|
-                                        PregnancyOutcomePage (InitiatorPostpartumEncounter assembled.id) assembled.encounter.participant
-                            ]
+                            PregnancyOutcomePage (InitiatorPostpartumEncounter assembled.id) assembled.encounter.participant
 
                         _ ->
-                            [ onClick <|
-                                SetActivePage <|
-                                    UserPage <|
-                                        PrenatalActivityPage assembled.id activity
-                            ]
+                            PrenatalActivityPage assembled.id activity
             in
-            div [ class "card" ]
-                [ div (class "image" :: navigationAction)
-                    [ span [ class <| "icon-task icon-task-" ++ icon ] [] ]
-                , div [ class "content" ]
-                    [ p [] [ text <| String.toUpper <| translate language label ] ]
-                ]
+            activityCard language label icon (SetActivePage <| UserPage navigationPage)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
@@ -436,23 +423,21 @@ viewMainPageContent language currentDate assembled model =
                 Reports ->
                     ( [], "" )
 
-        viewReportLink labelTransId redirectPage =
-            div
-                [ class "report-wrapper"
-                , onClick <| SetActivePage redirectPage
-                ]
-                [ div [ class "icon-progress-report" ] []
-                , div [ class "report-text" ]
-                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
-                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
-                    ]
-                ]
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage (InitiatorEncounterPage assembled.id) assembled.id)
-                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage (InitiatorEncounterPage assembled.id) assembled.participant.person)
+                    [ viewReportLink language
+                        Translate.ClinicalProgressReport
+                        (SetActivePage <|
+                            UserPage <|
+                                ClinicalProgressReportPage (InitiatorEncounterPage assembled.id) assembled.id
+                        )
+                    , viewReportLink language
+                        Translate.DemographicsReport
+                        (SetActivePage <|
+                            UserPage <|
+                                DemographicsReportPage (InitiatorEncounterPage assembled.id) assembled.participant.person
+                        )
                     ]
 
             else
@@ -471,6 +456,7 @@ viewMainPageContent language currentDate assembled model =
             div [ class "ui full segment" ]
                 [ innerContent
                 , viewActionButton language
+                    "primary"
                     pendingActivities
                     completedActivities
                     -- When pausing, we close the encounter.
@@ -490,7 +476,7 @@ generateActivityData : PrenatalActivity -> AssembledData -> ( TranslationId, Str
 generateActivityData activity assembled =
     let
         default =
-            ( Translate.PrenatalActivitiesTitle activity, getActivityIcon activity )
+            ( Translate.PrenatalActivityTitle activity, getActivityIcon activity )
     in
     case activity of
         NextSteps ->
@@ -516,8 +502,8 @@ generateActivityData activity assembled =
             default
 
 
-viewActionButton : Language -> List PrenatalActivity -> List PrenatalActivity -> msg -> (Bool -> msg) -> AssembledData -> Html msg
-viewActionButton language pendingActivities completedActivities pauseMsg setDialogStateMsg assembled =
+viewActionButton : Language -> String -> List PrenatalActivity -> List PrenatalActivity -> msg -> (Bool -> msg) -> AssembledData -> Html msg
+viewActionButton language buttonColor pendingActivities completedActivities pauseMsg setDialogStateMsg assembled =
     let
         enabled =
             if emergencyReferalRequired assembled then
@@ -537,7 +523,7 @@ viewActionButton language pendingActivities completedActivities pauseMsg setDial
                         False
     in
     if secondPhaseRequired assembled then
-        viewPauseEncounterButton language enabled pauseMsg
+        viewPauseEncounterButton language buttonColor enabled pauseMsg
 
     else
-        viewEndEncounterButton language enabled setDialogStateMsg
+        viewEndEncounterButtonCustomColor language buttonColor enabled setDialogStateMsg

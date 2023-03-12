@@ -17,9 +17,11 @@ var deviceUuidUrl = '/sw/config/device-uuid';
 
 var photosDownloadCache = "photos";
 var photosUploadCache = "photos-upload";
+var screenshotsUploadCache = "screenshots-upload";
 
 var photosDownloadUrlRegex = /\/system\/files\//;
 var photosUploadUrlRegex = /\/cache-upload\/images/;
+var screenshotsUploadUrlRegex = /\/cache-upload\/screenshots/;
 
 /**
  * The DB version on the backend.
@@ -29,7 +31,7 @@ var photosUploadUrlRegex = /\/cache-upload\/images/;
  *
  * @type {number}
  */
-var dbVerno = 17;
+var dbVerno = 20;
 
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
@@ -65,6 +67,7 @@ var tableForType = {
     family_planning: 'shards',
     follow_up: 'shards',
     group_health_education: 'shards',
+    group_ncda: 'shards',
     group_send_to_hc: 'shards',
     hc_contact: 'shards',
     health_center: 'nodes',
@@ -81,6 +84,29 @@ var tableForType = {
     medication_distribution: 'shards',
     mother_fbf: 'shards',
     muac: 'shards',
+    ncd_co_morbidities: 'shards',
+    ncd_core_exam: 'shards',
+    ncd_creatinine_test: 'shards',
+    ncd_danger_signs: 'shards',
+    ncd_encounter: 'shards',
+    ncd_family_history: 'shards',
+    ncd_family_planning: 'shards',
+    ncd_hba1c_test: 'shards',
+    ncd_health_education: 'shards',
+    ncd_hiv_test: 'shards',
+    ncd_labs_results: 'shards',
+    ncd_lipid_panel_test: 'shards',
+    ncd_liver_function_test : 'shards',
+    ncd_medication_distribution: 'shards',
+    ncd_medication_history: 'shards',
+    ncd_outside_care: 'shards',
+    ncd_pregnancy_test: 'shards',
+    ncd_random_blood_sugar_test: 'shards',
+    ncd_referral: 'shards',
+    ncd_social_history: 'shards',
+    ncd_symptom_review: 'shards',
+    ncd_urine_dipstick_test: 'shards',
+    ncd_vitals: 'shards',
     nurse: 'nodes',
     nutrition: 'shards',
     nutrition_caring: 'shards',
@@ -93,6 +119,7 @@ var tableForType = {
     nutrition_height: 'shards',
     nutrition_hygiene: 'shards',
     nutrition_muac: 'shards',
+    nutrition_ncda: 'shards',
     nutrition_nutrition: 'shards',
     nutrition_photo: 'shards',
     nutrition_send_to_hc: 'shards',
@@ -123,6 +150,7 @@ var tableForType = {
     prenatal_mental_health: 'shards',
     prenatal_nutrition: 'shards',
     prenatal_outside_care: 'shards',
+    prenatal_partner_hiv_test: 'shards',
     prenatal_photo: 'shards',
     prenatal_random_blood_sugar_test: 'shards',
     prenatal_send_to_hc: 'shards',
@@ -132,6 +160,8 @@ var tableForType = {
     prenatal_tetanus_immunisation: 'shards',
     prenatal_urine_dipstick_test: 'shards',
     relationship: 'shards',
+    resilience_message: 'nodes',
+    resilience_survey: 'nodes',
     resource: 'shards',
     send_to_hc: 'shards',
     session: 'shards',
@@ -161,6 +191,7 @@ var tableForType = {
     well_child_mebendezole: 'shards',
     well_child_mr_immunisation: 'shards',
     well_child_muac: 'shards',
+    well_child_ncda: 'shards',
     well_child_next_visit: 'shards',
     well_child_nutrition: 'shards',
     well_child_opv_immunisation: 'shards',

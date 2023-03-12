@@ -22,7 +22,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (tabItem)
+import Utils.Html exposing (activityCard, tabItem)
 import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
 
@@ -105,21 +105,10 @@ viewMainPageContent language currentDate id isChw db data model =
                 ]
 
         viewCard activity =
-            div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| HomeVisitActivityPage id activity
-                    ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
-                , div [ class "content" ]
-                    [ p []
-                        [ Translate.HomeVisitActivityTitle activity
-                            |> translate language
-                            |> String.toUpper
-                            |> text
-                        ]
-                    ]
-                ]
+            activityCard language
+                (Translate.HomeVisitActivityTitle activity)
+                (getActivityIcon activity)
+                (SetActivePage <| UserPage <| HomeVisitActivityPage id activity)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
@@ -128,18 +117,6 @@ viewMainPageContent language currentDate id isChw db data model =
 
                 Completed ->
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-        viewReportLink labelTransId redirectPage =
-            div
-                [ class "report-wrapper"
-                , onClick <| SetActivePage redirectPage
-                ]
-                [ div [ class "icon-progress-report" ] []
-                , div [ class "report-text" ]
-                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
-                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
-                    ]
-                ]
 
         innerContent =
             div [ class "full content" ]
@@ -153,11 +130,11 @@ viewMainPageContent language currentDate id isChw db data model =
                     ]
                 ]
 
-        allowEndEcounter =
+        allowEndEncounter =
             List.isEmpty pendingActivities
 
         endEcounterButtonAttributes =
-            if allowEndEcounter then
+            if allowEndEncounter then
                 [ class "ui fluid primary button"
                 , onClick <| CloseEncounter id
                 ]

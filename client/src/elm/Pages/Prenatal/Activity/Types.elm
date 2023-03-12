@@ -38,19 +38,6 @@ type PatientProvisionsTask
     | Resources
 
 
-type LaboratoryTask
-    = TaskBloodGpRsTest
-    | TaskHemoglobinTest
-    | TaskHepatitisBTest
-    | TaskHIVTest
-    | TaskMalariaTest
-    | TaskRandomBloodSugarTest
-    | TaskSyphilisTest
-    | TaskUrineDipstickTest
-    | TaskHIVPCRTest
-    | TaskCompletePreviousTests
-
-
 type SymptomReviewStep
     = SymptomReviewStepSymptoms
     | SymptomReviewStepQuestions
@@ -87,11 +74,6 @@ type TreatmentReviewTask
     | TreatmentReviewSyphilis
 
 
-type OutsideCareStep
-    = OutsideCareStepDiagnoses
-    | OutsideCareStepMedications
-
-
 type ImmunisationTask
     = TaskTetanus
 
@@ -103,3 +85,8 @@ type WarningPopupType msg
     | WarningPopupMentalHealth msg
     | WarningPopupTreatmentReview msg
     | WarningPopupVitaminA msg
+
+
+type ObstetricHistoryStep
+    = ObstetricHistoryFirstStep
+    | ObstetricHistorySecondStep

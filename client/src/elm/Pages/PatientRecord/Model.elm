@@ -2,14 +2,17 @@ module Pages.PatientRecord.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
+import Components.SendViaWhatsAppDialog.Model
 import Pages.Page exposing (Page)
-import Pages.WellChild.ProgressReport.Model exposing (DiagnosisMode(..))
+import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
 
 
 type alias Model =
     { diagnosisMode : DiagnosisMode
     , viewMode : ViewMode
     , filter : PatientRecordFilter
+    , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
+    , spvReportTab : ReportTab
     }
 
 
@@ -18,15 +21,19 @@ emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , viewMode = ViewPatientRecord
     , filter = FilterAcuteIllness
+    , sendViaWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , spvReportTab = TabSPVReport
     }
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
     | SetDiagnosisMode DiagnosisMode
+    | SetSPVReportTab ReportTab
     | SetViewMode ViewMode
     | SetFilter PatientRecordFilter
-    | NoOp
+    | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
 
 
 type ViewMode

@@ -8,6 +8,8 @@ import App.Utils exposing (getLoggedInData, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
+import Backend.NCDActivity.Model exposing (NCDActivity(..))
+import Backend.Nurse.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator(..))
@@ -47,6 +49,18 @@ import Pages.HomeVisit.Activity.Update
 import Pages.HomeVisit.Encounter.Model
 import Pages.HomeVisit.Encounter.Update
 import Pages.IndividualEncounterParticipants.Update
+import Pages.MessagingCenter.Model
+import Pages.MessagingCenter.Update
+import Pages.NCD.Activity.Model
+import Pages.NCD.Activity.Update
+import Pages.NCD.Encounter.Model
+import Pages.NCD.Encounter.Update
+import Pages.NCD.ProgressReport.Model
+import Pages.NCD.ProgressReport.Update
+import Pages.NCD.RecurrentActivity.Model
+import Pages.NCD.RecurrentActivity.Update
+import Pages.NCD.RecurrentEncounter.Model
+import Pages.NCD.RecurrentEncounter.Update
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.Update
 import Pages.Nutrition.Encounter.Model
@@ -458,6 +472,32 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageNCDEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NCD.Encounter.Model.emptyModel
+                                        |> Pages.NCD.Encounter.Update.update subMsg
+                            in
+                            ( { data | ncdEncounterPages = Dict.insert id subModel data.ncdEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNCDRecurrentEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdRecurrentEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NCD.RecurrentEncounter.Model.emptyModel
+                                        |> Pages.NCD.RecurrentEncounter.Update.update id subMsg
+                            in
+                            ( { data | ncdRecurrentEncounterPages = Dict.insert id subModel data.ncdRecurrentEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDRecurrentEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -554,6 +594,32 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageNCDActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.NCD.Activity.Model.emptyModel
+                                        |> Pages.NCD.Activity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | ncdActivityPages = Dict.insert ( id, activity ) subModel data.ncdActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNCDRecurrentActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdRecurrentActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.NCD.RecurrentActivity.Model.emptyModel
+                                        |> Pages.NCD.RecurrentActivity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | ncdRecurrentActivityPages = Dict.insert ( id, activity ) subModel data.ncdRecurrentActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDRecurrentActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePregnancyOutcome id subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -606,6 +672,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageNCDProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NCD.ProgressReport.Model.emptyModel
+                                        |> Pages.NCD.ProgressReport.Update.update subMsg
+                            in
+                            ( { data | ncdProgressReportPages = Dict.insert id subModel data.ncdProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPageAcuteIllnessOutcome id subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -653,6 +732,18 @@ update msg model =
                             in
                             ( { data | patientRecordPages = Dict.insert id subModel data.patientRecordPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePatientRecord id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageMessagingCenter id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Dict.get id data.messagingCenterPages
+                                        |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                                        |> Pages.MessagingCenter.Update.update model.currentTime currentDate subMsg
+                            in
+                            ( { data | messagingCenterPages = Dict.insert id subModel data.messagingCenterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageMessagingCenter id) subCmd
                             , appMsgs
                             )
                 )
@@ -722,46 +813,54 @@ update msg model =
                             Pages.PinCode.Update.update subMsg configured.pinCodePage
 
                         ( extraMsgs, extraCmds ) =
-                            outMsg
-                                |> Maybe.map
-                                    (\out ->
-                                        case out of
-                                            Pages.PinCode.Model.TryPinCode code ->
-                                                ( [ TryPinCode code ], [] )
+                            Maybe.map
+                                (\out ->
+                                    case out of
+                                        Pages.PinCode.Model.TryPinCode code ->
+                                            ( [ TryPinCode code ], [] )
 
-                                            Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked
-                                                  , MsgIndexedDb Backend.Model.HandleLogout
-                                                  , SetHealthCenter Nothing
-                                                  , SetVillage Nothing
-                                                  ]
-                                                , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
-                                                )
+                                        Pages.PinCode.Model.Logout ->
+                                            ( [ SetLoggedIn NotAsked
+                                              , MsgIndexedDb Backend.Model.HandleLogout
+                                              , SetHealthCenter Nothing
+                                              , SetVillage Nothing
+                                              ]
+                                            , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
+                                            )
 
-                                            Pages.PinCode.Model.SetActivePage page ->
-                                                let
-                                                    resetDashboardMsg =
-                                                        case page of
-                                                            -- When accessing Dashboard page, reset
-                                                            -- the page to initial state - selected month,
-                                                            -- for example will be set to current month.
-                                                            UserPage (DashboardPage MainPage) ->
-                                                                Pages.Dashboard.Model.Reset model.villageId
-                                                                    |> MsgPageDashboard MainPage
-                                                                    |> MsgLoggedIn
-                                                                    |> List.singleton
+                                        Pages.PinCode.Model.SetActivePage page ->
+                                            let
+                                                resetDashboardMsg =
+                                                    case page of
+                                                        -- When accessing Dashboard page, reset
+                                                        -- the page to initial state - selected month,
+                                                        -- for example will be set to current month.
+                                                        UserPage (DashboardPage MainPage) ->
+                                                            Pages.Dashboard.Model.Reset model.villageId
+                                                                |> MsgPageDashboard MainPage
+                                                                |> MsgLoggedIn
+                                                                |> List.singleton
 
-                                                            _ ->
-                                                                []
-                                                in
-                                                ( SetActivePage page :: resetDashboardMsg, [] )
+                                                        _ ->
+                                                            []
+                                            in
+                                            ( SetActivePage page :: resetDashboardMsg, [] )
 
-                                            Pages.PinCode.Model.SetHealthCenter id ->
-                                                ( [ SetHealthCenter (Just id) ], [] )
+                                        Pages.PinCode.Model.SetHealthCenter id ->
+                                            ( [ SetHealthCenter (Just id) ], [] )
 
-                                            Pages.PinCode.Model.SetVillage id ->
-                                                ( [ SetVillage (Just id) ], [] )
-                                    )
+                                        Pages.PinCode.Model.SetVillage id ->
+                                            ( [ SetVillage (Just id) ], [] )
+
+                                        Pages.PinCode.Model.UpdateNurse nurseId nurse ->
+                                            ( [ Backend.Nurse.Model.UpdateNurse nurseId nurse
+                                                    |> Backend.Model.MsgNurse nurseId
+                                                    |> MsgIndexedDb
+                                              ]
+                                            , []
+                                            )
+                                )
+                                outMsg
                                 |> Maybe.withDefault ( [], [] )
                     in
                     ( { configured | pinCodePage = subModel }
@@ -973,7 +1072,9 @@ update msg model =
                 (\configured ->
                     ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel model.villageId) nurse }
                     , Cmd.none
-                    , []
+                    , [ Pages.PinCode.Model.SetNextNotification model.currentTime
+                            |> MsgPagePinCode
+                      ]
                     )
                 )
                 model

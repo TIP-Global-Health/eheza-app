@@ -13,8 +13,8 @@ expected (and not completed).
 import Backend.Measurement.Model
     exposing
         ( HeightInCm(..)
+        , LaboratoryTest(..)
         , MuacInCm(..)
-        , PrenatalLaboratoryTest(..)
         , PrenatalMeasurements
         , PreviousDeliverySign(..)
         , WeightInKg(..)
@@ -177,6 +177,9 @@ recurrentActivityToString activity =
         RecurrentExamination ->
             "examination"
 
+        RecurrentMalariaPrevention ->
+            "malaria"
+
 
 recurrentActivityFromString : String -> Maybe PrenatalRecurrentActivity
 recurrentActivityFromString s =
@@ -190,64 +193,8 @@ recurrentActivityFromString s =
         "examination" ->
             Just RecurrentExamination
 
-        _ ->
-            Nothing
-
-
-prenatalLaboratoryTestToString : PrenatalLaboratoryTest -> String
-prenatalLaboratoryTestToString value =
-    case value of
-        TestBloodGpRs ->
-            "blood-gp-rs"
-
-        TestHemoglobin ->
-            "hemopglobin"
-
-        TestHepatitisB ->
-            "hepatitis-b"
-
-        TestRandomBloodSugar ->
-            "blood-sugar"
-
-        TestSyphilis ->
-            "syphilis"
-
-        TestUrineDipstick ->
-            "urine-dipstick"
-
-        TestVitalsRecheck ->
-            "vitals"
-
-        TestHIVPCR ->
-            "hiv-pcr"
-
-
-prenatalLaboratoryTestFromString : String -> Maybe PrenatalLaboratoryTest
-prenatalLaboratoryTestFromString value =
-    case value of
-        "blood-gp-rs" ->
-            Just TestBloodGpRs
-
-        "hemopglobin" ->
-            Just TestHemoglobin
-
-        "hepatitis-b" ->
-            Just TestHepatitisB
-
-        "blood-sugar" ->
-            Just TestRandomBloodSugar
-
-        "syphilis" ->
-            Just TestSyphilis
-
-        "urine-dipstick" ->
-            Just TestUrineDipstick
-
-        "vitals" ->
-            Just TestVitalsRecheck
-
-        "hiv-pcr" ->
-            Just TestHIVPCR
+        "malaria" ->
+            Just RecurrentMalariaPrevention
 
         _ ->
             Nothing
@@ -507,21 +454,17 @@ generateRiskFactorAlertData language currentDate measurements factor =
                     )
 
         FactorCSectionReason ->
-            measurements.obstetricHistoryStep2
+            getMeasurementValueFunc measurements.obstetricHistoryStep2
                 |> Maybe.andThen
-                    (\measurement ->
+                    (\value ->
                         let
-                            value =
+                            reason =
                                 -- There must be only one value.
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .cSectionReason
-                                    |> EverySet.toList
-                                    |> List.head
+                                Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
                                     |> Maybe.withDefault Backend.Measurement.Model.None
                         in
-                        if value /= Backend.Measurement.Model.None then
-                            Just (transAlert factor ++ " " ++ trans (Translate.CSectionReasons value))
+                        if reason /= Backend.Measurement.Model.None then
+                            Just (transAlert factor ++ " " ++ trans (Translate.CSectionReasons reason))
 
                         else
                             Nothing

@@ -3,7 +3,17 @@ module Pages.Prenatal.Activity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PrenatalEncounterId)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getHeightValue, getMeasurementValueFunc, muacIndication, muacValueFunc, prenatalLabExpirationPeriod, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( diabetesBySugarCount
+        , diabetesByUrineGlucose
+        , getHeightValue
+        , getMeasurementValueFunc
+        , labExpirationPeriod
+        , muacIndication
+        , muacValueFunc
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
@@ -21,10 +31,15 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (VaccinationFormViewMode(..), VitalsForm)
+import Measurement.Model exposing (FamilyPlanningForm, LaboratoryTask(..), OutsideCareForm, VaccinationFormViewMode(..), VitalsForm)
 import Measurement.Utils
     exposing
-        ( getNextVaccineDose
+        ( corePhysicalExamFormWithDefault
+        , getNextVaccineDose
+        , isTestResultValid
+        , resolveLabTestDate
+        , testPerformedByExecutionNote
+        , toEverySet
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         , vitalsFormWithDefault
@@ -41,6 +56,7 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , taskAllCompleted
         , taskCompleted
@@ -84,14 +100,7 @@ expectActivity currentDate assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.MalariaPrevention ->
-                    assembled.nursePreviousEncountersData
-                        |> List.filter
-                            (.measurements
-                                >> .malariaPrevention
-                                >> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
-                                >> Maybe.withDefault False
-                            )
-                        |> List.isEmpty
+                    expectMalariaPreventionActivity PhaseInitial assembled
 
                 Backend.PrenatalActivity.Model.Medication ->
                     True
@@ -110,7 +119,6 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
-                                |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
                                 |> not
                            )
@@ -190,7 +198,6 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
-                                |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
                                 |> not
                            )
@@ -485,7 +492,7 @@ expectNextStepsTask currentDate assembled task =
                                 || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
                                    -- at current encounter does not indicate a need for hospitalization.
                                    (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
-                                        && (not <| bloodPreasureAtHypertensionTreatmentRequiresHospitalization assembled)
+                                        && (not <| bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled)
                                    )
                     in
                     -- Emergency referral is not required.
@@ -533,6 +540,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisCandidiasis
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
+                                    , DiagnosisPostpartumEarlyMastitisOrEngorgment
                                     , DiagnosisPostpartumMastitis
                                     ]
                                     assembled
@@ -549,7 +557,7 @@ expectNextStepsTask currentDate assembled task =
                    (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
                 && -- We show Wait activity when there's at least one
                    -- test that was performed, or, 2 hours waiting is
-                   -- required for blood preasure recheck.
+                   -- required for blood pressure recheck.
                    (getMeasurementValueFunc assembled.measurements.labsResults
                         |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
                         |> Maybe.withDefault False
@@ -637,7 +645,13 @@ nextStepsTaskCompleted currentDate assembled task =
                         True
 
                 mastitisTreatmentCompleted =
-                    if diagnosed DiagnosisPostpartumMastitis assembled then
+                    if
+                        diagnosedAnyOf
+                            [ DiagnosisPostpartumEarlyMastitisOrEngorgment
+                            , DiagnosisPostpartumMastitis
+                            ]
+                            assembled
+                    then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMastitis assembled.measurements
 
                     else
@@ -1002,6 +1016,17 @@ referredToSpecialityCareProgram program assembled =
         |> Maybe.withDefault False
 
 
+referToUltrasound : AssembledData -> Bool
+referToUltrasound assembled =
+    getMeasurementValueFunc assembled.measurements.lastMenstrualPeriod
+        |> Maybe.map
+            (\value ->
+                (value.confident == False)
+                    && isJust value.notConfidentReason
+            )
+        |> Maybe.withDefault False
+
+
 provideNauseaAndVomitingEducation : AssembledData -> Bool
 provideNauseaAndVomitingEducation assembled =
     let
@@ -1156,9 +1181,11 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         mandatoryActivitiesForNurseCompleted =
             -- All activities that will appear at
             -- current encounter are completed, besides
-            -- Photo and Next Steps itself.
+            -- Malaria Prevention and Photo (optional)
+            --and the Next Steps itself.
             getAllActivities assembled
                 |> EverySet.fromList
+                |> EverySet.remove Backend.PrenatalActivity.Model.MalariaPrevention
                 |> EverySet.remove PrenatalPhoto
                 |> EverySet.remove NextSteps
                 |> EverySet.toList
@@ -1182,8 +1209,12 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         ChwFirstEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    ((not <| expectActivity currentDate assembled PregnancyDating) || activityCompleted currentDate assembled PregnancyDating)
-                        && ((not <| expectActivity currentDate assembled Laboratory) || activityCompleted currentDate assembled Laboratory)
+                    ((not <| expectActivity currentDate assembled PregnancyDating)
+                        || activityCompleted currentDate assembled PregnancyDating
+                    )
+                        && ((not <| expectActivity currentDate assembled Laboratory)
+                                || activityCompleted currentDate assembled Laboratory
+                           )
                         && activityCompleted currentDate assembled DangerSigns
             in
             if dangerSignsPresent assembled then
@@ -1668,7 +1699,30 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             assembled.measurements
 
         positiveMalariaTest =
-            testedPositiveAt .malariaTest
+            getMeasurementValueFunc measurements.malariaTest
+                |> Maybe.map
+                    (\value ->
+                        (-- Malaria RDT was run, and positive result was recorded.
+                         testPerformedByExecutionNote value.executionNote
+                            && (value.testResult == Just TestPositive)
+                        )
+                            || (-- Malaria RDT was not run, but blood smear test
+                                -- was taken, and it's result indicates Malaria.
+                                List.member value.executionNote
+                                    [ TestNoteLackOfReagents
+                                    , TestNoteLackOfOtherSupplies
+                                    , TestNoteNoEquipment
+                                    , TestNoteBrokenEquipment
+                                    , TestNoteNotIndicated
+                                    ]
+                                    && List.member value.bloodSmearResult
+                                        [ BloodSmearPlus
+                                        , BloodSmearPlusPlus
+                                        , BloodSmearPlusPlusPlus
+                                        ]
+                               )
+                    )
+                |> Maybe.withDefault False
 
         positiveSyphilisTest =
             testedPositiveAt .syphilisTest
@@ -1676,7 +1730,11 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         testedPositiveAt getMeasurementFunc =
             getMeasurementFunc measurements
                 |> getMeasurementValueFunc
-                |> Maybe.andThen (.testResult >> Maybe.map ((==) PrenatalTestPositive))
+                |> Maybe.map
+                    (\value ->
+                        testPerformedByExecutionNote value.executionNote
+                            && (value.testResult == Just TestPositive)
+                    )
                 |> Maybe.withDefault False
 
         hemoglobinCount =
@@ -1710,20 +1768,10 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (\value ->
                         let
                             bySugarCount =
-                                Maybe.map2
-                                    (\testPrerequisites sugarCount ->
-                                        if EverySet.member PrerequisiteFastFor12h testPrerequisites then
-                                            sugarCount > 126
-
-                                        else
-                                            sugarCount >= 200
-                                    )
-                                    value.testPrerequisites
-                                    value.sugarCount
-                                    |> Maybe.withDefault False
+                                diabetesBySugarCount value
 
                             byUrineGlucose =
-                                if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
+                                if testPerformedByExecutionNote value.executionNote then
                                     -- If random blood sugar test was perfomed, we determine by its results.
                                     False
 
@@ -1731,8 +1779,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                     -- If random blood sugar test was not perfomed, we determine by
                                     -- glucose level at urine dipstick test.
                                     getMeasurementValueFunc measurements.urineDipstickTest
-                                        |> Maybe.andThen .glucose
-                                        |> Maybe.map (\glucose -> List.member glucose [ GlucosePlus2, GlucosePlus3, GlucosePlus4 ])
+                                        |> Maybe.map diabetesByUrineGlucose
                                         |> Maybe.withDefault False
                         in
                         bySugarCount || byUrineGlucose
@@ -2347,7 +2394,7 @@ severePreeclampsiaByDangerSigns =
 severePreeclampsiaRecurrentPhase : List DangerSign -> PrenatalMeasurements -> Bool
 severePreeclampsiaRecurrentPhase dangerSigns measurements =
     let
-        byBloodPreasure =
+        byBloodPressure =
             getMeasurementValueFunc measurements.vitals
                 |> Maybe.map
                     (\value ->
@@ -2370,7 +2417,7 @@ severePreeclampsiaRecurrentPhase dangerSigns measurements =
                     )
                 |> Maybe.withDefault False
     in
-    byBloodPreasure
+    byBloodPressure
         && highUrineProtein measurements
         && severePreeclampsiaSigns measurements
 
@@ -3299,18 +3346,6 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             )
 
 
-{-| This is a convenience for cases where the form values ought to be redefined
-to allow multiple values. So, it should go away eventually.
--}
-toEverySet : a -> a -> Bool -> EverySet a
-toEverySet presentValue absentValue present =
-    if present then
-        EverySet.singleton presentValue
-
-    else
-        EverySet.singleton absentValue
-
-
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
     assembled.nursePreviousEncountersData
@@ -3327,13 +3362,6 @@ resolvePreviousMaybeValue assembled measurementFunc valueFunc =
         |> List.head
 
 
-fromBreastExamValue : Maybe BreastExamValue -> BreastExamForm
-fromBreastExamValue saved =
-    { breast = Maybe.map (.exam >> EverySet.toList) saved
-    , selfGuidance = Maybe.map .selfGuidance saved
-    }
-
-
 breastExamFormWithDefault : BreastExamForm -> Maybe BreastExamValue -> BreastExamForm
 breastExamFormWithDefault form saved =
     saved
@@ -3341,6 +3369,11 @@ breastExamFormWithDefault form saved =
             form
             (\value ->
                 { breast = or form.breast (value.exam |> EverySet.toList |> Just)
+                , dischargeType =
+                    maybeValueConsideringIsDirtyField form.dischargeTypeDirty
+                        form.dischargeType
+                        value.dischargeType
+                , dischargeTypeDirty = form.dischargeTypeDirty
                 , selfGuidance = or form.selfGuidance (Just value.selfGuidance)
                 }
             )
@@ -3354,62 +3387,9 @@ toBreastExamValueWithDefault saved form =
 
 toBreastExamValue : BreastExamForm -> Maybe BreastExamValue
 toBreastExamValue form =
-    -- The `EverySet.singleton` is temporary, until BresatExamForm is
-    -- redefined to allow more than one.
     Maybe.map BreastExamValue (Maybe.map EverySet.fromList form.breast)
+        |> andMap (Just form.dischargeType)
         |> andMap form.selfGuidance
-
-
-fromCorePhysicalExamValue : Maybe CorePhysicalExamValue -> CorePhysicalExamForm
-fromCorePhysicalExamValue saved =
-    { brittleHair = Maybe.map (.hairHead >> EverySet.member BrittleHairCPE) saved
-    , paleConjuctiva = Maybe.map (.eyes >> EverySet.member PaleConjuctiva) saved
-    , neck = Maybe.map (.neck >> EverySet.toList) saved
-    , heart = Maybe.andThen (.heart >> EverySet.toList >> List.head) saved
-    , heartMurmur = Maybe.map .heartMurmur saved
-    , lungs = Maybe.map (.lungs >> EverySet.toList) saved
-    , abdomen = Maybe.map (.abdomen >> EverySet.toList) saved
-    , hands = Maybe.map (.hands >> EverySet.toList) saved
-    , legs = Maybe.map (.legs >> EverySet.toList) saved
-    }
-
-
-corePhysicalExamFormWithDefault : CorePhysicalExamForm -> Maybe CorePhysicalExamValue -> CorePhysicalExamForm
-corePhysicalExamFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { brittleHair = or form.brittleHair (value.hairHead |> EverySet.member BrittleHairCPE |> Just)
-                , paleConjuctiva = or form.paleConjuctiva (value.eyes |> EverySet.member PaleConjuctiva |> Just)
-                , neck = or form.neck (value.neck |> EverySet.toList |> Just)
-                , heart = or form.heart (value.heart |> EverySet.toList |> List.head)
-                , heartMurmur = or form.heartMurmur (Just value.heartMurmur)
-                , lungs = or form.lungs (value.lungs |> EverySet.toList |> Just)
-                , abdomen = or form.abdomen (value.abdomen |> EverySet.toList |> Just)
-                , hands = or form.hands (value.hands |> EverySet.toList |> Just)
-                , legs = or form.legs (value.legs |> EverySet.toList |> Just)
-                }
-            )
-
-
-toCorePhysicalExamValueWithDefault : Maybe CorePhysicalExamValue -> CorePhysicalExamForm -> Maybe CorePhysicalExamValue
-toCorePhysicalExamValueWithDefault saved form =
-    corePhysicalExamFormWithDefault form saved
-        |> toCorePhysicalExamValue
-
-
-toCorePhysicalExamValue : CorePhysicalExamForm -> Maybe CorePhysicalExamValue
-toCorePhysicalExamValue form =
-    Maybe.map CorePhysicalExamValue (Maybe.map (toEverySet BrittleHairCPE NormalHairHead) form.brittleHair)
-        |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
-        |> andMap (Maybe.map EverySet.singleton form.heart)
-        |> andMap form.heartMurmur
-        |> andMap (Maybe.map EverySet.fromList form.neck)
-        |> andMap (Maybe.map EverySet.fromList form.lungs)
-        |> andMap (Maybe.map EverySet.fromList form.abdomen)
-        |> andMap (Maybe.map EverySet.fromList form.hands)
-        |> andMap (Maybe.map EverySet.fromList form.legs)
 
 
 fromDangerSignsValue : Maybe DangerSignsValue -> DangerSignsForm
@@ -3460,16 +3440,6 @@ toDangerSignsValue form =
     Just <| DangerSignsValue signs postpartumMother postpartumChild
 
 
-fromLastMenstrualPeriodValue : Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
-fromLastMenstrualPeriodValue saved =
-    { lmpRange = Nothing
-    , lmpDate = Maybe.map .date saved
-    , lmpDateConfident = Maybe.map .confident saved
-    , chwLmpConfirmation = Maybe.map .confirmation saved
-    , dateSelectorPopupState = Nothing
-    }
-
-
 lastMenstrualPeriodFormWithDefault : PregnancyDatingForm -> Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
 lastMenstrualPeriodFormWithDefault form saved =
     saved
@@ -3479,6 +3449,7 @@ lastMenstrualPeriodFormWithDefault form saved =
                 { lmpRange = or form.lmpRange (Just SixMonth)
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
+                , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }
@@ -3499,6 +3470,7 @@ toLastMenstrualPeriodValue form =
     in
     Maybe.map LastMenstrualPeriodValue form.lmpDate
         |> andMap form.lmpDateConfident
+        |> andMap (Just form.lmpDateNotConfidentReason)
         |> andMap (Just chwLmpConfirmation)
 
 
@@ -3941,12 +3913,7 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
                                                 Translate.HIVTreatmentSign
                                             ]
                                       ]
-                                    , [ if isJust form.hivMedicationNotGivenReason then
-                                            Just True
-
-                                        else
-                                            Nothing
-                                      ]
+                                    , [ maybeToBoolTask form.hivMedicationNotGivenReason ]
                                     )
                             )
                             form.hivMedicationByPMTCT
@@ -4127,7 +4094,7 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                         config.latestMedicationTreatment
                         |> Maybe.withDefault emptyNode
 
-                ( derrivedInput, derrivedTask ) =
+                ( derivedInput, derivedTask ) =
                     if config.adverseEventsFormValue == Just True then
                         ( [ viewQuestionLabel language Translate.TreatmentReviewQuestionAdverseEventsHospitalization
                           , viewBoolInput
@@ -4173,28 +4140,16 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
                     "adverse-events"
                     Nothing
               ]
-                ++ derrivedInput
+                ++ derivedInput
             , [ config.stillTakingFormValue
               , config.missedDosesFormValue
               , config.adverseEventsFormValue
               ]
-                ++ derrivedTask
+                ++ derivedTask
             )
         )
         configForTask
         |> Maybe.withDefault ( [], [] )
-
-
-fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
-fromObstetricalExamValue saved =
-    { fundalHeight = Maybe.map (.fundalHeight >> getHeightValue) saved
-    , fundalHeightDirty = False
-    , fetalPresentation = Maybe.map .fetalPresentation saved
-    , fetalMovement = Maybe.map .fetalMovement saved
-    , fetalHeartRate = Maybe.map .fetalHeartRate saved
-    , fetalHeartRateDirty = False
-    , cSectionScar = Maybe.map .cSectionScar saved
-    }
 
 
 obstetricalExamFormWithDefault : ObstetricalExamForm -> Maybe ObstetricalExamValue -> ObstetricalExamForm
@@ -4203,13 +4158,18 @@ obstetricalExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (getHeightValue value.fundalHeight)
+                { fundalPalpable = or form.fundalPalpable (Just value.fundalPalpable)
+                , fundalHeight =
+                    maybeValueConsideringIsDirtyField form.fundalHeightDirty
+                        form.fundalHeight
+                        (Maybe.map getHeightValue value.fundalHeight)
                 , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
                 , fetalHeartRate = valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
                 , fetalHeartRateDirty = form.fetalHeartRateDirty
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
+                , displayFundalPalpablePopup = form.displayFundalPalpablePopup
                 }
             )
 
@@ -4222,7 +4182,8 @@ toObstetricalExamValueWithDefault saved form =
 
 toObstetricalExamValue : ObstetricalExamForm -> Maybe ObstetricalExamValue
 toObstetricalExamValue form =
-    Maybe.map ObstetricalExamValue (Maybe.map HeightInCm form.fundalHeight)
+    Maybe.map ObstetricalExamValue form.fundalPalpable
+        |> andMap (Just <| Maybe.map HeightInCm form.fundalHeight)
         |> andMap form.fetalPresentation
         |> andMap form.fetalMovement
         |> andMap form.fetalHeartRate
@@ -4295,8 +4256,16 @@ obstetricHistoryStep2FormWithDefault form saved =
             (\value ->
                 { cSections = valueConsideringIsDirtyField form.cSectionsDirty form.cSections value.cSections
                 , cSectionsDirty = form.cSectionsDirty
-                , cSectionInPreviousDelivery = or form.cSectionInPreviousDelivery (EverySet.member CSectionInPreviousDelivery value.previousDelivery |> Just)
-                , cSectionReason = or form.cSectionReason (value.cSectionReason |> EverySet.toList |> List.head)
+                , cSectionInPreviousDelivery =
+                    maybeValueConsideringIsDirtyField form.cSectionInPreviousDeliveryDirty
+                        form.cSectionInPreviousDelivery
+                        (EverySet.member CSectionInPreviousDelivery value.previousDelivery |> Just)
+                , cSectionInPreviousDeliveryDirty = form.cSectionInPreviousDeliveryDirty
+                , cSectionReason =
+                    maybeValueConsideringIsDirtyField form.cSectionReasonDirty
+                        form.cSectionReason
+                        (Maybe.map EverySet.toList value.cSectionReason |> Maybe.andThen List.head)
+                , cSectionReasonDirty = form.cSectionReasonDirty
                 , previousDeliveryPeriod = or form.previousDeliveryPeriod (value.previousDeliveryPeriod |> EverySet.toList |> List.head)
                 , successiveAbortions = or form.successiveAbortions (EverySet.member SuccessiveAbortions value.obstetricHistory |> Just)
                 , successivePrematureDeliveries = or form.successivePrematureDeliveries (EverySet.member SuccessivePrematureDeliveries value.obstetricHistory |> Just)
@@ -4324,7 +4293,7 @@ toObstetricHistoryStep2Value : ObstetricFormSecondStep -> Maybe ObstetricHistory
 toObstetricHistoryStep2Value form =
     let
         previousDeliverySet =
-            [ Maybe.map (ifTrue CSectionInPreviousDelivery) form.cSectionInPreviousDelivery
+            [ ifNullableTrue CSectionInPreviousDelivery form.cSectionInPreviousDelivery
             , Maybe.map (ifTrue StillbornPreviousDelivery) form.stillbornPreviousDelivery
             , Maybe.map (ifTrue BabyDiedOnDayOfBirthPreviousDelivery) form.babyDiedOnDayOfBirthPreviousDelivery
             , Maybe.map (ifTrue PartialPlacentaPreviousDelivery) form.partialPlacentaPreviousDelivery
@@ -4347,36 +4316,10 @@ toObstetricHistoryStep2Value form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoObstetricHistorySign)
     in
     Maybe.map ObstetricHistoryStep2Value form.cSections
-        |> andMap (Maybe.map EverySet.singleton form.cSectionReason)
+        |> andMap (Just <| Maybe.map EverySet.singleton form.cSectionReason)
         |> andMap previousDeliverySet
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
         |> andMap obstetricHistorySet
-
-
-fromFamilyPlanningValue : Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm
-fromFamilyPlanningValue saved =
-    { signs = Maybe.map EverySet.toList saved }
-
-
-familyPlanningFormWithDefault : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm
-familyPlanningFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
-            )
-
-
-toFamilyPlanningValueWithDefault : Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
-toFamilyPlanningValueWithDefault saved form =
-    familyPlanningFormWithDefault form saved
-        |> toFamilyPlanningValue
-
-
-toFamilyPlanningValue : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
-toFamilyPlanningValue form =
-    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoFamilyPlanning) form.signs
 
 
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
@@ -4419,47 +4362,14 @@ toPrenatalNutritionValue form =
         |> andMap (Maybe.map MuacInCm form.muac)
 
 
-malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm
-malariaPreventionFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { receivedMosquitoNet = or form.receivedMosquitoNet (EverySet.member MosquitoNet value |> Just)
-                }
-            )
-
-
-toMalariaPreventionValueWithDefault : Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign)
-toMalariaPreventionValueWithDefault saved form =
-    malariaPreventionFormWithDefault form saved
-        |> toMalariaPreventionValue
-
-
-toMalariaPreventionValue : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign)
-toMalariaPreventionValue form =
-    Maybe.map (toEverySet MosquitoNet NoMalariaPreventionSigns) form.receivedMosquitoNet
-
-
-fromSocialHistoryValue : Maybe SocialHistoryValue -> SocialHistoryForm
-fromSocialHistoryValue saved =
-    { accompaniedByPartner = Maybe.map (.socialHistory >> EverySet.member AccompaniedByPartner) saved
-    , partnerReceivedCounseling = Maybe.map (.socialHistory >> EverySet.member PartnerHivCounseling) saved
-    , partnerReceivedTesting = Maybe.map (.hivTestingResult >> (==) NoHivTesting >> not) saved
-    , partnerTestingResult = Maybe.map .hivTestingResult saved
-    }
-
-
 socialHistoryFormWithDefault : SocialHistoryForm -> Maybe SocialHistoryValue -> SocialHistoryForm
 socialHistoryFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value.socialHistory |> Just)
-                , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value.socialHistory |> Just)
-                , partnerReceivedTesting = or form.partnerReceivedTesting (value.hivTestingResult == NoHivTesting |> not |> Just)
-                , partnerTestingResult = or form.partnerTestingResult (Just value.hivTestingResult)
+                { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value |> Just)
+                , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value |> Just)
                 }
             )
 
@@ -4472,16 +4382,11 @@ toSocialHistoryValueWithDefault saved form =
 
 toSocialHistoryValue : SocialHistoryForm -> Maybe SocialHistoryValue
 toSocialHistoryValue form =
-    let
-        socialHistory =
-            [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
-            , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSocialHistorySign)
-    in
-    Maybe.map SocialHistoryValue socialHistory
-        |> andMap form.partnerTestingResult
+    [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
+    , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSocialHistorySign)
 
 
 fromPregnancyTestValue : Maybe PregnancyTestResult -> PregnancyTestForm
@@ -4516,167 +4421,6 @@ toPregnancyTestValueWithDefault saved form =
 toPregnancyTestValue : PregnancyTestForm -> Maybe PregnancyTestResult
 toPregnancyTestValue form =
     form.pregnancyTestResult
-
-
-historyTasksCompletedFromTotal : AssembledData -> HistoryData -> HistoryTask -> ( Int, Int )
-historyTasksCompletedFromTotal assembled data task =
-    case task of
-        Obstetric ->
-            case data.obstetricHistoryStep of
-                ObstetricHistoryFirstStep ->
-                    let
-                        formStep1_ =
-                            assembled.measurements.obstetricHistory
-                                |> getMeasurementValueFunc
-                                |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-
-                        intInputs =
-                            [ formStep1_.termPregnancy
-                            , formStep1_.preTermPregnancy
-                            , formStep1_.stillbirthsAtTerm
-                            , formStep1_.stillbirthsPreTerm
-                            , formStep1_.abortions
-                            , formStep1_.liveChildren
-                            ]
-                    in
-                    ( (intInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                      )
-                        + taskCompleted formStep1_.currentlyPregnant
-                    , List.length intInputs + 1
-                    )
-
-                ObstetricHistorySecondStep ->
-                    let
-                        formStep2_ =
-                            assembled.measurements.obstetricHistoryStep2
-                                |> getMeasurementValueFunc
-                                |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
-
-                        boolInputs =
-                            [ formStep2_.cSectionInPreviousDelivery
-                            , formStep2_.successiveAbortions
-                            , formStep2_.successivePrematureDeliveries
-                            , formStep2_.stillbornPreviousDelivery
-                            , formStep2_.babyDiedOnDayOfBirthPreviousDelivery
-                            , formStep2_.partialPlacentaPreviousDelivery
-                            , formStep2_.severeHemorrhagingPreviousDelivery
-                            , formStep2_.preeclampsiaPreviousPregnancy
-                            , formStep2_.convulsionsPreviousDelivery
-                            , formStep2_.convulsionsAndUnconsciousPreviousDelivery
-                            , formStep2_.gestationalDiabetesPreviousPregnancy
-                            , formStep2_.incompleteCervixPreviousPregnancy
-                            , formStep2_.rhNegative
-                            ]
-                    in
-                    ( (boolInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                      )
-                        + taskCompleted formStep2_.cSections
-                        + taskCompleted formStep2_.cSectionReason
-                        + taskCompleted formStep2_.previousDeliveryPeriod
-                    , List.length boolInputs + 3
-                    )
-
-        Medical ->
-            let
-                medicalForm =
-                    assembled.measurements.medicalHistory
-                        |> getMeasurementValueFunc
-                        |> medicalHistoryFormWithDefault data.medicalForm
-
-                boolInputs =
-                    [ medicalForm.uterineMyoma
-                    , medicalForm.diabetes
-                    , medicalForm.cardiacDisease
-                    , medicalForm.renalDisease
-                    , medicalForm.hypertensionBeforePregnancy
-                    , medicalForm.tuberculosisPast
-                    , medicalForm.tuberculosisPresent
-                    , medicalForm.asthma
-                    , medicalForm.bowedLegs
-                    , medicalForm.hiv
-                    ]
-            in
-            ( boolInputs
-                |> List.map taskCompleted
-                |> List.sum
-            , List.length boolInputs
-            )
-
-        Social ->
-            let
-                socialForm =
-                    assembled.measurements.socialHistory
-                        |> getMeasurementValueFunc
-                        |> socialHistoryFormWithDefault data.socialForm
-
-                showCounselingQuestion =
-                    assembled.nursePreviousEncountersData
-                        |> List.filter
-                            (.measurements
-                                >> .socialHistory
-                                >> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
-                                >> Maybe.withDefault False
-                            )
-                        |> List.isEmpty
-
-                partnerReceivedCounselingInput =
-                    if showCounselingQuestion then
-                        [ socialForm.partnerReceivedCounseling ]
-
-                    else
-                        []
-
-                showTestingQuestions =
-                    assembled.nursePreviousEncountersData
-                        |> List.filter
-                            (.measurements
-                                >> .socialHistory
-                                >> Maybe.map
-                                    (\socialHistory ->
-                                        let
-                                            value =
-                                                Tuple.second socialHistory |> .value
-                                        in
-                                        (value.hivTestingResult == ResultHivPositive)
-                                            || (value.hivTestingResult == ResultHivNegative)
-                                    )
-                                >> Maybe.withDefault False
-                            )
-                        |> List.isEmpty
-
-                partnerReceivedTestingInput =
-                    if showTestingQuestions then
-                        [ socialForm.partnerReceivedTesting ]
-
-                    else
-                        []
-
-                boolInputs =
-                    (socialForm.accompaniedByPartner
-                        :: partnerReceivedCounselingInput
-                    )
-                        ++ partnerReceivedTestingInput
-
-                listInputs =
-                    if socialForm.partnerReceivedTesting == Just True then
-                        [ socialForm.partnerTestingResult ]
-
-                    else
-                        []
-            in
-            ( (boolInputs |> List.map taskCompleted |> List.sum)
-                + (listInputs |> List.map taskCompleted |> List.sum)
-            , List.length boolInputs + List.length listInputs
-            )
-
-        OutsideCare ->
-            -- This is not in use, because OutsideCare task got
-            -- special treatment at viewHistoryContent().
-            ( 0, 0 )
 
 
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
@@ -4771,32 +4515,14 @@ examinationTasksCompletedFromTotal assembled data task =
             )
 
         ObstetricalExam ->
-            let
-                form =
-                    assembled.measurements.obstetricalExam
-                        |> getMeasurementValueFunc
-                        |> obstetricalExamFormWithDefault data.obstetricalExamForm
-            in
-            ( taskCompleted form.fetalPresentation
-                + taskCompleted form.fetalMovement
-                + taskCompleted form.cSectionScar
-                + ([ Maybe.map (always ()) form.fundalHeight, Maybe.map (always ()) form.fetalHeartRate ]
-                    |> List.map taskCompleted
-                    |> List.sum
-                  )
-            , 5
-            )
+            -- This is not in use, because ObstetricalExam task got
+            -- special treatment at viewExaminationContent().
+            ( 0, 0 )
 
         BreastExam ->
-            let
-                form =
-                    assembled.measurements.breastExam
-                        |> getMeasurementValueFunc
-                        |> breastExamFormWithDefault data.breastExamForm
-            in
-            ( taskCompleted form.breast + taskCompleted form.selfGuidance
-            , 2
-            )
+            -- This is not in use, because BreastExam task got
+            -- special treatment at viewExaminationContent().
+            ( 0, 0 )
 
         GUExam ->
             let
@@ -4933,331 +4659,10 @@ toAppointmentConfirmationValue form =
     Maybe.map PrenatalAppointmentConfirmationValue form.appointmentDate
 
 
-prenatalMalariaTestFormWithDefault : PrenatalMalariaTestForm -> Maybe PrenatalMalariaTestValue -> PrenatalMalariaTestForm
-prenatalMalariaTestFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                let
-                    testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-
-                    testPerformedTodayFromValue =
-                        value.executionNote == TestNoteRunToday
-                in
-                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
-                , testPerformedDirty = form.testPerformedDirty
-                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
-                , testPerformedTodayDirty = form.testPerformedTodayDirty
-                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
-                , executionNoteDirty = form.executionNoteDirty
-                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
-                , executionDateDirty = form.executionDateDirty
-                , testResult = or form.testResult value.testResult
-                , dateSelectorPopupState = form.dateSelectorPopupState
-                }
-            )
-
-
-toPrenatalMalariaTestValueWithDefault : Maybe PrenatalMalariaTestValue -> PrenatalMalariaTestForm -> Maybe PrenatalMalariaTestValue
-toPrenatalMalariaTestValueWithDefault saved form =
-    prenatalMalariaTestFormWithDefault form saved
-        |> toPrenatalMalariaTestValue
-
-
-toPrenatalMalariaTestValue : PrenatalMalariaTestForm -> Maybe PrenatalMalariaTestValue
-toPrenatalMalariaTestValue form =
-    Maybe.map
-        (\executionNote ->
-            { executionNote = executionNote
-            , executionDate = form.executionDate
-            , testResult = form.testResult
-            }
-        )
-        form.executionNote
-
-
-prenatalHIVTestFormWithDefault : PrenatalHIVTestForm -> Maybe PrenatalHIVTestValue -> PrenatalHIVTestForm
-prenatalHIVTestFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                let
-                    knownAsPositiveValue =
-                        List.member value.executionNote [ TestNoteKnownAsPositive ]
-
-                    testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-
-                    testPerformedTodayFromValue =
-                        value.executionNote == TestNoteRunToday
-
-                    hivProgramHCValue =
-                        Maybe.map (EverySet.member HIVProgramHC)
-                            value.hivSigns
-                            |> Maybe.withDefault False
-
-                    partnerHIVPositiveValue =
-                        Maybe.map (EverySet.member PartnerHIVPositive)
-                            value.hivSigns
-                            |> Maybe.withDefault False
-
-                    partnerTakingARVValue =
-                        Maybe.map (EverySet.member PartnerTakingARV)
-                            value.hivSigns
-                            |> Maybe.withDefault False
-
-                    partnerSurpressedViralLoadValue =
-                        Maybe.map (EverySet.member PartnerSurpressedViralLoad)
-                            value.hivSigns
-                            |> Maybe.withDefault False
-                in
-                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
-                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
-                , testPerformedDirty = form.testPerformedDirty
-                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
-                , testPerformedTodayDirty = form.testPerformedTodayDirty
-                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
-                , executionNoteDirty = form.executionNoteDirty
-                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
-                , executionDateDirty = form.executionDateDirty
-                , testResult = or form.testResult value.testResult
-                , hivProgramHC = valueConsideringIsDirtyField form.hivProgramHCDirty form.hivProgramHC hivProgramHCValue
-                , hivProgramHCDirty = form.hivProgramHCDirty
-                , partnerHIVPositive = valueConsideringIsDirtyField form.partnerHIVPositiveDirty form.partnerHIVPositive partnerHIVPositiveValue
-                , partnerHIVPositiveDirty = form.partnerHIVPositiveDirty
-                , partnerTakingARV = valueConsideringIsDirtyField form.partnerTakingARVDirty form.partnerTakingARV partnerTakingARVValue
-                , partnerTakingARVDirty = form.partnerTakingARVDirty
-                , partnerSurpressedViralLoad = valueConsideringIsDirtyField form.partnerSurpressedViralLoadDirty form.partnerSurpressedViralLoad partnerSurpressedViralLoadValue
-                , partnerSurpressedViralLoadDirty = form.partnerSurpressedViralLoadDirty
-                , dateSelectorPopupState = form.dateSelectorPopupState
-                }
-            )
-
-
-toPrenatalHIVTestValueWithDefault : Maybe PrenatalHIVTestValue -> PrenatalHIVTestForm -> Maybe PrenatalHIVTestValue
-toPrenatalHIVTestValueWithDefault saved form =
-    prenatalHIVTestFormWithDefault form saved
-        |> toPrenatalHIVTestValue
-
-
-toPrenatalHIVTestValue : PrenatalHIVTestForm -> Maybe PrenatalHIVTestValue
-toPrenatalHIVTestValue form =
-    Maybe.map
-        (\executionNote ->
-            let
-                hivSigns =
-                    [ ifNullableTrue HIVProgramHC form.hivProgramHC
-                    , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
-                    , ifNullableTrue PartnerTakingARV form.partnerTakingARV
-                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
-                    ]
-                        |> Maybe.Extra.combine
-                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
-            in
-            { executionNote = executionNote
-            , executionDate = form.executionDate
-            , testResult = form.testResult
-            , hivSigns = hivSigns
-            }
-        )
-        form.executionNote
-
-
-prenatalUrineDipstickFormWithDefault : PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm
-prenatalUrineDipstickFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                let
-                    testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-
-                    testPerformedTodayFromValue =
-                        value.executionNote == TestNoteRunToday
-                in
-                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
-                , testPerformedDirty = form.testPerformedDirty
-                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
-                , testPerformedTodayDirty = form.testPerformedTodayDirty
-                , testVariant = or form.testVariant value.testVariant
-                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
-                , executionNoteDirty = form.executionNoteDirty
-                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
-                , executionDateDirty = form.executionDateDirty
-                , dateSelectorPopupState = form.dateSelectorPopupState
-                }
-            )
-
-
-toPrenatalUrineDipstickTestValueWithDefault : Maybe PrenatalUrineDipstickTestValue -> PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue
-toPrenatalUrineDipstickTestValueWithDefault saved form =
-    prenatalUrineDipstickFormWithDefault form saved
-        |> toPrenatalUrineDipstickTestValue
-
-
-toPrenatalUrineDipstickTestValue : PrenatalUrineDipstickForm -> Maybe PrenatalUrineDipstickTestValue
-toPrenatalUrineDipstickTestValue form =
-    Maybe.map
-        (\executionNote ->
-            { testVariant = form.testVariant
-            , executionNote = executionNote
-            , executionDate = form.executionDate
-            , protein = Nothing
-            , ph = Nothing
-            , glucose = Nothing
-            , leukocytes = Nothing
-            , nitrite = Nothing
-            , urobilinogen = Nothing
-            , haemoglobin = Nothing
-            , ketone = Nothing
-            , bilirubin = Nothing
-            }
-        )
-        form.executionNote
-
-
-prenatalRandomBloodSugarFormWithDefault : PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarForm
-prenatalRandomBloodSugarFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                let
-                    testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-
-                    testPerformedTodayFromValue =
-                        value.executionNote == TestNoteRunToday
-
-                    patientFastedValue =
-                        Maybe.map (EverySet.member PrerequisiteFastFor12h)
-                            value.testPrerequisites
-                in
-                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
-                , testPerformedDirty = form.testPerformedDirty
-                , patientFasted = or form.patientFasted patientFastedValue
-                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
-                , testPerformedTodayDirty = form.testPerformedTodayDirty
-                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
-                , executionNoteDirty = form.executionNoteDirty
-                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
-                , executionDateDirty = form.executionDateDirty
-                , dateSelectorPopupState = form.dateSelectorPopupState
-                }
-            )
-
-
-toPrenatalRandomBloodSugarValueWithDefault : Maybe PrenatalRandomBloodSugarTestValue -> PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue
-toPrenatalRandomBloodSugarValueWithDefault saved form =
-    prenatalRandomBloodSugarFormWithDefault form saved
-        |> toPrenatalRandomBloodSugarTestValue
-
-
-toPrenatalRandomBloodSugarTestValue : PrenatalRandomBloodSugarForm -> Maybe PrenatalRandomBloodSugarTestValue
-toPrenatalRandomBloodSugarTestValue form =
-    Maybe.map
-        (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map
-                        (\patientFasted ->
-                            if patientFasted then
-                                EverySet.singleton PrerequisiteFastFor12h
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.patientFasted
-            in
-            { executionNote = executionNote
-            , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
-            , sugarCount = Nothing
-            , originatingEncounter = Nothing
-            }
-        )
-        form.executionNote
-
-
-prenatalNonRDTFormWithDefault :
-    PrenatalLabsNonRDTForm
-    -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
-    -> PrenatalLabsNonRDTForm
-prenatalNonRDTFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                let
-                    knownAsPositiveValue =
-                        List.member value.executionNote [ TestNoteKnownAsPositive ]
-
-                    testPerformedValue =
-                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-
-                    testPerformedTodayFromValue =
-                        value.executionNote == TestNoteRunToday
-                in
-                { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
-                , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
-                , testPerformedDirty = form.testPerformedDirty
-                , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
-                , testPerformedTodayDirty = form.testPerformedTodayDirty
-                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
-                , executionNoteDirty = form.executionNoteDirty
-                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
-                , executionDateDirty = form.executionDateDirty
-                , dateSelectorPopupState = form.dateSelectorPopupState
-                }
-            )
-
-
-toPrenatalNonRDTValueWithDefault :
-    Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
-    -> (PrenatalTestExecutionNote -> Maybe NominalDate -> { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate })
-    -> PrenatalLabsNonRDTForm
-    -> Maybe { value | executionNote : PrenatalTestExecutionNote, executionDate : Maybe NominalDate }
-toPrenatalNonRDTValueWithDefault saved withEmptyResultsFunc form =
-    let
-        formWithDefault =
-            prenatalNonRDTFormWithDefault form saved
-    in
-    Maybe.map (\executionNote -> withEmptyResultsFunc executionNote formWithDefault.executionDate)
-        formWithDefault.executionNote
-
-
-toHepatitisBTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHepatitisBTestValue
-toHepatitisBTestValueWithEmptyResults note date =
-    PrenatalHepatitisBTestValue note date Nothing Nothing
-
-
-toSyphilisTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalSyphilisTestValue
-toSyphilisTestValueWithEmptyResults note date =
-    PrenatalSyphilisTestValue note date Nothing Nothing Nothing
-
-
-toHemoglobinTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHemoglobinTestValue
-toHemoglobinTestValueWithEmptyResults note date =
-    PrenatalHemoglobinTestValue note date Nothing
-
-
-toBloodGpRsTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalBloodGpRsTestValue
-toBloodGpRsTestValueWithEmptyResults note date =
-    PrenatalBloodGpRsTestValue note date Nothing Nothing Nothing
-
-
-toHIVPCRTestValueWithEmptyResults : PrenatalTestExecutionNote -> Maybe NominalDate -> PrenatalHIVPCRTestValue
-toHIVPCRTestValueWithEmptyResults note date =
-    PrenatalHIVPCRTestValue note date Nothing Nothing
-
-
 laboratoryTasks : List LaboratoryTask
 laboratoryTasks =
-    [ TaskHIVTest
+    [ TaskPartnerHIVTest
+    , TaskHIVTest
     , TaskHIVPCRTest
     , TaskSyphilisTest
     , TaskHepatitisBTest
@@ -5307,8 +4712,15 @@ laboratoryTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || isJust measurements.hivPCRTest
 
+        TaskPartnerHIVTest ->
+            (not <| taskExpected TaskPartnerHIVTest) || isJust measurements.partnerHIVTest
+
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
+
+        -- Others are not in use at Prenatal.
+        _ ->
+            False
 
 
 expectLaboratoryTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
@@ -5408,15 +4820,22 @@ expectLaboratoryTask currentDate assembled task =
                 TaskHIVPCRTest ->
                     isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
 
+                TaskPartnerHIVTest ->
+                    isInitialTest TaskPartnerHIVTest
+
                 TaskCompletePreviousTests ->
                     -- If we got this far, history task was completed.
+                    False
+
+                -- Others are not in use at Prenatal.
+                _ ->
                     False
 
         else
             task == TaskCompletePreviousTests
 
 
-generatePendingLabsFromPreviousEncounters : AssembledData -> List ( NominalDate, PrenatalEncounterId, List PrenatalLaboratoryTest )
+generatePendingLabsFromPreviousEncounters : AssembledData -> List ( NominalDate, PrenatalEncounterId, List LaboratoryTest )
 generatePendingLabsFromPreviousEncounters assembled =
     List.filterMap
         (\data ->
@@ -5450,54 +4869,11 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     let
         generateTestDates getMeasurementFunc resultsExistFunc resultsValidFunc =
             List.filterMap
-                (\data ->
-                    let
-                        measurement =
-                            getMeasurementFunc data.measurements
-
-                        dateMeasured =
-                            -- Date on which test was recorded.
-                            -- Note that this is not the date when test was performed,
-                            -- because it's possible to set past date for that.
-                            -- We need the recorded date, because the logic says that
-                            -- test that will not have results set for over 14 days is expired.
-                            -- Can default to current date, because we use it only when there's
-                            -- measurement value, and this means that there must be dateMeasured set.
-                            Maybe.map (Tuple.second >> .dateMeasured) measurement
-                                |> Maybe.withDefault currentDate
-                    in
-                    getMeasurementValueFunc measurement
-                        |> Maybe.andThen
-                            (\value ->
-                                if List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ] then
-                                    if resultsExistFunc value && (not <| resultsValidFunc value) then
-                                        -- Entered result is not valid, therefore,
-                                        -- we treat the test as if it was not performed.
-                                        Nothing
-
-                                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= prenatalLabExpirationPeriod) then
-                                        -- No results were entered for more than 35 days since the
-                                        -- day on which measurement was taken.
-                                        -- Test is considered expired, and is being ignored
-                                        -- (as if it was never performed).
-                                        Nothing
-
-                                    else
-                                        value.executionDate
-
-                                else
-                                    Nothing
-                            )
+                (.measurements
+                    >> getMeasurementFunc
+                    >> resolveLabTestDate currentDate resultsExistFunc resultsValidFunc
                 )
                 assembled.nursePreviousEncountersData
-
-        isTestResultValid =
-            .testResult
-                >> Maybe.map ((/=) PrenatalTestIndeterminate)
-                >> -- In case test result was not set yet, we consider
-                   -- it to be valid, because results for some test are
-                   -- updated after few hours, or even days.
-                   Maybe.withDefault True
     in
     [ ( TaskHIVTest, generateTestDates .hivTest (always True) isTestResultValid )
     , ( TaskSyphilisTest, generateTestDates .syphilisTest (.testResult >> isJust) isTestResultValid )
@@ -5507,42 +4883,9 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) (always True) )
     , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest (.hemoglobinCount >> isJust) (always True) )
     , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) (always True) )
+    , ( TaskPartnerHIVTest, generateTestDates .partnerHIVTest (always True) isTestResultValid )
     ]
         |> Dict.fromList
-
-
-laboratoryTaskIconClass : LaboratoryTask -> String
-laboratoryTaskIconClass task =
-    case task of
-        TaskHIVTest ->
-            "laboratory-hiv"
-
-        TaskSyphilisTest ->
-            "laboratory-syphilis"
-
-        TaskHepatitisBTest ->
-            "laboratory-hepatitis-b"
-
-        TaskMalariaTest ->
-            "laboratory-malaria-testing"
-
-        TaskBloodGpRsTest ->
-            "laboratory-blood-group"
-
-        TaskUrineDipstickTest ->
-            "laboratory-urine-dipstick"
-
-        TaskHemoglobinTest ->
-            "laboratory-hemoglobin"
-
-        TaskRandomBloodSugarTest ->
-            "laboratory-blood-sugar"
-
-        TaskHIVPCRTest ->
-            "laboratory-hiv"
-
-        TaskCompletePreviousTests ->
-            "laboratory-history"
 
 
 symptomReviewFormWithDefault : SymptomReviewForm -> Maybe PrenatalSymptomReviewValue -> SymptomReviewForm
@@ -5935,455 +5278,6 @@ prenatalSymptomQuestionInputAndState language form question =
         NoSymptomQuestions ->
             -- We should never get here.
             ( [], 0 )
-
-
-outsideCareFormWithDefault : OutsideCareForm -> Maybe PrenatalOutsideCareValue -> OutsideCareForm
-outsideCareFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                let
-                    malariaMedications =
-                        filterIllnessOptions outsideCareMedicationOptionsMalaria
-
-                    hypertensionMedications =
-                        filterIllnessOptions outsideCareMedicationOptionsHypertension
-
-                    syphilisMedications =
-                        filterIllnessOptions outsideCareMedicationOptionsSyphilis
-
-                    anemiaMedications =
-                        filterIllnessOptions outsideCareMedicationOptionsAnemia
-
-                    hivMedications =
-                        filterIllnessOptions outsideCareMedicationOptionsHIV
-
-                    filterIllnessOptions options =
-                        Maybe.map
-                            (EverySet.toList
-                                >> List.filter
-                                    (\medication ->
-                                        List.member medication options
-                                    )
-                            )
-                            value.medications
-                in
-                { seenAtAnotherFacility = or form.seenAtAnotherFacility (EverySet.member SeenAtAnotherFacility value.signs |> Just)
-                , givenNewDiagnosis = or form.givenNewDiagnosis (EverySet.member GivenNewDiagnoses value.signs |> Just)
-                , givenMedicine = or form.givenMedicine (EverySet.member GivenMedicine value.signs |> Just)
-                , plannedFollowUp = or form.plannedFollowUp (EverySet.member PlannedFollowUpCareWithSpecialist value.signs |> Just)
-                , diagnoses = maybeValueConsideringIsDirtyField form.diagnosesDirty form.diagnoses (value.diagnoses |> Maybe.map EverySet.toList)
-                , diagnosesDirty = form.diagnosesDirty
-                , malariaMedications = or form.malariaMedications malariaMedications
-                , hypertensionMedications = or form.hypertensionMedications hypertensionMedications
-                , syphilisMedications = or form.syphilisMedications syphilisMedications
-                , hivMedications = or form.hivMedications hivMedications
-                , anemiaMedications = or form.anemiaMedications anemiaMedications
-                }
-            )
-
-
-toPrenatalOutsideCareValueWithDefault : Maybe PrenatalOutsideCareValue -> OutsideCareForm -> Maybe PrenatalOutsideCareValue
-toPrenatalOutsideCareValueWithDefault saved form =
-    outsideCareFormWithDefault form saved
-        |> toPrenatalOutsideCareValue
-
-
-toPrenatalOutsideCareValue : OutsideCareForm -> Maybe PrenatalOutsideCareValue
-toPrenatalOutsideCareValue form =
-    let
-        maybeSigns =
-            [ Maybe.map (ifTrue SeenAtAnotherFacility) form.seenAtAnotherFacility
-            , ifNullableTrue GivenNewDiagnoses form.givenNewDiagnosis
-            , ifNullableTrue GivenMedicine form.givenMedicine
-            , ifNullableTrue PlannedFollowUpCareWithSpecialist form.plannedFollowUp
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalOutsideCareSigns)
-    in
-    Maybe.map
-        (\signs ->
-            let
-                diagnoses =
-                    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoPrenatalDiagnosis) form.diagnoses
-
-                mapMedications illnessMedications =
-                    [ Maybe.map (EverySet.fromList >> Just) illnessMedications
-                        |> Maybe.withDefault (Just EverySet.empty)
-                    ]
-
-                medications =
-                    mapMedications form.malariaMedications
-                        ++ mapMedications form.hypertensionMedications
-                        ++ mapMedications form.syphilisMedications
-                        ++ mapMedications form.anemiaMedications
-                        ++ mapMedications form.hivMedications
-                        |> Maybe.Extra.combine
-                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalOutsideCareMedications)
-            in
-            { signs = signs
-            , diagnoses = diagnoses
-            , medications = medications
-            }
-        )
-        maybeSigns
-
-
-outsideCareFormInputsAndTasks : Language -> OutsideCareStep -> OutsideCareForm -> ( List (Html Msg), List (Maybe Bool) )
-outsideCareFormInputsAndTasks language step form =
-    case step of
-        OutsideCareStepDiagnoses ->
-            outsideCareFormInputsAndTasksDiagnoses language form
-
-        OutsideCareStepMedications ->
-            outsideCareFormInputsAndTasksMedications language form
-
-
-outsideCareFormInputsAndTasksDiagnoses : Language -> OutsideCareForm -> ( List (Html Msg), List (Maybe Bool) )
-outsideCareFormInputsAndTasksDiagnoses language form =
-    let
-        ( givenNewDiagnosisSection, givenNewDiagnosisTasks ) =
-            if form.seenAtAnotherFacility == Just True then
-                let
-                    ( newDiagnosisSection, newDiagnosisTasks ) =
-                        if form.givenNewDiagnosis == Just True then
-                            let
-                                ( givenMedicineSection, givenMedicineTasks ) =
-                                    Maybe.map
-                                        (\diagnoses ->
-                                            if
-                                                List.any (\diagnosis -> List.member diagnosis diagnoses)
-                                                    outsideCareDiagnosesWithPossibleMedication
-                                            then
-                                                ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion GivenMedicine
-                                                  , viewBoolInput
-                                                        language
-                                                        form.givenMedicine
-                                                        (SetOutsideCareSignBoolInput
-                                                            (\value form_ ->
-                                                                { form_
-                                                                    | givenMedicine = Just value
-                                                                    , malariaMedications = Nothing
-                                                                    , hypertensionMedications = Nothing
-                                                                    , syphilisMedications = Nothing
-                                                                    , hivMedications = Nothing
-                                                                    , anemiaMedications = Nothing
-                                                                }
-                                                            )
-                                                        )
-                                                        "given-medicine"
-                                                        Nothing
-                                                  ]
-                                                , [ form.givenMedicine ]
-                                                )
-
-                                            else
-                                                ( [], [] )
-                                        )
-                                        form.diagnoses
-                                        |> Maybe.withDefault ( [], [] )
-                            in
-                            ( [ viewLabel language Translate.SelectAllDiagnoses
-                              , viewCheckBoxMultipleSelectInput language
-                                    outsideCareDiagnosesLeftColumn
-                                    outsideCareDiagnosesRightColumn
-                                    (form.diagnoses |> Maybe.withDefault [])
-                                    (Just DiagnosisOther)
-                                    SetOutsideCareDiagnosis
-                                    Translate.PrenatalDiagnosis
-                              , viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion PlannedFollowUpCareWithSpecialist
-                              , viewBoolInput
-                                    language
-                                    form.plannedFollowUp
-                                    (SetOutsideCareSignBoolInput
-                                        (\value form_ -> { form_ | plannedFollowUp = Just value })
-                                    )
-                                    "planned-follow-up"
-                                    Nothing
-                              ]
-                                ++ givenMedicineSection
-                            , [ if isJust form.diagnoses then
-                                    Just True
-
-                                else
-                                    Nothing
-                              , form.plannedFollowUp
-                              ]
-                                ++ givenMedicineTasks
-                            )
-
-                        else
-                            ( [], [] )
-                in
-                ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion GivenNewDiagnoses
-                  , viewBoolInput
-                        language
-                        form.givenNewDiagnosis
-                        (SetOutsideCareSignBoolInput
-                            (\value form_ ->
-                                { form_
-                                    | givenNewDiagnosis = Just value
-                                    , givenMedicine = Nothing
-                                    , diagnoses = Nothing
-                                    , diagnosesDirty = True
-                                }
-                            )
-                        )
-                        "given-new-diagnosis"
-                        Nothing
-                  ]
-                    ++ newDiagnosisSection
-                , [ form.givenNewDiagnosis ] ++ newDiagnosisTasks
-                )
-
-            else
-                ( [], [] )
-    in
-    ( [ viewQuestionLabel language <| Translate.PrenatalOutsideCareSignQuestion SeenAtAnotherFacility
-      , viewBoolInput
-            language
-            form.seenAtAnotherFacility
-            (SetOutsideCareSignBoolInput
-                (\value form_ ->
-                    { form_
-                        | seenAtAnotherFacility = Just value
-                        , givenNewDiagnosis = Nothing
-                        , givenMedicine = Nothing
-                        , diagnoses = Nothing
-                        , diagnosesDirty = True
-                    }
-                )
-            )
-            "seen-at-another-facility"
-            Nothing
-      ]
-        ++ givenNewDiagnosisSection
-    , [ form.seenAtAnotherFacility ] ++ givenNewDiagnosisTasks
-    )
-
-
-outsideCareFormInputsAndTasksMedications : Language -> OutsideCareForm -> ( List (Html Msg), List (Maybe Bool) )
-outsideCareFormInputsAndTasksMedications language form =
-    if form.givenMedicine == Just True then
-        Maybe.map
-            (\diagnoses ->
-                let
-                    ( malariaInputs, malariaTasks ) =
-                        if List.member DiagnosisMalaria diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisMalaria
-                              , selectTreatmentOptionsInput outsideCareMedicationOptionsMalaria
-                                    NoOutsideCareMedicationForMalaria
-                                    form.malariaMedications
-                                    SetOutsideCareMalariaMedication
-                              ]
-                            , [ if isJust form.malariaMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    ( hypertensionInputs, hypertensionTasks ) =
-                        if
-                            List.any (\diagnosis -> List.member diagnosis diagnoses)
-                                [ DiagnosisGestationalHypertensionImmediate
-                                , DiagnosisChronicHypertensionImmediate
-                                , DiagnosisModeratePreeclampsiaInitialPhase
-                                ]
-                        then
-                            let
-                                headerTransId =
-                                    if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
-                                        Translate.ModeratePreeclampsia
-
-                                    else
-                                        Translate.Hypertension
-                            in
-                            ( [ viewHeader headerTransId
-                              , selectTreatmentOptionsInput outsideCareMedicationOptionsHypertension
-                                    NoOutsideCareMedicationForHypertension
-                                    form.hypertensionMedications
-                                    SetOutsideCareHypertensionMedication
-                              ]
-                            , [ if isJust form.hypertensionMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    ( syphilisInputs, syphilisTasks ) =
-                        if List.member DiagnosisSyphilis diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisSyphilis
-                              , selectTreatmentOptionsInput outsideCareMedicationOptionsSyphilis
-                                    NoOutsideCareMedicationForSyphilis
-                                    form.syphilisMedications
-                                    SetOutsideCareSyphilisMedication
-                              ]
-                            , [ if isJust form.syphilisMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    ( anemiaInputs, anemiaTasks ) =
-                        if List.member DiagnosisModerateAnemia diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisModerateAnemia
-                              , selectTreatmentOptionsInput outsideCareMedicationOptionsAnemia
-                                    NoOutsideCareMedicationForAnemia
-                                    form.anemiaMedications
-                                    SetOutsideCareAnemiaMedication
-                              ]
-                            , [ if isJust form.anemiaMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    ( hivInputs, hivTasks ) =
-                        if List.member DiagnosisHIV diagnoses then
-                            ( [ viewHeader <| Translate.PrenatalDiagnosis DiagnosisHIV
-                              , selectTreatmentOptionsInput outsideCareMedicationOptionsHIV
-                                    NoOutsideCareMedicationForHIV
-                                    form.hivMedications
-                                    SetOutsideCareHIVMedication
-                              ]
-                            , [ if isJust form.hivMedications then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    selectTreatmentOptionsInput allOptions noneOption currentValue setMsg =
-                        let
-                            options =
-                                List.filter ((/=) noneOption) allOptions
-                        in
-                        viewCheckBoxMultipleSelectCustomInput language
-                            options
-                            []
-                            (Maybe.withDefault [] currentValue)
-                            (Just noneOption)
-                            setMsg
-                            (viewOutsideCareMedicationOption language)
-
-                    viewHeader diagnosisTransId =
-                        div [ class "label" ]
-                            [ span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilityPrefix ]
-                            , text " "
-                            , span [ class "diagnosis" ] [ text <| translate language diagnosisTransId ]
-                            , text " "
-                            , span [] [ text <| translate language Translate.DiagnosedAtAnotherFacilitySuffix ]
-                            ]
-                in
-                ( malariaInputs ++ hypertensionInputs ++ syphilisInputs ++ anemiaInputs ++ hivInputs
-                , malariaTasks ++ hypertensionTasks ++ syphilisTasks ++ anemiaTasks ++ hivTasks
-                )
-            )
-            form.diagnoses
-            |> Maybe.withDefault ( [], [] )
-
-    else
-        ( [], [] )
-
-
-viewOutsideCareMedicationOption : Language -> PrenatalOutsideCareMedication -> Html any
-viewOutsideCareMedicationOption language medication =
-    if List.member medication noOutsideCareMedicationOptions then
-        label [] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
-
-    else
-        viewOutsideCareMedicationOptionWithDosage language medication
-
-
-outsideCareMedicationOptionsMalaria : List PrenatalOutsideCareMedication
-outsideCareMedicationOptionsMalaria =
-    [ OutsideCareMedicationQuinineSulphate
-    , OutsideCareMedicationCoartem
-    , NoOutsideCareMedicationForMalaria
-    ]
-
-
-outsideCareMedicationOptionsHypertension : List PrenatalOutsideCareMedication
-outsideCareMedicationOptionsHypertension =
-    [ OutsideCareMedicationMethyldopa2
-    , OutsideCareMedicationMethyldopa3
-    , OutsideCareMedicationMethyldopa4
-    , OutsideCareMedicationCarvedilol
-    , OutsideCareMedicationAmlodipine
-    , NoOutsideCareMedicationForHypertension
-    ]
-
-
-outsideCareMedicationOptionsSyphilis : List PrenatalOutsideCareMedication
-outsideCareMedicationOptionsSyphilis =
-    [ OutsideCareMedicationPenecilin1
-    , OutsideCareMedicationPenecilin3
-    , OutsideCareMedicationErythromycin
-    , OutsideCareMedicationAzithromycin
-    , OutsideCareMedicationCeftriaxon
-    , NoOutsideCareMedicationForSyphilis
-    ]
-
-
-outsideCareMedicationOptionsAnemia : List PrenatalOutsideCareMedication
-outsideCareMedicationOptionsAnemia =
-    [ OutsideCareMedicationIron1
-    , OutsideCareMedicationIron2
-    , OutsideCareMedicationFolicAcid
-    , NoOutsideCareMedicationForAnemia
-    ]
-
-
-outsideCareMedicationOptionsHIV : List PrenatalOutsideCareMedication
-outsideCareMedicationOptionsHIV =
-    [ OutsideCareMedicationTDF3TC
-    , OutsideCareMedicationDolutegravir
-    , NoOutsideCareMedicationForHIV
-    ]
-
-
-noOutsideCareMedicationOptions : List PrenatalOutsideCareMedication
-noOutsideCareMedicationOptions =
-    [ NoOutsideCareMedicationForMalaria
-    , NoOutsideCareMedicationForHypertension
-    , NoOutsideCareMedicationForSyphilis
-    , NoOutsideCareMedicationForAnemia
-    , NoOutsideCareMedicationForHIV
-    ]
-
-
-viewOutsideCareMedicationOptionWithDosage : Language -> PrenatalOutsideCareMedication -> Html any
-viewOutsideCareMedicationOptionWithDosage language medication =
-    label []
-        [ span [ class "treatment" ] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationLabel medication ]
-        , text ": "
-        , span [ class "dosage" ] [ text <| translate language <| Translate.PrenatalOutsideCareMedicationDosage medication ]
-        ]
 
 
 mentalHealthFormWithDefault : MentalHealthForm -> Maybe PrenatalMentalHealthValue -> MentalHealthForm
@@ -7002,11 +5896,7 @@ guExamFormInputsAndTasks language assembled form =
                     "episiotomy"
                     Nothing
               ]
-            , [ if isJust form.vaginalExamSigns then
-                    Just True
-
-                else
-                    Nothing
+            , [ maybeToBoolTask form.vaginalExamSigns
               , form.episiotomyOrPerinealTear
               ]
             )
@@ -7029,12 +5919,7 @@ guExamFormInputsAndTasks language assembled form =
                                     Translate.PostpartumHealingProblem
                               , div [ class "separator double" ] []
                               ]
-                            , [ if isJust form.postpartumHealingProblems then
-                                    Just True
-
-                                else
-                                    Nothing
-                              ]
+                            , [ maybeToBoolTask form.postpartumHealingProblems ]
                             )
 
                         else
@@ -7137,12 +6022,7 @@ resolveReferralInputsAndTasksForCHW language currentDate assembled form =
                                     Translate.ReasonForNonReferral
                                 ]
                           ]
-                        , [ if isJust form.reasonForNotSendingToHC then
-                                Just True
-
-                            else
-                                Nothing
-                          ]
+                        , [ maybeToBoolTask form.reasonForNotSendingToHC ]
                         )
                 )
                 form.referToHealthCenter
@@ -7212,6 +6092,13 @@ matchRequiredReferralFacility assembled facility =
         FacilityNCDProgram ->
             referredToSpecialityCareProgram EnrolledToNCDProgram assembled
 
+        FacilityANCServices ->
+            -- Explicit NCD facility.
+            False
+
+        FacilityUltrasound ->
+            referToUltrasound assembled
+
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved
             -- with resolveReferralInputsAndTasksForCHW.
@@ -7220,7 +6107,12 @@ matchRequiredReferralFacility assembled facility =
 
 referralFacilities : List ReferralFacility
 referralFacilities =
-    [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram, FacilityNCDProgram ]
+    [ FacilityHospital
+    , FacilityMentalHealthSpecialist
+    , FacilityARVProgram
+    , FacilityNCDProgram
+    , FacilityUltrasound
+    ]
 
 
 specialityCareFormWithDefault : SpecialityCareForm -> Maybe SpecialityCareValue -> SpecialityCareForm
@@ -7248,3 +6140,32 @@ toSpecialityCareValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)
+
+
+lmpRangeToString : LmpRange -> String
+lmpRangeToString range =
+    case range of
+        OneMonth ->
+            "one-month"
+
+        ThreeMonth ->
+            "three-month"
+
+        SixMonth ->
+            "six-month"
+
+
+lmpRangeFromString : String -> Maybe LmpRange
+lmpRangeFromString s =
+    case s of
+        "one-month" ->
+            Just OneMonth
+
+        "three-month" ->
+            Just ThreeMonth
+
+        "six-month" ->
+            Just SixMonth
+
+        _ ->
+            Nothing

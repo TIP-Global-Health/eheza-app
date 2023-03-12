@@ -245,6 +245,21 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchNCDEncounter id ->
+            Dict.get id model.ncdEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchNCDEncountersForParticipant id ->
+            Dict.get id model.ncdEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchNCDMeasurements id ->
+            Dict.get id model.ncdMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
@@ -272,6 +287,16 @@ shouldFetch currentTime model msg =
 
         FetchTraceContact id ->
             Dict.get id model.traceContacts
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchResilienceSurveysForNurse id ->
+            Dict.get id model.resilienceSurveysByNurse
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchResilienceMessagesForNurse id ->
+            Dict.get id model.resilienceMessagesByNurse
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -378,6 +403,15 @@ forget msg model =
         FetchWellChildMeasurements id ->
             { model | wellChildMeasurements = Dict.remove id model.wellChildMeasurements }
 
+        FetchNCDEncounter id ->
+            { model | ncdEncounters = Dict.remove id model.ncdEncounters }
+
+        FetchNCDEncountersForParticipant id ->
+            { model | ncdEncountersByParticipant = Dict.remove id model.ncdEncountersByParticipant }
+
+        FetchNCDMeasurements id ->
+            { model | ncdMeasurements = Dict.remove id model.ncdMeasurements }
+
         FetchIndividualEncounterParticipant id ->
             { model | individualParticipants = Dict.remove id model.individualParticipants }
 
@@ -389,6 +423,12 @@ forget msg model =
 
         FetchSessionsByClinic clinicId ->
             { model | sessionsByClinic = Dict.remove clinicId model.sessionsByClinic }
+
+        FetchResilienceSurveysForNurse id ->
+            { model | resilienceSurveysByNurse = Dict.remove id model.resilienceSurveysByNurse }
+
+        FetchResilienceMessagesForNurse id ->
+            { model | resilienceMessagesByNurse = Dict.remove id model.resilienceMessagesByNurse }
 
         -- For other messages, we do nothing.
         _ ->

@@ -50,6 +50,7 @@ type alias ModelChild =
     , followUpForm : FollowUpForm
     , healthEducationForm : HealthEducationForm
     , sendToHCForm : SendToHCForm
+    , ncdaData : NCDAData
     }
 
 
@@ -74,6 +75,7 @@ emptyModelChild =
     , followUpForm = emptyFollowUpForm
     , healthEducationForm = emptyHealthEducationForm
     , sendToHCForm = emptySendToHCForm
+    , ncdaData = emptyNCDAData
     }
 
 
@@ -240,6 +242,10 @@ type MsgChild
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
+    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetBirthWeight String
+    | SetNCDAHelperState (Maybe NCDASign)
+    | SetNCDAFormStep NCDAStep
 
 
 type MsgMother
@@ -262,7 +268,8 @@ creating a new one.
 
 -}
 type OutMsgChild
-    = FetchIndividualNutritionData PersonId
+    = NoOp
+    | FetchIndividualNutritionData PersonId
     | SaveHeight (Maybe HeightId) HeightInCm
     | SaveWeight (Maybe WeightId) WeightInKg
     | SaveMuac (Maybe MuacId) MuacInCm
@@ -274,6 +281,7 @@ type OutMsgChild
     | SaveFollowUp (Maybe FollowUpId) FollowUpValue
     | SaveHealthEducation (Maybe GroupHealthEducationId) HealthEducationValue
     | SaveSendToHC (Maybe GroupSendToHCId) SendToHCValue
+    | SaveNCDA (Maybe GroupNCDAId) NCDAValue
 
 
 type OutMsgMother
@@ -409,6 +417,7 @@ type InvokationModule
     = InvokationModulePrenatal
     | InvokationModuleAcuteIllness
     | InvokationModuleWellChild
+    | InvokationModuleNCD
 
 
 type alias VaccinationForm msg =
@@ -468,4 +477,677 @@ type alias VaccinationFormDynamicContentAndTasksConfig msg =
     , nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
     , getIntervalForVaccine : VaccineDose -> ( Int, Unit )
     , firstDoseExpectedFrom : NominalDate
+    }
+
+
+type alias CorePhysicalExamForm =
+    { brittleHair : Maybe Bool
+    , paleConjuctiva : Maybe Bool
+    , neck : Maybe (List NeckCPESign)
+    , heart : Maybe HeartCPESign
+    , heartMurmur : Maybe Bool
+    , lungs : Maybe (List LungsCPESign)
+    , abdomen : Maybe (List AbdomenCPESign)
+    , hands : Maybe (List HandsCPESign)
+    , legs : Maybe (List LegsCPESign)
+    }
+
+
+emptyCorePhysicalExamForm : CorePhysicalExamForm
+emptyCorePhysicalExamForm =
+    { brittleHair = Nothing
+    , paleConjuctiva = Nothing
+    , neck = Nothing
+    , heart = Nothing
+    , heartMurmur = Nothing
+    , lungs = Nothing
+    , abdomen = Nothing
+    , hands = Nothing
+    , legs = Nothing
+    }
+
+
+type alias CorePhysicalExamFormConfig msg =
+    { setBoolInputMsg : (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) -> Bool -> msg
+    , setNeckMsg : NeckCPESign -> msg
+    , setHeartMsg : HeartCPESign -> msg
+    , setLungsMsg : LungsCPESign -> msg
+    , setAbdomenMsg : AbdomenCPESign -> msg
+    , setHandsMsg : HandsCPESign -> msg
+    , setLegsMsg : LegsCPESign -> msg
+    }
+
+
+type alias FamilyPlanningForm =
+    { signs : Maybe (List FamilyPlanningSign)
+    }
+
+
+emptyFamilyPlanningForm : FamilyPlanningForm
+emptyFamilyPlanningForm =
+    FamilyPlanningForm Nothing
+
+
+type alias OutsideCareForm diagnosis =
+    { step : OutsideCareStep
+    , seenAtAnotherFacility : Maybe Bool
+    , givenNewDiagnosis : Maybe Bool
+    , givenMedicine : Maybe Bool
+    , plannedFollowUp : Maybe Bool
+    , diagnoses : Maybe (List diagnosis)
+    , diagnosesDirty : Bool
+    , malariaMedications : Maybe (List OutsideCareMedication)
+    , hypertensionMedications : Maybe (List OutsideCareMedication)
+    , syphilisMedications : Maybe (List OutsideCareMedication)
+    , hivMedications : Maybe (List OutsideCareMedication)
+    , anemiaMedications : Maybe (List OutsideCareMedication)
+    }
+
+
+emptyOutsideCareForm : OutsideCareForm diagnosis
+emptyOutsideCareForm =
+    { step = OutsideCareStepDiagnoses
+    , seenAtAnotherFacility = Nothing
+    , givenNewDiagnosis = Nothing
+    , givenMedicine = Nothing
+    , plannedFollowUp = Nothing
+    , diagnoses = Nothing
+    , diagnosesDirty = False
+    , malariaMedications = Nothing
+    , hypertensionMedications = Nothing
+    , syphilisMedications = Nothing
+    , hivMedications = Nothing
+    , anemiaMedications = Nothing
+    }
+
+
+type OutsideCareStep
+    = OutsideCareStepDiagnoses
+    | OutsideCareStepMedications
+
+
+type LaboratoryTask
+    = TaskBloodGpRsTest
+    | TaskHemoglobinTest
+    | TaskHepatitisBTest
+    | TaskHIVTest
+    | TaskMalariaTest
+    | TaskRandomBloodSugarTest
+    | TaskSyphilisTest
+    | TaskUrineDipstickTest
+    | TaskHIVPCRTest
+    | TaskPregnancyTest
+    | TaskCreatinineTest
+    | TaskLiverFunctionTest
+    | TaskLipidPanelTest
+    | TaskHbA1cTest
+    | TaskPartnerHIVTest
+    | TaskCompletePreviousTests
+
+
+type alias ContentAndTasksLaboratoryTestInitialConfig msg =
+    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
+    , setHIVTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHIVTestResultMsg : String -> msg
+    , setSyphilisTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setSyphilisTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHepatitisBTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHepatitisBTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
+    , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setMalariaTestResultMsg : String -> msg
+    , setBloodSmearResultMsg : String -> msg
+    , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
+    , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setUrineDipstickTestVariantMsg : TestVariant -> msg
+    , setHemoglobinTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHemoglobinTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
+    , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPregnancyTestFormBoolInputMsg : (Bool -> PregnancyTestForm msg -> PregnancyTestForm msg) -> Bool -> msg
+    , setPregnancyTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPregnancyTestResultMsg : String -> msg
+    , setCreatinineTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setCreatinineTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLiverFunctionTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
+    , setHbA1cTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm msg -> PartnerHIVTestForm msg) -> Bool -> msg
+    , setPartnerHIVTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPartnerHIVTestResultMsg : String -> msg
+    , noOpMsg : msg
+    }
+
+
+type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
+    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
+    , setHIVTestExecutionDateMsg : NominalDate -> msg
+    , setHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setSyphilisTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setSyphilisTestExecutionDateMsg : NominalDate -> msg
+    , setSyphilisTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHepatitisBTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHepatitisBTestExecutionDateMsg : NominalDate -> msg
+    , setHepatitisBTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
+    , setMalariaTestExecutionDateMsg : NominalDate -> msg
+    , setMalariaTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setBloodGpRsTestExecutionDateMsg : NominalDate -> msg
+    , setBloodGpRsTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
+    , setUrineDipstickTestExecutionDateMsg : NominalDate -> msg
+    , setUrineDipstickTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHemoglobinTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHemoglobinTestExecutionDateMsg : NominalDate -> msg
+    , setHemoglobinTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
+    , setRandomBloodSugarTestExecutionDateMsg : NominalDate -> msg
+    , setRandomBloodSugarTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setRandomBloodSugarResultMsg : String -> msg
+    , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setHIVPCRTestExecutionDateMsg : NominalDate -> msg
+    , setHIVPCRTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setPregnancyTestFormBoolInputMsg : (Bool -> PregnancyTestForm msg -> PregnancyTestForm msg) -> Bool -> msg
+    , setPregnancyTestExecutionDateMsg : NominalDate -> msg
+    , setPregnancyTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setCreatinineTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setCreatinineTestExecutionDateMsg : NominalDate -> msg
+    , setCreatinineTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLiverFunctionTestExecutionDateMsg : NominalDate -> msg
+    , setLiverFunctionTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setLipidPanelTestExecutionDateMsg : NominalDate -> msg
+    , setLipidPanelTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
+    , setHbA1cTestExecutionDateMsg : NominalDate -> msg
+    , setHbA1cTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setHbA1cTestResultMsg : String -> msg
+    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm msg -> PartnerHIVTestForm msg) -> Bool -> msg
+    , setPartnerHIVTestExecutionDateMsg : NominalDate -> msg
+    , setPartnerHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , noOpMsg : msg
+    }
+
+
+type alias HIVTestForm msg =
+    { knownAsPositive : Maybe Bool
+    , testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe TestResult
+    , hivProgramHC : Maybe Bool
+    , hivProgramHCDirty : Bool
+    , partnerHIVPositive : Maybe Bool
+    , partnerHIVPositiveDirty : Bool
+    , partnerTakingARV : Maybe Bool
+    , partnerTakingARVDirty : Bool
+    , partnerSurpressedViralLoad : Maybe Bool
+    , partnerSurpressedViralLoadDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyHIVTestForm : HIVTestForm msg
+emptyHIVTestForm =
+    { knownAsPositive = Nothing
+    , testPerformed = Nothing
+    , testPerformedDirty = False
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testResult = Nothing
+    , hivProgramHC = Nothing
+    , hivProgramHCDirty = False
+    , partnerHIVPositive = Nothing
+    , partnerHIVPositiveDirty = False
+    , partnerTakingARV = Nothing
+    , partnerTakingARVDirty = False
+    , partnerSurpressedViralLoad = Nothing
+    , partnerSurpressedViralLoadDirty = False
+    , dateSelectorPopupState = Nothing
+    }
+
+
+type alias MalariaTestForm msg =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+
+    -- Holds the date of Malaria RDT execution.
+    -- If Malaria RDT was not performed, but blood smear was,
+    -- will hold the date of blood smear.
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe TestResult
+    , bloodSmearTaken : Maybe Bool
+    , bloodSmearTakenDirty : Bool
+    , bloodSmearResult : Maybe BloodSmearResult
+    , bloodSmearResultDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyMalariaTestForm : MalariaTestForm msg
+emptyMalariaTestForm =
+    MalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing False Nothing False Nothing
+
+
+type alias UrineDipstickForm msg =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , testVariant : Maybe TestVariant
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyUrineDipstickForm : UrineDipstickForm msg
+emptyUrineDipstickForm =
+    UrineDipstickForm Nothing False Nothing False Nothing Nothing False Nothing False Nothing
+
+
+type alias RandomBloodSugarForm msg =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , patientFasted : Maybe Bool
+    , immediateResult : Maybe Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    , sugarCount : Maybe Float
+    , sugarCountDirty : Bool
+    }
+
+
+emptyRandomBloodSugarForm : RandomBloodSugarForm msg
+emptyRandomBloodSugarForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , patientFasted = Nothing
+    , immediateResult = Nothing
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , dateSelectorPopupState = Nothing
+
+    -- We need this, since RandomBloodSugar result can be
+    -- entered both  immediately, and from case management.
+    , sugarCount = Nothing
+    , sugarCountDirty = False
+    }
+
+
+type alias PregnancyTestForm msg =
+    { knownAsPositive : Maybe Bool
+    , testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe TestResult
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyPregnancyTestForm : PregnancyTestForm msg
+emptyPregnancyTestForm =
+    { knownAsPositive = Nothing
+    , testPerformed = Nothing
+    , testPerformedDirty = False
+    , testPerformedToday = Nothing
+    , testPerformedTodayDirty = False
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testResult = Nothing
+    , dateSelectorPopupState = Nothing
+    }
+
+
+type alias NonRDTForm msg =
+    { knownAsPositive : Maybe Bool
+    , testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyNonRDTForm : NonRDTForm msg
+emptyNonRDTForm =
+    NonRDTForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing
+
+
+type alias SyphilisResultForm encounterId =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe TestResult
+    , symptoms : Maybe (List IllnessSymptom)
+    , symptomsDirty : Bool
+    , originatingEncounter : Maybe encounterId
+    }
+
+
+emptySyphilisResultForm : SyphilisResultForm encounterId
+emptySyphilisResultForm =
+    SyphilisResultForm Nothing Nothing Nothing Nothing False Nothing
+
+
+type alias HepatitisBResultForm encounterId =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testResult : Maybe TestResult
+    , originatingEncounter : Maybe encounterId
+    }
+
+
+emptyHepatitisBResultForm : HepatitisBResultForm encounterId
+emptyHepatitisBResultForm =
+    HepatitisBResultForm Nothing Nothing Nothing Nothing
+
+
+type alias BloodGpRsResultForm encounterId =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , bloodGroup : Maybe BloodGroup
+    , rhesus : Maybe Rhesus
+    , originatingEncounter : Maybe encounterId
+    }
+
+
+emptyBloodGpRsResultForm : BloodGpRsResultForm encounterId
+emptyBloodGpRsResultForm =
+    BloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing
+
+
+type alias UrineDipstickResultForm =
+    { testVariant : Maybe TestVariant
+    , executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , protein : Maybe ProteinValue
+    , ph : Maybe PHValue
+    , glucose : Maybe GlucoseValue
+    , leukocytes : Maybe LeukocytesValue
+    , nitrite : Maybe NitriteValue
+    , urobilinogen : Maybe UrobilinogenValue
+    , haemoglobin : Maybe HaemoglobinValue
+    , ketone : Maybe KetoneValue
+    , bilirubin : Maybe BilirubinValue
+    }
+
+
+emptyUrineDipstickResultForm : UrineDipstickResultForm
+emptyUrineDipstickResultForm =
+    { testVariant = Nothing
+    , executionNote = Nothing
+    , executionDate = Nothing
+    , protein = Nothing
+    , ph = Nothing
+    , glucose = Nothing
+    , leukocytes = Nothing
+    , nitrite = Nothing
+    , urobilinogen = Nothing
+    , haemoglobin = Nothing
+    , ketone = Nothing
+    , bilirubin = Nothing
+    }
+
+
+type alias HemoglobinResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hemoglobinCount : Maybe Float
+    }
+
+
+emptyHemoglobinResultForm : HemoglobinResultForm
+emptyHemoglobinResultForm =
+    HemoglobinResultForm Nothing Nothing Nothing
+
+
+type alias RandomBloodSugarResultForm encounterId =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , sugarCount : Maybe Float
+    , originatingEncounter : Maybe encounterId
+    }
+
+
+emptyRandomBloodSugarResultForm : RandomBloodSugarResultForm encounterId
+emptyRandomBloodSugarResultForm =
+    RandomBloodSugarResultForm Nothing Nothing Nothing Nothing Nothing
+
+
+type alias HIVPCRResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , hivViralLoadStatus : Maybe ViralLoadStatus
+    , hivViralLoad : Maybe Float
+    }
+
+
+emptyHIVPCRResultForm : HIVPCRResultForm
+emptyHIVPCRResultForm =
+    HIVPCRResultForm Nothing Nothing Nothing Nothing
+
+
+type alias PartnerHIVTestForm msg =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe TestResult
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyPartnerHIVTestForm : PartnerHIVTestForm msg
+emptyPartnerHIVTestForm =
+    PartnerHIVTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
+
+
+type alias CreatinineResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , creatinineResult : Maybe Float
+    , bunResult : Maybe Float
+    }
+
+
+emptyCreatinineResultForm : CreatinineResultForm
+emptyCreatinineResultForm =
+    CreatinineResultForm Nothing Nothing Nothing Nothing
+
+
+type alias LiverFunctionResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , altResult : Maybe Float
+    , astResult : Maybe Float
+    }
+
+
+emptyLiverFunctionResultForm : LiverFunctionResultForm
+emptyLiverFunctionResultForm =
+    LiverFunctionResultForm Nothing Nothing Nothing Nothing
+
+
+type alias NCDAData =
+    { form : NCDAForm
+    , helperState : Maybe NCDASign
+    }
+
+
+emptyNCDAData : NCDAData
+emptyNCDAData =
+    { form = emptyNCDAForm
+    , helperState = Nothing
+    }
+
+
+type alias NCDAForm =
+    { step : Maybe NCDAStep
+    , bornWithBirthDefect : Maybe Bool
+    , breastfedForSixMonths : Maybe Bool
+    , appropriateComplementaryFeeding : Maybe Bool
+    , ongeraMNP : Maybe Bool
+    , fiveFoodGroups : Maybe Bool
+    , mealFrequency6to8Months : Maybe Bool
+    , mealFrequency9to11Months : Maybe Bool
+    , mealFrequency12MonthsOrMore : Maybe Bool
+    , supportChildWithDisability : Maybe Bool
+    , conditionalCashTransfer : Maybe Bool
+    , conditionalFoodItems : Maybe Bool
+    , hasCleanWater : Maybe Bool
+    , hasHandwashingFacility : Maybe Bool
+    , hasToilets : Maybe Bool
+    , hasKitchenGarden : Maybe Bool
+    , regularPrenatalVisits : Maybe Bool
+    , ironSupplementsDuringPregnancy : Maybe Bool
+    , insecticideTreatedBednetsDuringPregnancy : Maybe Bool
+    , birthWeight : Maybe WeightInGrm
+    }
+
+
+emptyNCDAForm : NCDAForm
+emptyNCDAForm =
+    { step = Nothing
+    , bornWithBirthDefect = Nothing
+    , breastfedForSixMonths = Nothing
+    , appropriateComplementaryFeeding = Nothing
+    , ongeraMNP = Nothing
+    , fiveFoodGroups = Nothing
+    , mealFrequency6to8Months = Nothing
+    , mealFrequency9to11Months = Nothing
+    , mealFrequency12MonthsOrMore = Nothing
+    , supportChildWithDisability = Nothing
+    , conditionalCashTransfer = Nothing
+    , conditionalFoodItems = Nothing
+    , hasCleanWater = Nothing
+    , hasHandwashingFacility = Nothing
+    , hasToilets = Nothing
+    , hasKitchenGarden = Nothing
+    , regularPrenatalVisits = Nothing
+    , ironSupplementsDuringPregnancy = Nothing
+    , insecticideTreatedBednetsDuringPregnancy = Nothing
+    , birthWeight = Nothing
+    }
+
+
+type NCDAStep
+    = NCDAStepQuestionsAskedOnce
+    | NCDAStepPermanentQuestions1
+    | NCDAStepPermanentQuestions2
+
+
+type GroupOfFoods
+    = Staples
+    | Legumes
+    | DairyProducts
+    | AnimalSourceFoods
+    | Eggs
+    | FruitsVegetables
+    | BreastMilk
+    | MealsWithEdibleOil
+
+
+type alias LipidPanelResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , unitOfMeasurement : Maybe UnitOfMeasurement
+    , totalCholesterolResult : Maybe Float
+    , totalCholesterolResultDirty : Bool
+    , ldlCholesterolResult : Maybe Float
+    , ldlCholesterolResultDirty : Bool
+    , hdlCholesterolResult : Maybe Float
+    , hdlCholesterolResultDirty : Bool
+    , triglyceridesResult : Maybe Float
+    , triglyceridesResultDirty : Bool
+    }
+
+
+emptyLipidPanelResultForm : LipidPanelResultForm
+emptyLipidPanelResultForm =
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , unitOfMeasurement = Nothing
+    , totalCholesterolResult = Nothing
+    , totalCholesterolResultDirty = False
+    , ldlCholesterolResult = Nothing
+    , ldlCholesterolResultDirty = False
+    , hdlCholesterolResult = Nothing
+    , hdlCholesterolResultDirty = False
+    , triglyceridesResult = Nothing
+    , triglyceridesResultDirty = False
+    }
+
+
+type alias HbA1cTestForm msg =
+    { gotResultsPreviously : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    , hba1cResult : Maybe Float
+    , hba1cResultDirty : Bool
+    }
+
+
+emptyHbA1cTestForm : HbA1cTestForm msg
+emptyHbA1cTestForm =
+    { gotResultsPreviously = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , dateSelectorPopupState = Nothing
+    , hba1cResult = Nothing
+    , hba1cResultDirty = False
     }
