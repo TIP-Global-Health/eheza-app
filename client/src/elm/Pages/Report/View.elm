@@ -31,7 +31,7 @@ viewLabsPane : Language -> NominalDate -> (Maybe LabResultsMode -> msg) -> Html 
 viewLabsPane language currentDate setLabResultsModeMsg =
     let
         _ =
-            Debug.log "viewLabsPane" ""
+            Debug.log "TEST" "viewLabsPane"
     in
     div [ class "labs" ] <|
         [ viewItemHeading language Translate.LabResults "blue"
