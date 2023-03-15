@@ -613,6 +613,8 @@ medicateForHypertension phase assembled =
                                        -- Note that we do not check for Renal Complications, since
                                        -- it can only be diagnosed at recurrent phase.
                                        diagnosed DiagnosisDiabetesInitial assembled
+                                    || -- Pregnant women always get Methyldopa treatment.
+                                       patientIsPregnant assembled.measurements
 
                             _ ->
                                 True

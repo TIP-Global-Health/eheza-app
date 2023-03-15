@@ -3,6 +3,7 @@ description = User related code
 core = 7.x
 package = Hedley
 dependencies[] = ctools
+dependencies[] = date
 dependencies[] = entityreference
 dependencies[] = features
 dependencies[] = hedley_device

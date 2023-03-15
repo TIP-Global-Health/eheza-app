@@ -100,7 +100,8 @@ svg.chart {
     font-size: 12px;
   }
 
-  polyline.data {
+  polyline.data,
+  polyline.child-data {
     fill: none;
     stroke: $color-black;
     stroke-width: 2px;
