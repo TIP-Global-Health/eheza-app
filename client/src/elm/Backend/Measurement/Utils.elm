@@ -2557,25 +2557,6 @@ reasonForNonReferralToString value =
             "none"
 
 
-socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
-socialHistoryHivTestingResultFromString result =
-    case result of
-        "positive" ->
-            Just ResultHivPositive
-
-        "negative" ->
-            Just ResultHivNegative
-
-        "indeterminate" ->
-            Just ResultHivIndeterminate
-
-        "none" ->
-            Just NoHivTesting
-
-        _ ->
-            Nothing
-
-
 postpartumHealingProblemToString : PostpartumHealingProblem -> String
 postpartumHealingProblemToString value =
     case value of
@@ -2621,22 +2602,6 @@ postpartumHealingProblemFromString value =
 
         _ ->
             Nothing
-
-
-socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
-socialHistoryHivTestingResultToString result =
-    case result of
-        ResultHivPositive ->
-            "positive"
-
-        ResultHivNegative ->
-            "negative"
-
-        ResultHivIndeterminate ->
-            "indeterminate"
-
-        NoHivTesting ->
-            "none"
 
 
 pregnancyTestResultFromString : String -> Maybe PregnancyTestResult
@@ -3434,6 +3399,9 @@ referralToFacilityCompleted referralSigns nonReferralReasons facility =
                 FacilityANCServices ->
                     Just ( ReferToANCServices, NonReferralReasonANCServices )
 
+                FacilityUltrasound ->
+                    Just ( ReferToUltrasound, NonReferralReasonUltrasound )
+
                 FacilityHealthCenter ->
                     -- We should never get here, as referral to HC
                     -- got special treatement, and not supported here.
@@ -3498,6 +3466,9 @@ nonReferralReasonToSign facility reason =
 
         FacilityANCServices ->
             NonReferralReasonANCServices reason
+
+        FacilityUltrasound ->
+            NonReferralReasonUltrasound reason
 
         FacilityHealthCenter ->
             -- We should never get here, as referral to HC
@@ -3695,3 +3666,73 @@ expectNCDAActivity currentDate person =
                 |> Maybe.map (\ageMonths -> ageMonths < 24)
                 |> Maybe.withDefault False
            )
+
+
+lmpDateNotConfidentReasonToString : LmpDateNotConfidentReason -> String
+lmpDateNotConfidentReasonToString value =
+    case value of
+        ReasonIrregularMenses ->
+            "irregular-menses"
+
+        ReasonOnFamilyPlanningMethod ->
+            "on-family-planning-method"
+
+        ReasonCanNotRememberDates ->
+            "can-not-remember-dates"
+
+
+lmpDateNotConfidentReasonFromString : String -> Maybe LmpDateNotConfidentReason
+lmpDateNotConfidentReasonFromString value =
+    case value of
+        "irregular-menses" ->
+            Just ReasonIrregularMenses
+
+        "on-family-planning-method" ->
+            Just ReasonOnFamilyPlanningMethod
+
+        "can-not-remember-dates" ->
+            Just ReasonCanNotRememberDates
+
+        _ ->
+            Nothing
+
+
+bloodSmearResultToString : BloodSmearResult -> String
+bloodSmearResultToString value =
+    case value of
+        BloodSmearNegative ->
+            "negative"
+
+        BloodSmearPlus ->
+            "+"
+
+        BloodSmearPlusPlus ->
+            "++"
+
+        BloodSmearPlusPlusPlus ->
+            "+++"
+
+        BloodSmearNotTaken ->
+            "not-taken"
+
+
+bloodSmearResultFromString : String -> Maybe BloodSmearResult
+bloodSmearResultFromString value =
+    case value of
+        "negative" ->
+            Just BloodSmearNegative
+
+        "+" ->
+            Just BloodSmearPlus
+
+        "++" ->
+            Just BloodSmearPlusPlus
+
+        "+++" ->
+            Just BloodSmearPlusPlusPlus
+
+        "not-taken" ->
+            Just BloodSmearNotTaken
+
+        _ ->
+            Nothing

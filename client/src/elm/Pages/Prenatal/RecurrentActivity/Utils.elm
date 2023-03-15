@@ -52,6 +52,9 @@ expectActivity currentDate assembled activity =
                 |> List.isEmpty
                 |> not
 
+        RecurrentMalariaPrevention ->
+            expectMalariaPreventionActivity PhaseRecurrent assembled
+
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
 activityCompleted currentDate assembled activity =
@@ -73,6 +76,10 @@ activityCompleted currentDate assembled activity =
                 || (resolveExaminationTasks currentDate assembled
                         |> List.all (examinationMeasurementTaken assembled)
                    )
+
+        RecurrentMalariaPrevention ->
+            (not <| expectActivity currentDate assembled RecurrentMalariaPrevention)
+                || isJust assembled.measurements.malariaPrevention
 
 
 laboratoryResultTasks : List LaboratoryTask
@@ -132,6 +139,9 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
 
+        TaskPartnerHIVTest ->
+            not <| taskExpected TaskPartnerHIVTest
+
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
 
@@ -177,6 +187,9 @@ expectLaboratoryResultTask currentDate assembled task =
 
         TaskHIVPCRTest ->
             wasTestPerformed .hivPCRTest
+
+        TaskPartnerHIVTest ->
+            False
 
         TaskCompletePreviousTests ->
             False
@@ -558,6 +571,9 @@ matchRequiredReferralFacility assembled facility =
 
         -- Explicit NCD facility.
         FacilityANCServices ->
+            False
+
+        FacilityUltrasound ->
             False
 
         FacilityHealthCenter ->

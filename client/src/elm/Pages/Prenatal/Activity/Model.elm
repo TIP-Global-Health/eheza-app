@@ -19,6 +19,7 @@ import Measurement.Model
         , NonRDTForm
         , OutsideCareForm
         , OutsideCareStep(..)
+        , PartnerHIVTestForm
         , RandomBloodSugarForm
         , SendToHCForm
         , UrineDipstickForm
@@ -31,6 +32,7 @@ import Measurement.Model
         , emptyMalariaTestForm
         , emptyNonRDTForm
         , emptyOutsideCareForm
+        , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarForm
         , emptySendToHCForm
         , emptyUrineDipstickForm
@@ -50,10 +52,11 @@ type Msg
     | SetWarningPopupState (Maybe (WarningPopupType Msg))
       -- PregnancyDatingMsgs
     | SetLmpDateSelectorState (Maybe (DateSelectorConfig Msg))
-    | SetConfirmLmpDate NominalDate Bool
+    | SetConfirmLmpDate LastMenstrualPeriodValue Bool
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
+    | SetLmpDateNotConfidentReason LmpDateNotConfidentReason
     | SavePregnancyDating IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
@@ -73,7 +76,6 @@ type Msg
     | SaveMedicalHistory PersonId (Maybe ( MedicalHistoryId, MedicalHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
-    | SetSocialHivTestingResult String
     | SaveSocialHistory PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Outside Care
     | SetOutsideCareStep OutsideCareStep
@@ -109,10 +111,12 @@ type Msg
     | SetObstetricalExamFloatMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFetalPresentation FetalPresentation
     | SetObstetricalExamCSectionScar CSectionScar
+    | HideFundalPalpablePopup
     | SaveObstetricalExam PersonId (Maybe ( ObstetricalExamId, ObstetricalExam )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
     | SetBreastExamBreast BreastExamSign
+    | SetDischargeType DischargeType
     | SaveBreastExam PersonId (Maybe ( BreastExamId, BreastExam )) (Maybe ExaminationTask)
       -- ExaminationMsgs, GU Exam
     | SetGUExamBoolInput (Bool -> GUExamForm -> GUExamForm) Bool
@@ -163,6 +167,7 @@ type Msg
     | SetMalariaTestExecutionNote TestExecutionNote
     | SetMalariaTestExecutionDate NominalDate
     | SetMalariaTestResult String
+    | SetBloodSmearResultMsg String
     | SetMalariaTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveMalariaTest PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
     | SetBloodGpRsTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
@@ -194,6 +199,12 @@ type Msg
     | SaveHIVPCRTest PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
     | SetLabsHistoryCompleted Bool
     | SaveLabsHistory
+    | SetPartnerHIVTestFormBoolInput (Bool -> PartnerHIVTestForm Msg -> PartnerHIVTestForm Msg) Bool
+    | SetPartnerHIVTestExecutionNote TestExecutionNote
+    | SetPartnerHIVTestExecutionDate NominalDate
+    | SetPartnerHIVTestResult String
+    | SetPartnerHIVTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SavePartnerHIVTest PersonId (Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )) (Maybe LaboratoryTask)
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SaveHealthEducation PersonId (Maybe ( PrenatalHealthEducationId, PrenatalHealthEducation ))
@@ -379,27 +390,6 @@ emptyFamilyPlanningData =
     }
 
 
-type alias MalariaPreventionData =
-    { form : MalariaPreventionForm
-    }
-
-
-emptyMalariaPreventionData : MalariaPreventionData
-emptyMalariaPreventionData =
-    { form = emptyMalariaPreventionForm
-    }
-
-
-type alias MalariaPreventionForm =
-    { receivedMosquitoNet : Maybe Bool
-    }
-
-
-emptyMalariaPreventionForm : MalariaPreventionForm
-emptyMalariaPreventionForm =
-    MalariaPreventionForm Nothing
-
-
 type alias MedicationData =
     { form : MedicationForm
     }
@@ -530,6 +520,7 @@ type alias LaboratoryData =
     , urineDipstickTestForm : UrineDipstickForm Msg
     , hivPCRTestForm : NonRDTForm Msg
     , labsHistoryForm : LabsHistoryForm
+    , partnerHIVTestForm : PartnerHIVTestForm Msg
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -547,6 +538,7 @@ emptyLaboratoryData =
     , urineDipstickTestForm = emptyUrineDipstickForm
     , hivPCRTestForm = emptyNonRDTForm
     , labsHistoryForm = emptyLabsHistoryForm
+    , partnerHIVTestForm = emptyPartnerHIVTestForm
     , activeTask = Nothing
     }
 
@@ -711,23 +703,19 @@ emptyNextStepsData =
 -- FORMS
 
 
-type ObstetricHistoryStep
-    = ObstetricHistoryFirstStep
-    | ObstetricHistorySecondStep
-
-
 type alias PregnancyDatingForm =
     { lmpRange : Maybe LmpRange
     , lmpDate : Maybe Date
     , lmpDateConfident : Maybe Bool
     , chwLmpConfirmation : Maybe Bool
+    , lmpDateNotConfidentReason : Maybe LmpDateNotConfidentReason
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing
+    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 type alias ObstetricFormFirstStep =
@@ -769,7 +757,9 @@ type alias ObstetricFormSecondStep =
     { cSections : Maybe Int
     , cSectionsDirty : Bool
     , cSectionInPreviousDelivery : Maybe Bool
+    , cSectionInPreviousDeliveryDirty : Bool
     , cSectionReason : Maybe CSectionReason
+    , cSectionReasonDirty : Bool
     , previousDeliveryPeriod : Maybe PreviousDeliveryPeriod
     , successiveAbortions : Maybe Bool
     , successivePrematureDeliveries : Maybe Bool
@@ -791,7 +781,9 @@ emptyObstetricFormSecondStep =
     { cSections = Nothing
     , cSectionsDirty = False
     , cSectionInPreviousDelivery = Nothing
+    , cSectionInPreviousDeliveryDirty = False
     , cSectionReason = Nothing
+    , cSectionReasonDirty = False
     , previousDeliveryPeriod = Nothing
     , successiveAbortions = Nothing
     , successivePrematureDeliveries = Nothing
@@ -842,43 +834,12 @@ emptyMedicalHistoryForm =
 type alias SocialHistoryForm =
     { accompaniedByPartner : Maybe Bool
     , partnerReceivedCounseling : Maybe Bool
-    , partnerReceivedTesting : Maybe Bool
-    , partnerTestingResult : Maybe SocialHistoryHivTestingResult
     }
 
 
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
-    SocialHistoryForm Nothing Nothing Nothing Nothing
-
-
-lmpRangeToString : LmpRange -> String
-lmpRangeToString range =
-    case range of
-        OneMonth ->
-            "one-month"
-
-        ThreeMonth ->
-            "three-month"
-
-        SixMonth ->
-            "six-month"
-
-
-lmpRangeFromString : String -> Maybe LmpRange
-lmpRangeFromString s =
-    case s of
-        "one-month" ->
-            Just OneMonth
-
-        "three-month" ->
-            Just ThreeMonth
-
-        "six-month" ->
-            Just SixMonth
-
-        _ ->
-            Nothing
+    SocialHistoryForm Nothing Nothing
 
 
 type alias NutritionAssessmentForm =
@@ -903,38 +864,43 @@ emptyNutritionAssessmentForm =
 
 
 type alias ObstetricalExamForm =
-    { fundalHeight : Maybe Float
+    { fundalPalpable : Maybe Bool
+    , fundalHeight : Maybe Float
     , fundalHeightDirty : Bool
     , fetalPresentation : Maybe FetalPresentation
     , fetalMovement : Maybe Bool
     , fetalHeartRate : Maybe Int
     , fetalHeartRateDirty : Bool
     , cSectionScar : Maybe CSectionScar
+    , displayFundalPalpablePopup : Bool
     }
 
 
 emptyObstetricalExamForm : ObstetricalExamForm
 emptyObstetricalExamForm =
-    { fundalHeight = Nothing
+    { fundalPalpable = Nothing
+    , fundalHeight = Nothing
     , fundalHeightDirty = False
     , fetalPresentation = Nothing
     , fetalMovement = Nothing
     , fetalHeartRate = Nothing
     , fetalHeartRateDirty = False
     , cSectionScar = Nothing
+    , displayFundalPalpablePopup = False
     }
 
 
 type alias BreastExamForm =
-    -- Should be EverySet, since you can have more than one sign.
     { breast : Maybe (List BreastExamSign)
+    , dischargeType : Maybe DischargeType
+    , dischargeTypeDirty : Bool
     , selfGuidance : Maybe Bool
     }
 
 
 emptyBreastExamForm : BreastExamForm
 emptyBreastExamForm =
-    BreastExamForm Nothing Nothing
+    BreastExamForm Nothing Nothing False Nothing
 
 
 type alias GUExamForm =

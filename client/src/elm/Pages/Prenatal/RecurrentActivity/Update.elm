@@ -3,7 +3,7 @@ module Pages.Prenatal.RecurrentActivity.Update exposing (update, updateLabsHisto
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (IllnessSymptom(..), ViralLoadStatus(..))
+import Backend.Measurement.Model exposing (IllnessSymptom(..), PhaseRecorded(..), ViralLoadStatus(..))
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalActivity.Model
@@ -21,7 +21,7 @@ import Measurement.Utils
         , randomBloodSugarResultFormWithDefault
         , syphilisResultFormWithDefault
         , toBloodGpRsResultsValueWithDefault
-        , toHIVPCRRResultsValueWithDefault
+        , toHIVPCRResultsValueWithDefault
         , toHemoglobinResultsValueWithDefault
         , toHepatitisBResultsValueWithDefault
         , toRandomBloodSugarResultsValueWithDefault
@@ -480,7 +480,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    toHIVPCRRResultsValueWithDefault measurement data.hivPCRTestForm
+                    toHIVPCRResultsValueWithDefault measurement data.hivPCRTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -1133,7 +1133,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toHIVPCRRResultsValueWithDefault measurement model.labResultsData.hivPCRTestForm
+                    toHIVPCRResultsValueWithDefault measurement model.labResultsData.hivPCRTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -1389,4 +1389,43 @@ update language currentDate id db msg model =
                     |> Backend.Model.MsgPrenatalEncounter id
                     |> App.Model.MsgIndexedDb
               ]
+            )
+
+        SetMalariaPreventionBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.malariaPreventionData.form
+
+                updatedData =
+                    model.malariaPreventionData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | malariaPreventionData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMalariaPrevention personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.malariaPreventionData.form
+                        |> toMalariaPreventionValueWithDefault PhaseRecurrent measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMalariaPrevention personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+                        |> List.append [ App.Model.SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
             )

@@ -151,6 +151,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_partner_hiv_test content'.
+  $permissions['create prenatal_partner_hiv_test content'] = array(
+    'name' => 'create prenatal_partner_hiv_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_random_blood_sugar_test content'.
   $permissions['create prenatal_random_blood_sugar_test content'] = array(
     'name' => 'create prenatal_random_blood_sugar_test content',
@@ -347,6 +357,15 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_partner_hiv_test content'.
+  $permissions['delete any prenatal_partner_hiv_test content'] = array(
+    'name' => 'delete any prenatal_partner_hiv_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_random_blood_sugar_test content'.
   $permissions['delete any prenatal_random_blood_sugar_test content'] = array(
     'name' => 'delete any prenatal_random_blood_sugar_test content',
@@ -530,6 +549,15 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete own prenatal_outside_care content'.
   $permissions['delete own prenatal_outside_care content'] = array(
     'name' => 'delete own prenatal_outside_care content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_partner_hiv_test content'.
+  $permissions['delete own prenatal_partner_hiv_test content'] = array(
+    'name' => 'delete own prenatal_partner_hiv_test content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -732,6 +760,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit any prenatal_outside_care content'.
   $permissions['edit any prenatal_outside_care content'] = array(
     'name' => 'edit any prenatal_outside_care content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_partner_hiv_test content'.
+  $permissions['edit any prenatal_partner_hiv_test content'] = array(
+    'name' => 'edit any prenatal_partner_hiv_test content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -942,6 +980,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit own prenatal_outside_care content'.
   $permissions['edit own prenatal_outside_care content'] = array(
     'name' => 'edit own prenatal_outside_care content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_partner_hiv_test content'.
+  $permissions['edit own prenatal_partner_hiv_test content'] = array(
+    'name' => 'edit own prenatal_partner_hiv_test content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

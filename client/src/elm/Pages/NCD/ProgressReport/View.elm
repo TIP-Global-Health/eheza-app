@@ -192,6 +192,7 @@ viewContent language currentDate initiator db model assembled =
             let
                 labResultsConfig =
                     { hivPCR = False
+                    , partnerHIV = False
                     , syphilis = False
                     , hepatitisB = False
                     , malaria = False
@@ -853,6 +854,7 @@ generateLabsResultsPaneData currentDate assembled =
     , urineDipstick = extractValues .urineDipstickTest
     , randomBloodSugar = extractValues .randomBloodSugarTest
     , hivPCR = []
+    , partnerHIV = []
     , syphilis = []
     , hepatitisB = []
     , malaria = []

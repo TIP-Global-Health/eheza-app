@@ -141,6 +141,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_breastfeeding" (decodeHead decodePrenatalBreastfeeding) Nothing
         |> optional "prenatal_gu_exam" (decodeHead decodePrenatalGUExam) Nothing
         |> optional "prenatal_speciality_care" (decodeHead decodePrenatalSpecialityCare) Nothing
+        |> optional "prenatal_partner_hiv_test" (decodeHead decodePrenatalPartnerHIVTest) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -525,6 +526,19 @@ decodeHIVPCRTestValue =
         |> optional "hiv_viral_load" (nullable decodeFloat) Nothing
 
 
+decodePrenatalPartnerHIVTest : Decoder PrenatalPartnerHIVTest
+decodePrenatalPartnerHIVTest =
+    decodePrenatalMeasurement decodePartnerHIVTestValue
+
+
+decodePartnerHIVTestValue : Decoder PartnerHIVTestValue
+decodePartnerHIVTestValue =
+    succeed PartnerHIVTestValue
+        |> required "test_execution_note" decodeTestExecutionNote
+        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodeTestResult) Nothing
+
+
 decodeViralLoadStatus : Decoder ViralLoadStatus
 decodeViralLoadStatus =
     string
@@ -566,6 +580,18 @@ decodeMalariaTestValue =
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "test_result" (nullable decodeTestResult) Nothing
+        |> optional "blood_smear_result" decodeBloodSmearResult BloodSmearNotTaken
+
+
+decodeBloodSmearResult : Decoder BloodSmearResult
+decodeBloodSmearResult =
+    string
+        |> andThen
+            (\value ->
+                bloodSmearResultFromString value
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| value ++ " is not a recognized BloodSmearResult")
+            )
 
 
 decodePrenatalRandomBloodSugarTest : Decoder PrenatalRandomBloodSugarTest
@@ -1379,6 +1405,15 @@ decodeDistributionNotice =
             )
 
 
+decodeBreastExam : Decoder BreastExam
+decodeBreastExam =
+    succeed BreastExamValue
+        |> required "breast" (decodeEverySet decodeBreastExamSign)
+        |> optional "discharge_type" (nullable decodeDischargeType) Nothing
+        |> required "breast_self_exam" bool
+        |> decodePrenatalMeasurement
+
+
 decodeBreastExamSign : Decoder BreastExamSign
 decodeBreastExamSign =
     string
@@ -1407,12 +1442,32 @@ decodeBreastExamSign =
             )
 
 
-decodeBreastExam : Decoder BreastExam
-decodeBreastExam =
-    succeed BreastExamValue
-        |> required "breast" (decodeEverySet decodeBreastExamSign)
-        |> required "breast_self_exam" bool
-        |> decodePrenatalMeasurement
+decodeDischargeType : Decoder DischargeType
+decodeDischargeType =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "milky" ->
+                        succeed DischargeMilky
+
+                    "clear" ->
+                        succeed DischargeClear
+
+                    "brown-bloody" ->
+                        succeed DischargeBrownOrBloody
+
+                    "yellow" ->
+                        succeed DischargeYellow
+
+                    "green" ->
+                        succeed DischargeGreen
+
+                    _ ->
+                        fail <|
+                            s
+                                ++ " is not a recognized DischargeType"
+            )
 
 
 decodeHairHeadCPESign : Decoder HairHeadCPESign
@@ -1656,6 +1711,9 @@ decodeDangerSign =
                     "gush-leaking-vaginal-fluid" ->
                         succeed GushLeakingVaginalFluid
 
+                    "premature-onset-contractions" ->
+                        succeed PrematureOnsetContractions
+
                     "none" ->
                         succeed NoDangerSign
 
@@ -1700,8 +1758,20 @@ decodeLastMenstrualPeriod =
     succeed LastMenstrualPeriodValue
         |> required "last_menstrual_period" Gizra.NominalDate.decodeYYYYMMDD
         |> required "confident" bool
+        |> optional "not_confident_reason" (nullable decodeLmpDateNotConfidentReason) Nothing
         |> optional "confirmation" (decodeWithFallback False bool) False
         |> decodePrenatalMeasurement
+
+
+decodeLmpDateNotConfidentReason : Decoder LmpDateNotConfidentReason
+decodeLmpDateNotConfidentReason =
+    string
+        |> andThen
+            (\reason ->
+                lmpDateNotConfidentReasonFromString reason
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (reason ++ " is not a recognized LmpDateNotConfidentReason" |> fail)
+            )
 
 
 decodeMedicalHistorySign : Decoder MedicalHistorySign
@@ -1898,7 +1968,8 @@ decodeFetalPresentation =
 decodeObstetricalExam : Decoder ObstetricalExam
 decodeObstetricalExam =
     succeed ObstetricalExamValue
-        |> required "fundal_height" (map HeightInCm decodeFloat)
+        |> required "fundal_palpable" bool
+        |> optional "fundal_height" (nullable (map HeightInCm decodeFloat)) Nothing
         |> required "fetal_presentation" decodeFetalPresentation
         |> required "fetal_movement" bool
         |> required "fetal_heart_rate" decodeInt
@@ -1935,6 +2006,18 @@ decodePrenatalNutrition =
         |> decodePrenatalMeasurement
 
 
+decodeMalariaPrevention : Decoder MalariaPrevention
+decodeMalariaPrevention =
+    decodePrenatalMeasurement decodeMalariaPreventionValue
+
+
+decodeMalariaPreventionValue : Decoder MalariaPreventionValue
+decodeMalariaPreventionValue =
+    succeed MalariaPreventionValue
+        |> required "resources" (decodeEverySet decodeMalariaPreventionSign)
+        |> optional "phase_recorded" decodePhaseRecorded PhaseInitial
+
+
 decodeMalariaPreventionSign : Decoder MalariaPreventionSign
 decodeMalariaPreventionSign =
     string
@@ -1952,11 +2035,21 @@ decodeMalariaPreventionSign =
             )
 
 
-decodeMalariaPrevention : Decoder MalariaPrevention
-decodeMalariaPrevention =
-    decodeEverySet decodeMalariaPreventionSign
-        |> field "resources"
-        |> decodePrenatalMeasurement
+decodePhaseRecorded : Decoder PhaseRecorded
+decodePhaseRecorded =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "initial" ->
+                        succeed PhaseInitial
+
+                    "recurrent" ->
+                        succeed PhaseRecurrent
+
+                    _ ->
+                        fail <| s ++ " is not a recognized PhaseRecorded"
+            )
 
 
 decodeSocialHistorySign : Decoder SocialHistorySign
@@ -1979,34 +2072,10 @@ decodeSocialHistorySign =
             )
 
 
-decodeSocialHistoryHivTestingResult : Decoder SocialHistoryHivTestingResult
-decodeSocialHistoryHivTestingResult =
-    string
-        |> andThen
-            (\s ->
-                case s of
-                    "positive" ->
-                        succeed ResultHivPositive
-
-                    "negative" ->
-                        succeed ResultHivNegative
-
-                    "indeterminate" ->
-                        succeed ResultHivIndeterminate
-
-                    "none" ->
-                        succeed NoHivTesting
-
-                    _ ->
-                        fail <| s ++ " is not a recognized SocialHistorySign"
-            )
-
-
 decodeSocialHistory : Decoder SocialHistory
 decodeSocialHistory =
-    succeed SocialHistoryValue
-        |> required "social_history" (decodeEverySet decodeSocialHistorySign)
-        |> required "partner_hiv_testing" decodeSocialHistoryHivTestingResult
+    decodeEverySet decodeSocialHistorySign
+        |> field "social_history"
         |> decodePrenatalMeasurement
 
 
@@ -2047,6 +2116,9 @@ decodeCSectionReason =
 
                     "other" ->
                         succeed Other
+
+                    "previous-c-section" ->
+                        succeed PreviousCSection
 
                     _ ->
                         fail <| s ++ " is not a recognized CSectionReason"
@@ -2164,7 +2236,7 @@ decodeObstetricHistoryStep2 : Decoder ObstetricHistoryStep2
 decodeObstetricHistoryStep2 =
     succeed ObstetricHistoryStep2Value
         |> required "c_sections" decodeInt
-        |> required "c_section_reason" (decodeEverySet decodeCSectionReason)
+        |> optional "c_section_reason" (nullable (decodeEverySet decodeCSectionReason)) Nothing
         |> required "previous_delivery" (decodeEverySet decodePreviousDeliverySign)
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
@@ -2977,6 +3049,12 @@ decodeReferToFacilitySign =
                     "anc-accompany" ->
                         succeed AccompanyToANCServices
 
+                    "us" ->
+                        succeed ReferToUltrasound
+
+                    "us-referral-form" ->
+                        succeed ReferralFormUltrasound
+
                     "none" ->
                         succeed NoReferToFacilitySigns
 
@@ -3033,6 +3111,10 @@ decodeNonReferralSign =
                                         Maybe.map (NonReferralReasonANCServices >> succeed) reasonForNonReferral
                                             |> Maybe.withDefault failure
 
+                                    "us" ->
+                                        Maybe.map (NonReferralReasonUltrasound >> succeed) reasonForNonReferral
+                                            |> Maybe.withDefault failure
+
                                     "none" ->
                                         succeed NoNonReferralSigns
 
@@ -3066,6 +3148,9 @@ decodeReferralFacility =
 
                     "anc" ->
                         succeed FacilityANCServices
+
+                    "us" ->
+                        succeed FacilityUltrasound
 
                     _ ->
                         fail <|

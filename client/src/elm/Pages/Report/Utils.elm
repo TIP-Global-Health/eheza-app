@@ -25,6 +25,11 @@ hivPCRResultNormal =
     (==) ResultSuppressedViralLoad
 
 
+partnerHIVResultNormal : TestResult -> Bool
+partnerHIVResultNormal =
+    testResultNormal
+
+
 syphilisResultNormal : TestResult -> Bool
 syphilisResultNormal =
     testResultNormal
@@ -38,6 +43,11 @@ hepatitisBResultNormal =
 malariaResultNormal : TestResult -> Bool
 malariaResultNormal =
     testResultNormal
+
+
+bloodSmearResultNormal : BloodSmearResult -> Bool
+bloodSmearResultNormal value =
+    List.member value [ BloodSmearNegative, BloodSmearNotTaken ]
 
 
 proteinResultNormal : ProteinValue -> Bool

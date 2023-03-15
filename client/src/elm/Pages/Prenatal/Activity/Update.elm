@@ -17,21 +17,21 @@ import Backend.Measurement.Model
         , LungsCPESign(..)
         , NeckCPESign(..)
         , OutsideCareMedication(..)
+        , PhaseRecorded(..)
         , PhotoUrl(..)
         , PostpartumChildDangerSign(..)
         , PostpartumHealingProblem(..)
         , PostpartumMotherDangerSign(..)
         , PrenatalSymptom(..)
         , PreviousDeliveryPeriod(..)
-        , SocialHistoryHivTestingResult(..)
         , VaginalExamSign(..)
         )
 import Backend.Measurement.Utils
     exposing
-        ( getMeasurementValueFunc
+        ( bloodSmearResultFromString
+        , getMeasurementValueFunc
         , nonReferralReasonToSign
         , pregnancyTestResultFromString
-        , socialHistoryHivTestingResultFromString
         , testResultFromString
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -59,6 +59,7 @@ import Measurement.Utils
         , toMalariaTestValueWithDefault
         , toNonRDTValueWithDefault
         , toOutsideCareValueWithDefault
+        , toPartnerHIVTestValueWithDefault
         , toRandomBloodSugarTestValueWithDefault
         , toSendToHCValueWithDefault
         , toSyphilisTestValueWithEmptyResults
@@ -231,12 +232,19 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetConfirmLmpDate confirmedDate confirmed ->
+        SetConfirmLmpDate originalValue confirmed ->
             let
                 updatedForm =
                     if confirmed then
                         model.pregnancyDatingData.form
-                            |> (\form -> { form | chwLmpConfirmation = Just True, lmpDate = Just confirmedDate, lmpDateConfident = Just True })
+                            |> (\form ->
+                                    { form
+                                        | chwLmpConfirmation = Just True
+                                        , lmpDate = Just originalValue.date
+                                        , lmpDateConfident = Just originalValue.confident
+                                        , lmpDateNotConfidentReason = originalValue.notConfidentReason
+                                    }
+                               )
 
                     else
                         { emptyPregnancyDatingForm | chwLmpConfirmation = Just False }
@@ -269,7 +277,12 @@ update language currentDate id db msg model =
             let
                 updatedForm =
                     model.pregnancyDatingData.form
-                        |> (\form -> { form | lmpDateConfident = Just value })
+                        |> (\form ->
+                                { form
+                                    | lmpDateConfident = Just value
+                                    , lmpDateNotConfidentReason = Nothing
+                                }
+                           )
 
                 updatedData =
                     model.pregnancyDatingData
@@ -288,6 +301,21 @@ update language currentDate id db msg model =
                 updatedForm =
                     model.pregnancyDatingData.form
                         |> (\form -> { form | lmpRange = range })
+
+                updatedData =
+                    model.pregnancyDatingData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | pregnancyDatingData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLmpDateNotConfidentReason value ->
+            let
+                updatedForm =
+                    model.pregnancyDatingData.form
+                        |> (\form -> { form | lmpDateNotConfidentReason = Just value })
 
                 updatedData =
                     model.pregnancyDatingData
@@ -416,7 +444,7 @@ update language currentDate id db msg model =
                         Just reason
 
                 updatedForm =
-                    { form | cSectionReason = updatedReason }
+                    { form | cSectionReason = updatedReason, cSectionReasonDirty = True }
 
                 updatedData =
                     model.historyData
@@ -437,7 +465,14 @@ update language currentDate id db msg model =
                         updatedValue =
                             String.toInt value
                     in
-                    { form | cSections = updatedValue, cSectionsDirty = True }
+                    { form
+                        | cSections = updatedValue
+                        , cSectionsDirty = True
+                        , cSectionInPreviousDelivery = Nothing
+                        , cSectionInPreviousDeliveryDirty = True
+                        , cSectionReason = Nothing
+                        , cSectionReasonDirty = True
+                    }
 
                 updatedData =
                     model.historyData
@@ -586,25 +621,6 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetSocialHivTestingResult value ->
-            let
-                result =
-                    socialHistoryHivTestingResultFromString value
-
-                updatedData =
-                    let
-                        updatedForm =
-                            model.historyData.socialForm
-                                |> (\form -> { form | partnerTestingResult = result })
-                    in
-                    model.historyData
-                        |> (\data -> { data | socialForm = updatedForm })
-            in
-            ( { model | historyData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SaveSocialHistory personId saved nextTask ->
             let
                 measurementId =
@@ -613,19 +629,11 @@ update language currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                updatedForm =
-                    if isNothing model.historyData.socialForm.partnerTestingResult then
-                        model.historyData.socialForm
-                            |> (\form -> { form | partnerTestingResult = Just NoHivTesting })
-
-                    else
-                        model.historyData.socialForm
-
                 extraMsgs =
                     generateHistoryMsgs nextTask
 
                 appMsgs =
-                    toSocialHistoryValueWithDefault measurement updatedForm
+                    toSocialHistoryValueWithDefault measurement model.historyData.socialForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSocialHistory personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -1161,6 +1169,21 @@ update language currentDate id db msg model =
             , []
             )
 
+        HideFundalPalpablePopup ->
+            let
+                updatedForm =
+                    model.examinationData.obstetricalExamForm
+                        |> (\form -> { form | displayFundalPalpablePopup = False })
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | obstetricalExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveObstetricalExam personId saved nextTask ->
             let
                 measurementId =
@@ -1206,8 +1229,7 @@ update language currentDate id db msg model =
             let
                 form =
                     Dict.get id db.prenatalMeasurements
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
                         |> Maybe.map
                             (.breastExam
                                 >> getMeasurementValueFunc
@@ -1221,6 +1243,28 @@ update language currentDate id db msg model =
                         NormalBreast
                         sign
                         form
+
+                updatedFormConsideringDischarge =
+                    if sign == Discharge then
+                        { updatedForm | dischargeType = Nothing, dischargeTypeDirty = True }
+
+                    else
+                        updatedForm
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | breastExamForm = updatedFormConsideringDischarge })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetDischargeType value ->
+            let
+                updatedForm =
+                    model.examinationData.breastExamForm
+                        |> (\form -> { form | dischargeType = Just value, dischargeTypeDirty = True })
 
                 updatedData =
                     model.examinationData
@@ -1433,11 +1477,10 @@ update language currentDate id db msg model =
 
         SetMalariaPreventionBoolInput formUpdateFunc value ->
             let
+                updatedForm =
+                    formUpdateFunc value model.malariaPreventionData.form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.malariaPreventionData.form
-                    in
                     model.malariaPreventionData
                         |> (\data -> { data | form = updatedForm })
             in
@@ -1456,7 +1499,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.malariaPreventionData.form
-                        |> toMalariaPreventionValueWithDefault measurement
+                        |> toMalariaPreventionValueWithDefault PhaseInitial measurement
                         |> unwrap
                             []
                             (\value ->
@@ -2118,6 +2161,28 @@ update language currentDate id db msg model =
             , []
             )
 
+        SetBloodSmearResultMsg value ->
+            let
+                form =
+                    model.laboratoryData.malariaTestForm
+
+                updatedForm =
+                    { form
+                        | bloodSmearResult = bloodSmearResultFromString value
+                        , bloodSmearResultDirty = True
+                        , executionDate = Just currentDate
+                        , executionDateDirty = True
+                    }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetMalariaTestDateSelectorState state ->
             let
                 form =
@@ -2683,6 +2748,122 @@ update language currentDate id db msg model =
                         |> toNonRDTValueWithDefault measurement toHIVPCRTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetPartnerHIVTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.laboratoryData.partnerHIVTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestExecutionNote value ->
+            let
+                form =
+                    model.laboratoryData.partnerHIVTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestExecutionDate value ->
+            let
+                form =
+                    model.laboratoryData.partnerHIVTestForm
+
+                updatedForm =
+                    { form | executionDate = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestResult value ->
+            let
+                form =
+                    model.laboratoryData.partnerHIVTestForm
+
+                updatedForm =
+                    { form | testResult = testResultFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestDateSelectorState state ->
+            let
+                form =
+                    model.laboratoryData.partnerHIVTestForm
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SavePartnerHIVTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLaboratoryMsgs nextTask
+
+                appMsgs =
+                    model.laboratoryData.partnerHIVTestForm
+                        |> toPartnerHIVTestValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SavePartnerHIVTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
