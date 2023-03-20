@@ -581,6 +581,7 @@ type LaboratoryTask
     | TaskLiverFunctionTest
     | TaskLipidPanelTest
     | TaskHbA1cTest
+    | TaskPartnerHIVTest
     | TaskCompletePreviousTests
 
 
@@ -595,6 +596,7 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
     , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
     , setMalariaTestResultMsg : String -> msg
+    , setBloodSmearResultMsg : String -> msg
     , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
     , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
@@ -617,6 +619,9 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
     , setHbA1cTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm msg -> PartnerHIVTestForm msg) -> Bool -> msg
+    , setPartnerHIVTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPartnerHIVTestResultMsg : String -> msg
     , noOpMsg : msg
     }
 
@@ -666,6 +671,9 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setHbA1cTestExecutionDateMsg : NominalDate -> msg
     , setHbA1cTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , setHbA1cTestResultMsg : String -> msg
+    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm msg -> PartnerHIVTestForm msg) -> Bool -> msg
+    , setPartnerHIVTestExecutionDateMsg : NominalDate -> msg
+    , setPartnerHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , noOpMsg : msg
     }
 
@@ -724,16 +732,24 @@ type alias MalariaTestForm msg =
     , testPerformedTodayDirty : Bool
     , executionNote : Maybe TestExecutionNote
     , executionNoteDirty : Bool
+
+    -- Holds the date of Malaria RDT execution.
+    -- If Malaria RDT was not performed, but blood smear was,
+    -- will hold the date of blood smear.
     , executionDate : Maybe NominalDate
     , executionDateDirty : Bool
     , testResult : Maybe TestResult
+    , bloodSmearTaken : Maybe Bool
+    , bloodSmearTakenDirty : Bool
+    , bloodSmearResult : Maybe BloodSmearResult
+    , bloodSmearResultDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
     }
 
 
 emptyMalariaTestForm : MalariaTestForm msg
 emptyMalariaTestForm =
-    MalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
+    MalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing False Nothing False Nothing
 
 
 type alias UrineDipstickForm msg =
@@ -955,6 +971,25 @@ type alias HIVPCRResultForm =
 emptyHIVPCRResultForm : HIVPCRResultForm
 emptyHIVPCRResultForm =
     HIVPCRResultForm Nothing Nothing Nothing Nothing
+
+
+type alias PartnerHIVTestForm msg =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , testPerformedToday : Maybe Bool
+    , testPerformedTodayDirty : Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , testResult : Maybe TestResult
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+    }
+
+
+emptyPartnerHIVTestForm : PartnerHIVTestForm msg
+emptyPartnerHIVTestForm =
+    PartnerHIVTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
 
 
 type alias CreatinineResultForm =

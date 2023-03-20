@@ -1705,10 +1705,10 @@ div.page-activity.home-visit {
 
       .label {
         font-size: 30px;
+      }
 
-        &.self-guidance {
-          font-size: 25px;
-        }
+      .label.secondary {
+        font-size: 25px;
       }
 
       .label.question {
@@ -2120,6 +2120,18 @@ div.page-activity.prenatal {
             padding: 0 20px;
             text-transform: uppercase;
           }
+        }
+      }
+
+      .ui.form.examination.obstetrical-exam {
+
+        .question {
+          font-size: 25px;
+          margin: 20px 0;
+        }
+
+        .ui.modal .popup-title {
+          margin: 80px 0;
         }
       }
     }
@@ -4028,6 +4040,7 @@ div.page-report.ncd {
   }
 
   .ui.unstackable.items .actions {
+    height: auto;
     margin: 20px 0 0 0;
   }
 }

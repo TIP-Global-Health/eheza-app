@@ -3,6 +3,7 @@ module Pages.Prenatal.View exposing (..)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -10,7 +11,16 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
-import Pages.Utils exposing (viewCheckBoxSelectInputWithRecommendation, viewCustomLabel, viewEncounterActionButton, viewInstructionsLabel)
+import Pages.Utils
+    exposing
+        ( taskCompleted
+        , viewBoolInput
+        , viewCheckBoxSelectInputWithRecommendation
+        , viewCustomLabel
+        , viewEncounterActionButton
+        , viewInstructionsLabel
+        , viewQuestionLabel
+        )
 import Translate exposing (Language, translate)
 
 
@@ -25,15 +35,15 @@ viewMedicationDistributionForm :
     -> (AvoidingGuidanceReason -> msg)
     -> MedicationDistributionForm
     -> Html msg
-viewMedicationDistributionForm language currentDate phase assembled setMedicationDistributionBoolInputMsg setMedicationDistributionAdministrationNoteMsg setRecommendedTreatmentSignMsg avoidingGuidanceReasonMsg form =
+viewMedicationDistributionForm language currentDate phase assembled setBoolInputMsg setAdministrationNoteMsg setRecommendedTreatmentSignMsg avoidingGuidanceReasonMsg form =
     let
         ( content, _, _ ) =
             resolveMedicationDistributionInputsAndTasks language
                 currentDate
                 phase
                 assembled
-                setMedicationDistributionBoolInputMsg
-                setMedicationDistributionAdministrationNoteMsg
+                setBoolInputMsg
+                setAdministrationNoteMsg
                 setRecommendedTreatmentSignMsg
                 avoidingGuidanceReasonMsg
                 form
@@ -42,9 +52,57 @@ viewMedicationDistributionForm language currentDate phase assembled setMedicatio
         content
 
 
-viewPauseEncounterButton : Language -> Bool -> msg -> Html msg
-viewPauseEncounterButton language enabled pauseAction =
-    viewEncounterActionButton language Translate.PauseEncounter enabled pauseAction
+viewMalariaPreventionContent :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> ((Bool -> MalariaPreventionForm -> MalariaPreventionForm) -> Bool -> msg)
+    -> (PersonId -> Maybe ( MalariaPreventionId, MalariaPrevention ) -> msg)
+    -> MalariaPreventionData
+    -> List (Html msg)
+viewMalariaPreventionContent language currentDate assembled setBoolInputMsg saveMsg data =
+    let
+        form =
+            assembled.measurements.malariaPrevention
+                |> getMeasurementValueFunc
+                |> malariaPreventionFormWithDefault data.form
+
+        tasksCompleted =
+            taskCompleted form.receivedMosquitoNet
+
+        totalTasks =
+            1
+
+        receivedMosquitoNetUpdateFunc value form_ =
+            { form_ | receivedMosquitoNet = Just value }
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form malaria-prevention" ]
+                [ viewQuestionLabel language Translate.ReceivedMosquitoNet
+                , viewBoolInput
+                    language
+                    form.receivedMosquitoNet
+                    (setBoolInputMsg receivedMosquitoNetUpdateFunc)
+                    "mosquito-net"
+                    Nothing
+                ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| saveMsg assembled.participant.person assembled.measurements.malariaPrevention
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewPauseEncounterButton : Language -> String -> Bool -> msg -> Html msg
+viewPauseEncounterButton language buttonColor enabled pauseAction =
+    viewEncounterActionButton language Translate.PauseEncounter buttonColor enabled pauseAction
 
 
 customWarningPopup : Language -> ( Html msg, Html msg, msg ) -> Html msg

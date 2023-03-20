@@ -16,7 +16,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (SendToHCForm)
-import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, vitalsFormWithDefault)
+import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, toEverySet, vitalsFormWithDefault)
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage, viewTreatmentWithDosage)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
@@ -750,7 +750,13 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                                 ( [], 0, 0 )
 
                         ( mastitisInputs, mastitisCompleted, mastitisActive ) =
-                            if diagnosed DiagnosisPostpartumMastitis assembled then
+                            if
+                                diagnosedAnyOf
+                                    [ DiagnosisPostpartumEarlyMastitisOrEngorgment
+                                    , DiagnosisPostpartumMastitis
+                                    ]
+                                    assembled
+                            then
                                 resolveRecommendedTreatmentForMastitisInputsAndTasks language
                                     currentDate
                                     setRecommendedTreatmentSignMsg
@@ -1590,6 +1596,9 @@ resolveRecommendedTreatmentForMastitisInputsAndTasks language currentDate setRec
         allowedSigns =
             recommendedTreatmentSignsForMastitis
 
+        forEarlyMastitisOrEngorgment =
+            diagnosed DiagnosisPostpartumEarlyMastitisOrEngorgment assembled
+
         -- Since we may have values set for another diagnosis,
         -- we need to filter them out, to be able to determine the current value.
         currentValue =
@@ -1599,7 +1608,7 @@ resolveRecommendedTreatmentForMastitisInputsAndTasks language currentDate setRec
                 )
                 form.recommendedTreatmentSigns
     in
-    ( [ viewCustomLabel language Translate.MastitisRecommendedTreatmentHeader "." "instructions"
+    ( [ viewCustomLabel language (Translate.MastitisRecommendedTreatmentHeader forEarlyMastitisOrEngorgment) "." "instructions"
       , h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
       , div [ class "instructions" ]
             [ viewInstructionsLabel "icon-pills" (text <| translate language Translate.MastitisRecommendedTreatmentHelper ++ ".") ]
@@ -1769,17 +1778,14 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                     else
                         Nothing
 
-                -- Only for Postpartum encounter.
+                -- Used to be prescribed for Early Mastitis / Engorgment
+                -- diagnosis. Currently not in use.
+                -- Keeping it's infrastructure for possible future applications.
                 paracetamolSet =
-                    if diagnosed DiagnosisPostpartumEarlyMastitisOrEngorgment assembled then
-                        Just
-                            ( Translate.MedicationDistributionHelperEarlyMastitisOrEngorgment
-                            , [ Paracetamol ]
-                            , []
-                            )
-
-                    else
-                        Nothing
+                    ( Translate.MedicationDistributionHelperEarlyMastitisOrEngorgment
+                    , [ Paracetamol ]
+                    , []
+                    )
             in
             Maybe.Extra.values
                 [ mebendazoleSet
@@ -1788,7 +1794,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 , gonorheaSet
                 , trichomonasOrBVSet
                 , vitaminASet
-                , paracetamolSet
                 ]
 
         PrenatalEncounterPhaseRecurrent ->
@@ -3063,6 +3068,8 @@ referralFormWithDefault form saved =
                 , referToNCDProgram = or form.referToNCDProgram (resolveFromFacilitySignsValue ReferToNCDProgram)
                 , referralFormNCDProgram = or form.referralFormNCDProgram (resolveFromFacilitySignsValue ReferralFormNCDProgram)
                 , accompanyToNCDProgram = or form.accompanyToNCDProgram (resolveFromFacilitySignsValue AccompanyToNCDProgram)
+                , referToUltrasound = or form.referToUltrasound (resolveFromFacilitySignsValue ReferToUltrasound)
+                , referralFormUltrasound = or form.referralFormUltrasound (resolveFromFacilitySignsValue ReferralFormUltrasound)
                 , facilityNonReferralReasons = or form.facilityNonReferralReasons value.facilityNonReferralReasons
                 }
             )
@@ -3077,7 +3084,7 @@ toPrenatalReferralValueWithDefault saved form =
 toPrenatalReferralValue : ReferralForm -> Maybe PrenatalReferralValue
 toPrenatalReferralValue form =
     let
-        sendToHCSigns =
+        sendToHCSignsByForm =
             [ ifNullableTrue HandReferrerForm form.handReferralForm
             , ifNullableTrue ReferToHealthCenter form.referToHealthCenter
             , ifNullableTrue PrenatalAccompanyToHC form.accompanyToHealthCenter
@@ -3085,7 +3092,20 @@ toPrenatalReferralValue form =
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty)
 
-        referToFacilitySigns =
+        -- We need to handle situation when patient is not referred to HC for a reason -
+        -- no signs are set, but reason is set => update signs to 'none' value.
+        sendToHCSigns =
+            if sendToHCSignsByForm == Just EverySet.empty && isJust form.reasonForNotSendingToHC then
+                Just (EverySet.singleton NoSendToHCSigns)
+
+            else
+                sendToHCSignsByForm
+
+        -- We need to handle situation when patient is not referred to any
+        -- facility (there are multiple facilities), and we have reason set for
+        -- at least one facility.
+        -- In this case, we update signs to 'none' value.
+        referToFacilitySignsByForm =
             [ ifNullableTrue ReferToHospital form.referToHospital
             , ifNullableTrue ReferralFormHospital form.referralFormHospital
             , ifNullableTrue ReferToMentalHealthSpecialist form.referToMentalHealthSpecialist
@@ -3097,11 +3117,24 @@ toPrenatalReferralValue form =
             , ifNullableTrue ReferToNCDProgram form.referToNCDProgram
             , ifNullableTrue ReferralFormNCDProgram form.referralFormNCDProgram
             , ifNullableTrue AccompanyToNCDProgram form.accompanyToNCDProgram
+            , ifNullableTrue ReferToUltrasound form.referToUltrasound
+            , ifNullableTrue ReferralFormUltrasound form.referralFormUltrasound
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty)
+
+        referToFacilitySigns =
+            if referToFacilitySignsByForm == Just EverySet.empty && isSet form.facilityNonReferralReasons then
+                Just (EverySet.singleton NoReferToFacilitySigns)
+
+            else
+                referToFacilitySignsByForm
+
+        isSet maybeSet =
+            Maybe.map (\set -> EverySet.size set > 0) maybeSet
+                |> Maybe.withDefault False
     in
-    if isJust sendToHCSigns || isJust referToFacilitySigns then
+    if isSet sendToHCSigns || isSet referToFacilitySigns then
         Just
             { sendToHCSigns = sendToHCSigns
             , reasonForNotSendingToHC = form.reasonForNotSendingToHC
@@ -3282,8 +3315,28 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                     -- Not in use at Prenatal
                     Nothing
 
+                FacilityUltrasound ->
+                    Just
+                        { header =
+                            [ div [ class "label" ] [ text <| translate language Translate.PrenatalUltrasoundHeader ++ "." ]
+                            , viewCustomLabel language Translate.PrenatalUltrasoundInstructions "." "instructions"
+                            ]
+                        , referralField = form.referToUltrasound
+                        , referralUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | referToUltrasound = Just value
+                                    , referralFormUltrasound = Nothing
+                                }
+                        , formField = form.referralFormUltrasound
+                        , formUpdateFunc = \value form_ -> { form_ | referralFormUltrasound = Just value }
+                        , accompanyConfig = Nothing
+                        , reasonToSignFunc = NonReferralReasonUltrasound
+                        }
+
                 FacilityHealthCenter ->
-                    -- Not in use at Prenatal
+                    -- Referral to HC is not supported here as it
+                    -- got special treatment.
                     Nothing
     in
     Maybe.map
@@ -3495,3 +3548,58 @@ applyGeneralDiagnosesHierarchy diagnoses =
 
     else
         diagnoses
+
+
+expectMalariaPreventionActivity : PhaseRecorded -> AssembledData -> Bool
+expectMalariaPreventionActivity phaseRecorded assembled =
+    -- Measurement should be taken at current encounter.
+    expectMalariaPreventionActivityByPastEncounters assembled
+        && (-- Measurement was taken at current phase.
+            -- We need to expect the activity to allow editing.
+            getMeasurementValueFunc assembled.measurements.malariaPrevention
+                |> Maybe.map (.phaseRecorded >> (==) phaseRecorded)
+                |> -- No measurement taken on initial
+                   -- phase of current encounter.
+                   -- Need to take it current phase.
+                   Maybe.withDefault True
+           )
+
+
+expectMalariaPreventionActivityByPastEncounters : AssembledData -> Bool
+expectMalariaPreventionActivityByPastEncounters =
+    .nursePreviousEncountersData
+        >> List.filter
+            (.measurements
+                >> .malariaPrevention
+                >> Maybe.map (Tuple.second >> .value >> .resources >> EverySet.member MosquitoNet)
+                >> Maybe.withDefault False
+            )
+        >> List.isEmpty
+
+
+malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe MalariaPreventionValue -> MalariaPreventionForm
+malariaPreventionFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { receivedMosquitoNet = or form.receivedMosquitoNet (EverySet.member MosquitoNet value.resources |> Just)
+                }
+            )
+
+
+toMalariaPreventionValueWithDefault : PhaseRecorded -> Maybe MalariaPreventionValue -> MalariaPreventionForm -> Maybe MalariaPreventionValue
+toMalariaPreventionValueWithDefault phaseRecorded saved form =
+    malariaPreventionFormWithDefault form saved
+        |> toMalariaPreventionValue phaseRecorded
+
+
+toMalariaPreventionValue : PhaseRecorded -> MalariaPreventionForm -> Maybe MalariaPreventionValue
+toMalariaPreventionValue phaseRecorded form =
+    Maybe.map
+        (\receivedMosquitoNet ->
+            { resources = toEverySet MosquitoNet NoMalariaPreventionSigns receivedMosquitoNet
+            , phaseRecorded = phaseRecorded
+            }
+        )
+        form.receivedMosquitoNet

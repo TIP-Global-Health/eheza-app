@@ -68,6 +68,9 @@ type Msg
     | SetHIVViralLoadUndetectable Bool
     | SetHIVViralLoad String
     | SaveHIVPCRResult PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
+      -- MalariaPreventionMsgs
+    | SetMalariaPreventionBoolInput (Bool -> MalariaPreventionForm -> MalariaPreventionForm) Bool
+    | SaveMalariaPrevention PersonId (Maybe ( MalariaPreventionId, MalariaPrevention ))
       -- NextStepsMsgs
     | SetActiveNextStepsTask NextStepsTask
     | SetReferralBoolInput (Bool -> ReferralForm -> ReferralForm) Bool
@@ -85,6 +88,7 @@ type Msg
 type alias Model =
     { examinationData : ExaminationData
     , labResultsData : LabResultsData
+    , malariaPreventionData : MalariaPreventionData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe (WarningPopupType Msg)
@@ -95,6 +99,7 @@ emptyModel : Model
 emptyModel =
     { examinationData = emptyExaminationData
     , labResultsData = emptyLabResultsData
+    , malariaPreventionData = emptyMalariaPreventionData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing

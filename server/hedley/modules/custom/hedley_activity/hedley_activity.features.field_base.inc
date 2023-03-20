@@ -247,6 +247,7 @@ function hedley_activity_field_default_field_bases() {
         'failure-to-progress' => 'Failure To Progress',
         'none' => 'None',
         'other' => 'Other',
+        'previous-c-section' => 'Previous c-section',
       ),
       'allowed_values_function' => '',
     ),
@@ -427,6 +428,7 @@ function hedley_activity_field_default_field_bases() {
         'severe-vomiting' => 'Severe vomiting',
         'unconscious' => 'Unconscious',
         'gush-leaking-vaginal-fluid' => 'Gush or leaking of vaginal fluid',
+        'premature-onset-contractions' => 'Premature onset of contractions',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',
@@ -483,6 +485,35 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_discharge_type'.
+  $field_bases['field_discharge_type'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_discharge_type',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'milky' => 'Milky',
+        'clear' => 'Clear',
+        'brown-bloody' => 'Brown or bloody',
+        'yellow' => 'Yellow',
+        'green' => 'Green',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_distributed_amount'.
@@ -621,8 +652,8 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => '',
-        1 => '',
+        0 => 'No',
+        1 => 'Yes',
       ),
       'allowed_values_function' => '',
     ),
@@ -703,6 +734,32 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_fundal_palpable'.
+  $field_bases['field_fundal_palpable'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_fundal_palpable',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        0 => 'No',
+        1 => 'Yes',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_boolean',
   );
 
   // Exported field_base: 'field_hands'.
@@ -1255,6 +1312,33 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_not_confident_reason'.
+  $field_bases['field_not_confident_reason'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_not_confident_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'irregular-menses' => 'Irregular Menses',
+        'on-family-planning-method' => 'On Family Planning method',
+        'can-not-remember-dates' => 'Can not remember dates',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_nurse'.
   $field_bases['field_nurse'] = array(
     'active' => 1,
@@ -1437,6 +1521,32 @@ function hedley_activity_field_default_field_bases() {
         'negative' => 'Negative',
         'indeterminate' => 'Indeterminate',
         'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_phase_recorded'.
+  $field_bases['field_phase_recorded'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_phase_recorded',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'initial' => 'Initial',
+        'recurrent' => 'Recurrent',
       ),
       'allowed_values_function' => '',
     ),

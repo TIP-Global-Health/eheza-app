@@ -82,6 +82,21 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                             |> Maybe.withDefault True
                     }
 
+                LabResultsHistoryPartnerHIV assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
+                    { label = Translate.LaboratoryTaskLabel TaskPartnerHIVTest
+                    , recentResult = Maybe.map (Translate.TestResult >> translate language) recentResultValue
+                    , knownAsPositive = False
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
+                    , recentResultNormal =
+                        Maybe.map partnerHIVResultNormal recentResultValue
+                            |> Maybe.withDefault True
+                    }
+
                 LabResultsHistorySyphilis assembled ->
                     let
                         recentResultValue =
@@ -124,6 +139,21 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                     , totalResults = List.length assembled
                     , recentResultNormal =
                         Maybe.map malariaResultNormal recentResultValue
+                            |> Maybe.withDefault True
+                    }
+
+                LabResultsHistoryBloodSmear assembled ->
+                    let
+                        recentResultValue =
+                            List.head assembled |> Maybe.andThen Tuple.second
+                    in
+                    { label = Translate.BloodSmearLabel
+                    , recentResult = Maybe.map (Translate.BloodSmearResult >> translate language) recentResultValue
+                    , knownAsPositive = False
+                    , recentResultDate = List.head assembled |> Maybe.map Tuple.first
+                    , totalResults = List.length assembled
+                    , recentResultNormal =
+                        Maybe.map bloodSmearResultNormal recentResultValue
                             |> Maybe.withDefault True
                     }
 
@@ -618,6 +648,9 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                         value.hivViralLoadStatus
                 )
 
+        partnerHIVTestResults =
+            getTestResults .partnerHIV .testResult
+
         syphilisTestResults =
             getTestResults .syphilis .testResult
 
@@ -626,6 +659,22 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
 
         malariaTestResults =
             getTestResults .malaria .testResult
+
+        bloodSmearTestResults =
+            data.malaria
+                |> List.filterMap
+                    (\value ->
+                        if
+                            (not <| testPerformedByExecutionNote value.executionNote)
+                                && (value.bloodSmearResult /= BloodSmearNotTaken)
+                        then
+                            Maybe.map (\executionDate -> ( executionDate, Just value.bloodSmearResult ))
+                                value.executionDate
+
+                        else
+                            Nothing
+                    )
+                |> List.sortWith sortTuplesByDateDesc
 
         urineDipstickTestResults =
             List.filterMap
@@ -760,12 +809,15 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                     [ viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHIV hivTestResults)
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
                         |> showIf displayConfig.hivPCR
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryPartnerHIV partnerHIVTestResults)
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistorySyphilis syphilisTestResults)
                         |> showIf displayConfig.syphilis
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHepatitisB hepatitisBTestResults)
                         |> showIf displayConfig.hepatitisB
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryMalaria malariaTestResults)
                         |> showIf displayConfig.malaria
+                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryBloodSmear bloodSmearTestResults)
+                        |> showIf ((not <| List.isEmpty bloodSmearTestResults) && displayConfig.malaria)
                     , dipstickShortEntry
                     , dipstickLongEntry
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
@@ -1026,6 +1078,9 @@ viewLabResultsHistoryPane language currentDate mode =
                 LabResultsHistoryHIVPCR assembled ->
                     List.map (viewEntry (Translate.HIVPCRResult >> translate language) hivPCRResultNormal) assembled
 
+                LabResultsHistoryPartnerHIV assembled ->
+                    List.map (viewEntry (Translate.TestResult >> translate language) partnerHIVResultNormal) assembled
+
                 LabResultsHistorySyphilis assembled ->
                     List.map (viewEntry (Translate.TestResult >> translate language) syphilisResultNormal) assembled
 
@@ -1034,6 +1089,9 @@ viewLabResultsHistoryPane language currentDate mode =
 
                 LabResultsHistoryMalaria assembled ->
                     List.map (viewEntry (Translate.TestResult >> translate language) malariaResultNormal) assembled
+
+                LabResultsHistoryBloodSmear assembled ->
+                    List.map (viewEntry (Translate.BloodSmearResult >> translate language) bloodSmearResultNormal) assembled
 
                 LabResultsHistoryProtein assembled ->
                     List.map (viewEntry (Translate.LaboratoryProteinValue >> translate language) proteinResultNormal) assembled

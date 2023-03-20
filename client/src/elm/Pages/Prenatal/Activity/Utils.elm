@@ -100,14 +100,7 @@ expectActivity currentDate assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.MalariaPrevention ->
-                    assembled.nursePreviousEncountersData
-                        |> List.filter
-                            (.measurements
-                                >> .malariaPrevention
-                                >> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
-                                >> Maybe.withDefault False
-                            )
-                        |> List.isEmpty
+                    expectMalariaPreventionActivity PhaseInitial assembled
 
                 Backend.PrenatalActivity.Model.Medication ->
                     True
@@ -126,7 +119,6 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
-                                |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
                                 |> not
                            )
@@ -206,7 +198,6 @@ expectActivity currentDate assembled activity =
                 NextSteps ->
                     mandatoryActivitiesForNextStepsCompleted currentDate assembled
                         && (resolveNextStepsTasks currentDate assembled
-                                |> List.filter (expectNextStepsTask currentDate assembled)
                                 |> List.isEmpty
                                 |> not
                            )
@@ -549,6 +540,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisCandidiasis
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
+                                    , DiagnosisPostpartumEarlyMastitisOrEngorgment
                                     , DiagnosisPostpartumMastitis
                                     ]
                                     assembled
@@ -653,7 +645,13 @@ nextStepsTaskCompleted currentDate assembled task =
                         True
 
                 mastitisTreatmentCompleted =
-                    if diagnosed DiagnosisPostpartumMastitis assembled then
+                    if
+                        diagnosedAnyOf
+                            [ DiagnosisPostpartumEarlyMastitisOrEngorgment
+                            , DiagnosisPostpartumMastitis
+                            ]
+                            assembled
+                    then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMastitis assembled.measurements
 
                     else
@@ -1018,6 +1016,17 @@ referredToSpecialityCareProgram program assembled =
         |> Maybe.withDefault False
 
 
+referToUltrasound : AssembledData -> Bool
+referToUltrasound assembled =
+    getMeasurementValueFunc assembled.measurements.lastMenstrualPeriod
+        |> Maybe.map
+            (\value ->
+                (value.confident == False)
+                    && isJust value.notConfidentReason
+            )
+        |> Maybe.withDefault False
+
+
 provideNauseaAndVomitingEducation : AssembledData -> Bool
 provideNauseaAndVomitingEducation assembled =
     let
@@ -1172,9 +1181,11 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         mandatoryActivitiesForNurseCompleted =
             -- All activities that will appear at
             -- current encounter are completed, besides
-            -- Photo and Next Steps itself.
+            -- Malaria Prevention and Photo (optional)
+            --and the Next Steps itself.
             getAllActivities assembled
                 |> EverySet.fromList
+                |> EverySet.remove Backend.PrenatalActivity.Model.MalariaPrevention
                 |> EverySet.remove PrenatalPhoto
                 |> EverySet.remove NextSteps
                 |> EverySet.toList
@@ -1198,8 +1209,12 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         ChwFirstEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    ((not <| expectActivity currentDate assembled PregnancyDating) || activityCompleted currentDate assembled PregnancyDating)
-                        && ((not <| expectActivity currentDate assembled Laboratory) || activityCompleted currentDate assembled Laboratory)
+                    ((not <| expectActivity currentDate assembled PregnancyDating)
+                        || activityCompleted currentDate assembled PregnancyDating
+                    )
+                        && ((not <| expectActivity currentDate assembled Laboratory)
+                                || activityCompleted currentDate assembled Laboratory
+                           )
                         && activityCompleted currentDate assembled DangerSigns
             in
             if dangerSignsPresent assembled then
@@ -1684,7 +1699,30 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             assembled.measurements
 
         positiveMalariaTest =
-            testedPositiveAt .malariaTest
+            getMeasurementValueFunc measurements.malariaTest
+                |> Maybe.map
+                    (\value ->
+                        (-- Malaria RDT was run, and positive result was recorded.
+                         testPerformedByExecutionNote value.executionNote
+                            && (value.testResult == Just TestPositive)
+                        )
+                            || (-- Malaria RDT was not run, but blood smear test
+                                -- was taken, and it's result indicates Malaria.
+                                List.member value.executionNote
+                                    [ TestNoteLackOfReagents
+                                    , TestNoteLackOfOtherSupplies
+                                    , TestNoteNoEquipment
+                                    , TestNoteBrokenEquipment
+                                    , TestNoteNotIndicated
+                                    ]
+                                    && List.member value.bloodSmearResult
+                                        [ BloodSmearPlus
+                                        , BloodSmearPlusPlus
+                                        , BloodSmearPlusPlusPlus
+                                        ]
+                               )
+                    )
+                |> Maybe.withDefault False
 
         positiveSyphilisTest =
             testedPositiveAt .syphilisTest
@@ -1692,7 +1730,11 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         testedPositiveAt getMeasurementFunc =
             getMeasurementFunc measurements
                 |> getMeasurementValueFunc
-                |> Maybe.andThen (.testResult >> Maybe.map ((==) TestPositive))
+                |> Maybe.map
+                    (\value ->
+                        testPerformedByExecutionNote value.executionNote
+                            && (value.testResult == Just TestPositive)
+                    )
                 |> Maybe.withDefault False
 
         hemoglobinCount =
@@ -3320,13 +3362,6 @@ resolvePreviousMaybeValue assembled measurementFunc valueFunc =
         |> List.head
 
 
-fromBreastExamValue : Maybe BreastExamValue -> BreastExamForm
-fromBreastExamValue saved =
-    { breast = Maybe.map (.exam >> EverySet.toList) saved
-    , selfGuidance = Maybe.map .selfGuidance saved
-    }
-
-
 breastExamFormWithDefault : BreastExamForm -> Maybe BreastExamValue -> BreastExamForm
 breastExamFormWithDefault form saved =
     saved
@@ -3334,6 +3369,11 @@ breastExamFormWithDefault form saved =
             form
             (\value ->
                 { breast = or form.breast (value.exam |> EverySet.toList |> Just)
+                , dischargeType =
+                    maybeValueConsideringIsDirtyField form.dischargeTypeDirty
+                        form.dischargeType
+                        value.dischargeType
+                , dischargeTypeDirty = form.dischargeTypeDirty
                 , selfGuidance = or form.selfGuidance (Just value.selfGuidance)
                 }
             )
@@ -3347,9 +3387,8 @@ toBreastExamValueWithDefault saved form =
 
 toBreastExamValue : BreastExamForm -> Maybe BreastExamValue
 toBreastExamValue form =
-    -- The `EverySet.singleton` is temporary, until BresatExamForm is
-    -- redefined to allow more than one.
     Maybe.map BreastExamValue (Maybe.map EverySet.fromList form.breast)
+        |> andMap (Just form.dischargeType)
         |> andMap form.selfGuidance
 
 
@@ -3401,16 +3440,6 @@ toDangerSignsValue form =
     Just <| DangerSignsValue signs postpartumMother postpartumChild
 
 
-fromLastMenstrualPeriodValue : Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
-fromLastMenstrualPeriodValue saved =
-    { lmpRange = Nothing
-    , lmpDate = Maybe.map .date saved
-    , lmpDateConfident = Maybe.map .confident saved
-    , chwLmpConfirmation = Maybe.map .confirmation saved
-    , dateSelectorPopupState = Nothing
-    }
-
-
 lastMenstrualPeriodFormWithDefault : PregnancyDatingForm -> Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
 lastMenstrualPeriodFormWithDefault form saved =
     saved
@@ -3420,6 +3449,7 @@ lastMenstrualPeriodFormWithDefault form saved =
                 { lmpRange = or form.lmpRange (Just SixMonth)
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
+                , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }
@@ -3440,6 +3470,7 @@ toLastMenstrualPeriodValue form =
     in
     Maybe.map LastMenstrualPeriodValue form.lmpDate
         |> andMap form.lmpDateConfident
+        |> andMap (Just form.lmpDateNotConfidentReason)
         |> andMap (Just chwLmpConfirmation)
 
 
@@ -4121,31 +4152,24 @@ resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolI
         |> Maybe.withDefault ( [], [] )
 
 
-fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
-fromObstetricalExamValue saved =
-    { fundalHeight = Maybe.map (.fundalHeight >> getHeightValue) saved
-    , fundalHeightDirty = False
-    , fetalPresentation = Maybe.map .fetalPresentation saved
-    , fetalMovement = Maybe.map .fetalMovement saved
-    , fetalHeartRate = Maybe.map .fetalHeartRate saved
-    , fetalHeartRateDirty = False
-    , cSectionScar = Maybe.map .cSectionScar saved
-    }
-
-
 obstetricalExamFormWithDefault : ObstetricalExamForm -> Maybe ObstetricalExamValue -> ObstetricalExamForm
 obstetricalExamFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { fundalHeight = valueConsideringIsDirtyField form.fundalHeightDirty form.fundalHeight (getHeightValue value.fundalHeight)
+                { fundalPalpable = or form.fundalPalpable (Just value.fundalPalpable)
+                , fundalHeight =
+                    maybeValueConsideringIsDirtyField form.fundalHeightDirty
+                        form.fundalHeight
+                        (Maybe.map getHeightValue value.fundalHeight)
                 , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
                 , fetalHeartRate = valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
                 , fetalHeartRateDirty = form.fetalHeartRateDirty
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
+                , displayFundalPalpablePopup = form.displayFundalPalpablePopup
                 }
             )
 
@@ -4158,7 +4182,8 @@ toObstetricalExamValueWithDefault saved form =
 
 toObstetricalExamValue : ObstetricalExamForm -> Maybe ObstetricalExamValue
 toObstetricalExamValue form =
-    Maybe.map ObstetricalExamValue (Maybe.map HeightInCm form.fundalHeight)
+    Maybe.map ObstetricalExamValue form.fundalPalpable
+        |> andMap (Just <| Maybe.map HeightInCm form.fundalHeight)
         |> andMap form.fetalPresentation
         |> andMap form.fetalMovement
         |> andMap form.fetalHeartRate
@@ -4231,8 +4256,16 @@ obstetricHistoryStep2FormWithDefault form saved =
             (\value ->
                 { cSections = valueConsideringIsDirtyField form.cSectionsDirty form.cSections value.cSections
                 , cSectionsDirty = form.cSectionsDirty
-                , cSectionInPreviousDelivery = or form.cSectionInPreviousDelivery (EverySet.member CSectionInPreviousDelivery value.previousDelivery |> Just)
-                , cSectionReason = or form.cSectionReason (value.cSectionReason |> EverySet.toList |> List.head)
+                , cSectionInPreviousDelivery =
+                    maybeValueConsideringIsDirtyField form.cSectionInPreviousDeliveryDirty
+                        form.cSectionInPreviousDelivery
+                        (EverySet.member CSectionInPreviousDelivery value.previousDelivery |> Just)
+                , cSectionInPreviousDeliveryDirty = form.cSectionInPreviousDeliveryDirty
+                , cSectionReason =
+                    maybeValueConsideringIsDirtyField form.cSectionReasonDirty
+                        form.cSectionReason
+                        (Maybe.map EverySet.toList value.cSectionReason |> Maybe.andThen List.head)
+                , cSectionReasonDirty = form.cSectionReasonDirty
                 , previousDeliveryPeriod = or form.previousDeliveryPeriod (value.previousDeliveryPeriod |> EverySet.toList |> List.head)
                 , successiveAbortions = or form.successiveAbortions (EverySet.member SuccessiveAbortions value.obstetricHistory |> Just)
                 , successivePrematureDeliveries = or form.successivePrematureDeliveries (EverySet.member SuccessivePrematureDeliveries value.obstetricHistory |> Just)
@@ -4260,7 +4293,7 @@ toObstetricHistoryStep2Value : ObstetricFormSecondStep -> Maybe ObstetricHistory
 toObstetricHistoryStep2Value form =
     let
         previousDeliverySet =
-            [ Maybe.map (ifTrue CSectionInPreviousDelivery) form.cSectionInPreviousDelivery
+            [ ifNullableTrue CSectionInPreviousDelivery form.cSectionInPreviousDelivery
             , Maybe.map (ifTrue StillbornPreviousDelivery) form.stillbornPreviousDelivery
             , Maybe.map (ifTrue BabyDiedOnDayOfBirthPreviousDelivery) form.babyDiedOnDayOfBirthPreviousDelivery
             , Maybe.map (ifTrue PartialPlacentaPreviousDelivery) form.partialPlacentaPreviousDelivery
@@ -4283,7 +4316,7 @@ toObstetricHistoryStep2Value form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoObstetricHistorySign)
     in
     Maybe.map ObstetricHistoryStep2Value form.cSections
-        |> andMap (Maybe.map EverySet.singleton form.cSectionReason)
+        |> andMap (Just <| Maybe.map EverySet.singleton form.cSectionReason)
         |> andMap previousDeliverySet
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
         |> andMap obstetricHistorySet
@@ -4329,47 +4362,14 @@ toPrenatalNutritionValue form =
         |> andMap (Maybe.map MuacInCm form.muac)
 
 
-malariaPreventionFormWithDefault : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm
-malariaPreventionFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { receivedMosquitoNet = or form.receivedMosquitoNet (EverySet.member MosquitoNet value |> Just)
-                }
-            )
-
-
-toMalariaPreventionValueWithDefault : Maybe (EverySet MalariaPreventionSign) -> MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign)
-toMalariaPreventionValueWithDefault saved form =
-    malariaPreventionFormWithDefault form saved
-        |> toMalariaPreventionValue
-
-
-toMalariaPreventionValue : MalariaPreventionForm -> Maybe (EverySet MalariaPreventionSign)
-toMalariaPreventionValue form =
-    Maybe.map (toEverySet MosquitoNet NoMalariaPreventionSigns) form.receivedMosquitoNet
-
-
-fromSocialHistoryValue : Maybe SocialHistoryValue -> SocialHistoryForm
-fromSocialHistoryValue saved =
-    { accompaniedByPartner = Maybe.map (.socialHistory >> EverySet.member AccompaniedByPartner) saved
-    , partnerReceivedCounseling = Maybe.map (.socialHistory >> EverySet.member PartnerHivCounseling) saved
-    , partnerReceivedTesting = Maybe.map (.hivTestingResult >> (==) NoHivTesting >> not) saved
-    , partnerTestingResult = Maybe.map .hivTestingResult saved
-    }
-
-
 socialHistoryFormWithDefault : SocialHistoryForm -> Maybe SocialHistoryValue -> SocialHistoryForm
 socialHistoryFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value.socialHistory |> Just)
-                , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value.socialHistory |> Just)
-                , partnerReceivedTesting = or form.partnerReceivedTesting (value.hivTestingResult == NoHivTesting |> not |> Just)
-                , partnerTestingResult = or form.partnerTestingResult (Just value.hivTestingResult)
+                { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value |> Just)
+                , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value |> Just)
                 }
             )
 
@@ -4382,16 +4382,11 @@ toSocialHistoryValueWithDefault saved form =
 
 toSocialHistoryValue : SocialHistoryForm -> Maybe SocialHistoryValue
 toSocialHistoryValue form =
-    let
-        socialHistory =
-            [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
-            , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSocialHistorySign)
-    in
-    Maybe.map SocialHistoryValue socialHistory
-        |> andMap form.partnerTestingResult
+    [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
+    , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSocialHistorySign)
 
 
 fromPregnancyTestValue : Maybe PregnancyTestResult -> PregnancyTestForm
@@ -4426,167 +4421,6 @@ toPregnancyTestValueWithDefault saved form =
 toPregnancyTestValue : PregnancyTestForm -> Maybe PregnancyTestResult
 toPregnancyTestValue form =
     form.pregnancyTestResult
-
-
-historyTasksCompletedFromTotal : AssembledData -> HistoryData -> HistoryTask -> ( Int, Int )
-historyTasksCompletedFromTotal assembled data task =
-    case task of
-        Obstetric ->
-            case data.obstetricHistoryStep of
-                ObstetricHistoryFirstStep ->
-                    let
-                        formStep1_ =
-                            assembled.measurements.obstetricHistory
-                                |> getMeasurementValueFunc
-                                |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-
-                        intInputs =
-                            [ formStep1_.termPregnancy
-                            , formStep1_.preTermPregnancy
-                            , formStep1_.stillbirthsAtTerm
-                            , formStep1_.stillbirthsPreTerm
-                            , formStep1_.abortions
-                            , formStep1_.liveChildren
-                            ]
-                    in
-                    ( (intInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                      )
-                        + taskCompleted formStep1_.currentlyPregnant
-                    , List.length intInputs + 1
-                    )
-
-                ObstetricHistorySecondStep ->
-                    let
-                        formStep2_ =
-                            assembled.measurements.obstetricHistoryStep2
-                                |> getMeasurementValueFunc
-                                |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
-
-                        boolInputs =
-                            [ formStep2_.cSectionInPreviousDelivery
-                            , formStep2_.successiveAbortions
-                            , formStep2_.successivePrematureDeliveries
-                            , formStep2_.stillbornPreviousDelivery
-                            , formStep2_.babyDiedOnDayOfBirthPreviousDelivery
-                            , formStep2_.partialPlacentaPreviousDelivery
-                            , formStep2_.severeHemorrhagingPreviousDelivery
-                            , formStep2_.preeclampsiaPreviousPregnancy
-                            , formStep2_.convulsionsPreviousDelivery
-                            , formStep2_.convulsionsAndUnconsciousPreviousDelivery
-                            , formStep2_.gestationalDiabetesPreviousPregnancy
-                            , formStep2_.incompleteCervixPreviousPregnancy
-                            , formStep2_.rhNegative
-                            ]
-                    in
-                    ( (boolInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                      )
-                        + taskCompleted formStep2_.cSections
-                        + taskCompleted formStep2_.cSectionReason
-                        + taskCompleted formStep2_.previousDeliveryPeriod
-                    , List.length boolInputs + 3
-                    )
-
-        Medical ->
-            let
-                medicalForm =
-                    assembled.measurements.medicalHistory
-                        |> getMeasurementValueFunc
-                        |> medicalHistoryFormWithDefault data.medicalForm
-
-                boolInputs =
-                    [ medicalForm.uterineMyoma
-                    , medicalForm.diabetes
-                    , medicalForm.cardiacDisease
-                    , medicalForm.renalDisease
-                    , medicalForm.hypertensionBeforePregnancy
-                    , medicalForm.tuberculosisPast
-                    , medicalForm.tuberculosisPresent
-                    , medicalForm.asthma
-                    , medicalForm.bowedLegs
-                    , medicalForm.hiv
-                    ]
-            in
-            ( boolInputs
-                |> List.map taskCompleted
-                |> List.sum
-            , List.length boolInputs
-            )
-
-        Social ->
-            let
-                socialForm =
-                    assembled.measurements.socialHistory
-                        |> getMeasurementValueFunc
-                        |> socialHistoryFormWithDefault data.socialForm
-
-                showCounselingQuestion =
-                    assembled.nursePreviousEncountersData
-                        |> List.filter
-                            (.measurements
-                                >> .socialHistory
-                                >> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
-                                >> Maybe.withDefault False
-                            )
-                        |> List.isEmpty
-
-                partnerReceivedCounselingInput =
-                    if showCounselingQuestion then
-                        [ socialForm.partnerReceivedCounseling ]
-
-                    else
-                        []
-
-                showTestingQuestions =
-                    assembled.nursePreviousEncountersData
-                        |> List.filter
-                            (.measurements
-                                >> .socialHistory
-                                >> Maybe.map
-                                    (\socialHistory ->
-                                        let
-                                            value =
-                                                Tuple.second socialHistory |> .value
-                                        in
-                                        (value.hivTestingResult == ResultHivPositive)
-                                            || (value.hivTestingResult == ResultHivNegative)
-                                    )
-                                >> Maybe.withDefault False
-                            )
-                        |> List.isEmpty
-
-                partnerReceivedTestingInput =
-                    if showTestingQuestions then
-                        [ socialForm.partnerReceivedTesting ]
-
-                    else
-                        []
-
-                boolInputs =
-                    (socialForm.accompaniedByPartner
-                        :: partnerReceivedCounselingInput
-                    )
-                        ++ partnerReceivedTestingInput
-
-                listInputs =
-                    if socialForm.partnerReceivedTesting == Just True then
-                        [ socialForm.partnerTestingResult ]
-
-                    else
-                        []
-            in
-            ( (boolInputs |> List.map taskCompleted |> List.sum)
-                + (listInputs |> List.map taskCompleted |> List.sum)
-            , List.length boolInputs + List.length listInputs
-            )
-
-        OutsideCare ->
-            -- This is not in use, because OutsideCare task got
-            -- special treatment at viewHistoryContent().
-            ( 0, 0 )
 
 
 examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
@@ -4681,32 +4515,14 @@ examinationTasksCompletedFromTotal assembled data task =
             )
 
         ObstetricalExam ->
-            let
-                form =
-                    assembled.measurements.obstetricalExam
-                        |> getMeasurementValueFunc
-                        |> obstetricalExamFormWithDefault data.obstetricalExamForm
-            in
-            ( taskCompleted form.fetalPresentation
-                + taskCompleted form.fetalMovement
-                + taskCompleted form.cSectionScar
-                + ([ Maybe.map (always ()) form.fundalHeight, Maybe.map (always ()) form.fetalHeartRate ]
-                    |> List.map taskCompleted
-                    |> List.sum
-                  )
-            , 5
-            )
+            -- This is not in use, because ObstetricalExam task got
+            -- special treatment at viewExaminationContent().
+            ( 0, 0 )
 
         BreastExam ->
-            let
-                form =
-                    assembled.measurements.breastExam
-                        |> getMeasurementValueFunc
-                        |> breastExamFormWithDefault data.breastExamForm
-            in
-            ( taskCompleted form.breast + taskCompleted form.selfGuidance
-            , 2
-            )
+            -- This is not in use, because BreastExam task got
+            -- special treatment at viewExaminationContent().
+            ( 0, 0 )
 
         GUExam ->
             let
@@ -4845,7 +4661,8 @@ toAppointmentConfirmationValue form =
 
 laboratoryTasks : List LaboratoryTask
 laboratoryTasks =
-    [ TaskHIVTest
+    [ TaskPartnerHIVTest
+    , TaskHIVTest
     , TaskHIVPCRTest
     , TaskSyphilisTest
     , TaskHepatitisBTest
@@ -4894,6 +4711,9 @@ laboratoryTaskCompleted currentDate assembled task =
 
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || isJust measurements.hivPCRTest
+
+        TaskPartnerHIVTest ->
+            (not <| taskExpected TaskPartnerHIVTest) || isJust measurements.partnerHIVTest
 
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
@@ -5000,6 +4820,9 @@ expectLaboratoryTask currentDate assembled task =
                 TaskHIVPCRTest ->
                     isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
 
+                TaskPartnerHIVTest ->
+                    isInitialTest TaskPartnerHIVTest
+
                 TaskCompletePreviousTests ->
                     -- If we got this far, history task was completed.
                     False
@@ -5060,6 +4883,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) (always True) )
     , ( TaskHemoglobinTest, generateTestDates .hemoglobinTest (.hemoglobinCount >> isJust) (always True) )
     , ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) (always True) )
+    , ( TaskPartnerHIVTest, generateTestDates .partnerHIVTest (always True) isTestResultValid )
     ]
         |> Dict.fromList
 
@@ -6272,6 +6096,9 @@ matchRequiredReferralFacility assembled facility =
             -- Explicit NCD facility.
             False
 
+        FacilityUltrasound ->
+            referToUltrasound assembled
+
         FacilityHealthCenter ->
             -- We should never get here. HC inputs are resolved
             -- with resolveReferralInputsAndTasksForCHW.
@@ -6280,7 +6107,12 @@ matchRequiredReferralFacility assembled facility =
 
 referralFacilities : List ReferralFacility
 referralFacilities =
-    [ FacilityHospital, FacilityMentalHealthSpecialist, FacilityARVProgram, FacilityNCDProgram ]
+    [ FacilityHospital
+    , FacilityMentalHealthSpecialist
+    , FacilityARVProgram
+    , FacilityNCDProgram
+    , FacilityUltrasound
+    ]
 
 
 specialityCareFormWithDefault : SpecialityCareForm -> Maybe SpecialityCareValue -> SpecialityCareForm
@@ -6308,3 +6140,32 @@ toSpecialityCareValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)
+
+
+lmpRangeToString : LmpRange -> String
+lmpRangeToString range =
+    case range of
+        OneMonth ->
+            "one-month"
+
+        ThreeMonth ->
+            "three-month"
+
+        SixMonth ->
+            "six-month"
+
+
+lmpRangeFromString : String -> Maybe LmpRange
+lmpRangeFromString s =
+    case s of
+        "one-month" ->
+            Just OneMonth
+
+        "three-month" ->
+            Just ThreeMonth
+
+        "six-month" ->
+            Just SixMonth
+
+        _ ->
+            Nothing
