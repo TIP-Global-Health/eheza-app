@@ -23,11 +23,14 @@
 /db_snapshots
 /import-db
 /import.yaml
-/mutagen
+/mutagen/mutagen.yml
+/mutagen/.start-synced
 /nginx_full/nginx-site.conf
 /postgres/postgresql.conf
 /providers/platform.yaml
 /sequelpro.spf
-/traefik
-/xhprof
+/traefik/config/public-ihangane.yaml
+/traefik/certs/public-ihangane.crt
+/traefik/certs/public-ihangane.key
+/xhprof/xhprof_prepend.php
 /**/README.*

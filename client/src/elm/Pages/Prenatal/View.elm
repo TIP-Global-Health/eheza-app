@@ -101,9 +101,9 @@ viewMalariaPreventionContent language currentDate assembled setBoolInputMsg save
     ]
 
 
-viewPauseEncounterButton : Language -> Bool -> msg -> Html msg
-viewPauseEncounterButton language enabled pauseAction =
-    viewEncounterActionButton language Translate.PauseEncounter enabled pauseAction
+viewPauseEncounterButton : Language -> String -> Bool -> msg -> Html msg
+viewPauseEncounterButton language buttonColor enabled pauseAction =
+    viewEncounterActionButton language Translate.PauseEncounter buttonColor enabled pauseAction
 
 
 customWarningPopup : Language -> ( Html msg, Html msg, msg ) -> Html msg

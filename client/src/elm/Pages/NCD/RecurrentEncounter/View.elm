@@ -155,7 +155,11 @@ viewMainPageContent language currentDate assembled model =
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEncounterActionButton language Translate.LeaveEncounter True (SetActivePage <| UserPage GlobalCaseManagementPage)
+                , viewEncounterActionButton language
+                    Translate.LeaveEncounter
+                    "primary"
+                    True
+                    (SetActivePage <| UserPage GlobalCaseManagementPage)
                 ]
     in
     [ tabs

@@ -908,31 +908,30 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
 
 viewStartEncounterButton : Language -> msg -> Html msg
 viewStartEncounterButton language action =
-    div [ class "actions" ]
-        [ button
-            [ class "ui fluid primary button"
-            , onClick action
-            ]
-            [ text <| translate language Translate.StartEncounter ]
-        ]
+    viewEncounterActionButton language Translate.StartEncounter "primary" True action
 
 
 viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
-viewEndEncounterButton language allowEndEncounter setDialogStateMsgs =
-    viewEncounterActionButton language Translate.EndEncounter allowEndEncounter (setDialogStateMsgs True)
+viewEndEncounterButton language =
+    viewEndEncounterButtonCustomColor language "primary"
 
 
-viewEncounterActionButton : Language -> TranslationId -> Bool -> msg -> Html msg
-viewEncounterActionButton language label allowAction action =
+viewEndEncounterButtonCustomColor : Language -> String -> Bool -> (Bool -> msg) -> Html msg
+viewEndEncounterButtonCustomColor language buttonColor allowEndEncounter setDialogStateMsgs =
+    viewEncounterActionButton language Translate.EndEncounter buttonColor allowEndEncounter (setDialogStateMsgs True)
+
+
+viewEncounterActionButton : Language -> TranslationId -> String -> Bool -> msg -> Html msg
+viewEncounterActionButton language label buttonColor allowAction action =
     let
         attributes =
             if allowAction then
-                [ class "ui fluid primary button"
+                [ class <| "ui fluid button " ++ buttonColor
                 , onClick action
                 ]
 
             else
-                [ class "ui fluid primary button disabled" ]
+                [ class <| "ui fluid button disabled " ++ buttonColor ]
     in
     div [ class "actions" ]
         [ button attributes
@@ -943,23 +942,40 @@ viewEncounterActionButton language label allowAction action =
 viewEndEncounterMenuForProgressReport : Language -> Bool -> (Bool -> msg) -> msg -> Html msg
 viewEndEncounterMenuForProgressReport language allowEndEncounter setDialogStateMsg setSendViaWhatsAppDialogStateMsg =
     let
+        sendViaWhatsAppEnabled =
+            -- For now, we disabled 'Send via WhatsApp' feature.
+            False
+
+        ( actionsClass, endEncounterButtonColor, sendViaWhatsAppButton ) =
+            if sendViaWhatsAppEnabled then
+                ( "actions two"
+                , "velvet"
+                , button
+                    [ class "ui fluid primary button"
+                    , onClick setSendViaWhatsAppDialogStateMsg
+                    ]
+                    [ text <| translate language Translate.SendViaWhatsApp ]
+                )
+
+            else
+                ( "actions"
+                , "primary"
+                , emptyNode
+                )
+
         attributes =
             if allowEndEncounter then
-                [ class "ui fluid velvet button"
+                [ class <| "ui fluid button " ++ endEncounterButtonColor
                 , onClick <| setDialogStateMsg True
                 ]
 
             else
-                [ class "ui fluid velvet button disabled" ]
+                [ class <| "ui fluid button disabled " ++ endEncounterButtonColor ]
     in
-    div [ class "actions two" ]
+    div [ class actionsClass ]
         [ button attributes
             [ text <| translate language Translate.EndEncounter ]
-        , button
-            [ class "ui fluid primary button"
-            , onClick setSendViaWhatsAppDialogStateMsg
-            ]
-            [ text <| translate language Translate.SendViaWhatsApp ]
+        , sendViaWhatsAppButton
         ]
 
 

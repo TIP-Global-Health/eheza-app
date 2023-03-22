@@ -3094,7 +3094,7 @@ translationSet trans =
                     }
 
         BeatsPerMinuteUnitLabel ->
-            { english = "bpm"
+            { english = "Beats per minute"
             , kinyarwanda = Just "Inshuro umutima utera ku munota"
             }
 
@@ -3236,7 +3236,7 @@ translationSet trans =
             }
 
         BloodSmearLabel ->
-            { english = "Blood Smear"
+            { english = "Malaria Blood Smear"
             , kinyarwanda = Nothing
             }
 
@@ -3306,7 +3306,7 @@ translationSet trans =
             }
 
         BreathsPerMinuteUnitLabel ->
-            { english = "bpm"
+            { english = "Breaths per minute"
             , kinyarwanda = Just "Inshuro ahumeka ku munota"
             }
 
@@ -3920,12 +3920,12 @@ translationSet trans =
 
         ConvulsionsAndUnconsciousPreviousDelivery ->
             { english = "Experienced convulsions and resulted in becoming unconscious after delivery"
-            , kinyarwanda = Just "Ubushize yahinze umushyitsi bimuviramo kutumva akimara kubyara"
+            , kinyarwanda = Just "Ubushize yaragagaye bimuviramo kutumva akimara kubyara"
             }
 
         ConvulsionsPreviousDelivery ->
             { english = "Experienced convulsions in previous delivery"
-            , kinyarwanda = Just "Ubushize yahinze umushyitsi abyara"
+            , kinyarwanda = Just "Ubushize yaragagaye abyara"
             }
 
         CurrentIllnessBegan ->
@@ -5503,12 +5503,12 @@ translationSet trans =
 
         FundalPalpableQuestion ->
             { english = "Is fundal palpable"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ese nyababyeyi irumvikana igihe usuzuma umubyeyi"
             }
 
         FundalPalpableWarning ->
             { english = "Inconsistent with documented gestational age, recommended ultrasound."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ntibihura n'ibyumweru by'inda byanditswe, urasabwa guca mu cyuma gisuzuma ababyeyi batwite."
             }
 
         Gender gender ->
@@ -5898,7 +5898,7 @@ translationSet trans =
 
         HIV ->
             { english = "HIV"
-            , kinyarwanda = Just "Amaguru atameze neza(yagize imitego)"
+            , kinyarwanda = Just "Virusi itera SIDA"
             }
 
         HIVPCRResult result ->
@@ -7298,7 +7298,7 @@ translationSet trans =
 
                 TaskPartnerHIVTest ->
                     { english = "Partner HIV"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cya Virusi itera SIDA k'umugabo we"
                     }
 
                 TaskCompletePreviousTests ->
@@ -7378,7 +7378,7 @@ translationSet trans =
 
                 TaskPartnerHIVTest ->
                     { english = "Partner HIV"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cya Virusi itera SIDA k'umugabo we"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -7461,7 +7461,7 @@ translationSet trans =
 
                 TaskPartnerHIVTest ->
                     { english = "Partner HIV Test Date"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Itariki y'ikizamini cya Virusi itera SIDA k'umugabo we"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -7544,7 +7544,7 @@ translationSet trans =
 
                 TaskPartnerHIVTest ->
                     { english = "Partner HIV Test Result"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisubizo by'ikizamini cya Virusi itera SIDA k'umugabo we"
                     }
 
                 -- Not in use, so no translation is needed.
@@ -7577,7 +7577,7 @@ translationSet trans =
 
                 LabResultsHistoryPartnerHIV _ ->
                     { english = "Partner HIV Test History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku kizamini cya Virusi itera SIDA k'umugabo we"
                     }
 
                 LabResultsHistorySyphilis _ ->
@@ -7596,7 +7596,7 @@ translationSet trans =
                     }
 
                 LabResultsHistoryBloodSmear _ ->
-                    { english = "Blood Smear Test History"
+                    { english = "Malaria Blood Smear Test History"
                     , kinyarwanda = Nothing
                     }
 
@@ -9482,7 +9482,7 @@ translationSet trans =
         NCDAFillTheBlanksItemLabel item ->
             case item of
                 HeightToAge ->
-                    { english = "Level of stunting using child length mat"
+                    { english = "Level of stuning using child length mat"
                     , kinyarwanda = Just "Ikigero cyo kugwingira hakoreshejwe agasambi"
                     }
 
@@ -10948,7 +10948,7 @@ translationSet trans =
 
         PartnerReceivedHivCounseling ->
             { english = "Did partner receive HIV Counseling during this pregnancy"
-            , kinyarwanda = Just "Umugabo yahawe ubujyanama kuri Virusi itera SIDA? "
+            , kinyarwanda = Just "Umugabo yahawe ubujyanama kuri Virusi itera SIDA"
             }
 
         PartnerReceivedHivTesting ->

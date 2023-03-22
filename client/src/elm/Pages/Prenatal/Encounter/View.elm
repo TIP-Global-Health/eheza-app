@@ -38,7 +38,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButton)
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
+import Pages.Utils exposing (viewEndEncounterButtonCustomColor, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
@@ -456,6 +456,7 @@ viewMainPageContent language currentDate assembled model =
             div [ class "ui full segment" ]
                 [ innerContent
                 , viewActionButton language
+                    "primary"
                     pendingActivities
                     completedActivities
                     -- When pausing, we close the encounter.
@@ -501,8 +502,8 @@ generateActivityData activity assembled =
             default
 
 
-viewActionButton : Language -> List PrenatalActivity -> List PrenatalActivity -> msg -> (Bool -> msg) -> AssembledData -> Html msg
-viewActionButton language pendingActivities completedActivities pauseMsg setDialogStateMsg assembled =
+viewActionButton : Language -> String -> List PrenatalActivity -> List PrenatalActivity -> msg -> (Bool -> msg) -> AssembledData -> Html msg
+viewActionButton language buttonColor pendingActivities completedActivities pauseMsg setDialogStateMsg assembled =
     let
         enabled =
             if emergencyReferalRequired assembled then
@@ -522,7 +523,7 @@ viewActionButton language pendingActivities completedActivities pauseMsg setDial
                         False
     in
     if secondPhaseRequired assembled then
-        viewPauseEncounterButton language enabled pauseMsg
+        viewPauseEncounterButton language buttonColor enabled pauseMsg
 
     else
-        viewEndEncounterButton language enabled setDialogStateMsg
+        viewEndEncounterButtonCustomColor language buttonColor enabled setDialogStateMsg
