@@ -429,6 +429,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | Balance
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
@@ -582,6 +583,7 @@ type TranslationId
     | DeliveryOutcome
     | DemographicInformation
     | DemographicsReport
+    | Details
     | DetectableViralLoad
     | Device
     | DeviceNotAuthorized
@@ -789,6 +791,7 @@ type TranslationId
     | IsCurrentlyBreastfeeding
     | IsolatedAtHome
     | IsThisYouQuestion
+    | Issued
     | KilogramShorthand
     | KilogramsPerMonth
     | KnownAsPositiveQuestion LaboratoryTask
@@ -1260,6 +1263,7 @@ type TranslationId
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
     | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | Received
     | ReceivedDewormingPill
     | ReceivedFolicAcid
     | ReceivedIronFolicAcid
@@ -1649,6 +1653,7 @@ type TranslationId
     | StrartNewAcuteIllnessHelper
     | StartDate
     | EndDate
+    | StartingStock
     | StartSyncing
     | StatusLabel
     | StopSyncing
@@ -3062,6 +3067,11 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
+        Balance ->
+            { english = "Balance"
+            , kinyarwanda = Nothing
+            }
+
         BreastfeedingSignQuestion sign ->
             case sign of
                 IsBreastfeeding ->
@@ -4393,6 +4403,11 @@ translationSet trans =
         DemographicsReport ->
             { english = "Demographics Report"
             , kinyarwanda = Just "Raporo y'umwirondoro"
+            }
+
+        Details ->
+            { english = "Details"
+            , kinyarwanda = Nothing
             }
 
         DetectableViralLoad ->
@@ -6498,6 +6513,11 @@ translationSet trans =
 
         IsThisYouQuestion ->
             { english = "Is this you"
+            , kinyarwanda = Nothing
+            }
+
+        Issued ->
+            { english = "Issued"
             , kinyarwanda = Nothing
             }
 
@@ -14383,6 +14403,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        Received ->
+            { english = "Received"
+            , kinyarwanda = Nothing
+            }
+
         ReceivedDewormingPill ->
             { english = "Has the mother received deworming pill"
             , kinyarwanda = Just "Umubyeyi yahawe ikinini cy'inzoka"
@@ -17609,6 +17634,11 @@ translationSet trans =
         EndDate ->
             { english = "End Date"
             , kinyarwanda = Just "Itariki urangirijeho"
+            }
+
+        StartingStock ->
+            { english = "Starting Stock"
+            , kinyarwanda = Nothing
             }
 
         StartSyncing ->

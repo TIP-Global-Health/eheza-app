@@ -5030,6 +5030,11 @@ div.page-activity.stock-management {
       padding: 5px 0;
       text-transform: uppercase;
     }
+
+    .pane-content {
+      background-color: $color-white;
+      color: $color-text;
+    }
   }
 
 }
