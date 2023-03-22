@@ -2170,6 +2170,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                     case task of
                         NextStepsWait ->
                             viewPauseEncounterButton language
+                                "primary"
                                 -- Button is enabled because there are
                                 -- no actual tasks to be performed.
                                 True
