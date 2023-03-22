@@ -122,6 +122,10 @@ viewModeMain language currentDate nurseId nurse model =
         , viewButton (Translate.StockManagementMenu MenuViewMonthDetails) (SetDisplayMode ModeCorrectEntry)
         , viewButton (Translate.StockManagementMenu MenuCorrectEntry) (SetDisplayMode ModeCorrectEntry)
         ]
+    , div [ class "pane history" ]
+        [ div [ class "pane-heading" ]
+            [ text <| translate language Translate.History ]
+        ]
     ]
 
 

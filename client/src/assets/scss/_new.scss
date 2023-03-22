@@ -5015,7 +5015,21 @@ div.page-activity.stock-management {
   // }
 
   .navigation-buttons {
+    margin-bottom: 50px;
     margin-top: 30px;
+  }
+
+  .pane.history {
+    background-color: $color-primary;
+    color: $color-white;
+
+    .pane-heading {
+      font-weight: 700;
+      font-size: 20px;
+      margin-left: 40px;
+      padding: 5px 0;
+      text-transform: uppercase;
+    }
   }
 
 }

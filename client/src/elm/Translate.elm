@@ -737,6 +737,7 @@ type TranslationId
     | HighRiskFactors
     | HighSeverityAlert HighSeverityAlert
     | HighSeverityAlerts
+    | History
     | HistoryTask HistoryTask
     | HIV
     | HIVPCRResult HIVPCRResult
@@ -5876,6 +5877,11 @@ translationSet trans =
             , kinyarwanda = Just "Bimenyetso mpuruza bikabije"
             }
 
+        History ->
+            { english = "History"
+            , kinyarwanda = Just "Amakuru"
+            }
+
         HistoryTask task ->
             case task of
                 Obstetric ->
@@ -7302,9 +7308,7 @@ translationSet trans =
                     }
 
                 TaskCompletePreviousTests ->
-                    { english = "History"
-                    , kinyarwanda = Just "Amakuru"
-                    }
+                    translationSet History
 
         LaboratoryTaskLabel task ->
             case task of
@@ -11494,7 +11498,7 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro"
                     }
 
-                History ->
+                Backend.PrenatalActivity.Model.History ->
                     { english = "History"
                     , kinyarwanda = Just "Amateka y'ibyamubayeho"
                     }
