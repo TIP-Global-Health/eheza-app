@@ -803,6 +803,7 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.StockManagement.View.view model.language
                             currentDate
+                            model.healthCenterId
                             nurseId
                             nurse
                             model.indexedDb
