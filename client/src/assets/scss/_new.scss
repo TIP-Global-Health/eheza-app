@@ -4947,6 +4947,12 @@ div.page-activity.stock-management {
     }
   }
 
+  .timestamp {
+    color: $color-white;
+    text-align: left;
+    margin: 30px 0px 10px;
+    font-size: 18px;
+  }
 }
 
 div.page-activity.stock-management {
@@ -5008,11 +5014,6 @@ div.page-activity.stock-management {
       padding: 10px;
     }
   }
-
-  // .overlay .ui.modal.diagnosis-popup {
-  //   margin-left: -250px;
-  //   width: 500px;
-  // }
 
   .navigation-buttons {
     margin-bottom: 40px;
@@ -5077,6 +5078,11 @@ div.page-activity.stock-management {
         }
       }
     }
+  }
+
+  .timestamp {
+    margin-top: 20px;
+    padding-bottom: 40px;
   }
 
 }
