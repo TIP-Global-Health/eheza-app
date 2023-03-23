@@ -268,7 +268,6 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse db model =
                 )
                 maybeHealthCenterId
                 |> Maybe.withDefault Dict.empty
-                |> Debug.log ""
 
         ( selectedMonthReceived, selectedMonthIssued, selectedMonthStock ) =
             let
