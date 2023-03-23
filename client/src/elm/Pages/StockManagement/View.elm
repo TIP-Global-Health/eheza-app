@@ -149,11 +149,11 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
                                             |> List.head
                                             |> Maybe.map .dateRecorded
                                             |> Maybe.withDefault
-                                                -- When no stock updates were found, we know that
+                                                -- If no stock update entries were found, we know that
                                                 -- health center is yet to activate Stock Management
-                                                -- feature, because when activated, initial quantity
-                                                -- should be set.
-                                                -- Inticatin of this would be setting first stock upddate
+                                                -- feature, because when activated, initial setup is
+                                                -- performed using stock update mechanism.
+                                                -- Intication of this would be setting first stock update
                                                 -- to future date.
                                                 (Date.add Date.Months 1 currentDate)
                                             |> dateToMonthYear
@@ -181,32 +181,29 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
                                                     compareMonthYear stockUpdateMonthYear firstMonthForDisplay /= LT
                                                 )
 
-                                    fbfBalance =
-                                        Dict.values measurements.childFbf
-                                            ++ Dict.values measurements.motherFbf
-                                            |> List.filterMap
-                                                (\fbf ->
-                                                    let
-                                                        fbfMonthYear =
-                                                            dateToMonthYear fbf.dateMeasured
-                                                    in
-                                                    if compareMonthYear fbfMonthYear firstStockUpdateMonthYear == EQ then
-                                                        Just fbf.value.distributedAmount
+                                    -- To be able to present correct numbers, we need to know the initial
+                                    -- starting stock.
+                                    -- There are 2 options for this:
+                                    --   1. Initial setup was performed during display period:
+                                    --     Here, we simply look at that month quantities by Fbf and
+                                    --     Stock update entries.
+                                    --   2. Initial setup was performed before display period:
+                                    --     In this case, we need to count quantities by Fbf and
+                                    --     Stock update entries from initial setup month (included),
+                                    --     up yntil first display month (not included).
+                                    startingStockFilteringCondition processedMonthYear =
+                                        if compareMonthYear firstStockUpdateMonthYear firstMonthForDisplay == GT then
+                                            compareMonthYear processedMonthYear firstStockUpdateMonthYear == EQ
 
-                                                    else
-                                                        Nothing
-                                                )
-                                            |> List.sum
+                                        else
+                                            (compareMonthYear processedMonthYear firstStockUpdateMonthYear /= LT)
+                                                && (compareMonthYear processedMonthYear firstMonthForDisplay == LT)
 
-                                    stockUpdateBalance =
+                                    initialStockByStockUpdate =
                                         Dict.values measurements.stockUpdate
                                             |> List.filterMap
                                                 (\stockUpdate ->
-                                                    let
-                                                        stockUpdateMonthYear =
-                                                            dateToMonthYear stockUpdate.dateRecorded
-                                                    in
-                                                    if compareMonthYear stockUpdateMonthYear firstStockUpdateMonthYear == EQ then
+                                                    if startingStockFilteringCondition <| dateToMonthYear stockUpdate.dateRecorded then
                                                         Just stockUpdate.quantity
 
                                                     else
@@ -214,8 +211,21 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
                                                 )
                                             |> List.sum
 
-                                    initialBalance =
-                                        toFloat stockUpdateBalance - fbfBalance
+                                    initialStockByFbf =
+                                        Dict.values measurements.childFbf
+                                            ++ Dict.values measurements.motherFbf
+                                            |> List.filterMap
+                                                (\fbf ->
+                                                    if startingStockFilteringCondition <| dateToMonthYear fbf.dateMeasured then
+                                                        Just fbf.value.distributedAmount
+
+                                                    else
+                                                        Nothing
+                                                )
+                                            |> List.sum
+
+                                    initialStartingStock =
+                                        toFloat initialStockByStockUpdate - initialStockByFbf
 
                                     receivedIssuedByMonthYear =
                                         List.range 0 12
@@ -262,28 +272,41 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
                                             prevMonthYear =
                                                 getPrevMonthYear monthYear
 
-                                            monthYearBalance =
-                                                let
-                                                    checkIfInitialBalance =
-                                                        if compareMonthYear prevMonthYear firstStockUpdateMonthYear == EQ then
-                                                            Just initialBalance
-
-                                                        else
-                                                            Nothing
-                                                in
+                                            -- Starting stock for current month can be calculated by looking
+                                            -- at data generated for previous month.
+                                            -- If exists, it's the final balance of that month.
+                                            -- If not, we set initial starting stock, if previous month was
+                                            -- the setup month.
+                                            startingStock =
                                                 Dict.get prevMonthYear accum
-                                                    |> Maybe.map
-                                                        (\( maybePrevBalance, prevReceived, prevIssued ) ->
-                                                            case maybePrevBalance of
-                                                                Just prevBalance ->
-                                                                    Just <| prevBalance + prevReceived - prevIssued
+                                                    |> Maybe.map .currentBalance
+                                                    |> Maybe.withDefault
+                                                        (if compareMonthYear prevMonthYear firstStockUpdateMonthYear == EQ then
+                                                            Just initialStartingStock
 
-                                                                Nothing ->
-                                                                    checkIfInitialBalance
+                                                         else
+                                                            Nothing
                                                         )
-                                                    |> Maybe.withDefault checkIfInitialBalance
                                         in
-                                        Dict.insert monthYear ( monthYearBalance, received, issued ) accum
+                                        Dict.insert monthYear
+                                            { startingStock = startingStock
+                                            , received = received
+                                            , issued = issued
+                                            , currentBalance =
+                                                Maybe.map
+                                                    (\starting ->
+                                                        Just (starting + received - issued)
+                                                    )
+                                                    startingStock
+                                                    |> Maybe.withDefault
+                                                        (if compareMonthYear monthYear firstStockUpdateMonthYear == EQ then
+                                                            Just (received - issued)
+
+                                                         else
+                                                            Nothing
+                                                        )
+                                            }
+                                            accum
                                     )
                                     Dict.empty
                                     receivedIssuedByMonthYear
@@ -299,14 +322,10 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
             in
             Dict.get selectedMonthYear historyData
                 |> Maybe.map
-                    (\( balance, received, issued ) ->
-                        ( String.fromFloat received
-                        , String.fromFloat issued
-                        , Maybe.map
-                            (\initial ->
-                                String.fromFloat (initial + received - issued)
-                            )
-                            balance
+                    (\data ->
+                        ( String.fromFloat data.received
+                        , String.fromFloat data.issued
+                        , Maybe.map String.fromFloat data.currentBalance
                             |> Maybe.withDefault ""
                         )
                     )
@@ -329,7 +348,7 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
                 |> Maybe.withDefault []
                 |> List.map viewHistoryRow
 
-        viewHistoryRow ( ( month, year ), ( balance, received, issued ) ) =
+        viewHistoryRow ( ( month, year ), data ) =
             let
                 monthForView =
                     Date.numberToMonth month
@@ -337,24 +356,19 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
                 yearForView =
                     modBy 1000 year
 
-                initialBalance =
-                    Maybe.map String.fromFloat balance
+                startingStock =
+                    Maybe.map String.fromFloat data.startingStock
                         |> Maybe.withDefault ""
 
                 currentBalance =
-                    Maybe.map
-                        (\initial ->
-                            (initial + received - issued)
-                                |> String.fromFloat
-                        )
-                        balance
+                    Maybe.map String.fromFloat data.currentBalance
                         |> Maybe.withDefault ""
             in
             div [ class "row" ]
                 [ div [ class "cell month" ] [ text <| translate language <| Translate.ResolveMonthYY monthForView yearForView False ]
-                , div [ class "cell starting-stock" ] [ text initialBalance ]
-                , div [ class "cell received" ] [ text <| String.fromFloat received ]
-                , div [ class "cell issued" ] [ text <| String.fromFloat issued ]
+                , div [ class "cell starting-stock" ] [ text startingStock ]
+                , div [ class "cell received" ] [ text <| String.fromFloat data.received ]
+                , div [ class "cell issued" ] [ text <| String.fromFloat data.issued ]
                 , div [ class "cell balance" ] [ text currentBalance ]
                 , div [ class "cell details" ] [ button [] [ text <| translate language Translate.View ] ]
                 ]
