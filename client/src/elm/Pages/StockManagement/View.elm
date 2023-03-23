@@ -107,6 +107,41 @@ viewModeMain language currentDate nurseId nurse model =
 
         selectedDate =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
+
+        historyHeaderRow =
+            div [ class "row header" ]
+                [ div [ class "cell month" ] [ text <| translate language Translate.Month ]
+                , div [ class "cell starting-stock" ] [ text <| translate language Translate.StartingStock ]
+                , div [ class "cell received" ] [ text <| translate language Translate.Received ]
+                , div [ class "cell issued" ] [ text <| translate language Translate.Issued ]
+                , div [ class "cell balance" ] [ text <| translate language Translate.Balance ]
+                , div [ class "cell details" ] [ text <| translate language Translate.Details ]
+                ]
+
+        historyRows =
+            List.range 1 12
+                |> List.map viewHistoryRow
+
+        viewHistoryRow monthGap =
+            let
+                date =
+                    Date.add Date.Months (-1 * monthGap) currentDate
+
+                month =
+                    Date.monthNumber date
+                        |> Date.numberToMonth
+
+                year =
+                    Date.year date |> modBy 1000
+            in
+            div [ class "row" ]
+                [ div [ class "cell month" ] [ text <| translate language <| Translate.ResolveMonthYY month year False ]
+                , div [ class "cell starting-stock" ] []
+                , div [ class "cell received" ] []
+                , div [ class "cell issued" ] []
+                , div [ class "cell balance" ] []
+                , div [ class "cell details" ] [ button [] [ text <| translate language Translate.View ] ]
+                ]
     in
     [ viewMonthSelector language selectedDate model.monthGap maxMonthGap ChangeMonthGap
     , div [ class "ui grid" ]
@@ -125,16 +160,9 @@ viewModeMain language currentDate nurseId nurse model =
     , div [ class "pane history" ]
         [ div [ class "pane-heading" ]
             [ text <| translate language Translate.History ]
-        , div [ class "pane-content" ]
-            [ div [ class "row header" ]
-                [ div [ class "cell month" ] [ text <| translate language Translate.Month ]
-                , div [ class "cell starting-stock" ] [ text <| translate language Translate.StartingStock ]
-                , div [ class "cell received" ] [ text <| translate language Translate.Received ]
-                , div [ class "cell issued" ] [ text <| translate language Translate.Issued ]
-                , div [ class "cell balance" ] [ text <| translate language Translate.Balance ]
-                , div [ class "cell details" ] [ text <| translate language Translate.Details ]
-                ]
-            ]
+        , div [ class "pane-content" ] <|
+            historyHeaderRow
+                :: historyRows
         ]
     ]
 

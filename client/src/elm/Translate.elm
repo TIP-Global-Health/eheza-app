@@ -1504,7 +1504,7 @@ type TranslationId
     | ResilienceReminderFooter ResilienceReminderType
     | ResilienceSurveyQuestionOption ResilienceSurveyQuestionOption
     | ResolveMonth Bool Month
-    | ResolveMonthYY Int Bool Month
+    | ResolveMonthYY Month Int Bool
     | RespiratoryDistress
     | RespiratoryRate
     | ResponsePeriod ResponsePeriod
@@ -16406,7 +16406,7 @@ translationSet trans =
         ResolveMonth short month ->
             translateMonth month short
 
-        ResolveMonthYY year short month ->
+        ResolveMonthYY month year short ->
             translateMonthYY month year short
 
         RespiratoryDistress ->
@@ -20290,8 +20290,8 @@ translateMonthYY : Month -> Int -> Bool -> TranslationSet String
 translateMonthYY month year short =
     translateMonth month short
         |> (\set ->
-                { english = set.english ++ "-" ++ Debug.toString year
-                , kinyarwanda = Maybe.map (\kinyarwanda -> kinyarwanda ++ "-" ++ Debug.toString year) set.kinyarwanda
+                { english = set.english ++ " " ++ String.fromInt year
+                , kinyarwanda = Maybe.map (\kinyarwanda -> kinyarwanda ++ " " ++ String.fromInt year) set.kinyarwanda
                 }
            )
 

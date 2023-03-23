@@ -5015,7 +5015,7 @@ div.page-activity.stock-management {
   // }
 
   .navigation-buttons {
-    margin-bottom: 50px;
+    margin-bottom: 40px;
     margin-top: 30px;
   }
 
@@ -5034,6 +5034,47 @@ div.page-activity.stock-management {
     .pane-content {
       background-color: $color-white;
       color: $color-text;
+
+      .row {
+        border-bottom: 1px solid $color-text;
+        display: flex;
+
+        .cell {
+          border-right: 1px solid $color-text;
+          font-size: 20px;
+          padding: 5px;
+          text-align: center;
+          width: 105px;
+        }
+
+        .cell.month {
+          width: 140px;
+        }
+
+        .cell.starting-stock {
+          width: 170px;
+        }
+
+        .cell button {
+          background: $color-primary;
+          border: none;
+          color: $color-white;
+          font-size: 16px;
+          line-height: 25px;
+          text-transform: uppercase;
+          font-weight: normal;
+          padding: 0 10px;
+          border-radius: 5px;
+        }
+      }
+
+      .row.header {
+        line-height: 60px;
+
+        .cell {
+          font-size: 22px;
+        }
+      }
     }
   }
 
