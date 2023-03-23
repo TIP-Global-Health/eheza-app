@@ -19,9 +19,11 @@ import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, fromLocalDateTime)
+import Gizra.TimePosix exposing (viewTimePosix)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import List.Zipper exposing (Zipper)
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Dashboard.View exposing (chwCard)
@@ -46,13 +48,25 @@ import Pages.Utils
         , viewTextInput
         )
 import RemoteData exposing (RemoteData(..))
+import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model exposing (SyncInfoAuthorityZipper)
+import Time
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (spinner, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> Maybe HealthCenterId -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate maybeHealthCenterId nurseId nurse db model =
+view :
+    Language
+    -> NominalDate
+    -> Maybe HealthCenterId
+    -> NurseId
+    -> Nurse
+    -> SyncInfoAuthorityZipper
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities db model =
     let
         header =
             let
@@ -80,7 +94,7 @@ view language currentDate maybeHealthCenterId nurseId nurse db model =
         content =
             case model.displayMode of
                 ModeMain ->
-                    viewModeMain language currentDate maybeHealthCenterId nurseId nurse db model
+                    viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities db model
 
                 ModeReceiveStock ->
                     viewModeReceiveStock language currentDate nurseId nurse model.receiveStockForm
@@ -93,8 +107,17 @@ view language currentDate maybeHealthCenterId nurseId nurse db model =
             :: content
 
 
-viewModeMain : Language -> NominalDate -> Maybe HealthCenterId -> NurseId -> Nurse -> ModelIndexedDb -> Model -> List (Html Msg)
-viewModeMain language currentDate maybeHealthCenterId nurseId nurse db model =
+viewModeMain :
+    Language
+    -> NominalDate
+    -> Maybe HealthCenterId
+    -> NurseId
+    -> Nurse
+    -> SyncInfoAuthorityZipper
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities db model =
     let
         viewButton label action =
             button
@@ -335,6 +358,35 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse db model =
                 , div [ class "cell balance" ] [ text currentBalance ]
                 , div [ class "cell details" ] [ button [] [ text <| translate language Translate.View ] ]
                 ]
+
+        lastUpdated =
+            Maybe.map2
+                (\healthCenterId syncInfoZipper ->
+                    List.Zipper.toList syncInfoZipper
+                        |> List.filter
+                            (\zipper ->
+                                zipper.uuid == fromEntityUuid healthCenterId
+                            )
+                        |> List.head
+                        |> Maybe.map
+                            (\info ->
+                                let
+                                    dateAndTime =
+                                        if info.lastSuccesfulContact == 0 then
+                                            translate language Translate.Never
+
+                                        else
+                                            Time.millisToPosix info.lastSuccesfulContact
+                                                |> viewTimePosix language
+                                in
+                                div [ class "timestamp" ]
+                                    [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ dateAndTime ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                )
+                maybeHealthCenterId
+                syncInfoAuthorities
+                |> Maybe.withDefault emptyNode
     in
     [ viewMonthSelector language selectedDate model.monthGap maxMonthGap ChangeMonthGap
     , div [ class "ui grid" ]
@@ -357,6 +409,7 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse db model =
             historyHeaderRow
                 :: historyRows
         ]
+    , lastUpdated
     ]
 
 

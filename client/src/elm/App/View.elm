@@ -806,6 +806,7 @@ viewUserPage page deviceName model configured =
                             model.healthCenterId
                             nurseId
                             nurse
+                            model.syncManager.syncInfoAuthorities
                             model.indexedDb
                             loggedInModel.stockManagementPage
                             |> Html.map (MsgLoggedIn << MsgPageStockManagement)
