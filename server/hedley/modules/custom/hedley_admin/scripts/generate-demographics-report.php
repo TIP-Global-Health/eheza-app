@@ -34,30 +34,52 @@ $measurement_types_sql_list = implode(', ', $types);
  *   Age classifier string.
  * @param string $gender
  *   Male or female.
- *
+ * @param string $region
+ *   The administrative district. 
+ * 
  * @return int
  *   Amount of patients.
  */
-function classified_count($age, $gender, $region) {
-  if ($age === 'all' && $gender === 'all') {
-    return db_query("SELECT COUNT(*)
-    FROM person_classified
-    LEFT JOIN field_data_field_district district ON person_classified.entity_id=district.entity_id
-    WHERE field_district_value LIKE '%$region%'")->fetchField();
+function classified_count($age, $gender, $region = NULL) {
+  if ($region) {
+    if ($age === 'all' && $gender === 'all') {
+      return db_query("SELECT COUNT(*)
+      FROM person_classified
+      LEFT JOIN field_data_field_district district ON person_classified.entity_id=district.entity_id
+      WHERE field_district_value LIKE '%$region%'")->fetchField();
+    }
+    else {
+      return db_query("SELECT
+      COUNT(*)
+      FROM
+      person_classified
+      LEFT JOIN field_data_field_district district ON person_classified.entity_id=district.entity_id
+      WHERE field_district_value LIKE '%$region%'
+      AND age = :age AND
+      gender = :gender
+      ", [
+        ':age' => $age,
+        ':gender' => $gender,
+      ])->fetchField();
+    }
   }
   else {
-    return db_query("SELECT
-    COUNT(*)
-    FROM
-    person_classified
-    LEFT JOIN field_data_field_district district ON person_classified.entity_id=district.entity_id
-    WHERE field_district_value LIKE '%$region%'
-    AND age = :age AND
-    gender = :gender
-    ", [
-      ':age' => $age,
-      ':gender' => $gender,
-    ])->fetchField();
+    if ($age === 'all' && $gender === 'all') {
+    return db_query("SELECT COUNT(*)
+    FROM person_classified")->fetchField();
+    }
+    else {
+      return db_query("SELECT
+      COUNT(*)
+      FROM
+      person_classified
+      WHERE age = :age AND
+      gender = :gender
+      ", [
+        ':age' => $age,
+        ':gender' => $gender,
+      ])->fetchField();
+    }
   }
 }
 
@@ -68,33 +90,59 @@ function classified_count($age, $gender, $region) {
  *   Age classifier string.
  * @param string $gender
  *   Male or female.
- *
+ * @param string $region
+ *   The administrative district. 
+ * 
  * @return int
  *   Amount of patients.
  */
-function impacted_count($age, $gender, $region) {
-  if ($age === 'all' && $gender === 'all') {
-    return (int) db_query("SELECT COUNT(*)
-      FROM person_classified cl
-      INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id
-      LEFT JOIN field_data_field_district district ON cl.entity_id=district.entity_id
-      WHERE field_district_value LIKE '%$region%'")->fetchField();
-  }
-  else {
-    return (int) db_query("
-    SELECT
-        COUNT(*)
-      FROM
-        person_classified cl
+function impacted_count($age, $gender, $region = NULL) {
+
+  if ($region) {
+    if ($age === 'all' && $gender === 'all') {
+      return (int) db_query("SELECT COUNT(*)
+        FROM person_classified cl
         INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id
         LEFT JOIN field_data_field_district district ON cl.entity_id=district.entity_id
-        WHERE field_district_value LIKE '%$region%'
-        AND age = :age
-        AND gender = :gender
-      ", [
-        ':age' => $age,
-        ':gender' => $gender,
-      ])->fetchField();
+        WHERE field_district_value LIKE '%$region%'")->fetchField();
+    }
+    else {
+      return (int) db_query("
+      SELECT
+          COUNT(*)
+        FROM
+          person_classified cl
+          INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id
+          LEFT JOIN field_data_field_district district ON cl.entity_id=district.entity_id
+          WHERE field_district_value LIKE '%$region%'
+          AND age = :age
+          AND gender = :gender
+        ", [
+          ':age' => $age,
+          ':gender' => $gender,
+        ])->fetchField();
+    }
+  }
+  else {
+    if ($age === 'all' && $gender === 'all') {
+      return (int) db_query("SELECT COUNT(*)
+        FROM person_classified cl
+        INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id")->fetchField();
+    }
+    else {
+      return (int) db_query("
+      SELECT
+          COUNT(*)
+        FROM
+          person_classified cl
+          INNER JOIN person_impacted pi ON cl.entity_id = pi.entity_id
+          AND age = :age
+          AND gender = :gender
+        ", [
+          ':age' => $age,
+          ':gender' => $gender,
+        ])->fetchField();
+    }
   }
 }
 
@@ -105,17 +153,16 @@ function impacted_count($age, $gender, $region) {
  *   Encounter type.
  * @param mixed $filter
  *   Filter type 'hc' or NULL.
+ * @param string $limit
+ *   The date limit.   
+ * @param string $region
+ *   The administrative district. 
  *
  * @return int
  *   Amount of encounters.
  */
 function encounter_all_count($type, $filter = NULL, $limit = NULL, $region = NULL) {
-  
-  if ($region === FALSE) {
-    $region_clause = "AND field_district_value LIKE '%$region%'";
-  } else {
-    $region_clause = "";
-  }
+  $region_clause = ($region) ? "AND field_district_value LIKE '%$region%'" : "";
 
   if ($filter === 'hc' && $type == 'prenatal') {
     // Health center ANC.
@@ -128,6 +175,20 @@ function encounter_all_count($type, $filter = NULL, $limit = NULL, $region = NUL
       LEFT JOIN field_data_field_prenatal_encounter_type t ON e.field_prenatal_encounter_target_id=t.entity_id
       WHERE (field_prenatal_encounter_type_value='nurse'
         OR field_prenatal_encounter_type_value is NULL)
+        {$region_clause}
+        AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
+  }
+  elseif ($filter === 'hc' && $type == 'acute_illness') {
+    // Health center AI.
+    return db_query("SELECT COUNT(DISTINCT field_acute_illness_encounter_target_id)
+      FROM field_data_field_acute_illness_encounter e
+      LEFT JOIN node ON e.entity_id = node.nid
+      LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
+      LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+      LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
+      LEFT JOIN field_data_field_ai_encounter_type t ON e.field_acute_illness_encounter_target_id=t.entity_id
+      WHERE (field_ai_encounter_type_value='nurse-encounter'
+        OR field_ai_encounter_type_value is NULL)
         {$region_clause}
         AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
 
@@ -152,11 +213,17 @@ function encounter_all_count($type, $filter = NULL, $limit = NULL, $region = NUL
  *   Encounter type.
  * @param mixed $filter
  *   Filter type 'hc' or NULL.
+ * @param string $limit
+ *   The date limit.   
+ * @param string $region
+ *   The administrative district. 
  *
  * @return int
  *   Amount of encounters.
  */
 function encounter_unique_count($type, $filter = NULL, $limit = NULL, $region = NULL) {
+  $region_clause = ($region) ? "AND field_district_value LIKE '%$region%'" : "";
+
   if ($filter === 'hc' && $type == 'prenatal') {
     // Health center ANC.
     return db_query("SELECT COUNT(DISTINCT person.field_person_target_id)
@@ -168,9 +235,25 @@ function encounter_unique_count($type, $filter = NULL, $limit = NULL, $region = 
       LEFT JOIN field_data_field_prenatal_encounter_type t on e.field_prenatal_encounter_target_id=t.entity_id
         WHERE (field_prenatal_encounter_type_value='nurse'
           OR field_prenatal_encounter_type_value is NULL)
-          AND field_district_value LIKE '%$region%'
+          {$region_clause}
           AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
   }
+
+  elseif ($filter === 'hc' && $type == 'acute_illness') {
+    // Health center AI.
+    return db_query("SELECT COUNT(DISTINCT person.field_person_target_id)
+      FROM field_data_field_acute_illness_encounter e
+      LEFT JOIN node ON e.entity_id = node.nid
+      LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
+      LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+      LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
+      LEFT JOIN field_data_field_ai_encounter_type t on e.field_acute_illness_encounter_target_id=t.entity_id
+        WHERE (field_ai_encounter_type_value='nurse-encounter'
+          OR field_ai_encounter_type_value is NULL)
+          {$region_clause}
+          AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
+  }
+  else {
   return db_query("SELECT COUNT(DISTINCT person.field_person_target_id)
     FROM field_data_field_{$type}_encounter e
     LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id
@@ -178,8 +261,10 @@ function encounter_unique_count($type, $filter = NULL, $limit = NULL, $region = 
     LEFT JOIN field_data_field_individual_participant ip ON e.field_{$type}_encounter_target_id=ip.entity_id
     LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
     LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
-    WHERE field_district_value LIKE '%$region%'
-    AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
+    WHERE 
+      FROM_UNIXTIME(node.created) < '$limit'
+      {$region_clause}")->fetchField();
+  }
 }
 
 $bootstrap_data_structures = file_get_contents(__DIR__ . '/bootstrap-demographics-report.SQL');
@@ -306,13 +391,7 @@ drush_print("## ENCOUNTERS");
  *   Associative array, keyed by type.
  */
 function group_encounter_all($measurement_types_list, $limit = NULL, $region = NULL) {
-
-  if ($region === FALSE) {
-    $region_clause = "AND field_district_value LIKE '%$region%'";
-  } else {
-    $region_clause = "";
-  }
-
+  $region_clause = ($region) ? "AND field_district_value LIKE '%$region%'" : "";
 
   return db_query("
   SELECT
@@ -352,6 +431,8 @@ GROUP BY
  *   Amount of patients by type.
  */
 function group_encounter_unique($measurement_types_list, $limit = NULL, $region = NULL) {
+  $region_clause = ($region) ? "AND field_district_value LIKE '%$region%'" : "";
+
   return db_query("
   SELECT
   field_group_type_value as type, COUNT(*) as counter
@@ -373,7 +454,7 @@ FROM
         sess_rel.bundle IN ($measurement_types_list)
         AND field_group_type_value IS NOT NULL
         AND class.entity_id IS NOT NULL
-        AND field_district_value LIKE '%$region%'
+        {$region_clause}
         AND FROM_UNIXTIME(node.created) < '$limit'
     GROUP BY
       field_group_type_value, field_person_target_id
@@ -401,13 +482,33 @@ $encounters = [
   ],
   [
     'Acute Illness',
-    encounter_all_count('acute_illness', 'chw', $limit_date, $region),
-    encounter_unique_count('acute_illness', 'chw', $limit_date, $region),
+    encounter_all_count('acute_illness', 'all', $limit_date, $region),
+    encounter_unique_count('acute_illness', 'all', $limit_date, $region),
+  ],
+  [
+    '   Health Center',
+    encounter_all_count('acute_illness', 'hc', $limit_date, $region),
+    encounter_unique_count('acute_illness', 'hc', $limit_date, $region),
+  ],
+  [
+    '   CHW',
+    encounter_all_count('acute_illness', 'all', $limit_date, $region) - encounter_all_count('acute_illness', 'hc', $limit_date, $region),
+    encounter_unique_count('acute_illness', 'all', $limit_date, $region) - encounter_unique_count('acute_illness', 'hc', $limit_date, $region),
+  ],
+    [
+    'Standard Pediatric Visit',
+    encounter_all_count('well_child', 'hc', $limit_date, $region),
+    encounter_unique_count('well_child', 'hc', $limit_date, $region),
+  ],
+    [
+    '  Home Visit',
+    encounter_all_count('home_visit', 'chw', $limit_date, $region),
+    encounter_unique_count('home_visit', 'chw', $limit_date, $region),
   ],
   [
     'Nutrition (total)',
-    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date, $region),
-    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date, $region),
+    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date, $region) + encounter_all_count('home_visit', 'chw', $limit_date, $region),
+    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date, $region) + encounter_unique_count('home_visit', 'chw', $limit_date, $region),
   ],
   [
     '  PMTCT',
@@ -441,8 +542,8 @@ $encounters = [
   ],
   [
     'TOTAL',
-    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date, $region) + encounter_all_count('prenatal', 'all', $limit_date, $region) + encounter_all_count('acute_illness', 'chw', $limit_date),
-    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date) + encounter_unique_count('prenatal', 'all', $limit_date, $region) + encounter_unique_count('acute_illness', 'chw', $limit_date, $region),
+    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date, $region) + encounter_all_count('prenatal', 'all', $limit_date, $region) + encounter_all_count('acute_illness', 'all', $limit_date) + encounter_all_count('well_child', 'chw', $limit_date),
+    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date) + encounter_unique_count('prenatal', 'all', $limit_date, $region) + encounter_unique_count('acute_illness', 'all', $limit_date, $region) + encounter_unique_count('well_child', 'hc', $limit_date, $region),
   ],
 ];
 
