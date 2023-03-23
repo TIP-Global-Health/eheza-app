@@ -35,8 +35,8 @@ $measurement_types_sql_list = implode(', ', $types);
  * @param string $gender
  *   Male or female.
  * @param string $region
- *   The administrative district. 
- * 
+ *   The administrative district.
+ *
  * @return int
  *   Amount of patients.
  */
@@ -65,8 +65,8 @@ function classified_count($age, $gender, $region = NULL) {
   }
   else {
     if ($age === 'all' && $gender === 'all') {
-    return db_query("SELECT COUNT(*)
-    FROM person_classified")->fetchField();
+      return db_query("SELECT COUNT(*)
+      FROM person_classified")->fetchField();
     }
     else {
       return db_query("SELECT
@@ -91,8 +91,8 @@ function classified_count($age, $gender, $region = NULL) {
  * @param string $gender
  *   Male or female.
  * @param string $region
- *   The administrative district. 
- * 
+ *   The administrative district.
+ *
  * @return int
  *   Amount of patients.
  */
@@ -154,9 +154,9 @@ function impacted_count($age, $gender, $region = NULL) {
  * @param mixed $filter
  *   Filter type 'hc' or NULL.
  * @param string $limit
- *   The date limit.   
+ *   The date limit.
  * @param string $region
- *   The administrative district. 
+ *   The administrative district.
  *
  * @return int
  *   Amount of encounters.
@@ -214,9 +214,9 @@ function encounter_all_count($type, $filter = NULL, $limit = NULL, $region = NUL
  * @param mixed $filter
  *   Filter type 'hc' or NULL.
  * @param string $limit
- *   The date limit.   
+ *   The date limit.
  * @param string $region
- *   The administrative district. 
+ *   The administrative district.
  *
  * @return int
  *   Amount of encounters.
@@ -254,16 +254,16 @@ function encounter_unique_count($type, $filter = NULL, $limit = NULL, $region = 
           AND FROM_UNIXTIME(node.created) < '$limit'")->fetchField();
   }
   else {
-  return db_query("SELECT COUNT(DISTINCT person.field_person_target_id)
-    FROM field_data_field_{$type}_encounter e
-    LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id
-    LEFT JOIN node ON e.entity_id = node.nid
-    LEFT JOIN field_data_field_individual_participant ip ON e.field_{$type}_encounter_target_id=ip.entity_id
-    LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
-    LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
-    WHERE 
-      FROM_UNIXTIME(node.created) < '$limit'
-      {$region_clause}")->fetchField();
+    return db_query("SELECT COUNT(DISTINCT person.field_person_target_id)
+      FROM field_data_field_{$type}_encounter e
+      LEFT JOIN field_data_field_person p ON e.entity_id = p.entity_id
+      LEFT JOIN node ON e.entity_id = node.nid
+      LEFT JOIN field_data_field_individual_participant ip ON e.field_{$type}_encounter_target_id=ip.entity_id
+      LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+      LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
+      WHERE 
+        FROM_UNIXTIME(node.created) < '$limit'
+        {$region_clause}")->fetchField();
   }
 }
 
@@ -495,12 +495,12 @@ $encounters = [
     encounter_all_count('acute_illness', 'all', $limit_date, $region) - encounter_all_count('acute_illness', 'hc', $limit_date, $region),
     encounter_unique_count('acute_illness', 'all', $limit_date, $region) - encounter_unique_count('acute_illness', 'hc', $limit_date, $region),
   ],
-    [
+  [
     'Standard Pediatric Visit',
     encounter_all_count('well_child', 'hc', $limit_date, $region),
     encounter_unique_count('well_child', 'hc', $limit_date, $region),
   ],
-    [
+  [
     '  Home Visit',
     encounter_all_count('home_visit', 'chw', $limit_date, $region),
     encounter_unique_count('home_visit', 'chw', $limit_date, $region),

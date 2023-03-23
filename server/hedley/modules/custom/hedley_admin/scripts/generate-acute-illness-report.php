@@ -58,7 +58,7 @@ foreach ($first_encounters as $first_encounter) {
 
   $query = 'SELECT field_acute_illness_diagnosis_value FROM field_data_field_acute_illness_diagnosis di WHERE entity_id = ' . $first_encounter;
   $result = db_query($query)->fetchField();
-  if($result) {
+  if ($result) {
     $diagnoses[] = $result;
   }
 }
@@ -86,7 +86,7 @@ $data[] = [
 $table = new HedleyAdminTextTable(['Initial Diagnosis', 'Count']);
 drush_print($table->render($data));
 
-
+drush_print("# ANC Acute Illness report - $start_date  - $end_date");
 $result = db_query("
   SELECT 
     field_prenatal_diagnoses_value
@@ -116,5 +116,5 @@ $data[] = [
   count($diagnoses),
 ];
 
-//$table = new HedleyAdminTextTable(['Initial Diagnosis', 'Count']);
-//drush_print($table->render($data));
+$table = new HedleyAdminTextTable(['Initial Diagnosis', 'Count']);
+drush_print($table->render($data));
