@@ -430,6 +430,7 @@ type TranslationId
     | Back
     | BackendError
     | Balance
+    | BatchNumberAbrev
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
@@ -649,6 +650,7 @@ type TranslationId
     | Estimated
     | ExaminationTask ExaminationTask
     | ExaminationTaskRecurrent Pages.Prenatal.RecurrentActivity.Types.ExaminationTask
+    | ExpirityDate
     | ExposureTask ExposureTask
     | Extremities
     | Eyes
@@ -792,6 +794,7 @@ type TranslationId
     | IsolatedAtHome
     | IsThisYouQuestion
     | Issued
+    | IssuedTo
     | KilogramShorthand
     | KilogramsPerMonth
     | KnownAsPositiveQuestion LaboratoryTask
@@ -977,6 +980,7 @@ type TranslationId
     | Month
     | MonthAbbrev
     | MonthSinglePlural Int
+    | MonthsOfStock
     | MonthsOld
     | Mother
     | MotherDemographicInformation
@@ -1266,6 +1270,7 @@ type TranslationId
     | Received
     | ReceivedDewormingPill
     | ReceivedFolicAcid
+    | ReceivedFrom
     | ReceivedIronFolicAcid
     | ReceivedMebendazole
     | ReceivedMosquitoNet
@@ -1600,6 +1605,7 @@ type TranslationId
     | SevereAcuteMalnutrition
     | SevereHemorrhagingPreviousDelivery
     | Shared
+    | Signature
     | SignOnDoorPostedQuestion
     | SpecialityCareHeaderPrefix
     | SpecialityCareHeaderSuffix
@@ -3069,6 +3075,11 @@ translationSet trans =
 
         Balance ->
             { english = "Balance"
+            , kinyarwanda = Nothing
+            }
+
+        BatchNumberAbrev ->
+            { english = "Batch #"
             , kinyarwanda = Nothing
             }
 
@@ -5134,6 +5145,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
+        ExpirityDate ->
+            { english = "Expirity Date"
+            , kinyarwanda = Nothing
+            }
+
         ExposureTask task ->
             case task of
                 ExposureTravel ->
@@ -6518,6 +6534,11 @@ translationSet trans =
 
         Issued ->
             { english = "Issued"
+            , kinyarwanda = Nothing
+            }
+
+        IssuedTo ->
+            { english = "Issued To"
             , kinyarwanda = Nothing
             }
 
@@ -9154,6 +9175,11 @@ translationSet trans =
                 { english = String.fromInt value ++ " Months"
                 , kinyarwanda = Just <| "Amezi " ++ String.fromInt value
                 }
+
+        MonthsOfStock ->
+            { english = "Months of Stock"
+            , kinyarwanda = Nothing
+            }
 
         MonthsOld ->
             { english = "months old"
@@ -14418,6 +14444,11 @@ translationSet trans =
             , kinyarwanda = Just "Wahawe ibinini bya Folic Acid"
             }
 
+        ReceivedFrom ->
+            { english = "Received From"
+            , kinyarwanda = Nothing
+            }
+
         ReceivedIronFolicAcid ->
             { english = "Has the mother received iron and folic acid supplement"
             , kinyarwanda = Just "Umubyeyi yahawe ibinini bya Fer cg Folic Acid byongera amaraso"
@@ -17070,6 +17101,11 @@ translationSet trans =
         Shared ->
             { english = "Shared"
             , kinyarwanda = Just "Ayisangira n'abandi"
+            }
+
+        Signature ->
+            { english = "Signature"
+            , kinyarwanda = Nothing
             }
 
         SignOnDoorPostedQuestion ->

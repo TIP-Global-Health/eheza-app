@@ -451,8 +451,32 @@ viewModeMonthDetails language currentDate monthGap db model =
     let
         selectedDate =
             resolveSelectedDateForMonthSelector currentDate monthGap
+
+        historyHeaderRow =
+            div [ class "row header" ]
+                [ div [ class "cell date" ] [ text <| translate language Translate.Date ]
+                , div [ class "cell from-to" ]
+                    [ text <|
+                        (translate language Translate.ReceivedFrom ++ " / " ++ translate language Translate.IssuedTo)
+                    ]
+                , div [ class "cell batch" ] [ text <| translate language Translate.BatchNumberAbrev ]
+                , div [ class "cell expirity" ] [ text <| translate language Translate.ExpirityDate ]
+                , div [ class "cell received" ] [ text <| translate language Translate.Received ]
+                , div [ class "cell issued" ] [ text <| translate language Translate.Issued ]
+                , div [ class "cell balance" ] [ text <| translate language Translate.Balance ]
+                , div [ class "cell months-of-stock" ] [ text <| translate language Translate.MonthsOfStock ]
+                , div [ class "cell signature" ] [ text <| translate language Translate.Signature ]
+                ]
     in
-    [ viewMonthSelector language selectedDate monthGap maxMonthGap ChangeDetailsMonthGap ]
+    [ viewMonthSelector language selectedDate monthGap maxMonthGap ChangeDetailsMonthGap
+    , div [ class "pane month-details" ]
+        [ div [ class "pane-heading" ]
+            [ text <| translate language Translate.History ]
+        , div [ class "pane-content" ] <|
+            historyHeaderRow
+                :: []
+        ]
+    ]
 
 
 viewModeReceiveStock : Language -> NominalDate -> NurseId -> Nurse -> ReceiveStockForm -> List (Html Msg)

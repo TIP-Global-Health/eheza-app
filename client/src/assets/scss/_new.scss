@@ -5020,7 +5020,7 @@ div.page-activity.stock-management {
     margin-top: 30px;
   }
 
-  .pane.history {
+  .pane {
     background-color: $color-primary;
     color: $color-white;
 
@@ -5052,6 +5052,29 @@ div.page-activity.stock-management {
         .cell.month {
           width: 140px;
         }
+      }
+
+      .row.header {
+        line-height: 60px;
+
+        .cell {
+          font-size: 22px;
+        }
+      }
+    }
+  }
+
+  .pane.history {
+
+    .pane-content {
+      background-color: $color-white;
+      color: $color-text;
+
+      .row {
+
+        .cell.month {
+          width: 140px;
+        }
 
         .cell.starting-stock {
           width: 170px;
@@ -5069,12 +5092,38 @@ div.page-activity.stock-management {
           border-radius: 5px;
         }
       }
+    }
+  }
 
-      .row.header {
-        line-height: 60px;
+  .pane.month-details {
+
+    .pane-content {
+
+      .row {
 
         .cell {
-          font-size: 22px;
+          font-size: 17px;
+          line-height: 22px;
+          padding: 5px;
+          text-align: center;
+          width: 75px;
+        }
+
+        .cell.from-to,
+        .cell.signature {
+          width: 100px;
+        }
+
+        .cell.received {
+          width: 85px;
+        }
+      }
+
+      .row.header {
+        line-height: 40px;
+
+        .cell {
+          font-size: 17px;
         }
       }
     }
