@@ -3461,6 +3461,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                         (\measurements -> { measurements | childFbf = Dict.insert uuid data measurements.childFbf })
                         modelWithStockUpdateRecalc
 
+                -- This revision may cause stock management data to become obsolete,
+                -- therefore, we 'mark' it for recalculation.
                 modelWithStockUpdateRecalc =
                     Maybe.map
                         (\id ->
@@ -3745,6 +3747,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                         (\measurements -> { measurements | motherFbf = Dict.insert uuid data measurements.motherFbf })
                         modelWithStockUpdateRecalc
 
+                -- This revision may cause stock management data to become obsolete,
+                -- therefore, we 'mark' it for recalculation.
                 modelWithStockUpdateRecalc =
                     Maybe.map
                         (\id ->
@@ -4514,6 +4518,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                         (\measurements -> { measurements | stockUpdate = Dict.insert uuid data measurements.stockUpdate })
                         modelWithStockUpdateRecalc
 
+                -- This revision may cause stock management data to become obsolete,
+                -- therefore, we 'mark' it for recalculation.
                 modelWithStockUpdateRecalc =
                     Maybe.map
                         (\id ->
