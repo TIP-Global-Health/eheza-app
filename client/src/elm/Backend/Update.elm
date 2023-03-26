@@ -3300,7 +3300,13 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 successful EditableSessions. Ideally, we would handle this in a more
 nuanced way.
 -}
-handleRevision : NominalDate -> Maybe HealthCenterId -> Maybe VillageId -> Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
+handleRevision :
+    NominalDate
+    -> Maybe HealthCenterId
+    -> Maybe VillageId
+    -> Revision
+    -> ( ModelIndexedDb, Bool )
+    -> ( ModelIndexedDb, Bool )
 handleRevision currentDate healthCenterId villageId revision (( model, recalc ) as noChange) =
     case revision of
         AcuteFindingsRevision uuid data ->
@@ -3453,7 +3459,15 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     mapStockManagementMeasurements
                         healthCenterId
                         (\measurements -> { measurements | childFbf = Dict.insert uuid data measurements.childFbf })
-                        model
+                        modelWithStockUpdateRecalc
+
+                modelWithStockUpdateRecalc =
+                    Maybe.map
+                        (\id ->
+                            { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+                        )
+                        healthCenterId
+                        |> Maybe.withDefault model
             in
             ( mapChildMeasurements
                 data.participantId
@@ -3729,7 +3743,15 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     mapStockManagementMeasurements
                         healthCenterId
                         (\measurements -> { measurements | motherFbf = Dict.insert uuid data measurements.motherFbf })
-                        model
+                        modelWithStockUpdateRecalc
+
+                modelWithStockUpdateRecalc =
+                    Maybe.map
+                        (\id ->
+                            { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+                        )
+                        healthCenterId
+                        |> Maybe.withDefault model
             in
             ( mapMotherMeasurements
                 data.participantId
@@ -4490,7 +4512,15 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     mapStockManagementMeasurements
                         healthCenterId
                         (\measurements -> { measurements | stockUpdate = Dict.insert uuid data measurements.stockUpdate })
-                        model
+                        modelWithStockUpdateRecalc
+
+                modelWithStockUpdateRecalc =
+                    Maybe.map
+                        (\id ->
+                            { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+                        )
+                        healthCenterId
+                        |> Maybe.withDefault model
             in
             ( { modelWithMappedStockManagement
                 | stockUpdates =
