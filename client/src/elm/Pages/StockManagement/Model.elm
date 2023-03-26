@@ -32,6 +32,19 @@ emptyModel =
     }
 
 
+type alias AssembledData =
+    Dict MonthYear DataForMonth
+
+
+type alias DataForMonth =
+    { startingStock : Maybe Float
+    , received : Float
+    , issued : Float
+    , currentBalance : Maybe Float
+    , consumptionAverage : Float
+    }
+
+
 maxMonthGap : Int
 maxMonthGap =
     11

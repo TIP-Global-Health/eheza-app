@@ -11,4 +11,6 @@ import RemoteData exposing (RemoteData(..))
 
 fetch : NominalDate -> HealthCenterId -> ModelIndexedDb -> List MsgIndexedDb
 fetch currentDate healthCenterId db =
-    [ FetchStockManagementMeasurements healthCenterId ]
+    [ FetchStockManagementMeasurements healthCenterId
+    , FetchStockManagementData healthCenterId
+    ]

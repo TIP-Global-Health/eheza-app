@@ -1,5 +1,6 @@
 module Backend.StockUpdate.Model exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (PhotoUrl, StockUpdate)
 import Date exposing (Date)
@@ -14,6 +15,23 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { requestState = NotAsked }
+
+
+type alias StockManagementData =
+    Dict MonthYear DataForMonth
+
+
+type alias MonthYear =
+    ( Int, Int )
+
+
+type alias DataForMonth =
+    { startingStock : Maybe Float
+    , received : Float
+    , issued : Float
+    , currentBalance : Maybe Float
+    , consumptionAverage : Float
+    }
 
 
 type Msg

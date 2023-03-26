@@ -13,7 +13,8 @@ import Backend.Measurement.Model
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Utils exposing (sortByDate)
-import Backend.StockUpdate.Utils exposing (stockSupplierToString)
+import Backend.StockUpdate.Model exposing (StockManagementData)
+import Backend.StockUpdate.Utils exposing (..)
 import Date exposing (Month, Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
@@ -23,6 +24,7 @@ import Gizra.TimePosix exposing (viewTimePosix)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import List.Extra
 import List.Zipper exposing (Zipper)
 import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
@@ -49,6 +51,7 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
+import Round
 import SyncManager.Model exposing (SyncInfoAuthorityZipper)
 import Time
 import Translate exposing (Language, TranslationId, translate)
@@ -67,6 +70,28 @@ view :
     -> Model
     -> Html Msg
 view language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities db model =
+    Maybe.andThen
+        (\healthCenterId ->
+            Dict.get healthCenterId db.stockManagementData
+        )
+        maybeHealthCenterId
+        |> Maybe.withDefault NotAsked
+        |> viewWebData language
+            (viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities model)
+            identity
+
+
+viewHeaderAndContent :
+    Language
+    -> NominalDate
+    -> Maybe HealthCenterId
+    -> NurseId
+    -> Nurse
+    -> SyncInfoAuthorityZipper
+    -> Model
+    -> StockManagementData
+    -> Html Msg
+viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities model data =
     let
         header =
             let
@@ -95,12 +120,16 @@ view language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities 
                 ]
 
         content =
+            let
+                lastUpdated =
+                    viewLastUpdated language maybeHealthCenterId syncInfoAuthorities
+            in
             case model.displayMode of
                 ModeMain ->
-                    viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities db model
+                    viewModeMain language currentDate nurseId nurse lastUpdated data model
 
                 ModeMonthDetails monthGap ->
-                    viewModeMonthDetails language currentDate monthGap db model
+                    viewModeMonthDetails language currentDate monthGap lastUpdated data
 
                 ModeReceiveStock ->
                     viewModeReceiveStock language currentDate nurseId nurse model.receiveStockForm
@@ -113,17 +142,51 @@ view language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities 
             :: content
 
 
+viewLastUpdated :
+    Language
+    -> Maybe HealthCenterId
+    -> SyncInfoAuthorityZipper
+    -> Html Msg
+viewLastUpdated language maybeHealthCenterId syncInfoAuthorities =
+    Maybe.map2
+        (\healthCenterId syncInfoZipper ->
+            List.Zipper.toList syncInfoZipper
+                |> List.filter
+                    (\zipper ->
+                        zipper.uuid == fromEntityUuid healthCenterId
+                    )
+                |> List.head
+                |> Maybe.map
+                    (\info ->
+                        let
+                            dateAndTime =
+                                if info.lastSuccesfulContact == 0 then
+                                    translate language Translate.Never
+
+                                else
+                                    Time.millisToPosix info.lastSuccesfulContact
+                                        |> viewTimePosix language
+                        in
+                        div [ class "timestamp" ]
+                            [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ dateAndTime ]
+                    )
+                |> Maybe.withDefault emptyNode
+        )
+        maybeHealthCenterId
+        syncInfoAuthorities
+        |> Maybe.withDefault emptyNode
+
+
 viewModeMain :
     Language
     -> NominalDate
-    -> Maybe HealthCenterId
     -> NurseId
     -> Nurse
-    -> SyncInfoAuthorityZipper
-    -> ModelIndexedDb
+    -> Html Msg
+    -> StockManagementData
     -> Model
     -> List (Html Msg)
-viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities db model =
+viewModeMain language currentDate nurseId nurse lastUpdated data model =
     let
         viewButton label action =
             button
@@ -137,201 +200,17 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
         selectedDate =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
-        historyData =
-            Maybe.andThen
-                (\healthCenterId ->
-                    Dict.get healthCenterId db.stockManagementMeasurements
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map
-                            (\measurements ->
-                                let
-                                    firstMonthForDisplay =
-                                        Date.add Date.Months -12 currentDate
-                                            |> dateToMonthYear
-
-                                    firstStockUpdateMonthYear =
-                                        Dict.values measurements.stockUpdate
-                                            |> List.sortWith (sortByDate .dateRecorded)
-                                            |> List.head
-                                            |> Maybe.map .dateRecorded
-                                            |> Maybe.withDefault
-                                                -- If no stock update entries were found, we know that
-                                                -- health center is yet to activate Stock Management
-                                                -- feature, because when activated, initial setup is
-                                                -- performed using stock update mechanism.
-                                                -- Intication of this would be setting first stock update
-                                                -- to future date.
-                                                (Date.add Date.Months 1 currentDate)
-                                            |> dateToMonthYear
-
-                                    fbfForDisplay =
-                                        Dict.values measurements.childFbf
-                                            ++ Dict.values measurements.motherFbf
-                                            |> List.filter
-                                                (\fbf ->
-                                                    let
-                                                        fbfMonthYear =
-                                                            dateToMonthYear fbf.dateMeasured
-                                                    in
-                                                    compareMonthYear fbfMonthYear firstMonthForDisplay /= LT
-                                                )
-
-                                    stockUpdateForDisplay =
-                                        Dict.values measurements.stockUpdate
-                                            |> List.filter
-                                                (\stockUpdate ->
-                                                    let
-                                                        stockUpdateMonthYear =
-                                                            dateToMonthYear stockUpdate.dateRecorded
-                                                    in
-                                                    compareMonthYear stockUpdateMonthYear firstMonthForDisplay /= LT
-                                                )
-
-                                    -- To be able to present correct numbers, we need to know the initial
-                                    -- starting stock.
-                                    -- There are 2 options for this:
-                                    --   1. Initial setup was performed during display period:
-                                    --     Here, we simply look at that month quantities by Fbf and
-                                    --     Stock update entries.
-                                    --   2. Initial setup was performed before display period:
-                                    --     In this case, we need to count quantities by Fbf and
-                                    --     Stock update entries from initial setup month (included),
-                                    --     up yntil first display month (not included).
-                                    startingStockFilteringCondition processedMonthYear =
-                                        if compareMonthYear firstStockUpdateMonthYear firstMonthForDisplay == GT then
-                                            compareMonthYear processedMonthYear firstStockUpdateMonthYear == EQ
-
-                                        else
-                                            (compareMonthYear processedMonthYear firstStockUpdateMonthYear /= LT)
-                                                && (compareMonthYear processedMonthYear firstMonthForDisplay == LT)
-
-                                    initialStockByStockUpdate =
-                                        Dict.values measurements.stockUpdate
-                                            |> List.filterMap
-                                                (\stockUpdate ->
-                                                    if startingStockFilteringCondition <| dateToMonthYear stockUpdate.dateRecorded then
-                                                        Just stockUpdate.quantity
-
-                                                    else
-                                                        Nothing
-                                                )
-                                            |> List.sum
-
-                                    initialStockByFbf =
-                                        Dict.values measurements.childFbf
-                                            ++ Dict.values measurements.motherFbf
-                                            |> List.filterMap
-                                                (\fbf ->
-                                                    if startingStockFilteringCondition <| dateToMonthYear fbf.dateMeasured then
-                                                        Just fbf.value.distributedAmount
-
-                                                    else
-                                                        Nothing
-                                                )
-                                            |> List.sum
-
-                                    initialStartingStock =
-                                        toFloat initialStockByStockUpdate - initialStockByFbf
-
-                                    receivedIssuedByMonthYear =
-                                        List.range 0 12
-                                            |> List.map
-                                                (\monthGap ->
-                                                    let
-                                                        monthYear =
-                                                            Date.add Date.Months (-1 * monthGap) currentDate
-                                                                |> dateToMonthYear
-
-                                                        received =
-                                                            List.filter
-                                                                (\stockUpdate ->
-                                                                    let
-                                                                        stockUpdateMonthYear =
-                                                                            dateToMonthYear stockUpdate.dateRecorded
-                                                                    in
-                                                                    compareMonthYear stockUpdateMonthYear monthYear == EQ
-                                                                )
-                                                                stockUpdateForDisplay
-                                                                |> List.map .quantity
-                                                                |> List.sum
-                                                                |> toFloat
-
-                                                        issued =
-                                                            List.filter
-                                                                (\fbf ->
-                                                                    let
-                                                                        fbfMonthYear =
-                                                                            dateToMonthYear fbf.dateMeasured
-                                                                    in
-                                                                    compareMonthYear fbfMonthYear monthYear == EQ
-                                                                )
-                                                                fbfForDisplay
-                                                                |> List.map (.value >> .distributedAmount)
-                                                                |> List.sum
-                                                    in
-                                                    ( monthYear, ( received, issued ) )
-                                                )
-                                in
-                                List.foldr
-                                    (\( monthYear, ( received, issued ) ) accum ->
-                                        let
-                                            prevMonthYear =
-                                                getPrevMonthYear monthYear
-
-                                            -- Starting stock for current month can be calculated by looking
-                                            -- at data generated for previous month.
-                                            -- If exists, it's the final balance of that month.
-                                            -- If not, we set initial starting stock, if previous month was
-                                            -- the setup month.
-                                            startingStock =
-                                                Dict.get prevMonthYear accum
-                                                    |> Maybe.map .currentBalance
-                                                    |> Maybe.withDefault
-                                                        (if compareMonthYear prevMonthYear firstStockUpdateMonthYear == EQ then
-                                                            Just initialStartingStock
-
-                                                         else
-                                                            Nothing
-                                                        )
-                                        in
-                                        Dict.insert monthYear
-                                            { startingStock = startingStock
-                                            , received = received
-                                            , issued = issued
-                                            , currentBalance =
-                                                Maybe.map
-                                                    (\starting ->
-                                                        Just (starting + received - issued)
-                                                    )
-                                                    startingStock
-                                                    |> Maybe.withDefault
-                                                        (if compareMonthYear monthYear firstStockUpdateMonthYear == EQ then
-                                                            Just (received - issued)
-
-                                                         else
-                                                            Nothing
-                                                        )
-                                            }
-                                            accum
-                                    )
-                                    Dict.empty
-                                    receivedIssuedByMonthYear
-                            )
-                )
-                maybeHealthCenterId
-                |> Maybe.withDefault Dict.empty
-
         ( selectedMonthReceived, selectedMonthIssued, selectedMonthStock ) =
             let
                 selectedMonthYear =
                     dateToMonthYear selectedDate
             in
-            Dict.get selectedMonthYear historyData
+            Dict.get selectedMonthYear data
                 |> Maybe.map
-                    (\data ->
-                        ( String.fromFloat data.received
-                        , String.fromFloat data.issued
-                        , Maybe.map String.fromFloat data.currentBalance
+                    (\dataForMonth ->
+                        ( String.fromFloat dataForMonth.received
+                        , String.fromFloat dataForMonth.issued
+                        , Maybe.map String.fromFloat dataForMonth.currentBalance
                             |> Maybe.withDefault ""
                         )
                     )
@@ -348,13 +227,13 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
                 ]
 
         historyRows =
-            Dict.toList historyData
+            Dict.toList data
                 |> List.reverse
                 |> List.tail
                 |> Maybe.withDefault []
                 |> List.map viewHistoryRow
 
-        viewHistoryRow ( ( month, year ), data ) =
+        viewHistoryRow ( ( month, year ), dataForMonth ) =
             let
                 monthForView =
                     Date.numberToMonth month
@@ -363,11 +242,11 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
                     modBy 1000 year
 
                 startingStock =
-                    Maybe.map String.fromFloat data.startingStock
+                    Maybe.map String.fromFloat dataForMonth.startingStock
                         |> Maybe.withDefault ""
 
                 currentBalance =
-                    Maybe.map String.fromFloat data.currentBalance
+                    Maybe.map String.fromFloat dataForMonth.currentBalance
                         |> Maybe.withDefault ""
 
                 monthGap =
@@ -377,43 +256,14 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
             div [ class "row" ]
                 [ div [ class "cell month" ] [ text <| translate language <| Translate.ResolveMonthYY monthForView yearForView False ]
                 , div [ class "cell starting-stock" ] [ text startingStock ]
-                , div [ class "cell received" ] [ text <| String.fromFloat data.received ]
-                , div [ class "cell issued" ] [ text <| String.fromFloat data.issued ]
+                , div [ class "cell received" ] [ text <| String.fromFloat dataForMonth.received ]
+                , div [ class "cell issued" ] [ text <| String.fromFloat dataForMonth.issued ]
                 , div [ class "cell balance" ] [ text currentBalance ]
                 , div [ class "cell details" ]
                     [ button [ onClick <| SetDisplayMode (ModeMonthDetails monthGap) ]
                         [ text <| translate language Translate.View ]
                     ]
                 ]
-
-        lastUpdated =
-            Maybe.map2
-                (\healthCenterId syncInfoZipper ->
-                    List.Zipper.toList syncInfoZipper
-                        |> List.filter
-                            (\zipper ->
-                                zipper.uuid == fromEntityUuid healthCenterId
-                            )
-                        |> List.head
-                        |> Maybe.map
-                            (\info ->
-                                let
-                                    dateAndTime =
-                                        if info.lastSuccesfulContact == 0 then
-                                            translate language Translate.Never
-
-                                        else
-                                            Time.millisToPosix info.lastSuccesfulContact
-                                                |> viewTimePosix language
-                                in
-                                div [ class "timestamp" ]
-                                    [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ dateAndTime ]
-                            )
-                        |> Maybe.withDefault emptyNode
-                )
-                maybeHealthCenterId
-                syncInfoAuthorities
-                |> Maybe.withDefault emptyNode
     in
     [ viewMonthSelector language selectedDate model.monthGap maxMonthGap ChangeMonthGap
     , div [ class "ui grid" ]
@@ -444,10 +294,10 @@ viewModeMonthDetails :
     Language
     -> NominalDate
     -> Int
-    -> ModelIndexedDb
-    -> Model
+    -> Html Msg
+    -> StockManagementData
     -> List (Html Msg)
-viewModeMonthDetails language currentDate monthGap db model =
+viewModeMonthDetails language currentDate monthGap lastUpdated data =
     let
         selectedDate =
             resolveSelectedDateForMonthSelector currentDate monthGap

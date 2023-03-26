@@ -70,6 +70,7 @@ import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
 import Backend.StockUpdate.Model
 import Backend.StockUpdate.Update
+import Backend.StockUpdate.Utils exposing (generateStockManagementData)
 import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.Utils exposing (..)
@@ -649,6 +650,29 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             ( { model | stockManagementMeasurements = Dict.insert id Loading model.stockManagementMeasurements }
             , sw.get stockManagementMeasurementsEndpoint id
                 |> toCmd (RemoteData.fromResult >> HandleFetchedStockManagementMeasurements id)
+            , []
+            )
+
+        FetchStockManagementData id ->
+            let
+                updatedModel =
+                    case Dict.get id model.stockManagementData of
+                        Just (Success _) ->
+                            -- Data already calculated, and there's no need to recalculate.
+                            model
+
+                        _ ->
+                            let
+                                data =
+                                    Dict.get id model.stockManagementMeasurements
+                                        |> Maybe.andThen RemoteData.toMaybe
+                                        |> Maybe.map (generateStockManagementData currentDate >> Success)
+                                        |> Maybe.withDefault NotAsked
+                            in
+                            { model | stockManagementData = Dict.insert id data model.stockManagementData }
+            in
+            ( updatedModel
+            , Cmd.none
             , []
             )
 
