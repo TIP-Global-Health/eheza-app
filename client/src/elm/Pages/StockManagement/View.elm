@@ -75,6 +75,9 @@ view language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities 
                         ModeMain ->
                             ( Translate.StockManagement, SetActivePage PinCodePage )
 
+                        ModeMonthDetails _ ->
+                            ( Translate.StockManagement, SetDisplayMode ModeMain )
+
                         ModeReceiveStock ->
                             ( Translate.StockManagementMenu MenuReceiveStock, SetDisplayMode ModeMain )
 
@@ -95,6 +98,9 @@ view language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities 
             case model.displayMode of
                 ModeMain ->
                     viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities db model
+
+                ModeMonthDetails monthGap ->
+                    viewModeMonthDetails language currentDate monthGap db model
 
                 ModeReceiveStock ->
                     viewModeReceiveStock language currentDate nurseId nurse model.receiveStockForm
@@ -363,6 +369,10 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
                 currentBalance =
                     Maybe.map String.fromFloat data.currentBalance
                         |> Maybe.withDefault ""
+
+                monthGap =
+                    dateToMonthYear currentDate
+                        |> monthYearDiff ( month, year )
             in
             div [ class "row" ]
                 [ div [ class "cell month" ] [ text <| translate language <| Translate.ResolveMonthYY monthForView yearForView False ]
@@ -370,7 +380,10 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
                 , div [ class "cell received" ] [ text <| String.fromFloat data.received ]
                 , div [ class "cell issued" ] [ text <| String.fromFloat data.issued ]
                 , div [ class "cell balance" ] [ text currentBalance ]
-                , div [ class "cell details" ] [ button [] [ text <| translate language Translate.View ] ]
+                , div [ class "cell details" ]
+                    [ button [ onClick <| SetDisplayMode (ModeMonthDetails monthGap) ]
+                        [ text <| translate language Translate.View ]
+                    ]
                 ]
 
         lastUpdated =
@@ -413,7 +426,7 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
     , div
         [ class "navigation-buttons" ]
         [ viewButton (Translate.StockManagementMenu MenuReceiveStock) (SetDisplayMode ModeReceiveStock)
-        , viewButton (Translate.StockManagementMenu MenuViewMonthDetails) (SetDisplayMode ModeCorrectEntry)
+        , viewButton (Translate.StockManagementMenu MenuViewMonthDetails) (SetDisplayMode (ModeMonthDetails 0))
         , viewButton (Translate.StockManagementMenu MenuCorrectEntry) (SetDisplayMode ModeCorrectEntry)
         ]
     , div [ class "pane history" ]
@@ -425,6 +438,21 @@ viewModeMain language currentDate maybeHealthCenterId nurseId nurse syncInfoAuth
         ]
     , lastUpdated
     ]
+
+
+viewModeMonthDetails :
+    Language
+    -> NominalDate
+    -> Int
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewModeMonthDetails language currentDate monthGap db model =
+    let
+        selectedDate =
+            resolveSelectedDateForMonthSelector currentDate monthGap
+    in
+    [ viewMonthSelector language selectedDate monthGap maxMonthGap ChangeDetailsMonthGap ]
 
 
 viewModeReceiveStock : Language -> NominalDate -> NurseId -> Nurse -> ReceiveStockForm -> List (Html Msg)

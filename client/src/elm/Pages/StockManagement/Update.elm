@@ -39,6 +39,17 @@ update currentDate maybeHealthCenterId msg model =
             , []
             )
 
+        ChangeDetailsMonthGap value ->
+            case model.displayMode of
+                ModeMonthDetails monthGap ->
+                    update currentDate maybeHealthCenterId (SetDisplayMode (ModeMonthDetails (monthGap + value))) model
+
+                _ ->
+                    ( model
+                    , Cmd.none
+                    , []
+                    )
+
         SetReceiveStockConfirmIdentity confirmed ->
             let
                 form =
