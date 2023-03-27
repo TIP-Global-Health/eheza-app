@@ -124,6 +124,9 @@ generateStockManagementData currentDate measurements =
                     )
                 |> List.sum
 
+        _ =
+            Debug.log "initialStartingStock" initialStartingStock
+
         initialStockByFbf =
             List.filterMap
                 (\fbf ->
@@ -148,7 +151,7 @@ generateStockManagementData currentDate measurements =
                                 Date.add Date.Months (-1 * monthGap) currentDate
                                     |> dateToMonthYear
 
-                            received =
+                            stockUpdates =
                                 List.filter
                                     (\stockUpdate ->
                                         let
@@ -158,11 +161,8 @@ generateStockManagementData currentDate measurements =
                                         compareMonthYear stockUpdateMonthYear monthYear == EQ
                                     )
                                     stockUpdateForDisplay
-                                    |> List.map .quantity
-                                    |> List.sum
-                                    |> toFloat
 
-                            issued =
+                            fbfs =
                                 List.filter
                                     (\fbf ->
                                         let
@@ -172,15 +172,22 @@ generateStockManagementData currentDate measurements =
                                         compareMonthYear fbfMonthYear monthYear == EQ
                                     )
                                     fbfForDisplay
-                                    |> List.map (.value >> .distributedAmount)
-                                    |> List.sum
                         in
-                        ( monthYear, ( received, issued ) )
+                        ( monthYear, ( stockUpdates, fbfs ) )
                     )
     in
     List.foldr
-        (\( monthYear, ( received, issued ) ) accum ->
+        (\( monthYear, ( stockUpdates, fbfs ) ) accum ->
             let
+                received =
+                    List.map .quantity stockUpdates
+                        |> List.sum
+                        |> toFloat
+
+                issued =
+                    List.map (.value >> .distributedAmount) fbfs
+                        |> List.sum
+
                 prevMonthYear =
                     getPrevMonthYear monthYear
 
@@ -236,6 +243,8 @@ generateStockManagementData currentDate measurements =
                                 Nothing
                             )
                 , consumptionAverage = consumptionSixPastMonths / 6
+                , stockUpdates = stockUpdates
+                , fbfs = fbfs
                 }
                 accum
         )

@@ -430,7 +430,7 @@ type TranslationId
     | Back
     | BackendError
     | Balance
-    | BatchNumberAbrev
+    | BatchNumberAbbrev
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
@@ -1138,6 +1138,7 @@ type TranslationId
     | PatientRecordFilter PatientRecordFilter
     | PauseEncounter
     | PatientShowsNoSignsOfCovid
+    | Patients
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
     | People
@@ -1624,6 +1625,7 @@ type TranslationId
     | StockManagementSelectDateLabel
     | StockManagementSupplierQuestion
     | StockSupplier StockSupplier
+    | StockSupplierAbbrev StockSupplier
     | SubsequentAntenatalVisit
     | SubsequentEncounter
     | SubsequentEncounterReferral AcuteIllnessEncounterType
@@ -3078,7 +3080,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        BatchNumberAbrev ->
+        BatchNumberAbbrev ->
             { english = "Batch #"
             , kinyarwanda = Nothing
             }
@@ -11125,6 +11127,11 @@ translationSet trans =
             , kinyarwanda = Just "Umurwayi nta bimenyetso bya Koronavirusi agaragaza"
             }
 
+        Patients ->
+            { english = "Patients"
+            , kinyarwanda = Nothing
+            }
+
         PediatricVisit ->
             { english = "Pediatric Visit"
             , kinyarwanda = Just "Isura ry'umwana"
@@ -17270,6 +17277,38 @@ translationSet trans =
 
                 SupplierBUFMAR ->
                     { english = "BUFMAR (Le Bureau des Formations Médicales agréées du Rwanda)"
+                    , kinyarwanda = Nothing
+                    }
+
+        StockSupplierAbbrev value ->
+            case value of
+                SupplierMOH ->
+                    { english = "MOH"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRBC ->
+                    { english = "RBC"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierUNICEF ->
+                    { english = "UNICEF"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRMSCentral ->
+                    { english = "RMS-Central"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRMSDistrict ->
+                    { english = "RMS-District"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierBUFMAR ->
+                    { english = "BUFMAR"
                     , kinyarwanda = Nothing
                     }
 

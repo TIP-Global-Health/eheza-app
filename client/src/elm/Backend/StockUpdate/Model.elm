@@ -2,7 +2,7 @@ module Backend.StockUpdate.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (PhotoUrl, StockUpdate)
+import Backend.Measurement.Model exposing (Fbf, PhotoUrl, StockUpdate)
 import Date exposing (Date)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -31,6 +31,8 @@ type alias DataForMonth =
     , issued : Float
     , currentBalance : Maybe Float
     , consumptionAverage : Float
+    , stockUpdates : List StockUpdate
+    , fbfs : List Fbf
     }
 
 
