@@ -4994,16 +4994,25 @@ div.page-activity.stock-management {
       width: 50%;
     }
 
-    .form-input.quantity {
+    .form-input.quantity,
+    .months-of-stock {
       border: 2px solid $color-light-gray;
       margin-bottom: 30px;
       width: 50%;
+    }
+
+    .months-of-stock {
+      font-weight: 300;
+      height: 50px;
+      line-height: 50px;
+      text-align: center;
     }
 
     .form-input.quantity input {
       background: $color-white;
       border: none;
       color: $color-text;
+      font-weight: 300;
       height: 100%;
     }
 

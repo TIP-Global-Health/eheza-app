@@ -20,6 +20,13 @@ import Time.Extra
 
 update : NominalDate -> Maybe HealthCenterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate maybeHealthCenterId msg model =
+    let
+        noChange =
+            ( model
+            , Cmd.none
+            , []
+            )
+    in
     case msg of
         SetActivePage page ->
             ( model
@@ -45,10 +52,7 @@ update currentDate maybeHealthCenterId msg model =
                     update currentDate maybeHealthCenterId (SetDisplayMode (ModeMonthDetails (monthGap + value))) model
 
                 _ ->
-                    ( model
-                    , Cmd.none
-                    , []
-                    )
+                    noChange
 
         SetReceiveStockConfirmIdentity confirmed ->
             let

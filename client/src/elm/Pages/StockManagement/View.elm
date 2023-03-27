@@ -132,7 +132,12 @@ viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse sync
                     viewModeMonthDetails language currentDate monthGap lastUpdated data
 
                 ModeReceiveStock ->
-                    viewModeReceiveStock language currentDate nurseId nurse model.receiveStockForm
+                    let
+                        consumptionAverage =
+                            Dict.get (dateToMonthYear currentDate) data
+                                |> Maybe.map .consumptionAverage
+                    in
+                    viewModeReceiveStock language currentDate nurseId nurse consumptionAverage model.receiveStockForm
 
                 ModeCorrectEntry ->
                     viewModeCorrectEntry language currentDate nurseId nurse model.correctEntryForm
@@ -305,6 +310,22 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
         monthYear =
             dateToMonthYear selectedDate
 
+        headerRow =
+            div [ class "row header" ]
+                [ div [ class "cell date" ] [ text <| translate language Translate.Date ]
+                , div [ class "cell from-to" ]
+                    [ text <|
+                        (translate language Translate.ReceivedFrom ++ " / " ++ translate language Translate.IssuedTo)
+                    ]
+                , div [ class "cell batch" ] [ text <| translate language Translate.BatchNumberAbbrev ]
+                , div [ class "cell expirity" ] [ text <| translate language Translate.ExpirityDate ]
+                , div [ class "cell received" ] [ text <| translate language Translate.Received ]
+                , div [ class "cell issued" ] [ text <| translate language Translate.Issued ]
+                , div [ class "cell balance" ] [ text <| translate language Translate.Balance ]
+                , div [ class "cell months-of-stock" ] [ text <| translate language Translate.MonthsOfStock ]
+                , div [ class "cell signature" ] [ text <| translate language Translate.Signature ]
+                ]
+
         rows =
             Dict.get monthYear data
                 |> Maybe.map
@@ -416,22 +437,6 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                     )
                 |> Maybe.withDefault []
 
-        headerRow =
-            div [ class "row header" ]
-                [ div [ class "cell date" ] [ text <| translate language Translate.Date ]
-                , div [ class "cell from-to" ]
-                    [ text <|
-                        (translate language Translate.ReceivedFrom ++ " / " ++ translate language Translate.IssuedTo)
-                    ]
-                , div [ class "cell batch" ] [ text <| translate language Translate.BatchNumberAbbrev ]
-                , div [ class "cell expirity" ] [ text <| translate language Translate.ExpirityDate ]
-                , div [ class "cell received" ] [ text <| translate language Translate.Received ]
-                , div [ class "cell issued" ] [ text <| translate language Translate.Issued ]
-                , div [ class "cell balance" ] [ text <| translate language Translate.Balance ]
-                , div [ class "cell months-of-stock" ] [ text <| translate language Translate.MonthsOfStock ]
-                , div [ class "cell signature" ] [ text <| translate language Translate.Signature ]
-                ]
-
         viewRow averageConsumption rowData =
             let
                 expirity =
@@ -482,8 +487,8 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
     ]
 
 
-viewModeReceiveStock : Language -> NominalDate -> NurseId -> Nurse -> ReceiveStockForm -> List (Html Msg)
-viewModeReceiveStock language currentDate nurseId nurse form =
+viewModeReceiveStock : Language -> NominalDate -> NurseId -> Nurse -> Maybe Float -> ReceiveStockForm -> List (Html Msg)
+viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form =
     let
         ( inputs, tasks ) =
             let
@@ -521,6 +526,21 @@ viewModeReceiveStock language currentDate nurseId nurse form =
                             dateExpiresForView =
                                 Maybe.map formatDDMMYYYY form.dateExpires
                                     |> Maybe.withDefault ""
+
+                            monthsOfStock =
+                                Maybe.map2
+                                    (\quantity averageConsumption ->
+                                        if averageConsumption == 0 then
+                                            []
+
+                                        else
+                                            [ viewLabel language Translate.MonthsOfStock
+                                            , div [ class "label months-of-stock" ] [ text <| Round.round 1 (toFloat quantity / averageConsumption) ]
+                                            ]
+                                    )
+                                    form.quantity
+                                    consumptionAverage
+                                    |> Maybe.withDefault []
                         in
                         ( [ viewLabel language Translate.StockManagementSelectDateLabel
                           , div
@@ -561,22 +581,23 @@ viewModeReceiveStock language currentDate nurseId nurse form =
                                 form.quantity
                                 SetQuantityAdded
                                 "quantity"
-                          , viewLabel language Translate.Observations
-                          , textarea
-                                [ rows 5
-                                , cols 50
-                                , class "form-input textarea"
-                                , value <| Maybe.withDefault "" form.notes
-                                , onInput SetNotes
-                                ]
-                                []
                           ]
+                            ++ monthsOfStock
+                            ++ [ viewLabel language Translate.Observations
+                               , textarea
+                                    [ rows 5
+                                    , cols 50
+                                    , class "form-input textarea"
+                                    , value <| Maybe.withDefault "" form.notes
+                                    , onInput SetNotes
+                                    ]
+                                    []
+                               ]
                         , [ maybeToBoolTask form.dateRecorded
                           , maybeToBoolTask form.supplier
                           , maybeToBoolTask form.batchNumber
                           , maybeToBoolTask form.dateExpires
                           , maybeToBoolTask form.quantity
-                          , maybeToBoolTask form.notes
                           ]
                         )
 
@@ -627,7 +648,7 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                                 , close = SetDateSelectorState Nothing
                                 , dateFrom = fromDate
                                 , dateTo = currentDate
-                                , dateDefault = Just fromDate
+                                , dateDefault = Just currentDate
                                 }
 
                             dateForView =
