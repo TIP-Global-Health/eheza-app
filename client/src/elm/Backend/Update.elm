@@ -653,6 +653,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        HandleFetchedStockManagementMeasurements id data ->
+            ( { model | stockManagementMeasurements = Dict.insert id data model.stockManagementMeasurements }
+            , Cmd.none
+            , []
+            )
+
         FetchStockManagementData id ->
             let
                 updatedModel =
@@ -676,8 +682,8 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
-        HandleFetchedStockManagementMeasurements id data ->
-            ( { model | stockManagementMeasurements = Dict.insert id data model.stockManagementMeasurements }
+        MarkForRecalculationStockManagementData id ->
+            ( { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
             , Cmd.none
             , []
             )

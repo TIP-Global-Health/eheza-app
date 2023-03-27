@@ -323,6 +323,7 @@ type MsgIndexedDb
     | FetchSessionsByClinic ClinicId
     | FetchStockManagementMeasurements HealthCenterId
     | FetchStockManagementData HealthCenterId
+    | MarkForRecalculationStockManagementData HealthCenterId
     | FetchVillages
     | FetchTraceContact AcuteIllnessTraceContactId
       -- Messages which handle responses to data
