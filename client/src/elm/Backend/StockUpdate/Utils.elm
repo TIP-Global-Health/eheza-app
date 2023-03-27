@@ -188,12 +188,12 @@ generateStockManagementData currentDate measurements =
                 -- at data generated for previous month.
                 -- If exists, it's the final balance of that month.
                 -- If not, we set initial starting stock, if previous month was
-                -- the setup month.
+                -- the setup month, or latter.
                 startingStock =
                     Dict.get prevMonthYear accum
                         |> Maybe.map .currentBalance
                         |> Maybe.withDefault
-                            (if compareMonthYear prevMonthYear firstStockUpdateMonthYear == EQ then
+                            (if compareMonthYear prevMonthYear firstStockUpdateMonthYear /= LT then
                                 Just initialStartingStock
 
                              else
