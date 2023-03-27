@@ -124,9 +124,6 @@ generateStockManagementData currentDate measurements =
                     )
                 |> List.sum
 
-        _ =
-            Debug.log "initialStartingStock" initialStartingStock
-
         initialStockByFbf =
             List.filterMap
                 (\fbf ->
