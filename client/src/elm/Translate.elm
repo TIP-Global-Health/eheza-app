@@ -15472,8 +15472,8 @@ translationSet trans =
             }
 
         ResilienceMessageGrowth1Title ->
-            { english = "An Important reminder, growth takes time!"
-            , kinyarwanda = Just "Kora urutonde rw'ibintu ukora neza!"
+            { english = "An Important reminder, make a list of things you are good at!"
+            , kinyarwanda = Just "Kwibutsa! Kora urutonde rw'ibintu ukora neza!"
             }
 
         ResilienceMessageGrowth1Paragraph1 ->
