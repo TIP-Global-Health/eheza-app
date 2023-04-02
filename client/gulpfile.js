@@ -174,7 +174,7 @@ gulp.task("copy:fonts", function() {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:html2canvas", "copy:images", "copy:favicon",
+gulp.task("copy:dev", ["copy:bower", "copy:html2canvas", "copy:signature_pad", "copy:images", "copy:favicon",
   "copy:fonts"
 ], function() {
   return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
@@ -203,6 +203,16 @@ gulp.task("copy:html2canvas", function() {
     ]).pipe(gulp.dest("serve/node_modules/html2canvas/dist"))
     .pipe($.size({
       title: "html2canvas"
+    }))
+});
+
+// Copy signature_pad.
+gulp.task("copy:signature_pad", function() {
+  return gulp.src([
+      "node_modules/signature_pad/dist/*",
+    ]).pipe(gulp.dest("serve/node_modules/signature_pad/dist"))
+    .pipe($.size({
+      title: "signature_pad"
     }))
 });
 
@@ -404,7 +414,8 @@ var precacheLocalDev = [
   'bower_components/dexie/dist/dexie.min.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
   'bower_components/semantic/dist/semantic.min.css',
-  'node_modules/html2canvas/dist/html2canvas.min.js'
+  'node_modules/html2canvas/dist/html2canvas.min.js',
+  'node_modules/signature_pad/dist/signature_pad.min.js'
 ];
 
 // There may be a better way to do this, but for the moment we have some
@@ -418,7 +429,8 @@ var precacheProd = [
   'bower_components/dexie/dist/dexie.min.*.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
   'bower_components/semantic/dist/semantic.min.*.css',
-  'node_modules/html2canvas/dist/html2canvas.min.*.js'
+  'node_modules/html2canvas/dist/html2canvas.min.*.js',
+  'node_modules/signature_pad/dist/signature_pad.min.js'
 ];
 
 // For offline use while developing
