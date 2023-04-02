@@ -709,6 +709,21 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                                 "quantity"
                           ]
                             ++ correctionReasonInputs
+                            ++ [ viewLabel language Translate.StockManagementEnterSignatureLabel
+                               , div
+                                    [ class "signature-pad"
+                                    , id "signature-pad"
+
+                                    -- , on "signatureupdate" (Json.Decode.map SignatureUpdate decodeSignature)
+                                    ]
+                                    [ div
+                                        [ class "signature-pad--body" ]
+                                        [ canvas [] [] ]
+                                    , div
+                                        [ class "signature-pad--footer" ]
+                                        [ button [ onClick CorrectEntryClearSignaturePad ] [ text "Clear" ] ]
+                                    ]
+                               ]
                         , [ maybeToBoolTask form.date
                           , maybeToBoolTask form.entryType
                           , maybeToBoolTask form.quantity

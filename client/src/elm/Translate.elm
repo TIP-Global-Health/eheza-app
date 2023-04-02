@@ -1620,6 +1620,7 @@ type TranslationId
     | StockManagementCorrectionEntryType CorrectionEntryType
     | StockManagementCorrectionReasonLabel
     | StockManagementDateExpiresQuestion
+    | StockManagementEnterSignatureLabel
     | StockManagementQuantityAddedQuestion
     | StockManagementQuantityCorrectionLabel
     | StockManagementSelectDateLabel
@@ -17225,6 +17226,11 @@ translationSet trans =
 
         StockManagementDateExpiresQuestion ->
             { english = "What is the expiration date"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementEnterSignatureLabel ->
+            { english = "Please enter your signature"
             , kinyarwanda = Nothing
             }
 

@@ -151,4 +151,5 @@ type Msg
     | SetQuantityDeducted String
     | SetCorrectionReason StockCorrectionReason
     | HideCorrectEntryIdentityPopup
+    | CorrectEntryClearSignaturePad
     | SaveCorrectEntry NurseId

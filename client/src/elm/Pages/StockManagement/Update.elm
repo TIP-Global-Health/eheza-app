@@ -1,6 +1,7 @@
 module Pages.StockManagement.Update exposing (update)
 
 import App.Model
+import App.Ports exposing (bindSignaturePad, clearSignaturePad)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (PhotoUrl(..), StockUpdateType(..))
@@ -242,9 +243,16 @@ update currentDate maybeHealthCenterId msg model =
 
                 updatedForm =
                     { form | confirmIdentity = Just confirmed, displayIdentityPopup = not confirmed }
+
+                cmd =
+                    if confirmed then
+                        bindSignaturePad ()
+
+                    else
+                        Cmd.none
             in
             ( { model | correctEntryForm = updatedForm }
-            , Cmd.none
+            , cmd
             , []
             )
 
@@ -326,6 +334,12 @@ update currentDate maybeHealthCenterId msg model =
             in
             ( { model | correctEntryForm = updatedForm }
             , Cmd.none
+            , []
+            )
+
+        CorrectEntryClearSignaturePad ->
+            ( model
+            , clearSignaturePad ()
             , []
             )
 
