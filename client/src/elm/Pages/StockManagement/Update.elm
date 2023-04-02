@@ -36,8 +36,28 @@ update currentDate maybeHealthCenterId msg model =
             )
 
         SetDisplayMode mode ->
+            let
+                signaturePadCmd =
+                    case mode of
+                        ModeReceiveStock ->
+                            if model.receiveStockForm.confirmIdentity == Just True then
+                                bindSignaturePad ()
+
+                            else
+                                Cmd.none
+
+                        ModeCorrectEntry ->
+                            if model.correctEntryForm.confirmIdentity == Just True then
+                                bindSignaturePad ()
+
+                            else
+                                Cmd.none
+
+                        _ ->
+                            Cmd.none
+            in
             ( { model | displayMode = mode }
-            , Cmd.none
+            , signaturePadCmd
             , []
             )
 
