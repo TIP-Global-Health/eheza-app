@@ -1209,7 +1209,6 @@ elmApp.ports.bindDropZone.subscribe(function() {
 // Signature Pad.
 
 // https://github.com/szimek/signature_pad
-var signaturePad = undefined;
 var canvas = undefined;
 var signaturePad = undefined;
 

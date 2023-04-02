@@ -61,6 +61,12 @@ update currentDate maybeHealthCenterId msg model =
             , []
             )
 
+        ClearSignaturePad ->
+            ( model
+            , clearSignaturePad ()
+            , []
+            )
+
         ChangeMonthGap value ->
             ( { model | monthGap = model.monthGap + value }
             , Cmd.none
@@ -82,9 +88,16 @@ update currentDate maybeHealthCenterId msg model =
 
                 updatedForm =
                     { form | confirmIdentity = Just confirmed, displayIdentityPopup = not confirmed }
+
+                cmd =
+                    if confirmed then
+                        bindSignaturePad ()
+
+                    else
+                        Cmd.none
             in
             ( { model | receiveStockForm = updatedForm }
-            , Cmd.none
+            , cmd
             , []
             )
 
@@ -354,12 +367,6 @@ update currentDate maybeHealthCenterId msg model =
             in
             ( { model | correctEntryForm = updatedForm }
             , Cmd.none
-            , []
-            )
-
-        CorrectEntryClearSignaturePad ->
-            ( model
-            , clearSignaturePad ()
             , []
             )
 
