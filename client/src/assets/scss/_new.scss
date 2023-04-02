@@ -5022,6 +5022,46 @@ div.page-activity.stock-management {
       color: $color-text;
       padding: 10px;
     }
+
+    .signature-pad {
+      display: flex;
+      flex-direction: column;
+      font-size: 10px;
+      height: 260px;
+      position: relative;
+      width: 100%;
+
+      .signature-pad--body {
+        border: 2px solid $color-light-gray;
+        flex: 1;
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      .signature-pad--body canvas {
+        border-radius: 4px;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }
+
+      .signature-pad--footer {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .signature-pad--footer button {
+        background-color: $color-velvet;
+        color: $color-white;
+        font-size: 18px;
+        font-weight: 700;
+        height: 36px;
+        line-height: 30px;
+        width: 120px;
+      }
+    }
   }
 
   .navigation-buttons {
