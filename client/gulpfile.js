@@ -415,7 +415,7 @@ var precacheLocalDev = [
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
   'bower_components/semantic/dist/semantic.min.css',
   'node_modules/html2canvas/dist/html2canvas.min.js',
-  'node_modules/signature_pad/dist/signature_pad.min.js'
+  'node_modules/signature_pad/dist/signature_pad.umd.min.js'
 ];
 
 // There may be a better way to do this, but for the moment we have some
@@ -430,7 +430,7 @@ var precacheProd = [
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
   'bower_components/semantic/dist/semantic.min.*.css',
   'node_modules/html2canvas/dist/html2canvas.min.*.js',
-  'node_modules/signature_pad/dist/signature_pad.min.js'
+  'node_modules/signature_pad/dist/signature_pad.umd.min.js'
 ];
 
 // For offline use while developing
