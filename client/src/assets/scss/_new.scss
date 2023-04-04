@@ -5024,6 +5024,10 @@ div.page-activity.stock-management {
       padding: 10px;
     }
 
+    .correction-reason.hidden {
+      display: none;
+    }
+
     .signature-pad {
       display: flex;
       flex-direction: column;
