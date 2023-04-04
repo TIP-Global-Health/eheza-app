@@ -29,8 +29,8 @@
 /postgres/postgresql.conf
 /providers/platform.yaml
 /sequelpro.spf
-/traefik/config/sec-ihangane.yaml
-/traefik/certs/sec-ihangane.crt
-/traefik/certs/sec-ihangane.key
+/traefik/config/public-ihangane.yaml
+/traefik/certs/public-ihangane.crt
+/traefik/certs/public-ihangane.key
 /xhprof/xhprof_prepend.php
 /**/README.*
