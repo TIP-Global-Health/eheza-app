@@ -2749,9 +2749,7 @@ type alias StockUpdate =
     , correctionReason : Maybe StockCorrectionReason
     , healthCenter : HealthCenterId
     , shard : Maybe HealthCenterId
-
-    -- @todo: Change to ImageUrl.
-    , signature : Maybe ImageUrl
+    , signature : ImageUrl
     }
 
 

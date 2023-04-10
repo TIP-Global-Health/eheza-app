@@ -2,7 +2,7 @@ module Pages.StockManagement.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (StockCorrectionReason, StockSupplier)
+import Backend.Measurement.Model exposing (ImageUrl, StockCorrectionReason, StockSupplier)
 import Backend.Nurse.Model exposing (Nurse)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
@@ -76,6 +76,7 @@ type alias ReceiveStockForm =
     , dateExpires : Maybe NominalDate
     , quantity : Maybe Int
     , notes : Maybe String
+    , signature : Maybe ImageUrl
     , dateRecordedSelectorPopupState : Maybe (DateSelectorConfig Msg)
     , dateExpiresSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
@@ -91,6 +92,7 @@ emptyReceiveStockForm =
     , dateExpires = Nothing
     , quantity = Nothing
     , notes = Nothing
+    , signature = Nothing
     , dateRecordedSelectorPopupState = Nothing
     , dateExpiresSelectorPopupState = Nothing
     }
@@ -103,6 +105,7 @@ type alias CorrectEntryForm =
     , entryType : Maybe CorrectionEntryType
     , quantity : Maybe Int
     , reason : Maybe StockCorrectionReason
+    , signature : Maybe ImageUrl
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
@@ -115,6 +118,7 @@ emptyCorrectEntryForm =
     , entryType = Nothing
     , quantity = Nothing
     , reason = Nothing
+    , signature = Nothing
     , dateSelectorPopupState = Nothing
     }
 
