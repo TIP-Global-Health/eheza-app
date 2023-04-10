@@ -7,10 +7,10 @@ import Backend.Measurement.Model
         ( ChildNutritionSign(..)
         , ContributingFactorsSign(..)
         , FamilyPlanningSign(..)
+        , ImageUrl(..)
         , LactationSign(..)
         , MeasurementData
         , MotherMeasurements
-        , ImageUrl(..)
         , WeightInGrm(..)
         )
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)

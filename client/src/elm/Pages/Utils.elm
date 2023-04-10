@@ -6,10 +6,10 @@ import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
+        , ImageUrl(..)
         , MedicationDistributionSign(..)
         , MedicationDistributionValue
         , MedicationNonAdministrationSign(..)
-        , ImageUrl(..)
         )
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
