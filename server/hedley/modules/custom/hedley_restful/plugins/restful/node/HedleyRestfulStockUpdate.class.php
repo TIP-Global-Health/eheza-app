@@ -90,7 +90,7 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
         [$this, 'imageProcess'],
       ],
       // @todo: change image style
-      'image_styles' => ['patient-photo'],
+      'image_styles' => ['signature'],
     ];
 
     return $public_fields;
@@ -153,7 +153,7 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
       }
 
       if (!empty($item->signature) && !empty($item->uri)) {
-        $item->signature = image_style_url('patient-photo', $item->uri);
+        $item->signature = image_style_url('signature', $item->uri);
       }
 
       unset($item->uri);
