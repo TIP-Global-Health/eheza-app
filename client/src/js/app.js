@@ -1238,7 +1238,6 @@ elmApp.ports.storeSignature.subscribe(function(data) {
 
 function attachSignaturePad() {
   const wrapper = document.getElementById("signature-pad");
-  // const clearButton = wrapper.querySelector("[data-action=clear]");
   canvas = wrapper.querySelector("canvas");
   signaturePad = new SignaturePad(canvas, {
     // It's Necessary to use an opaque color when saving image as JPEG;
@@ -1264,29 +1263,6 @@ function attachSignaturePad() {
 
   window.onresize = resizeCanvas;
   resizeCanvas();
-
-  // signaturePadCanvas = document.querySelector(signaturePadSelector);
-  // console.log(signaturePadCanvas);
-  // if (signaturePadCanvas === null) {
-  //   console.err('Signature widget failure');
-  //   return;
-  // }
-  // signaturePadElement = document.querySelector('#signatureCanvas');
-  // signaturePad = new SignaturePad(signaturePadCanvas, {
-    // 'onEnd': function () {
-    //   var event = makeCustomEvent("signatureupdate", {
-    //     file: signaturePad.toDataURL("image/svg+xml")
-    //   });
-    //
-    //   signaturePadElement.dispatchEvent(event);
-    // }
-  // });
-  // var signature_data = signaturePadElement.getAttribute('data-signature');
-  // if (signature_data.length > 0) {
-  //   signaturePadElement.fromDataURL(signature_data);
-  // }
-  // window.addEventListener("resize", signaturePadResizeCanvas);
-  // signaturePadResizeCanvas();
 }
 
 function storeSignatureFromPad() {
@@ -1313,33 +1289,18 @@ function storeSignatureFromPad() {
 
         if (response.ok) {
          var json = await response.json();
-         console.log('Response ok');
          reportSignaturePadResult(json.url);
-
-         // var today = new Date();
-         //
-         // var entry = {
-         //     screenshot: json.url,
-         //     person: data.personId,
-         //     date_measured: today.toISOString().split('T')[0],
-         //     report_type: data.reportType,
-         //     phone_number: data.phoneNumber,
-         //     syncStage: 0,
-         //     fileId: null
-         // };
-         //
-         // await dbSync.whatsAppUploads.add(entry);
-         //
-         // reportProgressReportScreenshotResult("success");
         }
         else {
-          console.log('Response not ok');
-          // reportProgressReportScreenshotResult("failure");
+          // If something goes wrong while storing signature in cache,
+          // currently we do nothing.
+          // This situation is very rare, and if it does happen, user
+          // will most likely repeat the action.
         }
       }
       catch (e) {
-        console.log('Exception');
-       //   reportProgressReportScreenshotResult("failure");
+        // Something was wrong with storing signature in cache.
+        // Take no action (for now).
       }
     });
    })();
@@ -1355,17 +1316,6 @@ function reportSignaturePadResult(url) {
     element.dispatchEvent(event);
   }
 }
-
-// On mobile devices it might make more sense to listen to orientation change,
-// rather than window resize events.
-
-// function signaturePadResizeCanvas() {
-//   var ratio =  Math.max(window.devicePixelRatio || 1, 1);
-//   signaturePadCanvas.width = signaturePadCanvas.offsetWidth * ratio;
-//   signaturePadCanvas.height = signaturePadCanvas.offsetHeight * ratio;
-//   signaturePadCanvas.getContext("2d").scale(ratio, ratio);
-//   signaturePad.clear();
-// }
 
 /**
  * Wait for id to appear before invoking related functions.
