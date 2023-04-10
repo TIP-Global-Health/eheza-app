@@ -9,7 +9,7 @@ import Backend.HealthCenter.Encoder
 import Backend.HomeVisitEncounter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
 import Backend.Measurement.Encoder
-import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Measurement.Model exposing (ImageUrl(..))
 import Backend.Model exposing (Revision(..))
 import Backend.NCDEncounter.Encoder
 import Backend.Nurse.Encoder
@@ -901,12 +901,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
 {-| Return a photo from a "Authority" entity.
 -}
-getPhotoFromBackendAuthorityEntity : BackendAuthorityEntity -> Maybe String
-getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
+getImageFromBackendAuthorityEntity : BackendAuthorityEntity -> Maybe String
+getImageFromBackendAuthorityEntity backendAuthorityEntity =
     let
-        getPhotoFromMeasurement identifier =
+        getImageFromMeasurement identifier =
             let
-                (PhotoUrl url) =
+                (ImageUrl url) =
                     identifier.entity.value
             in
             Just url
@@ -916,13 +916,13 @@ getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
             identifier.entity.avatarUrl
 
         BackendAuthorityPhoto identifier ->
-            getPhotoFromMeasurement identifier
+            getImageFromMeasurement identifier
 
         BackendAuthorityNutritionPhoto identifier ->
-            getPhotoFromMeasurement identifier
+            getImageFromMeasurement identifier
 
         BackendAuthorityPrenatalPhoto identifier ->
-            getPhotoFromMeasurement identifier
+            getImageFromMeasurement identifier
 
         _ ->
             Nothing

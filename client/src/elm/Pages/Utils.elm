@@ -9,7 +9,7 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , MedicationDistributionValue
         , MedicationNonAdministrationSign(..)
-        , PhotoUrl(..)
+        , ImageUrl(..)
         )
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
@@ -1170,8 +1170,8 @@ viewPhotoThumb url =
         ]
 
 
-viewPhotoThumbFromPhotoUrl : PhotoUrl -> Html any
-viewPhotoThumbFromPhotoUrl (PhotoUrl url) =
+viewPhotoThumbFromImageUrl : ImageUrl -> Html any
+viewPhotoThumbFromImageUrl (ImageUrl url) =
     viewPhotoThumb url
 
 

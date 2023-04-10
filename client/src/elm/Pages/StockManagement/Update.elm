@@ -4,7 +4,7 @@ import App.Model
 import App.Ports exposing (bindSignaturePad, clearSignaturePad)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (PhotoUrl(..), StockUpdateType(..))
+import Backend.Measurement.Model exposing (ImageUrl(..), StockUpdateType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model
 import Backend.StockUpdate.Model

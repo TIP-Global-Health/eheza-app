@@ -71,12 +71,12 @@ type alias NCDMeasurement value =
 {-| The string represents the URL of the photo -- that is, the URL which
 we can reference in order to display the photo.
 -}
-type PhotoUrl
-    = PhotoUrl String
+type ImageUrl
+    = ImageUrl String
 
 
 type alias Photo =
-    GroupMeasurement PhotoUrl
+    GroupMeasurement ImageUrl
 
 
 {-| For the various measurements that are floats, we wrap them in a type to
@@ -314,7 +314,7 @@ type alias NutritionNutrition =
 
 
 type alias NutritionPhoto =
-    NutritionMeasurement PhotoUrl
+    NutritionMeasurement ImageUrl
 
 
 type alias NutritionWeight =
@@ -800,7 +800,7 @@ type alias PrenatalNutrition =
 
 
 type alias PrenatalPhoto =
-    PrenatalMeasurement PhotoUrl
+    PrenatalMeasurement ImageUrl
 
 
 type alias MalariaPrevention =
@@ -2152,7 +2152,7 @@ type alias WellChildNutrition =
 
 
 type alias WellChildPhoto =
-    WellChildMeasurement PhotoUrl
+    WellChildMeasurement ImageUrl
 
 
 type alias WellChildWeight =
@@ -2751,7 +2751,7 @@ type alias StockUpdate =
     , shard : Maybe HealthCenterId
 
     -- @todo: Change to ImageUrl.
-    , signature : Maybe PhotoUrl
+    , signature : Maybe ImageUrl
     }
 
 

@@ -89,26 +89,26 @@ encodeWeightValueWithType type_ (WeightInKg weight) =
 
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
-    encodeGroupMeasurement (encodePhotoUrlWithType "photo")
+    encodeGroupMeasurement (encodeImageUrlWithType "photo")
 
 
 encodeNutritionPhoto : NutritionPhoto -> List ( String, Value )
 encodeNutritionPhoto =
-    encodeNutritionMeasurement (encodePhotoUrlWithType "nutrition_photo")
+    encodeNutritionMeasurement (encodeImageUrlWithType "nutrition_photo")
 
 
 encodePrenatalPhoto : PrenatalPhoto -> List ( String, Value )
 encodePrenatalPhoto =
-    encodePrenatalMeasurement (encodePhotoUrlWithType "prenatal_photo")
+    encodePrenatalMeasurement (encodeImageUrlWithType "prenatal_photo")
 
 
 encodeWellChildPhoto : WellChildPhoto -> List ( String, Value )
 encodeWellChildPhoto =
-    encodeWellChildMeasurement (encodePhotoUrlWithType "well_child_photo")
+    encodeWellChildMeasurement (encodeImageUrlWithType "well_child_photo")
 
 
-encodePhotoUrlWithType : String -> PhotoUrl -> List ( String, Value )
-encodePhotoUrlWithType type_ (PhotoUrl url) =
+encodeImageUrlWithType : String -> ImageUrl -> List ( String, Value )
+encodeImageUrlWithType type_ (ImageUrl url) =
     [ ( "photo", string url )
     , ( "deleted", bool False )
     , ( "type", string type_ )

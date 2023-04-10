@@ -57,7 +57,7 @@ import Pages.Utils
         , viewCustomSelectListInput
         , viewLabel
         , viewMeasurementInput
-        , viewPhotoThumbFromPhotoUrl
+        , viewPhotoThumbFromImageUrl
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
@@ -496,7 +496,7 @@ viewMeasurementFloatDiff language unit currentValue previousValue =
         viewMessage False
 
 
-viewPhoto : Language -> MeasurementData (Maybe ( PhotoId, Photo )) -> Maybe PhotoUrl -> Html MsgChild
+viewPhoto : Language -> MeasurementData (Maybe ( PhotoId, Photo )) -> Maybe ImageUrl -> Html MsgChild
 viewPhoto language measurement photo =
     let
         activity =
@@ -529,7 +529,7 @@ viewPhoto language measurement photo =
                 |> keyed "help"
             , keyedDivKeyed "grid"
                 [ class "ui grid" ]
-                [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
+                [ Maybe.map viewPhotoThumbFromImageUrl displayPhoto
                     |> showMaybe
                     |> List.singleton
                     |> div [ class "eight wide column" ]
