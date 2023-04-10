@@ -46,6 +46,7 @@ import Pages.Utils
         , viewLabel
         , viewMonthSelector
         , viewNumberInput
+        , viewPhotoThumbFromImageUrl
         , viewQuestionLabel
         , viewSaveAction
         , viewSelectListInput
@@ -354,6 +355,7 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                                         , expirity = stockUpdate.dateExpires
                                         , received = received
                                         , issued = issued
+                                        , signature = Just stockUpdate.signature
                                         , balance = Nothing
                                         }
                                     )
@@ -368,6 +370,7 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                                         , expirity = Nothing
                                         , received = Nothing
                                         , issued = Just fbf.value.distributedAmount
+                                        , signature = Nothing
                                         , balance = Nothing
                                         }
                                     )
@@ -388,6 +391,7 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                                                                     Maybe.map2 (+)
                                                                         stored.issued
                                                                         new.issued
+                                                                , signature = Nothing
                                                                 , balance = Nothing
                                                                 }
                                                         in
@@ -465,6 +469,10 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                         Maybe.Extra.or rowData.received rowData.issued
                             |> Maybe.map (\quantity -> Round.round 1 (quantity / averageConsumption))
                             |> Maybe.withDefault ""
+
+                signature =
+                    Maybe.map viewPhotoThumbFromImageUrl rowData.signature
+                        |> Maybe.withDefault emptyNode
             in
             div [ class "row" ]
                 [ div [ class "cell date" ] [ text <| formatDDMMYY rowData.date ]
@@ -475,7 +483,7 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                 , div [ class "cell issued" ] [ text issued ]
                 , div [ class "cell balance" ] [ text balance ]
                 , div [ class "cell months-of-stock" ] [ text monthsOfStock ]
-                , div [ class "cell signature" ] [ text "@todo" ]
+                , div [ class "cell signature" ] [ signature ]
                 ]
     in
     [ viewMonthSelector language selectedDate monthGap maxMonthGap ChangeDetailsMonthGap
