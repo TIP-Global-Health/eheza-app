@@ -5059,12 +5059,18 @@ div.page-activity.stock-management {
 
       .signature-pad--footer button {
         background-color: $color-velvet;
+        border: none;
         color: $color-white;
         font-size: 18px;
         font-weight: 700;
         height: 36px;
         line-height: 30px;
         width: 120px;
+      }
+
+      .signature-pad--footer button.primary {
+        background-color: $color-primary;
+        margin-right: 25px;
       }
     }
   }

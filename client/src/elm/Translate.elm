@@ -331,6 +331,7 @@ type TranslationId
     | AbdomenCPESign AbdomenCPESign
     | Abnormal
     | Abortions
+    | Accept
     | AccompaniedByPartner
     | AccompanyToFacilityQuestion ReferralFacility
     | AccessDenied
@@ -1860,6 +1861,11 @@ translationSet trans =
         Abortions ->
             { english = "Abortions"
             , kinyarwanda = Just "Inda yavuyemo"
+            }
+
+        Accept ->
+            { english = "Accept"
+            , kinyarwanda = Nothing
             }
 
         AccompaniedByPartner ->

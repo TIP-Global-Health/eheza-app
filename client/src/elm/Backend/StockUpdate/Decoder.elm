@@ -27,7 +27,7 @@ decodeStockUpdate =
         |> optional "stock_correction_reason" (nullable decodeStockCorrectionReason) Nothing
         |> required "health_center" decodeEntityUuid
         |> optional "shard" (nullable decodeEntityUuid) Nothing
-        |> optional "signature" (nullable (map ImageUrl (decodeStringWithDefault ""))) Nothing
+        |> optional "signature" (map ImageUrl (decodeStringWithDefault "")) (ImageUrl "")
 
 
 decodeStockUpdateType : Decoder StockUpdateType

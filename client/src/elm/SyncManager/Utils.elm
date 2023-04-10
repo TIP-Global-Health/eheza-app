@@ -924,6 +924,13 @@ getImageFromBackendAuthorityEntity backendAuthorityEntity =
         BackendAuthorityPrenatalPhoto identifier ->
             getImageFromMeasurement identifier
 
+        BackendAuthorityStockUpdate identifier ->
+            let
+                (ImageUrl url) =
+                    identifier.entity.signature
+            in
+            Just url
+
         _ ->
             Nothing
 

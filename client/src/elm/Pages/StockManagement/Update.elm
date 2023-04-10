@@ -249,7 +249,7 @@ update currentDate maybeHealthCenterId msg model =
                                     , correctionReason = Nothing
                                     , healthCenter = healthCenterId
                                     , shard = Just healthCenterId
-                                    , signature = Nothing
+                                    , signature = ImageUrl ""
                                     }
                             in
                             ( [ Backend.StockUpdate.Model.CreateStockUpdate record
@@ -398,7 +398,7 @@ update currentDate maybeHealthCenterId msg model =
                                     , correctionReason = form.reason
                                     , healthCenter = healthCenterId
                                     , shard = Just healthCenterId
-                                    , signature = Nothing
+                                    , signature = ImageUrl ""
                                     }
                             in
                             ( [ Backend.StockUpdate.Model.CreateStockUpdate record

@@ -795,7 +795,13 @@ viewSignaturePad language =
             [ canvas [] [] ]
         , div
             [ class "signature-pad--footer" ]
-            [ button [ onClick ClearSignaturePad ] [ text <| translate language Translate.Clear ] ]
+            [ button
+                [ class "primary"
+                , onClick ClearSignaturePad
+                ]
+                [ text <| translate language Translate.Accept ]
+            , button [ onClick ClearSignaturePad ] [ text <| translate language Translate.Clear ]
+            ]
         ]
     ]
 
