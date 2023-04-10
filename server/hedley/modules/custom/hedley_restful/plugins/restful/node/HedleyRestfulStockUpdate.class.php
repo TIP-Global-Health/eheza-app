@@ -67,15 +67,6 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
     // The label is purely decorative.
     unset($public_fields['label']);
 
-    $public_fields['signature'] = [
-      'property' => 'field_signature',
-      'process_callbacks' => [
-        [$this, 'imageProcess'],
-      ],
-      // @todo: change image style
-      'image_styles' => ['patient-photo'],
-    ];
-
     foreach (array_merge($this->fields, $this->multiFields) as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
 
@@ -91,6 +82,16 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
         $public_fields[$public_name]['sub_property'] = 'field_uuid';
       }
     }
+
+    unset($public_fields['signature']);
+    $public_fields['signature'] = [
+      'property' => 'field_signature',
+      'process_callbacks' => [
+        [$this, 'imageProcess'],
+      ],
+      // @todo: change image style
+      'image_styles' => ['patient-photo'],
+    ];
 
     return $public_fields;
   }
@@ -115,6 +116,11 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
     }
 
     $query->groupBy('node.nid');
+
+    // For the Signature, get to the `file`. We'll convert the `uri`
+    // to `field_signature`.
+    $query->innerJoin('file_managed', 'f', 'f.fid = field_signature.field_signature_fid');
+    $query->addField('f', 'uri');
 
     return $query;
   }
@@ -145,6 +151,12 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
         $date = explode(' ', $item->{$public_name});
         $item->{$public_name} = !empty($date[0]) ? $date[0] : NULL;
       }
+
+      if (!empty($item->signature) && !empty($item->uri)) {
+        $item->signature = image_style_url('patient-photo', $item->uri);
+      }
+
+      unset($item->uri);
     }
 
     return $items;
