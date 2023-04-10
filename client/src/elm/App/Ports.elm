@@ -11,6 +11,7 @@ port module App.Ports exposing
     , scrollToElement
     , setLanguage
     , storageQuota
+    , storeSignature
     )
 
 import App.Model exposing (MemoryQuota, StorageQuota)
@@ -59,6 +60,9 @@ port bindSignaturePad : () -> Cmd msg
 
 
 port clearSignaturePad : () -> Cmd msg
+
+
+port storeSignature : () -> Cmd msg
 
 
 port scrollToElement : String -> Cmd msg

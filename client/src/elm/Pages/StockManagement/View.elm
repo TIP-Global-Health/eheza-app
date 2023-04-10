@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
         ( Gender(..)
+        , ImageUrl(..)
         , StockCorrectionReason(..)
         , StockSupplier(..)
         , StockUpdate
@@ -23,7 +24,8 @@ import Gizra.NominalDate exposing (NominalDate, formatDDMMYY, formatDDMMYYYY, fr
 import Gizra.TimePosix exposing (viewTimePosix)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (on, onClick, onInput)
+import Json.Decode
 import List.Extra
 import List.Zipper exposing (Zipper)
 import Maybe exposing (Maybe)
@@ -593,12 +595,13 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
                                     ]
                                     []
                                ]
-                            ++ viewSignaturePad language
+                            ++ viewSignature language ReceiveStockHandleStoredSignature form.signature
                         , [ maybeToBoolTask form.dateRecorded
                           , maybeToBoolTask form.supplier
                           , maybeToBoolTask form.batchNumber
                           , maybeToBoolTask form.dateExpires
                           , maybeToBoolTask form.quantity
+                          , maybeToBoolTask form.signature
                           ]
                         )
 
@@ -732,10 +735,11 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                                     SetQuantityDeducted
                                     "quantity"
                                ]
-                            ++ viewSignaturePad language
+                            ++ viewSignature language CorrectEntryHandleStoredSignature form.signature
                         , [ maybeToBoolTask form.date
                           , maybeToBoolTask form.entryType
                           , maybeToBoolTask form.quantity
+                          , maybeToBoolTask form.signature
                           ]
                             ++ correctionReasonTasks
                         )
@@ -781,14 +785,29 @@ viewLoggedInAsPhrase language nurse =
         ]
 
 
-viewSignaturePad : Language -> List (Html Msg)
-viewSignaturePad language =
+viewSignature : Language -> (String -> Msg) -> Maybe ImageUrl -> List (Html Msg)
+viewSignature language handleStoredSignatureMsg signature =
+    let
+        content =
+            Maybe.map
+                (\(ImageUrl url) ->
+                    div [ class "signature" ]
+                        [ img [ src url ] [] ]
+                )
+                signature
+                |> Maybe.withDefault (viewSignaturePad language handleStoredSignatureMsg)
+    in
     [ viewLabel language Translate.StockManagementEnterSignatureLabel
-    , div
+    , content
+    ]
+
+
+viewSignaturePad : Language -> (String -> Msg) -> Html Msg
+viewSignaturePad language handleStoredSignatureMsg =
+    div
         [ class "signature-pad"
         , id "signature-pad"
-
-        -- , on "signatureupdate" (Json.Decode.map SignatureUpdate decodeSignature)
+        , on "signaturecomplete" (Json.Decode.map handleStoredSignatureMsg (Json.Decode.at [ "detail", "url" ] Json.Decode.string))
         ]
         [ div
             [ class "signature-pad--body" ]
@@ -797,13 +816,12 @@ viewSignaturePad language =
             [ class "signature-pad--footer" ]
             [ button
                 [ class "primary"
-                , onClick ClearSignaturePad
+                , onClick StoreSignature
                 ]
                 [ text <| translate language Translate.Accept ]
             , button [ onClick ClearSignaturePad ] [ text <| translate language Translate.Clear ]
             ]
         ]
-    ]
 
 
 viewStockUpdateContent : Language -> Maybe Bool -> List (Html Msg) -> Msg -> Bool -> Msg -> Int -> Int -> List (Html Msg)

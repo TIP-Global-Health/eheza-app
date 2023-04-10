@@ -131,6 +131,7 @@ type CorrectionEntryType
 type Msg
     = SetActivePage Page
     | SetDisplayMode DisplayMode
+    | StoreSignature
     | ClearSignaturePad
       -- Main menu.
     | ChangeMonthGap Int
@@ -147,6 +148,7 @@ type Msg
     | SetQuantityAdded String
     | SetNotes String
     | HideReceiveStockIdentityPopup
+    | ReceiveStockHandleStoredSignature String
     | SaveReceiveStock NurseId
       --  CorrectEntry form.
     | SetCorrectEntryConfirmIdentity Bool
@@ -156,4 +158,5 @@ type Msg
     | SetQuantityDeducted String
     | SetCorrectionReason StockCorrectionReason
     | HideCorrectEntryIdentityPopup
+    | CorrectEntryHandleStoredSignature String
     | SaveCorrectEntry NurseId

@@ -13,6 +13,10 @@ import Utils.Json exposing (encodeIfExists)
 
 encodeStockUpdate : StockUpdate -> List ( String, Value )
 encodeStockUpdate stockUpdate =
+    let
+        (ImageUrl url) =
+            stockUpdate.signature
+    in
     [ ( "nurse", encodeEntityUuid stockUpdate.nurse )
     , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD stockUpdate.dateMeasured )
     , ( "stock_update_type", encodeStockUpdateType stockUpdate.updateType )
@@ -20,8 +24,7 @@ encodeStockUpdate stockUpdate =
     , ( "quantity", int stockUpdate.quantity )
     , ( "health_center", encodeEntityUuid stockUpdate.healthCenter )
     , ( "shard", encodeEntityUuid stockUpdate.healthCenter )
-
-    --  , ( "signature", string url )
+    , ( "signature", string url )
     , ( "deleted", bool False )
     , ( "type", string "stock_update" )
     ]

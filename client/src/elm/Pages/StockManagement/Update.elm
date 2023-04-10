@@ -1,7 +1,7 @@
 module Pages.StockManagement.Update exposing (update)
 
 import App.Model
-import App.Ports exposing (bindSignaturePad, clearSignaturePad)
+import App.Ports exposing (bindSignaturePad, clearSignaturePad, storeSignature)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ImageUrl(..), StockUpdateType(..))
@@ -58,6 +58,12 @@ update currentDate maybeHealthCenterId msg model =
             in
             ( { model | displayMode = mode }
             , signaturePadCmd
+            , []
+            )
+
+        StoreSignature ->
+            ( model
+            , storeSignature ()
             , []
             )
 
@@ -227,14 +233,27 @@ update currentDate maybeHealthCenterId msg model =
             , []
             )
 
+        ReceiveStockHandleStoredSignature url ->
+            let
+                form =
+                    model.receiveStockForm
+
+                updatedForm =
+                    { form | signature = Just <| ImageUrl url }
+            in
+            ( { model | receiveStockForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
         SaveReceiveStock nurseId ->
             let
                 form =
                     model.receiveStockForm
 
                 ( action, updatedModel ) =
-                    Maybe.map3
-                        (\healthCenterId dateRecorded quantity ->
+                    Maybe.map4
+                        (\healthCenterId dateRecorded quantity signature ->
                             let
                                 record =
                                     { nurse = nurseId
@@ -249,7 +268,7 @@ update currentDate maybeHealthCenterId msg model =
                                     , correctionReason = Nothing
                                     , healthCenter = healthCenterId
                                     , shard = Just healthCenterId
-                                    , signature = ImageUrl ""
+                                    , signature = signature
                                     }
                             in
                             ( [ Backend.StockUpdate.Model.CreateStockUpdate record
@@ -262,6 +281,7 @@ update currentDate maybeHealthCenterId msg model =
                         maybeHealthCenterId
                         form.dateRecorded
                         form.quantity
+                        form.signature
                         |> Maybe.withDefault ( [], model )
             in
             ( updatedModel
@@ -370,14 +390,27 @@ update currentDate maybeHealthCenterId msg model =
             , []
             )
 
+        CorrectEntryHandleStoredSignature url ->
+            let
+                form =
+                    model.correctEntryForm
+
+                updatedForm =
+                    { form | signature = Just <| ImageUrl url }
+            in
+            ( { model | correctEntryForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
         SaveCorrectEntry nurseId ->
             let
                 form =
                     model.correctEntryForm
 
                 ( action, updatedModel ) =
-                    Maybe.map4
-                        (\healthCenterId dateRecorded quantity entryType ->
+                    Maybe.map5
+                        (\healthCenterId dateRecorded quantity entryType signature ->
                             let
                                 record =
                                     { nurse = nurseId
@@ -398,7 +431,7 @@ update currentDate maybeHealthCenterId msg model =
                                     , correctionReason = form.reason
                                     , healthCenter = healthCenterId
                                     , shard = Just healthCenterId
-                                    , signature = ImageUrl ""
+                                    , signature = signature
                                     }
                             in
                             ( [ Backend.StockUpdate.Model.CreateStockUpdate record
@@ -412,6 +445,7 @@ update currentDate maybeHealthCenterId msg model =
                         form.date
                         form.quantity
                         form.entryType
+                        form.signature
                         |> Maybe.withDefault ( [], model )
             in
             ( updatedModel

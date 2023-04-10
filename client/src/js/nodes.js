@@ -1025,12 +1025,20 @@
      * Helper function to add a record to authority PhotoUploadChanges.
      */
     function addPhotoUploadChanges(tableHook, table, obj) {
-        if (!obj.data.hasOwnProperty('photo')) {
-            // Entity doesn't have a photo.
-            return;
+        var url;
+
+        if (obj.data.hasOwnProperty('photo')) {
+          url = obj.data.photo;
+        }
+        else if (obj.data.hasOwnProperty('signature')) {
+          url = obj.data.signature;
+        }
+        else {
+          // Entity doesn't have an image.
+          return;
         }
 
-        if (!photosUploadUrlRegex.test(obj.data.photo)) {
+        if (!photosUploadUrlRegex.test(url)) {
             // Photo URL doesn't point to the local cache.
             return;
         }
@@ -1041,7 +1049,7 @@
             const result = await table.add({
                 localId : primaryKey,
                 uuid: obj.uuid,
-                photo: obj.data.photo,
+                photo: url,
                 // Drupal's file ID.
                 fileId: null,
                 // The file name on Drupal.

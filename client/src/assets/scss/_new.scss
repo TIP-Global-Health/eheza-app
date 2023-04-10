@@ -5028,6 +5028,14 @@ div.page-activity.stock-management {
       display: none;
     }
 
+    .signature {
+      border: 2px solid $color-light-gray;
+    }
+
+    .signature img {
+      width: 600px;
+    }
+
     .signature-pad {
       display: flex;
       flex-direction: column;

@@ -1184,7 +1184,6 @@ function reportProgressReportScreenshotResult(result) {
   }
 }
 
-
 function getRandom8Digits () {
   var timestamp = String(performance.timeOrigin + performance.now());
   timestamp = timestamp.replace('.', '');
@@ -1223,6 +1222,18 @@ elmApp.ports.clearSignaturePad.subscribe(function() {
     return;
   }
   signaturePad.clear();
+});
+
+elmApp.ports.storeSignature.subscribe(function(data) {
+  if (signaturePad === undefined) {
+    return;
+  }
+
+  if (signaturePad.isEmpty()) {
+    return;
+  }
+
+  storeSignatureFromPad();
 });
 
 function attachSignaturePad() {
@@ -1278,7 +1289,72 @@ function attachSignaturePad() {
   // signaturePadResizeCanvas();
 }
 
+function storeSignatureFromPad() {
+  (async () => {
+    const uploadCache = 'photos-upload';
+    const cache = await caches.open(uploadCache);
 
+    signaturePad.canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      const imageName = 'signature-' + getRandom8Digits() + '.png';
+      formData.set('file', blob, imageName);
+
+      const url = "cache-upload/images/" + Date.now();
+
+      try {
+        var response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          // This prevents attaching cookies to request, to prevent
+          // sending authentication cookie, as our desired
+          // authentication method is token.
+          credentials: 'omit'
+        });
+
+        if (response.ok) {
+         var json = await response.json();
+         console.log('Response ok');
+         reportSignaturePadResult(json.url);
+
+         // var today = new Date();
+         //
+         // var entry = {
+         //     screenshot: json.url,
+         //     person: data.personId,
+         //     date_measured: today.toISOString().split('T')[0],
+         //     report_type: data.reportType,
+         //     phone_number: data.phoneNumber,
+         //     syncStage: 0,
+         //     fileId: null
+         // };
+         //
+         // await dbSync.whatsAppUploads.add(entry);
+         //
+         // reportProgressReportScreenshotResult("success");
+        }
+        else {
+          console.log('Response not ok');
+          // reportProgressReportScreenshotResult("failure");
+        }
+      }
+      catch (e) {
+        console.log('Exception');
+       //   reportProgressReportScreenshotResult("failure");
+      }
+    });
+   })();
+}
+
+function reportSignaturePadResult(url) {
+  var element = document.getElementById(signaturePadSelector);
+  if (element) {
+    var event = makeCustomEvent("signaturecomplete", {
+      url: url
+    });
+
+    element.dispatchEvent(event);
+  }
+}
 
 // On mobile devices it might make more sense to listen to orientation change,
 // rather than window resize events.
@@ -1353,6 +1429,7 @@ function attachDropzone() {
   });
 
   dropZone.on('complete', function(file) {
+    console.log(file);
     // We just send the `file` back into Elm, via the view ... Elm can
     // decode the file as it pleases.
     var event = makeCustomEvent("dropzonecomplete", {
