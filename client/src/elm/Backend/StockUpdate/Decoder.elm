@@ -19,12 +19,15 @@ decodeStockUpdate =
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
         |> required "stock_update_type" decodeStockUpdateType
         |> required "quantity" decodeInt
-        |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "expiration_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "batch_number" (nullable string) Nothing
         |> optional "stock_supplier" (nullable decodeStockSupplier) Nothing
+        |> optional "notes" (nullable string) Nothing
         |> optional "stock_correction_reason" (nullable decodeStockCorrectionReason) Nothing
-        |> required "signature" (map PhotoUrl (decodeStringWithDefault ""))
+        |> required "health_center" decodeEntityUuid
+        |> optional "shard" (nullable decodeEntityUuid) Nothing
+        |> optional "signature" (nullable (map PhotoUrl (decodeStringWithDefault ""))) Nothing
 
 
 decodeStockUpdateType : Decoder StockUpdateType

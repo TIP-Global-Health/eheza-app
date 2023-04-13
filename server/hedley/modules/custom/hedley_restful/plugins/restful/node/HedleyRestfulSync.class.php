@@ -386,6 +386,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'last_follow_up_date',
           'execution_date',
           'resilience_start_date',
+          'expiration_date',
         ];
 
         $multiDateFields = [
@@ -444,9 +445,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'villages',
         ];
 
-        // Do not ignore 'health center' field for person,
-        // as this is what actually associates person with health center.
-        if ($item['type'] != 'person') {
+        // Do not ignore 'health center' field for person and stock_update,
+        // as this is what associates the node with health center.
+        if (!in_array($item['type'], ['person', 'stock_update'])) {
           $ignored[] = 'health_center';
         }
 

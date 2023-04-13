@@ -751,7 +751,7 @@ update msg model =
                         MsgPageStockManagement subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.StockManagement.Update.update currentDate subMsg data.stockManagementPage
+                                    Pages.StockManagement.Update.update currentDate model.healthCenterId subMsg data.stockManagementPage
                             in
                             ( { data | stockManagementPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageStockManagement) subCmd

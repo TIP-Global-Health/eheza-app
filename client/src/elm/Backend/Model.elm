@@ -93,6 +93,7 @@ type alias ModelIndexedDb =
     , nurseRequests : Dict NurseId Backend.Nurse.Model.Model
     , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
     , resilienceMessageRequests : Dict NurseId Backend.ResilienceMessage.Model.Model
+    , stockUpdateRequests : Dict NurseId Backend.StockUpdate.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -224,6 +225,7 @@ emptyModelIndexedDb =
     , nurseRequests = Dict.empty
     , resilienceSurveyRequests = Dict.empty
     , resilienceMessageRequests = Dict.empty
+    , stockUpdateRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
     , relationshipsByPerson = Dict.empty
@@ -407,6 +409,7 @@ type MsgIndexedDb
     | MsgNurse NurseId Backend.Nurse.Model.Msg
     | MsgResilienceSurvey NurseId Backend.ResilienceSurvey.Model.Msg
     | MsgResilienceMessage NurseId Backend.ResilienceMessage.Model.Msg
+    | MsgStockUpdate NurseId Backend.StockUpdate.Model.Msg
     | ResetFailedToFetchAuthorities
 
 

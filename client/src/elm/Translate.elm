@@ -141,7 +141,7 @@ import Pages.Report.Model
         , RandomBloodSugarResult(..)
         , ReportTab(..)
         )
-import Pages.StockManagement.Model exposing (StockManagementMenu(..))
+import Pages.StockManagement.Model exposing (CorrectionEntryType(..), StockManagementMenu(..))
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
@@ -763,6 +763,8 @@ type TranslationId
     | HypertensionRecommendedTreatmentUpdateNoCurrentTreatment
     | HypertensionRecommendedTreatmentUpdateStartTreatment
     | HypertensionStageAndRenalComplicationsHeader Bool NCDDiagnosis
+    | IdentityPopupHeader
+    | IdentityPopupInstructions
     | IdleWaitingForSync
     | Ignore
     | IllnessSymptom IllnessSymptom
@@ -785,6 +787,7 @@ type TranslationId
     | InstructionsChooseTwoMedications
     | IsCurrentlyBreastfeeding
     | IsolatedAtHome
+    | IsThisYouQuestion
     | KilogramShorthand
     | KilogramsPerMonth
     | KnownAsPositiveQuestion LaboratoryTask
@@ -887,6 +890,7 @@ type TranslationId
     | LmpLabel
     | LmpRangeHeader
     | LmpRange LmpRange
+    | LoggedInAsPhrase
     | Location
     | LoginPhrase LoginPhrase
     | Low
@@ -1074,6 +1078,7 @@ type TranslationId
     | NutritionNextStepsTask Measurement.Model.NextStepsTask
     | NitritionSigns
     | NutritionSupplementType NutritionSupplementType
+    | Observations
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -1596,6 +1601,15 @@ type TranslationId
     | StockCorrectionReason StockCorrectionReason
     | StockManagement
     | StockManagementMenu StockManagementMenu
+    | StockManagementBatchNumberQuestion
+    | StockManagementCorrectionTypeLabel
+    | StockManagementCorrectionEntryType CorrectionEntryType
+    | StockManagementCorrectionReasonLabel
+    | StockManagementDateExpiresQuestion
+    | StockManagementQuantityAddedQuestion
+    | StockManagementQuantityCorrectionLabel
+    | StockManagementSelectDateLabel
+    | StockManagementSupplierQuestion
     | StockSupplier StockSupplier
     | SubsequentAntenatalVisit
     | SubsequentEncounter
@@ -6131,6 +6145,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        IdentityPopupHeader ->
+            { english = "You are not properly logged in to E-Heza."
+            , kinyarwanda = Nothing
+            }
+
+        IdentityPopupInstructions ->
+            { english = "To proceed, you must log out and log back in as then correct user."
+            , kinyarwanda = Nothing
+            }
+
         IdleWaitingForSync ->
             { english = "Idle, waiting for next Sync cycle"
             , kinyarwanda = Nothing
@@ -6457,6 +6481,11 @@ translationSet trans =
         IsolatedAtHome ->
             { english = "Isolated at home"
             , kinyarwanda = Just "Yashyizwe mu kato mu rugo"
+            }
+
+        IsThisYouQuestion ->
+            { english = "Is this you"
+            , kinyarwanda = Nothing
             }
 
         KilogramShorthand ->
@@ -8107,6 +8136,11 @@ translationSet trans =
                     { english = "Within 6 months"
                     , kinyarwanda = Just "Mu mezi atandatu"
                     }
+
+        LoggedInAsPhrase ->
+            { english = "You are logged in as"
+            , kinyarwanda = Nothing
+            }
 
         Location ->
             { english = "Location"
@@ -10684,6 +10718,11 @@ translationSet trans =
         NitritionSigns ->
             { english = "Nutrition Signs"
             , kinyarwanda = Just "Ibimenyetso by'imirire"
+            }
+
+        Observations ->
+            { english = "Observations"
+            , kinyarwanda = Nothing
             }
 
         ObstetricalDiagnosis ->
@@ -17067,6 +17106,58 @@ translationSet trans =
                     { english = "Correct entry"
                     , kinyarwanda = Nothing
                     }
+
+        StockManagementBatchNumberQuestion ->
+            { english = "What is the batch number"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementCorrectionTypeLabel ->
+            { english = "Please select the type of the correct"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementCorrectionEntryType value ->
+            case value of
+                EntryAddition ->
+                    { english = "Addition"
+                    , kinyarwanda = Nothing
+                    }
+
+                EntrySubstraction ->
+                    { english = "Substraction"
+                    , kinyarwanda = Nothing
+                    }
+
+        StockManagementCorrectionReasonLabel ->
+            { english = "Please select the reason for the correct"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementDateExpiresQuestion ->
+            { english = "What is the expiration date"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementQuantityAddedQuestion ->
+            { english = "How much stock is being received"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementQuantityCorrectionLabel ->
+            { english = "Please enter the quantity"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementSelectDateLabel ->
+            { english = "Select a date for this entry"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementSupplierQuestion ->
+            { english = "Where was this received from"
+            , kinyarwanda = Nothing
+            }
 
         StockSupplier value ->
             case value of

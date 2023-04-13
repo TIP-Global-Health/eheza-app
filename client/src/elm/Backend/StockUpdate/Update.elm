@@ -1,9 +1,9 @@
-module Backend.ResilienceMessage.Update exposing (update)
+module Backend.StockUpdate.Update exposing (update)
 
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
-import Backend.ResilienceMessage.Model exposing (..)
+import Backend.StockUpdate.Model exposing (..)
 import Backend.Utils exposing (sw)
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
@@ -24,8 +24,8 @@ update currentDate msg model =
 
 
 createStockUpdate : NominalDate -> StockUpdate -> Model -> ( Model, Cmd Msg )
-createStockUpdate currentDate stockUpdate model =
+createStockUpdate currentDate record model =
     ( { model | requestState = Loading }
-    , sw.post stockUpdateEndpoint survey
+    , sw.post stockUpdateEndpoint record
         |> toCmd (RemoteData.fromResult >> HandleCreatedStockUpdate)
     )
