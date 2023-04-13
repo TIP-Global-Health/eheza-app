@@ -370,6 +370,8 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                                         , expirity = Nothing
                                         , received = Nothing
                                         , issued = Just fbf.value.distributedAmount
+
+                                        -- Fbf distribution does not have signature.
                                         , signature = Nothing
                                         , balance = Nothing
                                         }
