@@ -55,7 +55,7 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
    */
   protected $entityFields = [
     'field_nurse',
-    'field_health_center'
+    'field_health_center',
   ];
 
   /**
