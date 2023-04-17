@@ -89,7 +89,6 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
       'process_callbacks' => [
         [$this, 'imageProcess'],
       ],
-      // @todo: change image style
       'image_styles' => ['signature'],
     ];
 

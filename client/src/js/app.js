@@ -1379,7 +1379,6 @@ function attachDropzone() {
   });
 
   dropZone.on('complete', function(file) {
-    console.log(file);
     // We just send the `file` back into Elm, via the view ... Elm can
     // decode the file as it pleases.
     var event = makeCustomEvent("dropzonecomplete", {
