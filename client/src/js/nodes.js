@@ -122,11 +122,14 @@
                 else if (type === 'well-child-measurements') {
                     return viewMeasurements('well_child_encounter', uuid);
                 }
+                else if (type === 'ncd-measurements') {
+                    return viewMeasurements('ncd_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
-                else if (type === 'ncd-measurements') {
-                    return viewMeasurements('ncd_encounter', uuid);
+                else if (type === 'stock-management-measurements') {
+                    return viewStockManagementMeasurements(uuid);
                 }
                 else {
                     return view(type, uuid);
@@ -595,6 +598,60 @@
                         }
                     }
 
+                    if (data[node.type]) {
+                        data[node.type].push(node);
+                    } else {
+                        data[node.type] = [node];
+                    }
+                });
+
+                var body = JSON.stringify({
+                    // Decoder is expecting a list.
+                    data: [data]
+                });
+
+                var response = new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return Promise.resolve(response);
+            } else {
+                response = new Response('', {
+                    status: 404,
+                    statusText: 'Not found'
+                });
+
+                return Promise.reject(response);
+            }
+        }).catch(sendErrorResponses);
+    }
+
+    var stockManagementMeasurementsTypes = [
+      'child_fbf',
+      'mother_fbf',
+      'stock_update'
+    ];
+
+    function viewStockManagementMeasurements (shard) {
+        // Load all types of follow up measurements that belong to provided healh center.
+        var query = dbSync.shards.where('type').anyOf(stockManagementMeasurementsTypes).and(function (item) {
+          return item.shard === shard;
+        });
+
+        // Build an empty list of measurements, so we return some value, even
+        // if no measurements were ever taken.
+        var data = {};
+        data = {};
+        // Decoder is expecting to have the health center UUID.
+        data.uuid = shard;
+
+        return query.toArray().catch(databaseError).then(function (nodes) {
+            if (nodes) {
+                nodes.forEach(function (node) {
                     if (data[node.type]) {
                         data[node.type].push(node);
                     } else {

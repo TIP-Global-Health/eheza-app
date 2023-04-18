@@ -67,7 +67,6 @@ import Backend.ResilienceSurvey.Model
         ( ResilienceSurveyQuestion(..)
         , ResilienceSurveyQuestionOption(..)
         )
-import Backend.StockUpdate.Model exposing (StockCorrectionReason(..), StockSupplier(..))
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
 import Components.SendViaWhatsAppDialog.Model
@@ -430,6 +429,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | Balance
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
@@ -555,6 +555,7 @@ type TranslationId
     | ChwDashboardLabel
     | CurrentlyPregnant
     | CurrentlyPregnantQuestion
+    | CurrentStock
     | DangerSign DangerSign
     | DangerSignsLabelForChw
     | DangerSignsLabelForNurse
@@ -582,6 +583,7 @@ type TranslationId
     | DeliveryOutcome
     | DemographicInformation
     | DemographicsReport
+    | Details
     | DetectableViralLoad
     | Device
     | DeviceNotAuthorized
@@ -737,6 +739,7 @@ type TranslationId
     | HighRiskFactors
     | HighSeverityAlert HighSeverityAlert
     | HighSeverityAlerts
+    | History
     | HistoryTask HistoryTask
     | HIV
     | HIVPCRResult HIVPCRResult
@@ -788,6 +791,7 @@ type TranslationId
     | IsCurrentlyBreastfeeding
     | IsolatedAtHome
     | IsThisYouQuestion
+    | Issued
     | KilogramShorthand
     | KilogramsPerMonth
     | KnownAsPositiveQuestion LaboratoryTask
@@ -981,6 +985,8 @@ type TranslationId
     | MotherNameLabel
     | MotherNationalId
     | Mothers
+    | MTDIn
+    | MTDOut
     | MUAC
     | MuacHelper
     | MyAccount
@@ -1257,6 +1263,7 @@ type TranslationId
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
     | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | Received
     | ReceivedDewormingPill
     | ReceivedFolicAcid
     | ReceivedIronFolicAcid
@@ -1497,7 +1504,7 @@ type TranslationId
     | ResilienceReminderFooter ResilienceReminderType
     | ResilienceSurveyQuestionOption ResilienceSurveyQuestionOption
     | ResolveMonth Bool Month
-    | ResolveMonthYY Int Bool Month
+    | ResolveMonthYY Month Int Bool
     | RespiratoryDistress
     | RespiratoryRate
     | ResponsePeriod ResponsePeriod
@@ -1646,6 +1653,7 @@ type TranslationId
     | StrartNewAcuteIllnessHelper
     | StartDate
     | EndDate
+    | StartingStock
     | StartSyncing
     | StatusLabel
     | StopSyncing
@@ -3059,6 +3067,11 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
+        Balance ->
+            { english = "Balance"
+            , kinyarwanda = Nothing
+            }
+
         BreastfeedingSignQuestion sign ->
             case sign of
                 IsBreastfeeding ->
@@ -4171,6 +4184,11 @@ translationSet trans =
             , kinyarwanda = Just "Umurwayi aratwite"
             }
 
+        CurrentStock ->
+            { english = "Current Stock"
+            , kinyarwanda = Nothing
+            }
+
         ChwDashboardLabel ->
             { english = "CHW Snapshot"
             , kinyarwanda = Just "Ishusho y'ibyagezweho"
@@ -4385,6 +4403,11 @@ translationSet trans =
         DemographicsReport ->
             { english = "Demographics Report"
             , kinyarwanda = Just "Raporo y'umwirondoro"
+            }
+
+        Details ->
+            { english = "Details"
+            , kinyarwanda = Nothing
             }
 
         DetectableViralLoad ->
@@ -5869,6 +5892,11 @@ translationSet trans =
             , kinyarwanda = Just "Bimenyetso mpuruza bikabije"
             }
 
+        History ->
+            { english = "History"
+            , kinyarwanda = Just "Amakuru"
+            }
+
         HistoryTask task ->
             case task of
                 Obstetric ->
@@ -6485,6 +6513,11 @@ translationSet trans =
 
         IsThisYouQuestion ->
             { english = "Is this you"
+            , kinyarwanda = Nothing
+            }
+
+        Issued ->
+            { english = "Issued"
             , kinyarwanda = Nothing
             }
 
@@ -7295,9 +7328,7 @@ translationSet trans =
                     }
 
                 TaskCompletePreviousTests ->
-                    { english = "History"
-                    , kinyarwanda = Just "Amakuru"
-                    }
+                    translationSet History
 
         LaboratoryTaskLabel task ->
             case task of
@@ -9162,6 +9193,16 @@ translationSet trans =
         Mothers ->
             { english = "Mothers"
             , kinyarwanda = Just "Ababyeyi"
+            }
+
+        MTDIn ->
+            { english = "MTD in"
+            , kinyarwanda = Nothing
+            }
+
+        MTDOut ->
+            { english = "MTD out"
+            , kinyarwanda = Nothing
             }
 
         MUAC ->
@@ -11477,7 +11518,7 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro"
                     }
 
-                History ->
+                Backend.PrenatalActivity.Model.History ->
                     { english = "History"
                     , kinyarwanda = Just "Amateka y'ibyamubayeho"
                     }
@@ -14362,6 +14403,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        Received ->
+            { english = "Received"
+            , kinyarwanda = Nothing
+            }
+
         ReceivedDewormingPill ->
             { english = "Has the mother received deworming pill"
             , kinyarwanda = Just "Umubyeyi yahawe ikinini cy'inzoka"
@@ -16360,7 +16406,7 @@ translationSet trans =
         ResolveMonth short month ->
             translateMonth month short
 
-        ResolveMonthYY year short month ->
+        ResolveMonthYY month year short ->
             translateMonthYY month year short
 
         RespiratoryDistress ->
@@ -17588,6 +17634,11 @@ translationSet trans =
         EndDate ->
             { english = "End Date"
             , kinyarwanda = Just "Itariki urangirijeho"
+            }
+
+        StartingStock ->
+            { english = "Starting Stock"
+            , kinyarwanda = Nothing
             }
 
         StartSyncing ->
@@ -20239,8 +20290,8 @@ translateMonthYY : Month -> Int -> Bool -> TranslationSet String
 translateMonthYY month year short =
     translateMonth month short
         |> (\set ->
-                { english = set.english ++ "-" ++ Debug.toString year
-                , kinyarwanda = Maybe.map (\kinyarwanda -> kinyarwanda ++ "-" ++ Debug.toString year) set.kinyarwanda
+                { english = set.english ++ " " ++ String.fromInt year
+                , kinyarwanda = Maybe.map (\kinyarwanda -> kinyarwanda ++ " " ++ String.fromInt year) set.kinyarwanda
                 }
            )
 

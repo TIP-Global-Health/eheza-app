@@ -1,7 +1,7 @@
 module Backend.StockUpdate.Encoder exposing (encodeStockUpdate)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Measurement.Model exposing (PhotoUrl(..), StockCorrectionReason(..), StockSupplier(..), StockUpdate, StockUpdateType(..))
 import Backend.StockUpdate.Model exposing (..)
 import Backend.StockUpdate.Utils exposing (..)
 import EverySet

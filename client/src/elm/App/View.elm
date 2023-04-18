@@ -803,8 +803,10 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.StockManagement.View.view model.language
                             currentDate
+                            model.healthCenterId
                             nurseId
                             nurse
+                            model.syncManager.syncInfoAuthorities
                             model.indexedDb
                             loggedInModel.stockManagementPage
                             |> Html.map (MsgLoggedIn << MsgPageStockManagement)

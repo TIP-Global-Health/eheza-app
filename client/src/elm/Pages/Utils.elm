@@ -17,6 +17,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
+import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -390,6 +391,45 @@ nonAdministrationReasonToSign sign reason =
 
         NoMedicationDistributionSignsRecurrentPhase ->
             NoMedicationNonAdministrationSigns
+
+
+viewMonthSelector : Language -> NominalDate -> Int -> Int -> (Int -> msg) -> Html msg
+viewMonthSelector language selectedDate monthGap maxGap changeMonthGapMsg =
+    let
+        monthNumber =
+            Date.monthNumber selectedDate
+
+        month =
+            Date.numberToMonth monthNumber
+
+        year =
+            Date.year selectedDate
+    in
+    div [ class "month-selector" ]
+        [ span
+            [ classList
+                [ ( "icon-back", True )
+                , ( "hidden", monthGap == maxGap )
+                ]
+            , onClick <| changeMonthGapMsg 1
+            ]
+            []
+        , span [ class "label" ]
+            [ text <| translate language (Translate.ResolveMonth False month) ++ " " ++ String.fromInt year ]
+        , span
+            [ classList
+                [ ( "icon-back rotate-180", True )
+                , ( "hidden", monthGap == 0 )
+                ]
+            , onClick <| changeMonthGapMsg -1
+            ]
+            []
+        ]
+
+
+resolveSelectedDateForMonthSelector : NominalDate -> Int -> NominalDate
+resolveSelectedDateForMonthSelector currentDate monthGap =
+    Date.add Date.Months (-1 * monthGap) currentDate
 
 
 

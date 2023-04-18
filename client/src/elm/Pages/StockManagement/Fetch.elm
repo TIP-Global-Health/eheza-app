@@ -9,7 +9,6 @@ import Pages.StockManagement.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : NominalDate -> NurseId -> ModelIndexedDb -> List MsgIndexedDb
-fetch currentDate nurseId db =
-    -- @todo
-    []
+fetch : NominalDate -> HealthCenterId -> ModelIndexedDb -> List MsgIndexedDb
+fetch currentDate healthCenterId db =
+    [ FetchStockManagementMeasurements healthCenterId ]

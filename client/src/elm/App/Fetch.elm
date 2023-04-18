@@ -359,12 +359,8 @@ fetch model =
             UserPage StockManagementPage ->
                 getLoggedInData model
                     |> Maybe.map
-                        (\( _, loggedIn ) ->
-                            let
-                                nurseId =
-                                    Tuple.first loggedIn.nurse
-                            in
-                            Pages.StockManagement.Fetch.fetch currentDate nurseId model.indexedDb
+                        (\( healthCenterId, _ ) ->
+                            Pages.StockManagement.Fetch.fetch currentDate healthCenterId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []

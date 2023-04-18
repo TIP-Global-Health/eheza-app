@@ -38,7 +38,7 @@ import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
-import Backend.StockUpdate.Model exposing (StockUpdate)
+import Backend.StockUpdate.Model
 import Backend.TraceContact.Model
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
@@ -135,6 +135,7 @@ type alias ModelIndexedDb =
     , homeVisitMeasurements : Dict HomeVisitEncounterId (WebData HomeVisitMeasurements)
     , wellChildMeasurements : Dict WellChildEncounterId (WebData WellChildMeasurements)
     , ncdMeasurements : Dict NCDEncounterId (WebData NCDMeasurements)
+    , stockManagementMeasurements : Dict HealthCenterId (WebData StockManagementMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -198,6 +199,7 @@ emptyModelIndexedDb =
     , ncdEncounters = Dict.empty
     , ncdEncountersByParticipant = Dict.empty
     , ncdMeasurements = Dict.empty
+    , stockManagementMeasurements = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
@@ -317,6 +319,7 @@ type MsgIndexedDb
     | FetchResilienceSurveysForNurse NurseId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
+    | FetchStockManagementMeasurements HealthCenterId
     | FetchVillages
     | FetchTraceContact AcuteIllnessTraceContactId
       -- Messages which handle responses to data
@@ -362,6 +365,7 @@ type MsgIndexedDb
     | HandleFetchedResilienceSurveysForNurse NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
+    | HandleFetchedStockManagementMeasurements HealthCenterId (WebData StockManagementMeasurements)
     | HandleFetchedVillages (WebData (Dict VillageId Village))
     | HandleFetchedTraceContact AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
       -- Messages which mutate data

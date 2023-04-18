@@ -1,6 +1,7 @@
 module Backend.StockUpdate.Utils exposing (..)
 
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (StockCorrectionReason(..), StockSupplier(..), StockUpdate, StockUpdateType(..))
 import Backend.StockUpdate.Model exposing (..)
 import EverySet
 
