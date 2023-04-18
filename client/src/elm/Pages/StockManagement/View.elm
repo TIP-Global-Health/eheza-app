@@ -593,6 +593,7 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
                                     ]
                                     []
                                ]
+                            ++ viewSignaturePad language
                         , [ maybeToBoolTask form.dateRecorded
                           , maybeToBoolTask form.supplier
                           , maybeToBoolTask form.batchNumber
@@ -656,8 +657,13 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                                     |> Maybe.withDefault ""
 
                             ( correctionReasonInputs, correctionReasonTasks ) =
-                                Maybe.map
-                                    (\entryType ->
+                                let
+                                    -- Change of value at input that affects display of conditional input,
+                                    -- and located above signature pad causes pad to unbind, and signature
+                                    -- to disappear.
+                                    -- To overcome this, conditional input is changed to constant,
+                                    -- and it is hidden with CSS, until needed field on form is set.
+                                    correctionReasonSection entryType hidden =
                                         let
                                             reasons =
                                                 case entryType of
@@ -673,19 +679,35 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                                                         , ReasonOther
                                                         ]
                                         in
-                                        ( [ viewQuestionLabel language Translate.StockManagementCorrectionReasonLabel
-                                          , viewCheckBoxSelectInput language
+                                        div
+                                            [ classList
+                                                [ ( "correction-reason", True )
+                                                , ( "hidden", hidden )
+                                                ]
+                                            ]
+                                            [ viewQuestionLabel language Translate.StockManagementCorrectionReasonLabel
+                                            , viewCheckBoxSelectInput language
                                                 reasons
                                                 []
                                                 form.reason
                                                 SetCorrectionReason
                                                 Translate.StockCorrectionReason
-                                          ]
+                                            ]
+                                in
+                                Maybe.map
+                                    (\entryType ->
+                                        ( [ correctionReasonSection entryType False ]
                                         , [ maybeToBoolTask form.reason ]
                                         )
                                     )
                                     form.entryType
-                                    |> Maybe.withDefault ( [], [] )
+                                    |> Maybe.withDefault
+                                        ( [ -- Since entryType is not set yet, we display the input
+                                            -- at 'hidden' mode.
+                                            correctionReasonSection EntrySubstraction True
+                                          ]
+                                        , []
+                                        )
                         in
                         ( [ viewLabel language Translate.StockManagementSelectDateLabel
                           , div
@@ -701,14 +723,16 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                                 correctionEntryTypeToString
                                 SetCorrectionEntryType
                                 Translate.StockManagementCorrectionEntryType
-                                "correction-reason"
-                          , viewLabel language Translate.StockManagementQuantityCorrectionLabel
-                          , viewNumberInput language
-                                form.quantity
-                                SetQuantityDeducted
-                                "quantity"
+                                "correction-type"
                           ]
                             ++ correctionReasonInputs
+                            ++ [ viewLabel language Translate.StockManagementQuantityCorrectionLabel
+                               , viewNumberInput language
+                                    form.quantity
+                                    SetQuantityDeducted
+                                    "quantity"
+                               ]
+                            ++ viewSignaturePad language
                         , [ maybeToBoolTask form.date
                           , maybeToBoolTask form.entryType
                           , maybeToBoolTask form.quantity
@@ -755,6 +779,25 @@ viewLoggedInAsPhrase language nurse =
         , text <| translate language Translate.IsThisYouQuestion
         , text "?"
         ]
+
+
+viewSignaturePad : Language -> List (Html Msg)
+viewSignaturePad language =
+    [ viewLabel language Translate.StockManagementEnterSignatureLabel
+    , div
+        [ class "signature-pad"
+        , id "signature-pad"
+
+        -- , on "signatureupdate" (Json.Decode.map SignatureUpdate decodeSignature)
+        ]
+        [ div
+            [ class "signature-pad--body" ]
+            [ canvas [] [] ]
+        , div
+            [ class "signature-pad--footer" ]
+            [ button [ onClick ClearSignaturePad ] [ text <| translate language Translate.Clear ] ]
+        ]
+    ]
 
 
 viewStockUpdateContent : Language -> Maybe Bool -> List (Html Msg) -> Msg -> Bool -> Msg -> Int -> Int -> List (Html Msg)

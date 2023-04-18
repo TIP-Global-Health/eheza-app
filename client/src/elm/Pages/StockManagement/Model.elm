@@ -127,6 +127,7 @@ type CorrectionEntryType
 type Msg
     = SetActivePage Page
     | SetDisplayMode DisplayMode
+    | ClearSignaturePad
       -- Main menu.
     | ChangeMonthGap Int
       -- Month Details menu.
