@@ -37,7 +37,7 @@ generateStockManagementData currentDate measurements =
                     -- health center is yet to activate Stock Management
                     -- feature.
                     -- Indication of this would be setting first stock update
-                    -- momth to future date.
+                    -- month to future date.
                     (Date.add Date.Months 1 currentDate)
                 |> dateToMonthYear
 
