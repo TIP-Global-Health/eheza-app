@@ -42,7 +42,7 @@ type alias ModelChild =
     { height : String
     , muac : String
     , nutrition : NutritionValue
-    , photo : Maybe PhotoUrl
+    , photo : Maybe ImageUrl
     , weight : String
     , counseling : Maybe ( CounselingTiming, EverySet CounselingTopicId )
     , fbfForm : FbfForm
@@ -275,7 +275,7 @@ type OutMsgChild
     | SaveMuac (Maybe MuacId) MuacInCm
     | SaveCounselingSession (Maybe CounselingSessionId) CounselingTiming (EverySet CounselingTopicId)
     | SaveNutrition (Maybe ChildNutritionId) NutritionValue
-    | SavePhoto (Maybe PhotoId) PhotoUrl
+    | SavePhoto (Maybe PhotoId) ImageUrl
     | SaveChildFbf (Maybe ChildFbfId) FbfValue
     | SaveContributingFactors (Maybe ContributingFactorsId) (EverySet ContributingFactorsSign)
     | SaveFollowUp (Maybe FollowUpId) FollowUpValue
@@ -335,7 +335,7 @@ emptyNutritionForm =
 
 
 type alias PhotoForm =
-    { url : Maybe PhotoUrl
+    { url : Maybe ImageUrl
     }
 
 

@@ -231,11 +231,11 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         data.entities
                                             |> List.foldl
                                                 (\entity accum ->
-                                                    case SyncManager.Utils.getPhotoFromBackendAuthorityEntity entity of
-                                                        Just photoUrl ->
+                                                    case SyncManager.Utils.getImageFromBackendAuthorityEntity entity of
+                                                        Just imageUrl ->
                                                             (entity
                                                                 |> SyncManager.Utils.getBackendAuthorityEntityIdentifier
-                                                                |> SyncManager.Encoder.encodeDataForDeferredPhotos photoUrl
+                                                                |> SyncManager.Encoder.encodeDataForDeferredPhotos imageUrl
                                                             )
                                                                 :: accum
 

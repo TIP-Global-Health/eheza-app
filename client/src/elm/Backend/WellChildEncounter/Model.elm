@@ -186,7 +186,7 @@ type Msg
     | HandleSavedMuac (WebData ())
     | SaveNutrition PersonId (Maybe WellChildNutritionId) NutritionValue
     | HandleSavedNutrition (WebData ())
-    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
+    | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl
     | HandleSavedPhoto (WebData ())
     | SaveWeight PersonId (Maybe WellChildWeightId) WeightInKg
     | HandleSavedWeight (WebData ())

@@ -15,6 +15,30 @@ function hedley_stock_management_ctools_plugin_api($module = NULL, $api = NULL) 
 }
 
 /**
+ * Implements hook_image_default_styles().
+ */
+function hedley_stock_management_image_default_styles() {
+  $styles = array();
+
+  // Exported image style: signature.
+  $styles['signature'] = array(
+    'label' => 'Signature',
+    'effects' => array(
+      1 => array(
+        'name' => 'image_scale_and_crop',
+        'data' => array(
+          'width' => 600,
+          'height' => 187,
+        ),
+        'weight' => 1,
+      ),
+    ),
+  );
+
+  return $styles;
+}
+
+/**
  * Implements hook_node_info().
  */
 function hedley_stock_management_node_info() {

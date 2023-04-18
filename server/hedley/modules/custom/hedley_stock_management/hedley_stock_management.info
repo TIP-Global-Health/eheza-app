@@ -41,6 +41,7 @@ features[field_instance][] = node-stock_update-field_stock_correction_reason
 features[field_instance][] = node-stock_update-field_stock_supplier
 features[field_instance][] = node-stock_update-field_stock_update_type
 features[field_instance][] = node-stock_update-field_uuid
+features[image][] = signature
 features[node][] = stock_update
 features[user_permission][] = create stock_update content
 features[user_permission][] = delete any stock_update content

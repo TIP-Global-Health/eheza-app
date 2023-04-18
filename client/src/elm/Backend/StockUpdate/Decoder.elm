@@ -1,7 +1,7 @@
 module Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Measurement.Model exposing (PhotoUrl(..), StockCorrectionReason(..), StockSupplier(..), StockUpdate, StockUpdateType(..))
+import Backend.Measurement.Model exposing (ImageUrl(..), StockCorrectionReason(..), StockSupplier(..), StockUpdate, StockUpdateType(..))
 import Backend.StockUpdate.Model exposing (..)
 import Backend.StockUpdate.Utils exposing (..)
 import EverySet exposing (EverySet)
@@ -27,7 +27,7 @@ decodeStockUpdate =
         |> optional "stock_correction_reason" (nullable decodeStockCorrectionReason) Nothing
         |> required "health_center" decodeEntityUuid
         |> optional "shard" (nullable decodeEntityUuid) Nothing
-        |> optional "signature" (nullable (map PhotoUrl (decodeStringWithDefault ""))) Nothing
+        |> optional "signature" (map ImageUrl (decodeStringWithDefault "")) (ImageUrl "")
 
 
 decodeStockUpdateType : Decoder StockUpdateType

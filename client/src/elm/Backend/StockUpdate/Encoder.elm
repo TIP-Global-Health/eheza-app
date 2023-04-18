@@ -1,7 +1,7 @@
 module Backend.StockUpdate.Encoder exposing (encodeStockUpdate)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Measurement.Model exposing (PhotoUrl(..), StockCorrectionReason(..), StockSupplier(..), StockUpdate, StockUpdateType(..))
+import Backend.Measurement.Model exposing (ImageUrl(..), StockCorrectionReason(..), StockSupplier(..), StockUpdate, StockUpdateType(..))
 import Backend.StockUpdate.Model exposing (..)
 import Backend.StockUpdate.Utils exposing (..)
 import EverySet
@@ -13,6 +13,10 @@ import Utils.Json exposing (encodeIfExists)
 
 encodeStockUpdate : StockUpdate -> List ( String, Value )
 encodeStockUpdate stockUpdate =
+    let
+        (ImageUrl url) =
+            stockUpdate.signature
+    in
     [ ( "nurse", encodeEntityUuid stockUpdate.nurse )
     , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD stockUpdate.dateMeasured )
     , ( "stock_update_type", encodeStockUpdateType stockUpdate.updateType )
@@ -20,8 +24,7 @@ encodeStockUpdate stockUpdate =
     , ( "quantity", int stockUpdate.quantity )
     , ( "health_center", encodeEntityUuid stockUpdate.healthCenter )
     , ( "shard", encodeEntityUuid stockUpdate.healthCenter )
-
-    --  , ( "signature", string url )
+    , ( "signature", string url )
     , ( "deleted", bool False )
     , ( "type", string "stock_update" )
     ]

@@ -1136,7 +1136,7 @@ decodeNutritionValue =
 decodePhoto : Decoder Photo
 decodePhoto =
     field "photo" (decodeStringWithDefault "")
-        |> map PhotoUrl
+        |> map ImageUrl
         |> decodeGroupMeasurement
 
 
@@ -1150,7 +1150,7 @@ decodeWeight =
 decodePrenatalPhoto : Decoder PrenatalPhoto
 decodePrenatalPhoto =
     field "photo" (decodeStringWithDefault "")
-        |> map PhotoUrl
+        |> map ImageUrl
         |> decodePrenatalMeasurement
 
 
@@ -1176,7 +1176,7 @@ decodeNutritionNutrition =
 decodeNutritionPhoto : Decoder NutritionPhoto
 decodeNutritionPhoto =
     field "photo" (decodeStringWithDefault "")
-        |> map PhotoUrl
+        |> map ImageUrl
         |> decodeNutritionMeasurement
 
 
@@ -1209,7 +1209,7 @@ decodeWellChildNutrition =
 decodeWellChildPhoto : Decoder WellChildPhoto
 decodeWellChildPhoto =
     field "photo" (decodeStringWithDefault "")
-        |> map PhotoUrl
+        |> map ImageUrl
         |> decodeWellChildMeasurement
 
 

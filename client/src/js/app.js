@@ -1184,7 +1184,6 @@ function reportProgressReportScreenshotResult(result) {
   }
 }
 
-
 function getRandom8Digits () {
   var timestamp = String(performance.timeOrigin + performance.now());
   timestamp = timestamp.replace('.', '');
@@ -1225,9 +1224,20 @@ elmApp.ports.clearSignaturePad.subscribe(function() {
   signaturePad.clear();
 });
 
+elmApp.ports.storeSignature.subscribe(function(data) {
+  if (signaturePad === undefined) {
+    return;
+  }
+
+  if (signaturePad.isEmpty()) {
+    return;
+  }
+
+  storeSignatureFromPad();
+});
+
 function attachSignaturePad() {
   const wrapper = document.getElementById("signature-pad");
-  // const clearButton = wrapper.querySelector("[data-action=clear]");
   canvas = wrapper.querySelector("canvas");
   signaturePad = new SignaturePad(canvas, {
     // It's Necessary to use an opaque color when saving image as JPEG;
@@ -1253,43 +1263,59 @@ function attachSignaturePad() {
 
   window.onresize = resizeCanvas;
   resizeCanvas();
-
-  // signaturePadCanvas = document.querySelector(signaturePadSelector);
-  // console.log(signaturePadCanvas);
-  // if (signaturePadCanvas === null) {
-  //   console.err('Signature widget failure');
-  //   return;
-  // }
-  // signaturePadElement = document.querySelector('#signatureCanvas');
-  // signaturePad = new SignaturePad(signaturePadCanvas, {
-    // 'onEnd': function () {
-    //   var event = makeCustomEvent("signatureupdate", {
-    //     file: signaturePad.toDataURL("image/svg+xml")
-    //   });
-    //
-    //   signaturePadElement.dispatchEvent(event);
-    // }
-  // });
-  // var signature_data = signaturePadElement.getAttribute('data-signature');
-  // if (signature_data.length > 0) {
-  //   signaturePadElement.fromDataURL(signature_data);
-  // }
-  // window.addEventListener("resize", signaturePadResizeCanvas);
-  // signaturePadResizeCanvas();
 }
 
+function storeSignatureFromPad() {
+  (async () => {
+    const uploadCache = 'photos-upload';
+    const cache = await caches.open(uploadCache);
 
+    signaturePad.canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      const imageName = 'signature-' + getRandom8Digits() + '.png';
+      formData.set('file', blob, imageName);
 
-// On mobile devices it might make more sense to listen to orientation change,
-// rather than window resize events.
+      const url = "cache-upload/images/" + Date.now();
 
-// function signaturePadResizeCanvas() {
-//   var ratio =  Math.max(window.devicePixelRatio || 1, 1);
-//   signaturePadCanvas.width = signaturePadCanvas.offsetWidth * ratio;
-//   signaturePadCanvas.height = signaturePadCanvas.offsetHeight * ratio;
-//   signaturePadCanvas.getContext("2d").scale(ratio, ratio);
-//   signaturePad.clear();
-// }
+      try {
+        var response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          // This prevents attaching cookies to request, to prevent
+          // sending authentication cookie, as our desired
+          // authentication method is token.
+          credentials: 'omit'
+        });
+
+        if (response.ok) {
+         var json = await response.json();
+         reportSignaturePadResult(json.url);
+        }
+        else {
+          // If something goes wrong while storing signature in cache,
+          // currently we do nothing.
+          // This situation is very rare, and if it does happen, user
+          // will most likely repeat the action.
+        }
+      }
+      catch (e) {
+        // Something was wrong with storing signature in cache.
+        // Take no action (for now).
+      }
+    });
+   })();
+}
+
+function reportSignaturePadResult(url) {
+  var element = document.getElementById(signaturePadSelector);
+  if (element) {
+    var event = makeCustomEvent("signaturecomplete", {
+      url: url
+    });
+
+    element.dispatchEvent(event);
+  }
+}
 
 /**
  * Wait for id to appear before invoking related functions.
