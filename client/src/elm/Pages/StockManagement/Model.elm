@@ -32,13 +32,31 @@ emptyModel =
     }
 
 
+type alias AssembledData =
+    Dict MonthYear DataForMonth
+
+
+type alias DataForMonth =
+    { startingStock : Maybe Float
+    , received : Float
+    , issued : Float
+    , currentBalance : Maybe Float
+    , consumptionAverage : Float
+    }
+
+
 maxMonthGap : Int
 maxMonthGap =
     11
 
 
+type alias MonthYear =
+    ( Int, Int )
+
+
 type DisplayMode
     = ModeMain
+    | ModeMonthDetails Int
     | ModeReceiveStock
     | ModeCorrectEntry
 
@@ -111,6 +129,8 @@ type Msg
     | SetDisplayMode DisplayMode
       -- Main menu.
     | ChangeMonthGap Int
+      -- Month Details menu.
+    | ChangeDetailsMonthGap Int
       --  ReceiveStock form.
     | SetReceiveStockConfirmIdentity Bool
     | SetDateRecorded Date

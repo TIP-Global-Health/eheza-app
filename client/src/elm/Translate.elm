@@ -430,6 +430,7 @@ type TranslationId
     | Back
     | BackendError
     | Balance
+    | BatchNumberAbbrev
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
@@ -649,6 +650,7 @@ type TranslationId
     | Estimated
     | ExaminationTask ExaminationTask
     | ExaminationTaskRecurrent Pages.Prenatal.RecurrentActivity.Types.ExaminationTask
+    | ExpirityDate
     | ExposureTask ExposureTask
     | Extremities
     | Eyes
@@ -792,6 +794,7 @@ type TranslationId
     | IsolatedAtHome
     | IsThisYouQuestion
     | Issued
+    | IssuedTo
     | KilogramShorthand
     | KilogramsPerMonth
     | KnownAsPositiveQuestion LaboratoryTask
@@ -977,6 +980,7 @@ type TranslationId
     | Month
     | MonthAbbrev
     | MonthSinglePlural Int
+    | MonthsOfStock
     | MonthsOld
     | Mother
     | MotherDemographicInformation
@@ -1134,6 +1138,7 @@ type TranslationId
     | PatientRecordFilter PatientRecordFilter
     | PauseEncounter
     | PatientShowsNoSignsOfCovid
+    | Patients
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
     | People
@@ -1266,6 +1271,7 @@ type TranslationId
     | Received
     | ReceivedDewormingPill
     | ReceivedFolicAcid
+    | ReceivedFrom
     | ReceivedIronFolicAcid
     | ReceivedMebendazole
     | ReceivedMosquitoNet
@@ -1600,6 +1606,7 @@ type TranslationId
     | SevereAcuteMalnutrition
     | SevereHemorrhagingPreviousDelivery
     | Shared
+    | Signature
     | SignOnDoorPostedQuestion
     | SpecialityCareHeaderPrefix
     | SpecialityCareHeaderSuffix
@@ -1618,6 +1625,7 @@ type TranslationId
     | StockManagementSelectDateLabel
     | StockManagementSupplierQuestion
     | StockSupplier StockSupplier
+    | StockSupplierAbbrev StockSupplier
     | SubsequentAntenatalVisit
     | SubsequentEncounter
     | SubsequentEncounterReferral AcuteIllnessEncounterType
@@ -3069,6 +3077,11 @@ translationSet trans =
 
         Balance ->
             { english = "Balance"
+            , kinyarwanda = Nothing
+            }
+
+        BatchNumberAbbrev ->
+            { english = "Batch #"
             , kinyarwanda = Nothing
             }
 
@@ -5134,6 +5147,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
 
+        ExpirityDate ->
+            { english = "Expirity Date"
+            , kinyarwanda = Nothing
+            }
+
         ExposureTask task ->
             case task of
                 ExposureTravel ->
@@ -6518,6 +6536,11 @@ translationSet trans =
 
         Issued ->
             { english = "Issued"
+            , kinyarwanda = Nothing
+            }
+
+        IssuedTo ->
+            { english = "Issued To"
             , kinyarwanda = Nothing
             }
 
@@ -9155,6 +9178,11 @@ translationSet trans =
                 , kinyarwanda = Just <| "Amezi " ++ String.fromInt value
                 }
 
+        MonthsOfStock ->
+            { english = "Months of Stock"
+            , kinyarwanda = Nothing
+            }
+
         MonthsOld ->
             { english = "months old"
             , kinyarwanda = Just "Amezi"
@@ -11097,6 +11125,11 @@ translationSet trans =
         PatientShowsNoSignsOfCovid ->
             { english = "Patient shows no signs of Covid"
             , kinyarwanda = Just "Umurwayi nta bimenyetso bya Koronavirusi agaragaza"
+            }
+
+        Patients ->
+            { english = "Patients"
+            , kinyarwanda = Nothing
             }
 
         PediatricVisit ->
@@ -14418,6 +14451,11 @@ translationSet trans =
             , kinyarwanda = Just "Wahawe ibinini bya Folic Acid"
             }
 
+        ReceivedFrom ->
+            { english = "Received From"
+            , kinyarwanda = Nothing
+            }
+
         ReceivedIronFolicAcid ->
             { english = "Has the mother received iron and folic acid supplement"
             , kinyarwanda = Just "Umubyeyi yahawe ibinini bya Fer cg Folic Acid byongera amaraso"
@@ -17072,6 +17110,11 @@ translationSet trans =
             , kinyarwanda = Just "Ayisangira n'abandi"
             }
 
+        Signature ->
+            { english = "Signature"
+            , kinyarwanda = Nothing
+            }
+
         SignOnDoorPostedQuestion ->
             { english = "Have you posted signs on the door indicating that the space is an isolation area"
             , kinyarwanda = Just "Waba washyize ibimenyetso ku rugi byerekana ko iki cyumba ari ikijyamo abantu bari mu kato"
@@ -17234,6 +17277,38 @@ translationSet trans =
 
                 SupplierBUFMAR ->
                     { english = "BUFMAR (Le Bureau des Formations Médicales agréées du Rwanda)"
+                    , kinyarwanda = Nothing
+                    }
+
+        StockSupplierAbbrev value ->
+            case value of
+                SupplierMOH ->
+                    { english = "MOH"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRBC ->
+                    { english = "RBC"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierUNICEF ->
+                    { english = "UNICEF"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRMSCentral ->
+                    { english = "RMS-Central"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRMSDistrict ->
+                    { english = "RMS-District"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierBUFMAR ->
+                    { english = "BUFMAR"
                     , kinyarwanda = Nothing
                     }
 

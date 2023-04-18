@@ -38,7 +38,7 @@ import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
-import Backend.StockUpdate.Model
+import Backend.StockUpdate.Model exposing (StockManagementData)
 import Backend.TraceContact.Model
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
@@ -136,6 +136,7 @@ type alias ModelIndexedDb =
     , wellChildMeasurements : Dict WellChildEncounterId (WebData WellChildMeasurements)
     , ncdMeasurements : Dict NCDEncounterId (WebData NCDMeasurements)
     , stockManagementMeasurements : Dict HealthCenterId (WebData StockManagementMeasurements)
+    , stockManagementData : Dict HealthCenterId (WebData StockManagementData)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -200,6 +201,7 @@ emptyModelIndexedDb =
     , ncdEncountersByParticipant = Dict.empty
     , ncdMeasurements = Dict.empty
     , stockManagementMeasurements = Dict.empty
+    , stockManagementData = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
@@ -320,6 +322,8 @@ type MsgIndexedDb
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchStockManagementMeasurements HealthCenterId
+    | FetchStockManagementData HealthCenterId
+    | MarkForRecalculationStockManagementData HealthCenterId
     | FetchVillages
     | FetchTraceContact AcuteIllnessTraceContactId
       -- Messages which handle responses to data

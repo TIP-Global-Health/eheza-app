@@ -4994,16 +4994,25 @@ div.page-activity.stock-management {
       width: 50%;
     }
 
-    .form-input.quantity {
+    .form-input.quantity,
+    .months-of-stock {
       border: 2px solid $color-light-gray;
       margin-bottom: 30px;
       width: 50%;
+    }
+
+    .months-of-stock {
+      font-weight: 300;
+      height: 50px;
+      line-height: 50px;
+      text-align: center;
     }
 
     .form-input.quantity input {
       background: $color-white;
       border: none;
       color: $color-text;
+      font-weight: 300;
       height: 100%;
     }
 
@@ -5020,7 +5029,7 @@ div.page-activity.stock-management {
     margin-top: 30px;
   }
 
-  .pane.history {
+  .pane {
     background-color: $color-primary;
     color: $color-white;
 
@@ -5052,6 +5061,29 @@ div.page-activity.stock-management {
         .cell.month {
           width: 140px;
         }
+      }
+
+      .row.header {
+        line-height: 60px;
+
+        .cell {
+          font-size: 22px;
+        }
+      }
+    }
+  }
+
+  .pane.history {
+
+    .pane-content {
+      background-color: $color-white;
+      color: $color-text;
+
+      .row {
+
+        .cell.month {
+          width: 140px;
+        }
 
         .cell.starting-stock {
           width: 170px;
@@ -5069,12 +5101,38 @@ div.page-activity.stock-management {
           border-radius: 5px;
         }
       }
+    }
+  }
 
-      .row.header {
-        line-height: 60px;
+  .pane.month-details {
+
+    .pane-content {
+
+      .row {
 
         .cell {
-          font-size: 22px;
+          font-size: 16px;
+          line-height: 22px;
+          padding: 5px;
+          text-align: center;
+          width: 75px;
+        }
+
+        .cell.from-to,
+        .cell.signature {
+          width: 100px;
+        }
+
+        .cell.received {
+          width: 85px;
+        }
+      }
+
+      .row.header {
+        line-height: 40px;
+
+        .cell {
+          font-size: 17px;
         }
       }
     }
