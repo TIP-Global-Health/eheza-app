@@ -15518,7 +15518,7 @@ translationSet trans =
 
         ResilienceMessageGrowth3Paragraph2 ->
             { english = "Remember: If it matters to you, you will find a way to do it."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageGrowth4Title ->
@@ -15553,7 +15553,7 @@ translationSet trans =
 
         ResilienceMessageStressManagement1Paragraph3 ->
             { english = "Remember: Sometimes you win, sometimes you learn."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageStressManagement2Title ->
@@ -15608,7 +15608,7 @@ translationSet trans =
 
         ResilienceMessageStressManagement3Paragraph2 ->
             { english = "Remember: One small positive thought in the morning can change your whole day."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageStressManagement4Title ->
@@ -15628,7 +15628,7 @@ translationSet trans =
 
         ResilienceMessageStressManagement4Paragraph3 ->
             { english = "Remember: Real change happens one step at a time."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageStressManagement5Title name ->
@@ -15648,7 +15648,7 @@ translationSet trans =
 
         ResilienceMessageStressManagement5Paragraph3 ->
             { english = "Remember: Make time to rest and be thankful."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageStressManagement6Title ->
@@ -15663,7 +15663,7 @@ translationSet trans =
 
         ResilienceMessageStressManagement6Paragraph2 ->
             { english = "Remember: If you see someone without a smile, give them one of yours."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageStressManagement7Title ->
@@ -15753,7 +15753,7 @@ translationSet trans =
 
         ResilienceMessageMindfulness3Paragraph4 ->
             { english = "Remember: Mindfulness can be hard to do until we practice it. Give it a try today."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageMindfulness4Title ->
@@ -15773,7 +15773,7 @@ translationSet trans =
 
         ResilienceMessageMindfulness4Paragraph3 ->
             { english = "Remember: Calmness is your weapon against challenges."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageMindfulness5Title ->
@@ -15803,7 +15803,7 @@ translationSet trans =
 
         ResilienceMessageMindfulness5Paragraph3 ->
             { english = "Remember: Breathe deep to release negative energy."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageMindfulness6Title ->
@@ -15828,7 +15828,7 @@ translationSet trans =
 
         ResilienceMessageMindfulness6Paragraph4 ->
             { english = "Remember: Hope is the only thing stronger than fear."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageMindfulness6Bullet1 ->
@@ -15863,7 +15863,7 @@ translationSet trans =
 
         ResilienceMessageConnecting1Paragraph3 ->
             { english = "Remember: Every day may not be good, but there will be something good in every day."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageConnecting2Title ->
@@ -15923,7 +15923,7 @@ translationSet trans =
 
         ResilienceMessageConnecting4Paragraph3 ->
             { english = "Remember: Helping others is a way to help yourself."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageConnecting5Title ->
@@ -15983,7 +15983,7 @@ translationSet trans =
 
         ResilienceMessageSelfCare1Paragraph4 ->
             { english = "Remember: The challenge is not to be perfect - it is to be whole."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageSelfCare1Bullet1 ->
@@ -16018,7 +16018,7 @@ translationSet trans =
 
         ResilienceMessageSelfCare2Paragraph3 ->
             { english = "Remember: A well-spent day brings happy sleep."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just ""
             }
 
         ResilienceMessageSelfCare3Title ->
@@ -16245,12 +16245,12 @@ translationSet trans =
             case reminderType of
                 ResilienceReminderDrinkWatter ->
                     { english = "Remember: Don’t count the days, make the days count."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just ""
                     }
 
                 ResilienceReminderTakeBreak ->
                     { english = "Remember: The stiller you are, the calmer life is. Take a moment to be still."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just ""
                     }
 
         ResilienceRole role ->
