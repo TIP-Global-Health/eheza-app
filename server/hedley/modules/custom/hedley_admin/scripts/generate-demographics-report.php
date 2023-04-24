@@ -507,8 +507,8 @@ $encounters = [
   ],
   [
     'Nutrition (total)',
-    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date, $region) + encounter_all_count('home_visit', 'chw', $limit_date, $region),
-    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date, $region) + encounter_unique_count('home_visit', 'chw', $limit_date, $region),
+    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date, $region),
+    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date, $region),
   ],
   [
     '  PMTCT',
@@ -542,8 +542,8 @@ $encounters = [
   ],
   [
     'TOTAL',
-    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date, $region) + encounter_all_count('prenatal', 'all', $limit_date, $region) + encounter_all_count('acute_illness', 'all', $limit_date) + encounter_all_count('well_child', 'chw', $limit_date),
-    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date) + encounter_unique_count('prenatal', 'all', $limit_date, $region) + encounter_unique_count('acute_illness', 'all', $limit_date, $region) + encounter_unique_count('well_child', 'hc', $limit_date, $region),
+    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date, $region) + encounter_all_count('prenatal', 'all', $limit_date, $region) + encounter_all_count('acute_illness', 'all', $limit_date, $region) + encounter_all_count('well_child', 'hc', $limit_date, $region) + encounter_all_count('home_visit', 'chw', $limit_date, $region),
+    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date, $region) + encounter_unique_count('prenatal', 'all', $limit_date, $region) + encounter_unique_count('acute_illness', 'all', $limit_date, $region) + encounter_unique_count('well_child', 'hc', $limit_date, $region) + encounter_unique_count('home_visit', 'chw', $limit_date, $region),
   ],
 ];
 
