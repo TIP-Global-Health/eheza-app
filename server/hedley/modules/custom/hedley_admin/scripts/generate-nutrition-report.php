@@ -12,6 +12,9 @@
 
 require_once __DIR__ . '/report_common.inc';
 
+//Get the region
+$region = drush_get_option('region', FALSE);
+
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
@@ -31,7 +34,10 @@ $base_query = base_query_for_bundle('person');
 
 $six_years_ago = date('Ymd', strtotime('-6 years'));
 $base_query->fieldCondition('field_birth_date', 'value', $six_years_ago, '>');
-$base_query->fieldCondition('field_district', 'value', 'Bugesera', '=');
+
+if ($region) {
+  $base_query->fieldCondition('field_district', 'value', $region, '=');
+}
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
@@ -42,8 +48,9 @@ if ($total == 0) {
   exit;
 }
 
+$region = ($region) ? $region : 'All Districts';
 
-drush_print("$total children with age below 6 years located.");
+drush_print("$total children below 6 years located in $region.");
 
 $processed = 0;
 
@@ -132,8 +139,7 @@ while ($processed < $total) {
 }
 
 drush_print('Done!');
-
-drush_print("# Nutrition report - " . date('D/m/Y'));
+drush_print("# Nutrition report - " . $region . " - " . date('D/m/Y'));
 drush_print('');
 
 $skeleton = [

@@ -434,8 +434,8 @@ class RoboFile extends Tasks {
   /**
    * Generates the nutrition report.
    */
-  public function reportNutrition() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php');
+  public function reportNutrition($region = NULL) {
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php --region=$region");
   }
 
 }
