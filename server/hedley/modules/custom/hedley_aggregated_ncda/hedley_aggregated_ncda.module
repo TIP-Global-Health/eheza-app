@@ -4,3 +4,32 @@
  * @file
  * Drupal needs this blank file.
  */
+
+function hedley_aggregated_ncda_menu() {
+  $items['admin/reports/aggregated-ncda'] = array(
+    'title' => '',
+    'description' => 'Aggregated NCDA scoreboard',
+    'page callback' => 'hedley_aggregated_ncda_callback',
+    'access arguments' => ['hedley_aggregated_ncda_access'],
+  );
+
+  return $items;
+}
+
+function hedley_aggregated_ncda_access() {
+  global $user;
+
+  if (user_is_anonymous()) {
+    return FALSE;
+  }
+
+  if ($user->uid == 1) {
+    return TRUE;
+  }
+
+  return in_array('administrator', $user->roles);
+}
+
+function hedley_aggregated_ncda_callback() {
+  return 'Aggregated NCDA scoreboard';
+}
