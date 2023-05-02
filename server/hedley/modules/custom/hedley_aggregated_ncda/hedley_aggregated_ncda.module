@@ -31,5 +31,7 @@ function hedley_aggregated_ncda_access() {
 }
 
 function hedley_aggregated_ncda_callback() {
+  drupal_add_css(drupal_get_path('module', 'hedley_aggregated_ncda') . '/css/aggregated-ncda.css', 'file');
+
   return 'Aggregated NCDA scoreboard';
 }

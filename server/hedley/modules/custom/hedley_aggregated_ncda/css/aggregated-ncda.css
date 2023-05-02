@@ -1,0 +1,12 @@
+#main {
+  margin: unset;
+}
+
+#breadcrumb,
+#main-wrapper #sidebar-first {
+  display: none;
+}
+
+.block.block-system .content {
+  color: red;
+}
