@@ -5,6 +5,9 @@
  * Drupal needs this blank file.
  */
 
+/**
+ * Implements hook_menu().
+ */
 function hedley_aggregated_ncda_menu() {
   $items['admin/reports/aggregated-ncda'] = array(
     'title' => '',
@@ -16,6 +19,12 @@ function hedley_aggregated_ncda_menu() {
   return $items;
 }
 
+/**
+ * Determines whether current user may access Aggregated NCDA scoreboard page.
+ *
+ * @return bool
+ *   TRUE if the user has access, FALSE otherwise.
+ */
 function hedley_aggregated_ncda_access() {
   global $user;
 
@@ -30,8 +39,36 @@ function hedley_aggregated_ncda_access() {
   return in_array('administrator', $user->roles);
 }
 
+/**
+ * Callback function for the Aggregated NCDA scoreboard page.
+ *
+ * Adds JavaScript and CSS files to the page and initializes an Elm application
+ * with the given settings.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
 function hedley_aggregated_ncda_callback() {
+  // Add application.
+  drupal_add_js(drupal_get_path('module', 'hedley_aggregated_ncda') . '/js/elm-main.js');
+  drupal_add_js(drupal_get_path('module', 'hedley_aggregated_ncda') . '/js/elm.js');
+
+  //Add CSS.
   drupal_add_css(drupal_get_path('module', 'hedley_aggregated_ncda') . '/css/aggregated-ncda.css', 'file');
 
-  return 'Aggregated NCDA scoreboard';
+  // Getting a unique ID for the app.
+  $app_id = drupal_html_id('elm-app');
+
+  // Add settings.
+  $settings = [
+    'elm_apps' => [
+      $app_id => [
+        'data' => [],
+      ],
+    ],
+  ];
+  drupal_add_js($settings, 'setting');
+
+  // Return the HTML markup for the Elm application.
+  return '<div id="' . $app_id . '"></div>';
 }
