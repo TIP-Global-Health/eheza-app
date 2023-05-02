@@ -53,7 +53,7 @@ function hedley_aggregated_ncda_callback() {
   drupal_add_js(drupal_get_path('module', 'hedley_aggregated_ncda') . '/js/elm-main.js');
   drupal_add_js(drupal_get_path('module', 'hedley_aggregated_ncda') . '/js/elm.js');
 
-  //Add CSS.
+  // Add CSS.
   drupal_add_css(drupal_get_path('module', 'hedley_aggregated_ncda') . '/css/aggregated-ncda.css', 'file');
 
   // Getting a unique ID for the app.
