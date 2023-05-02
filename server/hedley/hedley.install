@@ -655,3 +655,10 @@ function hedley_update_7035() {
 function hedley_update_7036() {
   module_enable(['hedley_resilience']);
 }
+
+/**
+ * Enable the Hedley Aggregated NCDA module.
+ */
+function hedley_update_7037() {
+  module_enable(['hedley_aggregated_ncda']);
+}
