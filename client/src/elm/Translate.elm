@@ -4470,7 +4470,7 @@ translationSet trans =
             }
 
         DoTheFollowing ->
-            { english = " Do the Following"
+            { english = "Do the Following"
             , kinyarwanda = Just "Kora ibi bikurikira"
             }
 
@@ -15307,7 +15307,7 @@ translationSet trans =
             }
 
         ResilienceMessageIntroduction1Paragraph1 name ->
-            { english = "Hello " ++ name ++ " Welcome to the work-based resilience program. As healthcare providers, we often face obstacles and challenges; for example: a lot of work, various responsibilities (including those at home), listening to patients with different problems, etc."
+            { english = "Hello " ++ name ++ ", Welcome to the work-based resilience program. As healthcare providers, we often face obstacles and challenges; for example: a lot of work, various responsibilities (including those at home), listening to patients with different problems, etc."
             , kinyarwanda = Just <| "Muraho neza " ++ name ++ ", Murakaza neza muri gahunda yo kumenya kwiyitaho bitewe n'akazi dukora. Nk'abakozi dutanga serivisi z'ubuvuzi, dukunze guhura n'imbogamizi; urugero: akazi kenshi, inshingano nyinshi harimo n'izo mu rugo, gutega amatwi abantu bafite ibibazo bitandukanye baba baje batugana, n'ibindi."
             }
 
@@ -15332,7 +15332,7 @@ translationSet trans =
             }
 
         ResilienceMessageIntroduction2Paragraph2 ->
-            { english = "After this six-month journey, we hope that you will be able to"
+            { english = "After this six-month journey, we hope that you will be able to:"
             , kinyarwanda = Just "Nyuma y'uru rugendo rw'amezi atandatu, twizera ko uzaba ushobora:"
             }
 
@@ -15818,7 +15818,7 @@ translationSet trans =
 
         ResilienceMessageMindfulness6Paragraph2 ->
             { english = "Say to yourself: when you breathe in \"2, 3, 4\", when you hold your breath \"2, 3, 4\", when you breathe out \"2, 3, 4\". Once you do this you will feel calm."
-            , kinyarwanda = Just "Ibwire ubwawe: igihe winjije umwuka 2 3 4, igihe uhagaritse umwuka 2 3 4, igihe usohoye umwuka 2 3 4. Numara kubikora uzumva utuje."
+            , kinyarwanda = Just "Ibwire ubwawe: igihe winjije umwuka 2 3 4, igihe uhagaritse umwuka \"2, 3, 4\", igihe usohoye umwuka \"2, 3, 4\". Numara kubikora uzumva utuje."
             }
 
         ResilienceMessageMindfulness6Paragraph3 ->
@@ -15847,7 +15847,7 @@ translationSet trans =
             }
 
         ResilienceMessageConnecting1Title ->
-            { english = "Surround yourself with positive people"
+            { english = "Surround yourself with positive people."
             , kinyarwanda = Just "Girana ibihe byiza n'inshuti n'umuryango wawe."
             }
 
