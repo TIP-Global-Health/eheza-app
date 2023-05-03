@@ -112,7 +112,7 @@ import Pages.Utils
         , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
-        , viewPhotoThumbFromPhotoUrl
+        , viewPhotoThumbFromImageUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
         , viewRedAlertForBool
@@ -1291,7 +1291,7 @@ viewPrenatalPhotoContent language currentDate assembled data =
                 |> keyed "help"
             , keyedDivKeyed "grid"
                 [ class "ui grid" ]
-                [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
+                [ Maybe.map viewPhotoThumbFromImageUrl displayPhoto
                     |> showMaybe
                     |> List.singleton
                     |> div [ class "eight wide column" ]

@@ -72,7 +72,7 @@ import Pages.Utils
         , viewCustomSelectListInput
         , viewInstructionsLabel
         , viewLabel
-        , viewPhotoThumbFromPhotoUrl
+        , viewPhotoThumbFromImageUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
         , viewRedAlertForSelect

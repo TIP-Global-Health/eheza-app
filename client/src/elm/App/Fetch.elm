@@ -49,6 +49,7 @@ import Pages.Prenatal.RecurrentActivity.Fetch
 import Pages.Prenatal.RecurrentEncounter.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
+import Pages.StockManagement.Fetch
 import Pages.TraceContact.Fetch
 import Pages.WellChild.Activity.Fetch
 import Pages.WellChild.Encounter.Fetch
@@ -351,6 +352,15 @@ fetch model =
                                     Tuple.first loggedIn.nurse
                             in
                             Pages.MessagingCenter.Fetch.fetch currentDate nurseId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
+            UserPage StockManagementPage ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( healthCenterId, _ ) ->
+                            Pages.StockManagement.Fetch.fetch currentDate healthCenterId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []

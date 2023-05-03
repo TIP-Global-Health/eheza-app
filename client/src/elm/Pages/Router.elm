@@ -320,6 +320,9 @@ pageToFragment current =
                 MessagingCenterPage ->
                     Just "messaging-center"
 
+                StockManagementPage ->
+                    Just "stock-management"
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -376,6 +379,7 @@ parser =
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")
+        , map (UserPage StockManagementPage) (s "stock-management")
 
         -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top

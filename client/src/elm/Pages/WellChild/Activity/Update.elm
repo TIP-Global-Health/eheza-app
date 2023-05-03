@@ -1651,7 +1651,7 @@ update currentDate isChw id db msg model =
             let
                 updatedForm =
                     model.photoForm
-                        |> (\form -> { form | url = Just (PhotoUrl result.url) })
+                        |> (\form -> { form | url = Just (ImageUrl result.url) })
             in
             ( { model | photoForm = updatedForm }
             , Cmd.none

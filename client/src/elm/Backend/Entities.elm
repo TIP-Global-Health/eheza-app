@@ -1405,3 +1405,11 @@ type alias PrenatalPartnerHIVTestId =
 
 type PrenatalPartnerHIVTestUuidType
     = PrenatalPartnerHIVTestUuidType
+
+
+type alias StockUpdateId =
+    EntityUuid StockUpdateUuidType
+
+
+type StockUpdateUuidType
+    = StockUpdateUuidType

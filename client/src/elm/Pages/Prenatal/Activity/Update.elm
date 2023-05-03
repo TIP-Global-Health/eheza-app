@@ -13,12 +13,12 @@ import Backend.Measurement.Model
         , DangerSign(..)
         , FamilyPlanningSign(..)
         , HandsCPESign(..)
+        , ImageUrl(..)
         , LegsCPESign(..)
         , LungsCPESign(..)
         , NeckCPESign(..)
         , OutsideCareMedication(..)
         , PhaseRecorded(..)
-        , PhotoUrl(..)
         , PostpartumChildDangerSign(..)
         , PostpartumHealingProblem(..)
         , PostpartumMotherDangerSign(..)
@@ -193,7 +193,7 @@ update language currentDate id db msg model =
             let
                 updatedData =
                     model.prenatalPhotoData
-                        |> (\data -> { data | url = Just (PhotoUrl result.url) })
+                        |> (\data -> { data | url = Just (ImageUrl result.url) })
             in
             ( { model | prenatalPhotoData = updatedData }
             , Cmd.none

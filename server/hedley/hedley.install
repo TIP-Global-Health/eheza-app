@@ -657,8 +657,15 @@ function hedley_update_7036() {
 }
 
 /**
+* Enable the Hedley Stock Management module.
+*/
+function hedley_update_7037() {
+  module_enable(['hedley_stock_management']);
+}
+
+/**
  * Enable the Hedley Aggregated NCDA module.
  */
-function hedley_update_7037() {
+function hedley_update_7038() {
   module_enable(['hedley_aggregated_ncda']);
 }

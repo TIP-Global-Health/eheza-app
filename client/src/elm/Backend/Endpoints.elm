@@ -56,6 +56,8 @@ import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
+import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
+import Backend.StockUpdate.Encoder exposing (encodeStockUpdate)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
@@ -305,6 +307,11 @@ homeVisitMeasurementsEndpoint =
 wellChildMeasurementsEndpoint : ReadOnlyEndPoint Error WellChildEncounterId WellChildMeasurements ()
 wellChildMeasurementsEndpoint =
     swEndpoint "nodes/well-child-measurements" decodeWellChildMeasurements
+
+
+stockManagementMeasurementsEndpoint : ReadOnlyEndPoint Error HealthCenterId StockManagementMeasurements ()
+stockManagementMeasurementsEndpoint =
+    swEndpoint "nodes/stock-management-measurements" decodeStockManagementMeasurements
 
 
 {-| Type-safe params ... how nice!
@@ -1243,3 +1250,9 @@ prenatalPartnerHIVTestEndpoint : ReadWriteEndPoint Error PrenatalPartnerHIVTestI
 prenatalPartnerHIVTestEndpoint =
     swEndpoint "nodes/prenatal_partner_hiv_test" decodePrenatalPartnerHIVTest
         |> withValueEncoder (object << encodePrenatalPartnerHIVTest)
+
+
+stockUpdateEndpoint : ReadWriteEndPoint Error StockUpdateId StockUpdate StockUpdate ()
+stockUpdateEndpoint =
+    swEndpoint "nodes/stock_update" decodeStockUpdate
+        |> withValueEncoder (object << encodeStockUpdate)
