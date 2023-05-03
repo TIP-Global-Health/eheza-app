@@ -179,17 +179,17 @@ $symptoms_general[] =[
 $symptoms_general[] =[
   'field' => 'field_data_field_increased_thirst_period',
   'value' => 'field_increased_thirst_period_value',
-  'name' => 'unable_to_drink',
+  'name' => 'increased_thirst',
 ];
 $symptoms_general[] =[
   'field' => 'field_data_field_dry_mouth_period',
   'value' => 'field_dry_mouth_period_value',
-  'name' => 'unable_to_drink',
+  'name' => 'dry_mouth',
 ];
 $symptoms_general[] =[
   'field' => 'field_data_field_severe_weakness_period',
   'value' => 'field_severe_weakness_period_value',
-  'name' => 'unable_to_drink',
+  'name' => 'severe_weakness',
 ];
 $total_count = 0;
 $success_count = 0;
@@ -200,6 +200,7 @@ foreach ($nids as $nid) {
 
   $symptom_id = db_query($query)->fetchfield();
 
+  if ($symptom_id) {
   foreach ($symptoms_general as $symptom) {
     $query = 'SELECT ' . $symptom['value'] . ' as value FROM '. $symptom['field'] . ' WHERE entity_id = ' . $symptom_id;
     $data = db_query($query)->fetchfield();
@@ -207,11 +208,10 @@ foreach ($nids as $nid) {
       $total_count = $total_count + 1;
       break;
     }
-
-
   }
     $total_count = $total_count + 1;
     $success_count = $success_count + 1;
+}
 }
 
 $table = new HedleyAdminTextTable(['Encounters', 'Count']);
@@ -257,5 +257,5 @@ foreach ($nodes as $nid => $value) {
   ];
 }
 
-//drush_print($table->render($data));
+// drush_print($table->render($data));
 
