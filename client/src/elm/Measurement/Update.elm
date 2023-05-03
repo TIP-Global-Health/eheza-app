@@ -7,10 +7,10 @@ import Backend.Measurement.Model
         ( ChildNutritionSign(..)
         , ContributingFactorsSign(..)
         , FamilyPlanningSign(..)
+        , ImageUrl(..)
         , LactationSign(..)
         , MeasurementData
         , MotherMeasurements
-        , PhotoUrl(..)
         , WeightInGrm(..)
         )
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
@@ -158,7 +158,7 @@ updateChild msg model =
             )
 
         DropZoneComplete result ->
-            ( { model | photo = Just (PhotoUrl result.url) }
+            ( { model | photo = Just (ImageUrl result.url) }
             , Cmd.none
             , Nothing
             )

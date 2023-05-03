@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), ContributingFactorsSign(..), PhotoUrl(..), WeightInGrm(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), ContributingFactorsSign(..), ImageUrl(..), WeightInGrm(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
@@ -178,7 +178,7 @@ update currentDate id db msg model =
                         updatedForm =
                             model.photoData.form
                                 |> (\form ->
-                                        { form | url = Just (PhotoUrl result.url) }
+                                        { form | url = Just (ImageUrl result.url) }
                                    )
                     in
                     model.photoData

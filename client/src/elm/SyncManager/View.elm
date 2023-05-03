@@ -732,6 +732,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthoritySocialHistory identifier ->
                 viewMeasurement identifier "Social History"
 
+            BackendAuthorityStockUpdate identifier ->
+                text <| "Stock Update " ++ identifier.uuid
+
             BackendAuthoritySymptomsGeneral identifier ->
                 viewMeasurement identifier "Symptoms General"
 

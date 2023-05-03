@@ -80,7 +80,7 @@ import Pages.Utils
         , viewLabel
         , viewMeasurementInput
         , viewPersonDetails
-        , viewPhotoThumbFromPhotoUrl
+        , viewPhotoThumbFromImageUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
         , viewSaveAction
@@ -511,7 +511,7 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
     ]
 
 
-viewPhotoForm : Language -> NominalDate -> Maybe PhotoUrl -> (DropZoneFile -> msg) -> List (Html msg)
+viewPhotoForm : Language -> NominalDate -> Maybe ImageUrl -> (DropZoneFile -> msg) -> List (Html msg)
 viewPhotoForm language currentDate displayPhoto dropZoneCompleteMsg =
     let
         activity =
@@ -522,7 +522,7 @@ viewPhotoForm language currentDate displayPhoto dropZoneCompleteMsg =
             |> keyed "help"
         , keyedDivKeyed "grid"
             [ class "ui grid" ]
-            [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
+            [ Maybe.map viewPhotoThumbFromImageUrl displayPhoto
                 |> showMaybe
                 |> List.singleton
                 |> div [ class "eight wide column" ]

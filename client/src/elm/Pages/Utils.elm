@@ -6,10 +6,10 @@ import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
+        , ImageUrl(..)
         , MedicationDistributionSign(..)
         , MedicationDistributionValue
         , MedicationNonAdministrationSign(..)
-        , PhotoUrl(..)
         )
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
@@ -17,8 +17,9 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
+import Date
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -390,6 +391,45 @@ nonAdministrationReasonToSign sign reason =
 
         NoMedicationDistributionSignsRecurrentPhase ->
             NoMedicationNonAdministrationSigns
+
+
+viewMonthSelector : Language -> NominalDate -> Int -> Int -> (Int -> msg) -> Html msg
+viewMonthSelector language selectedDate monthGap maxGap changeMonthGapMsg =
+    let
+        monthNumber =
+            Date.monthNumber selectedDate
+
+        month =
+            Date.numberToMonth monthNumber
+
+        year =
+            Date.year selectedDate
+    in
+    div [ class "month-selector" ]
+        [ span
+            [ classList
+                [ ( "icon-back", True )
+                , ( "hidden", monthGap == maxGap )
+                ]
+            , onClick <| changeMonthGapMsg 1
+            ]
+            []
+        , span [ class "label" ]
+            [ text <| translate language (Translate.ResolveMonth False month) ++ " " ++ String.fromInt year ]
+        , span
+            [ classList
+                [ ( "icon-back rotate-180", True )
+                , ( "hidden", monthGap == 0 )
+                ]
+            , onClick <| changeMonthGapMsg -1
+            ]
+            []
+        ]
+
+
+resolveSelectedDateForMonthSelector : NominalDate -> Int -> NominalDate
+resolveSelectedDateForMonthSelector currentDate monthGap =
+    Date.add Date.Months (-1 * monthGap) currentDate
 
 
 
@@ -1130,8 +1170,8 @@ viewPhotoThumb url =
         ]
 
 
-viewPhotoThumbFromPhotoUrl : PhotoUrl -> Html any
-viewPhotoThumbFromPhotoUrl (PhotoUrl url) =
+viewPhotoThumbFromImageUrl : ImageUrl -> Html any
+viewPhotoThumbFromImageUrl (ImageUrl url) =
     viewPhotoThumb url
 
 
@@ -1185,3 +1225,28 @@ customSaveButton language active msg label =
         , onClick msg
         ]
         [ text <| translate language label ]
+
+
+customPopup : Language -> Bool -> TranslationId -> ( Html msg, Html msg, msg ) -> Html msg
+customPopup language showWarning actionLabel ( topMessage, bottomMessage, action ) =
+    div [ class "ui active modal diagnosis-popup" ]
+        [ div [ class "content" ] <|
+            [ div [ class "popup-heading-wrapper" ]
+                [ img [ src "assets/images/exclamation-red.png" ] []
+                , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                ]
+                |> showIf showWarning
+            , div [ class "popup-title" ]
+                [ topMessage
+                , bottomMessage
+                ]
+            ]
+        , div
+            [ class "actions" ]
+            [ button
+                [ class "ui primary fluid button"
+                , onClick action
+                ]
+                [ text <| translate language actionLabel ]
+            ]
+        ]

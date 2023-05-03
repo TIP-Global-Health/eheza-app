@@ -51,6 +51,7 @@ type MainMenuActivity
     | MenuCaseManagement
     | MenuDeviceStatus
     | MenuMessagingCenter
+    | MenuStockManagement
 
 
 type ResilienceReminderType

@@ -140,6 +140,7 @@ import Pages.Report.Model
         , RandomBloodSugarResult(..)
         , ReportTab(..)
         )
+import Pages.StockManagement.Model exposing (CorrectionEntryType(..), StockManagementMenu(..))
 import Pages.TraceContact.Model exposing (NoContactReason(..))
 import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
@@ -330,6 +331,7 @@ type TranslationId
     | AbdomenCPESign AbdomenCPESign
     | Abnormal
     | Abortions
+    | Accept
     | AccompaniedByPartner
     | AccompanyToFacilityQuestion ReferralFacility
     | AccessDenied
@@ -428,6 +430,8 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | Balance
+    | BatchNumberAbbrev
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
@@ -553,6 +557,7 @@ type TranslationId
     | ChwDashboardLabel
     | CurrentlyPregnant
     | CurrentlyPregnantQuestion
+    | CurrentStock
     | DangerSign DangerSign
     | DangerSignsLabelForChw
     | DangerSignsLabelForNurse
@@ -580,6 +585,7 @@ type TranslationId
     | DeliveryOutcome
     | DemographicInformation
     | DemographicsReport
+    | Details
     | DetectableViralLoad
     | Device
     | DeviceNotAuthorized
@@ -645,6 +651,7 @@ type TranslationId
     | Estimated
     | ExaminationTask ExaminationTask
     | ExaminationTaskRecurrent Pages.Prenatal.RecurrentActivity.Types.ExaminationTask
+    | ExpirityDate
     | ExposureTask ExposureTask
     | Extremities
     | Eyes
@@ -735,6 +742,7 @@ type TranslationId
     | HighRiskFactors
     | HighSeverityAlert HighSeverityAlert
     | HighSeverityAlerts
+    | History
     | HistoryTask HistoryTask
     | HIV
     | HIVPCRResult HIVPCRResult
@@ -761,6 +769,8 @@ type TranslationId
     | HypertensionRecommendedTreatmentUpdateNoCurrentTreatment
     | HypertensionRecommendedTreatmentUpdateStartTreatment
     | HypertensionStageAndRenalComplicationsHeader Bool NCDDiagnosis
+    | IdentityPopupHeader
+    | IdentityPopupInstructions
     | IdleWaitingForSync
     | Ignore
     | IllnessSymptom IllnessSymptom
@@ -783,6 +793,9 @@ type TranslationId
     | InstructionsChooseTwoMedications
     | IsCurrentlyBreastfeeding
     | IsolatedAtHome
+    | IsThisYouQuestion
+    | Issued
+    | IssuedTo
     | KilogramShorthand
     | KilogramsPerMonth
     | KnownAsPositiveQuestion LaboratoryTask
@@ -885,6 +898,7 @@ type TranslationId
     | LmpLabel
     | LmpRangeHeader
     | LmpRange LmpRange
+    | LoggedInAsPhrase
     | Location
     | LoginPhrase LoginPhrase
     | Low
@@ -967,6 +981,7 @@ type TranslationId
     | Month
     | MonthAbbrev
     | MonthSinglePlural Int
+    | MonthsOfStock
     | MonthsOld
     | Mother
     | MotherDemographicInformation
@@ -975,6 +990,8 @@ type TranslationId
     | MotherNameLabel
     | MotherNationalId
     | Mothers
+    | MTDIn
+    | MTDOut
     | MUAC
     | MuacHelper
     | MyAccount
@@ -1072,6 +1089,7 @@ type TranslationId
     | NutritionNextStepsTask Measurement.Model.NextStepsTask
     | NitritionSigns
     | NutritionSupplementType NutritionSupplementType
+    | Observations
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -1121,6 +1139,7 @@ type TranslationId
     | PatientRecordFilter PatientRecordFilter
     | PauseEncounter
     | PatientShowsNoSignsOfCovid
+    | Patients
     | PediatricCareMilestone PediatricCareMilestone
     | PediatricVisit
     | People
@@ -1250,8 +1269,10 @@ type TranslationId
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
     | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | Received
     | ReceivedDewormingPill
     | ReceivedFolicAcid
+    | ReceivedFrom
     | ReceivedIronFolicAcid
     | ReceivedMebendazole
     | ReceivedMosquitoNet
@@ -1490,7 +1511,7 @@ type TranslationId
     | ResilienceReminderFooter ResilienceReminderType
     | ResilienceSurveyQuestionOption ResilienceSurveyQuestionOption
     | ResolveMonth Bool Month
-    | ResolveMonthYY Int Bool Month
+    | ResolveMonthYY Month Int Bool
     | RespiratoryDistress
     | RespiratoryRate
     | ResponsePeriod ResponsePeriod
@@ -1586,11 +1607,27 @@ type TranslationId
     | SevereAcuteMalnutrition
     | SevereHemorrhagingPreviousDelivery
     | Shared
+    | Signature
     | SignOnDoorPostedQuestion
     | SpecialityCareHeaderPrefix
     | SpecialityCareHeaderSuffix
     | SpecialityCareSignQuestion SpecialityCareSign
     | StillbornPreviousDelivery
+    | StockCorrectionReason StockCorrectionReason
+    | StockManagement
+    | StockManagementMenu StockManagementMenu
+    | StockManagementBatchNumberQuestion
+    | StockManagementCorrectionTypeLabel
+    | StockManagementCorrectionEntryType CorrectionEntryType
+    | StockManagementCorrectionReasonLabel
+    | StockManagementDateExpiresQuestion
+    | StockManagementEnterSignatureLabel
+    | StockManagementQuantityAddedQuestion
+    | StockManagementQuantityCorrectionLabel
+    | StockManagementSelectDateLabel
+    | StockManagementSupplierQuestion
+    | StockSupplier StockSupplier
+    | StockSupplierAbbrev StockSupplier
     | SubsequentAntenatalVisit
     | SubsequentEncounter
     | SubsequentEncounterReferral AcuteIllnessEncounterType
@@ -1626,6 +1663,7 @@ type TranslationId
     | StrartNewAcuteIllnessHelper
     | StartDate
     | EndDate
+    | StartingStock
     | StartSyncing
     | StatusLabel
     | StopSyncing
@@ -1823,6 +1861,11 @@ translationSet trans =
         Abortions ->
             { english = "Abortions"
             , kinyarwanda = Just "Inda yavuyemo"
+            }
+
+        Accept ->
+            { english = "Accept"
+            , kinyarwanda = Nothing
             }
 
         AccompaniedByPartner ->
@@ -3039,6 +3082,16 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
+        Balance ->
+            { english = "Balance"
+            , kinyarwanda = Nothing
+            }
+
+        BatchNumberAbbrev ->
+            { english = "Batch #"
+            , kinyarwanda = Nothing
+            }
+
         BreastfeedingSignQuestion sign ->
             case sign of
                 IsBreastfeeding ->
@@ -4151,6 +4204,11 @@ translationSet trans =
             , kinyarwanda = Just "Umurwayi aratwite"
             }
 
+        CurrentStock ->
+            { english = "Current Stock"
+            , kinyarwanda = Nothing
+            }
+
         ChwDashboardLabel ->
             { english = "CHW Snapshot"
             , kinyarwanda = Just "Ishusho y'ibyagezweho"
@@ -4365,6 +4423,11 @@ translationSet trans =
         DemographicsReport ->
             { english = "Demographics Report"
             , kinyarwanda = Just "Raporo y'umwirondoro"
+            }
+
+        Details ->
+            { english = "Details"
+            , kinyarwanda = Nothing
             }
 
         DetectableViralLoad ->
@@ -5090,6 +5153,11 @@ translationSet trans =
                     { english = "Vitals"
                     , kinyarwanda = Just "Ibimenyetso by'ubuzima"
                     }
+
+        ExpirityDate ->
+            { english = "Expirity Date"
+            , kinyarwanda = Nothing
+            }
 
         ExposureTask task ->
             case task of
@@ -5849,6 +5917,11 @@ translationSet trans =
             , kinyarwanda = Just "Bimenyetso mpuruza bikabije"
             }
 
+        History ->
+            { english = "History"
+            , kinyarwanda = Just "Amakuru"
+            }
+
         HistoryTask task ->
             case task of
                 Obstetric ->
@@ -6124,6 +6197,16 @@ translationSet trans =
                     { english = ""
                     , kinyarwanda = Nothing
                     }
+
+        IdentityPopupHeader ->
+            { english = "You are not properly logged in to E-Heza."
+            , kinyarwanda = Nothing
+            }
+
+        IdentityPopupInstructions ->
+            { english = "To proceed, you must log out and log back in as then correct user."
+            , kinyarwanda = Nothing
+            }
 
         IdleWaitingForSync ->
             { english = "Idle, waiting for next Sync cycle"
@@ -6451,6 +6534,21 @@ translationSet trans =
         IsolatedAtHome ->
             { english = "Isolated at home"
             , kinyarwanda = Just "Yashyizwe mu kato mu rugo"
+            }
+
+        IsThisYouQuestion ->
+            { english = "Is this you"
+            , kinyarwanda = Nothing
+            }
+
+        Issued ->
+            { english = "Issued"
+            , kinyarwanda = Nothing
+            }
+
+        IssuedTo ->
+            { english = "Issued To"
+            , kinyarwanda = Nothing
             }
 
         KilogramShorthand ->
@@ -7260,9 +7358,7 @@ translationSet trans =
                     }
 
                 TaskCompletePreviousTests ->
-                    { english = "History"
-                    , kinyarwanda = Just "Amakuru"
-                    }
+                    translationSet History
 
         LaboratoryTaskLabel task ->
             case task of
@@ -8102,6 +8198,11 @@ translationSet trans =
                     , kinyarwanda = Just "Mu mezi atandatu"
                     }
 
+        LoggedInAsPhrase ->
+            { english = "You are logged in as"
+            , kinyarwanda = Nothing
+            }
+
         Location ->
             { english = "Location"
             , kinyarwanda = Just "Aho Ruzatangirwa"
@@ -8190,6 +8291,11 @@ translationSet trans =
 
                 MenuMessagingCenter ->
                     { english = "Wellbeing"
+                    , kinyarwanda = Nothing
+                    }
+
+                MenuStockManagement ->
+                    { english = "Stock Management"
                     , kinyarwanda = Nothing
                     }
 
@@ -9079,6 +9185,11 @@ translationSet trans =
                 , kinyarwanda = Just <| "Amezi " ++ String.fromInt value
                 }
 
+        MonthsOfStock ->
+            { english = "Months of Stock"
+            , kinyarwanda = Nothing
+            }
+
         MonthsOld ->
             { english = "months old"
             , kinyarwanda = Just "Amezi"
@@ -9117,6 +9228,16 @@ translationSet trans =
         Mothers ->
             { english = "Mothers"
             , kinyarwanda = Just "Ababyeyi"
+            }
+
+        MTDIn ->
+            { english = "MTD in"
+            , kinyarwanda = Nothing
+            }
+
+        MTDOut ->
+            { english = "MTD out"
+            , kinyarwanda = Nothing
             }
 
         MUAC ->
@@ -10675,6 +10796,11 @@ translationSet trans =
             , kinyarwanda = Just "Ibimenyetso by'imirire"
             }
 
+        Observations ->
+            { english = "Observations"
+            , kinyarwanda = Nothing
+            }
+
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"
             , kinyarwanda = Just "Uburwayi bwemejwe n'inzobere mu gusuzuma abagore batwite"
@@ -11006,6 +11132,11 @@ translationSet trans =
         PatientShowsNoSignsOfCovid ->
             { english = "Patient shows no signs of Covid"
             , kinyarwanda = Just "Umurwayi nta bimenyetso bya Koronavirusi agaragaza"
+            }
+
+        Patients ->
+            { english = "Patients"
+            , kinyarwanda = Nothing
             }
 
         PediatricVisit ->
@@ -11427,7 +11558,7 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro"
                     }
 
-                History ->
+                Backend.PrenatalActivity.Model.History ->
                     { english = "History"
                     , kinyarwanda = Just "Amateka y'ibyamubayeho"
                     }
@@ -14312,6 +14443,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        Received ->
+            { english = "Received"
+            , kinyarwanda = Nothing
+            }
+
         ReceivedDewormingPill ->
             { english = "Has the mother received deworming pill"
             , kinyarwanda = Just "Umubyeyi yahawe ikinini cy'inzoka"
@@ -14320,6 +14456,11 @@ translationSet trans =
         ReceivedFolicAcid ->
             { english = "Have you received Folic Acid"
             , kinyarwanda = Just "Wahawe ibinini bya Folic Acid"
+            }
+
+        ReceivedFrom ->
+            { english = "Received From"
+            , kinyarwanda = Nothing
             }
 
         ReceivedIronFolicAcid ->
@@ -16310,7 +16451,7 @@ translationSet trans =
         ResolveMonth short month ->
             translateMonth month short
 
-        ResolveMonthYY year short month ->
+        ResolveMonthYY month year short ->
             translateMonthYY month year short
 
         RespiratoryDistress ->
@@ -16976,6 +17117,11 @@ translationSet trans =
             , kinyarwanda = Just "Ayisangira n'abandi"
             }
 
+        Signature ->
+            { english = "Signature"
+            , kinyarwanda = Nothing
+            }
+
         SignOnDoorPostedQuestion ->
             { english = "Have you posted signs on the door indicating that the space is an isolation area"
             , kinyarwanda = Just "Waba washyize ibimenyetso ku rugi byerekana ko iki cyumba ari ikijyamo abantu bari mu kato"
@@ -17012,6 +17158,171 @@ translationSet trans =
             { english = "Stillborn in previous delivery"
             , kinyarwanda = Just "Aheruka kubyara umwana upfuye"
             }
+
+        StockCorrectionReason value ->
+            case value of
+                ReasonInputError ->
+                    { english = "Error in input"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonExpiration ->
+                    { english = "Expired stock"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonMissing ->
+                    { english = "Missing stock / unaccounted for"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReasonOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+        StockManagement ->
+            { english = "Stock Management"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementMenu value ->
+            case value of
+                MenuReceiveStock ->
+                    { english = "Receive Stock"
+                    , kinyarwanda = Nothing
+                    }
+
+                MenuViewMonthDetails ->
+                    { english = "View current month details"
+                    , kinyarwanda = Nothing
+                    }
+
+                MenuCorrectEntry ->
+                    { english = "Correct entry"
+                    , kinyarwanda = Nothing
+                    }
+
+        StockManagementBatchNumberQuestion ->
+            { english = "What is the batch number"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementCorrectionTypeLabel ->
+            { english = "Please select the type of the correct"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementCorrectionEntryType value ->
+            case value of
+                EntryAddition ->
+                    { english = "Addition"
+                    , kinyarwanda = Nothing
+                    }
+
+                EntrySubstraction ->
+                    { english = "Substraction"
+                    , kinyarwanda = Nothing
+                    }
+
+        StockManagementCorrectionReasonLabel ->
+            { english = "Please select the reason for the correct"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementDateExpiresQuestion ->
+            { english = "What is the expiration date"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementEnterSignatureLabel ->
+            { english = "Please enter your signature"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementQuantityAddedQuestion ->
+            { english = "How much stock is being received"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementQuantityCorrectionLabel ->
+            { english = "Please enter the quantity"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementSelectDateLabel ->
+            { english = "Select a date for this entry"
+            , kinyarwanda = Nothing
+            }
+
+        StockManagementSupplierQuestion ->
+            { english = "Where was this received from"
+            , kinyarwanda = Nothing
+            }
+
+        StockSupplier value ->
+            case value of
+                SupplierMOH ->
+                    { english = "MOH (Ministry of Health)"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRBC ->
+                    { english = "RBC (Rwanda Biomedical Center)"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierUNICEF ->
+                    { english = "UNICEF"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRMSCentral ->
+                    { english = "RWANDA MEDICAL SUPPLY (RMS)-Central Level"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRMSDistrict ->
+                    { english = "RWANDA MEDICAL SUPPLY (RMS)-District Level"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierBUFMAR ->
+                    { english = "BUFMAR (Le Bureau des Formations Médicales agréées du Rwanda)"
+                    , kinyarwanda = Nothing
+                    }
+
+        StockSupplierAbbrev value ->
+            case value of
+                SupplierMOH ->
+                    { english = "MOH"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRBC ->
+                    { english = "RBC"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierUNICEF ->
+                    { english = "UNICEF"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRMSCentral ->
+                    { english = "RMS-Central"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierRMSDistrict ->
+                    { english = "RMS-District"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplierBUFMAR ->
+                    { english = "BUFMAR"
+                    , kinyarwanda = Nothing
+                    }
 
         SubsequentEncounter ->
             { english = "Subsequent Encounter"
@@ -17410,6 +17721,11 @@ translationSet trans =
         EndDate ->
             { english = "End Date"
             , kinyarwanda = Just "Itariki urangirijeho"
+            }
+
+        StartingStock ->
+            { english = "Starting Stock"
+            , kinyarwanda = Nothing
             }
 
         StartSyncing ->
@@ -19144,6 +19460,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                StockManagementPage ->
+                    { english = "Stock Management"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =
@@ -20056,8 +20377,8 @@ translateMonthYY : Month -> Int -> Bool -> TranslationSet String
 translateMonthYY month year short =
     translateMonth month short
         |> (\set ->
-                { english = set.english ++ "-" ++ Debug.toString year
-                , kinyarwanda = Maybe.map (\kinyarwanda -> kinyarwanda ++ "-" ++ Debug.toString year) set.kinyarwanda
+                { english = set.english ++ " " ++ String.fromInt year
+                , kinyarwanda = Maybe.map (\kinyarwanda -> kinyarwanda ++ " " ++ String.fromInt year) set.kinyarwanda
                 }
            )
 
