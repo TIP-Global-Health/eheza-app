@@ -72,3 +72,73 @@ function hedley_aggregated_ncda_callback() {
   // Return the HTML markup for the Elm application.
   return '<div id="' . $app_id . '"></div>';
 }
+
+/**
+ * Generates NCDA data for a given person and stores it in a node.
+ *
+ * @param int $person_id
+ *   The ID of the person for whom to generate the NCDA data.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_aggregated_ncda_generate_data_for_person($person_id) {
+  $village_id = hedley_chw_find_person_village($person_id);
+  if (!$village_id) {
+    // We must know the village of person to be able to present NCDA data.
+    return;
+  }
+
+  $person = node_load($person_id);
+  $wrapper = entity_metadata_wrapper('node', $person);
+  $birth_date = $wrapper->field_birth_date->value();
+  if (empty($birth_date)) {
+    // We must know the birthdate to be able to present NCDA data.
+    return;
+  }
+
+  if ($birth_date < strtotime("-9 year")) {
+    // We generate data for children only.
+    // Our first records are from Jan 2018, so going back
+    // 9 years to make sure we cover all children.
+    return;
+  }
+
+  $data = [
+    'person_id' => $person_id,
+    'village_id' => $village_id,
+    'birth_date' => date("Y-m-d", $birth_date),
+  ];
+
+  $encoded_data = json_encode($data);
+
+  // Search for existing individual data node.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'ncda_individual_data')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->addTag('exclude_deleted')
+    ->range(0, 1)
+    ->execute();
+
+  // If found, update JSON data.
+  if (!empty($result['node'])) {
+    $individual_data_id = key($result['node']);
+    $data_wrapper = entity_metadata_wrapper('node', $individual_data_id);
+    $data_wrapper->field_json_data->set($encoded_data);
+    $data_wrapper->save();
+    return;
+  }
+
+  // If we got so far, individual data node needs to be created.
+  $data_node = entity_create('node', [
+    'type' => 'ncda_individual_data',
+    'uid' => $person->uid,
+  ]);
+
+  $data_wrapper = entity_metadata_wrapper('node', $data_node);
+  $data_wrapper->field_person->set($person_id);
+  $data_wrapper->field_json_data->set($encoded_data);
+  $data_wrapper->save();
+}
