@@ -19144,6 +19144,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                WellBeingPage ->
+                    { english = "WellBeing"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =
