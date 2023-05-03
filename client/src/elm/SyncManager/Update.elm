@@ -18,7 +18,7 @@ import List.Zipper as Zipper
 import Maybe.Extra
 import Pages.Page exposing (Page)
 import RemoteData
-import Restful.Endpoint exposing (fromEntityUuid)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
 import SyncManager.Model exposing (..)
@@ -168,7 +168,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 currentZipper =
                     Zipper.current zipper
 
-                ( saveFetchedDataCmd, modelUpdated ) =
+                ( saveFetchedDataCmd, modelUpdated, extraMsgs ) =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             let
@@ -178,22 +178,36 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
                                             []
                                         |> List.reverse
+
+                                -- When authority completes download, we mark stock managemend data of that
+                                -- health center as obsolete, as there may have been Fbf/Stock update
+                                -- entries downloaded.
+                                stockManagementDataMsg =
+                                    if data.revisionCount == 0 then
+                                        [ Backend.Model.MarkForRecalculationStockManagementData (toEntityUuid currentZipper.uuid)
+                                            |> App.Model.MsgIndexedDb
+                                        ]
+
+                                    else
+                                        []
                             in
                             ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = currentZipper.uuid, timestamp = requestTimestamp }
                             , { model | downloadAuthorityResponse = webData }
+                            , stockManagementDataMsg
                             )
 
                         Nothing ->
                             ( Cmd.none
                             , SyncManager.Utils.determineSyncStatus activePage
                                 { model | syncStatus = SyncDownloadAuthority webData }
+                            , []
                             )
             in
             SubModelReturn
                 modelUpdated
                 saveFetchedDataCmd
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
-                []
+                extraMsgs
 
         BackendAuthorityFetchedDataSavedHandle timestamp ->
             if requestTimestamp /= timestamp then
@@ -217,11 +231,11 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         data.entities
                                             |> List.foldl
                                                 (\entity accum ->
-                                                    case SyncManager.Utils.getPhotoFromBackendAuthorityEntity entity of
-                                                        Just photoUrl ->
+                                                    case SyncManager.Utils.getImageFromBackendAuthorityEntity entity of
+                                                        Just imageUrl ->
                                                             (entity
                                                                 |> SyncManager.Utils.getBackendAuthorityEntityIdentifier
-                                                                |> SyncManager.Encoder.encodeDataForDeferredPhotos photoUrl
+                                                                |> SyncManager.Encoder.encodeDataForDeferredPhotos imageUrl
                                                             )
                                                                 :: accum
 

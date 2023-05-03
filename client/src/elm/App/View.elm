@@ -85,6 +85,8 @@ import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
 import Pages.Session.View
+import Pages.StockManagement.Model
+import Pages.StockManagement.View
 import Pages.TraceContact.Model
 import Pages.TraceContact.View
 import Pages.WellChild.Activity.Model
@@ -792,6 +794,22 @@ viewUserPage page deviceName model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                            |> flexPageWrapper model
+
+                    StockManagementPage ->
+                        let
+                            ( nurseId, nurse ) =
+                                loggedInModel.nurse
+                        in
+                        Pages.StockManagement.View.view model.language
+                            currentDate
+                            model.healthCenterId
+                            nurseId
+                            nurse
+                            model.syncManager.syncInfoAuthorities
+                            model.indexedDb
+                            loggedInModel.stockManagementPage
+                            |> Html.map (MsgLoggedIn << MsgPageStockManagement)
                             |> flexPageWrapper model
 
             else

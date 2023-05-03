@@ -162,6 +162,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'resource' => 'resources',
   'send_to_hc' => 'send-to-hcs',
   'social_history' => 'social-histories',
+  'stock_update' => 'stock-update',
   'symptoms_general' => 'symptoms-general',
   'symptoms_gi' => 'symptoms-gi',
   'symptoms_respiratory' => 'symptoms-respiratory',

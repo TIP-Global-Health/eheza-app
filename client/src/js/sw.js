@@ -166,6 +166,7 @@ var tableForType = {
     send_to_hc: 'shards',
     session: 'shards',
     social_history: 'shards',
+    stock_update: 'shards',
     syncmetadata: 'syncMetadata',
     symptoms_general: 'shards',
     symptoms_gi: 'shards',

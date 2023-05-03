@@ -54,6 +54,7 @@ import Pages.Prenatal.RecurrentActivity.Model
 import Pages.Prenatal.RecurrentEncounter.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
+import Pages.StockManagement.Model
 import Pages.TraceContact.Model
 import Pages.WellChild.Activity.Model
 import Pages.WellChild.Encounter.Model
@@ -253,6 +254,7 @@ type alias LoggedInModel =
     , personsPage : Pages.People.Model.Model
     , individualEncounterParticipantsPage : Pages.IndividualEncounterParticipants.Model.Model
     , clinicsPage : Pages.Clinics.Model.Model
+    , stockManagementPage : Pages.StockManagement.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
@@ -298,6 +300,7 @@ emptyLoggedInModel villageId nurse =
     , personsPage = Pages.People.Model.emptyModel
     , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
+    , stockManagementPage = Pages.StockManagement.Model.emptyModel
     , relationshipPages = Dict.empty
     , nurse = nurse
     , prenatalParticipantPages = Dict.empty
@@ -406,6 +409,7 @@ type MsgLoggedIn
     | MsgPageClinicalProgressReport PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Msg
     | MsgPagePatientRecord PersonId Pages.PatientRecord.Model.Msg
     | MsgPageMessagingCenter NurseId Pages.MessagingCenter.Model.Msg
+    | MsgPageStockManagement Pages.StockManagement.Model.Msg
 
 
 type alias Flags =

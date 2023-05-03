@@ -17,7 +17,7 @@ type Msg
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition )) (EverySet NutritionAssessment)
     | DropZoneComplete DropZoneFile
-    | SavePhoto PersonId (Maybe NutritionPhotoId) PhotoUrl
+    | SavePhoto PersonId (Maybe NutritionPhotoId) ImageUrl
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool

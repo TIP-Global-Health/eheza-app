@@ -196,6 +196,7 @@ type UserPage
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage
+    | StockManagementPage
 
 
 {-| We group together the pages that can only be viewed in the Dashboard

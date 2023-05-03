@@ -94,6 +94,7 @@ import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
+import Pages.StockManagement.Update
 import Pages.TraceContact.Model
 import Pages.TraceContact.Update
 import Pages.WellChild.Activity.Model
@@ -744,6 +745,16 @@ update msg model =
                             in
                             ( { data | messagingCenterPages = Dict.insert id subModel data.messagingCenterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageMessagingCenter id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageStockManagement subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.StockManagement.Update.update currentDate model.healthCenterId subMsg data.stockManagementPage
+                            in
+                            ( { data | stockManagementPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageStockManagement) subCmd
                             , appMsgs
                             )
                 )
