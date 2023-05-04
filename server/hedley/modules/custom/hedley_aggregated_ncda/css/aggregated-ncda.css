@@ -1,12 +1,61 @@
-#main {
-  margin: unset;
+#page-wrapper #main-wrapper {
+  background: #0393DB;
 }
 
-#breadcrumb,
-#main-wrapper #sidebar-first {
+#page-wrapper #header,
+#main-wrapper #breadcrumb,
+#main-wrapper #sidebar-first,
+#main-wrapper #page-title {
   display: none;
 }
 
-.block.block-system .content {
-  color: red;
+#main-wrapper #main {
+  margin: unset;
 }
+
+.page-content {
+  min-height: 768px;
+  min-width: 1024px;
+}
+
+.page-content .header {
+  font-size: 30px;
+  margin-bottom: 30px;
+  margin-left: 40px;
+  padding: 20px;
+}
+
+.page-content .inputs {
+  width: 60%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-content .inputs .select-input-wrapper {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.page-content .inputs .select-input-wrapper.disabled {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.page-content .inputs .select-input-wrapper .label {
+  font-size: 26px;
+  width: 40%;
+}
+
+.page-content .inputs .select-input-wrapper .select-input {
+  background: none;
+  font-size: 2rem;
+  border: 2px solid white;
+  padding: 0 0.5em;
+  line-height: 0.5;
+  text-align: left;
+  height: 50px;
+  width: 60%;
+  color: #3b3b3b;
+}
+
+

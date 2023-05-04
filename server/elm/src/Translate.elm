@@ -21,7 +21,12 @@ type StringIdHttpError
 
 
 type TranslationId
-    = HttpError StringIdHttpError
+    = Cell
+    | District
+    | HttpError StringIdHttpError
+    | Province
+    | Sector
+    | Village
 
 
 {-| Main function to call for translation.
@@ -31,8 +36,27 @@ translate language trans =
     let
         translationSet =
             case trans of
+                Cell ->
+                    { english = "Cell"
+                    }
+
+                District ->
+                    { english = "District"
+                    }
+
                 HttpError val ->
                     translateHttpError val
+
+                Province ->
+                    { english = "Province"
+                    }
+
+                Sector ->
+                    { english = "Sector"
+                    }
+
+                Village ->
+                    { english = "Village" }
     in
     case language of
         English ->

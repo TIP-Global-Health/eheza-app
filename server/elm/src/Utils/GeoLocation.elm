@@ -1,7 +1,16 @@
-module Utils.GeoLocation exposing (GeoInfo, ReverseGeoInfo, geoInfo, getGeoLocation, reverseGeoInfo)
+module Utils.GeoLocation exposing
+    ( GeoInfo
+    , GeoLocationId
+    , ReverseGeoInfo
+    , filterGeoLocationDictByParent
+    , geoInfo
+    , geoLocationDictToOptions
+    , getGeoLocation
+    , reverseGeoInfo
+    )
 
 import AssocList as Dict exposing (Dict)
-import Restful.Endpoint exposing (EntityId, toEntityId)
+import Restful.Endpoint exposing (EntityId, fromEntityId, toEntityId)
 
 
 {-| This is here to have a partially type-safe key for the Dict.
@@ -2749,3 +2758,12 @@ filterGeoLocationDictByParent parentId =
         (\_ geoLocation ->
             (Just <| toEntityId parentId) == geoLocation.parent
         )
+
+
+geoLocationDictToOptions : Dict GeoLocationId GeoLocation -> List ( String, String )
+geoLocationDictToOptions =
+    Dict.toList
+        >> List.map
+            (\( id, geoLocation ) ->
+                ( String.fromInt <| fromEntityId id, geoLocation.name )
+            )

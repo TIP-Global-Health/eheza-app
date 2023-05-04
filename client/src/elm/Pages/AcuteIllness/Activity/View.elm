@@ -83,7 +83,7 @@ import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, filterGeoLocationDictByParent, geoInfo)
+import Utils.GeoLocation exposing (GeoInfo, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -3434,13 +3434,6 @@ viewCreateContactForm language currentDate db data =
                 label
                     :: maleOption
                     ++ femaleOption
-
-        geoLocationDictToOptions dict =
-            Dict.toList dict
-                |> List.map
-                    (\( id, geoLocation ) ->
-                        ( String.fromInt <| fromEntityId id, geoLocation.name )
-                    )
 
         geoLocationInputClass isDisabled =
             "select-input"

@@ -3,6 +3,7 @@ module Pages.Scoreboard.Model exposing (..)
 import AssocList
 import Dict exposing (Dict)
 import Json.Decode exposing (Value)
+import Utils.GeoLocation exposing (GeoLocationId)
 
 
 type alias Model =
@@ -20,11 +21,11 @@ type DisplayMode
 
 
 type alias ViewSelectionForm =
-    { province : Maybe String
-    , district : Maybe String
-    , sector : Maybe String
-    , cell : Maybe String
-    , village : Maybe String
+    { province : Maybe GeoLocationId
+    , district : Maybe GeoLocationId
+    , sector : Maybe GeoLocationId
+    , cell : Maybe GeoLocationId
+    , village : Maybe GeoLocationId
     }
 
 
@@ -39,13 +40,13 @@ emptyViewSelectionForm =
 
 
 type alias ViewSelectionValue =
-    { province : String
-    , district : String
-    , sector : Maybe String
-    , cell : Maybe String
-    , village : Maybe String
+    { province : GeoLocationId
+    , district : GeoLocationId
+    , sector : Maybe GeoLocationId
+    , cell : Maybe GeoLocationId
+    , village : Maybe GeoLocationId
     }
 
 
 type Msg
-    = NoOp
+    = SetGeoLocation (String -> ViewSelectionForm -> ViewSelectionForm) String

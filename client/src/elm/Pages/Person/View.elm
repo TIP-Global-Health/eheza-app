@@ -60,7 +60,7 @@ import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, filterGeoLocationDictByParent, geoInfo)
+import Utils.GeoLocation exposing (GeoInfo, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -1004,14 +1004,6 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
         familyInformationFields =
             [ viewSelectInput language Translate.FamilyUbudehe ubudeheOptions Backend.Person.Form.ubudehe "ten" "select-input" True personForm
             ]
-
-        geoLocationDictToOptions dict =
-            dict
-                |> Dict.toList
-                |> List.map
-                    (\( id, geoLocation ) ->
-                        ( String.fromInt <| fromEntityId id, geoLocation.name )
-                    )
 
         geoLocationInputClass isDisabled =
             "select-input"

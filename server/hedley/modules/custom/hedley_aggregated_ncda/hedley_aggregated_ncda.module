@@ -12,8 +12,8 @@ include_once 'hedley_aggregated_ncda.features.inc';
  */
 function hedley_aggregated_ncda_menu() {
   $items['admin/reports/aggregated-ncda'] = array(
-    'title' => '',
-    'description' => 'Aggregated NCDA scoreboard',
+    'title' => 'NCDA scoreboard',
+    'description' => 'View aggregated NCDA scoreboard',
     'page callback' => 'hedley_aggregated_ncda_callback',
     'access arguments' => ['hedley_aggregated_ncda_access'],
   );
