@@ -1,15 +1,15 @@
 module Pages.Scoreboard.View exposing (view)
 
 import App.Types exposing (Language)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Icons
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Scoreboard.Model exposing (Model, Msg(..))
+import Pages.Scoreboard.Model exposing (..)
 import Pages.Scoreboard.Utils exposing (..)
-import Pages.Utils exposing (emptySelectOption, viewLabel)
+import Pages.Utils exposing (emptySelectOption, viewActionButton, viewLabel)
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (GeoLocationId, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
@@ -17,6 +17,16 @@ import Utils.GeoLocation exposing (GeoLocationId, filterGeoLocationDictByParent,
 
 view : Language -> Model -> Html Msg
 view language model =
+    case model.displayMode of
+        DisplayViewSelection ->
+            viewDisplayViewSelection language model
+
+        DisplayResultTable value ->
+            text "@todo viewDisplayResultTable"
+
+
+viewDisplayViewSelection : Language -> Model -> Html Msg
+viewDisplayViewSelection language model =
     let
         provinceInput =
             let
@@ -142,6 +152,8 @@ view language model =
             , cellInput
             , villageInput
             ]
+        , viewActionButton language Translate.GenerateReport True GenerateReport
+            |> showIf (isJust model.form.province && isJust model.form.district)
         ]
 
 

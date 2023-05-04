@@ -1,5 +1,5 @@
 #page-wrapper #main-wrapper {
-  background: #0393DB;
+  background: #0393db;
 }
 
 #page-wrapper #header,
@@ -26,9 +26,10 @@
 }
 
 .page-content .inputs {
-  width: 60%;
+  width: 80%;
   margin-left: auto;
   margin-right: auto;
+  min-height: 380px;
 }
 
 .page-content .inputs .select-input-wrapper {
@@ -46,20 +47,35 @@
   font-size: 26px;
   width: 40%;
 }
-
 .page-content .inputs .select-input-wrapper .select-input {
   background: none;
-  font-size: 2rem;
   border: 2px solid white;
-  padding: 0 0.5em;
+  color: #3b3b3b;
+  font-size: 2rem;
+  height: 50px;
   line-height: 0.5;
   text-align: left;
-  height: 50px;
+  padding: 0 0.5em;
   width: 60%;
-  color: #3b3b3b;
 }
+
 
 .page-content .inputs .select-input-wrapper .select-input:focus {
   outline-color: white;
+}
+
+.page-content .actions {
+  text-align: center;
+}
+
+.page-content .actions button {
+  background-color: #0393db;
+  border: 2px solid white;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 24px;
+  height: 50px;
+  width: 30%;
 }
 

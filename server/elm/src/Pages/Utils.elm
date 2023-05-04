@@ -93,17 +93,17 @@ emptySelectOption isSelected =
         [ text "" ]
 
 
-viewEncounterActionButton : Language -> TranslationId -> String -> Bool -> msg -> Html msg
-viewEncounterActionButton language label buttonColor allowAction action =
+viewActionButton : Language -> TranslationId -> Bool -> msg -> Html msg
+viewActionButton language label allowAction action =
     let
         attributes =
             if allowAction then
-                [ class <| "ui fluid button " ++ buttonColor
+                [ class <| "ui fluid button"
                 , onClick action
                 ]
 
             else
-                [ class <| "ui fluid button disabled " ++ buttonColor ]
+                [ class <| "ui fluid button disabled" ]
     in
     div [ class "actions" ]
         [ button attributes

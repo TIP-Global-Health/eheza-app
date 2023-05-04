@@ -7,12 +7,16 @@ import Utils.GeoLocation exposing (GeoLocationId)
 
 
 type alias Model =
-    { form : ViewSelectionForm }
+    { displayMode : DisplayMode
+    , form : ViewSelectionForm
+    }
 
 
 emptyModel : Model
 emptyModel =
-    { form = emptyViewSelectionForm }
+    { displayMode = DisplayViewSelection
+    , form = emptyViewSelectionForm
+    }
 
 
 type DisplayMode
@@ -50,3 +54,4 @@ type alias ViewSelectionValue =
 
 type Msg
     = SetGeoLocation (String -> ViewSelectionForm -> ViewSelectionForm) String
+    | GenerateReport

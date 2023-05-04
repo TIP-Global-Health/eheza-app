@@ -5273,8 +5273,9 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$Scoreboard = {$: 'Scoreboard'};
+var $author$project$Pages$Scoreboard$Model$DisplayViewSelection = {$: 'DisplayViewSelection'};
 var $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
-var $author$project$Pages$Scoreboard$Model$emptyModel = {form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm};
+var $author$project$Pages$Scoreboard$Model$emptyModel = {displayMode: $author$project$Pages$Scoreboard$Model$DisplayViewSelection, form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm};
 var $author$project$Backend$Model$emptyModelBackend = {};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
@@ -5339,25 +5340,73 @@ var $author$project$App$Model$MsgScoreboardPage = function (a) {
 	return {$: 'MsgScoreboardPage', a: a};
 };
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Pages$Scoreboard$Model$DisplayResultTable = function (a) {
+	return {$: 'DisplayResultTable', a: a};
+};
 var $author$project$App$Model$PagesReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
 var $author$project$Error$Utils$noError = $elm$core$Maybe$Nothing;
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $author$project$Pages$Scoreboard$Update$update = F3(
 	function (modelBackend, msg, model) {
-		var updatedFormFunc = msg.a;
-		var value = msg.b;
-		return A4(
-			$author$project$App$Model$PagesReturn,
-			_Utils_update(
+		if (msg.$ === 'SetGeoLocation') {
+			var updatedFormFunc = msg.a;
+			var value = msg.b;
+			return A4(
+				$author$project$App$Model$PagesReturn,
+				_Utils_update(
+					model,
+					{
+						form: A2(updatedFormFunc, value, model.form)
+					}),
+				$elm$core$Platform$Cmd$none,
+				$author$project$Error$Utils$noError,
+				_List_Nil);
+		} else {
+			var updatedModel = A2(
+				$elm$core$Maybe$withDefault,
 				model,
-				{
-					form: A2(updatedFormFunc, value, model.form)
-				}),
-			$elm$core$Platform$Cmd$none,
-			$author$project$Error$Utils$noError,
-			_List_Nil);
+				A3(
+					$elm$core$Maybe$map2,
+					F2(
+						function (province, district) {
+							var value = {cell: model.form.cell, district: district, province: province, sector: model.form.sector, village: model.form.village};
+							return _Utils_update(
+								model,
+								{
+									displayMode: $author$project$Pages$Scoreboard$Model$DisplayResultTable(value),
+									form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm
+								});
+						}),
+					model.form.province,
+					model.form.district));
+			return A4($author$project$App$Model$PagesReturn, updatedModel, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+		}
 	});
 var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
@@ -5530,6 +5579,8 @@ var $author$project$Translate$translate = F2(
 					return {english: 'Cell'};
 				case 'District':
 					return {english: 'District'};
+				case 'GenerateReport':
+					return {english: 'Generate Report'};
 				case 'HttpError':
 					var val = trans.a;
 					return $author$project$Translate$translateHttpError(val);
@@ -5655,6 +5706,8 @@ var $author$project$Error$View$view = F2(
 	});
 var $author$project$Translate$Cell = {$: 'Cell'};
 var $author$project$Translate$District = {$: 'District'};
+var $author$project$Pages$Scoreboard$Model$GenerateReport = {$: 'GenerateReport'};
+var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
 var $author$project$Translate$Province = {$: 'Province'};
 var $author$project$Translate$Sector = {$: 'Sector'};
 var $author$project$Pages$Scoreboard$Model$SetGeoLocation = F2(
@@ -24165,6 +24218,56 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
+var $author$project$Gizra$Html$showIf = F2(
+	function (condition, html) {
+		return condition ? html : $author$project$Gizra$Html$emptyNode;
+	});
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Pages$Utils$viewActionButton = F4(
+	function (language, label, allowAction, action) {
+		var attributes = allowAction ? _List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('ui fluid button'),
+				$elm$html$Html$Events$onClick(action)
+			]) : _List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('ui fluid button disabled')
+			]);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('actions')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$button,
+					attributes,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, label))
+						]))
+				]));
+	});
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
@@ -24209,7 +24312,6 @@ var $elm$html$Html$Events$alwaysStop = function (x) {
 var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var $elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
@@ -24255,15 +24357,6 @@ var $author$project$Pages$Utils$viewCustomLabel = F4(
 var $author$project$Pages$Utils$viewLabel = F2(
 	function (language, translationId) {
 		return A4($author$project$Pages$Utils$viewCustomLabel, language, translationId, ':', 'label');
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
 	});
 var $author$project$Pages$Scoreboard$View$viewSelectListInput = F6(
 	function (language, currentValue, options, setMsg, labelTransId, disabled) {
@@ -24324,7 +24417,7 @@ var $author$project$Pages$Scoreboard$View$viewSelectListInput = F6(
 					selectOptions)
 				]));
 	});
-var $author$project$Pages$Scoreboard$View$view = F2(
+var $author$project$Pages$Scoreboard$View$viewDisplayViewSelection = F2(
 	function (language, model) {
 		var villageInput = A2(
 			$elm$core$Maybe$withDefault,
@@ -24501,8 +24594,22 @@ var $author$project$Pages$Scoreboard$View$view = F2(
 							$elm$html$Html$Attributes$class('inputs')
 						]),
 					_List_fromArray(
-						[provinceInput, districtInput, sectorInput, cellInput, villageInput]))
+						[provinceInput, districtInput, sectorInput, cellInput, villageInput])),
+					A2(
+					$author$project$Gizra$Html$showIf,
+					$elm_community$maybe_extra$Maybe$Extra$isJust(model.form.province) && $elm_community$maybe_extra$Maybe$Extra$isJust(model.form.district),
+					A4($author$project$Pages$Utils$viewActionButton, language, $author$project$Translate$GenerateReport, true, $author$project$Pages$Scoreboard$Model$GenerateReport))
 				]));
+	});
+var $author$project$Pages$Scoreboard$View$view = F2(
+	function (language, model) {
+		var _v0 = model.displayMode;
+		if (_v0.$ === 'DisplayViewSelection') {
+			return A2($author$project$Pages$Scoreboard$View$viewDisplayViewSelection, language, model);
+		} else {
+			var value = _v0.a;
+			return $elm$html$Html$text('@todo viewDisplayResultTable');
+		}
 	});
 var $author$project$App$View$view = function (model) {
 	var _v0 = model.activePage;

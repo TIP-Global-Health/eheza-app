@@ -23,6 +23,7 @@ type StringIdHttpError
 type TranslationId
     = Cell
     | District
+    | GenerateReport
     | HttpError StringIdHttpError
     | Province
     | Sector
@@ -42,6 +43,10 @@ translate language trans =
 
                 District ->
                     { english = "District"
+                    }
+
+                GenerateReport ->
+                    { english = "Generate Report"
                     }
 
                 HttpError val ->
