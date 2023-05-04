@@ -2,8 +2,10 @@
 
 /**
  * @file
- * Drupal needs this blank file.
+ * Code for the Hedley Aggregated NCDA feature.
  */
+
+include_once 'hedley_aggregated_ncda.features.inc';
 
 /**
  * Implements hook_menu().
