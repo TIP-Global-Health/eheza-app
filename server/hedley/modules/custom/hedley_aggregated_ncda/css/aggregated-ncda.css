@@ -32,6 +32,7 @@
 }
 
 .page-content .inputs .select-input-wrapper {
+  align-items: center;
   display: flex;
   margin-bottom: 20px;
 }
@@ -58,4 +59,7 @@
   color: #3b3b3b;
 }
 
+.page-content .inputs .select-input-wrapper .select-input:focus {
+  outline-color: white;
+}
 
