@@ -1,4 +1,4 @@
-module Utils.GeoLocation exposing (GeoInfo, ReverseGeoInfo, filterGeoLocationDictByParent, geoInfo, getGeoLocation, reverseGeoInfo)
+module Utils.GeoLocation exposing (GeoInfo, ReverseGeoInfo, geoInfo, getGeoLocation, reverseGeoInfo)
 
 import AssocList as Dict exposing (Dict)
 import Restful.Endpoint exposing (EntityId, toEntityId)

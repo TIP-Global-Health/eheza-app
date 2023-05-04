@@ -5273,7 +5273,8 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$Scoreboard = {$: 'Scoreboard'};
-var $author$project$Pages$Scoreboard$Model$emptyModel = {};
+var $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
+var $author$project$Pages$Scoreboard$Model$emptyModel = {form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm};
 var $author$project$Backend$Model$emptyModelBackend = {};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
