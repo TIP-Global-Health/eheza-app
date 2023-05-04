@@ -11,6 +11,11 @@
 
 #main-wrapper #main {
   margin: unset;
+  width: 100%;
+}
+
+#main-wrapper #main #content {
+  width: 100%;
 }
 
 .page-content {
@@ -78,4 +83,18 @@
   height: 50px;
   width: 30%;
 }
+
+.page-content .pane-heading {
+  background-color: #06b9ff;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 10px 15px;
+  text-align: center;
+}
+
+.page-content .pane-heading.cyan {
+  background-color: #03b5aa;
+}
+
 

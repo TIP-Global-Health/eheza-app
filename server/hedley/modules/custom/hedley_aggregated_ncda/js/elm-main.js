@@ -5575,6 +5575,8 @@ var $author$project$Translate$translate = F2(
 	function (language, trans) {
 		var translationSet = function () {
 			switch (trans.$) {
+				case 'AggregatedChildScoreboard':
+					return {english: 'Aggregated Child Scoreboard'};
 				case 'Cell':
 					return {english: 'Cell'};
 				case 'District':
@@ -5702,6 +5704,54 @@ var $author$project$Error$View$view = F2(
 						$elm$core$List$map,
 						$author$project$Error$View$viewError(language),
 						errors))
+				]));
+	});
+var $author$project$Translate$AggregatedChildScoreboard = {$: 'AggregatedChildScoreboard'};
+var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
+	function (language, label) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane-heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Translate$translate, language, label))
+				]));
+	});
+var $author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane = F2(
+	function (language, value) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane aggregated-child-scoreboard')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$AggregatedChildScoreboard),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					_List_Nil)
+				]));
+	});
+var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
+	function (language, value, model) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, value)
 				]));
 	});
 var $author$project$Translate$Cell = {$: 'Cell'};
@@ -24608,7 +24658,7 @@ var $author$project$Pages$Scoreboard$View$view = F2(
 			return A2($author$project$Pages$Scoreboard$View$viewDisplayViewSelection, language, model);
 		} else {
 			var value = _v0.a;
-			return $elm$html$Html$text('@todo viewDisplayResultTable');
+			return A3($author$project$Pages$Scoreboard$View$viewDisplayResultTable, language, value, model);
 		}
 	});
 var $author$project$App$View$view = function (model) {

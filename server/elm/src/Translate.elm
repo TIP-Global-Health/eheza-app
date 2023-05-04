@@ -21,7 +21,8 @@ type StringIdHttpError
 
 
 type TranslationId
-    = Cell
+    = AggregatedChildScoreboard
+    | Cell
     | District
     | GenerateReport
     | HttpError StringIdHttpError
@@ -37,6 +38,10 @@ translate language trans =
     let
         translationSet =
             case trans of
+                AggregatedChildScoreboard ->
+                    { english = "Aggregated Child Scoreboard"
+                    }
+
                 Cell ->
                     { english = "Cell"
                     }
