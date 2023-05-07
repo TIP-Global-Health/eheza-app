@@ -96,6 +96,14 @@
   background-color: #03b5aa;
 }
 
+.page-content .pane.orange .pane-heading {
+  background-color: #fbb03b;
+}
+
+.page-content .pane.velvet .pane-heading {
+  background-color: #d3145a;
+}
+
 .page-content .pane-content {
   background: white;
   color: #808080;

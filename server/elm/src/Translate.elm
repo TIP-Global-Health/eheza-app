@@ -41,7 +41,8 @@ type StringIdHttpError
 
 
 type TranslationId
-    = AggregatedChildScoreboard
+    = AcuteMalnutrition
+    | AggregatedChildScoreboard
     | Cell
     | Demographics
     | District
@@ -60,6 +61,7 @@ type TranslationId
     | Province
     | Sector
     | SelectedEntity SelectedEntity
+    | Stunting
     | Status
     | Village
 
@@ -67,6 +69,11 @@ type TranslationId
 translationSet : TranslationId -> TranslationSet
 translationSet transId =
     case transId of
+        AcuteMalnutrition ->
+            { english = "Acute Malnutrition"
+            , kinyarwanda = Nothing
+            }
+
         AggregatedChildScoreboard ->
             { english = "Aggregated Child Scoreboard"
             , kinyarwanda = Nothing
@@ -314,6 +321,11 @@ translationSet transId =
 
                 EntityVillage ->
                     translationSet Village
+
+        Stunting ->
+            { english = "Stunting"
+            , kinyarwanda = Nothing
+            }
 
         Status ->
             { english = "Status"

@@ -5693,6 +5693,8 @@ var $author$project$Translate$translationSet = function (transId) {
 	translationSet:
 	while (true) {
 		switch (transId.$) {
+			case 'AcuteMalnutrition':
+				return {english: 'Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'AggregatedChildScoreboard':
 				return {english: 'Aggregated Child Scoreboard', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Cell':
@@ -5910,6 +5912,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 				}
+			case 'Stunting':
+				return {english: 'Stunting', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Status':
 				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing};
 			default:
@@ -6047,10 +6051,200 @@ var $author$project$Pages$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Pages$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
 var $author$project$Pages$Scoreboard$Model$EntitySector = {$: 'EntitySector'};
 var $author$project$Pages$Scoreboard$Model$EntityVillage = {$: 'EntityVillage'};
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
+var $author$project$Translate$AcuteMalnutrition = {$: 'AcuteMalnutrition'};
+var $author$project$Pages$Scoreboard$Model$GoodNutrition = {$: 'GoodNutrition'};
+var $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition = {$: 'ModerateAcuteMalnutrition'};
+var $author$project$Translate$NCDAAcuteMalnutritionItemLabel = function (a) {
+	return {$: 'NCDAAcuteMalnutritionItemLabel', a: a};
 };
+var $author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition = {$: 'SevereAcuteMalnutrition'};
+var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
+	function (language, label) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane-heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Translate$translate, language, label))
+				]));
+	});
+var $elm$time$Time$Apr = {$: 'Apr'};
+var $elm$time$Time$Aug = {$: 'Aug'};
+var $elm$time$Time$Dec = {$: 'Dec'};
+var $elm$time$Time$Feb = {$: 'Feb'};
+var $elm$time$Time$Jan = {$: 'Jan'};
+var $elm$time$Time$Jul = {$: 'Jul'};
+var $elm$time$Time$Jun = {$: 'Jun'};
+var $elm$time$Time$Mar = {$: 'Mar'};
+var $elm$time$Time$May = {$: 'May'};
+var $author$project$Translate$Month = function (a) {
+	return {$: 'Month', a: a};
+};
+var $elm$time$Time$Nov = {$: 'Nov'};
+var $elm$time$Time$Oct = {$: 'Oct'};
+var $elm$time$Time$Sep = {$: 'Sep'};
+var $author$project$Translate$Status = {$: 'Status'};
+var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) {
+	var statusCell = A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('cell activity')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				A2($author$project$Translate$translate, language, $author$project$Translate$Status))
+			]));
+	var monthCells = A2(
+		$elm$core$List$map,
+		function (month) {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('cell')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$Month(month)))
+					]));
+		},
+		_List_fromArray(
+			[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]));
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('table-header')
+			]),
+		A2($elm$core$List$cons, statusCell, monthCells));
+};
+var $author$project$Pages$Scoreboard$View$viewTableRow = F3(
+	function (language, itemTransId, values) {
+		var valueCells = A2(
+			$elm$core$List$map,
+			function (value) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('cell value')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$String$fromInt(value))
+						]));
+			},
+			values);
+		var activityCell = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('cell activity')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Translate$translate, language, itemTransId))
+				]));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table-row')
+				]),
+			A2($elm$core$List$cons, activityCell, valueCells));
+	});
+var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F2(
+	function (language, entityType) {
+		var values = function () {
+			switch (entityType.$) {
+				case 'EntityVillage':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[11, 17, 19, 15, 15, 7, 8, 12, 11, 17, 11, 12]),
+							_List_fromArray(
+							[3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3]),
+							_List_fromArray(
+							[9, 6, 2, 8, 12, 1, 25, 3, 24, 5, 7, 11])
+						]);
+				case 'EntityCell':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[98, 129, 100, 123, 112, 145, 173, 98, 145, 134, 135, 122]),
+							_List_fromArray(
+							[98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122]),
+							_List_fromArray(
+							[35, 72, 98, 41, 84, 63, 52, 77, 96, 88, 55, 47])
+						]);
+				case 'EntitySector':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[203, 257, 234, 245, 245, 256, 124, 145, 124, 145, 239, 240]),
+							_List_fromArray(
+							[203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239]),
+							_List_fromArray(
+							[213, 243, 239, 221, 246, 236, 266, 223, 229, 221, 229, 234])
+						]);
+				default:
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[491, 455, 640, 678, 524, 491, 545, 640, 563, 640, 455, 491]),
+							_List_fromArray(
+							[530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491]),
+							_List_fromArray(
+							[223, 569, 854, 732, 988, 622, 901, 775, 666, 444, 888, 998])
+						]);
+			}
+		}();
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A3(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						$author$project$Translate$NCDAAcuteMalnutritionItemLabel(item),
+						itemValues);
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition, $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition, $author$project$Pages$Scoreboard$Model$GoodNutrition]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane orange')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$AcuteMalnutrition),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
+				]));
+	});
 var $author$project$Translate$AggregatedChildScoreboard = {$: 'AggregatedChildScoreboard'};
 var $author$project$Translate$SelectedEntity = function (a) {
 	return {$: 'SelectedEntity', a: a};
@@ -24528,20 +24722,6 @@ var $elm$core$Maybe$map = F2(
 		}
 	});
 var $elm$html$Html$span = _VirtualDom_node('span');
-var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
-	function (language, label) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('pane-heading')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					A2($author$project$Translate$translate, language, label))
-				]));
-	});
 var $author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane = F2(
 	function (language, _v0) {
 		var entityId = _v0.a;
@@ -24624,99 +24804,6 @@ var $author$project$Translate$NCDADemographicsItemLabel = function (a) {
 	return {$: 'NCDADemographicsItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$NewbornsThisMonth = {$: 'NewbornsThisMonth'};
-var $elm$time$Time$Apr = {$: 'Apr'};
-var $elm$time$Time$Aug = {$: 'Aug'};
-var $elm$time$Time$Dec = {$: 'Dec'};
-var $elm$time$Time$Feb = {$: 'Feb'};
-var $elm$time$Time$Jan = {$: 'Jan'};
-var $elm$time$Time$Jul = {$: 'Jul'};
-var $elm$time$Time$Jun = {$: 'Jun'};
-var $elm$time$Time$Mar = {$: 'Mar'};
-var $elm$time$Time$May = {$: 'May'};
-var $author$project$Translate$Month = function (a) {
-	return {$: 'Month', a: a};
-};
-var $elm$time$Time$Nov = {$: 'Nov'};
-var $elm$time$Time$Oct = {$: 'Oct'};
-var $elm$time$Time$Sep = {$: 'Sep'};
-var $author$project$Translate$Status = {$: 'Status'};
-var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) {
-	var statusCell = A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('cell activity')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text(
-				A2($author$project$Translate$translate, language, $author$project$Translate$Status))
-			]));
-	var monthCells = A2(
-		$elm$core$List$map,
-		function (month) {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('cell')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						A2(
-							$author$project$Translate$translate,
-							language,
-							$author$project$Translate$Month(month)))
-					]));
-		},
-		_List_fromArray(
-			[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]));
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('table-header')
-			]),
-		A2($elm$core$List$cons, statusCell, monthCells));
-};
-var $author$project$Pages$Scoreboard$View$viewTableRow = F3(
-	function (language, itemTransId, values) {
-		var valueCells = A2(
-			$elm$core$List$map,
-			function (value) {
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('cell value')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							$elm$core$String$fromInt(value))
-						]));
-			},
-			values);
-		var activityCell = A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('cell activity')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					A2($author$project$Translate$translate, language, itemTransId))
-				]));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('table-row')
-				]),
-			A2($elm$core$List$cons, activityCell, valueCells));
-	});
 var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F2(
 	function (language, entityType) {
 		var values = function () {
@@ -24797,22 +24884,109 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F2(
 						rows))
 				]));
 	});
+var $author$project$Pages$Scoreboard$Model$ModerateStunting = {$: 'ModerateStunting'};
+var $author$project$Translate$NCDAStuntingItemLabel = function (a) {
+	return {$: 'NCDAStuntingItemLabel', a: a};
+};
+var $author$project$Pages$Scoreboard$Model$NoStunting = {$: 'NoStunting'};
+var $author$project$Pages$Scoreboard$Model$SevereStunting = {$: 'SevereStunting'};
+var $author$project$Translate$Stunting = {$: 'Stunting'};
+var $author$project$Pages$Scoreboard$View$viewStuntingPane = F2(
+	function (language, entityType) {
+		var values = function () {
+			switch (entityType.$) {
+				case 'EntityVillage':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[23, 21, 17, 14, 9, 12, 18, 21, 16, 13, 19, 22]),
+							_List_fromArray(
+							[8, 14, 7, 18, 13, 17, 12, 15, 19, 16, 11, 10]),
+							_List_fromArray(
+							[19, 23, 18, 13, 15, 21, 14, 17, 22, 16, 11, 20])
+						]);
+				case 'EntityCell':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[153, 129, 102, 124, 148, 115, 149, 178, 162, 148, 161, 138]),
+							_List_fromArray(
+							[102, 125, 136, 129, 149, 131, 125, 117, 144, 146, 137, 108]),
+							_List_fromArray(
+							[116, 123, 151, 135, 112, 141, 152, 126, 123, 135, 146, 148])
+						]);
+				case 'EntitySector':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[270, 245, 214, 231, 265, 238, 249, 218, 221, 267, 236, 260]),
+							_List_fromArray(
+							[246, 269, 240, 232, 258, 215, 207, 236, 274, 252, 214, 233]),
+							_List_fromArray(
+							[238, 245, 214, 260, 219, 231, 241, 237, 218, 238, 255, 261])
+						]);
+				default:
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[605, 596, 562, 640, 621, 546, 661, 592, 635, 539, 587, 612]),
+							_List_fromArray(
+							[595, 581, 562, 605, 656, 576, 593, 635, 625, 655, 620, 575]),
+							_List_fromArray(
+							[604, 642, 553, 655, 577, 622, 600, 571, 598, 621, 542, 596])
+						]);
+			}
+		}();
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A3(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						$author$project$Translate$NCDAStuntingItemLabel(item),
+						itemValues);
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$SevereStunting, $author$project$Pages$Scoreboard$Model$ModerateStunting, $author$project$Pages$Scoreboard$Model$NoStunting]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane velvet')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$Stunting),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
+				]));
+	});
 var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
 	function (language, value, model) {
-		var selectedEntityData = function () {
-			var _v0 = value.village;
-			if (_v0.$ === 'Just') {
-				var id = _v0.a;
+		var _v0 = function () {
+			var _v1 = value.village;
+			if (_v1.$ === 'Just') {
+				var id = _v1.a;
 				return _Utils_Tuple2(id, $author$project$Pages$Scoreboard$Model$EntityVillage);
 			} else {
-				var _v1 = value.cell;
-				if (_v1.$ === 'Just') {
-					var id = _v1.a;
+				var _v2 = value.cell;
+				if (_v2.$ === 'Just') {
+					var id = _v2.a;
 					return _Utils_Tuple2(id, $author$project$Pages$Scoreboard$Model$EntityCell);
 				} else {
-					var _v2 = value.sector;
-					if (_v2.$ === 'Just') {
-						var id = _v2.a;
+					var _v3 = value.sector;
+					if (_v3.$ === 'Just') {
+						var id = _v3.a;
 						return _Utils_Tuple2(id, $author$project$Pages$Scoreboard$Model$EntitySector);
 					} else {
 						return _Utils_Tuple2(value.district, $author$project$Pages$Scoreboard$Model$EntityDistrict);
@@ -24820,6 +24994,8 @@ var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
 				}
 			}
 		}();
+		var entityId = _v0.a;
+		var entityType = _v0.b;
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -24828,8 +25004,13 @@ var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
 				]),
 			_List_fromArray(
 				[
-					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, selectedEntityData),
-					A2($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, selectedEntityData.b)
+					A2(
+					$author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane,
+					language,
+					_Utils_Tuple2(entityId, entityType)),
+					A2($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, entityType),
+					A2($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, entityType),
+					A2($author$project$Pages$Scoreboard$View$viewStuntingPane, language, entityType)
 				]));
 	});
 var $author$project$Pages$Scoreboard$Model$GenerateReport = {$: 'GenerateReport'};
@@ -24940,6 +25121,10 @@ var $author$project$Pages$Utils$viewActionButton = F4(
 						]))
 				]));
 	});
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
 var $elm$html$Html$Attributes$classList = function (classes) {
 	return $elm$html$Html$Attributes$class(
 		A2(

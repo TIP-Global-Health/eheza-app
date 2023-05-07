@@ -212,7 +212,7 @@ viewSelectListInput language currentValue options setMsg labelTransId disabled =
 viewDisplayResultTable : Language -> ViewSelectionValue -> Model -> Html Msg
 viewDisplayResultTable language value model =
     let
-        selectedEntityData =
+        ( entityId, entityType ) =
             case value.village of
                 Just id ->
                     ( id, EntityVillage )
@@ -231,8 +231,10 @@ viewDisplayResultTable language value model =
                                     ( value.district, EntityDistrict )
     in
     div [ class "page-content" ]
-        [ viewAggregatedChildScoreboardPane language selectedEntityData
-        , viewDemographicsPane language (Tuple.second selectedEntityData)
+        [ viewAggregatedChildScoreboardPane language ( entityId, entityType )
+        , viewDemographicsPane language entityType
+        , viewAcuteMalnutritionPane language entityType
+        , viewStuntingPane language entityType
         ]
 
 
@@ -311,6 +313,96 @@ viewDemographicsPane language entityType =
     in
     div [ class "pane cyan" ]
         [ viewPaneHeading language Translate.Demographics
+        , div [ class "pane-content" ] <|
+            viewTableHeader language
+                :: rows
+        ]
+
+
+viewAcuteMalnutritionPane : Language -> SelectedEntity -> Html any
+viewAcuteMalnutritionPane language entityType =
+    let
+        rows =
+            List.map2
+                (\item itemValues ->
+                    viewTableRow language (Translate.NCDAAcuteMalnutritionItemLabel item) itemValues
+                )
+                [ SevereAcuteMalnutrition, ModerateAcuteMalnutrition, GoodNutrition ]
+                values
+
+        values =
+            case entityType of
+                EntityVillage ->
+                    [ [ 11, 17, 19, 15, 15, 7, 8, 12, 11, 17, 11, 12 ]
+                    , [ 3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3 ]
+                    , [ 9, 6, 2, 8, 12, 1, 25, 3, 24, 5, 7, 11 ]
+                    ]
+
+                EntityCell ->
+                    [ [ 98, 129, 100, 123, 112, 145, 173, 98, 145, 134, 135, 122 ]
+                    , [ 98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122 ]
+                    , [ 35, 72, 98, 41, 84, 63, 52, 77, 96, 88, 55, 47 ]
+                    ]
+
+                EntitySector ->
+                    [ [ 203, 257, 234, 245, 245, 256, 124, 145, 124, 145, 239, 240 ]
+                    , [ 203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239 ]
+                    , [ 213, 243, 239, 221, 246, 236, 266, 223, 229, 221, 229, 234 ]
+                    ]
+
+                EntityDistrict ->
+                    [ [ 491, 455, 640, 678, 524, 491, 545, 640, 563, 640, 455, 491 ]
+                    , [ 530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491 ]
+                    , [ 223, 569, 854, 732, 988, 622, 901, 775, 666, 444, 888, 998 ]
+                    ]
+    in
+    div [ class "pane orange" ]
+        [ viewPaneHeading language Translate.AcuteMalnutrition
+        , div [ class "pane-content" ] <|
+            viewTableHeader language
+                :: rows
+        ]
+
+
+viewStuntingPane : Language -> SelectedEntity -> Html any
+viewStuntingPane language entityType =
+    let
+        rows =
+            List.map2
+                (\item itemValues ->
+                    viewTableRow language (Translate.NCDAStuntingItemLabel item) itemValues
+                )
+                [ SevereStunting, ModerateStunting, NoStunting ]
+                values
+
+        values =
+            case entityType of
+                EntityVillage ->
+                    [ [ 23, 21, 17, 14, 9, 12, 18, 21, 16, 13, 19, 22 ]
+                    , [ 8, 14, 7, 18, 13, 17, 12, 15, 19, 16, 11, 10 ]
+                    , [ 19, 23, 18, 13, 15, 21, 14, 17, 22, 16, 11, 20 ]
+                    ]
+
+                EntityCell ->
+                    [ [ 153, 129, 102, 124, 148, 115, 149, 178, 162, 148, 161, 138 ]
+                    , [ 102, 125, 136, 129, 149, 131, 125, 117, 144, 146, 137, 108 ]
+                    , [ 116, 123, 151, 135, 112, 141, 152, 126, 123, 135, 146, 148 ]
+                    ]
+
+                EntitySector ->
+                    [ [ 270, 245, 214, 231, 265, 238, 249, 218, 221, 267, 236, 260 ]
+                    , [ 246, 269, 240, 232, 258, 215, 207, 236, 274, 252, 214, 233 ]
+                    , [ 238, 245, 214, 260, 219, 231, 241, 237, 218, 238, 255, 261 ]
+                    ]
+
+                EntityDistrict ->
+                    [ [ 605, 596, 562, 640, 621, 546, 661, 592, 635, 539, 587, 612 ]
+                    , [ 595, 581, 562, 605, 656, 576, 593, 635, 625, 655, 620, 575 ]
+                    , [ 604, 642, 553, 655, 577, 622, 600, 571, 598, 621, 542, 596 ]
+                    ]
+    in
+    div [ class "pane velvet" ]
+        [ viewPaneHeading language Translate.Stunting
         , div [ class "pane-content" ] <|
             viewTableHeader language
                 :: rows
