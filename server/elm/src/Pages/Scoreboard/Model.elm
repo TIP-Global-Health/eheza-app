@@ -113,7 +113,7 @@ type NCDATargetedInterventionsItem
     | ConditionalFoodItems
 
 
-type NCDAUniversalInterventionsItem
+type NCDAUniversalInterventionItem
     = Immunization
     | VitaminA
     | Deworming

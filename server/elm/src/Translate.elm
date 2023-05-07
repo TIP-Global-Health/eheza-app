@@ -43,11 +43,13 @@ type StringIdHttpError
 type TranslationId
     = AcuteMalnutrition
     | AggregatedChildScoreboard
+    | ANCNewborn
     | Cell
     | Demographics
     | District
     | GenerateReport
     | HttpError StringIdHttpError
+    | InfrastructureEnvironmentWash
     | Month Month
     | NCDADemographicsItemLabel NCDADemographicsItem
     | NCDAAcuteMalnutritionItemLabel NCDAAcuteMalnutritionItem
@@ -56,14 +58,17 @@ type TranslationId
     | NCDAInfrastructureEnvironmentWashItemLabel NCDAInfrastructureEnvironmentWashItem
     | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
-    | NCDAUniversalInterventionsItemLabel NCDAUniversalInterventionsItem
+    | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
+    | NutritionBehavior
     | Province
     | Sector
     | SelectedEntity SelectedEntity
     | Stunting
     | Status
+    | TargetedInterventions
     | Village
+    | UniversalIntervention
 
 
 translationSet : TranslationId -> TranslationSet
@@ -76,6 +81,11 @@ translationSet transId =
 
         AggregatedChildScoreboard ->
             { english = "Aggregated Child Scoreboard"
+            , kinyarwanda = Nothing
+            }
+
+        ANCNewborn ->
+            { english = "ANC + Newborn"
             , kinyarwanda = Nothing
             }
 
@@ -101,6 +111,11 @@ translationSet transId =
 
         HttpError val ->
             translateHttpError val
+
+        InfrastructureEnvironmentWash ->
+            { english = "Infrastructure, Environment & Wash"
+            , kinyarwanda = Nothing
+            }
 
         Month month ->
             translateMonth month False
@@ -249,7 +264,7 @@ translationSet transId =
                     , kinyarwanda = Just "Gufata inkunga z’ingoboka harimo ibiryo n'amatungo magufi"
                     }
 
-        NCDAUniversalInterventionsItemLabel item ->
+        NCDAUniversalInterventionItemLabel item ->
             case item of
                 Immunization ->
                     { english = "Immunization"
@@ -298,6 +313,11 @@ translationSet transId =
                     , kinyarwanda = Just "Kubyimba"
                     }
 
+        NutritionBehavior ->
+            { english = "Nutrition Behavior"
+            , kinyarwanda = Nothing
+            }
+
         Province ->
             { english = "Province"
             , kinyarwanda = Nothing
@@ -332,8 +352,18 @@ translationSet transId =
             , kinyarwanda = Nothing
             }
 
+        TargetedInterventions ->
+            { english = "Targeted Interventions"
+            , kinyarwanda = Nothing
+            }
+
         Village ->
             { english = "Village"
+            , kinyarwanda = Nothing
+            }
+
+        UniversalIntervention ->
+            { english = "Univeral Intervention"
             , kinyarwanda = Nothing
             }
 

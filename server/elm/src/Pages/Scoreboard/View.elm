@@ -235,6 +235,11 @@ viewDisplayResultTable language value model =
         , viewDemographicsPane language entityType
         , viewAcuteMalnutritionPane language entityType
         , viewStuntingPane language entityType
+        , viewANCNewbornPane language entityType
+        , viewUniversalInterventionPane language entityType
+        , viewNutritionBehaviorPane language entityType
+        , viewTargetedInterventionsPane language entityType
+        , viewInfrastructureEnvironmentWashPane language entityType
         ]
 
 
@@ -409,1040 +414,263 @@ viewStuntingPane language entityType =
         ]
 
 
+viewANCNewbornPane : Language -> SelectedEntity -> Html any
+viewANCNewbornPane language entityType =
+    let
+        rows =
+            List.map2
+                (\item itemValues ->
+                    viewTableRow language (Translate.NCDAANCNewbornItemLabel item) itemValues
+                )
+                [ RegularCheckups, IronDuringPregnancy ]
+                values
 
---
--- viewANCNewbornPane :
---     Language
---     -> NominalDate
---     -> ModelIndexedDb
---     -> Person
---     -> List ( NominalDate, NCDAValue )
---     -> Html any
--- viewANCNewbornPane language currentDate db child allNCDAQuestionnaires =
---     let
---         pregnancyValues =
---             List.repeat 9 NCDACellValueEmpty
---
---         pregnancyValuesForANCSign sign =
---             if List.isEmpty allNCDAQuestionnaires then
---                 List.repeat 9 NCDACellValueDash
---
---             else
---                 let
---                     signConfirmed =
---                         List.any (\( _, value ) -> EverySet.member sign value.signs) allNCDAQuestionnaires
---                 in
---                 if signConfirmed then
---                     List.repeat 9 NCDACellValueV
---
---                 else
---                     List.repeat 9 NCDACellValueX
---
---         zeroToFiveValues =
---             List.repeat 6 NCDACellValueDash
---
---         sixToTwentyFourValues =
---             List.repeat 19 NCDACellValueDash
---     in
---     div [ class "pane anc-newborn" ]
---         [ viewPaneHeading language Translate.ANCNewborn
---         , div [ class "pane-content" ]
---             [ viewTableHeader
---             , viewTableRow language
---                 (Translate.NCDAANCNewbornItemLabel RegularCheckups)
---                 (pregnancyValuesForANCSign NCDARegularPrenatalVisits)
---                 zeroToFiveValues
---                 sixToTwentyFourValues
---             , viewTableRow language
---                 (Translate.NCDAANCNewbornItemLabel IronDuringPregnancy)
---                 (pregnancyValuesForANCSign NCDAIronSupplementsDuringPregnancy)
---                 zeroToFiveValues
---                 sixToTwentyFourValues
---             ]
---         ]
---
---
---
---
--- viewNutritionBehaviorPane :
---     Language
---     -> NominalDate
---     -> Person
---     -> Maybe (Dict Int NCDAValue)
---     -> Html any
--- viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths =
---     let
---         pregnancyValues =
---             List.repeat 9 NCDACellValueDash
---
---         breastfedForSixMonthsValues =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDABreastfedForSixMonths)
---
---         appropriateComplementaryFeedingValues =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAAppropriateComplementaryFeeding)
---
---         mealsADayValues =
---             generateValues currentDate
---                 child
---                 questionnairesByAgeInMonths
---                 (\questionnaire ->
---                     List.any (\sign -> EverySet.member sign questionnaire.signs)
---                         [ NCDAMealFrequency6to8Months
---                         , NCDAMealFrequency9to11Months
---                         , NCDAMealFrequency12MonthsOrMore
---                         ]
---                 )
---
---         diverseDietValues =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAFiveFoodGroups)
---
---         -- Here we are interested only at answer given when child was 6 months old.
---         -- For months before that, and after, will show dahses, in case child has
---         -- reached the age for which value is given (empty value otherwise).
---         ( breastfedForSixMonthsFirstPeriod, breastfedForSixMonthsSecondPeriod ) =
---             let
---                 firstPeriod =
---                     List.take 6 breastfedForSixMonthsValues
---                         |> List.map setDashIfNotEmpty
---
---                 secondPeriod =
---                     let
---                         generated =
---                             List.drop 6 breastfedForSixMonthsValues
---                     in
---                     List.take 1 generated
---                         ++ (List.drop 1 generated
---                                 |> List.map setDashIfNotEmpty
---                            )
---             in
---             ( firstPeriod, secondPeriod )
---
---         -- Here we are interested only at answer given when child has reached
---         -- the age of 7 months.
---         -- For prior period we show dahses, in case child has reached
---         -- the age for which value is given (empty value otherwise).
---         ( appropriateComplementaryFeedingFirstPeriod, appropriateComplementaryFeedingSecondPeriod ) =
---             let
---                 firstPeriod =
---                     List.take 6 appropriateComplementaryFeedingValues
---                         |> List.map setDashIfNotEmpty
---
---                 secondPeriod =
---                     let
---                         generated =
---                             List.drop 6 appropriateComplementaryFeedingValues
---                     in
---                     (List.take 1 generated
---                         |> List.map setDashIfNotEmpty
---                     )
---                         ++ List.drop 1 generated
---             in
---             ( firstPeriod, secondPeriod )
---
---         -- generateValues() may generate values at certain periods that are
---         -- not relevant, which we want to replace them with dashes.
---         -- However, if child has not yeat reach the age of month for which
---         -- value is presented, generateValues() will preperly set
---         -- NCDACellValueEmpty there, and we want to keep it.
---         setDashIfNotEmpty value =
---             if value == NCDACellValueEmpty then
---                 value
---
---             else
---                 NCDACellValueDash
---     in
---     div [ class "pane nutrition-behavior" ]
---         [ viewPaneHeading language Translate.NutritionBehavior
---         , div [ class "pane-content" ]
---             [ viewTableHeader
---             , viewTableRow language
---                 (Translate.NCDANutritionBehaviorItemLabel BreastfedSixMonths)
---                 pregnancyValues
---                 breastfedForSixMonthsFirstPeriod
---                 breastfedForSixMonthsSecondPeriod
---             , viewTableRow language
---                 (Translate.NCDANutritionBehaviorItemLabel AppropriateComplementaryFeeding)
---                 pregnancyValues
---                 appropriateComplementaryFeedingFirstPeriod
---                 appropriateComplementaryFeedingSecondPeriod
---             , viewTableRow language
---                 (Translate.NCDANutritionBehaviorItemLabel DiverseDiet)
---                 pregnancyValues
---                 (List.take 6 diverseDietValues)
---                 (List.drop 6 diverseDietValues)
---             , viewTableRow language
---                 (Translate.NCDANutritionBehaviorItemLabel MealsADay)
---                 pregnancyValues
---                 (List.take 6 mealsADayValues)
---                 (List.drop 6 mealsADayValues)
---             ]
---         ]
---
---
--- viewInfrastructureEnvironmentWashPane :
---     Language
---     -> NominalDate
---     -> Person
---     -> Maybe (Dict Int NCDAValue)
---     -> Html any
--- viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths =
---     let
---         pregnancyValues =
---             List.repeat 9 NCDACellValueDash
---
---         hasToilets =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasToilets)
---
---         hasCleanWater =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasCleanWater)
---
---         hasHandwashingFacility =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasHandwashingFacility)
---
---         hasKitchenGarden =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasKitchenGarden)
---
---         insecticideTreatedBedNets =
---             let
---                 byMonths =
---                     generateValues currentDate
---                         child
---                         questionnairesByAgeInMonths
---                         (.signs >> EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy)
---
---                 answer =
---                     List.foldl
---                         (\cellValue answerSoFar ->
---                             if List.member cellValue [ NCDACellValueV, NCDACellValueX ] then
---                                 Just cellValue
---
---                             else
---                                 answerSoFar
---                         )
---                         Nothing
---                         byMonths
---             in
---             -- This question is asked once. If answer was given,
---             -- we display it throughout the whole period.
---             Maybe.map
---                 (\answer_ ->
---                     List.map
---                         (\monthValue ->
---                             if monthValue /= NCDACellValueEmpty then
---                                 answer_
---
---                             else
---                                 NCDACellValueEmpty
---                         )
---                         byMonths
---                 )
---                 answer
---                 |> Maybe.withDefault byMonths
---     in
---     div [ class "pane infrastructure-environment-wash" ]
---         [ viewPaneHeading language Translate.InfrastructureEnvironmentWash
---         , div [ class "pane-content" ]
---             [ viewTableHeader
---             , viewTableRow language
---                 (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasToilets)
---                 pregnancyValues
---                 (List.take 6 hasToilets)
---                 (List.drop 6 hasToilets)
---             , viewTableRow language
---                 (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasCleanWater)
---                 pregnancyValues
---                 (List.take 6 hasCleanWater)
---                 (List.drop 6 hasCleanWater)
---             , viewTableRow language
---                 (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasHandwashingFacility)
---                 pregnancyValues
---                 (List.take 6 hasHandwashingFacility)
---                 (List.drop 6 hasHandwashingFacility)
---             , viewTableRow language
---                 (Translate.NCDAInfrastructureEnvironmentWashItemLabel InsecticideTreatedBedNets)
---                 pregnancyValues
---                 (List.take 6 insecticideTreatedBedNets)
---                 (List.drop 6 insecticideTreatedBedNets)
---             , viewTableRow language
---                 (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasKitchenGarden)
---                 pregnancyValues
---                 (List.take 6 hasKitchenGarden)
---                 (List.drop 6 hasKitchenGarden)
---             ]
---         ]
---
---
--- viewTargetedInterventionsPane :
---     Language
---     -> NominalDate
---     -> Person
---     -> ModelIndexedDb
---     -> Maybe (Dict Int NCDAValue)
---     -> ChildMeasurementList
---     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
---     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
---     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
---     -> Html any
--- viewTargetedInterventionsPane language currentDate child db questionnairesByAgeInMonths groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates acuteIllnesses =
---     let
---         pregnancyValues =
---             List.repeat 9 NCDACellValueDash
---
---         fbfsByAgeInMonths =
---             Dict.values groupNutritionMeasurements.fbfs
---                 |> List.map
---                     (\fbf ->
---                         if fbf.value.distributedAmount > 0 then
---                             ( fbf.dateMeasured, NCDACellValueV )
---
---                         else
---                             ( fbf.dateMeasured, NCDACellValueX )
---                     )
---                 |> distributeByAgeInMonths child
---
---         malnutritionTreatmentsByAgeInMonths =
---             groupMalnutritionTreatmentData
---                 ++ individualMalnutritionTreatmentData
---                 |> distributeByAgeInMonths child
---
---         groupMalnutritionTreatmentData =
---             let
---                 malnutritionAssessmentDates =
---                     Dict.values groupNutritionMeasurements.nutritions
---                         |> List.filterMap
---                             (\nutrition ->
---                                 if
---                                     List.any (\assessment -> EverySet.member assessment nutrition.value.assesment)
---                                         [ AssesmentAcuteMalnutritionModerate
---                                         , AssesmentAcuteMalnutritionSevere
---                                         ]
---                                 then
---                                     Just nutrition.dateMeasured
---
---                                 else
---                                     Nothing
---                             )
---             in
---             Dict.values groupNutritionMeasurements.sendToHC
---                 |> List.filterMap
---                     (\sendToHC ->
---                         if
---                             -- Sent to HC measurement was taken on same day
---                             -- malnutrition assessment was made.
---                             List.member sendToHC.dateMeasured malnutritionAssessmentDates
---                         then
---                             if EverySet.member ReferToHealthCenter sendToHC.value.signs then
---                                 Just ( sendToHC.dateMeasured, NCDACellValueV )
---
---                             else
---                                 Just ( sendToHC.dateMeasured, NCDACellValueX )
---
---                         else
---                             Nothing
---                     )
---
---         individualMalnutritionTreatmentData =
---             generateIndividualMalnutritionTreatmentData individualNutritionMeasurementsWithDates
---                 ++ generateIndividualMalnutritionTreatmentData individualWellChildMeasurementsWithDates
---
---         generateIndividualMalnutritionTreatmentData measurementsWithDates =
---             List.filterMap
---                 (\( date, ( _, measurements ) ) ->
---                     getMeasurementValueFunc measurements.nutrition
---                         |> Maybe.andThen
---                             (\nutritionValue ->
---                                 if
---                                     List.any (\assessment -> EverySet.member assessment nutritionValue.assesment)
---                                         [ AssesmentAcuteMalnutritionModerate
---                                         , AssesmentAcuteMalnutritionSevere
---                                         ]
---                                 then
---                                     getMeasurementValueFunc measurements.sendToHC
---                                         |> Maybe.map
---                                             (\sendToHCValue ->
---                                                 if EverySet.member ReferToHealthCenter sendToHCValue.signs then
---                                                     ( date, NCDACellValueV )
---
---                                                 else
---                                                     ( date, NCDACellValueX )
---                                             )
---
---                                 else
---                                     Nothing
---                             )
---                 )
---                 measurementsWithDates
---
---         diarrheaTreatmenByAgeInMonths =
---             Maybe.andThen
---                 (\birthDate ->
---                     List.filter
---                         (\( participantId, participant ) ->
---                             diffMonths birthDate participant.startDate < 24
---                         )
---                         acuteIllnesses
---                         |> List.map
---                             (\( participantId, participant ) ->
---                                 Dict.get participantId db.acuteIllnessEncountersByParticipant
---                                     |> Maybe.andThen RemoteData.toMaybe
---                                     |> Maybe.map
---                                         (Dict.toList
---                                             >> List.filterMap
---                                                 (\( encounterId, encounter ) ->
---                                                     -- We need to fetch measurements of encounters where Uncomplicated
---                                                     -- Gastrointestinal Infection was diagnosed, to check if treatment was given.
---                                                     if encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated then
---                                                         Dict.get encounterId db.acuteIllnessMeasurements
---                                                             |> Maybe.andThen RemoteData.toMaybe
---                                                             |> Maybe.andThen
---                                                                 (.medicationDistribution
---                                                                     >> getMeasurementValueFunc
---                                                                     >> Maybe.map
---                                                                         (\value ->
---                                                                             if
---                                                                                 List.any (\sign -> EverySet.member sign value.distributionSigns)
---                                                                                     [ ORS, Zinc ]
---                                                                             then
---                                                                                 ( encounter.startDate, NCDACellValueV )
---
---                                                                             else
---                                                                                 ( encounter.startDate, NCDACellValueX )
---                                                                         )
---                                                                 )
---
---                                                     else
---                                                         Nothing
---                                                 )
---                                         )
---                                     |> Maybe.withDefault []
---                             )
---                         |> List.concat
---                         |> distributeByAgeInMonths child
---                 )
---                 child.birthDate
---
---         fbfValues =
---             generateValues currentDate child fbfsByAgeInMonths ((==) NCDACellValueV)
---
---         malnutritionTreatmentValues =
---             generateValues currentDate child malnutritionTreatmentsByAgeInMonths ((==) NCDACellValueV)
---
---         diarrheaTreatmentValues =
---             generateValues currentDate child diarrheaTreatmenByAgeInMonths ((==) NCDACellValueV)
---
---         supportChildWithDisabilityValues =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDASupportChildWithDisability)
---
---         conditionalCashTransferValues =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAConditionalCashTransfer)
---
---         conditionalFoodItemsValues =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAConditionalFoodItems)
---     in
---     div [ class "pane targeted-interventions" ]
---         [ viewPaneHeading language Translate.TargetedInterventions
---         , div [ class "pane-content" ]
---             [ viewTableHeader
---             , viewTableRow language
---                 (Translate.NCDATargetedInterventionsItemLabel FBFGiven)
---                 pregnancyValues
---                 (List.take 6 fbfValues)
---                 (List.drop 6 fbfValues)
---             , viewTableRow language
---                 (Translate.NCDATargetedInterventionsItemLabel TreatmentForAcuteMalnutrition)
---                 pregnancyValues
---                 (List.take 6 malnutritionTreatmentValues)
---                 (List.drop 6 malnutritionTreatmentValues)
---             , viewTableRow language
---                 (Translate.NCDATargetedInterventionsItemLabel TreatmentForDiarrhea)
---                 pregnancyValues
---                 (List.take 6 diarrheaTreatmentValues)
---                 (List.drop 6 diarrheaTreatmentValues)
---             , viewTableRow language
---                 (Translate.NCDATargetedInterventionsItemLabel SupportChildWithDisability)
---                 pregnancyValues
---                 (List.take 6 supportChildWithDisabilityValues)
---                 (List.drop 6 supportChildWithDisabilityValues)
---             , viewTableRow language
---                 (Translate.NCDATargetedInterventionsItemLabel ConditionalCashTransfer)
---                 pregnancyValues
---                 (List.take 6 conditionalCashTransferValues)
---                 (List.drop 6 conditionalCashTransferValues)
---             , viewTableRow language
---                 (Translate.NCDATargetedInterventionsItemLabel ConditionalFoodItems)
---                 pregnancyValues
---                 (List.take 6 conditionalFoodItemsValues)
---                 (List.drop 6 conditionalFoodItemsValues)
---             ]
---         ]
---
---
--- viewUniversalInterventionsPane :
---     Language
---     -> NominalDate
---     -> Person
---     -> ModelIndexedDb
---     -> Maybe (Dict Int NCDAValue)
---     -> Maybe AssembledData
---     -> List ( WellChildEncounterId, WellChildEncounter )
---     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
---     -> Html any
--- viewUniversalInterventionsPane language currentDate child db questionnairesByAgeInMonths maybeAssembled wellChildEncounters individualWellChildMeasurementsWithDates =
---     let
---         pregnancyValues =
---             List.repeat 9 NCDACellValueDash
---
---         immunizationByAgeInMonths =
---             Maybe.andThen
---                 (\birthDate ->
---                     Maybe.map
---                         (\assembled ->
---                             List.repeat 25 ""
---                                 |> List.indexedMap
---                                     (\index _ ->
---                                         let
---                                             referenceDate =
---                                                 -- We use it to determine if child was
---                                                 -- behind on any of vaccines at that month.
---                                                 resolveLastDayForMonthX (index + 1) birthDate
---
---                                             -- Filter out vaccinations that were performed
---                                             -- after the reference date.
---                                             vaccinationProgressOnReferrenceDate =
---                                                 Dict.map
---                                                     (\vaccineType dosesDict ->
---                                                         Dict.filter
---                                                             (\dose administeredDate ->
---                                                                 Date.compare administeredDate referenceDate == LT
---                                                             )
---                                                             dosesDict
---                                                     )
---                                                     assembled.vaccinationProgress
---
---                                             futureVaccinations =
---                                                 generateFutureVaccinationsData currentDate child False vaccinationProgressOnReferrenceDate
---
---                                             closestDateForVaccination =
---                                                 List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
---                                                     |> List.sortWith Date.compare
---                                                     |> List.head
---                                         in
---                                         Maybe.map
---                                             (\closestDate ->
---                                                 if Date.compare closestDate referenceDate == GT then
---                                                     -- Closest date when vaccine is required is after
---                                                     -- current month, which means that att current month
---                                                     -- we're not behind on vaccination.
---                                                     ( referenceDate, NCDACellValueV )
---
---                                                 else
---                                                     ( referenceDate, NCDACellValueX )
---                                             )
---                                             closestDateForVaccination
---                                             |> Maybe.withDefault
---                                                 -- This indicates that there're no future vaccinations to be
---                                                 -- done, and therefore, we're on track at current month.
---                                                 ( referenceDate, NCDACellValueV )
---                                     )
---                         )
---                         maybeAssembled
---                         |> Maybe.withDefault
---                             -- We get here if there were no SPV encounters performed,
---                             -- which means that no vaccinations were recorded.
---                             -- Therefore, we're for sure behind on vaccinations
---                             -- for any given month.
---                             (List.repeat 25 ""
---                                 |> List.indexedMap
---                                     (\index _ ->
---                                         ( resolveLastDayForMonthX (index + 1) birthDate
---                                         , NCDACellValueX
---                                         )
---                                     )
---                             )
---                         |> distributeByAgeInMonths child
---                 )
---                 child.birthDate
---
---         resolveLastDayForMonthX monthX childBirthDate =
---             -- This is the date for last day of month X.
---             -- For example, for X = 0, this is
---             -- the last day, before child turns 1 month old.
---             Date.add Date.Months monthX childBirthDate
---                 |> Date.add Date.Days -1
---
---         vitaminAByAgeInMonths =
---             Maybe.andThen Tuple.first medicineByAgeInMonths
---
---         dewormerByAgeInMonths =
---             Maybe.andThen Tuple.second medicineByAgeInMonths
---
---         medicineByAgeInMonths =
---             Maybe.map
---                 (\assembled ->
---                     let
---                         generateMeasurementValues measurementFunc =
---                             List.filterMap
---                                 (measurementFunc
---                                     >> Maybe.map
---                                         (\( _, measurement ) ->
---                                             ( measurement.dateMeasured, measurement.value )
---                                         )
---                                 )
---                                 allMeasurements
---
---                         allMeasurements =
---                             assembled.measurements
---                                 :: List.map (Tuple.second >> Tuple.second)
---                                     assembled.previousMeasurementsWithDates
---                     in
---                     ( generateMeasurementValues .vitaminA
---                         |> distributeByAgeInMonths child
---                     , generateMeasurementValues .mebendezole
---                         |> distributeByAgeInMonths child
---                     )
---                 )
---                 maybeAssembled
---
---         immunizationValues =
---             generateValues currentDate child immunizationByAgeInMonths ((==) NCDACellValueV)
---
---         vitaminAValues =
---             let
---                 administeredMonths =
---                     List.indexedMap
---                         (\index value ->
---                             if value == NCDACellValueV then
---                                 Just index
---
---                             else
---                                 Nothing
---                         )
---                         rawValues
---                         |> Maybe.Extra.values
---
---                 rawValues =
---                     generateValues currentDate child vitaminAByAgeInMonths ((==) AdministeredToday)
---             in
---             List.indexedMap
---                 -- Vitamin A is not administered before age of 6 months.
---                 (postProcessMedicineRawValue 6 administeredMonths)
---                 rawValues
---
---         dewormerValues =
---             let
---                 administeredMonths =
---                     List.indexedMap
---                         (\index value ->
---                             if value == NCDACellValueV then
---                                 Just index
---
---                             else
---                                 Nothing
---                         )
---                         rawValues
---                         |> Maybe.Extra.values
---
---                 rawValues =
---                     generateValues currentDate child dewormerByAgeInMonths ((==) AdministeredToday)
---             in
---             List.indexedMap
---                 -- Dewormer is not administered before age of 12 months.
---                 (postProcessMedicineRawValue 12 administeredMonths)
---                 rawValues
---
---         postProcessMedicineRawValue startingMonth administeredMonths processingMonth value =
---             if value == NCDACellValueEmpty then
---                 -- This means that child did not reach this age yet.
---                 value
---
---             else if processingMonth < startingMonth then
---                 -- Medicine is not administered yet.
---                 NCDACellValueDash
---
---             else if
---                 List.any
---                     (\administeredMonth ->
---                         -- Child was given medicine within past 6 months
---                         processingMonth >= administeredMonth && processingMonth - administeredMonth < 6
---                     )
---                     administeredMonths
---             then
---                 NCDACellValueV
---
---             else
---                 NCDACellValueX
---
---         ongeraMNPValues =
---             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAOngeraMNP)
---
---         ecdValues =
---             Maybe.map2
---                 (\assembled ageMonths ->
---                     let
---                         milestonesToCurrentDateWithStatus =
---                             generateECDMilestonesWithStatus currentDate
---                                 child
---                                 wellChildEncounters
---                                 individualWellChildMeasurementsWithDates
---                                 |> Dict.fromList
---
---                         milestoneWithStatusToCellValues ( milestone, status ) =
---                             let
---                                 cellValue =
---                                     case status of
---                                         StatusOnTrack ->
---                                             NCDACellValueV
---
---                                         NoECDStatus ->
---                                             NCDACellValueEmpty
---
---                                         _ ->
---                                             NCDACellValueX
---                             in
---                             case milestone of
---                                 -- Covers age of 2 and 3 months.
---                                 Milestone6Weeks ->
---                                     List.repeat 2 cellValue
---
---                                 -- Covers age of 4 and 5 months.
---                                 Milestone14Weeks ->
---                                     List.repeat 2 cellValue
---
---                                 -- Covers age of 6, 7 and 8 months.
---                                 Milestone6Months ->
---                                     List.repeat 3 cellValue
---
---                                 -- Covers age of 9, 10 and 11 months.
---                                 Milestone9Months ->
---                                     List.repeat 3 cellValue
---
---                                 -- Covers age of 12, 13 and 14 months.
---                                 Milestone12Months ->
---                                     List.repeat 3 cellValue
---
---                                 --    Covers age of 15, 16 and 17 months.
---                                 Milestone15Months ->
---                                     List.repeat 3 cellValue
---
---                                 --    Covers age of 18 to 23 months.
---                                 Milestone18Months ->
---                                     List.repeat 6 cellValue
---
---                                 --    Covers age of 24 and 25 months.
---                                 Milestone2Years ->
---                                     List.repeat 2 cellValue
---
---                                 -- Not in range.
---                                 Milestone3Years ->
---                                     []
---
---                                 -- Not in range.
---                                 Milestone4Years ->
---                                     []
---
---                         allMilestones =
---                             [ Milestone6Weeks
---                             , Milestone14Weeks
---                             , Milestone6Months
---                             , Milestone9Months
---                             , Milestone12Months
---                             , Milestone15Months
---                             , Milestone18Months
---                             , Milestone2Years
---                             ]
---                     in
---                     -- For first month, there's no ECD milestone.
---                     NCDACellValueDash
---                         :: (List.map
---                                 (\milestone ->
---                                     ( milestone
---                                     , Dict.get milestone milestonesToCurrentDateWithStatus
---                                         |> Maybe.withDefault NoECDStatus
---                                     )
---                                 )
---                                 allMilestones
---                                 |> List.map milestoneWithStatusToCellValues
---                                 |> List.concat
---                            )
---                         |> List.indexedMap
---                             (\month value ->
---                                 if ageMonths < month then
---                                     NCDACellValueEmpty
---
---                                 else
---                                     value
---                             )
---                 )
---                 maybeAssembled
---                 (ageInMonths currentDate child)
---                 |> Maybe.withDefault emptyNCDAValuesForChild
---     in
---     div [ class "pane universal-interventions" ]
---         [ viewPaneHeading language Translate.UniversalInterventions
---         , div [ class "pane-content" ]
---             [ viewTableHeader
---             , viewTableRow language
---                 (Translate.NCDAUniversalInterventionsItemLabel Immunization)
---                 pregnancyValues
---                 (List.take 6 immunizationValues)
---                 (List.drop 6 immunizationValues)
---             , viewTableRow language
---                 (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.VitaminA)
---                 pregnancyValues
---                 (List.take 6 vitaminAValues)
---                 (List.drop 6 vitaminAValues)
---             , viewTableRow language
---                 (Translate.NCDAUniversalInterventionsItemLabel Deworming)
---                 pregnancyValues
---                 (List.take 6 dewormerValues)
---                 (List.drop 6 dewormerValues)
---             , viewTableRow language
---                 (Translate.NCDAUniversalInterventionsItemLabel OngeraMNP)
---                 pregnancyValues
---                 (List.take 6 ongeraMNPValues)
---                 (List.drop 6 ongeraMNPValues)
---             , viewTableRow language
---                 (Translate.NCDAUniversalInterventionsItemLabel ECDServices)
---                 pregnancyValues
---                 (List.take 6 ecdValues)
---                 (List.drop 6 ecdValues)
---             ]
---         ]
---
---
--- viewFillTheBlanksPane :
---     Language
---     -> NominalDate
---     -> ZScore.Model.Model
---     -> Person
---     -> ModelIndexedDb
---     -> ChildMeasurementList
---     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
---     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
---     -> Html any
--- viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates =
---     let
---         pregnancyValues =
---             List.repeat 9 NCDACellValueDash
---
---         maybeAgeInDays =
---             Maybe.map
---                 (\birthDate -> diffDays birthDate currentDate)
---                 child.birthDate
---
---         heightsValues =
---             generateFillTheBlanksValues heightsByAgeInMonths
---
---         weightsValues =
---             generateFillTheBlanksValues weightsByAgeInMonths
---
---         muacsValues =
---             generateFillTheBlanksValues muacsByAgeInMonths
---
---         nutritionsValues =
---             generateFillTheBlanksValues nutritionsByAgeInMonths
---
---         generateFillTheBlanksValues valuesByAgeInMonths =
---             Maybe.map2
---                 (\values ageMonths ->
---                     List.indexedMap
---                         (\month _ ->
---                             if ageMonths < month then
---                                 NCDACellValueEmpty
---
---                             else
---                                 Dict.get month values
---                                     |> Maybe.withDefault NCDACellValueDash
---                         )
---                         emptyNCDAValuesForChild
---                 )
---                 valuesByAgeInMonths
---                 (ageInMonths currentDate child)
---                 |> Maybe.withDefault emptyNCDAValuesForChild
---
---         heightsByAgeInMonths =
---             Maybe.map
---                 (\ageInDays ->
---                     List.filterMap
---                         (\( date, set ) ->
---                             Maybe.andThen
---                                 (\(HeightInCm height) ->
---                                     zScoreLengthHeightForAge zscores ageInDays child.gender (Centimetres height)
---                                         |> Maybe.map (\zscore -> ( date, cellValueByZscore zscore ))
---                                 )
---                                 set.height
---                         )
---                         allValuesSets
---                 )
---                 maybeAgeInDays
---                 |> Maybe.withDefault []
---                 |> distributeByAgeInMonths child
---
---         weightsByAgeInMonths =
---             Maybe.map
---                 (\ageInDays ->
---                     List.filterMap
---                         (\( date, set ) ->
---                             Maybe.andThen
---                                 (\(WeightInKg weight) ->
---                                     zScoreWeightForAge zscores ageInDays child.gender (Kilograms weight)
---                                         |> Maybe.map (\zscore -> ( date, cellValueByZscore zscore ))
---                                 )
---                                 set.weight
---                         )
---                         allValuesSets
---                 )
---                 maybeAgeInDays
---                 |> Maybe.withDefault []
---                 |> distributeByAgeInMonths child
---
---         cellValueByZscore zscore =
---             if zscore < -3 then
---                 NCDACellValueT
---
---             else if zscore < -2 then
---                 NCDACellValueH
---
---             else
---                 NCDACellValueC
---
---         muacsByAgeInMonths =
---             List.filterMap
---                 (\( date, set ) ->
---                     Maybe.map
---                         (\value ->
---                             let
---                                 cellValue =
---                                     case muacIndication value of
---                                         ColorAlertRed ->
---                                             NCDACellValueT
---
---                                         ColorAlertYellow ->
---                                             NCDACellValueH
---
---                                         ColorAlertGreen ->
---                                             NCDACellValueC
---                             in
---                             ( date, cellValue )
---                         )
---                         set.muac
---                 )
---                 allValuesSets
---                 |> distributeByAgeInMonths child
---
---         nutritionsByAgeInMonths =
---             List.filterMap
---                 (\( date, set ) ->
---                     Maybe.map
---                         (\value ->
---                             let
---                                 cellValue =
---                                     if EverySet.member Edema value.signs then
---                                         NCDACellValueT
---
---                                     else
---                                         NCDACellValueC
---                             in
---                             ( date, cellValue )
---                         )
---                         set.nutrition
---                 )
---                 allValuesSets
---                 |> distributeByAgeInMonths child
---
---         allValuesSets =
---             nutritionValuesSets ++ wellChildValuesSets ++ groupsValuesSets
---
---         nutritionValuesSets =
---             List.map
---                 (\( date, ( _, measurements ) ) ->
---                     generateIndividualValuesSet date measurements
---                 )
---                 individualNutritionMeasurementsWithDates
---
---         wellChildValuesSets =
---             List.map
---                 (\( date, ( _, measurements ) ) ->
---                     generateIndividualValuesSet date measurements
---                 )
---                 individualWellChildMeasurementsWithDates
---
---         generateIndividualValuesSet date measurements =
---             ( date
---             , { height = getMeasurementValueFunc measurements.height
---               , weight = getMeasurementValueFunc measurements.weight
---               , muac = getMeasurementValueFunc measurements.muac
---               , nutrition = getMeasurementValueFunc measurements.nutrition
---               }
---             )
---
---         groupsValuesSets =
---             List.map
---                 (\date ->
---                     ( date
---                     , { height = Dict.get date groupHeightsByDate
---                       , weight = Dict.get date groupWeightsByDate
---                       , muac = Dict.get date groupMuacsByDate
---                       , nutrition = Dict.get date groupNutritionsByDate
---                       }
---                     )
---                 )
---                 groupEncounterDates
---
---         groupEncounterDates =
---             Dict.keys groupHeightsByDate
---                 ++ Dict.keys groupWeightsByDate
---                 ++ Dict.keys groupMuacsByDate
---                 ++ Dict.keys groupNutritionsByDate
---                 |> EverySet.fromList
---                 |> EverySet.toList
---
---         groupHeightsByDate =
---             Dict.values groupNutritionMeasurements.heights
---                 |> List.map (\height -> ( height.dateMeasured, height.value ))
---                 |> Dict.fromList
---
---         groupWeightsByDate =
---             Dict.values groupNutritionMeasurements.weights
---                 |> List.map (\weight -> ( weight.dateMeasured, weight.value ))
---                 |> Dict.fromList
---
---         groupMuacsByDate =
---             Dict.values groupNutritionMeasurements.muacs
---                 |> List.map (\muac -> ( muac.dateMeasured, muac.value ))
---                 |> Dict.fromList
---
---         groupNutritionsByDate =
---             Dict.values groupNutritionMeasurements.nutritions
---                 |> List.map (\nutrition -> ( nutrition.dateMeasured, nutrition.value ))
---                 |> Dict.fromList
---     in
---     div [ class "pane fill-the-blanks" ]
---         [ viewPaneHeading language Translate.FillTheBlanks
---         , div [ class "pane-content" ]
---             [ viewTableHeader
---             , viewTableRow language
---                 (Translate.NCDAFillTheBlanksItemLabel HeightToAge)
---                 pregnancyValues
---                 (List.take 6 heightsValues)
---                 (List.drop 6 heightsValues)
---             , viewTableRow language
---                 (Translate.NCDAFillTheBlanksItemLabel WeightToAge)
---                 pregnancyValues
---                 (List.take 6 weightsValues)
---                 (List.drop 6 weightsValues)
---             , viewTableRow language
---                 (Translate.NCDAFillTheBlanksItemLabel MuacValue)
---                 pregnancyValues
---                 (List.take 6 muacsValues)
---                 (List.drop 6 muacsValues)
---             , viewTableRow language
---                 (Translate.NCDAFillTheBlanksItemLabel EdemaPresent)
---                 pregnancyValues
---                 (List.take 6 nutritionsValues)
---                 (List.drop 6 nutritionsValues)
---             ]
---         ]
+        values =
+            case entityType of
+                EntityVillage ->
+                    [ [ 10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12 ]
+                    , [ 10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12 ]
+                    ]
+
+                EntityCell ->
+                    [ [ 105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105 ]
+                    , [ 105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105 ]
+                    ]
+
+                EntitySector ->
+                    [ [ 259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241 ]
+                    , [ 259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241 ]
+                    ]
+
+                EntityDistrict ->
+                    [ [ 583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569 ]
+                    , [ 583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569 ]
+                    ]
+    in
+    div [ class "pane cyan" ]
+        [ viewPaneHeading language Translate.ANCNewborn
+        , div [ class "pane-content" ] <|
+            viewTableHeader language
+                :: rows
+        ]
+
+
+viewUniversalInterventionPane : Language -> SelectedEntity -> Html any
+viewUniversalInterventionPane language entityType =
+    let
+        rows =
+            List.map2
+                (\item itemValues ->
+                    viewTableRow language (Translate.NCDAUniversalInterventionItemLabel item) itemValues
+                )
+                [ Immunization, VitaminA, OngeraMNP, OngeraMNP, ECDServices ]
+                values
+
+        values =
+            case entityType of
+                EntityVillage ->
+                    [ [ 13, 14, 11, 17, 9, 8, 14, 16, 12, 10, 15, 12 ]
+                    , [ 6, 10, 17, 13, 14, 12, 9, 8, 11, 15, 16, 12 ]
+                    , [ 14, 12, 16, 17, 10, 9, 13, 7, 8, 11, 19, 11 ]
+                    , [ 7, 12, 15, 10, 16, 8, 15, 17, 13, 14, 19, 11 ]
+                    , [ 12, 15, 8, 11, 11, 9, 17, 16, 15, 12, 19, 11 ]
+                    ]
+
+                EntityCell ->
+                    [ [ 89, 98, 76, 81, 105, 92, 113, 127, 140, 115, 92, 104 ]
+                    , [ 102, 85, 121, 96, 133, 107, 127, 104, 141, 110, 88, 129 ]
+                    , [ 129, 118, 144, 96, 142, 139, 112, 131, 147, 137, 135, 123 ]
+                    , [ 136, 142, 98, 131, 143, 101, 131, 119, 144, 99, 109, 126 ]
+                    , [ 117, 121, 124, 133, 104, 141, 109, 128, 101, 137, 122, 99 ]
+                    ]
+
+                EntitySector ->
+                    [ [ 261, 217, 205, 238, 205, 281, 276, 220, 250, 299, 283, 252 ]
+                    , [ 222, 206, 223, 196, 279, 261, 257, 216, 249, 233, 269, 248 ]
+                    , [ 241, 267, 278, 217, 211, 251, 272, 229, 240, 221, 208, 220 ]
+                    , [ 211, 248, 230, 235, 222, 240, 216, 212, 227, 262, 255, 225 ]
+                    , [ 209, 224, 215, 247, 273, 263, 258, 214, 249, 236, 275, 249 ]
+                    ]
+
+                EntityDistrict ->
+                    [ [ 597, 567, 620, 564, 485, 545, 663, 536, 498, 603, 665, 496 ]
+                    , [ 547, 599, 581, 474, 505, 489, 655, 593, 605, 539, 629, 508 ]
+                    , [ 632, 506, 551, 580, 647, 562, 508, 475, 659, 502, 642, 657 ]
+                    , [ 608, 572, 519, 648, 655, 599, 586, 547, 596, 522, 618, 484 ]
+                    , [ 567, 514, 601, 658, 557, 528, 505, 506, 540, 554, 529, 510 ]
+                    ]
+    in
+    div [ class "pane orange" ]
+        [ viewPaneHeading language Translate.UniversalIntervention
+        , div [ class "pane-content" ] <|
+            viewTableHeader language
+                :: rows
+        ]
+
+
+viewNutritionBehaviorPane : Language -> SelectedEntity -> Html any
+viewNutritionBehaviorPane language entityType =
+    let
+        rows =
+            List.map2
+                (\item itemValues ->
+                    viewTableRow language (Translate.NCDANutritionBehaviorItemLabel item) itemValues
+                )
+                [ BreastfedSixMonths, AppropriateComplementaryFeeding, DiverseDiet, MealsADay ]
+                values
+
+        values =
+            case entityType of
+                EntityVillage ->
+                    [ [ 7, 17, 15, 19, 8, 13, 14, 11, 12, 11, 15, 12 ]
+                    , [ 8, 14, 12, 16, 18, 9, 10, 7, 13, 14, 12, 11 ]
+                    , [ 17, 18, 15, 13, 10, 7, 16, 9, 11, 17, 16, 11 ]
+                    , [ 16, 10, 11, 18, 14, 13, 12, 17, 9, 16, 15, 12 ]
+                    ]
+
+                EntityCell ->
+                    [ [ 104, 106, 120, 120, 102, 137, 102, 139, 98, 121, 139, 126 ]
+                    , [ 120, 131, 107, 125, 135, 114, 103, 141, 127, 135, 118, 111 ]
+                    , [ 133, 116, 119, 111, 123, 144, 111, 136, 128, 115, 101, 123 ]
+                    , [ 126, 108, 147, 125, 121, 115, 121, 116, 112, 118, 121, 111 ]
+                    ]
+
+                EntitySector ->
+                    [ [ 230, 207, 243, 232, 206, 252, 267, 211, 243, 235, 247, 230 ]
+                    , [ 240, 232, 221, 276, 261, 211, 250, 209, 287, 262, 237, 248 ]
+                    , [ 274, 290, 246, 230, 238, 231, 282, 237, 225, 279, 275, 230 ]
+                    , [ 280, 227, 236, 252, 210, 230, 232, 233, 226, 254, 249, 245 ]
+                    ]
+
+                EntityDistrict ->
+                    [ [ 567, 514, 601, 658, 557, 528, 505, 506, 540, 554, 529, 510 ]
+                    , [ 536, 567, 633, 530, 622, 583, 571, 549, 484, 497, 566, 502 ]
+                    , [ 507, 496, 609, 606, 575, 522, 548, 472, 645, 482, 483, 623 ]
+                    , [ 610, 497, 528, 582, 569, 505, 477, 567, 657, 519, 544, 568 ]
+                    ]
+    in
+    div [ class "pane velvet" ]
+        [ viewPaneHeading language Translate.NutritionBehavior
+        , div [ class "pane-content" ] <|
+            viewTableHeader language
+                :: rows
+        ]
+
+
+viewTargetedInterventionsPane : Language -> SelectedEntity -> Html any
+viewTargetedInterventionsPane language entityType =
+    let
+        rows =
+            List.map2
+                (\item itemValues ->
+                    viewTableRow language (Translate.NCDATargetedInterventionsItemLabel item) itemValues
+                )
+                [ FBFGiven
+                , TreatmentForAcuteMalnutrition
+                , TreatmentForDiarrhea
+                , SupportChildWithDisability
+                , ConditionalCashTransfer
+                , ConditionalFoodItems
+                ]
+                values
+
+        values =
+            case entityType of
+                EntityVillage ->
+                    [ [ 9, 15, 18, 7, 13, 11, 16, 9, 18, 8, 12, 10 ]
+                    , [ 13, 12, 7, 9, 8, 14, 17, 17, 10, 16, 10, 17 ]
+                    , [ 12, 15, 10, 18, 9, 16, 8, 11, 12, 17, 18, 14 ]
+                    , [ 3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3 ]
+                    , [ 17, 12, 8, 16, 11, 10, 9, 18, 15, 7, 12, 13 ]
+                    , [ 14, 10, 18, 11, 16, 12, 13, 7, 18, 12, 9, 15 ]
+                    ]
+
+                EntityCell ->
+                    [ [ 117, 135, 107, 104, 146, 97, 120, 138, 128, 99, 133, 128 ]
+                    , [ 139, 130, 131, 123, 103, 128, 123, 129, 145, 117, 99, 142 ]
+                    , [ 140, 96, 134, 121, 105, 98, 105, 139, 139, 138, 98, 131 ]
+                    , [ 98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122 ]
+                    , [ 142, 100, 129, 117, 141, 118, 120, 120, 123, 133, 98, 137 ]
+                    , [ 110, 91, 146, 124, 133, 149, 114, 89, 107, 144, 147, 118 ]
+                    ]
+
+                EntitySector ->
+                    [ [ 266, 288, 280, 238, 281, 275, 276, 259, 253, 246, 254, 259 ]
+                    , [ 203, 257, 234, 245, 245, 256, 124, 145, 124, 145, 239, 240 ]
+                    , [ 240, 229, 250, 240, 270, 216, 258, 247, 212, 250, 229, 209 ]
+                    , [ 203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239 ]
+                    , [ 254, 261, 237, 238, 258, 249, 275, 275, 216, 239, 241, 231 ]
+                    , [ 234, 227, 255, 265, 228, 208, 234, 206, 236, 238, 231, 252 ]
+                    ]
+
+                EntityDistrict ->
+                    [ [ 582, 618, 604, 533, 550, 601, 648, 486, 503, 565, 491, 634 ]
+                    , [ 491, 455, 640, 678, 524, 491, 545, 640, 563, 640, 455, 491 ]
+                    , [ 497, 555, 484, 545, 518, 491, 537, 652, 633, 614, 616, 554 ]
+                    , [ 530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491 ]
+                    , [ 620, 624, 578, 528, 530, 588, 583, 609, 625, 503, 651, 638 ]
+                    , [ 673, 635, 695, 604, 552, 618, 651, 673, 624, 586, 555, 668 ]
+                    ]
+    in
+    div [ class "pane cyan" ]
+        [ viewPaneHeading language Translate.TargetedInterventions
+        , div [ class "pane-content" ] <|
+            viewTableHeader language
+                :: rows
+        ]
+
+
+viewInfrastructureEnvironmentWashPane : Language -> SelectedEntity -> Html any
+viewInfrastructureEnvironmentWashPane language entityType =
+    let
+        rows =
+            List.map2
+                (\item itemValues ->
+                    viewTableRow language (Translate.NCDAInfrastructureEnvironmentWashItemLabel item) itemValues
+                )
+                [ HasToilets, HasCleanWater, HasHandwashingFacility, HasKitchenGarden, InsecticideTreatedBedNets ]
+                values
+
+        values =
+            case entityType of
+                EntityVillage ->
+                    [ [ 9, 14, 16, 12, 10, 8, 17, 11, 11, 16, 13, 15 ]
+                    , [ 13, 9, 13, 16, 12, 8, 17, 10, 10, 12, 14, 11 ]
+                    , [ 10, 9, 8, 16, 17, 11, 14, 18, 12, 15, 15, 11 ]
+                    , [ 16, 12, 11, 7, 13, 8, 16, 19, 15, 14, 11, 18 ]
+                    , [ 13, 8, 10, 9, 18, 11, 7, 17, 12, 10, 14, 17 ]
+                    ]
+
+                EntityCell ->
+                    [ [ 118, 138, 106, 117, 123, 98, 138, 103, 125, 125, 108, 110 ]
+                    , [ 122, 92, 146, 114, 125, 128, 138, 109, 91, 118, 115, 109 ]
+                    , [ 127, 126, 130, 103, 143, 117, 121, 108, 108, 111, 136, 135 ]
+                    , [ 104, 129, 132, 100, 99, 137, 132, 110, 127, 123, 131, 119 ]
+                    , [ 116, 90, 102, 92, 115, 134, 118, 137, 92, 130, 121, 122 ]
+                    ]
+
+                EntitySector ->
+                    [ [ 252, 244, 239, 247, 234, 259, 217, 259, 215, 250, 222, 264 ]
+                    , [ 257, 261, 209, 263, 225, 213, 226, 236, 220, 259, 240, 243 ]
+                    , [ 262, 209, 234, 237, 236, 237, 215, 267, 237, 228, 230, 256 ]
+                    , [ 252, 249, 214, 226, 284, 291, 202, 279, 238, 215, 285, 271 ]
+                    , [ 211, 262, 224, 244, 275, 237, 220, 246, 282, 265, 241, 241 ]
+                    ]
+
+                EntityDistrict ->
+                    [ [ 631, 583, 667, 626, 621, 567, 652, 611, 506, 555, 665, 636 ]
+                    , [ 537, 523, 588, 628, 617, 502, 562, 640, 504, 568, 522, 534 ]
+                    , [ 625, 623, 556, 504, 664, 655, 661, 531, 637, 558, 638, 582 ]
+                    , [ 657, 624, 577, 659, 643, 490, 532, 545, 601, 680, 506, 651 ]
+                    , [ 530, 605, 652, 621, 650, 522, 559, 606, 548, 523, 656, 492 ]
+                    ]
+    in
+    div [ class "pane orange" ]
+        [ viewPaneHeading language Translate.InfrastructureEnvironmentWash
+        , div [ class "pane-content" ] <|
+            viewTableHeader language
+                :: rows
+        ]
 
 
 viewPaneHeading : Language -> TranslationId -> Html any

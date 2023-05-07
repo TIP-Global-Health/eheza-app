@@ -5697,6 +5697,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'AggregatedChildScoreboard':
 				return {english: 'Aggregated Child Scoreboard', kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'ANCNewborn':
+				return {english: 'ANC + Newborn', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Cell':
 				return {english: 'Cell', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'District':
@@ -5708,6 +5710,8 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'HttpError':
 				var val = transId.a;
 				return $author$project$Translate$translateHttpError(val);
+			case 'InfrastructureEnvironmentWash':
+				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Month':
 				var month = transId.a;
 				return A2($author$project$Translate$translateMonth, month, false);
@@ -5838,7 +5842,7 @@ var $author$project$Translate$translationSet = function (transId) {
 							kinyarwanda: $elm$core$Maybe$Just('Gufata inkunga z’ingoboka harimo ibiryo n\'amatungo magufi')
 						};
 				}
-			case 'NCDAUniversalInterventionsItemLabel':
+			case 'NCDAUniversalInterventionItemLabel':
 				var item = transId.a;
 				switch (item.$) {
 					case 'Immunization':
@@ -5888,6 +5892,8 @@ var $author$project$Translate$translationSet = function (transId) {
 							kinyarwanda: $elm$core$Maybe$Just('Kubyimba')
 						};
 				}
+			case 'NutritionBehavior':
+				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Province':
 				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Sector':
@@ -5916,8 +5922,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Stunting', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Status':
 				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing};
-			default:
+			case 'TargetedInterventions':
+				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'Village':
 				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing};
+			default:
+				return {english: 'Univeral Intervention', kinyarwanda: $elm$core$Maybe$Nothing};
 		}
 	}
 };
@@ -6051,13 +6061,12 @@ var $author$project$Pages$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Pages$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
 var $author$project$Pages$Scoreboard$Model$EntitySector = {$: 'EntitySector'};
 var $author$project$Pages$Scoreboard$Model$EntityVillage = {$: 'EntityVillage'};
-var $author$project$Translate$AcuteMalnutrition = {$: 'AcuteMalnutrition'};
-var $author$project$Pages$Scoreboard$Model$GoodNutrition = {$: 'GoodNutrition'};
-var $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition = {$: 'ModerateAcuteMalnutrition'};
-var $author$project$Translate$NCDAAcuteMalnutritionItemLabel = function (a) {
-	return {$: 'NCDAAcuteMalnutritionItemLabel', a: a};
+var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
+var $author$project$Pages$Scoreboard$Model$IronDuringPregnancy = {$: 'IronDuringPregnancy'};
+var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
+	return {$: 'NCDAANCNewbornItemLabel', a: a};
 };
-var $author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition = {$: 'SevereAcuteMalnutrition'};
+var $author$project$Pages$Scoreboard$Model$RegularCheckups = {$: 'RegularCheckups'};
 var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
 	function (language, label) {
 		return A2(
@@ -6165,6 +6174,85 @@ var $author$project$Pages$Scoreboard$View$viewTableRow = F3(
 				]),
 			A2($elm$core$List$cons, activityCell, valueCells));
 	});
+var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F2(
+	function (language, entityType) {
+		var values = function () {
+			switch (entityType.$) {
+				case 'EntityVillage':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12]),
+							_List_fromArray(
+							[10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12])
+						]);
+				case 'EntityCell':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105]),
+							_List_fromArray(
+							[105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105])
+						]);
+				case 'EntitySector':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241]),
+							_List_fromArray(
+							[259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241])
+						]);
+				default:
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569]),
+							_List_fromArray(
+							[583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569])
+						]);
+			}
+		}();
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A3(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						$author$project$Translate$NCDAANCNewbornItemLabel(item),
+						itemValues);
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$RegularCheckups, $author$project$Pages$Scoreboard$Model$IronDuringPregnancy]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane cyan')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$ANCNewborn),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
+				]));
+	});
+var $author$project$Translate$AcuteMalnutrition = {$: 'AcuteMalnutrition'};
+var $author$project$Pages$Scoreboard$Model$GoodNutrition = {$: 'GoodNutrition'};
+var $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition = {$: 'ModerateAcuteMalnutrition'};
+var $author$project$Translate$NCDAAcuteMalnutritionItemLabel = function (a) {
+	return {$: 'NCDAAcuteMalnutritionItemLabel', a: a};
+};
+var $author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition = {$: 'SevereAcuteMalnutrition'};
 var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F2(
 	function (language, entityType) {
 		var values = function () {
@@ -24884,6 +24972,207 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F2(
 						rows))
 				]));
 	});
+var $author$project$Pages$Scoreboard$Model$HasCleanWater = {$: 'HasCleanWater'};
+var $author$project$Pages$Scoreboard$Model$HasHandwashingFacility = {$: 'HasHandwashingFacility'};
+var $author$project$Pages$Scoreboard$Model$HasKitchenGarden = {$: 'HasKitchenGarden'};
+var $author$project$Pages$Scoreboard$Model$HasToilets = {$: 'HasToilets'};
+var $author$project$Translate$InfrastructureEnvironmentWash = {$: 'InfrastructureEnvironmentWash'};
+var $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets = {$: 'InsecticideTreatedBedNets'};
+var $author$project$Translate$NCDAInfrastructureEnvironmentWashItemLabel = function (a) {
+	return {$: 'NCDAInfrastructureEnvironmentWashItemLabel', a: a};
+};
+var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F2(
+	function (language, entityType) {
+		var values = function () {
+			switch (entityType.$) {
+				case 'EntityVillage':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[9, 14, 16, 12, 10, 8, 17, 11, 11, 16, 13, 15]),
+							_List_fromArray(
+							[13, 9, 13, 16, 12, 8, 17, 10, 10, 12, 14, 11]),
+							_List_fromArray(
+							[10, 9, 8, 16, 17, 11, 14, 18, 12, 15, 15, 11]),
+							_List_fromArray(
+							[16, 12, 11, 7, 13, 8, 16, 19, 15, 14, 11, 18]),
+							_List_fromArray(
+							[13, 8, 10, 9, 18, 11, 7, 17, 12, 10, 14, 17])
+						]);
+				case 'EntityCell':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[118, 138, 106, 117, 123, 98, 138, 103, 125, 125, 108, 110]),
+							_List_fromArray(
+							[122, 92, 146, 114, 125, 128, 138, 109, 91, 118, 115, 109]),
+							_List_fromArray(
+							[127, 126, 130, 103, 143, 117, 121, 108, 108, 111, 136, 135]),
+							_List_fromArray(
+							[104, 129, 132, 100, 99, 137, 132, 110, 127, 123, 131, 119]),
+							_List_fromArray(
+							[116, 90, 102, 92, 115, 134, 118, 137, 92, 130, 121, 122])
+						]);
+				case 'EntitySector':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[252, 244, 239, 247, 234, 259, 217, 259, 215, 250, 222, 264]),
+							_List_fromArray(
+							[257, 261, 209, 263, 225, 213, 226, 236, 220, 259, 240, 243]),
+							_List_fromArray(
+							[262, 209, 234, 237, 236, 237, 215, 267, 237, 228, 230, 256]),
+							_List_fromArray(
+							[252, 249, 214, 226, 284, 291, 202, 279, 238, 215, 285, 271]),
+							_List_fromArray(
+							[211, 262, 224, 244, 275, 237, 220, 246, 282, 265, 241, 241])
+						]);
+				default:
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[631, 583, 667, 626, 621, 567, 652, 611, 506, 555, 665, 636]),
+							_List_fromArray(
+							[537, 523, 588, 628, 617, 502, 562, 640, 504, 568, 522, 534]),
+							_List_fromArray(
+							[625, 623, 556, 504, 664, 655, 661, 531, 637, 558, 638, 582]),
+							_List_fromArray(
+							[657, 624, 577, 659, 643, 490, 532, 545, 601, 680, 506, 651]),
+							_List_fromArray(
+							[530, 605, 652, 621, 650, 522, 559, 606, 548, 523, 656, 492])
+						]);
+			}
+		}();
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A3(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						$author$project$Translate$NCDAInfrastructureEnvironmentWashItemLabel(item),
+						itemValues);
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$HasToilets, $author$project$Pages$Scoreboard$Model$HasCleanWater, $author$project$Pages$Scoreboard$Model$HasHandwashingFacility, $author$project$Pages$Scoreboard$Model$HasKitchenGarden, $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane orange')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$InfrastructureEnvironmentWash),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
+				]));
+	});
+var $author$project$Pages$Scoreboard$Model$AppropriateComplementaryFeeding = {$: 'AppropriateComplementaryFeeding'};
+var $author$project$Pages$Scoreboard$Model$BreastfedSixMonths = {$: 'BreastfedSixMonths'};
+var $author$project$Pages$Scoreboard$Model$DiverseDiet = {$: 'DiverseDiet'};
+var $author$project$Pages$Scoreboard$Model$MealsADay = {$: 'MealsADay'};
+var $author$project$Translate$NCDANutritionBehaviorItemLabel = function (a) {
+	return {$: 'NCDANutritionBehaviorItemLabel', a: a};
+};
+var $author$project$Translate$NutritionBehavior = {$: 'NutritionBehavior'};
+var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F2(
+	function (language, entityType) {
+		var values = function () {
+			switch (entityType.$) {
+				case 'EntityVillage':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[7, 17, 15, 19, 8, 13, 14, 11, 12, 11, 15, 12]),
+							_List_fromArray(
+							[8, 14, 12, 16, 18, 9, 10, 7, 13, 14, 12, 11]),
+							_List_fromArray(
+							[17, 18, 15, 13, 10, 7, 16, 9, 11, 17, 16, 11]),
+							_List_fromArray(
+							[16, 10, 11, 18, 14, 13, 12, 17, 9, 16, 15, 12])
+						]);
+				case 'EntityCell':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[104, 106, 120, 120, 102, 137, 102, 139, 98, 121, 139, 126]),
+							_List_fromArray(
+							[120, 131, 107, 125, 135, 114, 103, 141, 127, 135, 118, 111]),
+							_List_fromArray(
+							[133, 116, 119, 111, 123, 144, 111, 136, 128, 115, 101, 123]),
+							_List_fromArray(
+							[126, 108, 147, 125, 121, 115, 121, 116, 112, 118, 121, 111])
+						]);
+				case 'EntitySector':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[230, 207, 243, 232, 206, 252, 267, 211, 243, 235, 247, 230]),
+							_List_fromArray(
+							[240, 232, 221, 276, 261, 211, 250, 209, 287, 262, 237, 248]),
+							_List_fromArray(
+							[274, 290, 246, 230, 238, 231, 282, 237, 225, 279, 275, 230]),
+							_List_fromArray(
+							[280, 227, 236, 252, 210, 230, 232, 233, 226, 254, 249, 245])
+						]);
+				default:
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[567, 514, 601, 658, 557, 528, 505, 506, 540, 554, 529, 510]),
+							_List_fromArray(
+							[536, 567, 633, 530, 622, 583, 571, 549, 484, 497, 566, 502]),
+							_List_fromArray(
+							[507, 496, 609, 606, 575, 522, 548, 472, 645, 482, 483, 623]),
+							_List_fromArray(
+							[610, 497, 528, 582, 569, 505, 477, 567, 657, 519, 544, 568])
+						]);
+			}
+		}();
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A3(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						$author$project$Translate$NCDANutritionBehaviorItemLabel(item),
+						itemValues);
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$BreastfedSixMonths, $author$project$Pages$Scoreboard$Model$AppropriateComplementaryFeeding, $author$project$Pages$Scoreboard$Model$DiverseDiet, $author$project$Pages$Scoreboard$Model$MealsADay]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane velvet')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$NutritionBehavior),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
+				]));
+	});
 var $author$project$Pages$Scoreboard$Model$ModerateStunting = {$: 'ModerateStunting'};
 var $author$project$Translate$NCDAStuntingItemLabel = function (a) {
 	return {$: 'NCDAStuntingItemLabel', a: a};
@@ -24971,6 +25260,224 @@ var $author$project$Pages$Scoreboard$View$viewStuntingPane = F2(
 						rows))
 				]));
 	});
+var $author$project$Pages$Scoreboard$Model$ConditionalCashTransfer = {$: 'ConditionalCashTransfer'};
+var $author$project$Pages$Scoreboard$Model$ConditionalFoodItems = {$: 'ConditionalFoodItems'};
+var $author$project$Pages$Scoreboard$Model$FBFGiven = {$: 'FBFGiven'};
+var $author$project$Translate$NCDATargetedInterventionsItemLabel = function (a) {
+	return {$: 'NCDATargetedInterventionsItemLabel', a: a};
+};
+var $author$project$Pages$Scoreboard$Model$SupportChildWithDisability = {$: 'SupportChildWithDisability'};
+var $author$project$Translate$TargetedInterventions = {$: 'TargetedInterventions'};
+var $author$project$Pages$Scoreboard$Model$TreatmentForAcuteMalnutrition = {$: 'TreatmentForAcuteMalnutrition'};
+var $author$project$Pages$Scoreboard$Model$TreatmentForDiarrhea = {$: 'TreatmentForDiarrhea'};
+var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F2(
+	function (language, entityType) {
+		var values = function () {
+			switch (entityType.$) {
+				case 'EntityVillage':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[9, 15, 18, 7, 13, 11, 16, 9, 18, 8, 12, 10]),
+							_List_fromArray(
+							[13, 12, 7, 9, 8, 14, 17, 17, 10, 16, 10, 17]),
+							_List_fromArray(
+							[12, 15, 10, 18, 9, 16, 8, 11, 12, 17, 18, 14]),
+							_List_fromArray(
+							[3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3]),
+							_List_fromArray(
+							[17, 12, 8, 16, 11, 10, 9, 18, 15, 7, 12, 13]),
+							_List_fromArray(
+							[14, 10, 18, 11, 16, 12, 13, 7, 18, 12, 9, 15])
+						]);
+				case 'EntityCell':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[117, 135, 107, 104, 146, 97, 120, 138, 128, 99, 133, 128]),
+							_List_fromArray(
+							[139, 130, 131, 123, 103, 128, 123, 129, 145, 117, 99, 142]),
+							_List_fromArray(
+							[140, 96, 134, 121, 105, 98, 105, 139, 139, 138, 98, 131]),
+							_List_fromArray(
+							[98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122]),
+							_List_fromArray(
+							[142, 100, 129, 117, 141, 118, 120, 120, 123, 133, 98, 137]),
+							_List_fromArray(
+							[110, 91, 146, 124, 133, 149, 114, 89, 107, 144, 147, 118])
+						]);
+				case 'EntitySector':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[266, 288, 280, 238, 281, 275, 276, 259, 253, 246, 254, 259]),
+							_List_fromArray(
+							[203, 257, 234, 245, 245, 256, 124, 145, 124, 145, 239, 240]),
+							_List_fromArray(
+							[240, 229, 250, 240, 270, 216, 258, 247, 212, 250, 229, 209]),
+							_List_fromArray(
+							[203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239]),
+							_List_fromArray(
+							[254, 261, 237, 238, 258, 249, 275, 275, 216, 239, 241, 231]),
+							_List_fromArray(
+							[234, 227, 255, 265, 228, 208, 234, 206, 236, 238, 231, 252])
+						]);
+				default:
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[582, 618, 604, 533, 550, 601, 648, 486, 503, 565, 491, 634]),
+							_List_fromArray(
+							[491, 455, 640, 678, 524, 491, 545, 640, 563, 640, 455, 491]),
+							_List_fromArray(
+							[497, 555, 484, 545, 518, 491, 537, 652, 633, 614, 616, 554]),
+							_List_fromArray(
+							[530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491]),
+							_List_fromArray(
+							[620, 624, 578, 528, 530, 588, 583, 609, 625, 503, 651, 638]),
+							_List_fromArray(
+							[673, 635, 695, 604, 552, 618, 651, 673, 624, 586, 555, 668])
+						]);
+			}
+		}();
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A3(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						$author$project$Translate$NCDATargetedInterventionsItemLabel(item),
+						itemValues);
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$FBFGiven, $author$project$Pages$Scoreboard$Model$TreatmentForAcuteMalnutrition, $author$project$Pages$Scoreboard$Model$TreatmentForDiarrhea, $author$project$Pages$Scoreboard$Model$SupportChildWithDisability, $author$project$Pages$Scoreboard$Model$ConditionalCashTransfer, $author$project$Pages$Scoreboard$Model$ConditionalFoodItems]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane cyan')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$TargetedInterventions),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
+				]));
+	});
+var $author$project$Pages$Scoreboard$Model$ECDServices = {$: 'ECDServices'};
+var $author$project$Pages$Scoreboard$Model$Immunization = {$: 'Immunization'};
+var $author$project$Translate$NCDAUniversalInterventionItemLabel = function (a) {
+	return {$: 'NCDAUniversalInterventionItemLabel', a: a};
+};
+var $author$project$Pages$Scoreboard$Model$OngeraMNP = {$: 'OngeraMNP'};
+var $author$project$Translate$UniversalIntervention = {$: 'UniversalIntervention'};
+var $author$project$Pages$Scoreboard$Model$VitaminA = {$: 'VitaminA'};
+var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F2(
+	function (language, entityType) {
+		var values = function () {
+			switch (entityType.$) {
+				case 'EntityVillage':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[13, 14, 11, 17, 9, 8, 14, 16, 12, 10, 15, 12]),
+							_List_fromArray(
+							[6, 10, 17, 13, 14, 12, 9, 8, 11, 15, 16, 12]),
+							_List_fromArray(
+							[14, 12, 16, 17, 10, 9, 13, 7, 8, 11, 19, 11]),
+							_List_fromArray(
+							[7, 12, 15, 10, 16, 8, 15, 17, 13, 14, 19, 11]),
+							_List_fromArray(
+							[12, 15, 8, 11, 11, 9, 17, 16, 15, 12, 19, 11])
+						]);
+				case 'EntityCell':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[89, 98, 76, 81, 105, 92, 113, 127, 140, 115, 92, 104]),
+							_List_fromArray(
+							[102, 85, 121, 96, 133, 107, 127, 104, 141, 110, 88, 129]),
+							_List_fromArray(
+							[129, 118, 144, 96, 142, 139, 112, 131, 147, 137, 135, 123]),
+							_List_fromArray(
+							[136, 142, 98, 131, 143, 101, 131, 119, 144, 99, 109, 126]),
+							_List_fromArray(
+							[117, 121, 124, 133, 104, 141, 109, 128, 101, 137, 122, 99])
+						]);
+				case 'EntitySector':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[261, 217, 205, 238, 205, 281, 276, 220, 250, 299, 283, 252]),
+							_List_fromArray(
+							[222, 206, 223, 196, 279, 261, 257, 216, 249, 233, 269, 248]),
+							_List_fromArray(
+							[241, 267, 278, 217, 211, 251, 272, 229, 240, 221, 208, 220]),
+							_List_fromArray(
+							[211, 248, 230, 235, 222, 240, 216, 212, 227, 262, 255, 225]),
+							_List_fromArray(
+							[209, 224, 215, 247, 273, 263, 258, 214, 249, 236, 275, 249])
+						]);
+				default:
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[597, 567, 620, 564, 485, 545, 663, 536, 498, 603, 665, 496]),
+							_List_fromArray(
+							[547, 599, 581, 474, 505, 489, 655, 593, 605, 539, 629, 508]),
+							_List_fromArray(
+							[632, 506, 551, 580, 647, 562, 508, 475, 659, 502, 642, 657]),
+							_List_fromArray(
+							[608, 572, 519, 648, 655, 599, 586, 547, 596, 522, 618, 484]),
+							_List_fromArray(
+							[567, 514, 601, 658, 557, 528, 505, 506, 540, 554, 529, 510])
+						]);
+			}
+		}();
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A3(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						$author$project$Translate$NCDAUniversalInterventionItemLabel(item),
+						itemValues);
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$Immunization, $author$project$Pages$Scoreboard$Model$VitaminA, $author$project$Pages$Scoreboard$Model$OngeraMNP, $author$project$Pages$Scoreboard$Model$OngeraMNP, $author$project$Pages$Scoreboard$Model$ECDServices]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane orange')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$UniversalIntervention),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
+				]));
+	});
 var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
 	function (language, value, model) {
 		var _v0 = function () {
@@ -25010,7 +25517,12 @@ var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
 					_Utils_Tuple2(entityId, entityType)),
 					A2($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, entityType),
 					A2($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, entityType),
-					A2($author$project$Pages$Scoreboard$View$viewStuntingPane, language, entityType)
+					A2($author$project$Pages$Scoreboard$View$viewStuntingPane, language, entityType),
+					A2($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, entityType),
+					A2($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, entityType),
+					A2($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, entityType),
+					A2($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, entityType),
+					A2($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, entityType)
 				]));
 	});
 var $author$project$Pages$Scoreboard$Model$GenerateReport = {$: 'GenerateReport'};
