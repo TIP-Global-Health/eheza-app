@@ -1,6 +1,7 @@
 module Pages.Scoreboard.View exposing (view)
 
 import App.Types exposing (Language)
+import AssocList as Dict exposing (Dict)
 import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -209,19 +210,63 @@ viewSelectListInput language currentValue options setMsg labelTransId disabled =
 
 viewDisplayResultTable : Language -> ViewSelectionValue -> Model -> Html Msg
 viewDisplayResultTable language value model =
+    let
+        selectedEntityData =
+            case value.village of
+                Just id ->
+                    ( id, EntityVillage )
+
+                Nothing ->
+                    case value.cell of
+                        Just id ->
+                            ( id, EntityCell )
+
+                        Nothing ->
+                            case value.sector of
+                                Just id ->
+                                    ( id, EntitySector )
+
+                                Nothing ->
+                                    ( value.district, EntityDistrict )
+    in
     div [ class "page-content" ]
-        [ viewAggregatedChildScoreboardPane language value ]
+        [ viewAggregatedChildScoreboardPane language selectedEntityData value ]
 
 
 viewAggregatedChildScoreboardPane :
     Language
+    -> ( GeoLocationId, SelectedEntity )
     -> ViewSelectionValue
     -> Html any
-viewAggregatedChildScoreboardPane language value =
+viewAggregatedChildScoreboardPane language ( entityId, entityType ) value =
+    let
+        entityName =
+            case entityType of
+                EntityDistrict ->
+                    resolveEnityName entityId geoInfo.districts
+
+                EntitySector ->
+                    resolveEnityName entityId geoInfo.sectors
+
+                EntityCell ->
+                    resolveEnityName entityId geoInfo.cells
+
+                EntityVillage ->
+                    resolveEnityName entityId geoInfo.villages
+
+        resolveEnityName id dict =
+            Dict.get id dict
+                |> Maybe.map .name
+                |> Maybe.withDefault ""
+    in
     div [ class "pane aggregated-child-scoreboard" ]
         [ viewPaneHeading language Translate.AggregatedChildScoreboard
         , div [ class "pane-content" ]
-            []
+            [ div []
+                [ span [ class "selected-entity" ] [ text <| (translate language <| Translate.SelectedEntity entityType) ++ ":" ]
+                , span [] [ text entityName ]
+                ]
+            ]
         ]
 
 

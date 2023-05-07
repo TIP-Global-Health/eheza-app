@@ -52,6 +52,13 @@ type alias ViewSelectionValue =
     }
 
 
+type SelectedEntity
+    = EntityDistrict
+    | EntitySector
+    | EntityCell
+    | EntityVillage
+
+
 type Msg
     = SetGeoLocation (String -> ViewSelectionForm -> ViewSelectionForm) String
     | GenerateReport

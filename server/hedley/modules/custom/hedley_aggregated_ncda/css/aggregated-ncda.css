@@ -20,7 +20,6 @@
 
 .page-content {
   min-height: 768px;
-  min-width: 1024px;
 }
 
 .page-content .header {
@@ -95,6 +94,19 @@
 
 .page-content .pane-heading.cyan {
   background-color: #03b5aa;
+}
+
+.page-content .pane-content {
+  background: white;
+  color: #808080;
+  font-size: 24px;
+  padding: 20px;
+  text-align: center;
+}
+
+.page-content .pane-content span.selected-entity {
+  font-weight: 600;
+  margin-right: 10px;
 }
 
 

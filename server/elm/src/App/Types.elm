@@ -11,3 +11,4 @@ type Page
 
 type Language
     = English
+    | Kinyarwanda

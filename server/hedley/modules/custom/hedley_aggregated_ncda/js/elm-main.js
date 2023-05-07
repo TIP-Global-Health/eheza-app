@@ -5555,48 +5555,87 @@ var $author$project$Translate$HttpError = function (a) {
 };
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Translate$Cell = {$: 'Cell'};
+var $author$project$Translate$District = {$: 'District'};
+var $author$project$Translate$Sector = {$: 'Sector'};
+var $author$project$Translate$Village = {$: 'Village'};
 var $author$project$Translate$translateHttpError = function (transId) {
 	switch (transId.$) {
 		case 'ErrorBadUrl':
-			return {english: 'URL is not valid.'};
+			return {english: 'URL is not valid.', kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'ErrorBadPayload':
 			var message = transId.a;
-			return {english: 'The server responded with data of an unexpected type: ' + message};
+			return {english: 'The server responded with data of an unexpected type: ' + message, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'ErrorBadStatus':
 			var err = transId.a;
-			return {english: err};
+			return {english: err, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'ErrorNetworkError':
-			return {english: 'There was a network error.'};
+			return {english: 'There was a network error.', kinyarwanda: $elm$core$Maybe$Nothing};
 		default:
-			return {english: 'The network request timed out.'};
+			return {english: 'The network request timed out.', kinyarwanda: $elm$core$Maybe$Nothing};
+	}
+};
+var $author$project$Translate$translationSet = function (transId) {
+	translationSet:
+	while (true) {
+		switch (transId.$) {
+			case 'AggregatedChildScoreboard':
+				return {english: 'Aggregated Child Scoreboard', kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'Cell':
+				return {english: 'Cell', kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'District':
+				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'GenerateReport':
+				return {english: 'Generate Report', kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'HttpError':
+				var val = transId.a;
+				return $author$project$Translate$translateHttpError(val);
+			case 'Province':
+				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'Sector':
+				return {english: 'Sector', kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'SelectedEntity':
+				var entity = transId.a;
+				switch (entity.$) {
+					case 'EntityDistrict':
+						var $temp$transId = $author$project$Translate$District;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'EntitySector':
+						var $temp$transId = $author$project$Translate$Sector;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'EntityCell':
+						var $temp$transId = $author$project$Translate$Cell;
+						transId = $temp$transId;
+						continue translationSet;
+					default:
+						var $temp$transId = $author$project$Translate$Village;
+						transId = $temp$transId;
+						continue translationSet;
+				}
+			default:
+				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing};
+		}
 	}
 };
 var $author$project$Translate$translate = F2(
-	function (language, trans) {
-		var translationSet = function () {
-			switch (trans.$) {
-				case 'AggregatedChildScoreboard':
-					return {english: 'Aggregated Child Scoreboard'};
-				case 'Cell':
-					return {english: 'Cell'};
-				case 'District':
-					return {english: 'District'};
-				case 'GenerateReport':
-					return {english: 'Generate Report'};
-				case 'HttpError':
-					var val = trans.a;
-					return $author$project$Translate$translateHttpError(val);
-				case 'Province':
-					return {english: 'Province'};
-				case 'Sector':
-					return {english: 'Sector'};
-				default:
-					return {english: 'Village'};
-			}
-		}();
-		return function ($) {
-			return $.english;
-		}(translationSet);
+	function (language, transId) {
+		var set = $author$project$Translate$translationSet(transId);
+		if (language.$ === 'English') {
+			return function ($) {
+				return $.english;
+			}(set);
+		} else {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				function ($) {
+					return $.english;
+				}(set),
+				function ($) {
+					return $.kinyarwanda;
+				}(set));
+		}
 	});
 var $author$project$Utils$WebData$errorString = F2(
 	function (language, error) {
@@ -5706,66 +5745,18 @@ var $author$project$Error$View$view = F2(
 						errors))
 				]));
 	});
+var $author$project$Pages$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
+var $author$project$Pages$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
+var $author$project$Pages$Scoreboard$Model$EntitySector = {$: 'EntitySector'};
+var $author$project$Pages$Scoreboard$Model$EntityVillage = {$: 'EntityVillage'};
 var $author$project$Translate$AggregatedChildScoreboard = {$: 'AggregatedChildScoreboard'};
-var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
-	function (language, label) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('pane-heading')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					A2($author$project$Translate$translate, language, label))
-				]));
+var $author$project$Translate$SelectedEntity = function (a) {
+	return {$: 'SelectedEntity', a: a};
+};
+var $author$project$Utils$GeoLocation$GeoLocation = F2(
+	function (name, parent) {
+		return {name: name, parent: parent};
 	});
-var $author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane = F2(
-	function (language, value) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('pane aggregated-child-scoreboard')
-				]),
-			_List_fromArray(
-				[
-					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$AggregatedChildScoreboard),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('pane-content')
-						]),
-					_List_Nil)
-				]));
-	});
-var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
-	function (language, value, model) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('page-content')
-				]),
-			_List_fromArray(
-				[
-					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, value)
-				]));
-	});
-var $author$project$Translate$Cell = {$: 'Cell'};
-var $author$project$Translate$District = {$: 'District'};
-var $author$project$Pages$Scoreboard$Model$GenerateReport = {$: 'GenerateReport'};
-var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
-var $author$project$Translate$Province = {$: 'Province'};
-var $author$project$Translate$Sector = {$: 'Sector'};
-var $author$project$Pages$Scoreboard$Model$SetGeoLocation = F2(
-	function (a, b) {
-		return {$: 'SetGeoLocation', a: a, b: b};
-	});
-var $author$project$Translate$Village = {$: 'Village'};
-var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $pzp1997$assoc_list$AssocList$D = function (a) {
 	return {$: 'D', a: a};
 };
@@ -5779,41 +5770,6 @@ var $elm$core$List$filter = F2(
 				}),
 			_List_Nil,
 			list);
-	});
-var $pzp1997$assoc_list$AssocList$filter = F2(
-	function (isGood, _v0) {
-		var alist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$filter,
-				function (_v1) {
-					var key = _v1.a;
-					var value = _v1.b;
-					return A2(isGood, key, value);
-				},
-				alist));
-	});
-var $author$project$Restful$Endpoint$EntityId = function (a) {
-	return {$: 'EntityId', a: a};
-};
-var $author$project$Restful$Endpoint$toEntityId = $author$project$Restful$Endpoint$EntityId;
-var $author$project$Utils$GeoLocation$filterGeoLocationDictByParent = function (parentId) {
-	return $pzp1997$assoc_list$AssocList$filter(
-		F2(
-			function (_v0, geoLocation) {
-				return _Utils_eq(
-					$elm$core$Maybe$Just(
-						$author$project$Restful$Endpoint$toEntityId(parentId)),
-					geoLocation.parent);
-			}));
-};
-var $author$project$Restful$Endpoint$fromEntityId = function (_v0) {
-	var a = _v0.a;
-	return a;
-};
-var $author$project$Utils$GeoLocation$GeoLocation = F2(
-	function (name, parent) {
-		return {name: name, parent: parent};
 	});
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $pzp1997$assoc_list$AssocList$remove = F2(
@@ -5850,6 +5806,10 @@ var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
 		$pzp1997$assoc_list$AssocList$D(_List_Nil),
 		alist);
 };
+var $author$project$Restful$Endpoint$EntityId = function (a) {
+	return {$: 'EntityId', a: a};
+};
+var $author$project$Restful$Endpoint$toEntityId = $author$project$Restful$Endpoint$EntityId;
 var $author$project$Utils$GeoLocation$getGeoCells = $pzp1997$assoc_list$AssocList$fromList(
 	_Utils_ap(
 		_List_fromArray(
@@ -24235,6 +24195,199 @@ var $author$project$Utils$GeoLocation$getGeoVillages = $pzp1997$assoc_list$Assoc
 													$author$project$Restful$Endpoint$toEntityId(2615))))
 										]))))))))));
 var $author$project$Utils$GeoLocation$geoInfo = {cells: $author$project$Utils$GeoLocation$getGeoCells, districts: $author$project$Utils$GeoLocation$getGeoDistricts, provinces: $author$project$Utils$GeoLocation$getGeoProvinces, sectors: $author$project$Utils$GeoLocation$getGeoSectors, villages: $author$project$Utils$GeoLocation$getGeoVillages};
+var $pzp1997$assoc_list$AssocList$get = F2(
+	function (targetKey, _v0) {
+		get:
+		while (true) {
+			var alist = _v0.a;
+			if (!alist.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var _v2 = alist.a;
+				var key = _v2.a;
+				var value = _v2.b;
+				var rest = alist.b;
+				if (_Utils_eq(key, targetKey)) {
+					return $elm$core$Maybe$Just(value);
+				} else {
+					var $temp$targetKey = targetKey,
+						$temp$_v0 = $pzp1997$assoc_list$AssocList$D(rest);
+					targetKey = $temp$targetKey;
+					_v0 = $temp$_v0;
+					continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
+	function (language, label) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane-heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Translate$translate, language, label))
+				]));
+	});
+var $author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane = F3(
+	function (language, _v0, value) {
+		var entityId = _v0.a;
+		var entityType = _v0.b;
+		var resolveEnityName = F2(
+			function (id, dict) {
+				return A2(
+					$elm$core$Maybe$withDefault,
+					'',
+					A2(
+						$elm$core$Maybe$map,
+						function ($) {
+							return $.name;
+						},
+						A2($pzp1997$assoc_list$AssocList$get, id, dict)));
+			});
+		var entityName = function () {
+			switch (entityType.$) {
+				case 'EntityDistrict':
+					return A2(resolveEnityName, entityId, $author$project$Utils$GeoLocation$geoInfo.districts);
+				case 'EntitySector':
+					return A2(resolveEnityName, entityId, $author$project$Utils$GeoLocation$geoInfo.sectors);
+				case 'EntityCell':
+					return A2(resolveEnityName, entityId, $author$project$Utils$GeoLocation$geoInfo.cells);
+				default:
+					return A2(resolveEnityName, entityId, $author$project$Utils$GeoLocation$geoInfo.villages);
+			}
+		}();
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane aggregated-child-scoreboard')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$AggregatedChildScoreboard),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$span,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('selected-entity')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2(
+												$author$project$Translate$translate,
+												language,
+												$author$project$Translate$SelectedEntity(entityType)) + ':')
+										])),
+									A2(
+									$elm$html$Html$span,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(entityName)
+										]))
+								]))
+						]))
+				]));
+	});
+var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
+	function (language, value, model) {
+		var selectedEntityData = function () {
+			var _v0 = value.village;
+			if (_v0.$ === 'Just') {
+				var id = _v0.a;
+				return _Utils_Tuple2(id, $author$project$Pages$Scoreboard$Model$EntityVillage);
+			} else {
+				var _v1 = value.cell;
+				if (_v1.$ === 'Just') {
+					var id = _v1.a;
+					return _Utils_Tuple2(id, $author$project$Pages$Scoreboard$Model$EntityCell);
+				} else {
+					var _v2 = value.sector;
+					if (_v2.$ === 'Just') {
+						var id = _v2.a;
+						return _Utils_Tuple2(id, $author$project$Pages$Scoreboard$Model$EntitySector);
+					} else {
+						return _Utils_Tuple2(value.district, $author$project$Pages$Scoreboard$Model$EntityDistrict);
+					}
+				}
+			}
+		}();
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content')
+				]),
+			_List_fromArray(
+				[
+					A3($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, selectedEntityData, value)
+				]));
+	});
+var $author$project$Pages$Scoreboard$Model$GenerateReport = {$: 'GenerateReport'};
+var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
+var $author$project$Translate$Province = {$: 'Province'};
+var $author$project$Pages$Scoreboard$Model$SetGeoLocation = F2(
+	function (a, b) {
+		return {$: 'SetGeoLocation', a: a, b: b};
+	});
+var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
+var $pzp1997$assoc_list$AssocList$filter = F2(
+	function (isGood, _v0) {
+		var alist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var key = _v1.a;
+					var value = _v1.b;
+					return A2(isGood, key, value);
+				},
+				alist));
+	});
+var $author$project$Utils$GeoLocation$filterGeoLocationDictByParent = function (parentId) {
+	return $pzp1997$assoc_list$AssocList$filter(
+		F2(
+			function (_v0, geoLocation) {
+				return _Utils_eq(
+					$elm$core$Maybe$Just(
+						$author$project$Restful$Endpoint$toEntityId(parentId)),
+					geoLocation.parent);
+			}));
+};
+var $author$project$Restful$Endpoint$fromEntityId = function (_v0) {
+	var a = _v0.a;
+	return a;
+};
 var $pzp1997$assoc_list$AssocList$toList = function (_v0) {
 	var alist = _v0.a;
 	return alist;
@@ -24258,16 +24411,6 @@ var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 		return true;
 	}
 };
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $author$project$Gizra$Html$showIf = F2(
 	function (condition, html) {
 		return condition ? html : $author$project$Gizra$Html$emptyNode;
