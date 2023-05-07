@@ -21,6 +21,8 @@
 
 .page-content {
   min-height: 768px;
+  margin-bottom: 20px;
+  margin-top: 30px;
 }
 
 .page-content .header {
@@ -71,6 +73,45 @@
 
 .page-content .actions {
   text-align: center;
+}
+
+.page-content .top-bar {
+  display: flex;
+  height: 60px;
+}
+
+.page-content .top-bar .new-selection {
+  width: 35%;
+}
+
+.page-content .top-bar .year-selector {
+  display: flex;
+  justify-content: space-evenly;
+  width: 30%;
+}
+
+.page-content .top-bar .year-selector span.label {
+  color: white;
+  font-size: 24px;
+}
+
+.page-content .top-bar .year-selector svg {
+  cursor: pointer;
+}
+
+.page-content .top-bar .year-selector svg.hidden {
+  visibility: hidden;
+}
+
+.page-content .top-bar .new-selection button {
+  background-color: #0393db;
+  border: 2px solid white;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  height: 30px;
+  margin-left: 20px;
 }
 
 .page-content .actions button {

@@ -27,7 +27,7 @@ type Msg
     | MsgScoreboardPage Pages.Scoreboard.Model.Msg
     | NoOp
     | SetActivePage Page
-    | SetCurrentDate Time.Posix
+    | SetCurrentTime Time.Posix
 
 
 type alias Flags =
@@ -40,7 +40,7 @@ type alias Model =
     , errors : List Error
     , language : Language
     , activePage : Page
-    , currentDate : Time.Posix
+    , currentTime : Time.Posix
     , scoreboardPage : Pages.Scoreboard.Model.Model
     }
 
@@ -51,6 +51,6 @@ emptyModel =
     , errors = []
     , language = English
     , activePage = Scoreboard
-    , currentDate = Time.millisToPosix 0
+    , currentTime = Time.millisToPosix 0
     , scoreboardPage = Pages.Scoreboard.Model.emptyModel
     }

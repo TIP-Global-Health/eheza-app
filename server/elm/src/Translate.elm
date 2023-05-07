@@ -60,6 +60,7 @@ type TranslationId
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
+    | NewSelection
     | NutritionBehavior
     | Province
     | Sector
@@ -312,6 +313,11 @@ translationSet transId =
                     { english = "Edema"
                     , kinyarwanda = Just "Kubyimba"
                     }
+
+        NewSelection ->
+            { english = "New Selection"
+            , kinyarwanda = Nothing
+            }
 
         NutritionBehavior ->
             { english = "Nutrition Behavior"

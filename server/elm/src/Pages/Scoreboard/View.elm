@@ -3,6 +3,7 @@ module Pages.Scoreboard.View exposing (view)
 import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
 import Gizra.Html exposing (emptyNode, showIf)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -10,21 +11,21 @@ import Icons
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Scoreboard.Model exposing (..)
 import Pages.Scoreboard.Utils exposing (..)
-import Pages.Utils exposing (emptySelectOption, viewActionButton, viewLabel)
+import Pages.Utils exposing (emptySelectOption, viewActionButton, viewLabel, viewYearSelector)
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (GeoLocationId, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
 
 
-view : Language -> Model -> Html Msg
-view language model =
+view : Language -> NominalDate -> Model -> Html Msg
+view language currentDate model =
     case model.displayMode of
         DisplayViewSelection ->
             viewDisplayViewSelection language model
 
         DisplayResultTable value ->
-            viewDisplayResultTable language value model
+            viewDisplayResultTable language currentDate value model
 
 
 viewDisplayViewSelection : Language -> Model -> Html Msg
@@ -209,8 +210,8 @@ viewSelectListInput language currentValue options setMsg labelTransId disabled =
         ]
 
 
-viewDisplayResultTable : Language -> ViewSelectionValue -> Model -> Html Msg
-viewDisplayResultTable language value model =
+viewDisplayResultTable : Language -> NominalDate -> ViewSelectionValue -> Model -> Html Msg
+viewDisplayResultTable language currentDate value model =
     let
         ( entityId, entityType ) =
             case value.village of
@@ -229,10 +230,21 @@ viewDisplayResultTable language value model =
 
                                 Nothing ->
                                     ( value.district, EntityDistrict )
+
+        topBar =
+            div [ class "top-bar" ]
+                [ div [ class "new-selection" ]
+                    [ button [ onClick ResetSelection ]
+                        [ text <| translate language Translate.NewSelection ]
+                    ]
+                , viewYearSelector language currentDate model.yearSelectorGap ChaneYearGap
+                , div [ class "values-percents" ] []
+                ]
     in
     div [ class "page-content" ]
-        [ viewAggregatedChildScoreboardPane language ( entityId, entityType )
-        , viewDemographicsPane language entityType
+        [ topBar
+        , viewAggregatedChildScoreboardPane language ( entityId, entityType )
+        , viewDemographicsPane language currentDate entityType
         , viewAcuteMalnutritionPane language entityType
         , viewStuntingPane language entityType
         , viewANCNewbornPane language entityType
@@ -279,8 +291,8 @@ viewAggregatedChildScoreboardPane language ( entityId, entityType ) =
         ]
 
 
-viewDemographicsPane : Language -> SelectedEntity -> Html any
-viewDemographicsPane language entityType =
+viewDemographicsPane : Language -> NominalDate -> SelectedEntity -> Html any
+viewDemographicsPane language currentDate entityType =
     let
         rows =
             List.map2

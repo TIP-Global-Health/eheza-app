@@ -7,7 +7,7 @@ import Time
 
 
 updateBackend : Time.Posix -> Msg -> ModelBackend -> BackendReturn Msg
-updateBackend currentDate msg model =
+updateBackend currentTime msg model =
     case msg of
         NoOp ->
             BackendReturn model Cmd.none Nothing []

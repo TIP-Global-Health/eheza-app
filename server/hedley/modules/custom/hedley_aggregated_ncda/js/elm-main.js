@@ -5255,8 +5255,8 @@ var $author$project$App$Fetch$fetch = function (model) {
 	}
 };
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $author$project$App$Model$SetCurrentDate = function (a) {
-	return {$: 'SetCurrentDate', a: a};
+var $author$project$App$Model$SetCurrentTime = function (a) {
+	return {$: 'SetCurrentTime', a: a};
 };
 var $elm$core$List$append = F2(
 	function (xs, ys) {
@@ -5290,7 +5290,8 @@ var $author$project$Pages$Scoreboard$Model$emptyModel = {
 			sector: $elm$core$Maybe$Nothing,
 			village: $elm$core$Maybe$Nothing
 		}),
-	form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm
+	form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm,
+	yearSelectorGap: 0
 };
 var $author$project$Backend$Model$emptyModelBackend = {};
 var $elm$time$Time$Posix = function (a) {
@@ -5300,7 +5301,7 @@ var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
 var $author$project$App$Model$emptyModel = {
 	activePage: $author$project$App$Types$Scoreboard,
 	backend: $author$project$Backend$Model$emptyModelBackend,
-	currentDate: $elm$time$Time$millisToPosix(0),
+	currentTime: $elm$time$Time$millisToPosix(0),
 	errors: _List_Nil,
 	language: $author$project$App$Types$English,
 	scoreboardPage: $author$project$Pages$Scoreboard$Model$emptyModel
@@ -5336,7 +5337,7 @@ var $author$project$App$Update$init = function (flags) {
 			$elm$core$List$append,
 			_List_fromArray(
 				[
-					A2($elm$core$Task$perform, $author$project$App$Model$SetCurrentDate, $elm$time$Time$now)
+					A2($elm$core$Task$perform, $author$project$App$Model$SetCurrentTime, $elm$time$Time$now)
 				]),
 			A2(
 				$elm$core$List$map,
@@ -5387,38 +5388,51 @@ var $elm$core$Maybe$withDefault = F2(
 	});
 var $author$project$Pages$Scoreboard$Update$update = F3(
 	function (modelBackend, msg, model) {
-		if (msg.$ === 'SetGeoLocation') {
-			var updatedFormFunc = msg.a;
-			var value = msg.b;
-			return A4(
-				$author$project$App$Model$PagesReturn,
-				_Utils_update(
-					model,
-					{
-						form: A2(updatedFormFunc, value, model.form)
-					}),
-				$elm$core$Platform$Cmd$none,
-				$author$project$Error$Utils$noError,
-				_List_Nil);
-		} else {
-			var updatedModel = A2(
-				$elm$core$Maybe$withDefault,
-				model,
-				A3(
-					$elm$core$Maybe$map2,
-					F2(
-						function (province, district) {
-							var value = {cell: model.form.cell, district: district, province: province, sector: model.form.sector, village: model.form.village};
-							return _Utils_update(
-								model,
-								{
-									displayMode: $author$project$Pages$Scoreboard$Model$DisplayResultTable(value),
-									form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm
-								});
+		switch (msg.$) {
+			case 'SetGeoLocation':
+				var updatedFormFunc = msg.a;
+				var value = msg.b;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							form: A2(updatedFormFunc, value, model.form)
 						}),
-					model.form.province,
-					model.form.district));
-			return A4($author$project$App$Model$PagesReturn, updatedModel, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'GenerateReport':
+				var updatedModel = A2(
+					$elm$core$Maybe$withDefault,
+					model,
+					A3(
+						$elm$core$Maybe$map2,
+						F2(
+							function (province, district) {
+								var value = {cell: model.form.cell, district: district, province: province, sector: model.form.sector, village: model.form.village};
+								return _Utils_update(
+									model,
+									{
+										displayMode: $author$project$Pages$Scoreboard$Model$DisplayResultTable(value),
+										form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm
+									});
+							}),
+						model.form.province,
+						model.form.district));
+				return A4($author$project$App$Model$PagesReturn, updatedModel, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+			case 'ResetSelection':
+				return A4($author$project$App$Model$PagesReturn, $author$project$Pages$Scoreboard$Model$emptyModel, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+			default:
+				var step = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{yearSelectorGap: model.yearSelectorGap + step}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
 		}
 	});
 var $author$project$Backend$Types$BackendReturn = F4(
@@ -5426,7 +5440,7 @@ var $author$project$Backend$Types$BackendReturn = F4(
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
 var $author$project$Backend$Update$updateBackend = F3(
-	function (currentDate, msg, model) {
+	function (currentTime, msg, model) {
 		return A4($author$project$Backend$Types$BackendReturn, model, $elm$core$Platform$Cmd$none, $elm$core$Maybe$Nothing, _List_Nil);
 	});
 var $elm_community$maybe_extra$Maybe$Extra$unwrap = F3(
@@ -5488,7 +5502,7 @@ var $author$project$App$Update$update = F2(
 					model.backend,
 					F2(
 						function (subMsg_, subModel) {
-							return A3($author$project$Backend$Update$updateBackend, model.currentDate, subMsg_, subModel);
+							return A3($author$project$Backend$Update$updateBackend, model.currentTime, subMsg_, subModel);
 						}),
 					F2(
 						function (subModel, model_) {
@@ -5532,12 +5546,227 @@ var $author$project$App$Update$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{currentDate: date}),
+						{currentTime: date}),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $justinmimbs$date$Date$RD = function (a) {
+	return {$: 'RD', a: a};
+};
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
+	});
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $justinmimbs$date$Date$isLeapYear = function (y) {
+	return ((!A2($elm$core$Basics$modBy, 4, y)) && (!(!A2($elm$core$Basics$modBy, 100, y)))) || (!A2($elm$core$Basics$modBy, 400, y));
+};
+var $justinmimbs$date$Date$daysBeforeMonth = F2(
+	function (y, m) {
+		var leapDays = $justinmimbs$date$Date$isLeapYear(y) ? 1 : 0;
+		switch (m.$) {
+			case 'Jan':
+				return 0;
+			case 'Feb':
+				return 31;
+			case 'Mar':
+				return 59 + leapDays;
+			case 'Apr':
+				return 90 + leapDays;
+			case 'May':
+				return 120 + leapDays;
+			case 'Jun':
+				return 151 + leapDays;
+			case 'Jul':
+				return 181 + leapDays;
+			case 'Aug':
+				return 212 + leapDays;
+			case 'Sep':
+				return 243 + leapDays;
+			case 'Oct':
+				return 273 + leapDays;
+			case 'Nov':
+				return 304 + leapDays;
+			default:
+				return 334 + leapDays;
+		}
+	});
+var $justinmimbs$date$Date$floorDiv = F2(
+	function (a, b) {
+		return $elm$core$Basics$floor(a / b);
+	});
+var $justinmimbs$date$Date$daysBeforeYear = function (y1) {
+	var y = y1 - 1;
+	var leapYears = (A2($justinmimbs$date$Date$floorDiv, y, 4) - A2($justinmimbs$date$Date$floorDiv, y, 100)) + A2($justinmimbs$date$Date$floorDiv, y, 400);
+	return (365 * y) + leapYears;
+};
+var $justinmimbs$date$Date$daysInMonth = F2(
+	function (y, m) {
+		switch (m.$) {
+			case 'Jan':
+				return 31;
+			case 'Feb':
+				return $justinmimbs$date$Date$isLeapYear(y) ? 29 : 28;
+			case 'Mar':
+				return 31;
+			case 'Apr':
+				return 30;
+			case 'May':
+				return 31;
+			case 'Jun':
+				return 30;
+			case 'Jul':
+				return 31;
+			case 'Aug':
+				return 31;
+			case 'Sep':
+				return 30;
+			case 'Oct':
+				return 31;
+			case 'Nov':
+				return 30;
+			default:
+				return 31;
+		}
+	});
+var $justinmimbs$date$Date$fromCalendarDate = F3(
+	function (y, m, d) {
+		return $justinmimbs$date$Date$RD(
+			($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A3(
+				$elm$core$Basics$clamp,
+				1,
+				A2($justinmimbs$date$Date$daysInMonth, y, m),
+				d));
+	});
+var $elm$time$Time$flooredDiv = F2(
+	function (numerator, denominator) {
+		return $elm$core$Basics$floor(numerator / denominator);
+	});
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0.a;
+	return millis;
+};
+var $elm$time$Time$toAdjustedMinutesHelp = F3(
+	function (defaultOffset, posixMinutes, eras) {
+		toAdjustedMinutesHelp:
+		while (true) {
+			if (!eras.b) {
+				return posixMinutes + defaultOffset;
+			} else {
+				var era = eras.a;
+				var olderEras = eras.b;
+				if (_Utils_cmp(era.start, posixMinutes) < 0) {
+					return posixMinutes + era.offset;
+				} else {
+					var $temp$defaultOffset = defaultOffset,
+						$temp$posixMinutes = posixMinutes,
+						$temp$eras = olderEras;
+					defaultOffset = $temp$defaultOffset;
+					posixMinutes = $temp$posixMinutes;
+					eras = $temp$eras;
+					continue toAdjustedMinutesHelp;
+				}
+			}
+		}
+	});
+var $elm$time$Time$toAdjustedMinutes = F2(
+	function (_v0, time) {
+		var defaultOffset = _v0.a;
+		var eras = _v0.b;
+		return A3(
+			$elm$time$Time$toAdjustedMinutesHelp,
+			defaultOffset,
+			A2(
+				$elm$time$Time$flooredDiv,
+				$elm$time$Time$posixToMillis(time),
+				60000),
+			eras);
+	});
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$time$Time$toCivil = function (minutes) {
+	var rawDay = A2($elm$time$Time$flooredDiv, minutes, 60 * 24) + 719468;
+	var era = (((rawDay >= 0) ? rawDay : (rawDay - 146096)) / 146097) | 0;
+	var dayOfEra = rawDay - (era * 146097);
+	var yearOfEra = ((((dayOfEra - ((dayOfEra / 1460) | 0)) + ((dayOfEra / 36524) | 0)) - ((dayOfEra / 146096) | 0)) / 365) | 0;
+	var dayOfYear = dayOfEra - (((365 * yearOfEra) + ((yearOfEra / 4) | 0)) - ((yearOfEra / 100) | 0));
+	var mp = (((5 * dayOfYear) + 2) / 153) | 0;
+	var month = mp + ((mp < 10) ? 3 : (-9));
+	var year = yearOfEra + (era * 400);
+	return {
+		day: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
+		month: month,
+		year: year + ((month <= 2) ? 1 : 0)
+	};
+};
+var $elm$time$Time$toDay = F2(
+	function (zone, time) {
+		return $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).day;
+	});
+var $elm$time$Time$Apr = {$: 'Apr'};
+var $elm$time$Time$Aug = {$: 'Aug'};
+var $elm$time$Time$Dec = {$: 'Dec'};
+var $elm$time$Time$Feb = {$: 'Feb'};
+var $elm$time$Time$Jan = {$: 'Jan'};
+var $elm$time$Time$Jul = {$: 'Jul'};
+var $elm$time$Time$Jun = {$: 'Jun'};
+var $elm$time$Time$Mar = {$: 'Mar'};
+var $elm$time$Time$May = {$: 'May'};
+var $elm$time$Time$Nov = {$: 'Nov'};
+var $elm$time$Time$Oct = {$: 'Oct'};
+var $elm$time$Time$Sep = {$: 'Sep'};
+var $elm$time$Time$toMonth = F2(
+	function (zone, time) {
+		var _v0 = $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).month;
+		switch (_v0) {
+			case 1:
+				return $elm$time$Time$Jan;
+			case 2:
+				return $elm$time$Time$Feb;
+			case 3:
+				return $elm$time$Time$Mar;
+			case 4:
+				return $elm$time$Time$Apr;
+			case 5:
+				return $elm$time$Time$May;
+			case 6:
+				return $elm$time$Time$Jun;
+			case 7:
+				return $elm$time$Time$Jul;
+			case 8:
+				return $elm$time$Time$Aug;
+			case 9:
+				return $elm$time$Time$Sep;
+			case 10:
+				return $elm$time$Time$Oct;
+			case 11:
+				return $elm$time$Time$Nov;
+			default:
+				return $elm$time$Time$Dec;
+		}
+	});
+var $elm$time$Time$toYear = F2(
+	function (zone, time) {
+		return $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).year;
+	});
+var $justinmimbs$date$Date$fromPosix = F2(
+	function (zone, posix) {
+		return A3(
+			$justinmimbs$date$Date$fromCalendarDate,
+			A2($elm$time$Time$toYear, zone, posix),
+			A2($elm$time$Time$toMonth, zone, posix),
+			A2($elm$time$Time$toDay, zone, posix));
+	});
+var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
+var $author$project$Gizra$NominalDate$fromLocalDateTime = $justinmimbs$date$Date$fromPosix($elm$time$Time$utc);
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -5892,6 +6121,8 @@ var $author$project$Translate$translationSet = function (transId) {
 							kinyarwanda: $elm$core$Maybe$Just('Kubyimba')
 						};
 				}
+			case 'NewSelection':
+				return {english: 'New Selection', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'NutritionBehavior':
 				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Province':
@@ -6057,10 +6288,33 @@ var $author$project$Error$View$view = F2(
 						errors))
 				]));
 	});
+var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
+	return {$: 'ChaneYearGap', a: a};
+};
 var $author$project$Pages$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Pages$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
 var $author$project$Pages$Scoreboard$Model$EntitySector = {$: 'EntitySector'};
 var $author$project$Pages$Scoreboard$Model$EntityVillage = {$: 'EntityVillage'};
+var $author$project$Translate$NewSelection = {$: 'NewSelection'};
+var $author$project$Pages$Scoreboard$Model$ResetSelection = {$: 'ResetSelection'};
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
 var $author$project$Pages$Scoreboard$Model$IronDuringPregnancy = {$: 'IronDuringPregnancy'};
 var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
@@ -6081,21 +6335,9 @@ var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
 					A2($author$project$Translate$translate, language, label))
 				]));
 	});
-var $elm$time$Time$Apr = {$: 'Apr'};
-var $elm$time$Time$Aug = {$: 'Aug'};
-var $elm$time$Time$Dec = {$: 'Dec'};
-var $elm$time$Time$Feb = {$: 'Feb'};
-var $elm$time$Time$Jan = {$: 'Jan'};
-var $elm$time$Time$Jul = {$: 'Jul'};
-var $elm$time$Time$Jun = {$: 'Jun'};
-var $elm$time$Time$Mar = {$: 'Mar'};
-var $elm$time$Time$May = {$: 'May'};
 var $author$project$Translate$Month = function (a) {
 	return {$: 'Month', a: a};
 };
-var $elm$time$Time$Nov = {$: 'Nov'};
-var $elm$time$Time$Oct = {$: 'Oct'};
-var $elm$time$Time$Sep = {$: 'Sep'};
 var $author$project$Translate$Status = {$: 'Status'};
 var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) {
 	var statusCell = A2(
@@ -6355,7 +6597,6 @@ var $elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $pzp1997$assoc_list$AssocList$remove = F2(
 	function (targetKey, _v0) {
 		var alist = _v0.a;
@@ -24892,8 +25133,8 @@ var $author$project$Translate$NCDADemographicsItemLabel = function (a) {
 	return {$: 'NCDADemographicsItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$NewbornsThisMonth = {$: 'NewbornsThisMonth'};
-var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F2(
-	function (language, entityType) {
+var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F3(
+	function (language, currentDate, entityType) {
 		var values = function () {
 			switch (entityType.$) {
 				case 'EntityVillage':
@@ -25478,8 +25719,199 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F2(
 						rows))
 				]));
 	});
-var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
-	function (language, value, model) {
+var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$virtual_dom$VirtualDom$nodeNS = function (tag) {
+	return _VirtualDom_nodeNS(
+		_VirtualDom_noScript(tag));
+};
+var $elm$svg$Svg$node = $elm$virtual_dom$VirtualDom$nodeNS('http://www.w3.org/2000/svg');
+var $author$project$Icons$iconBack = function (attrs) {
+	return A3(
+		$elm$svg$Svg$node,
+		'svg',
+		_Utils_ap(
+			_List_fromArray(
+				[
+					A2($elm$virtual_dom$VirtualDom$attribute, 'width', '35'),
+					A2($elm$virtual_dom$VirtualDom$attribute, 'height', '30'),
+					A2($elm$virtual_dom$VirtualDom$attribute, 'viewBox', '0 0 35 30'),
+					A2($elm$virtual_dom$VirtualDom$attribute, 'fill', 'none'),
+					A2($elm$virtual_dom$VirtualDom$attribute, 'xmlns', 'http://www.w3.org/2000/svg')
+				]),
+			attrs),
+		_List_fromArray(
+			[
+				A3(
+				$elm$svg$Svg$node,
+				'path',
+				_List_fromArray(
+					[
+						A2($elm$virtual_dom$VirtualDom$attribute, 'd', 'M13.1449 2.50021e-06C12.9391 -8.33099e-05 12.7353 0.0463702 12.5453 0.136693C12.3552 0.227017 12.1826 0.359429 12.0374 0.526313L0.45904 13.7647C0.165096 14.1017 -1.18017e-06 14.5583 -1.14379e-06 15.0344C-1.1074e-06 15.5104 0.165096 15.9671 0.45904 16.3041L12.0374 29.5424C12.3362 29.8485 12.7261 30.012 13.127 29.9993C13.5279 29.9867 13.9094 29.7989 14.193 29.4745C14.4766 29.1501 14.6408 28.7137 14.6518 28.2551C14.6629 27.7966 14.5199 27.3505 14.2524 27.0088L3.78859 15.0384L14.2544 3.06688C14.4736 2.81592 14.623 2.49629 14.6835 2.14834C14.7441 1.80039 14.7132 1.43971 14.5947 1.11184C14.4762 0.78397 14.2755 0.503603 14.0178 0.306132C13.7601 0.10866 13.4571 0.00293216 13.1469 0.00230467L13.1449 2.50021e-06Z'),
+						A2($elm$virtual_dom$VirtualDom$attribute, 'fill', 'white')
+					]),
+				_List_Nil),
+				A3(
+				$elm$svg$Svg$node,
+				'path',
+				_List_fromArray(
+					[
+						A2($elm$virtual_dom$VirtualDom$attribute, 'd', 'M32.665 13.2384L5.20109 13.2384C4.78493 13.2384 4.38579 13.4275 4.09152 13.7641C3.79725 14.1007 3.63199 14.5572 3.63199 15.0333C3.63199 15.5093 3.79725 15.9658 4.09152 16.3024C4.38579 16.639 4.78493 16.8281 5.20109 16.8281L32.665 16.8281C33.0812 16.8281 33.4803 16.639 33.7746 16.3024C34.0689 15.9658 34.2341 15.5093 34.2341 15.0333C34.2341 14.5572 34.0689 14.1007 33.7746 13.7641C33.4803 13.4275 33.0812 13.2384 32.665 13.2384Z'),
+						A2($elm$virtual_dom$VirtualDom$attribute, 'fill', 'white')
+					]),
+				_List_Nil)
+			]));
+};
+var $author$project$Icons$iconForward = function (attrs) {
+	return A3(
+		$elm$svg$Svg$node,
+		'svg',
+		_Utils_ap(
+			_List_fromArray(
+				[
+					A2($elm$virtual_dom$VirtualDom$attribute, 'width', '35'),
+					A2($elm$virtual_dom$VirtualDom$attribute, 'height', '30'),
+					A2($elm$virtual_dom$VirtualDom$attribute, 'viewBox', '0 0 35 30'),
+					A2($elm$virtual_dom$VirtualDom$attribute, 'fill', 'none'),
+					A2($elm$virtual_dom$VirtualDom$attribute, 'xmlns', 'http://www.w3.org/2000/svg')
+				]),
+			attrs),
+		_List_fromArray(
+			[
+				A3(
+				$elm$svg$Svg$node,
+				'path',
+				_List_fromArray(
+					[
+						A2($elm$virtual_dom$VirtualDom$attribute, 'd', 'M21.0891 2.50021e-06C21.2949 -8.33099e-05 21.4987 0.0463702 21.6887 0.136693C21.8788 0.227017 22.0514 0.359429 22.1966 0.526313L33.775 13.7647C34.0689 14.1017 34.234 14.5583 34.234 15.0344C34.234 15.5104 34.0689 15.9671 33.775 16.3041L22.1966 29.5424C21.8978 29.8485 21.5079 30.012 21.107 29.9993C20.7061 29.9867 20.3246 29.7989 20.041 29.4745C19.7574 29.1501 19.5932 28.7137 19.5822 28.2551C19.5711 27.7966 19.7141 27.3505 19.9816 27.0088L30.4454 15.0384L19.9796 3.06688C19.7604 2.81592 19.611 2.49629 19.5505 2.14834C19.4899 1.80039 19.5208 1.43971 19.6393 1.11184C19.7578 0.78397 19.9586 0.503603 20.2162 0.306132C20.4739 0.10866 20.777 0.00293216 21.0871 0.00230467L21.0891 2.50021e-06Z'),
+						A2($elm$virtual_dom$VirtualDom$attribute, 'fill', 'white')
+					]),
+				_List_Nil),
+				A3(
+				$elm$svg$Svg$node,
+				'path',
+				_List_fromArray(
+					[
+						A2($elm$virtual_dom$VirtualDom$attribute, 'd', 'M1.56896 13.2384L29.0329 13.2384C29.4491 13.2384 29.8482 13.4275 30.1425 13.7641C30.4367 14.1007 30.602 14.5572 30.602 15.0333C30.602 15.5093 30.4367 15.9658 30.1425 16.3024C29.8482 16.639 29.4491 16.8281 29.0329 16.8281L1.56896 16.8281C1.1528 16.8281 0.753662 16.639 0.459394 16.3024C0.165127 15.9658 -0.000137228 15.5093 -0.000137192 15.0333C-0.000137156 14.5572 0.165127 14.1007 0.459395 13.7641C0.753662 13.4275 1.1528 13.2384 1.56896 13.2384Z'),
+						A2($elm$virtual_dom$VirtualDom$attribute, 'fill', 'white')
+					]),
+				_List_Nil)
+			]));
+};
+var $justinmimbs$date$Date$divWithRemainder = F2(
+	function (a, b) {
+		return _Utils_Tuple2(
+			A2($justinmimbs$date$Date$floorDiv, a, b),
+			A2($elm$core$Basics$modBy, b, a));
+	});
+var $justinmimbs$date$Date$year = function (_v0) {
+	var rd = _v0.a;
+	var _v1 = A2($justinmimbs$date$Date$divWithRemainder, rd, 146097);
+	var n400 = _v1.a;
+	var r400 = _v1.b;
+	var _v2 = A2($justinmimbs$date$Date$divWithRemainder, r400, 36524);
+	var n100 = _v2.a;
+	var r100 = _v2.b;
+	var _v3 = A2($justinmimbs$date$Date$divWithRemainder, r100, 1461);
+	var n4 = _v3.a;
+	var r4 = _v3.b;
+	var _v4 = A2($justinmimbs$date$Date$divWithRemainder, r4, 365);
+	var n1 = _v4.a;
+	var r1 = _v4.b;
+	var n = (!r1) ? 0 : 1;
+	return ((((n400 * 400) + (n100 * 100)) + (n4 * 4)) + n1) + n;
+};
+var $author$project$Pages$Utils$viewYearSelector = F4(
+	function (language, currentDate, gap, changeGapMsg) {
+		var minYear = 2018;
+		var forwardClass = (!gap) ? _List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$class('hidden')
+			]) : _List_Nil;
+		var currentYear = $justinmimbs$date$Date$year(currentDate);
+		var selectedYear = currentYear + gap;
+		var backClass = _Utils_eq(selectedYear, minYear) ? _List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$class('hidden')
+			]) : _List_Nil;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('year-selector')
+				]),
+			_List_fromArray(
+				[
+					$author$project$Icons$iconBack(
+					A2(
+						$elm$core$List$cons,
+						$elm$html$Html$Events$onClick(
+							changeGapMsg(-1)),
+						backClass)),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('label')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$String$fromInt(selectedYear))
+						])),
+					$author$project$Icons$iconForward(
+					A2(
+						$elm$core$List$cons,
+						$elm$html$Html$Events$onClick(
+							changeGapMsg(1)),
+						forwardClass))
+				]));
+	});
+var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F4(
+	function (language, currentDate, value, model) {
+		var topBar = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('top-bar')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('new-selection')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Events$onClick($author$project$Pages$Scoreboard$Model$ResetSelection)
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Translate$translate, language, $author$project$Translate$NewSelection))
+								]))
+						])),
+					A4($author$project$Pages$Utils$viewYearSelector, language, currentDate, model.yearSelectorGap, $author$project$Pages$Scoreboard$Model$ChaneYearGap),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('values-percents')
+						]),
+					_List_Nil)
+				]));
 		var _v0 = function () {
 			var _v1 = value.village;
 			if (_v1.$ === 'Just') {
@@ -25511,11 +25943,12 @@ var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
 				]),
 			_List_fromArray(
 				[
+					topBar,
 					A2(
 					$author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane,
 					language,
 					_Utils_Tuple2(entityId, entityType)),
-					A2($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, entityType),
+					A3($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, entityType),
 					A2($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, entityType),
 					A2($author$project$Pages$Scoreboard$View$viewStuntingPane, language, entityType),
 					A2($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, entityType),
@@ -25587,24 +26020,6 @@ var $author$project$Gizra$Html$showIf = F2(
 	function (condition, html) {
 		return condition ? html : $author$project$Gizra$Html$emptyNode;
 	});
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $author$project$Pages$Utils$viewActionButton = F4(
 	function (language, label, allowAction, action) {
 		var attributes = allowAction ? _List_fromArray(
@@ -25966,14 +26381,14 @@ var $author$project$Pages$Scoreboard$View$viewDisplayViewSelection = F2(
 					A4($author$project$Pages$Utils$viewActionButton, language, $author$project$Translate$GenerateReport, true, $author$project$Pages$Scoreboard$Model$GenerateReport))
 				]));
 	});
-var $author$project$Pages$Scoreboard$View$view = F2(
-	function (language, model) {
+var $author$project$Pages$Scoreboard$View$view = F3(
+	function (language, currentDate, model) {
 		var _v0 = model.displayMode;
 		if (_v0.$ === 'DisplayViewSelection') {
 			return A2($author$project$Pages$Scoreboard$View$viewDisplayViewSelection, language, model);
 		} else {
 			var value = _v0.a;
-			return A3($author$project$Pages$Scoreboard$View$viewDisplayResultTable, language, value, model);
+			return A4($author$project$Pages$Scoreboard$View$viewDisplayResultTable, language, currentDate, value, model);
 		}
 	});
 var $author$project$App$View$view = function (model) {
@@ -25988,7 +26403,11 @@ var $author$project$App$View$view = function (model) {
 					A2(
 					$elm$html$Html$map,
 					$author$project$App$Model$MsgScoreboardPage,
-					A2($author$project$Pages$Scoreboard$View$view, model.language, model.scoreboardPage))
+					A3(
+						$author$project$Pages$Scoreboard$View$view,
+						model.language,
+						$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
+						model.scoreboardPage))
 				]));
 	} else {
 		return A2(

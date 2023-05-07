@@ -8,8 +8,52 @@ import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Icons
 import Maybe.Extra exposing (isJust, or, unwrap)
+import Svg.Attributes
 import Translate exposing (TranslationId, translate)
+
+
+viewYearSelector : Language -> NominalDate -> Int -> (Int -> msg) -> Html msg
+viewYearSelector language currentDate gap changeGapMsg =
+    let
+        currentYear =
+            Date.year currentDate
+
+        selectedYear =
+            currentYear + gap
+
+        backClass =
+            if selectedYear == minYear then
+                [ Svg.Attributes.class "hidden" ]
+
+            else
+                []
+
+        forwardClass =
+            if gap == 0 then
+                [ Svg.Attributes.class "hidden" ]
+
+            else
+                []
+
+        minYear =
+            2018
+    in
+    div [ class "year-selector" ]
+        [ Icons.iconBack <|
+            (onClick <| changeGapMsg -1)
+                :: backClass
+        , span [ class "label" ] [ text <| String.fromInt selectedYear ]
+        , Icons.iconForward <|
+            (onClick <| changeGapMsg 1)
+                :: forwardClass
+        ]
+
+
+resolveSelectedDateForMonthSelector : NominalDate -> Int -> NominalDate
+resolveSelectedDateForMonthSelector currentDate monthGap =
+    Date.add Date.Months (-1 * monthGap) currentDate
 
 
 viewLabel : Language -> TranslationId -> Html any

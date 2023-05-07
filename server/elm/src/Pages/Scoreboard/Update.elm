@@ -4,7 +4,7 @@ import App.Model exposing (PagesReturn)
 import Backend.Model exposing (ModelBackend)
 import Error.Utils exposing (noError)
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Scoreboard.Model exposing (DisplayMode(..), Model, Msg(..), emptyViewSelectionForm)
+import Pages.Scoreboard.Model exposing (DisplayMode(..), Model, Msg(..), emptyModel, emptyViewSelectionForm)
 import Pages.Scoreboard.Utils exposing (..)
 import Restful.Endpoint exposing (toEntityId)
 
@@ -41,6 +41,20 @@ update modelBackend msg model =
             in
             PagesReturn
                 updatedModel
+                Cmd.none
+                noError
+                []
+
+        ResetSelection ->
+            PagesReturn
+                emptyModel
+                Cmd.none
+                noError
+                []
+
+        ChaneYearGap step ->
+            PagesReturn
+                { model | yearSelectorGap = model.yearSelectorGap + step }
                 Cmd.none
                 noError
                 []

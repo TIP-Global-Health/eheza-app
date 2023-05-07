@@ -3,6 +3,7 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import App.Types exposing (Page(..))
 import Error.View
+import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Pages.Scoreboard.View
 
@@ -16,6 +17,7 @@ view model =
                 , Html.map MsgScoreboardPage <|
                     Pages.Scoreboard.View.view
                         model.language
+                        (fromLocalDateTime model.currentTime)
                         model.scoreboardPage
                 ]
 

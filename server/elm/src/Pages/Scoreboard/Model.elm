@@ -10,6 +10,7 @@ import Utils.GeoLocation exposing (GeoLocationId)
 type alias Model =
     { displayMode : DisplayMode
     , form : ViewSelectionForm
+    , yearSelectorGap : Int
     }
 
 
@@ -18,6 +19,7 @@ emptyModel =
     { -- displayMode = DisplayViewSelection
       displayMode = DisplayResultTable { cell = Nothing, district = toEntityId 2046, province = toEntityId 1990, sector = Nothing, village = Nothing }
     , form = emptyViewSelectionForm
+    , yearSelectorGap = 0
     }
 
 
@@ -64,6 +66,8 @@ type SelectedEntity
 type Msg
     = SetGeoLocation (String -> ViewSelectionForm -> ViewSelectionForm) String
     | GenerateReport
+    | ResetSelection
+    | ChaneYearGap Int
 
 
 type NCDADemographicsItem

@@ -27,7 +27,7 @@ init flags =
         cmds =
             fetch model
                 |> List.map (Task.succeed >> Task.perform identity)
-                |> List.append [ Task.perform SetCurrentDate Time.now ]
+                |> List.append [ Task.perform SetCurrentTime Time.now ]
                 |> Cmd.batch
     in
     ( model
@@ -57,7 +57,7 @@ update msg model =
             updateSubModel
                 subMsg
                 model.backend
-                (\subMsg_ subModel -> Backend.Update.updateBackend model.currentDate subMsg_ subModel)
+                (\subMsg_ subModel -> Backend.Update.updateBackend model.currentTime subMsg_ subModel)
                 (\subModel model_ -> { model_ | backend = subModel })
                 (\subCmds -> MsgBackend subCmds)
                 model
@@ -81,10 +81,11 @@ update msg model =
             , Cmd.none
             )
 
-        SetCurrentDate date ->
-            ( { model | currentDate = date }, Cmd.none )
+        SetCurrentTime date ->
+            ( { model | currentTime = date }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    -- Time.every 60000 SetCurrentTime
     Sub.none
