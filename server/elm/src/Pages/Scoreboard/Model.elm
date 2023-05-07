@@ -16,8 +16,9 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { -- displayMode = DisplayViewSelection
-      displayMode = DisplayResultTable { cell = Nothing, district = toEntityId 2046, province = toEntityId 1990, sector = Nothing, village = Nothing }
+    { displayMode = DisplayViewSelection
+
+    -- displayMode = DisplayResultTable { cell = Nothing, district = toEntityId 2046, province = toEntityId 1990, sector = Nothing, village = Nothing }
     , form = emptyViewSelectionForm
     , yearSelectorGap = 0
     }

@@ -2,6 +2,7 @@ module Pages.Scoreboard.View exposing (view)
 
 import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
+import Date
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -244,14 +245,14 @@ viewDisplayResultTable language currentDate value model =
     div [ class "page-content" ]
         [ topBar
         , viewAggregatedChildScoreboardPane language ( entityId, entityType )
-        , viewDemographicsPane language currentDate entityType
-        , viewAcuteMalnutritionPane language entityType
-        , viewStuntingPane language entityType
-        , viewANCNewbornPane language entityType
-        , viewUniversalInterventionPane language entityType
-        , viewNutritionBehaviorPane language entityType
-        , viewTargetedInterventionsPane language entityType
-        , viewInfrastructureEnvironmentWashPane language entityType
+        , viewDemographicsPane language currentDate model.yearSelectorGap entityType
+        , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap entityType
+        , viewStuntingPane language currentDate model.yearSelectorGap entityType
+        , viewANCNewbornPane language currentDate model.yearSelectorGap entityType
+        , viewUniversalInterventionPane language currentDate model.yearSelectorGap entityType
+        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap entityType
+        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap entityType
+        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap entityType
         ]
 
 
@@ -291,13 +292,33 @@ viewAggregatedChildScoreboardPane language ( entityId, entityType ) =
         ]
 
 
-viewDemographicsPane : Language -> NominalDate -> SelectedEntity -> Html any
-viewDemographicsPane language currentDate entityType =
+formatValues : NominalDate -> Int -> List Int -> List String
+formatValues currentDate yearSelectorGap =
+    let
+        currentMonthNumber =
+            Date.monthNumber currentDate
+    in
+    List.indexedMap
+        (\index value ->
+            if yearSelectorGap == 0 then
+                if index < currentMonthNumber then
+                    String.fromInt value
+
+                else
+                    ""
+
+            else
+                String.fromInt value
+        )
+
+
+viewDemographicsPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
+viewDemographicsPane language currentDate yearSelectorGap entityType =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language (Translate.NCDADemographicsItemLabel item) itemValues
+                    viewTableRow language currentDate yearSelectorGap (Translate.NCDADemographicsItemLabel item) itemValues
                 )
                 [ ChildrenUnder2, NewbornsThisMonth, LowBirthWeigh ]
                 values
@@ -336,13 +357,13 @@ viewDemographicsPane language currentDate entityType =
         ]
 
 
-viewAcuteMalnutritionPane : Language -> SelectedEntity -> Html any
-viewAcuteMalnutritionPane language entityType =
+viewAcuteMalnutritionPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
+viewAcuteMalnutritionPane language currentDate yearSelectorGap entityType =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language (Translate.NCDAAcuteMalnutritionItemLabel item) itemValues
+                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAAcuteMalnutritionItemLabel item) itemValues
                 )
                 [ SevereAcuteMalnutrition, ModerateAcuteMalnutrition, GoodNutrition ]
                 values
@@ -381,13 +402,13 @@ viewAcuteMalnutritionPane language entityType =
         ]
 
 
-viewStuntingPane : Language -> SelectedEntity -> Html any
-viewStuntingPane language entityType =
+viewStuntingPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
+viewStuntingPane language currentDate yearSelectorGap entityType =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language (Translate.NCDAStuntingItemLabel item) itemValues
+                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAStuntingItemLabel item) itemValues
                 )
                 [ SevereStunting, ModerateStunting, NoStunting ]
                 values
@@ -426,13 +447,13 @@ viewStuntingPane language entityType =
         ]
 
 
-viewANCNewbornPane : Language -> SelectedEntity -> Html any
-viewANCNewbornPane language entityType =
+viewANCNewbornPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
+viewANCNewbornPane language currentDate yearSelectorGap entityType =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language (Translate.NCDAANCNewbornItemLabel item) itemValues
+                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAANCNewbornItemLabel item) itemValues
                 )
                 [ RegularCheckups, IronDuringPregnancy ]
                 values
@@ -467,13 +488,13 @@ viewANCNewbornPane language entityType =
         ]
 
 
-viewUniversalInterventionPane : Language -> SelectedEntity -> Html any
-viewUniversalInterventionPane language entityType =
+viewUniversalInterventionPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
+viewUniversalInterventionPane language currentDate yearSelectorGap entityType =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language (Translate.NCDAUniversalInterventionItemLabel item) itemValues
+                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAUniversalInterventionItemLabel item) itemValues
                 )
                 [ Immunization, VitaminA, OngeraMNP, OngeraMNP, ECDServices ]
                 values
@@ -520,13 +541,13 @@ viewUniversalInterventionPane language entityType =
         ]
 
 
-viewNutritionBehaviorPane : Language -> SelectedEntity -> Html any
-viewNutritionBehaviorPane language entityType =
+viewNutritionBehaviorPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
+viewNutritionBehaviorPane language currentDate yearSelectorGap entityType =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language (Translate.NCDANutritionBehaviorItemLabel item) itemValues
+                    viewTableRow language currentDate yearSelectorGap (Translate.NCDANutritionBehaviorItemLabel item) itemValues
                 )
                 [ BreastfedSixMonths, AppropriateComplementaryFeeding, DiverseDiet, MealsADay ]
                 values
@@ -569,13 +590,13 @@ viewNutritionBehaviorPane language entityType =
         ]
 
 
-viewTargetedInterventionsPane : Language -> SelectedEntity -> Html any
-viewTargetedInterventionsPane language entityType =
+viewTargetedInterventionsPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
+viewTargetedInterventionsPane language currentDate yearSelectorGap entityType =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language (Translate.NCDATargetedInterventionsItemLabel item) itemValues
+                    viewTableRow language currentDate yearSelectorGap (Translate.NCDATargetedInterventionsItemLabel item) itemValues
                 )
                 [ FBFGiven
                 , TreatmentForAcuteMalnutrition
@@ -632,13 +653,13 @@ viewTargetedInterventionsPane language entityType =
         ]
 
 
-viewInfrastructureEnvironmentWashPane : Language -> SelectedEntity -> Html any
-viewInfrastructureEnvironmentWashPane language entityType =
+viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
+viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap entityType =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language (Translate.NCDAInfrastructureEnvironmentWashItemLabel item) itemValues
+                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAInfrastructureEnvironmentWashItemLabel item) itemValues
                 )
                 [ HasToilets, HasCleanWater, HasHandwashingFacility, HasKitchenGarden, InsecticideTreatedBedNets ]
                 values
@@ -709,19 +730,19 @@ viewTableHeader language =
             :: monthCells
 
 
-viewTableRow : Language -> TranslationId -> List Int -> Html any
-viewTableRow language itemTransId values =
+viewTableRow : Language -> NominalDate -> Int -> TranslationId -> List Int -> Html any
+viewTableRow language currentDate yearSelectorGap itemTransId values =
     let
         activityCell =
             div [ class "cell activity" ] [ text <| translate language itemTransId ]
 
         valueCells =
-            List.map
-                (\value ->
-                    div [ class "cell value" ]
-                        [ text <| String.fromInt value ]
-                )
-                values
+            formatValues currentDate yearSelectorGap values
+                |> List.map
+                    (\value ->
+                        div [ class "cell value" ]
+                            [ text value ]
+                    )
     in
     div [ class "table-row" ] <|
         activityCell

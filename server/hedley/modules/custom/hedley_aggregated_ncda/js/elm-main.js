@@ -5273,26 +5273,9 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$Scoreboard = {$: 'Scoreboard'};
-var $author$project$Pages$Scoreboard$Model$DisplayResultTable = function (a) {
-	return {$: 'DisplayResultTable', a: a};
-};
+var $author$project$Pages$Scoreboard$Model$DisplayViewSelection = {$: 'DisplayViewSelection'};
 var $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
-var $author$project$Restful$Endpoint$EntityId = function (a) {
-	return {$: 'EntityId', a: a};
-};
-var $author$project$Restful$Endpoint$toEntityId = $author$project$Restful$Endpoint$EntityId;
-var $author$project$Pages$Scoreboard$Model$emptyModel = {
-	displayMode: $author$project$Pages$Scoreboard$Model$DisplayResultTable(
-		{
-			cell: $elm$core$Maybe$Nothing,
-			district: $author$project$Restful$Endpoint$toEntityId(2046),
-			province: $author$project$Restful$Endpoint$toEntityId(1990),
-			sector: $elm$core$Maybe$Nothing,
-			village: $elm$core$Maybe$Nothing
-		}),
-	form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm,
-	yearSelectorGap: 0
-};
+var $author$project$Pages$Scoreboard$Model$emptyModel = {displayMode: $author$project$Pages$Scoreboard$Model$DisplayViewSelection, form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm, yearSelectorGap: 0};
 var $author$project$Backend$Model$emptyModelBackend = {};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
@@ -5357,6 +5340,9 @@ var $author$project$App$Model$MsgScoreboardPage = function (a) {
 	return {$: 'MsgScoreboardPage', a: a};
 };
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Pages$Scoreboard$Model$DisplayResultTable = function (a) {
+	return {$: 'DisplayResultTable', a: a};
+};
 var $author$project$App$Model$PagesReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
@@ -6379,8 +6365,138 @@ var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) 
 			]),
 		A2($elm$core$List$cons, statusCell, monthCells));
 };
-var $author$project$Pages$Scoreboard$View$viewTableRow = F3(
-	function (language, itemTransId, values) {
+var $justinmimbs$date$Date$monthToNumber = function (m) {
+	switch (m.$) {
+		case 'Jan':
+			return 1;
+		case 'Feb':
+			return 2;
+		case 'Mar':
+			return 3;
+		case 'Apr':
+			return 4;
+		case 'May':
+			return 5;
+		case 'Jun':
+			return 6;
+		case 'Jul':
+			return 7;
+		case 'Aug':
+			return 8;
+		case 'Sep':
+			return 9;
+		case 'Oct':
+			return 10;
+		case 'Nov':
+			return 11;
+		default:
+			return 12;
+	}
+};
+var $justinmimbs$date$Date$numberToMonth = function (mn) {
+	var _v0 = A2($elm$core$Basics$max, 1, mn);
+	switch (_v0) {
+		case 1:
+			return $elm$time$Time$Jan;
+		case 2:
+			return $elm$time$Time$Feb;
+		case 3:
+			return $elm$time$Time$Mar;
+		case 4:
+			return $elm$time$Time$Apr;
+		case 5:
+			return $elm$time$Time$May;
+		case 6:
+			return $elm$time$Time$Jun;
+		case 7:
+			return $elm$time$Time$Jul;
+		case 8:
+			return $elm$time$Time$Aug;
+		case 9:
+			return $elm$time$Time$Sep;
+		case 10:
+			return $elm$time$Time$Oct;
+		case 11:
+			return $elm$time$Time$Nov;
+		default:
+			return $elm$time$Time$Dec;
+	}
+};
+var $justinmimbs$date$Date$toCalendarDateHelp = F3(
+	function (y, m, d) {
+		toCalendarDateHelp:
+		while (true) {
+			var monthDays = A2($justinmimbs$date$Date$daysInMonth, y, m);
+			var mn = $justinmimbs$date$Date$monthToNumber(m);
+			if ((mn < 12) && (_Utils_cmp(d, monthDays) > 0)) {
+				var $temp$y = y,
+					$temp$m = $justinmimbs$date$Date$numberToMonth(mn + 1),
+					$temp$d = d - monthDays;
+				y = $temp$y;
+				m = $temp$m;
+				d = $temp$d;
+				continue toCalendarDateHelp;
+			} else {
+				return {day: d, month: m, year: y};
+			}
+		}
+	});
+var $justinmimbs$date$Date$divWithRemainder = F2(
+	function (a, b) {
+		return _Utils_Tuple2(
+			A2($justinmimbs$date$Date$floorDiv, a, b),
+			A2($elm$core$Basics$modBy, b, a));
+	});
+var $justinmimbs$date$Date$year = function (_v0) {
+	var rd = _v0.a;
+	var _v1 = A2($justinmimbs$date$Date$divWithRemainder, rd, 146097);
+	var n400 = _v1.a;
+	var r400 = _v1.b;
+	var _v2 = A2($justinmimbs$date$Date$divWithRemainder, r400, 36524);
+	var n100 = _v2.a;
+	var r100 = _v2.b;
+	var _v3 = A2($justinmimbs$date$Date$divWithRemainder, r100, 1461);
+	var n4 = _v3.a;
+	var r4 = _v3.b;
+	var _v4 = A2($justinmimbs$date$Date$divWithRemainder, r4, 365);
+	var n1 = _v4.a;
+	var r1 = _v4.b;
+	var n = (!r1) ? 0 : 1;
+	return ((((n400 * 400) + (n100 * 100)) + (n4 * 4)) + n1) + n;
+};
+var $justinmimbs$date$Date$toOrdinalDate = function (_v0) {
+	var rd = _v0.a;
+	var y = $justinmimbs$date$Date$year(
+		$justinmimbs$date$Date$RD(rd));
+	return {
+		ordinalDay: rd - $justinmimbs$date$Date$daysBeforeYear(y),
+		year: y
+	};
+};
+var $justinmimbs$date$Date$toCalendarDate = function (_v0) {
+	var rd = _v0.a;
+	var date = $justinmimbs$date$Date$toOrdinalDate(
+		$justinmimbs$date$Date$RD(rd));
+	return A3($justinmimbs$date$Date$toCalendarDateHelp, date.year, $elm$time$Time$Jan, date.ordinalDay);
+};
+var $justinmimbs$date$Date$month = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toCalendarDate,
+	function ($) {
+		return $.month;
+	});
+var $justinmimbs$date$Date$monthNumber = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToNumber);
+var $author$project$Pages$Scoreboard$View$formatValues = F2(
+	function (currentDate, yearSelectorGap) {
+		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
+		return $elm$core$List$indexedMap(
+			F2(
+				function (index, value) {
+					return (!yearSelectorGap) ? ((_Utils_cmp(index, currentMonthNumber) < 0) ? $elm$core$String$fromInt(value) : '') : $elm$core$String$fromInt(value);
+				}));
+	});
+var $author$project$Pages$Scoreboard$View$viewTableRow = F5(
+	function (language, currentDate, yearSelectorGap, itemTransId, values) {
 		var valueCells = A2(
 			$elm$core$List$map,
 			function (value) {
@@ -6392,11 +6508,10 @@ var $author$project$Pages$Scoreboard$View$viewTableRow = F3(
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text(
-							$elm$core$String$fromInt(value))
+							$elm$html$Html$text(value)
 						]));
 			},
-			values);
+			A3($author$project$Pages$Scoreboard$View$formatValues, currentDate, yearSelectorGap, values));
 		var activityCell = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -6416,8 +6531,8 @@ var $author$project$Pages$Scoreboard$View$viewTableRow = F3(
 				]),
 			A2($elm$core$List$cons, activityCell, valueCells));
 	});
-var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F2(
-	function (language, entityType) {
+var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F4(
+	function (language, currentDate, yearSelectorGap, entityType) {
 		var values = function () {
 			switch (entityType.$) {
 				case 'EntityVillage':
@@ -6458,9 +6573,11 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F2(
 			$elm$core$List$map2,
 			F2(
 				function (item, itemValues) {
-					return A3(
+					return A5(
 						$author$project$Pages$Scoreboard$View$viewTableRow,
 						language,
+						currentDate,
+						yearSelectorGap,
 						$author$project$Translate$NCDAANCNewbornItemLabel(item),
 						itemValues);
 				}),
@@ -6495,8 +6612,8 @@ var $author$project$Translate$NCDAAcuteMalnutritionItemLabel = function (a) {
 	return {$: 'NCDAAcuteMalnutritionItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition = {$: 'SevereAcuteMalnutrition'};
-var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F2(
-	function (language, entityType) {
+var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F4(
+	function (language, currentDate, yearSelectorGap, entityType) {
 		var values = function () {
 			switch (entityType.$) {
 				case 'EntityVillage':
@@ -6545,9 +6662,11 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F2(
 			$elm$core$List$map2,
 			F2(
 				function (item, itemValues) {
-					return A3(
+					return A5(
 						$author$project$Pages$Scoreboard$View$viewTableRow,
 						language,
+						currentDate,
+						yearSelectorGap,
 						$author$project$Translate$NCDAAcuteMalnutritionItemLabel(item),
 						itemValues);
 				}),
@@ -6631,6 +6750,10 @@ var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
 		$pzp1997$assoc_list$AssocList$D(_List_Nil),
 		alist);
 };
+var $author$project$Restful$Endpoint$EntityId = function (a) {
+	return {$: 'EntityId', a: a};
+};
+var $author$project$Restful$Endpoint$toEntityId = $author$project$Restful$Endpoint$EntityId;
 var $author$project$Utils$GeoLocation$getGeoCells = $pzp1997$assoc_list$AssocList$fromList(
 	_Utils_ap(
 		_List_fromArray(
@@ -25133,8 +25256,8 @@ var $author$project$Translate$NCDADemographicsItemLabel = function (a) {
 	return {$: 'NCDADemographicsItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$NewbornsThisMonth = {$: 'NewbornsThisMonth'};
-var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F3(
-	function (language, currentDate, entityType) {
+var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F4(
+	function (language, currentDate, yearSelectorGap, entityType) {
 		var values = function () {
 			switch (entityType.$) {
 				case 'EntityVillage':
@@ -25183,9 +25306,11 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F3(
 			$elm$core$List$map2,
 			F2(
 				function (item, itemValues) {
-					return A3(
+					return A5(
 						$author$project$Pages$Scoreboard$View$viewTableRow,
 						language,
+						currentDate,
+						yearSelectorGap,
 						$author$project$Translate$NCDADemographicsItemLabel(item),
 						itemValues);
 				}),
@@ -25222,8 +25347,8 @@ var $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets = {$: 'Inse
 var $author$project$Translate$NCDAInfrastructureEnvironmentWashItemLabel = function (a) {
 	return {$: 'NCDAInfrastructureEnvironmentWashItemLabel', a: a};
 };
-var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F2(
-	function (language, entityType) {
+var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F4(
+	function (language, currentDate, yearSelectorGap, entityType) {
 		var values = function () {
 			switch (entityType.$) {
 				case 'EntityVillage':
@@ -25288,9 +25413,11 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 			$elm$core$List$map2,
 			F2(
 				function (item, itemValues) {
-					return A3(
+					return A5(
 						$author$project$Pages$Scoreboard$View$viewTableRow,
 						language,
+						currentDate,
+						yearSelectorGap,
 						$author$project$Translate$NCDAInfrastructureEnvironmentWashItemLabel(item),
 						itemValues);
 				}),
@@ -25326,8 +25453,8 @@ var $author$project$Translate$NCDANutritionBehaviorItemLabel = function (a) {
 	return {$: 'NCDANutritionBehaviorItemLabel', a: a};
 };
 var $author$project$Translate$NutritionBehavior = {$: 'NutritionBehavior'};
-var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F2(
-	function (language, entityType) {
+var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F4(
+	function (language, currentDate, yearSelectorGap, entityType) {
 		var values = function () {
 			switch (entityType.$) {
 				case 'EntityVillage':
@@ -25384,9 +25511,11 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F2(
 			$elm$core$List$map2,
 			F2(
 				function (item, itemValues) {
-					return A3(
+					return A5(
 						$author$project$Pages$Scoreboard$View$viewTableRow,
 						language,
+						currentDate,
+						yearSelectorGap,
 						$author$project$Translate$NCDANutritionBehaviorItemLabel(item),
 						itemValues);
 				}),
@@ -25421,8 +25550,8 @@ var $author$project$Translate$NCDAStuntingItemLabel = function (a) {
 var $author$project$Pages$Scoreboard$Model$NoStunting = {$: 'NoStunting'};
 var $author$project$Pages$Scoreboard$Model$SevereStunting = {$: 'SevereStunting'};
 var $author$project$Translate$Stunting = {$: 'Stunting'};
-var $author$project$Pages$Scoreboard$View$viewStuntingPane = F2(
-	function (language, entityType) {
+var $author$project$Pages$Scoreboard$View$viewStuntingPane = F4(
+	function (language, currentDate, yearSelectorGap, entityType) {
 		var values = function () {
 			switch (entityType.$) {
 				case 'EntityVillage':
@@ -25471,9 +25600,11 @@ var $author$project$Pages$Scoreboard$View$viewStuntingPane = F2(
 			$elm$core$List$map2,
 			F2(
 				function (item, itemValues) {
-					return A3(
+					return A5(
 						$author$project$Pages$Scoreboard$View$viewTableRow,
 						language,
+						currentDate,
+						yearSelectorGap,
 						$author$project$Translate$NCDAStuntingItemLabel(item),
 						itemValues);
 				}),
@@ -25511,8 +25642,8 @@ var $author$project$Pages$Scoreboard$Model$SupportChildWithDisability = {$: 'Sup
 var $author$project$Translate$TargetedInterventions = {$: 'TargetedInterventions'};
 var $author$project$Pages$Scoreboard$Model$TreatmentForAcuteMalnutrition = {$: 'TreatmentForAcuteMalnutrition'};
 var $author$project$Pages$Scoreboard$Model$TreatmentForDiarrhea = {$: 'TreatmentForDiarrhea'};
-var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F2(
-	function (language, entityType) {
+var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F4(
+	function (language, currentDate, yearSelectorGap, entityType) {
 		var values = function () {
 			switch (entityType.$) {
 				case 'EntityVillage':
@@ -25585,9 +25716,11 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F2(
 			$elm$core$List$map2,
 			F2(
 				function (item, itemValues) {
-					return A3(
+					return A5(
 						$author$project$Pages$Scoreboard$View$viewTableRow,
 						language,
+						currentDate,
+						yearSelectorGap,
 						$author$project$Translate$NCDATargetedInterventionsItemLabel(item),
 						itemValues);
 				}),
@@ -25623,8 +25756,8 @@ var $author$project$Translate$NCDAUniversalInterventionItemLabel = function (a) 
 var $author$project$Pages$Scoreboard$Model$OngeraMNP = {$: 'OngeraMNP'};
 var $author$project$Translate$UniversalIntervention = {$: 'UniversalIntervention'};
 var $author$project$Pages$Scoreboard$Model$VitaminA = {$: 'VitaminA'};
-var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F2(
-	function (language, entityType) {
+var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F4(
+	function (language, currentDate, yearSelectorGap, entityType) {
 		var values = function () {
 			switch (entityType.$) {
 				case 'EntityVillage':
@@ -25689,9 +25822,11 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F2(
 			$elm$core$List$map2,
 			F2(
 				function (item, itemValues) {
-					return A3(
+					return A5(
 						$author$project$Pages$Scoreboard$View$viewTableRow,
 						language,
+						currentDate,
+						yearSelectorGap,
 						$author$project$Translate$NCDAUniversalInterventionItemLabel(item),
 						itemValues);
 				}),
@@ -25804,32 +25939,9 @@ var $author$project$Icons$iconForward = function (attrs) {
 				_List_Nil)
 			]));
 };
-var $justinmimbs$date$Date$divWithRemainder = F2(
-	function (a, b) {
-		return _Utils_Tuple2(
-			A2($justinmimbs$date$Date$floorDiv, a, b),
-			A2($elm$core$Basics$modBy, b, a));
-	});
-var $justinmimbs$date$Date$year = function (_v0) {
-	var rd = _v0.a;
-	var _v1 = A2($justinmimbs$date$Date$divWithRemainder, rd, 146097);
-	var n400 = _v1.a;
-	var r400 = _v1.b;
-	var _v2 = A2($justinmimbs$date$Date$divWithRemainder, r400, 36524);
-	var n100 = _v2.a;
-	var r100 = _v2.b;
-	var _v3 = A2($justinmimbs$date$Date$divWithRemainder, r100, 1461);
-	var n4 = _v3.a;
-	var r4 = _v3.b;
-	var _v4 = A2($justinmimbs$date$Date$divWithRemainder, r4, 365);
-	var n1 = _v4.a;
-	var r1 = _v4.b;
-	var n = (!r1) ? 0 : 1;
-	return ((((n400 * 400) + (n100 * 100)) + (n4 * 4)) + n1) + n;
-};
 var $author$project$Pages$Utils$viewYearSelector = F4(
 	function (language, currentDate, gap, changeGapMsg) {
-		var minYear = 2018;
+		var minYear = 2022;
 		var forwardClass = (!gap) ? _List_fromArray(
 			[
 				$elm$svg$Svg$Attributes$class('hidden')
@@ -25948,14 +26060,14 @@ var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F4(
 					$author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane,
 					language,
 					_Utils_Tuple2(entityId, entityType)),
-					A3($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, entityType),
-					A2($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, entityType),
-					A2($author$project$Pages$Scoreboard$View$viewStuntingPane, language, entityType),
-					A2($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, entityType),
-					A2($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, entityType),
-					A2($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, entityType),
-					A2($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, entityType),
-					A2($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, entityType)
+					A4($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, entityType),
+					A4($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, entityType),
+					A4($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, entityType),
+					A4($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, entityType),
+					A4($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, entityType),
+					A4($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, entityType),
+					A4($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, entityType),
+					A4($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, entityType)
 				]));
 	});
 var $author$project$Pages$Scoreboard$Model$GenerateReport = {$: 'GenerateReport'};

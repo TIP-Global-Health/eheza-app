@@ -37,8 +37,9 @@ viewYearSelector language currentDate gap changeGapMsg =
             else
                 []
 
+        -- @todo: change to 2018
         minYear =
-            2018
+            2022
     in
     div [ class "year-selector" ]
         [ Icons.iconBack <|
@@ -49,11 +50,6 @@ viewYearSelector language currentDate gap changeGapMsg =
             (onClick <| changeGapMsg 1)
                 :: forwardClass
         ]
-
-
-resolveSelectedDateForMonthSelector : NominalDate -> Int -> NominalDate
-resolveSelectedDateForMonthSelector currentDate monthGap =
-    Date.add Date.Months (-1 * monthGap) currentDate
 
 
 viewLabel : Language -> TranslationId -> Html any
