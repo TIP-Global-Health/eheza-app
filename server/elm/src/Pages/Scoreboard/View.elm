@@ -12,6 +12,7 @@ import Pages.Scoreboard.Model exposing (..)
 import Pages.Scoreboard.Utils exposing (..)
 import Pages.Utils exposing (emptySelectOption, viewActionButton, viewLabel)
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
+import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (GeoLocationId, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
 
@@ -230,15 +231,16 @@ viewDisplayResultTable language value model =
                                     ( value.district, EntityDistrict )
     in
     div [ class "page-content" ]
-        [ viewAggregatedChildScoreboardPane language selectedEntityData value ]
+        [ viewAggregatedChildScoreboardPane language selectedEntityData
+        , viewDemographicsPane language (Tuple.second selectedEntityData)
+        ]
 
 
 viewAggregatedChildScoreboardPane :
     Language
     -> ( GeoLocationId, SelectedEntity )
-    -> ViewSelectionValue
     -> Html any
-viewAggregatedChildScoreboardPane language ( entityId, entityType ) value =
+viewAggregatedChildScoreboardPane language ( entityId, entityType ) =
     let
         entityName =
             case entityType of
@@ -259,7 +261,7 @@ viewAggregatedChildScoreboardPane language ( entityId, entityType ) value =
                 |> Maybe.map .name
                 |> Maybe.withDefault ""
     in
-    div [ class "pane aggregated-child-scoreboard" ]
+    div [ class "pane" ]
         [ viewPaneHeading language Translate.AggregatedChildScoreboard
         , div [ class "pane-content" ]
             [ div []
@@ -270,10 +272,49 @@ viewAggregatedChildScoreboardPane language ( entityId, entityType ) value =
         ]
 
 
-viewPaneHeading : Language -> TranslationId -> Html any
-viewPaneHeading language label =
-    div [ class <| "pane-heading" ]
-        [ text <| translate language label ]
+viewDemographicsPane : Language -> SelectedEntity -> Html any
+viewDemographicsPane language entityType =
+    let
+        rows =
+            List.map2
+                (\item itemValues ->
+                    viewTableRow language (Translate.NCDADemographicsItemLabel item) itemValues
+                )
+                [ ChildrenUnder2, NewbornsThisMonth, LowBirthWeigh ]
+                values
+
+        values =
+            case entityType of
+                EntityVillage ->
+                    [ [ 12, 12, 14, 13, 15, 15, 15, 12, 13, 13, 14, 14 ]
+                    , [ 11, 11, 17, 15, 16, 16, 16, 11, 15, 15, 17, 17 ]
+                    , [ 5, 8, 6, 7, 1, 4, 3, 5, 8, 3, 1, 6 ]
+                    ]
+
+                EntityCell ->
+                    [ [ 98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122 ]
+                    , [ 97, 97, 126, 106, 176, 176, 176, 97, 102, 102, 132, 132 ]
+                    , [ 25, 34, 32, 21, 23, 34, 45, 13, 34, 56, 12, 34 ]
+                    ]
+
+                EntitySector ->
+                    [ [ 203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239 ]
+                    , [ 205, 205, 238, 227, 266, 266, 266, 205, 227, 227, 238, 238 ]
+                    , [ 145, 146, 124, 145, 124, 145, 123, 145, 134, 135, 123, 234 ]
+                    ]
+
+                EntityDistrict ->
+                    [ [ 530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491 ]
+                    , [ 531, 531, 516, 455, 640, 640, 640, 531, 455, 455, 516, 516 ]
+                    , [ 345, 345, 356, 455, 214, 256, 289, 278, 267, 256, 256, 245 ]
+                    ]
+    in
+    div [ class "pane cyan" ]
+        [ viewPaneHeading language Translate.Demographics
+        , div [ class "pane-content" ] <|
+            viewTableHeader language
+                :: rows
+        ]
 
 
 
@@ -329,96 +370,6 @@ viewPaneHeading language label =
 --         ]
 --
 --
--- viewTableHeader : Html any
--- viewTableHeader =
---     div [ class "table-header" ]
---         [ div [ class "activity" ] [ text "Activity" ]
---         , div [ class "flex-column pregnancy" ]
---             [ div [ class "column-heading" ] [ text "Pregnancy (1-9)" ]
---             , List.repeat 9 ""
---                 |> List.indexedMap
---                     (\index _ ->
---                         div [ class "month" ] [ text <| String.fromInt <| index + 1 ]
---                     )
---                 |> div [ class "months" ]
---             ]
---         , div [ class "flex-column 0-5" ]
---             [ div [ class "column-heading" ] [ text "Child (0-5)" ]
---             , List.repeat 6 ""
---                 |> List.indexedMap
---                     (\index _ ->
---                         div [ class "month" ] [ text <| String.fromInt index ]
---                     )
---                 |> div [ class "months" ]
---             ]
---         , div [ class "flex-column 6-24" ]
---             [ div [ class "column-heading" ] [ text "Child (6-24 months)" ]
---             , List.repeat 19 ""
---                 |> List.indexedMap
---                     (\index _ ->
---                         div [ class "month" ] [ text <| String.fromInt <| index + 6 ]
---                     )
---                 |> div [ class "months" ]
---             ]
---         ]
---
---
--- viewTableRow : Language -> TranslationId -> List NCDACellValue -> List NCDACellValue -> List NCDACellValue -> Html any
--- viewTableRow language itemTransId pregnancyValues zeroToFiveValues sixToTwentyFourValues =
---     let
---         viewCellValue cellValue =
---             case cellValue of
---                 NCDACellValueV ->
---                     span [ class "green" ] [ text "v" ]
---
---                 NCDACellValueX ->
---                     span [ class "red" ] [ text "x" ]
---
---                 NCDACellValueDash ->
---                     span [] [ text "-" ]
---
---                 NCDACellValueC ->
---                     span [ class "green" ] [ text "c" ]
---
---                 NCDACellValueH ->
---                     span [ class "orange" ] [ text "h" ]
---
---                 NCDACellValueT ->
---                     span [ class "red" ] [ text "t" ]
---
---                 NCDACellValueEmpty ->
---                     emptyNode
---     in
---     div [ class "table-row" ]
---         [ div [ class "activity" ] [ text <| translate language itemTransId ]
---         , List.indexedMap
---             (\index value ->
---                 div [ class "month" ]
---                     [ span [ class "hidden" ] [ text <| String.fromInt <| index + 1 ]
---                     , viewCellValue value
---                     ]
---             )
---             pregnancyValues
---             |> div [ class "months" ]
---         , List.indexedMap
---             (\index value ->
---                 div [ class "month" ]
---                     [ span [ class "hidden" ] [ text <| String.fromInt index ]
---                     , viewCellValue value
---                     ]
---             )
---             zeroToFiveValues
---             |> div [ class "months" ]
---         , List.indexedMap
---             (\index value ->
---                 div [ class "month" ]
---                     [ span [ class "hidden" ] [ text <| String.fromInt <| index + 6 ]
---                     , viewCellValue value
---                     ]
---             )
---             sixToTwentyFourValues
---             |> div [ class "months" ]
---         ]
 --
 --
 -- viewNutritionBehaviorPane :
@@ -1400,29 +1351,46 @@ viewPaneHeading language label =
 --                 (List.drop 6 nutritionsValues)
 --             ]
 --         ]
---
---
--- distributeByAgeInMonths : Person -> List ( NominalDate, a ) -> Maybe (Dict Int a)
--- distributeByAgeInMonths child values =
---     Maybe.map
---         (\birthDate ->
---             List.sortWith sortTuplesByDateDesc values
---                 |> List.foldl
---                     (\( date, value ) accum ->
---                         let
---                             ageMonths =
---                                 diffMonths birthDate date
---                         in
---                         Dict.get ageMonths accum
---                             |> Maybe.map
---                                 -- We want to get most recent value for a month.
---                                 -- Since values are sorted DESC by date, we
---                                 -- know that if we already recorded value for that
---                                 -- month, it's more recent than the one we are checking,
---                                 -- and therefore this value can be skipped.
---                                 (always accum)
---                             |> Maybe.withDefault (Dict.insert ageMonths value accum)
---                     )
---                     Dict.empty
---         )
---         child.birthDate
+
+
+viewPaneHeading : Language -> TranslationId -> Html any
+viewPaneHeading language label =
+    div [ class <| "pane-heading" ]
+        [ text <| translate language label ]
+
+
+viewTableHeader : Language -> Html any
+viewTableHeader language =
+    let
+        statusCell =
+            div [ class "cell activity" ] [ text <| translate language Translate.Status ]
+
+        monthCells =
+            List.map
+                (\month ->
+                    div [ class "cell" ] [ text <| translate language <| Translate.Month month ]
+                )
+                [ Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec ]
+    in
+    div [ class "table-header" ] <|
+        statusCell
+            :: monthCells
+
+
+viewTableRow : Language -> TranslationId -> List Int -> Html any
+viewTableRow language itemTransId values =
+    let
+        activityCell =
+            div [ class "cell activity" ] [ text <| translate language itemTransId ]
+
+        valueCells =
+            List.map
+                (\value ->
+                    div [ class "cell value" ]
+                        [ text <| String.fromInt value ]
+                )
+                values
+    in
+    div [ class "table-row" ] <|
+        activityCell
+            :: valueCells

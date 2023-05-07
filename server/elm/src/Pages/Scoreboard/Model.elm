@@ -3,6 +3,7 @@ module Pages.Scoreboard.Model exposing (..)
 import AssocList
 import Dict exposing (Dict)
 import Json.Decode exposing (Value)
+import Restful.Endpoint exposing (toEntityId)
 import Utils.GeoLocation exposing (GeoLocationId)
 
 
@@ -14,7 +15,8 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { displayMode = DisplayViewSelection
+    { -- displayMode = DisplayViewSelection
+      displayMode = DisplayResultTable { cell = Nothing, district = toEntityId 2046, province = toEntityId 1990, sector = Nothing, village = Nothing }
     , form = emptyViewSelectionForm
     }
 
@@ -62,3 +64,65 @@ type SelectedEntity
 type Msg
     = SetGeoLocation (String -> ViewSelectionForm -> ViewSelectionForm) String
     | GenerateReport
+
+
+type NCDADemographicsItem
+    = ChildrenUnder2
+    | NewbornsThisMonth
+    | LowBirthWeigh
+
+
+type NCDAAcuteMalnutritionItem
+    = SevereAcuteMalnutrition
+    | ModerateAcuteMalnutrition
+    | GoodNutrition
+
+
+type NCDAStuntingItem
+    = SevereStunting
+    | ModerateStunting
+    | NoStunting
+
+
+type NCDAANCNewbornItem
+    = RegularCheckups
+    | IronDuringPregnancy
+
+
+type NCDANutritionBehaviorItem
+    = BreastfedSixMonths
+    | AppropriateComplementaryFeeding
+    | DiverseDiet
+    | MealsADay
+
+
+type NCDAInfrastructureEnvironmentWashItem
+    = HasToilets
+    | HasCleanWater
+    | HasHandwashingFacility
+    | HasKitchenGarden
+    | InsecticideTreatedBedNets
+
+
+type NCDATargetedInterventionsItem
+    = FBFGiven
+    | TreatmentForAcuteMalnutrition
+    | TreatmentForDiarrhea
+    | SupportChildWithDisability
+    | ConditionalCashTransfer
+    | ConditionalFoodItems
+
+
+type NCDAUniversalInterventionsItem
+    = Immunization
+    | VitaminA
+    | Deworming
+    | OngeraMNP
+    | ECDServices
+
+
+type NCDAFillTheBlanksItem
+    = HeightToAge
+    | WeightToAge
+    | MuacValue
+    | EdemaPresent

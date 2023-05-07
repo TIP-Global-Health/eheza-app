@@ -5273,9 +5273,25 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$Scoreboard = {$: 'Scoreboard'};
-var $author$project$Pages$Scoreboard$Model$DisplayViewSelection = {$: 'DisplayViewSelection'};
+var $author$project$Pages$Scoreboard$Model$DisplayResultTable = function (a) {
+	return {$: 'DisplayResultTable', a: a};
+};
 var $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
-var $author$project$Pages$Scoreboard$Model$emptyModel = {displayMode: $author$project$Pages$Scoreboard$Model$DisplayViewSelection, form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm};
+var $author$project$Restful$Endpoint$EntityId = function (a) {
+	return {$: 'EntityId', a: a};
+};
+var $author$project$Restful$Endpoint$toEntityId = $author$project$Restful$Endpoint$EntityId;
+var $author$project$Pages$Scoreboard$Model$emptyModel = {
+	displayMode: $author$project$Pages$Scoreboard$Model$DisplayResultTable(
+		{
+			cell: $elm$core$Maybe$Nothing,
+			district: $author$project$Restful$Endpoint$toEntityId(2046),
+			province: $author$project$Restful$Endpoint$toEntityId(1990),
+			sector: $elm$core$Maybe$Nothing,
+			village: $elm$core$Maybe$Nothing
+		}),
+	form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm
+};
 var $author$project$Backend$Model$emptyModelBackend = {};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
@@ -5340,9 +5356,6 @@ var $author$project$App$Model$MsgScoreboardPage = function (a) {
 	return {$: 'MsgScoreboardPage', a: a};
 };
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Pages$Scoreboard$Model$DisplayResultTable = function (a) {
-	return {$: 'DisplayResultTable', a: a};
-};
 var $author$project$App$Model$PagesReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
@@ -5575,6 +5588,107 @@ var $author$project$Translate$translateHttpError = function (transId) {
 			return {english: 'The network request timed out.', kinyarwanda: $elm$core$Maybe$Nothing};
 	}
 };
+var $author$project$Translate$translateMonth = F2(
+	function (month, _short) {
+		switch (month.$) {
+			case 'Jan':
+				return _short ? {
+					english: 'Jan',
+					kinyarwanda: $elm$core$Maybe$Just('Mut')
+				} : {
+					english: 'January',
+					kinyarwanda: $elm$core$Maybe$Just('Mutarama')
+				};
+			case 'Feb':
+				return _short ? {
+					english: 'Feb',
+					kinyarwanda: $elm$core$Maybe$Just('Gas')
+				} : {
+					english: 'February',
+					kinyarwanda: $elm$core$Maybe$Just('Gashyantare')
+				};
+			case 'Mar':
+				return _short ? {
+					english: 'Mar',
+					kinyarwanda: $elm$core$Maybe$Just('Wer')
+				} : {
+					english: 'March',
+					kinyarwanda: $elm$core$Maybe$Just('Werurwe')
+				};
+			case 'Apr':
+				return _short ? {
+					english: 'Apr',
+					kinyarwanda: $elm$core$Maybe$Just('Mat')
+				} : {
+					english: 'April',
+					kinyarwanda: $elm$core$Maybe$Just('Mata')
+				};
+			case 'May':
+				return _short ? {
+					english: 'May',
+					kinyarwanda: $elm$core$Maybe$Just('Gic')
+				} : {
+					english: 'May',
+					kinyarwanda: $elm$core$Maybe$Just('Gicurasi')
+				};
+			case 'Jun':
+				return _short ? {
+					english: 'Jun',
+					kinyarwanda: $elm$core$Maybe$Just('Kam')
+				} : {
+					english: 'June',
+					kinyarwanda: $elm$core$Maybe$Just('Kamena')
+				};
+			case 'Jul':
+				return _short ? {
+					english: 'Jul',
+					kinyarwanda: $elm$core$Maybe$Just('Nya')
+				} : {
+					english: 'July',
+					kinyarwanda: $elm$core$Maybe$Just('Nyakanga')
+				};
+			case 'Aug':
+				return _short ? {
+					english: 'Aug',
+					kinyarwanda: $elm$core$Maybe$Just('Kan')
+				} : {
+					english: 'August',
+					kinyarwanda: $elm$core$Maybe$Just('Kanama')
+				};
+			case 'Sep':
+				return _short ? {
+					english: 'Sep',
+					kinyarwanda: $elm$core$Maybe$Just('Nze')
+				} : {
+					english: 'September',
+					kinyarwanda: $elm$core$Maybe$Just('Nzeri')
+				};
+			case 'Oct':
+				return _short ? {
+					english: 'Oct',
+					kinyarwanda: $elm$core$Maybe$Just('Ukw')
+				} : {
+					english: 'October',
+					kinyarwanda: $elm$core$Maybe$Just('Ukwakira')
+				};
+			case 'Nov':
+				return _short ? {
+					english: 'Nov',
+					kinyarwanda: $elm$core$Maybe$Just('Ugu')
+				} : {
+					english: 'November',
+					kinyarwanda: $elm$core$Maybe$Just('Ugushyingo')
+				};
+			default:
+				return _short ? {
+					english: 'Dec',
+					kinyarwanda: $elm$core$Maybe$Just('Uku')
+				} : {
+					english: 'December',
+					kinyarwanda: $elm$core$Maybe$Just('Ukuboza')
+				};
+		}
+	});
 var $author$project$Translate$translationSet = function (transId) {
 	translationSet:
 	while (true) {
@@ -5585,11 +5699,193 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Cell', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'District':
 				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'Demographics':
+				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'GenerateReport':
 				return {english: 'Generate Report', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'HttpError':
 				var val = transId.a;
 				return $author$project$Translate$translateHttpError(val);
+			case 'Month':
+				var month = transId.a;
+				return A2($author$project$Translate$translateMonth, month, false);
+			case 'NCDADemographicsItemLabel':
+				var item = transId.a;
+				switch (item.$) {
+					case 'ChildrenUnder2':
+						return {english: 'Children under 2', kinyarwanda: $elm$core$Maybe$Nothing};
+					case 'NewbornsThisMonth':
+						return {english: 'Number of Newborns this month', kinyarwanda: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Low Birth Weigh (Y/N)', kinyarwanda: $elm$core$Maybe$Nothing};
+				}
+			case 'NCDAAcuteMalnutritionItemLabel':
+				var item = transId.a;
+				switch (item.$) {
+					case 'SevereAcuteMalnutrition':
+						return {english: 'Severe Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing};
+					case 'ModerateAcuteMalnutrition':
+						return {english: 'Moderate Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Good Nutrition', kinyarwanda: $elm$core$Maybe$Nothing};
+				}
+			case 'NCDAStuntingItemLabel':
+				var item = transId.a;
+				switch (item.$) {
+					case 'SevereStunting':
+						return {english: 'Severe Stunting', kinyarwanda: $elm$core$Maybe$Nothing};
+					case 'ModerateStunting':
+						return {english: 'Moderate Stunting', kinyarwanda: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'No Stunting', kinyarwanda: $elm$core$Maybe$Nothing};
+				}
+			case 'NCDAANCNewbornItemLabel':
+				var item = transId.a;
+				if (item.$ === 'RegularCheckups') {
+					return {
+						english: 'Regular prenatal and postpartum checkups',
+						kinyarwanda: $elm$core$Maybe$Just('Yisuzumishije uko bikwiye atwite na nyuma yo kubyara')
+					};
+				} else {
+					return {
+						english: 'Iron during pregnancy',
+						kinyarwanda: $elm$core$Maybe$Just('Yafashe umuti wongera amaraso atwite')
+					};
+				}
+			case 'NCDAInfrastructureEnvironmentWashItemLabel':
+				var item = transId.a;
+				switch (item.$) {
+					case 'HasToilets':
+						return {
+							english: 'Household has toilets',
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite ubwiherero')
+						};
+					case 'HasCleanWater':
+						return {
+							english: 'Household has clean water',
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite amazi meza')
+						};
+					case 'HasHandwashingFacility':
+						return {
+							english: 'Household has handwashing facility',
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite kandagirukarabe')
+						};
+					case 'HasKitchenGarden':
+						return {
+							english: 'Household has kitchen garden',
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite akarima k\'igikoni')
+						};
+					default:
+						return {
+							english: 'Insecticide treated bed nets',
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite nzitiramibu ikoranye umuti')
+						};
+				}
+			case 'NCDANutritionBehaviorItemLabel':
+				var item = transId.a;
+				switch (item.$) {
+					case 'BreastfedSixMonths':
+						return {
+							english: 'Breastfed baby for 6 mo without interruption',
+							kinyarwanda: $elm$core$Maybe$Just('Konsa umwana amezi 6 utamuvangiye')
+						};
+					case 'AppropriateComplementaryFeeding':
+						return {
+							english: 'Appropriate complementary feeding (6-24 mo)',
+							kinyarwanda: $elm$core$Maybe$Just('Imfashabere igizwe n’indyo yuzuye (Amezi 6-24)')
+						};
+					case 'DiverseDiet':
+						return {
+							english: 'Does the child have a diverse diet?',
+							kinyarwanda: $elm$core$Maybe$Just('Umwana afata indyo yuzuye')
+						};
+					default:
+						return {
+							english: 'Number of times a child eats a day',
+							kinyarwanda: $elm$core$Maybe$Just('Inshuro umwana afata ifunguro ku munsi')
+						};
+				}
+			case 'NCDATargetedInterventionsItemLabel':
+				var item = transId.a;
+				switch (item.$) {
+					case 'FBFGiven':
+						return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing};
+					case 'TreatmentForAcuteMalnutrition':
+						return {
+							english: 'Treatment for acute malnutrition (severe or moderate)',
+							kinyarwanda: $elm$core$Maybe$Just('Kuvura imiritre mibi  ifatiyeho(Ikabije cg yoroheje)')
+						};
+					case 'TreatmentForDiarrhea':
+						return {
+							english: 'Treatment of diarrhea (ORS & Zinc)',
+							kinyarwanda: $elm$core$Maybe$Just('Kuvura impiswi(Ukoresheje Zinc cg ORS)')
+						};
+					case 'SupportChildWithDisability':
+						return {
+							english: 'Provide support to a child with a disability ',
+							kinyarwanda: $elm$core$Maybe$Just('Guha umwana ufite ubumuga ubufasha bwihariye')
+						};
+					case 'ConditionalCashTransfer':
+						return {
+							english: 'Receipt of conditional cash transfer e.g. NSDS, VUP',
+							kinyarwanda: $elm$core$Maybe$Just('Gufata amafaranga y’inkunga agenerwa umugore utwite n’uwonsa bo mu miryango ikennye (icyiciro cya 1 n’icya 2) – NSDS, VUP')
+						};
+					default:
+						return {
+							english: 'Receipt of conditional food items including small livestock',
+							kinyarwanda: $elm$core$Maybe$Just('Gufata inkunga z’ingoboka harimo ibiryo n\'amatungo magufi')
+						};
+				}
+			case 'NCDAUniversalInterventionsItemLabel':
+				var item = transId.a;
+				switch (item.$) {
+					case 'Immunization':
+						return {
+							english: 'Immunization',
+							kinyarwanda: $elm$core$Maybe$Just('Ikingira')
+						};
+					case 'VitaminA':
+						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing};
+					case 'Deworming':
+						return {
+							english: 'Deworming',
+							kinyarwanda: $elm$core$Maybe$Just('Imiti y\'inzoka')
+						};
+					case 'OngeraMNP':
+						return {
+							english: 'Use additional nutrients (Ongera)',
+							kinyarwanda: $elm$core$Maybe$Just('Koresha Ongera intungamubiri')
+						};
+					default:
+						return {
+							english: 'ECD services provided to child',
+							kinyarwanda: $elm$core$Maybe$Just('Umwana yahawe servise n\'ikigo mboneza mikurire')
+						};
+				}
+			case 'NCDAFillTheBlanksItemLabel':
+				var item = transId.a;
+				switch (item.$) {
+					case 'HeightToAge':
+						return {
+							english: 'Level of stuning using child length mat',
+							kinyarwanda: $elm$core$Maybe$Just('Ikigero cyo kugwingira hakoreshejwe agasambi')
+						};
+					case 'WeightToAge':
+						return {
+							english: 'Weight',
+							kinyarwanda: $elm$core$Maybe$Just('Ibiro')
+						};
+					case 'MuacValue':
+						return {
+							english: 'MUAC',
+							kinyarwanda: $elm$core$Maybe$Just('Ikizigira')
+						};
+					default:
+						return {
+							english: 'Edema',
+							kinyarwanda: $elm$core$Maybe$Just('Kubyimba')
+						};
+				}
 			case 'Province':
 				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Sector':
@@ -5614,6 +5910,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 				}
+			case 'Status':
+				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing};
 			default:
 				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing};
 		}
@@ -5749,6 +6047,10 @@ var $author$project$Pages$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Pages$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
 var $author$project$Pages$Scoreboard$Model$EntitySector = {$: 'EntitySector'};
 var $author$project$Pages$Scoreboard$Model$EntityVillage = {$: 'EntityVillage'};
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
 var $author$project$Translate$AggregatedChildScoreboard = {$: 'AggregatedChildScoreboard'};
 var $author$project$Translate$SelectedEntity = function (a) {
 	return {$: 'SelectedEntity', a: a};
@@ -5806,10 +6108,6 @@ var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
 		$pzp1997$assoc_list$AssocList$D(_List_Nil),
 		alist);
 };
-var $author$project$Restful$Endpoint$EntityId = function (a) {
-	return {$: 'EntityId', a: a};
-};
-var $author$project$Restful$Endpoint$toEntityId = $author$project$Restful$Endpoint$EntityId;
 var $author$project$Utils$GeoLocation$getGeoCells = $pzp1997$assoc_list$AssocList$fromList(
 	_Utils_ap(
 		_List_fromArray(
@@ -24244,8 +24542,8 @@ var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
 					A2($author$project$Translate$translate, language, label))
 				]));
 	});
-var $author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane = F3(
-	function (language, _v0, value) {
+var $author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane = F2(
+	function (language, _v0) {
 		var entityId = _v0.a;
 		var entityType = _v0.b;
 		var resolveEnityName = F2(
@@ -24276,7 +24574,7 @@ var $author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane = F3
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('pane aggregated-child-scoreboard')
+					$elm$html$Html$Attributes$class('pane')
 				]),
 			_List_fromArray(
 				[
@@ -24319,6 +24617,186 @@ var $author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane = F3
 						]))
 				]));
 	});
+var $author$project$Pages$Scoreboard$Model$ChildrenUnder2 = {$: 'ChildrenUnder2'};
+var $author$project$Translate$Demographics = {$: 'Demographics'};
+var $author$project$Pages$Scoreboard$Model$LowBirthWeigh = {$: 'LowBirthWeigh'};
+var $author$project$Translate$NCDADemographicsItemLabel = function (a) {
+	return {$: 'NCDADemographicsItemLabel', a: a};
+};
+var $author$project$Pages$Scoreboard$Model$NewbornsThisMonth = {$: 'NewbornsThisMonth'};
+var $elm$time$Time$Apr = {$: 'Apr'};
+var $elm$time$Time$Aug = {$: 'Aug'};
+var $elm$time$Time$Dec = {$: 'Dec'};
+var $elm$time$Time$Feb = {$: 'Feb'};
+var $elm$time$Time$Jan = {$: 'Jan'};
+var $elm$time$Time$Jul = {$: 'Jul'};
+var $elm$time$Time$Jun = {$: 'Jun'};
+var $elm$time$Time$Mar = {$: 'Mar'};
+var $elm$time$Time$May = {$: 'May'};
+var $author$project$Translate$Month = function (a) {
+	return {$: 'Month', a: a};
+};
+var $elm$time$Time$Nov = {$: 'Nov'};
+var $elm$time$Time$Oct = {$: 'Oct'};
+var $elm$time$Time$Sep = {$: 'Sep'};
+var $author$project$Translate$Status = {$: 'Status'};
+var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) {
+	var statusCell = A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('cell activity')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				A2($author$project$Translate$translate, language, $author$project$Translate$Status))
+			]));
+	var monthCells = A2(
+		$elm$core$List$map,
+		function (month) {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('cell')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$Month(month)))
+					]));
+		},
+		_List_fromArray(
+			[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]));
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('table-header')
+			]),
+		A2($elm$core$List$cons, statusCell, monthCells));
+};
+var $author$project$Pages$Scoreboard$View$viewTableRow = F3(
+	function (language, itemTransId, values) {
+		var valueCells = A2(
+			$elm$core$List$map,
+			function (value) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('cell value')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$String$fromInt(value))
+						]));
+			},
+			values);
+		var activityCell = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('cell activity')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Translate$translate, language, itemTransId))
+				]));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table-row')
+				]),
+			A2($elm$core$List$cons, activityCell, valueCells));
+	});
+var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F2(
+	function (language, entityType) {
+		var values = function () {
+			switch (entityType.$) {
+				case 'EntityVillage':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[12, 12, 14, 13, 15, 15, 15, 12, 13, 13, 14, 14]),
+							_List_fromArray(
+							[11, 11, 17, 15, 16, 16, 16, 11, 15, 15, 17, 17]),
+							_List_fromArray(
+							[5, 8, 6, 7, 1, 4, 3, 5, 8, 3, 1, 6])
+						]);
+				case 'EntityCell':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122]),
+							_List_fromArray(
+							[97, 97, 126, 106, 176, 176, 176, 97, 102, 102, 132, 132]),
+							_List_fromArray(
+							[25, 34, 32, 21, 23, 34, 45, 13, 34, 56, 12, 34])
+						]);
+				case 'EntitySector':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239]),
+							_List_fromArray(
+							[205, 205, 238, 227, 266, 266, 266, 205, 227, 227, 238, 238]),
+							_List_fromArray(
+							[145, 146, 124, 145, 124, 145, 123, 145, 134, 135, 123, 234])
+						]);
+				default:
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491]),
+							_List_fromArray(
+							[531, 531, 516, 455, 640, 640, 640, 531, 455, 455, 516, 516]),
+							_List_fromArray(
+							[345, 345, 356, 455, 214, 256, 289, 278, 267, 256, 256, 245])
+						]);
+			}
+		}();
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A3(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						$author$project$Translate$NCDADemographicsItemLabel(item),
+						itemValues);
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$ChildrenUnder2, $author$project$Pages$Scoreboard$Model$NewbornsThisMonth, $author$project$Pages$Scoreboard$Model$LowBirthWeigh]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane cyan')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$Demographics),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
+				]));
+	});
 var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
 	function (language, value, model) {
 		var selectedEntityData = function () {
@@ -24350,7 +24828,8 @@ var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F3(
 				]),
 			_List_fromArray(
 				[
-					A3($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, selectedEntityData, value)
+					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, selectedEntityData),
+					A2($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, selectedEntityData.b)
 				]));
 	});
 var $author$project$Pages$Scoreboard$Model$GenerateReport = {$: 'GenerateReport'};
@@ -24461,10 +24940,6 @@ var $author$project$Pages$Utils$viewActionButton = F4(
 						]))
 				]));
 	});
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
 var $elm$html$Html$Attributes$classList = function (classes) {
 	return $elm$html$Html$Attributes$class(
 		A2(
