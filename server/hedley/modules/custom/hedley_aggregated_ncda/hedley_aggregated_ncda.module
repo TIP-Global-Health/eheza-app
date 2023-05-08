@@ -15,7 +15,7 @@ function hedley_aggregated_ncda_menu() {
     'title' => 'NCDA scoreboard',
     'description' => 'View aggregated NCDA scoreboard',
     'page callback' => 'hedley_aggregated_ncda_callback',
-    'access arguments' => ['hedley_aggregated_ncda_access'],
+    'access callback' => 'hedley_aggregated_ncda_access',
   );
 
   return $items;
