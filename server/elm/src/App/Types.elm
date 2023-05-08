@@ -5,7 +5,8 @@ module App.Types exposing
 
 
 type Page
-    = Scoreboard
+    = Menu
+    | Scoreboard
     | NotFound
 
 

@@ -11,6 +11,8 @@ import App.Utils exposing (updateSubModel)
 import Backend.Model
 import Backend.Update
 import Json.Decode exposing (Value, decodeValue)
+import Pages.Menu.Model
+import Pages.Menu.Update
 import Pages.Scoreboard.Model
 import Pages.Scoreboard.Update
 import Pages.Scoreboard.Utils exposing (..)
@@ -21,8 +23,14 @@ import Time
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
+        activePage =
+            resolveActivePage flags.page
+
         model =
-            { emptyModel | backend = updateBackendWithAppData emptyModel.activePage flags.appData emptyModel.backend }
+            { emptyModel
+                | activePage = activePage
+                , backend = updateBackendWithAppData activePage flags.appData emptyModel.backend
+            }
 
         cmds =
             fetch model
@@ -36,11 +44,28 @@ init flags =
     )
 
 
+resolveActivePage : String -> Page
+resolveActivePage page =
+    case page of
+        "menu" ->
+            Menu
+
+        "results" ->
+            Scoreboard
+
+        _ ->
+            NotFound
+
+
 updateBackendWithAppData : Page -> Value -> Backend.Model.ModelBackend -> Backend.Model.ModelBackend
 updateBackendWithAppData activePage appData modelBackend =
     case activePage of
-        Scoreboard ->
+        Menu ->
             -- No data is passed for this page.
+            modelBackend
+
+        Scoreboard ->
+            -- @todo
             modelBackend
 
         NotFound ->
@@ -60,6 +85,15 @@ update msg model =
                 (\subMsg_ subModel -> Backend.Update.updateBackend model.currentTime subMsg_ subModel)
                 (\subModel model_ -> { model_ | backend = subModel })
                 (\subCmds -> MsgBackend subCmds)
+                model
+
+        MsgMenuPage subMsg ->
+            updateSubModel
+                subMsg
+                model.menuPage
+                (\subMsg_ subModel -> Pages.Menu.Update.update subMsg_ subModel)
+                (\subModel model_ -> { model_ | menuPage = subModel })
+                (\subCmds -> MsgMenuPage subCmds)
                 model
 
         MsgScoreboardPage subMsg ->

@@ -5243,15 +5243,18 @@ var $author$project$Pages$Scoreboard$Fetch$fetch = F2(
 	});
 var $author$project$App$Fetch$fetch = function (model) {
 	var _v0 = model.activePage;
-	if (_v0.$ === 'Scoreboard') {
-		return A2(
-			$elm$core$List$map,
-			function (subMsg) {
-				return $author$project$App$Model$MsgBackend(subMsg);
-			},
-			A2($author$project$Pages$Scoreboard$Fetch$fetch, model.backend, model.scoreboardPage));
-	} else {
-		return _List_Nil;
+	switch (_v0.$) {
+		case 'Menu':
+			return _List_Nil;
+		case 'Scoreboard':
+			return A2(
+				$elm$core$List$map,
+				function (subMsg) {
+					return $author$project$App$Model$MsgBackend(subMsg);
+				},
+				A2($author$project$Pages$Scoreboard$Fetch$fetch, model.backend, model.scoreboardPage));
+		default:
+			return _List_Nil;
 	}
 };
 var $elm$json$Json$Decode$field = _Json_decodeField;
@@ -5272,21 +5275,21 @@ var $elm$core$Basics$composeR = F3(
 			f(x));
 	});
 var $author$project$App$Types$English = {$: 'English'};
-var $author$project$App$Types$Scoreboard = {$: 'Scoreboard'};
-var $author$project$Pages$Scoreboard$Model$DisplayViewSelection = {$: 'DisplayViewSelection'};
-var $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
-var $author$project$Pages$Scoreboard$Model$emptyModel = {displayMode: $author$project$Pages$Scoreboard$Model$DisplayViewSelection, form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm, yearSelectorGap: 0};
+var $author$project$App$Types$NotFound = {$: 'NotFound'};
+var $author$project$Pages$Menu$Model$emptyModel = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
+var $author$project$Pages$Scoreboard$Model$emptyModel = {yearSelectorGap: 0};
 var $author$project$Backend$Model$emptyModelBackend = {};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
 };
 var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
 var $author$project$App$Model$emptyModel = {
-	activePage: $author$project$App$Types$Scoreboard,
+	activePage: $author$project$App$Types$NotFound,
 	backend: $author$project$Backend$Model$emptyModelBackend,
 	currentTime: $elm$time$Time$millisToPosix(0),
 	errors: _List_Nil,
 	language: $author$project$App$Types$English,
+	menuPage: $author$project$Pages$Menu$Model$emptyModel,
 	scoreboardPage: $author$project$Pages$Scoreboard$Model$emptyModel
 };
 var $elm$time$Time$Name = function (a) {
@@ -5301,19 +5304,36 @@ var $elm$time$Time$Zone = F2(
 	});
 var $elm$time$Time$customZone = $elm$time$Time$Zone;
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $author$project$App$Types$Menu = {$: 'Menu'};
+var $author$project$App$Types$Scoreboard = {$: 'Scoreboard'};
+var $author$project$App$Update$resolveActivePage = function (page) {
+	switch (page) {
+		case 'menu':
+			return $author$project$App$Types$Menu;
+		case 'results':
+			return $author$project$App$Types$Scoreboard;
+		default:
+			return $author$project$App$Types$NotFound;
+	}
+};
 var $author$project$App$Update$updateBackendWithAppData = F3(
 	function (activePage, appData, modelBackend) {
-		if (activePage.$ === 'Scoreboard') {
-			return modelBackend;
-		} else {
-			return modelBackend;
+		switch (activePage.$) {
+			case 'Menu':
+				return modelBackend;
+			case 'Scoreboard':
+				return modelBackend;
+			default:
+				return modelBackend;
 		}
 	});
 var $author$project$App$Update$init = function (flags) {
+	var activePage = $author$project$App$Update$resolveActivePage(flags.page);
 	var model = _Utils_update(
 		$author$project$App$Model$emptyModel,
 		{
-			backend: A3($author$project$App$Update$updateBackendWithAppData, $author$project$App$Model$emptyModel.activePage, flags.appData, $author$project$App$Model$emptyModel.backend)
+			activePage: activePage,
+			backend: A3($author$project$App$Update$updateBackendWithAppData, activePage, flags.appData, $author$project$App$Model$emptyModel.backend)
 		});
 	var cmds = $elm$core$Platform$Cmd$batch(
 		A2(
@@ -5331,95 +5351,46 @@ var $author$project$App$Update$init = function (flags) {
 				$author$project$App$Fetch$fetch(model))));
 	return _Utils_Tuple2(model, cmds);
 };
+var $elm$json$Json$Decode$string = _Json_decodeString;
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$App$Update$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
+var $author$project$App$Model$MsgMenuPage = function (a) {
+	return {$: 'MsgMenuPage', a: a};
+};
 var $author$project$App$Model$MsgScoreboardPage = function (a) {
 	return {$: 'MsgScoreboardPage', a: a};
 };
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Pages$Scoreboard$Model$DisplayResultTable = function (a) {
-	return {$: 'DisplayResultTable', a: a};
-};
 var $author$project$App$Model$PagesReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
-var $elm$core$Maybe$map2 = F3(
-	function (func, ma, mb) {
-		if (ma.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				return $elm$core$Maybe$Just(
-					A2(func, a, b));
-			}
-		}
-	});
 var $author$project$Error$Utils$noError = $elm$core$Maybe$Nothing;
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
+var $author$project$Pages$Menu$Update$update = F2(
+	function (msg, model) {
+		var updatedFunc = msg.a;
+		var value = msg.b;
+		return A4(
+			$author$project$App$Model$PagesReturn,
+			A2(updatedFunc, value, model),
+			$elm$core$Platform$Cmd$none,
+			$author$project$Error$Utils$noError,
+			_List_Nil);
 	});
 var $author$project$Pages$Scoreboard$Update$update = F3(
 	function (modelBackend, msg, model) {
-		switch (msg.$) {
-			case 'SetGeoLocation':
-				var updatedFormFunc = msg.a;
-				var value = msg.b;
-				return A4(
-					$author$project$App$Model$PagesReturn,
-					_Utils_update(
-						model,
-						{
-							form: A2(updatedFormFunc, value, model.form)
-						}),
-					$elm$core$Platform$Cmd$none,
-					$author$project$Error$Utils$noError,
-					_List_Nil);
-			case 'GenerateReport':
-				var updatedModel = A2(
-					$elm$core$Maybe$withDefault,
-					model,
-					A3(
-						$elm$core$Maybe$map2,
-						F2(
-							function (province, district) {
-								var value = {cell: model.form.cell, district: district, province: province, sector: model.form.sector, village: model.form.village};
-								return _Utils_update(
-									model,
-									{
-										displayMode: $author$project$Pages$Scoreboard$Model$DisplayResultTable(value),
-										form: $author$project$Pages$Scoreboard$Model$emptyViewSelectionForm
-									});
-							}),
-						model.form.province,
-						model.form.district));
-				return A4($author$project$App$Model$PagesReturn, updatedModel, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
-			case 'ResetSelection':
-				return A4($author$project$App$Model$PagesReturn, $author$project$Pages$Scoreboard$Model$emptyModel, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
-			default:
-				var step = msg.a;
-				return A4(
-					$author$project$App$Model$PagesReturn,
-					_Utils_update(
-						model,
-						{yearSelectorGap: model.yearSelectorGap + step}),
-					$elm$core$Platform$Cmd$none,
-					$author$project$Error$Utils$noError,
-					_List_Nil);
-		}
+		var step = msg.a;
+		return A4(
+			$author$project$App$Model$PagesReturn,
+			_Utils_update(
+				model,
+				{yearSelectorGap: model.yearSelectorGap + step}),
+			$elm$core$Platform$Cmd$none,
+			$author$project$Error$Utils$noError,
+			_List_Nil);
 	});
 var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
@@ -5498,6 +5469,26 @@ var $author$project$App$Update$update = F2(
 						}),
 					function (subCmds) {
 						return $author$project$App$Model$MsgBackend(subCmds);
+					},
+					model);
+			case 'MsgMenuPage':
+				var subMsg = msg.a;
+				return A6(
+					$author$project$App$Utils$updateSubModel,
+					subMsg,
+					model.menuPage,
+					F2(
+						function (subMsg_, subModel) {
+							return A2($author$project$Pages$Menu$Update$update, subMsg_, subModel);
+						}),
+					F2(
+						function (subModel, model_) {
+							return _Utils_update(
+								model_,
+								{menuPage: subModel});
+						}),
+					function (subCmds) {
+						return $author$project$App$Model$MsgMenuPage(subCmds);
 					},
 					model);
 			case 'MsgScoreboardPage':
@@ -5782,7 +5773,6 @@ var $author$project$Translate$HttpError = function (a) {
 	return {$: 'HttpError', a: a};
 };
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Translate$Cell = {$: 'Cell'};
 var $author$project$Translate$District = {$: 'District'};
 var $author$project$Translate$Sector = {$: 'Sector'};
@@ -6148,6 +6138,15 @@ var $author$project$Translate$translationSet = function (transId) {
 		}
 	}
 };
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $author$project$Translate$translate = F2(
 	function (language, transId) {
 		var set = $author$project$Translate$translationSet(transId);
@@ -6274,434 +6273,24 @@ var $author$project$Error$View$view = F2(
 						errors))
 				]));
 	});
-var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
-	return {$: 'ChaneYearGap', a: a};
-};
-var $author$project$Pages$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
-var $author$project$Pages$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
-var $author$project$Pages$Scoreboard$Model$EntitySector = {$: 'EntitySector'};
-var $author$project$Pages$Scoreboard$Model$EntityVillage = {$: 'EntityVillage'};
-var $author$project$Translate$NewSelection = {$: 'NewSelection'};
-var $author$project$Pages$Scoreboard$Model$ResetSelection = {$: 'ResetSelection'};
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
+var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
+var $author$project$Translate$Province = {$: 'Province'};
+var $author$project$Pages$Menu$Model$SetGeoLocation = F2(
+	function (a, b) {
+		return {$: 'SetGeoLocation', a: a, b: b};
 	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
-var $author$project$Pages$Scoreboard$Model$IronDuringPregnancy = {$: 'IronDuringPregnancy'};
-var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
-	return {$: 'NCDAANCNewbornItemLabel', a: a};
-};
-var $author$project$Pages$Scoreboard$Model$RegularCheckups = {$: 'RegularCheckups'};
-var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
-	function (language, label) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('pane-heading')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					A2($author$project$Translate$translate, language, label))
-				]));
-	});
-var $author$project$Translate$Month = function (a) {
-	return {$: 'Month', a: a};
-};
-var $author$project$Translate$Status = {$: 'Status'};
-var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) {
-	var statusCell = A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('cell activity')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text(
-				A2($author$project$Translate$translate, language, $author$project$Translate$Status))
-			]));
-	var monthCells = A2(
-		$elm$core$List$map,
-		function (month) {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('cell')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						A2(
-							$author$project$Translate$translate,
-							language,
-							$author$project$Translate$Month(month)))
-					]));
-		},
-		_List_fromArray(
-			[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]));
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('table-header')
-			]),
-		A2($elm$core$List$cons, statusCell, monthCells));
-};
-var $justinmimbs$date$Date$monthToNumber = function (m) {
-	switch (m.$) {
-		case 'Jan':
-			return 1;
-		case 'Feb':
-			return 2;
-		case 'Mar':
-			return 3;
-		case 'Apr':
-			return 4;
-		case 'May':
-			return 5;
-		case 'Jun':
-			return 6;
-		case 'Jul':
-			return 7;
-		case 'Aug':
-			return 8;
-		case 'Sep':
-			return 9;
-		case 'Oct':
-			return 10;
-		case 'Nov':
-			return 11;
-		default:
-			return 12;
-	}
-};
-var $justinmimbs$date$Date$numberToMonth = function (mn) {
-	var _v0 = A2($elm$core$Basics$max, 1, mn);
-	switch (_v0) {
-		case 1:
-			return $elm$time$Time$Jan;
-		case 2:
-			return $elm$time$Time$Feb;
-		case 3:
-			return $elm$time$Time$Mar;
-		case 4:
-			return $elm$time$Time$Apr;
-		case 5:
-			return $elm$time$Time$May;
-		case 6:
-			return $elm$time$Time$Jun;
-		case 7:
-			return $elm$time$Time$Jul;
-		case 8:
-			return $elm$time$Time$Aug;
-		case 9:
-			return $elm$time$Time$Sep;
-		case 10:
-			return $elm$time$Time$Oct;
-		case 11:
-			return $elm$time$Time$Nov;
-		default:
-			return $elm$time$Time$Dec;
-	}
-};
-var $justinmimbs$date$Date$toCalendarDateHelp = F3(
-	function (y, m, d) {
-		toCalendarDateHelp:
-		while (true) {
-			var monthDays = A2($justinmimbs$date$Date$daysInMonth, y, m);
-			var mn = $justinmimbs$date$Date$monthToNumber(m);
-			if ((mn < 12) && (_Utils_cmp(d, monthDays) > 0)) {
-				var $temp$y = y,
-					$temp$m = $justinmimbs$date$Date$numberToMonth(mn + 1),
-					$temp$d = d - monthDays;
-				y = $temp$y;
-				m = $temp$m;
-				d = $temp$d;
-				continue toCalendarDateHelp;
-			} else {
-				return {day: d, month: m, year: y};
-			}
+var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $justinmimbs$date$Date$divWithRemainder = F2(
-	function (a, b) {
-		return _Utils_Tuple2(
-			A2($justinmimbs$date$Date$floorDiv, a, b),
-			A2($elm$core$Basics$modBy, b, a));
-	});
-var $justinmimbs$date$Date$year = function (_v0) {
-	var rd = _v0.a;
-	var _v1 = A2($justinmimbs$date$Date$divWithRemainder, rd, 146097);
-	var n400 = _v1.a;
-	var r400 = _v1.b;
-	var _v2 = A2($justinmimbs$date$Date$divWithRemainder, r400, 36524);
-	var n100 = _v2.a;
-	var r100 = _v2.b;
-	var _v3 = A2($justinmimbs$date$Date$divWithRemainder, r100, 1461);
-	var n4 = _v3.a;
-	var r4 = _v3.b;
-	var _v4 = A2($justinmimbs$date$Date$divWithRemainder, r4, 365);
-	var n1 = _v4.a;
-	var r1 = _v4.b;
-	var n = (!r1) ? 0 : 1;
-	return ((((n400 * 400) + (n100 * 100)) + (n4 * 4)) + n1) + n;
-};
-var $justinmimbs$date$Date$toOrdinalDate = function (_v0) {
-	var rd = _v0.a;
-	var y = $justinmimbs$date$Date$year(
-		$justinmimbs$date$Date$RD(rd));
-	return {
-		ordinalDay: rd - $justinmimbs$date$Date$daysBeforeYear(y),
-		year: y
-	};
-};
-var $justinmimbs$date$Date$toCalendarDate = function (_v0) {
-	var rd = _v0.a;
-	var date = $justinmimbs$date$Date$toOrdinalDate(
-		$justinmimbs$date$Date$RD(rd));
-	return A3($justinmimbs$date$Date$toCalendarDateHelp, date.year, $elm$time$Time$Jan, date.ordinalDay);
-};
-var $justinmimbs$date$Date$month = A2(
-	$elm$core$Basics$composeR,
-	$justinmimbs$date$Date$toCalendarDate,
-	function ($) {
-		return $.month;
-	});
-var $justinmimbs$date$Date$monthNumber = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToNumber);
-var $author$project$Pages$Scoreboard$View$formatValues = F2(
-	function (currentDate, yearSelectorGap) {
-		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
-		return $elm$core$List$indexedMap(
-			F2(
-				function (index, value) {
-					return (!yearSelectorGap) ? ((_Utils_cmp(index, currentMonthNumber) < 0) ? $elm$core$String$fromInt(value) : '') : $elm$core$String$fromInt(value);
-				}));
-	});
-var $author$project$Pages$Scoreboard$View$viewTableRow = F5(
-	function (language, currentDate, yearSelectorGap, itemTransId, values) {
-		var valueCells = A2(
-			$elm$core$List$map,
-			function (value) {
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('cell value')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(value)
-						]));
-			},
-			A3($author$project$Pages$Scoreboard$View$formatValues, currentDate, yearSelectorGap, values));
-		var activityCell = A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('cell activity')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					A2($author$project$Translate$translate, language, itemTransId))
-				]));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('table-row')
-				]),
-			A2($elm$core$List$cons, activityCell, valueCells));
-	});
-var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F4(
-	function (language, currentDate, yearSelectorGap, entityType) {
-		var values = function () {
-			switch (entityType.$) {
-				case 'EntityVillage':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12]),
-							_List_fromArray(
-							[10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12])
-						]);
-				case 'EntityCell':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105]),
-							_List_fromArray(
-							[105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105])
-						]);
-				case 'EntitySector':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241]),
-							_List_fromArray(
-							[259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241])
-						]);
-				default:
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569]),
-							_List_fromArray(
-							[583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569])
-						]);
-			}
-		}();
-		var rows = A3(
-			$elm$core$List$map2,
-			F2(
-				function (item, itemValues) {
-					return A5(
-						$author$project$Pages$Scoreboard$View$viewTableRow,
-						language,
-						currentDate,
-						yearSelectorGap,
-						$author$project$Translate$NCDAANCNewbornItemLabel(item),
-						itemValues);
-				}),
-			_List_fromArray(
-				[$author$project$Pages$Scoreboard$Model$RegularCheckups, $author$project$Pages$Scoreboard$Model$IronDuringPregnancy]),
-			values);
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('pane cyan')
-				]),
-			_List_fromArray(
-				[
-					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$ANCNewborn),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('pane-content')
-						]),
-					A2(
-						$elm$core$List$cons,
-						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
-						rows))
-				]));
-	});
-var $author$project$Translate$AcuteMalnutrition = {$: 'AcuteMalnutrition'};
-var $author$project$Pages$Scoreboard$Model$GoodNutrition = {$: 'GoodNutrition'};
-var $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition = {$: 'ModerateAcuteMalnutrition'};
-var $author$project$Translate$NCDAAcuteMalnutritionItemLabel = function (a) {
-	return {$: 'NCDAAcuteMalnutritionItemLabel', a: a};
-};
-var $author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition = {$: 'SevereAcuteMalnutrition'};
-var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F4(
-	function (language, currentDate, yearSelectorGap, entityType) {
-		var values = function () {
-			switch (entityType.$) {
-				case 'EntityVillage':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[11, 17, 19, 15, 15, 7, 8, 12, 11, 17, 11, 12]),
-							_List_fromArray(
-							[3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3]),
-							_List_fromArray(
-							[9, 6, 2, 8, 12, 1, 25, 3, 24, 5, 7, 11])
-						]);
-				case 'EntityCell':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[98, 129, 100, 123, 112, 145, 173, 98, 145, 134, 135, 122]),
-							_List_fromArray(
-							[98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122]),
-							_List_fromArray(
-							[35, 72, 98, 41, 84, 63, 52, 77, 96, 88, 55, 47])
-						]);
-				case 'EntitySector':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[203, 257, 234, 245, 245, 256, 124, 145, 124, 145, 239, 240]),
-							_List_fromArray(
-							[203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239]),
-							_List_fromArray(
-							[213, 243, 239, 221, 246, 236, 266, 223, 229, 221, 229, 234])
-						]);
-				default:
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[491, 455, 640, 678, 524, 491, 545, 640, 563, 640, 455, 491]),
-							_List_fromArray(
-							[530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491]),
-							_List_fromArray(
-							[223, 569, 854, 732, 988, 622, 901, 775, 666, 444, 888, 998])
-						]);
-			}
-		}();
-		var rows = A3(
-			$elm$core$List$map2,
-			F2(
-				function (item, itemValues) {
-					return A5(
-						$author$project$Pages$Scoreboard$View$viewTableRow,
-						language,
-						currentDate,
-						yearSelectorGap,
-						$author$project$Translate$NCDAAcuteMalnutritionItemLabel(item),
-						itemValues);
-				}),
-			_List_fromArray(
-				[$author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition, $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition, $author$project$Pages$Scoreboard$Model$GoodNutrition]),
-			values);
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('pane orange')
-				]),
-			_List_fromArray(
-				[
-					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$AcuteMalnutrition),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('pane-content')
-						]),
-					A2(
-						$elm$core$List$cons,
-						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
-						rows))
-				]));
-	});
-var $author$project$Translate$AggregatedChildScoreboard = {$: 'AggregatedChildScoreboard'};
-var $author$project$Translate$SelectedEntity = function (a) {
-	return {$: 'SelectedEntity', a: a};
-};
-var $author$project$Utils$GeoLocation$GeoLocation = F2(
-	function (name, parent) {
-		return {name: name, parent: parent};
-	});
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $pzp1997$assoc_list$AssocList$D = function (a) {
 	return {$: 'D', a: a};
 };
@@ -6715,6 +6304,41 @@ var $elm$core$List$filter = F2(
 				}),
 			_List_Nil,
 			list);
+	});
+var $pzp1997$assoc_list$AssocList$filter = F2(
+	function (isGood, _v0) {
+		var alist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var key = _v1.a;
+					var value = _v1.b;
+					return A2(isGood, key, value);
+				},
+				alist));
+	});
+var $author$project$Restful$Endpoint$EntityId = function (a) {
+	return {$: 'EntityId', a: a};
+};
+var $author$project$Restful$Endpoint$toEntityId = $author$project$Restful$Endpoint$EntityId;
+var $author$project$Utils$GeoLocation$filterGeoLocationDictByParent = function (parentId) {
+	return $pzp1997$assoc_list$AssocList$filter(
+		F2(
+			function (_v0, geoLocation) {
+				return _Utils_eq(
+					$elm$core$Maybe$Just(
+						$author$project$Restful$Endpoint$toEntityId(parentId)),
+					geoLocation.parent);
+			}));
+};
+var $author$project$Restful$Endpoint$fromEntityId = function (_v0) {
+	var a = _v0.a;
+	return a;
+};
+var $author$project$Utils$GeoLocation$GeoLocation = F2(
+	function (name, parent) {
+		return {name: name, parent: parent};
 	});
 var $pzp1997$assoc_list$AssocList$remove = F2(
 	function (targetKey, _v0) {
@@ -6750,10 +6374,6 @@ var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
 		$pzp1997$assoc_list$AssocList$D(_List_Nil),
 		alist);
 };
-var $author$project$Restful$Endpoint$EntityId = function (a) {
-	return {$: 'EntityId', a: a};
-};
-var $author$project$Restful$Endpoint$toEntityId = $author$project$Restful$Endpoint$EntityId;
 var $author$project$Utils$GeoLocation$getGeoCells = $pzp1997$assoc_list$AssocList$fromList(
 	_Utils_ap(
 		_List_fromArray(
@@ -25139,6 +24759,22 @@ var $author$project$Utils$GeoLocation$getGeoVillages = $pzp1997$assoc_list$Assoc
 													$author$project$Restful$Endpoint$toEntityId(2615))))
 										]))))))))));
 var $author$project$Utils$GeoLocation$geoInfo = {cells: $author$project$Utils$GeoLocation$getGeoCells, districts: $author$project$Utils$GeoLocation$getGeoDistricts, provinces: $author$project$Utils$GeoLocation$getGeoProvinces, sectors: $author$project$Utils$GeoLocation$getGeoSectors, villages: $author$project$Utils$GeoLocation$getGeoVillages};
+var $pzp1997$assoc_list$AssocList$toList = function (_v0) {
+	var alist = _v0.a;
+	return alist;
+};
+var $author$project$Utils$GeoLocation$geoLocationDictToOptions = A2(
+	$elm$core$Basics$composeR,
+	$pzp1997$assoc_list$AssocList$toList,
+	$elm$core$List$map(
+		function (_v0) {
+			var id = _v0.a;
+			var geoLocation = _v0.b;
+			return _Utils_Tuple2(
+				$elm$core$String$fromInt(
+					$author$project$Restful$Endpoint$fromEntityId(id)),
+				geoLocation.name);
+		}));
 var $pzp1997$assoc_list$AssocList$get = F2(
 	function (targetKey, _v0) {
 		get:
@@ -25163,6 +24799,19 @@ var $pzp1997$assoc_list$AssocList$get = F2(
 			}
 		}
 	});
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
+	if (m.$ === 'Nothing') {
+		return false;
+	} else {
+		return true;
+	}
+};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -25173,80 +24822,845 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $elm$html$Html$span = _VirtualDom_node('span');
-var $author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane = F2(
-	function (language, _v0) {
-		var entityId = _v0.a;
-		var entityType = _v0.b;
-		var resolveEnityName = F2(
-			function (id, dict) {
-				return A2(
-					$elm$core$Maybe$withDefault,
-					'',
-					A2(
-						$elm$core$Maybe$map,
-						function ($) {
-							return $.name;
-						},
-						A2($pzp1997$assoc_list$AssocList$get, id, dict)));
-			});
-		var entityName = function () {
-			switch (entityType.$) {
-				case 'EntityDistrict':
-					return A2(resolveEnityName, entityId, $author$project$Utils$GeoLocation$geoInfo.districts);
-				case 'EntitySector':
-					return A2(resolveEnityName, entityId, $author$project$Utils$GeoLocation$geoInfo.sectors);
-				case 'EntityCell':
-					return A2(resolveEnityName, entityId, $author$project$Utils$GeoLocation$geoInfo.cells);
-				default:
-					return A2(resolveEnityName, entityId, $author$project$Utils$GeoLocation$geoInfo.villages);
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
 			}
-		}();
+		}
+	});
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $elm$html$Html$Attributes$classList = function (classes) {
+	return $elm$html$Html$Attributes$class(
+		A2(
+			$elm$core$String$join,
+			' ',
+			A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
+};
+var $elm$html$Html$option = _VirtualDom_node('option');
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$selected = $elm$html$Html$Attributes$boolProperty('selected');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
+	return A2(
+		$elm$html$Html$option,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$value(''),
+				$elm$html$Html$Attributes$selected(isSelected)
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('')
+			]));
+};
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $elm$html$Html$select = _VirtualDom_node('select');
+var $author$project$Pages$Utils$viewCustomLabel = F4(
+	function (language, translationId, suffix, class_) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('pane')
+					$elm$html$Html$Attributes$class(class_)
 				]),
 			_List_fromArray(
 				[
-					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$AggregatedChildScoreboard),
+					$elm$html$Html$text(
+					_Utils_ap(
+						A2($author$project$Translate$translate, language, translationId),
+						suffix))
+				]));
+	});
+var $author$project$Pages$Utils$viewLabel = F2(
+	function (language, translationId) {
+		return A4($author$project$Pages$Utils$viewCustomLabel, language, translationId, ':', 'label');
+	});
+var $author$project$Pages$Menu$View$viewSelectListInput = F6(
+	function (language, currentValue, options, setMsg, labelTransId, disabled) {
+		var emptyOption = $author$project$Pages$Utils$emptySelectOption(
+			_Utils_eq(currentValue, $elm$core$Maybe$Nothing));
+		var selectOptions = A2(
+			$elm$core$List$cons,
+			emptyOption,
+			A2(
+				$elm$core$List$map,
+				function (option_) {
+					var isSelected = A2(
+						$elm$core$Maybe$withDefault,
+						false,
+						A2(
+							$elm$core$Maybe$map,
+							function (id) {
+								return _Utils_eq(
+									currentValue,
+									$elm$core$Maybe$Just(
+										$author$project$Restful$Endpoint$toEntityId(id)));
+							},
+							$elm$core$String$toInt(option_.a)));
+					return A2(
+						$elm$html$Html$option,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$value(option_.a),
+								$elm$html$Html$Attributes$selected(isSelected)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(option_.b)
+							]));
+				},
+				options));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$classList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('select-input-wrapper', true),
+							_Utils_Tuple2('disabled', disabled)
+						]))
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Utils$viewLabel, language, labelTransId),
+					A2(
+					$elm$html$Html$select,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onInput(setMsg),
+							$elm$html$Html$Attributes$class('select-input')
+						]),
+					selectOptions)
+				]));
+	});
+var $author$project$Pages$Menu$View$view = F2(
+	function (language, model) {
+		var villageInput = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (parentId) {
+					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
+						A2(
+							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
+							$author$project$Restful$Endpoint$fromEntityId(parentId),
+							$author$project$Utils$GeoLocation$geoInfo.villages));
+					return A6(
+						$author$project$Pages$Menu$View$viewSelectListInput,
+						language,
+						model.village,
+						options,
+						$author$project$Pages$Menu$Model$SetGeoLocation(
+							F2(
+								function (value, form) {
+									return _Utils_update(
+										form,
+										{
+											village: A2(
+												$elm$core$Maybe$map,
+												$author$project$Restful$Endpoint$toEntityId,
+												$elm$core$String$toInt(value))
+										});
+								})),
+						$author$project$Translate$Village,
+						false);
+				},
+				model.cell));
+		var sectorInput = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (parentId) {
+					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
+						A2(
+							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
+							$author$project$Restful$Endpoint$fromEntityId(parentId),
+							$author$project$Utils$GeoLocation$geoInfo.sectors));
+					return A6(
+						$author$project$Pages$Menu$View$viewSelectListInput,
+						language,
+						model.sector,
+						options,
+						$author$project$Pages$Menu$Model$SetGeoLocation(
+							F2(
+								function (value, form) {
+									return _Utils_update(
+										form,
+										{
+											sector: A2(
+												$elm$core$Maybe$map,
+												$author$project$Restful$Endpoint$toEntityId,
+												$elm$core$String$toInt(value))
+										});
+								})),
+						$author$project$Translate$Sector,
+						$elm_community$maybe_extra$Maybe$Extra$isJust(model.cell));
+				},
+				model.district));
+		var provinceInput = function () {
+			var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions($author$project$Utils$GeoLocation$geoInfo.provinces);
+			return A6(
+				$author$project$Pages$Menu$View$viewSelectListInput,
+				language,
+				model.province,
+				options,
+				$author$project$Pages$Menu$Model$SetGeoLocation(
+					F2(
+						function (value, form) {
+							return _Utils_update(
+								form,
+								{
+									province: A2(
+										$elm$core$Maybe$map,
+										$author$project$Restful$Endpoint$toEntityId,
+										$elm$core$String$toInt(value))
+								});
+						})),
+				$author$project$Translate$Province,
+				$elm_community$maybe_extra$Maybe$Extra$isJust(model.district));
+		}();
+		var districtInput = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (parentId) {
+					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
+						A2(
+							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
+							$author$project$Restful$Endpoint$fromEntityId(parentId),
+							$author$project$Utils$GeoLocation$geoInfo.districts));
+					return A6(
+						$author$project$Pages$Menu$View$viewSelectListInput,
+						language,
+						model.district,
+						options,
+						$author$project$Pages$Menu$Model$SetGeoLocation(
+							F2(
+								function (value, form) {
+									return _Utils_update(
+										form,
+										{
+											district: A2(
+												$elm$core$Maybe$map,
+												$author$project$Restful$Endpoint$toEntityId,
+												$elm$core$String$toInt(value))
+										});
+								})),
+						$author$project$Translate$District,
+						$elm_community$maybe_extra$Maybe$Extra$isJust(model.sector));
+				},
+				model.province));
+		var cellInput = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (parentId) {
+					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
+						A2(
+							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
+							$author$project$Restful$Endpoint$fromEntityId(parentId),
+							$author$project$Utils$GeoLocation$geoInfo.cells));
+					return A6(
+						$author$project$Pages$Menu$View$viewSelectListInput,
+						language,
+						model.cell,
+						options,
+						$author$project$Pages$Menu$Model$SetGeoLocation(
+							F2(
+								function (value, form) {
+									return _Utils_update(
+										form,
+										{
+											cell: A2(
+												$elm$core$Maybe$map,
+												$author$project$Restful$Endpoint$toEntityId,
+												$elm$core$String$toInt(value))
+										});
+								})),
+						$author$project$Translate$Cell,
+						$elm_community$maybe_extra$Maybe$Extra$isJust(model.village));
+				},
+				model.sector));
+		var actionButton = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A3(
+				$elm$core$Maybe$map2,
+				F2(
+					function (province, district) {
+						var villagePart = A2(
+							$elm$core$Maybe$withDefault,
+							'',
+							A2(
+								$elm$core$Maybe$map,
+								function (geoLocation) {
+									return '/' + geoLocation.name;
+								},
+								A2(
+									$elm$core$Maybe$andThen,
+									function (id) {
+										return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.villages);
+									},
+									model.village)));
+						var sectorPart = A2(
+							$elm$core$Maybe$withDefault,
+							'',
+							A2(
+								$elm$core$Maybe$map,
+								function (geoLocation) {
+									return '/' + geoLocation.name;
+								},
+								A2(
+									$elm$core$Maybe$andThen,
+									function (id) {
+										return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.sectors);
+									},
+									model.sector)));
+						var provincePart = A2(
+							$elm$core$Maybe$withDefault,
+							'',
+							A2(
+								$elm$core$Maybe$map,
+								function ($) {
+									return $.name;
+								},
+								A2($pzp1997$assoc_list$AssocList$get, province, $author$project$Utils$GeoLocation$geoInfo.provinces)));
+						var districtPart = A2(
+							$elm$core$Maybe$withDefault,
+							'',
+							A2(
+								$elm$core$Maybe$map,
+								function ($) {
+									return $.name;
+								},
+								A2($pzp1997$assoc_list$AssocList$get, district, $author$project$Utils$GeoLocation$geoInfo.districts)));
+						var cellPart = A2(
+							$elm$core$Maybe$withDefault,
+							'',
+							A2(
+								$elm$core$Maybe$map,
+								function (geoLocation) {
+									return '/' + geoLocation.name;
+								},
+								A2(
+									$elm$core$Maybe$andThen,
+									function (id) {
+										return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.cells);
+									},
+									model.cell)));
+						var suffix = provincePart + ('/' + (districtPart + (sectorPart + (cellPart + villagePart))));
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('actions')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$a,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda/' + suffix)
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$button,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text(
+													A2($author$project$Translate$translate, language, $author$project$Translate$GenerateReport))
+												]))
+										]))
+								]));
+					}),
+				model.province,
+				model.district));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('header')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Please select desired view mode:')
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('inputs')
+						]),
+					_List_fromArray(
+						[provinceInput, districtInput, sectorInput, cellInput, villageInput])),
+					actionButton
+				]));
+	});
+var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
+	return {$: 'ChaneYearGap', a: a};
+};
+var $author$project$Pages$Scoreboard$Model$EntityVillage = {$: 'EntityVillage'};
+var $author$project$Translate$NewSelection = {$: 'NewSelection'};
+var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
+var $author$project$Pages$Scoreboard$Model$IronDuringPregnancy = {$: 'IronDuringPregnancy'};
+var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
+	return {$: 'NCDAANCNewbornItemLabel', a: a};
+};
+var $author$project$Pages$Scoreboard$Model$RegularCheckups = {$: 'RegularCheckups'};
+var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
+	function (language, label) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane-heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Translate$translate, language, label))
+				]));
+	});
+var $author$project$Translate$Month = function (a) {
+	return {$: 'Month', a: a};
+};
+var $author$project$Translate$Status = {$: 'Status'};
+var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) {
+	var statusCell = A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('cell activity')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				A2($author$project$Translate$translate, language, $author$project$Translate$Status))
+			]));
+	var monthCells = A2(
+		$elm$core$List$map,
+		function (month) {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('cell')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$Month(month)))
+					]));
+		},
+		_List_fromArray(
+			[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]));
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('table-header')
+			]),
+		A2($elm$core$List$cons, statusCell, monthCells));
+};
+var $justinmimbs$date$Date$monthToNumber = function (m) {
+	switch (m.$) {
+		case 'Jan':
+			return 1;
+		case 'Feb':
+			return 2;
+		case 'Mar':
+			return 3;
+		case 'Apr':
+			return 4;
+		case 'May':
+			return 5;
+		case 'Jun':
+			return 6;
+		case 'Jul':
+			return 7;
+		case 'Aug':
+			return 8;
+		case 'Sep':
+			return 9;
+		case 'Oct':
+			return 10;
+		case 'Nov':
+			return 11;
+		default:
+			return 12;
+	}
+};
+var $justinmimbs$date$Date$numberToMonth = function (mn) {
+	var _v0 = A2($elm$core$Basics$max, 1, mn);
+	switch (_v0) {
+		case 1:
+			return $elm$time$Time$Jan;
+		case 2:
+			return $elm$time$Time$Feb;
+		case 3:
+			return $elm$time$Time$Mar;
+		case 4:
+			return $elm$time$Time$Apr;
+		case 5:
+			return $elm$time$Time$May;
+		case 6:
+			return $elm$time$Time$Jun;
+		case 7:
+			return $elm$time$Time$Jul;
+		case 8:
+			return $elm$time$Time$Aug;
+		case 9:
+			return $elm$time$Time$Sep;
+		case 10:
+			return $elm$time$Time$Oct;
+		case 11:
+			return $elm$time$Time$Nov;
+		default:
+			return $elm$time$Time$Dec;
+	}
+};
+var $justinmimbs$date$Date$toCalendarDateHelp = F3(
+	function (y, m, d) {
+		toCalendarDateHelp:
+		while (true) {
+			var monthDays = A2($justinmimbs$date$Date$daysInMonth, y, m);
+			var mn = $justinmimbs$date$Date$monthToNumber(m);
+			if ((mn < 12) && (_Utils_cmp(d, monthDays) > 0)) {
+				var $temp$y = y,
+					$temp$m = $justinmimbs$date$Date$numberToMonth(mn + 1),
+					$temp$d = d - monthDays;
+				y = $temp$y;
+				m = $temp$m;
+				d = $temp$d;
+				continue toCalendarDateHelp;
+			} else {
+				return {day: d, month: m, year: y};
+			}
+		}
+	});
+var $justinmimbs$date$Date$divWithRemainder = F2(
+	function (a, b) {
+		return _Utils_Tuple2(
+			A2($justinmimbs$date$Date$floorDiv, a, b),
+			A2($elm$core$Basics$modBy, b, a));
+	});
+var $justinmimbs$date$Date$year = function (_v0) {
+	var rd = _v0.a;
+	var _v1 = A2($justinmimbs$date$Date$divWithRemainder, rd, 146097);
+	var n400 = _v1.a;
+	var r400 = _v1.b;
+	var _v2 = A2($justinmimbs$date$Date$divWithRemainder, r400, 36524);
+	var n100 = _v2.a;
+	var r100 = _v2.b;
+	var _v3 = A2($justinmimbs$date$Date$divWithRemainder, r100, 1461);
+	var n4 = _v3.a;
+	var r4 = _v3.b;
+	var _v4 = A2($justinmimbs$date$Date$divWithRemainder, r4, 365);
+	var n1 = _v4.a;
+	var r1 = _v4.b;
+	var n = (!r1) ? 0 : 1;
+	return ((((n400 * 400) + (n100 * 100)) + (n4 * 4)) + n1) + n;
+};
+var $justinmimbs$date$Date$toOrdinalDate = function (_v0) {
+	var rd = _v0.a;
+	var y = $justinmimbs$date$Date$year(
+		$justinmimbs$date$Date$RD(rd));
+	return {
+		ordinalDay: rd - $justinmimbs$date$Date$daysBeforeYear(y),
+		year: y
+	};
+};
+var $justinmimbs$date$Date$toCalendarDate = function (_v0) {
+	var rd = _v0.a;
+	var date = $justinmimbs$date$Date$toOrdinalDate(
+		$justinmimbs$date$Date$RD(rd));
+	return A3($justinmimbs$date$Date$toCalendarDateHelp, date.year, $elm$time$Time$Jan, date.ordinalDay);
+};
+var $justinmimbs$date$Date$month = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toCalendarDate,
+	function ($) {
+		return $.month;
+	});
+var $justinmimbs$date$Date$monthNumber = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToNumber);
+var $author$project$Pages$Scoreboard$View$formatValues = F2(
+	function (currentDate, yearSelectorGap) {
+		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
+		return $elm$core$List$indexedMap(
+			F2(
+				function (index, value) {
+					return (!yearSelectorGap) ? ((_Utils_cmp(index, currentMonthNumber) < 0) ? $elm$core$String$fromInt(value) : '') : $elm$core$String$fromInt(value);
+				}));
+	});
+var $author$project$Pages$Scoreboard$View$viewTableRow = F5(
+	function (language, currentDate, yearSelectorGap, itemTransId, values) {
+		var valueCells = A2(
+			$elm$core$List$map,
+			function (value) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('cell value')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(value)
+						]));
+			},
+			A3($author$project$Pages$Scoreboard$View$formatValues, currentDate, yearSelectorGap, values));
+		var activityCell = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('cell activity')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Translate$translate, language, itemTransId))
+				]));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table-row')
+				]),
+			A2($elm$core$List$cons, activityCell, valueCells));
+	});
+var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F4(
+	function (language, currentDate, yearSelectorGap, entityType) {
+		var values = function () {
+			switch (entityType.$) {
+				case 'EntityVillage':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12]),
+							_List_fromArray(
+							[10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12])
+						]);
+				case 'EntityCell':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105]),
+							_List_fromArray(
+							[105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105])
+						]);
+				case 'EntitySector':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241]),
+							_List_fromArray(
+							[259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241])
+						]);
+				default:
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569]),
+							_List_fromArray(
+							[583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569])
+						]);
+			}
+		}();
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A5(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						currentDate,
+						yearSelectorGap,
+						$author$project$Translate$NCDAANCNewbornItemLabel(item),
+						itemValues);
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$RegularCheckups, $author$project$Pages$Scoreboard$Model$IronDuringPregnancy]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane cyan')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$ANCNewborn),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$class('pane-content')
 						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
+				]));
+	});
+var $author$project$Translate$AcuteMalnutrition = {$: 'AcuteMalnutrition'};
+var $author$project$Pages$Scoreboard$Model$GoodNutrition = {$: 'GoodNutrition'};
+var $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition = {$: 'ModerateAcuteMalnutrition'};
+var $author$project$Translate$NCDAAcuteMalnutritionItemLabel = function (a) {
+	return {$: 'NCDAAcuteMalnutritionItemLabel', a: a};
+};
+var $author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition = {$: 'SevereAcuteMalnutrition'};
+var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F4(
+	function (language, currentDate, yearSelectorGap, entityType) {
+		var values = function () {
+			switch (entityType.$) {
+				case 'EntityVillage':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[11, 17, 19, 15, 15, 7, 8, 12, 11, 17, 11, 12]),
+							_List_fromArray(
+							[3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3]),
+							_List_fromArray(
+							[9, 6, 2, 8, 12, 1, 25, 3, 24, 5, 7, 11])
+						]);
+				case 'EntityCell':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[98, 129, 100, 123, 112, 145, 173, 98, 145, 134, 135, 122]),
+							_List_fromArray(
+							[98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122]),
+							_List_fromArray(
+							[35, 72, 98, 41, 84, 63, 52, 77, 96, 88, 55, 47])
+						]);
+				case 'EntitySector':
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[203, 257, 234, 245, 245, 256, 124, 145, 124, 145, 239, 240]),
+							_List_fromArray(
+							[203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239]),
+							_List_fromArray(
+							[213, 243, 239, 221, 246, 236, 266, 223, 229, 221, 229, 234])
+						]);
+				default:
+					return _List_fromArray(
+						[
+							_List_fromArray(
+							[491, 455, 640, 678, 524, 491, 545, 640, 563, 640, 455, 491]),
+							_List_fromArray(
+							[530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491]),
+							_List_fromArray(
+							[223, 569, 854, 732, 988, 622, 901, 775, 666, 444, 888, 998])
+						]);
+			}
+		}();
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A5(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						currentDate,
+						yearSelectorGap,
+						$author$project$Translate$NCDAAcuteMalnutritionItemLabel(item),
+						itemValues);
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition, $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition, $author$project$Pages$Scoreboard$Model$GoodNutrition]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane orange')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$AcuteMalnutrition),
+					A2(
+					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							A2(
-							$elm$html$Html$div,
-							_List_Nil,
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$span,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('selected-entity')
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											A2(
-												$author$project$Translate$translate,
-												language,
-												$author$project$Translate$SelectedEntity(entityType)) + ':')
-										])),
-									A2(
-									$elm$html$Html$span,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text(entityName)
-										]))
-								]))
-						]))
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
 				]));
 	});
 var $author$project$Pages$Scoreboard$Model$ChildrenUnder2 = {$: 'ChildrenUnder2'};
@@ -25939,6 +26353,23 @@ var $author$project$Icons$iconForward = function (attrs) {
 				_List_Nil)
 			]));
 };
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$span = _VirtualDom_node('span');
 var $author$project$Pages$Utils$viewYearSelector = F4(
 	function (language, currentDate, gap, changeGapMsg) {
 		var minYear = 2022;
@@ -25985,8 +26416,8 @@ var $author$project$Pages$Utils$viewYearSelector = F4(
 						forwardClass))
 				]));
 	});
-var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F4(
-	function (language, currentDate, value, model) {
+var $author$project$Pages$Scoreboard$View$view = F3(
+	function (language, currentDate, model) {
 		var topBar = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -26004,15 +26435,21 @@ var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F4(
 					_List_fromArray(
 						[
 							A2(
-							$elm$html$Html$button,
+							$elm$html$Html$a,
 							_List_fromArray(
 								[
-									$elm$html$Html$Events$onClick($author$project$Pages$Scoreboard$Model$ResetSelection)
+									$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda')
 								]),
 							_List_fromArray(
 								[
-									$elm$html$Html$text(
-									A2($author$project$Translate$translate, language, $author$project$Translate$NewSelection))
+									A2(
+									$elm$html$Html$button,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$NewSelection))
+										]))
 								]))
 						])),
 					A4($author$project$Pages$Utils$viewYearSelector, language, currentDate, model.yearSelectorGap, $author$project$Pages$Scoreboard$Model$ChaneYearGap),
@@ -26024,29 +26461,7 @@ var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F4(
 						]),
 					_List_Nil)
 				]));
-		var _v0 = function () {
-			var _v1 = value.village;
-			if (_v1.$ === 'Just') {
-				var id = _v1.a;
-				return _Utils_Tuple2(id, $author$project$Pages$Scoreboard$Model$EntityVillage);
-			} else {
-				var _v2 = value.cell;
-				if (_v2.$ === 'Just') {
-					var id = _v2.a;
-					return _Utils_Tuple2(id, $author$project$Pages$Scoreboard$Model$EntityCell);
-				} else {
-					var _v3 = value.sector;
-					if (_v3.$ === 'Just') {
-						var id = _v3.a;
-						return _Utils_Tuple2(id, $author$project$Pages$Scoreboard$Model$EntitySector);
-					} else {
-						return _Utils_Tuple2(value.district, $author$project$Pages$Scoreboard$Model$EntityDistrict);
-					}
-				}
-			}
-		}();
-		var entityId = _v0.a;
-		var entityType = _v0.b;
+		var entityType = $author$project$Pages$Scoreboard$Model$EntityVillage;
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -26056,10 +26471,6 @@ var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F4(
 			_List_fromArray(
 				[
 					topBar,
-					A2(
-					$author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane,
-					language,
-					_Utils_Tuple2(entityId, entityType)),
 					A4($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, entityType),
 					A4($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, entityType),
 					A4($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, entityType),
@@ -26070,465 +26481,45 @@ var $author$project$Pages$Scoreboard$View$viewDisplayResultTable = F4(
 					A4($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, entityType)
 				]));
 	});
-var $author$project$Pages$Scoreboard$Model$GenerateReport = {$: 'GenerateReport'};
-var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
-var $author$project$Translate$Province = {$: 'Province'};
-var $author$project$Pages$Scoreboard$Model$SetGeoLocation = F2(
-	function (a, b) {
-		return {$: 'SetGeoLocation', a: a, b: b};
-	});
-var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
-var $pzp1997$assoc_list$AssocList$filter = F2(
-	function (isGood, _v0) {
-		var alist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$filter,
-				function (_v1) {
-					var key = _v1.a;
-					var value = _v1.b;
-					return A2(isGood, key, value);
-				},
-				alist));
-	});
-var $author$project$Utils$GeoLocation$filterGeoLocationDictByParent = function (parentId) {
-	return $pzp1997$assoc_list$AssocList$filter(
-		F2(
-			function (_v0, geoLocation) {
-				return _Utils_eq(
-					$elm$core$Maybe$Just(
-						$author$project$Restful$Endpoint$toEntityId(parentId)),
-					geoLocation.parent);
-			}));
-};
-var $author$project$Restful$Endpoint$fromEntityId = function (_v0) {
-	var a = _v0.a;
-	return a;
-};
-var $pzp1997$assoc_list$AssocList$toList = function (_v0) {
-	var alist = _v0.a;
-	return alist;
-};
-var $author$project$Utils$GeoLocation$geoLocationDictToOptions = A2(
-	$elm$core$Basics$composeR,
-	$pzp1997$assoc_list$AssocList$toList,
-	$elm$core$List$map(
-		function (_v0) {
-			var id = _v0.a;
-			var geoLocation = _v0.b;
-			return _Utils_Tuple2(
-				$elm$core$String$fromInt(
-					$author$project$Restful$Endpoint$fromEntityId(id)),
-				geoLocation.name);
-		}));
-var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
-	if (m.$ === 'Nothing') {
-		return false;
-	} else {
-		return true;
-	}
-};
-var $author$project$Gizra$Html$showIf = F2(
-	function (condition, html) {
-		return condition ? html : $author$project$Gizra$Html$emptyNode;
-	});
-var $author$project$Pages$Utils$viewActionButton = F4(
-	function (language, label, allowAction, action) {
-		var attributes = allowAction ? _List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('ui fluid button'),
-				$elm$html$Html$Events$onClick(action)
-			]) : _List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('ui fluid button disabled')
-			]);
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('actions')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$button,
-					attributes,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							A2($author$project$Translate$translate, language, label))
-						]))
-				]));
-	});
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
-var $elm$html$Html$Attributes$classList = function (classes) {
-	return $elm$html$Html$Attributes$class(
-		A2(
-			$elm$core$String$join,
-			' ',
-			A2(
-				$elm$core$List$map,
-				$elm$core$Tuple$first,
-				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
-};
-var $elm$html$Html$option = _VirtualDom_node('option');
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$bool(bool));
-	});
-var $elm$html$Html$Attributes$selected = $elm$html$Html$Attributes$boolProperty('selected');
-var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
-var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
-	return A2(
-		$elm$html$Html$option,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$value(''),
-				$elm$html$Html$Attributes$selected(isSelected)
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('')
-			]));
-};
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $elm$html$Html$select = _VirtualDom_node('select');
-var $author$project$Pages$Utils$viewCustomLabel = F4(
-	function (language, translationId, suffix, class_) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class(class_)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					_Utils_ap(
-						A2($author$project$Translate$translate, language, translationId),
-						suffix))
-				]));
-	});
-var $author$project$Pages$Utils$viewLabel = F2(
-	function (language, translationId) {
-		return A4($author$project$Pages$Utils$viewCustomLabel, language, translationId, ':', 'label');
-	});
-var $author$project$Pages$Scoreboard$View$viewSelectListInput = F6(
-	function (language, currentValue, options, setMsg, labelTransId, disabled) {
-		var emptyOption = $author$project$Pages$Utils$emptySelectOption(
-			_Utils_eq(currentValue, $elm$core$Maybe$Nothing));
-		var selectOptions = A2(
-			$elm$core$List$cons,
-			emptyOption,
-			A2(
-				$elm$core$List$map,
-				function (option_) {
-					var isSelected = A2(
-						$elm$core$Maybe$withDefault,
-						false,
-						A2(
-							$elm$core$Maybe$map,
-							function (id) {
-								return _Utils_eq(
-									currentValue,
-									$elm$core$Maybe$Just(
-										$author$project$Restful$Endpoint$toEntityId(id)));
-							},
-							$elm$core$String$toInt(option_.a)));
-					return A2(
-						$elm$html$Html$option,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$value(option_.a),
-								$elm$html$Html$Attributes$selected(isSelected)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(option_.b)
-							]));
-				},
-				options));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$classList(
-					_List_fromArray(
-						[
-							_Utils_Tuple2('select-input-wrapper', true),
-							_Utils_Tuple2('disabled', disabled)
-						]))
-				]),
-			_List_fromArray(
-				[
-					A2($author$project$Pages$Utils$viewLabel, language, labelTransId),
-					A2(
-					$elm$html$Html$select,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onInput(setMsg),
-							$elm$html$Html$Attributes$class('select-input')
-						]),
-					selectOptions)
-				]));
-	});
-var $author$project$Pages$Scoreboard$View$viewDisplayViewSelection = F2(
-	function (language, model) {
-		var villageInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (parentId) {
-					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
-						A2(
-							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
-							$author$project$Restful$Endpoint$fromEntityId(parentId),
-							$author$project$Utils$GeoLocation$geoInfo.villages));
-					return A6(
-						$author$project$Pages$Scoreboard$View$viewSelectListInput,
-						language,
-						model.form.village,
-						options,
-						$author$project$Pages$Scoreboard$Model$SetGeoLocation(
-							F2(
-								function (value, form) {
-									return _Utils_update(
-										form,
-										{
-											village: A2(
-												$elm$core$Maybe$map,
-												$author$project$Restful$Endpoint$toEntityId,
-												$elm$core$String$toInt(value))
-										});
-								})),
-						$author$project$Translate$Village,
-						false);
-				},
-				model.form.cell));
-		var sectorInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (parentId) {
-					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
-						A2(
-							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
-							$author$project$Restful$Endpoint$fromEntityId(parentId),
-							$author$project$Utils$GeoLocation$geoInfo.sectors));
-					return A6(
-						$author$project$Pages$Scoreboard$View$viewSelectListInput,
-						language,
-						model.form.sector,
-						options,
-						$author$project$Pages$Scoreboard$Model$SetGeoLocation(
-							F2(
-								function (value, form) {
-									return _Utils_update(
-										form,
-										{
-											sector: A2(
-												$elm$core$Maybe$map,
-												$author$project$Restful$Endpoint$toEntityId,
-												$elm$core$String$toInt(value))
-										});
-								})),
-						$author$project$Translate$Sector,
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.form.cell));
-				},
-				model.form.district));
-		var provinceInput = function () {
-			var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions($author$project$Utils$GeoLocation$geoInfo.provinces);
-			return A6(
-				$author$project$Pages$Scoreboard$View$viewSelectListInput,
-				language,
-				model.form.province,
-				options,
-				$author$project$Pages$Scoreboard$Model$SetGeoLocation(
-					F2(
-						function (value, form) {
-							return _Utils_update(
-								form,
-								{
-									province: A2(
-										$elm$core$Maybe$map,
-										$author$project$Restful$Endpoint$toEntityId,
-										$elm$core$String$toInt(value))
-								});
-						})),
-				$author$project$Translate$Province,
-				$elm_community$maybe_extra$Maybe$Extra$isJust(model.form.district));
-		}();
-		var districtInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (parentId) {
-					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
-						A2(
-							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
-							$author$project$Restful$Endpoint$fromEntityId(parentId),
-							$author$project$Utils$GeoLocation$geoInfo.districts));
-					return A6(
-						$author$project$Pages$Scoreboard$View$viewSelectListInput,
-						language,
-						model.form.district,
-						options,
-						$author$project$Pages$Scoreboard$Model$SetGeoLocation(
-							F2(
-								function (value, form) {
-									return _Utils_update(
-										form,
-										{
-											district: A2(
-												$elm$core$Maybe$map,
-												$author$project$Restful$Endpoint$toEntityId,
-												$elm$core$String$toInt(value))
-										});
-								})),
-						$author$project$Translate$District,
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.form.sector));
-				},
-				model.form.province));
-		var cellInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (parentId) {
-					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
-						A2(
-							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
-							$author$project$Restful$Endpoint$fromEntityId(parentId),
-							$author$project$Utils$GeoLocation$geoInfo.cells));
-					return A6(
-						$author$project$Pages$Scoreboard$View$viewSelectListInput,
-						language,
-						model.form.cell,
-						options,
-						$author$project$Pages$Scoreboard$Model$SetGeoLocation(
-							F2(
-								function (value, form) {
-									return _Utils_update(
-										form,
-										{
-											cell: A2(
-												$elm$core$Maybe$map,
-												$author$project$Restful$Endpoint$toEntityId,
-												$elm$core$String$toInt(value))
-										});
-								})),
-						$author$project$Translate$Cell,
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.form.village));
-				},
-				model.form.sector));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('page-content')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('header')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('Please select desired view mode:')
-						])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('inputs')
-						]),
-					_List_fromArray(
-						[provinceInput, districtInput, sectorInput, cellInput, villageInput])),
-					A2(
-					$author$project$Gizra$Html$showIf,
-					$elm_community$maybe_extra$Maybe$Extra$isJust(model.form.province) && $elm_community$maybe_extra$Maybe$Extra$isJust(model.form.district),
-					A4($author$project$Pages$Utils$viewActionButton, language, $author$project$Translate$GenerateReport, true, $author$project$Pages$Scoreboard$Model$GenerateReport))
-				]));
-	});
-var $author$project$Pages$Scoreboard$View$view = F3(
-	function (language, currentDate, model) {
-		var _v0 = model.displayMode;
-		if (_v0.$ === 'DisplayViewSelection') {
-			return A2($author$project$Pages$Scoreboard$View$viewDisplayViewSelection, language, model);
-		} else {
-			var value = _v0.a;
-			return A4($author$project$Pages$Scoreboard$View$viewDisplayResultTable, language, currentDate, value, model);
-		}
-	});
 var $author$project$App$View$view = function (model) {
 	var _v0 = model.activePage;
-	if (_v0.$ === 'Scoreboard') {
-		return A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2($author$project$Error$View$view, model.language, model.errors),
-					A2(
-					$elm$html$Html$map,
-					$author$project$App$Model$MsgScoreboardPage,
-					A3(
-						$author$project$Pages$Scoreboard$View$view,
-						model.language,
-						$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
-						model.scoreboardPage))
-				]));
-	} else {
-		return A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text('Wrong page?')
-				]));
+	switch (_v0.$) {
+		case 'Menu':
+			return A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2($author$project$Error$View$view, model.language, model.errors),
+						A2(
+						$elm$html$Html$map,
+						$author$project$App$Model$MsgMenuPage,
+						A2($author$project$Pages$Menu$View$view, model.language, model.menuPage))
+					]));
+		case 'Scoreboard':
+			return A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2($author$project$Error$View$view, model.language, model.errors),
+						A2(
+						$elm$html$Html$map,
+						$author$project$App$Model$MsgScoreboardPage,
+						A3(
+							$author$project$Pages$Scoreboard$View$view,
+							model.language,
+							$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
+							model.scoreboardPage))
+					]));
+		default:
+			return A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Wrong page?')
+					]));
 	}
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
@@ -26541,8 +26532,13 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	A2(
 		$elm$json$Json$Decode$andThen,
-		function (appData) {
-			return $elm$json$Json$Decode$succeed(
-				{appData: appData});
+		function (page) {
+			return A2(
+				$elm$json$Json$Decode$andThen,
+				function (appData) {
+					return $elm$json$Json$Decode$succeed(
+						{appData: appData, page: page});
+				},
+				A2($elm$json$Json$Decode$field, 'appData', $elm$json$Json$Decode$value));
 		},
-		A2($elm$json$Json$Decode$field, 'appData', $elm$json$Json$Decode$value)))(0)}});}(this));
+		A2($elm$json$Json$Decode$field, 'page', $elm$json$Json$Decode$string)))(0)}});}(this));

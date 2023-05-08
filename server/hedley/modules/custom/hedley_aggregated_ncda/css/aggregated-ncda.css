@@ -1,5 +1,10 @@
+body,
 #page-wrapper #main-wrapper {
   background: #0393db;
+}
+
+#skip-link {
+  visibility: hidden;
 }
 
 #page-wrapper #header,
@@ -103,7 +108,7 @@
   visibility: hidden;
 }
 
-.page-content .top-bar .new-selection button {
+.page-content .top-bar .new-selection a button {
   background-color: #0393db;
   border: 2px solid white;
   border-radius: 5px;
@@ -114,8 +119,8 @@
   margin-left: 20px;
 }
 
-.page-content .actions button {
-  background-color: #0393db;
+.page-content .actions a button {
+  background: #0393db;
   border: 2px solid white;
   border-radius: 5px;
   color: white;

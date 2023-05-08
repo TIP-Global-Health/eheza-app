@@ -150,20 +150,20 @@ function hedley_aggregated_ncda_generate_results_data($province, $district, $sec
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'person')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_province', 'target_id', $province)
-    ->fieldCondition('field_district', 'target_id', $district)
+    ->fieldCondition('field_province', 'value', $province)
+    ->fieldCondition('field_district', 'value', $district)
     ->addTag('exclude_deleted');
 
   if (!empty($sector)) {
-    $base_query->fieldCondition('field_sector', 'target_id', $sector);
+    $base_query->fieldCondition('field_sector', 'value', $sector);
   }
 
   if (!empty($cell)) {
-    $base_query->fieldCondition('field_cell', 'target_id', $cell);
+    $base_query->fieldCondition('field_cell', 'value', $cell);
   }
 
   if (!empty($village)) {
-    $base_query->fieldCondition('field_village', 'target_id', $village);
+    $base_query->fieldCondition('field_village', 'value', $village);
   }
 
   $data = [];
