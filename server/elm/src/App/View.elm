@@ -28,6 +28,7 @@ view model =
                     Pages.Scoreboard.View.view
                         model.language
                         (fromLocalDateTime model.currentTime)
+                        model.backend
                         model.scoreboardPage
                 ]
 

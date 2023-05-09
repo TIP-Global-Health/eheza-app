@@ -2,6 +2,9 @@ module Pages.Scoreboard.View exposing (view)
 
 import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (fromEntityId, toEntityId)
+import Backend.Model exposing (ModelBackend)
+import Backend.Scoreboard.Model exposing (ScoreboardData, SelectedEntity(..))
 import Date
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate)
@@ -12,18 +15,27 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Scoreboard.Model exposing (..)
 import Pages.Scoreboard.Utils exposing (..)
 import Pages.Utils exposing (viewYearSelector)
-import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (GeoLocationId, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
 
 
-view : Language -> NominalDate -> Model -> Html Msg
-view language currentDate model =
-    let
-        entityType =
-            EntityVillage
+view : Language -> NominalDate -> ModelBackend -> Model -> Html Msg
+view language currentDate modelBackend model =
+    case modelBackend.scoreboardData of
+        Just (Ok data) ->
+            viewScoreboardData language currentDate data model
 
+        Just (Err err) ->
+            text <| Debug.toString err
+
+        Nothing ->
+            emptyNode
+
+
+viewScoreboardData : Language -> NominalDate -> ScoreboardData -> Model -> Html Msg
+viewScoreboardData language currentDate data model =
+    let
         topBar =
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
@@ -38,44 +50,24 @@ view language currentDate model =
     in
     div [ class "page-content" ]
         [ topBar
-
-        --   , viewAggregatedChildScoreboardPane language ( entityId, entityType )
-        , viewDemographicsPane language currentDate model.yearSelectorGap entityType
-        , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap entityType
-        , viewStuntingPane language currentDate model.yearSelectorGap entityType
-        , viewANCNewbornPane language currentDate model.yearSelectorGap entityType
-        , viewUniversalInterventionPane language currentDate model.yearSelectorGap entityType
-        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap entityType
-        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap entityType
-        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap entityType
+        , viewAggregatedChildScoreboardPane language data.entityName data.entityType
+        , viewDemographicsPane language currentDate model.yearSelectorGap data.entityType
+        , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap data.entityType
+        , viewStuntingPane language currentDate model.yearSelectorGap data.entityType
+        , viewANCNewbornPane language currentDate model.yearSelectorGap data.entityType
+        , viewUniversalInterventionPane language currentDate model.yearSelectorGap data.entityType
+        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap data.entityType
+        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap data.entityType
+        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap data.entityType
         ]
 
 
 viewAggregatedChildScoreboardPane :
     Language
-    -> ( GeoLocationId, SelectedEntity )
+    -> String
+    -> SelectedEntity
     -> Html any
-viewAggregatedChildScoreboardPane language ( entityId, entityType ) =
-    let
-        entityName =
-            case entityType of
-                EntityDistrict ->
-                    resolveEnityName entityId geoInfo.districts
-
-                EntitySector ->
-                    resolveEnityName entityId geoInfo.sectors
-
-                EntityCell ->
-                    resolveEnityName entityId geoInfo.cells
-
-                EntityVillage ->
-                    resolveEnityName entityId geoInfo.villages
-
-        resolveEnityName id dict =
-            Dict.get id dict
-                |> Maybe.map .name
-                |> Maybe.withDefault ""
-    in
+viewAggregatedChildScoreboardPane language entityName entityType =
     div [ class "pane" ]
         [ viewPaneHeading language Translate.AggregatedChildScoreboard
         , div [ class "pane-content" ]

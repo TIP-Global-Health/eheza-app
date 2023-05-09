@@ -1,13 +1,17 @@
 module Backend.Update exposing (updateBackend)
 
 import Backend.Model exposing (..)
+import Backend.Scoreboard.Update
 import Backend.Types exposing (BackendReturn)
 import Backend.Utils exposing (updateSubModel)
-import Time
 
 
-updateBackend : Time.Posix -> Msg -> ModelBackend -> BackendReturn Msg
-updateBackend currentTime msg model =
+updateBackend : Msg -> ModelBackend -> BackendReturn Msg
+updateBackend msg model =
     case msg of
-        NoOp ->
-            BackendReturn model Cmd.none Nothing []
+        MsgScoreboard subMsg ->
+            updateSubModel
+                subMsg
+                (\subMsg_ model_ -> Backend.Scoreboard.Update.update subMsg_ model_)
+                (\subCmds -> MsgScoreboard subCmds)
+                model

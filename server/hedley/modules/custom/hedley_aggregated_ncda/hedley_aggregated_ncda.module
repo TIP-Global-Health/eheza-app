@@ -97,19 +97,19 @@ function hedley_aggregated_ncda_build_results_app($province, $district, $sector 
   $data = [];
 
   if (empty($sector)) {
-    $data['entity_id'] = $district;
+    $data['entity_name'] = $district;
     $data['entity_type'] = 'district';
   }
   else if (empty($cell)) {
-    $data['entity_id'] = $sector;
+    $data['entity_name'] = $sector;
     $data['entity_type'] = 'sector';
   }
   else if (empty($village)) {
-    $data['entity_id'] = $cell;
+    $data['entity_name'] = $cell;
     $data['entity_type'] = 'cell';
   }
   else {
-    $data['entity_id'] = $village;
+    $data['entity_name'] = $village;
     $data['entity_type'] = 'village';
   }
 
@@ -190,10 +190,15 @@ function hedley_aggregated_ncda_generate_results_data($province, $district, $sec
     $ids = array_keys($result['node']);
     $nodes = node_load_multiple($ids);
     foreach ($nodes as $node) {
+      if (empty($node->field_ncda_data)) {
+        continue;
+      }
+
       $json_data = $node->field_ncda_data[LANGUAGE_NONE][0]['value'];
       if (empty($json_data)) {
         continue;
       }
+
       $data[] = json_decode($json_data);
     }
 

@@ -11,7 +11,7 @@ import Html.Events exposing (onInput)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Menu.Model exposing (..)
 import Pages.Utils exposing (emptySelectOption, viewActionButton, viewLabel)
-import Restful.Endpoint exposing (fromEntityId, toEntityId)
+import Backend.Entities exposing (fromEntityId, toEntityId)
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (GeoLocationId, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
 

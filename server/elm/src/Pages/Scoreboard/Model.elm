@@ -12,13 +12,6 @@ emptyModel =
     }
 
 
-type SelectedEntity
-    = EntityDistrict
-    | EntitySector
-    | EntityCell
-    | EntityVillage
-
-
 type Msg
     = ChaneYearGap Int
 

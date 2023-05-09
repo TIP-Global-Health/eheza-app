@@ -9,6 +9,7 @@ import App.Model exposing (..)
 import App.Types exposing (Language(..), Page(..))
 import App.Utils exposing (updateSubModel)
 import Backend.Model
+import Backend.Scoreboard.Model
 import Backend.Update
 import Json.Decode exposing (Value, decodeValue)
 import Pages.Menu.Model
@@ -27,18 +28,32 @@ init flags =
             resolveActivePage flags.page
 
         model =
-            { emptyModel
-                | activePage = activePage
-                , backend = updateBackendWithAppData activePage flags.appData emptyModel.backend
-            }
+            { emptyModel | activePage = activePage }
+
+        modelWithAppData =
+            case model.activePage of
+                Menu ->
+                    model
+
+                Scoreboard ->
+                    update
+                        (Backend.Scoreboard.Model.SetData flags.appData
+                            |> Backend.Model.MsgScoreboard
+                            |> MsgBackend
+                        )
+                        model
+                        |> Tuple.first
+
+                NotFound ->
+                    model
 
         cmds =
-            fetch model
+            fetch modelWithAppData
                 |> List.map (Task.succeed >> Task.perform identity)
                 |> List.append [ Task.perform SetCurrentTime Time.now ]
                 |> Cmd.batch
     in
-    ( model
+    ( modelWithAppData
       -- Let the Fetcher act upon the active page.
     , cmds
     )
@@ -57,32 +72,14 @@ resolveActivePage page =
             NotFound
 
 
-updateBackendWithAppData : Page -> Value -> Backend.Model.ModelBackend -> Backend.Model.ModelBackend
-updateBackendWithAppData activePage appData modelBackend =
-    case activePage of
-        Menu ->
-            -- No data is passed for this page.
-            modelBackend
-
-        Scoreboard ->
-            -- @todo
-            modelBackend
-
-        NotFound ->
-            modelBackend
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
-
         MsgBackend subMsg ->
             updateSubModel
                 subMsg
                 model.backend
-                (\subMsg_ subModel -> Backend.Update.updateBackend model.currentTime subMsg_ subModel)
+                (\subMsg_ subModel -> Backend.Update.updateBackend subMsg_ subModel)
                 (\subModel model_ -> { model_ | backend = subModel })
                 (\subCmds -> MsgBackend subCmds)
                 model
@@ -121,5 +118,4 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    -- Time.every 60000 SetCurrentTime
     Sub.none
