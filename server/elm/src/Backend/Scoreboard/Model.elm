@@ -9,7 +9,7 @@ import Json.Encode exposing (Value)
 type alias ScoreboardData =
     { entityName : String
     , entityType : SelectedEntity
-    , patientsData : List PatientData
+    , records : List PatientData
     }
 
 

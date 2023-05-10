@@ -36,9 +36,6 @@ view language currentDate modelBackend model =
 viewScoreboardData : Language -> NominalDate -> ScoreboardData -> Model -> Html Msg
 viewScoreboardData language currentDate data model =
     let
-        _ =
-            Debug.log "" data.patientsData
-
         topBar =
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]

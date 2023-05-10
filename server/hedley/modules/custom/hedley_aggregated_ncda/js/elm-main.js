@@ -5492,8 +5492,8 @@ var $author$project$Backend$Types$BackendReturn = F4(
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
 var $author$project$Backend$Scoreboard$Model$ScoreboardData = F3(
-	function (entityName, entityType, patientsData) {
-		return {entityName: entityName, entityType: entityType, patientsData: patientsData};
+	function (entityName, entityType, records) {
+		return {entityName: entityName, entityType: entityType, records: records};
 	});
 var $author$project$Backend$Scoreboard$Model$PatientData = function (birthDate) {
 	return {birthDate: birthDate};
@@ -26302,7 +26302,6 @@ var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
 	return {$: 'ChaneYearGap', a: a};
 };
 var $author$project$Translate$NewSelection = {$: 'NewSelection'};
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
 var $author$project$Pages$Scoreboard$Model$IronDuringPregnancy = {$: 'IronDuringPregnancy'};
 var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
@@ -27518,7 +27517,6 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 						]),
 					_List_Nil)
 				]));
-		var _v0 = A2($elm$core$Debug$log, '', data.patientsData);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
