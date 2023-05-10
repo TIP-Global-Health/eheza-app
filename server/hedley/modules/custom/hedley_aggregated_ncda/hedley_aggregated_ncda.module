@@ -145,25 +145,26 @@ function hedley_aggregated_ncda_build_elm_app($page, $data) {
 }
 
 function hedley_aggregated_ncda_generate_results_data($province, $district, $sector, $cell, $village) {
-  $base_query = new EntityFieldQuery();
-  $base_query
+  $query = new EntityFieldQuery();
+  $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'person')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_province', 'value', $province)
     ->fieldCondition('field_district', 'value', $district)
+    ->fieldCondition('field_ncda_data', 'value', NULL, 'IS NOT NULL')
     ->addTag('exclude_deleted');
 
   if (!empty($sector)) {
-    $base_query->fieldCondition('field_sector', 'value', $sector);
+    $query->fieldCondition('field_sector', 'value', $sector);
   }
 
   if (!empty($cell)) {
-    $base_query->fieldCondition('field_cell', 'value', $cell);
+    $query->fieldCondition('field_cell', 'value', $cell);
   }
 
   if (!empty($village)) {
-    $base_query->fieldCondition('field_village', 'value', $village);
+    $query->fieldCondition('field_village', 'value', $village);
   }
 
   $data = [];
@@ -173,7 +174,7 @@ function hedley_aggregated_ncda_generate_results_data($province, $district, $sec
     // Free up memory.
     drupal_static_reset();
 
-    $query = clone $base_query;
+    $query = clone $query;
     if ($nid) {
       $query->propertyCondition('nid', $nid, '>');
     }
@@ -190,10 +191,6 @@ function hedley_aggregated_ncda_generate_results_data($province, $district, $sec
     $ids = array_keys($result['node']);
     $nodes = node_load_multiple($ids);
     foreach ($nodes as $node) {
-      if (empty($node->field_ncda_data)) {
-        continue;
-      }
-
       $json_data = $node->field_ncda_data[LANGUAGE_NONE][0]['value'];
       if (empty($json_data)) {
         continue;
