@@ -233,6 +233,27 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     'birth_date' => date("Y-m-d", $birth_date),
   ];
 
+  $content_types_to_load = [
+    'group_ncda',
+    'nutrition_ncda',
+    'well_child_ncda',
+    'well_child_pregnancy_summary',
+  ];
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', $content_types_to_load, 'IN')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_person', 'target_id', $person_id);
+
+  $result = $query->execute();
+
+  $questioneers = [];
+  if (!empty($result['node'])) {
+    $nodes = node_load_multiple(array_keys($result['node']));
+  }
+
   $encoded_data = json_encode($data);
   $wrapper->field_ncda_data->set($encoded_data);
   $wrapper->save();
