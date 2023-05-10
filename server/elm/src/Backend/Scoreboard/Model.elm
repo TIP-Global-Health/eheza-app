@@ -2,12 +2,14 @@ module Backend.Scoreboard.Model exposing (..)
 
 import AssocList
 import Dict exposing (Dict)
+import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 
 
 type alias ScoreboardData =
     { entityName : String
     , entityType : SelectedEntity
+    , patientsData : List PatientData
     }
 
 
@@ -16,6 +18,10 @@ type SelectedEntity
     | EntitySector
     | EntityCell
     | EntityVillage
+
+
+type alias PatientData =
+    { birthDate : NominalDate }
 
 
 type Msg

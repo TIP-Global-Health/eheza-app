@@ -13,9 +13,6 @@ update msg model =
     case msg of
         SetData value ->
             let
-                _ =
-                    Debug.log "value" value
-
                 modelUpdated =
                     { model | scoreboardData = Just <| decodeValue decodeScoreboardData value }
             in
