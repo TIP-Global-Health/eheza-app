@@ -5,6 +5,7 @@ module Translate exposing
     )
 
 import App.Types exposing (Language(..))
+import Backend.Scoreboard.Model exposing (SelectedEntity(..))
 import Pages.Scoreboard.Model exposing (..)
 import Time exposing (Month(..))
 
