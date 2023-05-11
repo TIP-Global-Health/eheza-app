@@ -37,9 +37,8 @@ viewYearSelector language currentDate gap changeGapMsg =
             else
                 []
 
-        -- @todo: change to 2018
         minYear =
-            2022
+            2018
     in
     div [ class "year-selector" ]
         [ Icons.iconBack <|

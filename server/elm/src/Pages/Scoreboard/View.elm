@@ -7,7 +7,7 @@ import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Model exposing (ScoreboardData, SelectedEntity(..))
 import Date
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Icons
@@ -50,57 +50,33 @@ viewScoreboardData language currentDate data model =
     in
     div [ class "page-content" ]
         [ topBar
-        , viewAggregatedChildScoreboardPane language data.entityName data.entityType
-        , viewDemographicsPane language currentDate model.yearSelectorGap data.entityType
-        , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap data.entityType
-        , viewStuntingPane language currentDate model.yearSelectorGap data.entityType
-        , viewANCNewbornPane language currentDate model.yearSelectorGap data.entityType
-        , viewUniversalInterventionPane language currentDate model.yearSelectorGap data.entityType
-        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap data.entityType
-        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap data.entityType
-        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap data.entityType
+        , viewAggregatedChildScoreboardPane language data
+        , viewDemographicsPane language currentDate model.yearSelectorGap data
+        , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap data
+        , viewStuntingPane language currentDate model.yearSelectorGap data
+        , viewANCNewbornPane language currentDate model.yearSelectorGap data
+        , viewUniversalInterventionPane language currentDate model.yearSelectorGap data
+        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap data
+        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap data
+        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap data
         ]
 
 
-viewAggregatedChildScoreboardPane :
-    Language
-    -> String
-    -> SelectedEntity
-    -> Html any
-viewAggregatedChildScoreboardPane language entityName entityType =
+viewAggregatedChildScoreboardPane : Language -> ScoreboardData -> Html any
+viewAggregatedChildScoreboardPane language data =
     div [ class "pane" ]
         [ viewPaneHeading language Translate.AggregatedChildScoreboard
         , div [ class "pane-content" ]
             [ div []
-                [ span [ class "selected-entity" ] [ text <| (translate language <| Translate.SelectedEntity entityType) ++ ":" ]
-                , span [] [ text entityName ]
+                [ span [ class "selected-entity" ] [ text <| (translate language <| Translate.SelectedEntity data.entityType) ++ ":" ]
+                , span [] [ text data.entityName ]
                 ]
             ]
         ]
 
 
-formatValues : NominalDate -> Int -> List Int -> List String
-formatValues currentDate yearSelectorGap =
-    let
-        currentMonthNumber =
-            Date.monthNumber currentDate
-    in
-    List.indexedMap
-        (\index value ->
-            if yearSelectorGap == 0 then
-                if index < currentMonthNumber then
-                    String.fromInt value
-
-                else
-                    ""
-
-            else
-                String.fromInt value
-        )
-
-
-viewDemographicsPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
-viewDemographicsPane language currentDate yearSelectorGap entityType =
+viewDemographicsPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
+viewDemographicsPane language currentDate yearSelectorGap data =
     let
         rows =
             List.map2
@@ -110,31 +86,72 @@ viewDemographicsPane language currentDate yearSelectorGap entityType =
                 [ ChildrenUnder2, NewbornsThisMonth, LowBirthWeigh ]
                 values
 
+        valuesByRow =
+            List.foldl
+                (\record accum ->
+                    let
+                        ageInMonth =
+                            diffMonths record.birthDate currentDate
+                    in
+                    List.indexedMap
+                        (\index accumValue ->
+                            Dict.get index monthsGap
+                                |> Maybe.map
+                                    (\gapInMoths ->
+                                        let
+                                            gap =
+                                                ageInMonth - gapInMoths
+
+                                            row1 =
+                                                if gap >= 0 && gap < 24 then
+                                                    accumValue.row1 + 1
+
+                                                else
+                                                    accumValue.row1
+
+                                            row2 =
+                                                if gap == 0 then
+                                                    accumValue.row2 + 1
+
+                                                else
+                                                    accumValue.row2
+
+                                            row3 =
+                                                if gap == 0 && record.lowBirthWeight == Just True then
+                                                    accumValue.row3 + 1
+
+                                                else
+                                                    accumValue.row3
+                                        in
+                                        { row1 = row1
+                                        , row2 = row2
+                                        , row3 = row3
+                                        }
+                                    )
+                                |> Maybe.withDefault accumValue
+                        )
+                        accum
+                )
+                emptyValues
+                data.records
+
+        emptyValues =
+            List.repeat 12 { row1 = 0, row2 = 0, row3 = 0 }
+
+        monthsGap =
+            List.range 1 12
+                |> List.map (\monthNumber -> (-1 * 12 * yearSelectorGap) + (-1 * (monthNumber - currentMonthNumber)))
+                |> List.indexedMap Tuple.pair
+                |> Dict.fromList
+
+        currentMonthNumber =
+            Date.monthNumber currentDate
+
         values =
-            case entityType of
-                EntityVillage ->
-                    [ [ 12, 12, 14, 13, 15, 15, 15, 12, 13, 13, 14, 14 ]
-                    , [ 11, 11, 17, 15, 16, 16, 16, 11, 15, 15, 17, 17 ]
-                    , [ 5, 8, 6, 7, 1, 4, 3, 5, 8, 3, 1, 6 ]
-                    ]
-
-                EntityCell ->
-                    [ [ 98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122 ]
-                    , [ 97, 97, 126, 106, 176, 176, 176, 97, 102, 102, 132, 132 ]
-                    , [ 25, 34, 32, 21, 23, 34, 45, 13, 34, 56, 12, 34 ]
-                    ]
-
-                EntitySector ->
-                    [ [ 203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239 ]
-                    , [ 205, 205, 238, 227, 266, 266, 266, 205, 227, 227, 238, 238 ]
-                    , [ 145, 146, 124, 145, 124, 145, 123, 145, 134, 135, 123, 234 ]
-                    ]
-
-                EntityDistrict ->
-                    [ [ 530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491 ]
-                    , [ 531, 531, 516, 455, 640, 640, 640, 531, 455, 455, 516, 516 ]
-                    , [ 345, 345, 356, 455, 214, 256, 289, 278, 267, 256, 256, 245 ]
-                    ]
+            [ List.map .row1 valuesByRow
+            , List.map .row2 valuesByRow
+            , List.map .row3 valuesByRow
+            ]
     in
     div [ class "pane cyan" ]
         [ viewPaneHeading language Translate.Demographics
@@ -144,8 +161,8 @@ viewDemographicsPane language currentDate yearSelectorGap entityType =
         ]
 
 
-viewAcuteMalnutritionPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
-viewAcuteMalnutritionPane language currentDate yearSelectorGap entityType =
+viewAcuteMalnutritionPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
+viewAcuteMalnutritionPane language currentDate yearSelectorGap data =
     let
         rows =
             List.map2
@@ -156,7 +173,7 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap entityType =
                 values
 
         values =
-            case entityType of
+            case data.entityType of
                 EntityVillage ->
                     [ [ 11, 17, 19, 15, 15, 7, 8, 12, 11, 17, 11, 12 ]
                     , [ 3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3 ]
@@ -189,8 +206,8 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap entityType =
         ]
 
 
-viewStuntingPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
-viewStuntingPane language currentDate yearSelectorGap entityType =
+viewStuntingPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
+viewStuntingPane language currentDate yearSelectorGap data =
     let
         rows =
             List.map2
@@ -201,7 +218,7 @@ viewStuntingPane language currentDate yearSelectorGap entityType =
                 values
 
         values =
-            case entityType of
+            case data.entityType of
                 EntityVillage ->
                     [ [ 23, 21, 17, 14, 9, 12, 18, 21, 16, 13, 19, 22 ]
                     , [ 8, 14, 7, 18, 13, 17, 12, 15, 19, 16, 11, 10 ]
@@ -234,8 +251,8 @@ viewStuntingPane language currentDate yearSelectorGap entityType =
         ]
 
 
-viewANCNewbornPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
-viewANCNewbornPane language currentDate yearSelectorGap entityType =
+viewANCNewbornPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
+viewANCNewbornPane language currentDate yearSelectorGap data =
     let
         rows =
             List.map2
@@ -246,7 +263,7 @@ viewANCNewbornPane language currentDate yearSelectorGap entityType =
                 values
 
         values =
-            case entityType of
+            case data.entityType of
                 EntityVillage ->
                     [ [ 10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12 ]
                     , [ 10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12 ]
@@ -275,8 +292,8 @@ viewANCNewbornPane language currentDate yearSelectorGap entityType =
         ]
 
 
-viewUniversalInterventionPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
-viewUniversalInterventionPane language currentDate yearSelectorGap entityType =
+viewUniversalInterventionPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
+viewUniversalInterventionPane language currentDate yearSelectorGap data =
     let
         rows =
             List.map2
@@ -287,7 +304,7 @@ viewUniversalInterventionPane language currentDate yearSelectorGap entityType =
                 values
 
         values =
-            case entityType of
+            case data.entityType of
                 EntityVillage ->
                     [ [ 13, 14, 11, 17, 9, 8, 14, 16, 12, 10, 15, 12 ]
                     , [ 6, 10, 17, 13, 14, 12, 9, 8, 11, 15, 16, 12 ]
@@ -328,8 +345,8 @@ viewUniversalInterventionPane language currentDate yearSelectorGap entityType =
         ]
 
 
-viewNutritionBehaviorPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
-viewNutritionBehaviorPane language currentDate yearSelectorGap entityType =
+viewNutritionBehaviorPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
+viewNutritionBehaviorPane language currentDate yearSelectorGap data =
     let
         rows =
             List.map2
@@ -340,7 +357,7 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap entityType =
                 values
 
         values =
-            case entityType of
+            case data.entityType of
                 EntityVillage ->
                     [ [ 7, 17, 15, 19, 8, 13, 14, 11, 12, 11, 15, 12 ]
                     , [ 8, 14, 12, 16, 18, 9, 10, 7, 13, 14, 12, 11 ]
@@ -377,8 +394,8 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap entityType =
         ]
 
 
-viewTargetedInterventionsPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
-viewTargetedInterventionsPane language currentDate yearSelectorGap entityType =
+viewTargetedInterventionsPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
+viewTargetedInterventionsPane language currentDate yearSelectorGap data =
     let
         rows =
             List.map2
@@ -395,7 +412,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap entityType =
                 values
 
         values =
-            case entityType of
+            case data.entityType of
                 EntityVillage ->
                     [ [ 9, 15, 18, 7, 13, 11, 16, 9, 18, 8, 12, 10 ]
                     , [ 13, 12, 7, 9, 8, 14, 17, 17, 10, 16, 10, 17 ]
@@ -440,8 +457,8 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap entityType =
         ]
 
 
-viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> SelectedEntity -> Html any
-viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap entityType =
+viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
+viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap data =
     let
         rows =
             List.map2
@@ -452,7 +469,7 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap entit
                 values
 
         values =
-            case entityType of
+            case data.entityType of
                 EntityVillage ->
                     [ [ 9, 14, 16, 12, 10, 8, 17, 11, 11, 16, 13, 15 ]
                     , [ 13, 9, 13, 16, 12, 8, 17, 10, 10, 12, 14, 11 ]
@@ -534,3 +551,23 @@ viewTableRow language currentDate yearSelectorGap itemTransId values =
     div [ class "table-row" ] <|
         activityCell
             :: valueCells
+
+
+formatValues : NominalDate -> Int -> List Int -> List String
+formatValues currentDate yearSelectorGap =
+    let
+        currentMonthNumber =
+            Date.monthNumber currentDate
+    in
+    List.indexedMap
+        (\index value ->
+            if yearSelectorGap == 0 then
+                if index < currentMonthNumber then
+                    String.fromInt value
+
+                else
+                    ""
+
+            else
+                String.fromInt value
+        )
