@@ -250,8 +250,24 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   $result = $query->execute();
 
   $questioneers = [];
+  $birth_weight = NULL;
   if (!empty($result['node'])) {
     $nodes = node_load_multiple(array_keys($result['node']));
+    foreach ($nodes as $node) {
+      if (!empty($node->field_weight) && !empty($node->field_weight[LANGUAGE_NONE][0]['value'])) {
+        $birth_weight = $node->field_weight[LANGUAGE_NONE][0]['value'];
+      }
+
+      if ($node->type == 'well_child_pregnancy_summary') {
+        continue;
+      }
+
+      $questioneers[] = $node;
+    }
+
+    if ($birth_weight) {
+      $data['low_birth_weight'] = $birth_weight < 2000;
+    }
   }
 
   $encoded_data = json_encode($data);
