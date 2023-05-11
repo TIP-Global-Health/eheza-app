@@ -233,24 +233,43 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     'birth_date' => date("Y-m-d", $birth_date),
   ];
 
-  $content_types_to_load = HEDLEY_ACTIVITY_NCDA_BUNDLES;
+  $content_types_to_load = array_merge(HEDLEY_ACTIVITY_NCDA_BUNDLES, HEDLEY_ACTIVITY_HEIGHT_BUNDLES);
   $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
 
-  $questioneers = [];
+
+  $heights = $ncdas = [];
   $birth_weight = NULL;
   $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
   if (!empty($measurements)) {
     $nodes = node_load_multiple($measurements);
     foreach ($nodes as $node) {
+      if (in_array($node->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
+        $heights[] = $node;
+        continue;
+      }
+      if (in_array($node->type, HEDLEY_ACTIVITY_NCDA_BUNDLES)) {
+        $ncdas[] = $node;
+        continue;
+      }
+      // If we got so far, it's pregnancy summary content type.
+      // Only thing we need from it is the birth weight.
       if (!empty($node->field_weight) && !empty($node->field_weight[LANGUAGE_NONE][0]['value'])) {
         $birth_weight = $node->field_weight[LANGUAGE_NONE][0]['value'];
       }
+    }
 
-      if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE) {
-        continue;
+    // Birth weight measurement is taken once.
+    // At Newborn exam encounter (pregnancy summary measurement), if it
+    // was performed. At first NCDA questioner, otherwise.
+    // Therefore, if we did not resolve birth weight from pregnancy summary,
+    // we try to resolve from NCDA questioners.
+    if (empty($birth_weight)) {
+      foreach ($ncdas as $ncda) {
+        if (!empty($ncda->field_weight) && !empty($ncda->field_weight[LANGUAGE_NONE][0]['value'])) {
+          $birth_weight = $ncda->field_weight[LANGUAGE_NONE][0]['value'];
+        }
+        break;
       }
-
-      $questioneers[] = $node;
     }
   }
 
