@@ -279,14 +279,17 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     if (!empty($height->field_zscore_age) && !empty($height->field_zscore_age[LANGUAGE_NONE][0]['value'])) {
       $value = $height->field_zscore_age[LANGUAGE_NONE][0]['value'];
       if ($value <= -3) {
-        $data['stunting_severe'][] = $height->field_date_measured[LANGUAGE_NONE][0]['value'];
+        $parts = explode(' ', $height->field_date_measured[LANGUAGE_NONE][0]['value']);
+        $data['stunting_severe'][] = $parts[0];
         continue;
       }
       if ($value <= -2) {
-        $data['stunting_moderate'][] = $height->field_date_measured[LANGUAGE_NONE][0]['value'];
+        $parts = explode(' ', $height->field_date_measured[LANGUAGE_NONE][0]['value']);
+        $data['stunting_moderate'][] = $parts[0];
         continue;
       }
-      $data['stunting_normal'][] = $height->field_date_measured[LANGUAGE_NONE][0]['value'];
+      $parts = explode(' ', $height->field_date_measured[LANGUAGE_NONE][0]['value']);
+      $data['stunting_normal'][] = $parts[0];
     }
   }
 

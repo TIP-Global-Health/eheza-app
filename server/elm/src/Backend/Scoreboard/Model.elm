@@ -1,7 +1,5 @@
 module Backend.Scoreboard.Model exposing (..)
 
-import AssocList
-import Dict exposing (Dict)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 
@@ -23,6 +21,9 @@ type SelectedEntity
 type alias PatientData =
     { birthDate : NominalDate
     , lowBirthWeight : Maybe Bool
+    , stuntingSevere : List NominalDate
+    , stuntingModerate : List NominalDate
+    , stuntingNormal : List NominalDate
     }
 
 

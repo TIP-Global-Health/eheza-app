@@ -11,6 +11,7 @@ import App.Utils exposing (updateSubModel)
 import Backend.Model
 import Backend.Scoreboard.Model
 import Backend.Update
+import Gizra.NominalDate exposing (fromLocalDateTime)
 import Json.Decode exposing (Value, decodeValue)
 import Pages.Menu.Model
 import Pages.Menu.Update
@@ -79,7 +80,7 @@ update msg model =
             updateSubModel
                 subMsg
                 model.backend
-                (\subMsg_ subModel -> Backend.Update.updateBackend subMsg_ subModel)
+                (\subMsg_ subModel -> Backend.Update.updateBackend (fromLocalDateTime model.currentTime) subMsg_ subModel)
                 (\subModel model_ -> { model_ | backend = subModel })
                 (\subCmds -> MsgBackend subCmds)
                 model

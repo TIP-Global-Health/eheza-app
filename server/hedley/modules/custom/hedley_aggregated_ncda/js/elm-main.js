@@ -5458,6 +5458,221 @@ var $author$project$App$Model$MsgMenuPage = function (a) {
 var $author$project$App$Model$MsgScoreboardPage = function (a) {
 	return {$: 'MsgScoreboardPage', a: a};
 };
+var $justinmimbs$date$Date$RD = function (a) {
+	return {$: 'RD', a: a};
+};
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
+	});
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $justinmimbs$date$Date$isLeapYear = function (y) {
+	return ((!A2($elm$core$Basics$modBy, 4, y)) && (!(!A2($elm$core$Basics$modBy, 100, y)))) || (!A2($elm$core$Basics$modBy, 400, y));
+};
+var $justinmimbs$date$Date$daysBeforeMonth = F2(
+	function (y, m) {
+		var leapDays = $justinmimbs$date$Date$isLeapYear(y) ? 1 : 0;
+		switch (m.$) {
+			case 'Jan':
+				return 0;
+			case 'Feb':
+				return 31;
+			case 'Mar':
+				return 59 + leapDays;
+			case 'Apr':
+				return 90 + leapDays;
+			case 'May':
+				return 120 + leapDays;
+			case 'Jun':
+				return 151 + leapDays;
+			case 'Jul':
+				return 181 + leapDays;
+			case 'Aug':
+				return 212 + leapDays;
+			case 'Sep':
+				return 243 + leapDays;
+			case 'Oct':
+				return 273 + leapDays;
+			case 'Nov':
+				return 304 + leapDays;
+			default:
+				return 334 + leapDays;
+		}
+	});
+var $justinmimbs$date$Date$floorDiv = F2(
+	function (a, b) {
+		return $elm$core$Basics$floor(a / b);
+	});
+var $justinmimbs$date$Date$daysBeforeYear = function (y1) {
+	var y = y1 - 1;
+	var leapYears = (A2($justinmimbs$date$Date$floorDiv, y, 4) - A2($justinmimbs$date$Date$floorDiv, y, 100)) + A2($justinmimbs$date$Date$floorDiv, y, 400);
+	return (365 * y) + leapYears;
+};
+var $justinmimbs$date$Date$daysInMonth = F2(
+	function (y, m) {
+		switch (m.$) {
+			case 'Jan':
+				return 31;
+			case 'Feb':
+				return $justinmimbs$date$Date$isLeapYear(y) ? 29 : 28;
+			case 'Mar':
+				return 31;
+			case 'Apr':
+				return 30;
+			case 'May':
+				return 31;
+			case 'Jun':
+				return 30;
+			case 'Jul':
+				return 31;
+			case 'Aug':
+				return 31;
+			case 'Sep':
+				return 30;
+			case 'Oct':
+				return 31;
+			case 'Nov':
+				return 30;
+			default:
+				return 31;
+		}
+	});
+var $justinmimbs$date$Date$fromCalendarDate = F3(
+	function (y, m, d) {
+		return $justinmimbs$date$Date$RD(
+			($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A3(
+				$elm$core$Basics$clamp,
+				1,
+				A2($justinmimbs$date$Date$daysInMonth, y, m),
+				d));
+	});
+var $elm$time$Time$flooredDiv = F2(
+	function (numerator, denominator) {
+		return $elm$core$Basics$floor(numerator / denominator);
+	});
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0.a;
+	return millis;
+};
+var $elm$time$Time$toAdjustedMinutesHelp = F3(
+	function (defaultOffset, posixMinutes, eras) {
+		toAdjustedMinutesHelp:
+		while (true) {
+			if (!eras.b) {
+				return posixMinutes + defaultOffset;
+			} else {
+				var era = eras.a;
+				var olderEras = eras.b;
+				if (_Utils_cmp(era.start, posixMinutes) < 0) {
+					return posixMinutes + era.offset;
+				} else {
+					var $temp$defaultOffset = defaultOffset,
+						$temp$posixMinutes = posixMinutes,
+						$temp$eras = olderEras;
+					defaultOffset = $temp$defaultOffset;
+					posixMinutes = $temp$posixMinutes;
+					eras = $temp$eras;
+					continue toAdjustedMinutesHelp;
+				}
+			}
+		}
+	});
+var $elm$time$Time$toAdjustedMinutes = F2(
+	function (_v0, time) {
+		var defaultOffset = _v0.a;
+		var eras = _v0.b;
+		return A3(
+			$elm$time$Time$toAdjustedMinutesHelp,
+			defaultOffset,
+			A2(
+				$elm$time$Time$flooredDiv,
+				$elm$time$Time$posixToMillis(time),
+				60000),
+			eras);
+	});
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$time$Time$toCivil = function (minutes) {
+	var rawDay = A2($elm$time$Time$flooredDiv, minutes, 60 * 24) + 719468;
+	var era = (((rawDay >= 0) ? rawDay : (rawDay - 146096)) / 146097) | 0;
+	var dayOfEra = rawDay - (era * 146097);
+	var yearOfEra = ((((dayOfEra - ((dayOfEra / 1460) | 0)) + ((dayOfEra / 36524) | 0)) - ((dayOfEra / 146096) | 0)) / 365) | 0;
+	var dayOfYear = dayOfEra - (((365 * yearOfEra) + ((yearOfEra / 4) | 0)) - ((yearOfEra / 100) | 0));
+	var mp = (((5 * dayOfYear) + 2) / 153) | 0;
+	var month = mp + ((mp < 10) ? 3 : (-9));
+	var year = yearOfEra + (era * 400);
+	return {
+		day: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
+		month: month,
+		year: year + ((month <= 2) ? 1 : 0)
+	};
+};
+var $elm$time$Time$toDay = F2(
+	function (zone, time) {
+		return $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).day;
+	});
+var $elm$time$Time$Apr = {$: 'Apr'};
+var $elm$time$Time$Aug = {$: 'Aug'};
+var $elm$time$Time$Dec = {$: 'Dec'};
+var $elm$time$Time$Feb = {$: 'Feb'};
+var $elm$time$Time$Jan = {$: 'Jan'};
+var $elm$time$Time$Jul = {$: 'Jul'};
+var $elm$time$Time$Jun = {$: 'Jun'};
+var $elm$time$Time$Mar = {$: 'Mar'};
+var $elm$time$Time$May = {$: 'May'};
+var $elm$time$Time$Nov = {$: 'Nov'};
+var $elm$time$Time$Oct = {$: 'Oct'};
+var $elm$time$Time$Sep = {$: 'Sep'};
+var $elm$time$Time$toMonth = F2(
+	function (zone, time) {
+		var _v0 = $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).month;
+		switch (_v0) {
+			case 1:
+				return $elm$time$Time$Jan;
+			case 2:
+				return $elm$time$Time$Feb;
+			case 3:
+				return $elm$time$Time$Mar;
+			case 4:
+				return $elm$time$Time$Apr;
+			case 5:
+				return $elm$time$Time$May;
+			case 6:
+				return $elm$time$Time$Jun;
+			case 7:
+				return $elm$time$Time$Jul;
+			case 8:
+				return $elm$time$Time$Aug;
+			case 9:
+				return $elm$time$Time$Sep;
+			case 10:
+				return $elm$time$Time$Oct;
+			case 11:
+				return $elm$time$Time$Nov;
+			default:
+				return $elm$time$Time$Dec;
+		}
+	});
+var $elm$time$Time$toYear = F2(
+	function (zone, time) {
+		return $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).year;
+	});
+var $justinmimbs$date$Date$fromPosix = F2(
+	function (zone, posix) {
+		return A3(
+			$justinmimbs$date$Date$fromCalendarDate,
+			A2($elm$time$Time$toYear, zone, posix),
+			A2($elm$time$Time$toMonth, zone, posix),
+			A2($elm$time$Time$toDay, zone, posix));
+	});
+var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
+var $author$project$Gizra$NominalDate$fromLocalDateTime = $justinmimbs$date$Date$fromPosix($elm$time$Time$utc);
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$App$Model$PagesReturn = F4(
 	function (model, cmd, error, appMsgs) {
@@ -5495,9 +5710,9 @@ var $author$project$Backend$Scoreboard$Model$ScoreboardData = F3(
 	function (entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F2(
-	function (birthDate, lowBirthWeight) {
-		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight};
+var $author$project$Backend$Scoreboard$Model$PatientData = F5(
+	function (birthDate, lowBirthWeight, stuntingSevere, stuntingModerate, stuntingNormal) {
+		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight, stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$core$Basics$composeL = F3(
@@ -5569,9 +5784,6 @@ var $elm$parser$Parser$Advanced$fromState = F2(
 			A4($elm$parser$Parser$Advanced$DeadEnd, s.row, s.col, x, s.context));
 	});
 var $elm$parser$Parser$Advanced$isSubChar = _Parser_isSubChar;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $elm$parser$Parser$Advanced$chompIf = F2(
 	function (isGood, expecting) {
 		return $elm$parser$Parser$Advanced$Parser(
@@ -6007,82 +6219,6 @@ var $justinmimbs$date$Date$dayOfYear = $elm$parser$Parser$oneOf(
 			$elm$parser$Parser$succeed(
 			$justinmimbs$date$Date$OrdinalDay(1))
 		]));
-var $justinmimbs$date$Date$RD = function (a) {
-	return {$: 'RD', a: a};
-};
-var $elm$core$Basics$modBy = _Basics_modBy;
-var $elm$core$Basics$neq = _Utils_notEqual;
-var $justinmimbs$date$Date$isLeapYear = function (y) {
-	return ((!A2($elm$core$Basics$modBy, 4, y)) && (!(!A2($elm$core$Basics$modBy, 100, y)))) || (!A2($elm$core$Basics$modBy, 400, y));
-};
-var $justinmimbs$date$Date$daysBeforeMonth = F2(
-	function (y, m) {
-		var leapDays = $justinmimbs$date$Date$isLeapYear(y) ? 1 : 0;
-		switch (m.$) {
-			case 'Jan':
-				return 0;
-			case 'Feb':
-				return 31;
-			case 'Mar':
-				return 59 + leapDays;
-			case 'Apr':
-				return 90 + leapDays;
-			case 'May':
-				return 120 + leapDays;
-			case 'Jun':
-				return 151 + leapDays;
-			case 'Jul':
-				return 181 + leapDays;
-			case 'Aug':
-				return 212 + leapDays;
-			case 'Sep':
-				return 243 + leapDays;
-			case 'Oct':
-				return 273 + leapDays;
-			case 'Nov':
-				return 304 + leapDays;
-			default:
-				return 334 + leapDays;
-		}
-	});
-var $justinmimbs$date$Date$floorDiv = F2(
-	function (a, b) {
-		return $elm$core$Basics$floor(a / b);
-	});
-var $justinmimbs$date$Date$daysBeforeYear = function (y1) {
-	var y = y1 - 1;
-	var leapYears = (A2($justinmimbs$date$Date$floorDiv, y, 4) - A2($justinmimbs$date$Date$floorDiv, y, 100)) + A2($justinmimbs$date$Date$floorDiv, y, 400);
-	return (365 * y) + leapYears;
-};
-var $justinmimbs$date$Date$daysInMonth = F2(
-	function (y, m) {
-		switch (m.$) {
-			case 'Jan':
-				return 31;
-			case 'Feb':
-				return $justinmimbs$date$Date$isLeapYear(y) ? 29 : 28;
-			case 'Mar':
-				return 31;
-			case 'Apr':
-				return 30;
-			case 'May':
-				return 31;
-			case 'Jun':
-				return 30;
-			case 'Jul':
-				return 31;
-			case 'Aug':
-				return 31;
-			case 'Sep':
-				return 30;
-			case 'Oct':
-				return 31;
-			case 'Nov':
-				return 30;
-			default:
-				return 31;
-		}
-	});
 var $justinmimbs$date$Date$isBetweenInt = F3(
 	function (a, b, x) {
 		return (_Utils_cmp(a, x) < 1) && (_Utils_cmp(x, b) < 1);
@@ -6115,18 +6251,6 @@ var $justinmimbs$date$Date$monthToName = function (m) {
 			return 'December';
 	}
 };
-var $elm$time$Time$Apr = {$: 'Apr'};
-var $elm$time$Time$Aug = {$: 'Aug'};
-var $elm$time$Time$Dec = {$: 'Dec'};
-var $elm$time$Time$Feb = {$: 'Feb'};
-var $elm$time$Time$Jan = {$: 'Jan'};
-var $elm$time$Time$Jul = {$: 'Jul'};
-var $elm$time$Time$Jun = {$: 'Jun'};
-var $elm$time$Time$Mar = {$: 'Mar'};
-var $elm$time$Time$May = {$: 'May'};
-var $elm$time$Time$Nov = {$: 'Nov'};
-var $elm$time$Time$Oct = {$: 'Oct'};
-var $elm$time$Time$Sep = {$: 'Sep'};
 var $justinmimbs$date$Date$numberToMonth = function (mn) {
 	var _v0 = A2($elm$core$Basics$max, 1, mn);
 	switch (_v0) {
@@ -6419,6 +6543,7 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$list = _Json_decodeList;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$maybe = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
@@ -6482,16 +6607,310 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 			A2($elm$json$Json$Decode$field, key, valDecoder),
 			decoder);
 	});
-var $author$project$Backend$Scoreboard$Decoder$decodePatientData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'low_birth_weight',
-	$elm$json$Json$Decode$maybe($elm$json$Json$Decode$bool),
-	$elm$core$Maybe$Nothing,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'birth_date',
-		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-		$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)));
+var $justinmimbs$date$Date$Months = {$: 'Months'};
+var $justinmimbs$date$Date$monthToNumber = function (m) {
+	switch (m.$) {
+		case 'Jan':
+			return 1;
+		case 'Feb':
+			return 2;
+		case 'Mar':
+			return 3;
+		case 'Apr':
+			return 4;
+		case 'May':
+			return 5;
+		case 'Jun':
+			return 6;
+		case 'Jul':
+			return 7;
+		case 'Aug':
+			return 8;
+		case 'Sep':
+			return 9;
+		case 'Oct':
+			return 10;
+		case 'Nov':
+			return 11;
+		default:
+			return 12;
+	}
+};
+var $justinmimbs$date$Date$toCalendarDateHelp = F3(
+	function (y, m, d) {
+		toCalendarDateHelp:
+		while (true) {
+			var monthDays = A2($justinmimbs$date$Date$daysInMonth, y, m);
+			var mn = $justinmimbs$date$Date$monthToNumber(m);
+			if ((mn < 12) && (_Utils_cmp(d, monthDays) > 0)) {
+				var $temp$y = y,
+					$temp$m = $justinmimbs$date$Date$numberToMonth(mn + 1),
+					$temp$d = d - monthDays;
+				y = $temp$y;
+				m = $temp$m;
+				d = $temp$d;
+				continue toCalendarDateHelp;
+			} else {
+				return {day: d, month: m, year: y};
+			}
+		}
+	});
+var $justinmimbs$date$Date$divWithRemainder = F2(
+	function (a, b) {
+		return _Utils_Tuple2(
+			A2($justinmimbs$date$Date$floorDiv, a, b),
+			A2($elm$core$Basics$modBy, b, a));
+	});
+var $justinmimbs$date$Date$year = function (_v0) {
+	var rd = _v0.a;
+	var _v1 = A2($justinmimbs$date$Date$divWithRemainder, rd, 146097);
+	var n400 = _v1.a;
+	var r400 = _v1.b;
+	var _v2 = A2($justinmimbs$date$Date$divWithRemainder, r400, 36524);
+	var n100 = _v2.a;
+	var r100 = _v2.b;
+	var _v3 = A2($justinmimbs$date$Date$divWithRemainder, r100, 1461);
+	var n4 = _v3.a;
+	var r4 = _v3.b;
+	var _v4 = A2($justinmimbs$date$Date$divWithRemainder, r4, 365);
+	var n1 = _v4.a;
+	var r1 = _v4.b;
+	var n = (!r1) ? 0 : 1;
+	return ((((n400 * 400) + (n100 * 100)) + (n4 * 4)) + n1) + n;
+};
+var $justinmimbs$date$Date$toOrdinalDate = function (_v0) {
+	var rd = _v0.a;
+	var y = $justinmimbs$date$Date$year(
+		$justinmimbs$date$Date$RD(rd));
+	return {
+		ordinalDay: rd - $justinmimbs$date$Date$daysBeforeYear(y),
+		year: y
+	};
+};
+var $justinmimbs$date$Date$toCalendarDate = function (_v0) {
+	var rd = _v0.a;
+	var date = $justinmimbs$date$Date$toOrdinalDate(
+		$justinmimbs$date$Date$RD(rd));
+	return A3($justinmimbs$date$Date$toCalendarDateHelp, date.year, $elm$time$Time$Jan, date.ordinalDay);
+};
+var $justinmimbs$date$Date$toMonths = function (rd) {
+	var date = $justinmimbs$date$Date$toCalendarDate(
+		$justinmimbs$date$Date$RD(rd));
+	var wholeMonths = (12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1);
+	return wholeMonths + (date.day / 100);
+};
+var $elm$core$Basics$truncate = _Basics_truncate;
+var $justinmimbs$date$Date$diff = F3(
+	function (unit, _v0, _v1) {
+		var rd1 = _v0.a;
+		var rd2 = _v1.a;
+		switch (unit.$) {
+			case 'Years':
+				return ((($justinmimbs$date$Date$toMonths(rd2) - $justinmimbs$date$Date$toMonths(rd1)) | 0) / 12) | 0;
+			case 'Months':
+				return ($justinmimbs$date$Date$toMonths(rd2) - $justinmimbs$date$Date$toMonths(rd1)) | 0;
+			case 'Weeks':
+				return ((rd2 - rd1) / 7) | 0;
+			default:
+				return rd2 - rd1;
+		}
+	});
+var $author$project$Gizra$NominalDate$diffMonths = F2(
+	function (low, high) {
+		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, low, high);
+	});
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var $pzp1997$assoc_list$AssocList$D = function (a) {
+	return {$: 'D', a: a};
+};
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $pzp1997$assoc_list$AssocList$remove = F2(
+	function (targetKey, _v0) {
+		var alist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var key = _v1.a;
+					return !_Utils_eq(key, targetKey);
+				},
+				alist));
+	});
+var $pzp1997$assoc_list$AssocList$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A2($pzp1997$assoc_list$AssocList$remove, key, dict);
+		var alteredAlist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$cons,
+				_Utils_Tuple2(key, value),
+				alteredAlist));
+	});
+var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, result) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($pzp1997$assoc_list$AssocList$insert, key, value, result);
+			}),
+		$pzp1997$assoc_list$AssocList$D(_List_Nil),
+		alist);
+};
+var $pzp1997$assoc_list$AssocList$get = F2(
+	function (targetKey, _v0) {
+		get:
+		while (true) {
+			var alist = _v0.a;
+			if (!alist.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var _v2 = alist.a;
+				var key = _v2.a;
+				var value = _v2.b;
+				var rest = alist.b;
+				if (_Utils_eq(key, targetKey)) {
+					return $elm$core$Maybe$Just(value);
+				} else {
+					var $temp$targetKey = targetKey,
+						$temp$_v0 = $pzp1997$assoc_list$AssocList$D(rest);
+					targetKey = $temp$targetKey;
+					_v0 = $temp$_v0;
+					continue get;
+				}
+			}
+		}
+	});
+var $elm_community$maybe_extra$Maybe$Extra$isNothing = function (m) {
+	if (m.$ === 'Nothing') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $pzp1997$assoc_list$AssocList$toList = function (_v0) {
+	var alist = _v0.a;
+	return alist;
+};
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $pzp1997$assoc_list$AssocList$values = function (_v0) {
+	var alist = _v0.a;
+	return A2($elm$core$List$map, $elm$core$Tuple$second, alist);
+};
+var $author$project$Backend$Scoreboard$Decoder$sainitzePatientData = F2(
+	function (currentDate, data) {
+		var stuntingSevereDict = $pzp1997$assoc_list$AssocList$fromList(
+			A2(
+				$elm$core$List$map,
+				function (date) {
+					return _Utils_Tuple2(
+						A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate),
+						date);
+				},
+				data.stuntingSevere));
+		var stuntingNormalDict = $pzp1997$assoc_list$AssocList$fromList(
+			A2(
+				$elm$core$List$map,
+				function (date) {
+					return _Utils_Tuple2(
+						A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate),
+						date);
+				},
+				data.stuntingNormal));
+		var stuntingModerateDict = $pzp1997$assoc_list$AssocList$fromList(
+			A2(
+				$elm$core$List$map,
+				function (date) {
+					return _Utils_Tuple2(
+						A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate),
+						date);
+				},
+				data.stuntingModerate));
+		var sanitizedStuntingNormal = A2(
+			$elm$core$List$filterMap,
+			function (_v1) {
+				var months = _v1.a;
+				var date = _v1.b;
+				return ($elm_community$maybe_extra$Maybe$Extra$isNothing(
+					A2($pzp1997$assoc_list$AssocList$get, months, stuntingSevereDict)) && $elm_community$maybe_extra$Maybe$Extra$isNothing(
+					A2($pzp1997$assoc_list$AssocList$get, months, stuntingModerateDict))) ? $elm$core$Maybe$Just(date) : $elm$core$Maybe$Nothing;
+			},
+			$pzp1997$assoc_list$AssocList$toList(stuntingNormalDict));
+		var sanitizedStuntingModerate = A2(
+			$elm$core$List$filterMap,
+			function (_v0) {
+				var months = _v0.a;
+				var date = _v0.b;
+				return $elm_community$maybe_extra$Maybe$Extra$isNothing(
+					A2($pzp1997$assoc_list$AssocList$get, months, stuntingSevereDict)) ? $elm$core$Maybe$Just(date) : $elm$core$Maybe$Nothing;
+			},
+			$pzp1997$assoc_list$AssocList$toList(stuntingModerateDict));
+		return {
+			birthDate: data.birthDate,
+			lowBirthWeight: data.lowBirthWeight,
+			stuntingModerate: sanitizedStuntingModerate,
+			stuntingNormal: sanitizedStuntingNormal,
+			stuntingSevere: $pzp1997$assoc_list$AssocList$values(stuntingSevereDict)
+		};
+	});
+var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (currentDate) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		$author$project$Backend$Scoreboard$Decoder$sainitzePatientData(currentDate),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'stunting_normal',
+			$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'stunting_moderate',
+				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'stunting_severe',
+					$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+						'low_birth_weight',
+						$elm$json$Json$Decode$maybe($elm$json$Json$Decode$bool),
+						$elm$core$Maybe$Nothing,
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'birth_date',
+							$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+							$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))))));
+};
 var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
 var $author$project$Backend$Scoreboard$Model$EntitySector = {$: 'EntitySector'};
@@ -6513,28 +6932,33 @@ var $author$project$Backend$Scoreboard$Decoder$decodeSelectedEntity = A2(
 		}
 	},
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'results',
-	$elm$json$Json$Decode$list($author$project$Backend$Scoreboard$Decoder$decodePatientData),
-	A3(
+var $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData = function (currentDate) {
+	return A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'entity_type',
-		$author$project$Backend$Scoreboard$Decoder$decodeSelectedEntity,
+		'results',
+		$elm$json$Json$Decode$list(
+			$author$project$Backend$Scoreboard$Decoder$decodePatientData(currentDate)),
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'entity_name',
-			$elm$json$Json$Decode$string,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ScoreboardData))));
-var $author$project$Backend$Scoreboard$Update$update = F2(
-	function (msg, model) {
+			'entity_type',
+			$author$project$Backend$Scoreboard$Decoder$decodeSelectedEntity,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'entity_name',
+				$elm$json$Json$Decode$string,
+				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ScoreboardData))));
+};
+var $author$project$Backend$Scoreboard$Update$update = F3(
+	function (currentDate, msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
 			{
 				scoreboardData: $elm$core$Maybe$Just(
-					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData, value))
+					A2(
+						$elm$json$Json$Decode$decodeValue,
+						$author$project$Backend$Scoreboard$Decoder$decodeScoreboardData(currentDate),
+						value))
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
@@ -6549,15 +6973,15 @@ var $author$project$Backend$Utils$updateSubModel = F4(
 			model: backendReturn.model
 		};
 	});
-var $author$project$Backend$Update$updateBackend = F2(
-	function (msg, model) {
+var $author$project$Backend$Update$updateBackend = F3(
+	function (currentDate, msg, model) {
 		var subMsg = msg.a;
 		return A4(
 			$author$project$Backend$Utils$updateSubModel,
 			subMsg,
 			F2(
 				function (subMsg_, model_) {
-					return A2($author$project$Backend$Scoreboard$Update$update, subMsg_, model_);
+					return A3($author$project$Backend$Scoreboard$Update$update, currentDate, subMsg_, model_);
 				}),
 			function (subCmds) {
 				return $author$project$Backend$Model$MsgScoreboard(subCmds);
@@ -6620,7 +7044,11 @@ var $author$project$App$Update$update = F2(
 					model.backend,
 					F2(
 						function (subMsg_, subModel) {
-							return A2($author$project$Backend$Update$updateBackend, subMsg_, subModel);
+							return A3(
+								$author$project$Backend$Update$updateBackend,
+								$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
+								subMsg_,
+								subModel);
 						}),
 					F2(
 						function (subModel, model_) {
@@ -6731,130 +7159,6 @@ var $author$project$App$Update$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
-	});
-var $justinmimbs$date$Date$fromCalendarDate = F3(
-	function (y, m, d) {
-		return $justinmimbs$date$Date$RD(
-			($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A3(
-				$elm$core$Basics$clamp,
-				1,
-				A2($justinmimbs$date$Date$daysInMonth, y, m),
-				d));
-	});
-var $elm$time$Time$flooredDiv = F2(
-	function (numerator, denominator) {
-		return $elm$core$Basics$floor(numerator / denominator);
-	});
-var $elm$time$Time$posixToMillis = function (_v0) {
-	var millis = _v0.a;
-	return millis;
-};
-var $elm$time$Time$toAdjustedMinutesHelp = F3(
-	function (defaultOffset, posixMinutes, eras) {
-		toAdjustedMinutesHelp:
-		while (true) {
-			if (!eras.b) {
-				return posixMinutes + defaultOffset;
-			} else {
-				var era = eras.a;
-				var olderEras = eras.b;
-				if (_Utils_cmp(era.start, posixMinutes) < 0) {
-					return posixMinutes + era.offset;
-				} else {
-					var $temp$defaultOffset = defaultOffset,
-						$temp$posixMinutes = posixMinutes,
-						$temp$eras = olderEras;
-					defaultOffset = $temp$defaultOffset;
-					posixMinutes = $temp$posixMinutes;
-					eras = $temp$eras;
-					continue toAdjustedMinutesHelp;
-				}
-			}
-		}
-	});
-var $elm$time$Time$toAdjustedMinutes = F2(
-	function (_v0, time) {
-		var defaultOffset = _v0.a;
-		var eras = _v0.b;
-		return A3(
-			$elm$time$Time$toAdjustedMinutesHelp,
-			defaultOffset,
-			A2(
-				$elm$time$Time$flooredDiv,
-				$elm$time$Time$posixToMillis(time),
-				60000),
-			eras);
-	});
-var $elm$core$Basics$ge = _Utils_ge;
-var $elm$time$Time$toCivil = function (minutes) {
-	var rawDay = A2($elm$time$Time$flooredDiv, minutes, 60 * 24) + 719468;
-	var era = (((rawDay >= 0) ? rawDay : (rawDay - 146096)) / 146097) | 0;
-	var dayOfEra = rawDay - (era * 146097);
-	var yearOfEra = ((((dayOfEra - ((dayOfEra / 1460) | 0)) + ((dayOfEra / 36524) | 0)) - ((dayOfEra / 146096) | 0)) / 365) | 0;
-	var dayOfYear = dayOfEra - (((365 * yearOfEra) + ((yearOfEra / 4) | 0)) - ((yearOfEra / 100) | 0));
-	var mp = (((5 * dayOfYear) + 2) / 153) | 0;
-	var month = mp + ((mp < 10) ? 3 : (-9));
-	var year = yearOfEra + (era * 400);
-	return {
-		day: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
-		month: month,
-		year: year + ((month <= 2) ? 1 : 0)
-	};
-};
-var $elm$time$Time$toDay = F2(
-	function (zone, time) {
-		return $elm$time$Time$toCivil(
-			A2($elm$time$Time$toAdjustedMinutes, zone, time)).day;
-	});
-var $elm$time$Time$toMonth = F2(
-	function (zone, time) {
-		var _v0 = $elm$time$Time$toCivil(
-			A2($elm$time$Time$toAdjustedMinutes, zone, time)).month;
-		switch (_v0) {
-			case 1:
-				return $elm$time$Time$Jan;
-			case 2:
-				return $elm$time$Time$Feb;
-			case 3:
-				return $elm$time$Time$Mar;
-			case 4:
-				return $elm$time$Time$Apr;
-			case 5:
-				return $elm$time$Time$May;
-			case 6:
-				return $elm$time$Time$Jun;
-			case 7:
-				return $elm$time$Time$Jul;
-			case 8:
-				return $elm$time$Time$Aug;
-			case 9:
-				return $elm$time$Time$Sep;
-			case 10:
-				return $elm$time$Time$Oct;
-			case 11:
-				return $elm$time$Time$Nov;
-			default:
-				return $elm$time$Time$Dec;
-		}
-	});
-var $elm$time$Time$toYear = F2(
-	function (zone, time) {
-		return $elm$time$Time$toCivil(
-			A2($elm$time$Time$toAdjustedMinutes, zone, time)).year;
-	});
-var $justinmimbs$date$Date$fromPosix = F2(
-	function (zone, posix) {
-		return A3(
-			$justinmimbs$date$Date$fromCalendarDate,
-			A2($elm$time$Time$toYear, zone, posix),
-			A2($elm$time$Time$toMonth, zone, posix),
-			A2($elm$time$Time$toDay, zone, posix));
-	});
-var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
-var $author$project$Gizra$NominalDate$fromLocalDateTime = $justinmimbs$date$Date$fromPosix($elm$time$Time$utc);
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -7393,20 +7697,6 @@ var $elm$core$Maybe$andThen = F2(
 	});
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
-var $pzp1997$assoc_list$AssocList$D = function (a) {
-	return {$: 'D', a: a};
-};
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
 var $pzp1997$assoc_list$AssocList$filter = F2(
 	function (isGood, _v0) {
 		var alist = _v0.a;
@@ -7442,40 +7732,6 @@ var $author$project$Utils$GeoLocation$GeoLocation = F2(
 	function (name, parent) {
 		return {name: name, parent: parent};
 	});
-var $pzp1997$assoc_list$AssocList$remove = F2(
-	function (targetKey, _v0) {
-		var alist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$filter,
-				function (_v1) {
-					var key = _v1.a;
-					return !_Utils_eq(key, targetKey);
-				},
-				alist));
-	});
-var $pzp1997$assoc_list$AssocList$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A2($pzp1997$assoc_list$AssocList$remove, key, dict);
-		var alteredAlist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$cons,
-				_Utils_Tuple2(key, value),
-				alteredAlist));
-	});
-var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, result) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return A3($pzp1997$assoc_list$AssocList$insert, key, value, result);
-			}),
-		$pzp1997$assoc_list$AssocList$D(_List_Nil),
-		alist);
-};
 var $author$project$Utils$GeoLocation$getGeoCells = $pzp1997$assoc_list$AssocList$fromList(
 	_Utils_ap(
 		_List_fromArray(
@@ -25861,10 +26117,6 @@ var $author$project$Utils$GeoLocation$getGeoVillages = $pzp1997$assoc_list$Assoc
 													$author$project$Backend$Entities$toEntityId(2615))))
 										]))))))))));
 var $author$project$Utils$GeoLocation$geoInfo = {cells: $author$project$Utils$GeoLocation$getGeoCells, districts: $author$project$Utils$GeoLocation$getGeoDistricts, provinces: $author$project$Utils$GeoLocation$getGeoProvinces, sectors: $author$project$Utils$GeoLocation$getGeoSectors, villages: $author$project$Utils$GeoLocation$getGeoVillages};
-var $pzp1997$assoc_list$AssocList$toList = function (_v0) {
-	var alist = _v0.a;
-	return alist;
-};
 var $author$project$Utils$GeoLocation$geoLocationDictToOptions = A2(
 	$elm$core$Basics$composeR,
 	$pzp1997$assoc_list$AssocList$toList,
@@ -25877,30 +26129,6 @@ var $author$project$Utils$GeoLocation$geoLocationDictToOptions = A2(
 					$author$project$Backend$Entities$fromEntityId(id)),
 				geoLocation.name);
 		}));
-var $pzp1997$assoc_list$AssocList$get = F2(
-	function (targetKey, _v0) {
-		get:
-		while (true) {
-			var alist = _v0.a;
-			if (!alist.b) {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var _v2 = alist.a;
-				var key = _v2.a;
-				var value = _v2.b;
-				var rest = alist.b;
-				if (_Utils_eq(key, targetKey)) {
-					return $elm$core$Maybe$Just(value);
-				} else {
-					var $temp$targetKey = targetKey,
-						$temp$_v0 = $pzp1997$assoc_list$AssocList$D(rest);
-					targetKey = $temp$targetKey;
-					_v0 = $temp$_v0;
-					continue get;
-				}
-			}
-		}
-	});
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -25929,10 +26157,6 @@ var $elm$core$Maybe$map2 = F3(
 			}
 		}
 	});
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
 var $elm$html$Html$Attributes$classList = function (classes) {
 	return $elm$html$Html$Attributes$class(
 		A2(
@@ -26426,91 +26650,6 @@ var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) 
 			]),
 		A2($elm$core$List$cons, statusCell, monthCells));
 };
-var $justinmimbs$date$Date$monthToNumber = function (m) {
-	switch (m.$) {
-		case 'Jan':
-			return 1;
-		case 'Feb':
-			return 2;
-		case 'Mar':
-			return 3;
-		case 'Apr':
-			return 4;
-		case 'May':
-			return 5;
-		case 'Jun':
-			return 6;
-		case 'Jul':
-			return 7;
-		case 'Aug':
-			return 8;
-		case 'Sep':
-			return 9;
-		case 'Oct':
-			return 10;
-		case 'Nov':
-			return 11;
-		default:
-			return 12;
-	}
-};
-var $justinmimbs$date$Date$toCalendarDateHelp = F3(
-	function (y, m, d) {
-		toCalendarDateHelp:
-		while (true) {
-			var monthDays = A2($justinmimbs$date$Date$daysInMonth, y, m);
-			var mn = $justinmimbs$date$Date$monthToNumber(m);
-			if ((mn < 12) && (_Utils_cmp(d, monthDays) > 0)) {
-				var $temp$y = y,
-					$temp$m = $justinmimbs$date$Date$numberToMonth(mn + 1),
-					$temp$d = d - monthDays;
-				y = $temp$y;
-				m = $temp$m;
-				d = $temp$d;
-				continue toCalendarDateHelp;
-			} else {
-				return {day: d, month: m, year: y};
-			}
-		}
-	});
-var $justinmimbs$date$Date$divWithRemainder = F2(
-	function (a, b) {
-		return _Utils_Tuple2(
-			A2($justinmimbs$date$Date$floorDiv, a, b),
-			A2($elm$core$Basics$modBy, b, a));
-	});
-var $justinmimbs$date$Date$year = function (_v0) {
-	var rd = _v0.a;
-	var _v1 = A2($justinmimbs$date$Date$divWithRemainder, rd, 146097);
-	var n400 = _v1.a;
-	var r400 = _v1.b;
-	var _v2 = A2($justinmimbs$date$Date$divWithRemainder, r400, 36524);
-	var n100 = _v2.a;
-	var r100 = _v2.b;
-	var _v3 = A2($justinmimbs$date$Date$divWithRemainder, r100, 1461);
-	var n4 = _v3.a;
-	var r4 = _v3.b;
-	var _v4 = A2($justinmimbs$date$Date$divWithRemainder, r4, 365);
-	var n1 = _v4.a;
-	var r1 = _v4.b;
-	var n = (!r1) ? 0 : 1;
-	return ((((n400 * 400) + (n100 * 100)) + (n4 * 4)) + n1) + n;
-};
-var $justinmimbs$date$Date$toOrdinalDate = function (_v0) {
-	var rd = _v0.a;
-	var y = $justinmimbs$date$Date$year(
-		$justinmimbs$date$Date$RD(rd));
-	return {
-		ordinalDay: rd - $justinmimbs$date$Date$daysBeforeYear(y),
-		year: y
-	};
-};
-var $justinmimbs$date$Date$toCalendarDate = function (_v0) {
-	var rd = _v0.a;
-	var date = $justinmimbs$date$Date$toOrdinalDate(
-		$justinmimbs$date$Date$RD(rd));
-	return A3($justinmimbs$date$Date$toCalendarDateHelp, date.year, $elm$time$Time$Jan, date.ordinalDay);
-};
 var $justinmimbs$date$Date$month = A2(
 	$elm$core$Basics$composeR,
 	$justinmimbs$date$Date$toCalendarDate,
@@ -26789,33 +26928,6 @@ var $author$project$Translate$NCDADemographicsItemLabel = function (a) {
 	return {$: 'NCDADemographicsItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$NewbornsThisMonth = {$: 'NewbornsThisMonth'};
-var $justinmimbs$date$Date$Months = {$: 'Months'};
-var $justinmimbs$date$Date$toMonths = function (rd) {
-	var date = $justinmimbs$date$Date$toCalendarDate(
-		$justinmimbs$date$Date$RD(rd));
-	var wholeMonths = (12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1);
-	return wholeMonths + (date.day / 100);
-};
-var $elm$core$Basics$truncate = _Basics_truncate;
-var $justinmimbs$date$Date$diff = F3(
-	function (unit, _v0, _v1) {
-		var rd1 = _v0.a;
-		var rd2 = _v1.a;
-		switch (unit.$) {
-			case 'Years':
-				return ((($justinmimbs$date$Date$toMonths(rd2) - $justinmimbs$date$Date$toMonths(rd1)) | 0) / 12) | 0;
-			case 'Months':
-				return ($justinmimbs$date$Date$toMonths(rd2) - $justinmimbs$date$Date$toMonths(rd1)) | 0;
-			case 'Weeks':
-				return ((rd2 - rd1) / 7) | 0;
-			default:
-				return rd2 - rd1;
-		}
-	});
-var $author$project$Gizra$NominalDate$diffMonths = F2(
-	function (low, high) {
-		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, low, high);
-	});
 var $elm$core$List$repeatHelp = F3(
 	function (result, n, value) {
 		repeatHelp:
@@ -27156,51 +27268,7 @@ var $author$project$Pages$Scoreboard$Model$SevereStunting = {$: 'SevereStunting'
 var $author$project$Translate$Stunting = {$: 'Stunting'};
 var $author$project$Pages$Scoreboard$View$viewStuntingPane = F4(
 	function (language, currentDate, yearSelectorGap, data) {
-		var values = function () {
-			var _v0 = data.entityType;
-			switch (_v0.$) {
-				case 'EntityVillage':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[23, 21, 17, 14, 9, 12, 18, 21, 16, 13, 19, 22]),
-							_List_fromArray(
-							[8, 14, 7, 18, 13, 17, 12, 15, 19, 16, 11, 10]),
-							_List_fromArray(
-							[19, 23, 18, 13, 15, 21, 14, 17, 22, 16, 11, 20])
-						]);
-				case 'EntityCell':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[153, 129, 102, 124, 148, 115, 149, 178, 162, 148, 161, 138]),
-							_List_fromArray(
-							[102, 125, 136, 129, 149, 131, 125, 117, 144, 146, 137, 108]),
-							_List_fromArray(
-							[116, 123, 151, 135, 112, 141, 152, 126, 123, 135, 146, 148])
-						]);
-				case 'EntitySector':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[270, 245, 214, 231, 265, 238, 249, 218, 221, 267, 236, 260]),
-							_List_fromArray(
-							[246, 269, 240, 232, 258, 215, 207, 236, 274, 252, 214, 233]),
-							_List_fromArray(
-							[238, 245, 214, 260, 219, 231, 241, 237, 218, 238, 255, 261])
-						]);
-				default:
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[605, 596, 562, 640, 621, 546, 661, 592, 635, 539, 587, 612]),
-							_List_fromArray(
-							[595, 581, 562, 605, 656, 576, 593, 635, 625, 655, 620, 575]),
-							_List_fromArray(
-							[604, 642, 553, 655, 577, 622, 600, 571, 598, 621, 542, 596])
-						]);
-			}
-		}();
+		var values = _List_Nil;
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
