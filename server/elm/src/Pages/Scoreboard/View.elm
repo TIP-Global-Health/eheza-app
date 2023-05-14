@@ -47,13 +47,16 @@ viewScoreboardData language currentDate data model =
                 , viewYearSelector language currentDate model.yearSelectorGap ChaneYearGap
                 , div [ class "values-percents" ] []
                 ]
+
+        monthsGap =
+            generateMonthsGap currentDate model.yearSelectorGap
     in
     div [ class "page-content" ]
         [ topBar
         , viewAggregatedChildScoreboardPane language data
-        , viewDemographicsPane language currentDate model.yearSelectorGap data
+        , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap data
         , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap data
-        , viewStuntingPane language currentDate model.yearSelectorGap data
+        , viewStuntingPane language currentDate model.yearSelectorGap monthsGap data
         , viewANCNewbornPane language currentDate model.yearSelectorGap data
         , viewUniversalInterventionPane language currentDate model.yearSelectorGap data
         , viewNutritionBehaviorPane language currentDate model.yearSelectorGap data
@@ -75,8 +78,8 @@ viewAggregatedChildScoreboardPane language data =
         ]
 
 
-viewDemographicsPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
-viewDemographicsPane language currentDate yearSelectorGap data =
+viewDemographicsPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
+viewDemographicsPane language currentDate yearSelectorGap monthsGap data =
     let
         rows =
             List.map2
@@ -90,7 +93,7 @@ viewDemographicsPane language currentDate yearSelectorGap data =
             List.foldl
                 (\record accum ->
                     let
-                        ageInMonth =
+                        ageInMonths =
                             diffMonths record.birthDate currentDate
                     in
                     List.indexedMap
@@ -100,7 +103,7 @@ viewDemographicsPane language currentDate yearSelectorGap data =
                                     (\gapInMoths ->
                                         let
                                             gap =
-                                                ageInMonth - gapInMoths
+                                                ageInMonths - gapInMoths
 
                                             row1 =
                                                 if gap >= 0 && gap < 24 then
@@ -138,15 +141,6 @@ viewDemographicsPane language currentDate yearSelectorGap data =
         emptyValues =
             List.repeat 12 { row1 = 0, row2 = 0, row3 = 0 }
 
-        monthsGap =
-            List.range 1 12
-                |> List.map (\monthNumber -> (-1 * 12 * yearSelectorGap) + (-1 * (monthNumber - currentMonthNumber)))
-                |> List.indexedMap Tuple.pair
-                |> Dict.fromList
-
-        currentMonthNumber =
-            Date.monthNumber currentDate
-
         values =
             [ List.map .row1 valuesByRow
             , List.map .row2 valuesByRow
@@ -173,30 +167,7 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap data =
                 values
 
         values =
-            case data.entityType of
-                EntityVillage ->
-                    [ [ 11, 17, 19, 15, 15, 7, 8, 12, 11, 17, 11, 12 ]
-                    , [ 3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3 ]
-                    , [ 9, 6, 2, 8, 12, 1, 25, 3, 24, 5, 7, 11 ]
-                    ]
-
-                EntityCell ->
-                    [ [ 98, 129, 100, 123, 112, 145, 173, 98, 145, 134, 135, 122 ]
-                    , [ 98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122 ]
-                    , [ 35, 72, 98, 41, 84, 63, 52, 77, 96, 88, 55, 47 ]
-                    ]
-
-                EntitySector ->
-                    [ [ 203, 257, 234, 245, 245, 256, 124, 145, 124, 145, 239, 240 ]
-                    , [ 203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239 ]
-                    , [ 213, 243, 239, 221, 246, 236, 266, 223, 229, 221, 229, 234 ]
-                    ]
-
-                EntityDistrict ->
-                    [ [ 491, 455, 640, 678, 524, 491, 545, 640, 563, 640, 455, 491 ]
-                    , [ 530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491 ]
-                    , [ 223, 569, 854, 732, 988, 622, 901, 775, 666, 444, 888, 998 ]
-                    ]
+            []
     in
     div [ class "pane orange" ]
         [ viewPaneHeading language Translate.AcuteMalnutrition
@@ -206,8 +177,8 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap data =
         ]
 
 
-viewStuntingPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
-viewStuntingPane language currentDate yearSelectorGap data =
+viewStuntingPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
+viewStuntingPane language currentDate yearSelectorGap monthsGap data =
     let
         rows =
             List.map2
@@ -217,8 +188,66 @@ viewStuntingPane language currentDate yearSelectorGap data =
                 [ SevereStunting, ModerateStunting, NoStunting ]
                 values
 
+        valuesByRow =
+            List.foldl
+                (\record accum ->
+                    let
+                        severeAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.stuntingSevere
+
+                        moderateAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.stuntingModerate
+
+                        normalAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.stuntingNormal
+                    in
+                    List.indexedMap
+                        (\index accumValue ->
+                            Dict.get index monthsGap
+                                |> Maybe.map
+                                    (\gapInMoths ->
+                                        let
+                                            row1 =
+                                                if List.member gapInMoths severeAsAgeInMonths then
+                                                    accumValue.row1 + 1
+
+                                                else
+                                                    accumValue.row1
+
+                                            row2 =
+                                                if List.member gapInMoths moderateAsAgeInMonths then
+                                                    accumValue.row2 + 1
+
+                                                else
+                                                    accumValue.row2
+
+                                            row3 =
+                                                if List.member gapInMoths normalAsAgeInMonths then
+                                                    accumValue.row3 + 1
+
+                                                else
+                                                    accumValue.row3
+                                        in
+                                        { row1 = row1
+                                        , row2 = row2
+                                        , row3 = row3
+                                        }
+                                    )
+                                |> Maybe.withDefault accumValue
+                        )
+                        accum
+                )
+                emptyValues
+                data.records
+
+        emptyValues =
+            List.repeat 12 { row1 = 0, row2 = 0, row3 = 0 }
+
         values =
-            []
+            [ List.map .row1 valuesByRow
+            , List.map .row2 valuesByRow
+            , List.map .row3 valuesByRow
+            ]
     in
     div [ class "pane velvet" ]
         [ viewPaneHeading language Translate.Stunting
@@ -491,6 +520,18 @@ viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
     div [ class <| "pane-heading" ]
         [ text <| translate language label ]
+
+
+generateMonthsGap : NominalDate -> Int -> Dict Int Int
+generateMonthsGap currentDate yearSelectorGap =
+    let
+        currentMonthNumber =
+            Date.monthNumber currentDate
+    in
+    List.range 1 12
+        |> List.map (\monthNumber -> (-1 * 12 * yearSelectorGap) + (-1 * (monthNumber - currentMonthNumber)))
+        |> List.indexedMap Tuple.pair
+        |> Dict.fromList
 
 
 viewTableHeader : Language -> Html any

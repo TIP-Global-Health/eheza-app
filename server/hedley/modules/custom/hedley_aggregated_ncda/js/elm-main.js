@@ -6888,18 +6888,21 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 	return A2(
 		$elm$json$Json$Decode$map,
 		$author$project$Backend$Scoreboard$Decoder$sainitzePatientData(currentDate),
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 			'stunting_normal',
 			$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			_List_Nil,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 				'stunting_moderate',
 				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-				A3(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				_List_Nil,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 					'stunting_severe',
 					$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+					_List_Nil,
 					A4(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 						'low_birth_weight',
@@ -26586,6 +26589,27 @@ var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
 	return {$: 'ChaneYearGap', a: a};
 };
 var $author$project$Translate$NewSelection = {$: 'NewSelection'};
+var $justinmimbs$date$Date$month = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toCalendarDate,
+	function ($) {
+		return $.month;
+	});
+var $justinmimbs$date$Date$monthNumber = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToNumber);
+var $author$project$Pages$Scoreboard$View$generateMonthsGap = F2(
+	function (currentDate, yearSelectorGap) {
+		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
+		return $pzp1997$assoc_list$AssocList$fromList(
+			A2(
+				$elm$core$List$indexedMap,
+				$elm$core$Tuple$pair,
+				A2(
+					$elm$core$List$map,
+					function (monthNumber) {
+						return (((-1) * 12) * yearSelectorGap) + ((-1) * (monthNumber - currentMonthNumber));
+					},
+					A2($elm$core$List$range, 1, 12))));
+	});
 var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
 var $author$project$Pages$Scoreboard$Model$IronDuringPregnancy = {$: 'IronDuringPregnancy'};
 var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
@@ -26650,13 +26674,6 @@ var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) 
 			]),
 		A2($elm$core$List$cons, statusCell, monthCells));
 };
-var $justinmimbs$date$Date$month = A2(
-	$elm$core$Basics$composeR,
-	$justinmimbs$date$Date$toCalendarDate,
-	function ($) {
-		return $.month;
-	});
-var $justinmimbs$date$Date$monthNumber = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToNumber);
 var $author$project$Pages$Scoreboard$View$formatValues = F2(
 	function (currentDate, yearSelectorGap) {
 		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
@@ -26786,51 +26803,7 @@ var $author$project$Translate$NCDAAcuteMalnutritionItemLabel = function (a) {
 var $author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition = {$: 'SevereAcuteMalnutrition'};
 var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F4(
 	function (language, currentDate, yearSelectorGap, data) {
-		var values = function () {
-			var _v0 = data.entityType;
-			switch (_v0.$) {
-				case 'EntityVillage':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[11, 17, 19, 15, 15, 7, 8, 12, 11, 17, 11, 12]),
-							_List_fromArray(
-							[3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3]),
-							_List_fromArray(
-							[9, 6, 2, 8, 12, 1, 25, 3, 24, 5, 7, 11])
-						]);
-				case 'EntityCell':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[98, 129, 100, 123, 112, 145, 173, 98, 145, 134, 135, 122]),
-							_List_fromArray(
-							[98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122]),
-							_List_fromArray(
-							[35, 72, 98, 41, 84, 63, 52, 77, 96, 88, 55, 47])
-						]);
-				case 'EntitySector':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[203, 257, 234, 245, 245, 256, 124, 145, 124, 145, 239, 240]),
-							_List_fromArray(
-							[203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239]),
-							_List_fromArray(
-							[213, 243, 239, 221, 246, 236, 266, 223, 229, 221, 229, 234])
-						]);
-				default:
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[491, 455, 640, 678, 524, 491, 545, 640, 563, 640, 455, 491]),
-							_List_fromArray(
-							[530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491]),
-							_List_fromArray(
-							[223, 569, 854, 732, 988, 622, 901, 775, 666, 444, 888, 998])
-						]);
-			}
-		}();
+		var values = _List_Nil;
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -26949,28 +26922,17 @@ var $elm$core$List$repeat = F2(
 	function (n, value) {
 		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
 	});
-var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F4(
-	function (language, currentDate, yearSelectorGap, data) {
+var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F5(
+	function (language, currentDate, yearSelectorGap, monthsGap, data) {
 		var emptyValues = A2(
 			$elm$core$List$repeat,
 			12,
 			{row1: 0, row2: 0, row3: 0});
-		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
-		var monthsGap = $pzp1997$assoc_list$AssocList$fromList(
-			A2(
-				$elm$core$List$indexedMap,
-				$elm$core$Tuple$pair,
-				A2(
-					$elm$core$List$map,
-					function (monthNumber) {
-						return (((-1) * 12) * yearSelectorGap) + ((-1) * (monthNumber - currentMonthNumber));
-					},
-					A2($elm$core$List$range, 1, 12))));
 		var valuesByRow = A3(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var ageInMonth = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
+					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -26981,7 +26943,7 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F4(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMoths) {
-											var gap = ageInMonth - gapInMoths;
+											var gap = ageInMonths - gapInMoths;
 											var row1 = ((gap >= 0) && (gap < 24)) ? (accumValue.row1 + 1) : accumValue.row1;
 											var row2 = (!gap) ? (accumValue.row2 + 1) : accumValue.row2;
 											var row3 = ((!gap) && _Utils_eq(
@@ -27266,9 +27228,106 @@ var $author$project$Translate$NCDAStuntingItemLabel = function (a) {
 var $author$project$Pages$Scoreboard$Model$NoStunting = {$: 'NoStunting'};
 var $author$project$Pages$Scoreboard$Model$SevereStunting = {$: 'SevereStunting'};
 var $author$project$Translate$Stunting = {$: 'Stunting'};
-var $author$project$Pages$Scoreboard$View$viewStuntingPane = F4(
-	function (language, currentDate, yearSelectorGap, data) {
-		var values = _List_Nil;
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Pages$Scoreboard$View$viewStuntingPane = F5(
+	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+		var emptyValues = A2(
+			$elm$core$List$repeat,
+			12,
+			{row1: 0, row2: 0, row3: 0});
+		var valuesByRow = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (record, accum) {
+					var severeAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.stuntingSevere);
+					var normalAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.stuntingNormal);
+					var moderateAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.stuntingModerate);
+					return A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (index, accumValue) {
+								return A2(
+									$elm$core$Maybe$withDefault,
+									accumValue,
+									A2(
+										$elm$core$Maybe$map,
+										function (gapInMoths) {
+											var row3 = A2($elm$core$List$member, gapInMoths, normalAsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = A2($elm$core$List$member, gapInMoths, moderateAsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = A2($elm$core$List$member, gapInMoths, severeAsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+											return {row1: row1, row2: row2, row3: row3};
+										},
+										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+							}),
+						accum);
+				}),
+			emptyValues,
+			data.records);
+		var values = _List_fromArray(
+			[
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row1;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row2;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row3;
+				},
+				valuesByRow)
+			]);
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -27721,6 +27780,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 						]),
 					_List_Nil)
 				]));
+		var monthsGap = A2($author$project$Pages$Scoreboard$View$generateMonthsGap, currentDate, model.yearSelectorGap);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -27731,9 +27791,9 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 				[
 					topBar,
 					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, data),
-					A4($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, data),
+					A5($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, data),
-					A4($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, data),
+					A5($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, data),
