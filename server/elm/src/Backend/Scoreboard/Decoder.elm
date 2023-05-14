@@ -44,9 +44,9 @@ decodePatientData currentDate =
     succeed PatientData
         |> required "birth_date" decodeYYYYMMDD
         |> optional "low_birth_weight" (maybe bool) Nothing
-        |> required "stunting_severe" (list decodeYYYYMMDD)
-        |> required "stunting_moderate" (list decodeYYYYMMDD)
-        |> required "stunting_normal" (list decodeYYYYMMDD)
+        |> optional "stunting_severe" (list decodeYYYYMMDD) []
+        |> optional "stunting_moderate" (list decodeYYYYMMDD) []
+        |> optional "stunting_normal" (list decodeYYYYMMDD) []
         |> map (sainitzePatientData currentDate)
 
 
