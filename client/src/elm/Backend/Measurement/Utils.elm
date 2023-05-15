@@ -3583,7 +3583,7 @@ ncdaSignToString value =
             "regular-prenatal-visits"
 
         NCDAIronSupplementsDuringPregnancy ->
-            "ron-supplements-during-pregnancy"
+            "iron-supplements-during-pregnancy"
 
         NCDAInsecticideTreatedBednetsDuringPregnancy ->
             "insecticide-treated-bednets-during-pregnancy"
@@ -3643,7 +3643,7 @@ ncdaSignFromString value =
         "regular-prenatal-visits" ->
             Just NCDARegularPrenatalVisits
 
-        "ron-supplements-during-pregnancy" ->
+        "iron-supplements-during-pregnancy" ->
             Just NCDAIronSupplementsDuringPregnancy
 
         "insecticide-treated-bednets-during-pregnancy" ->

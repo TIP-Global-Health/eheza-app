@@ -306,7 +306,7 @@ viewUniversalInterventionPane language currentDate yearSelectorGap data =
                 (\item itemValues ->
                     viewTableRow language currentDate yearSelectorGap (Translate.NCDAUniversalInterventionItemLabel item) itemValues
                 )
-                [ Immunization, VitaminA, OngeraMNP, OngeraMNP, ECDServices ]
+                [ Immunization, VitaminA, Deworming, OngeraMNP, ECDServices ]
                 values
 
         values =
