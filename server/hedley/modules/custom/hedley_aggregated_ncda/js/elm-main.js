@@ -5710,11 +5710,19 @@ var $author$project$Backend$Scoreboard$Model$ScoreboardData = F3(
 	function (entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F7(
-	function (birthDate, lowBirthWeight, stuntingSevere, stuntingModerate, stuntingNormal, postpartumCheckups, ironDuringPregnancy) {
-		return {birthDate: birthDate, ironDuringPregnancy: ironDuringPregnancy, lowBirthWeight: lowBirthWeight, postpartumCheckups: postpartumCheckups, stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere};
+var $author$project$Backend$Scoreboard$Model$PatientData = F5(
+	function (birthDate, lowBirthWeight, nutrition, postpartumCheckups, ironDuringPregnancy) {
+		return {birthDate: birthDate, ironDuringPregnancy: ironDuringPregnancy, lowBirthWeight: lowBirthWeight, nutrition: nutrition, postpartumCheckups: postpartumCheckups};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
+	function (stunting, underweigt, wasting, muac) {
+		return {muac: muac, stunting: stunting, underweigt: underweigt, wasting: wasting};
+	});
+var $author$project$Backend$Scoreboard$Model$CriterionBySeverities = F3(
+	function (severe, moderate, normal) {
+		return {moderate: moderate, normal: normal, severe: severe};
+	});
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
 		return g(
@@ -6544,18 +6552,10 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
 var $elm$json$Json$Decode$list = _Json_decodeList;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $elm$json$Json$Decode$maybe = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
-				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
-			]));
-};
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
 	function (pathDecoder, valDecoder, fallback) {
@@ -6598,13 +6598,6 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
 				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
 				valDecoder,
 				fallback),
-			decoder);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
 			decoder);
 	});
 var $justinmimbs$date$Date$Months = {$: 'Months'};
@@ -6828,9 +6821,9 @@ var $pzp1997$assoc_list$AssocList$values = function (_v0) {
 	var alist = _v0.a;
 	return A2($elm$core$List$map, $elm$core$Tuple$second, alist);
 };
-var $author$project$Backend$Scoreboard$Decoder$sainitzePatientData = F2(
+var $author$project$Backend$Scoreboard$Decoder$sainitzeCriterionBySeverities = F2(
 	function (currentDate, data) {
-		var stuntingSevereDict = $pzp1997$assoc_list$AssocList$fromList(
+		var severeDict = $pzp1997$assoc_list$AssocList$fromList(
 			A2(
 				$elm$core$List$map,
 				function (date) {
@@ -6838,8 +6831,8 @@ var $author$project$Backend$Scoreboard$Decoder$sainitzePatientData = F2(
 						A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate),
 						date);
 				},
-				data.stuntingSevere));
-		var stuntingNormalDict = $pzp1997$assoc_list$AssocList$fromList(
+				data.severe));
+		var normalDict = $pzp1997$assoc_list$AssocList$fromList(
 			A2(
 				$elm$core$List$map,
 				function (date) {
@@ -6847,8 +6840,8 @@ var $author$project$Backend$Scoreboard$Decoder$sainitzePatientData = F2(
 						A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate),
 						date);
 				},
-				data.stuntingNormal));
-		var stuntingModerateDict = $pzp1997$assoc_list$AssocList$fromList(
+				data.normal));
+		var moderateDict = $pzp1997$assoc_list$AssocList$fromList(
 			A2(
 				$elm$core$List$map,
 				function (date) {
@@ -6856,73 +6849,114 @@ var $author$project$Backend$Scoreboard$Decoder$sainitzePatientData = F2(
 						A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate),
 						date);
 				},
-				data.stuntingModerate));
-		var sanitizedStuntingNormal = A2(
+				data.moderate));
+		var sanitizedModerate = A2(
 			$elm$core$List$filterMap,
 			function (_v1) {
 				var months = _v1.a;
 				var date = _v1.b;
-				return ($elm_community$maybe_extra$Maybe$Extra$isNothing(
-					A2($pzp1997$assoc_list$AssocList$get, months, stuntingSevereDict)) && $elm_community$maybe_extra$Maybe$Extra$isNothing(
-					A2($pzp1997$assoc_list$AssocList$get, months, stuntingModerateDict))) ? $elm$core$Maybe$Just(date) : $elm$core$Maybe$Nothing;
+				return $elm_community$maybe_extra$Maybe$Extra$isNothing(
+					A2($pzp1997$assoc_list$AssocList$get, months, severeDict)) ? $elm$core$Maybe$Just(date) : $elm$core$Maybe$Nothing;
 			},
-			$pzp1997$assoc_list$AssocList$toList(stuntingNormalDict));
-		var sanitizedStuntingModerate = A2(
+			$pzp1997$assoc_list$AssocList$toList(moderateDict));
+		var sanitizedNormal = A2(
 			$elm$core$List$filterMap,
 			function (_v0) {
 				var months = _v0.a;
 				var date = _v0.b;
-				return $elm_community$maybe_extra$Maybe$Extra$isNothing(
-					A2($pzp1997$assoc_list$AssocList$get, months, stuntingSevereDict)) ? $elm$core$Maybe$Just(date) : $elm$core$Maybe$Nothing;
+				return ($elm_community$maybe_extra$Maybe$Extra$isNothing(
+					A2($pzp1997$assoc_list$AssocList$get, months, severeDict)) && $elm_community$maybe_extra$Maybe$Extra$isNothing(
+					A2($pzp1997$assoc_list$AssocList$get, months, moderateDict))) ? $elm$core$Maybe$Just(date) : $elm$core$Maybe$Nothing;
 			},
-			$pzp1997$assoc_list$AssocList$toList(stuntingModerateDict));
+			$pzp1997$assoc_list$AssocList$toList(normalDict));
 		return _Utils_update(
 			data,
 			{
-				stuntingModerate: sanitizedStuntingModerate,
-				stuntingNormal: sanitizedStuntingNormal,
-				stuntingSevere: $pzp1997$assoc_list$AssocList$values(stuntingSevereDict)
+				moderate: sanitizedModerate,
+				normal: sanitizedNormal,
+				severe: $pzp1997$assoc_list$AssocList$values(severeDict)
 			});
 	});
-var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (currentDate) {
+var $author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities = function (currentDate) {
 	return A2(
 		$elm$json$Json$Decode$map,
-		$author$project$Backend$Scoreboard$Decoder$sainitzePatientData(currentDate),
+		$author$project$Backend$Scoreboard$Decoder$sainitzeCriterionBySeverities(currentDate),
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'iron_during_pregnancy',
-			$elm$json$Json$Decode$bool,
-			false,
+			'normal',
+			$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+			_List_Nil,
 			A4(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'postpartum_checkups',
-				$elm$json$Json$Decode$bool,
-				false,
+				'moderate',
+				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				_List_Nil,
 				A4(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-					'stunting_normal',
+					'severe',
 					$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
 					_List_Nil,
-					A4(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-						'stunting_moderate',
-						$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-						_List_Nil,
-						A4(
-							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-							'stunting_severe',
-							$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-							_List_Nil,
-							A4(
-								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-								'low_birth_weight',
-								$elm$json$Json$Decode$maybe($elm$json$Json$Decode$bool),
-								$elm$core$Maybe$Nothing,
-								A3(
-									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-									'birth_date',
-									$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-									$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))))))));
+					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$CriterionBySeverities)))));
+};
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = function (currentDate) {
+	return A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'muac',
+		$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'wasting',
+			$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'underweigt',
+				$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'stunting',
+					$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
+					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionCriterionsData)))));
+};
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (currentDate) {
+	return A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'iron_during_pregnancy',
+		$elm$json$Json$Decode$bool,
+		false,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'postpartum_checkups',
+			$elm$json$Json$Decode$bool,
+			false,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'nutrition',
+				$author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData(currentDate),
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'low_birth_weight',
+					$elm$json$Json$Decode$maybe($elm$json$Json$Decode$bool),
+					$elm$core$Maybe$Nothing,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'birth_date',
+						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData))))));
 };
 var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
@@ -27291,19 +27325,19 @@ var $author$project$Pages$Scoreboard$View$viewStuntingPane = F5(
 						function (date) {
 							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
 						},
-						record.stuntingSevere);
+						record.nutrition.stunting.severe);
 					var normalAsAgeInMonths = A2(
 						$elm$core$List$map,
 						function (date) {
 							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
 						},
-						record.stuntingNormal);
+						record.nutrition.stunting.normal);
 					var moderateAsAgeInMonths = A2(
 						$elm$core$List$map,
 						function (date) {
 							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
 						},
-						record.stuntingModerate);
+						record.nutrition.stunting.moderate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(

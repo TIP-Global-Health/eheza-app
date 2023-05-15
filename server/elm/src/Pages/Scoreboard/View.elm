@@ -193,13 +193,13 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap data =
                 (\record accum ->
                     let
                         severeAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.stuntingSevere
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.severe
 
                         moderateAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.stuntingModerate
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.moderate
 
                         normalAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.stuntingNormal
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.normal
                     in
                     List.indexedMap
                         (\index accumValue ->
