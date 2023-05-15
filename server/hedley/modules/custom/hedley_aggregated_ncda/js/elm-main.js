@@ -7552,7 +7552,7 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'Village':
 				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing};
 			default:
-				return {english: 'Univeral Intervention', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing};
 		}
 	}
 };
@@ -27481,6 +27481,7 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F4(
 						rows))
 				]));
 	});
+var $author$project$Pages$Scoreboard$Model$Deworming = {$: 'Deworming'};
 var $author$project$Pages$Scoreboard$Model$ECDServices = {$: 'ECDServices'};
 var $author$project$Pages$Scoreboard$Model$Immunization = {$: 'Immunization'};
 var $author$project$Translate$NCDAUniversalInterventionItemLabel = function (a) {
@@ -27565,7 +27566,7 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F4(
 						itemValues);
 				}),
 			_List_fromArray(
-				[$author$project$Pages$Scoreboard$Model$Immunization, $author$project$Pages$Scoreboard$Model$VitaminA, $author$project$Pages$Scoreboard$Model$OngeraMNP, $author$project$Pages$Scoreboard$Model$OngeraMNP, $author$project$Pages$Scoreboard$Model$ECDServices]),
+				[$author$project$Pages$Scoreboard$Model$Immunization, $author$project$Pages$Scoreboard$Model$VitaminA, $author$project$Pages$Scoreboard$Model$Deworming, $author$project$Pages$Scoreboard$Model$OngeraMNP, $author$project$Pages$Scoreboard$Model$ECDServices]),
 			values);
 		return A2(
 			$elm$html$Html$div,

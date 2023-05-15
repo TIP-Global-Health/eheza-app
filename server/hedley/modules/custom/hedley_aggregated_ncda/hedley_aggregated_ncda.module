@@ -258,9 +258,9 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     }
   }
 
-  // Birth weight measurement is taken once.
-  // At Newborn exam encounter (pregnancy summary measurement), if it
-  // was performed. At first NCDA questioner, otherwise.
+  // Birth weight measurement is taken once -
+  // at Newborn exam encounter (pregnancy summary measurement), if it
+  // was performed, at first NCDA questioner, otherwise.
   // Therefore, if we did not resolve birth weight from pregnancy summary,
   // we try to resolve from NCDA questioners.
   if (empty($birth_weight)) {
@@ -270,6 +270,9 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
       }
       break;
     }
+  }
+  if ($birth_weight) {
+    $data['low_birth_weight'] = $birth_weight < 2000;
   }
 
   $data['stunting_severe'] = [];
@@ -293,9 +296,23 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     }
   }
 
-  if ($birth_weight) {
-    $data['low_birth_weight'] = $birth_weight < 2000;
+  $postpartum_checkups = $iron_during_pregnancy = FALSE;
+  foreach ($ncdas as $ncda) {
+    $items = field_get_items('node', $ncda, 'field_ncda_signs');
+    if (!$items) {
+      continue;
+    }
+    foreach ($items as $item) {
+      if ($item['value'] == 'regular-prenatal-visits') {
+        $postpartum_checkups = TRUE;
+      }
+      elseif ($item['value'] == 'iron-supplements-during-pregnancy') {
+        $iron_during_pregnancy = TRUE;
+      }
+    }
   }
+  $data['postpartum_checkups'] = $postpartum_checkups;
+  $data['iron_during_pregnancy'] = $iron_during_pregnancy;
 
   $encoded_data = json_encode($data);
   $wrapper->field_ncda_data->set($encoded_data);
