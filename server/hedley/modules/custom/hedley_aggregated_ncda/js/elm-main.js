@@ -5710,9 +5710,9 @@ var $author$project$Backend$Scoreboard$Model$ScoreboardData = F3(
 	function (entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F5(
-	function (birthDate, lowBirthWeight, stuntingSevere, stuntingModerate, stuntingNormal) {
-		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight, stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere};
+var $author$project$Backend$Scoreboard$Model$PatientData = F7(
+	function (birthDate, lowBirthWeight, stuntingSevere, stuntingModerate, stuntingNormal, postpartumCheckups, ironDuringPregnancy) {
+		return {birthDate: birthDate, ironDuringPregnancy: ironDuringPregnancy, lowBirthWeight: lowBirthWeight, postpartumCheckups: postpartumCheckups, stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$core$Basics$composeL = F3(
@@ -6876,13 +6876,13 @@ var $author$project$Backend$Scoreboard$Decoder$sainitzePatientData = F2(
 					A2($pzp1997$assoc_list$AssocList$get, months, stuntingSevereDict)) ? $elm$core$Maybe$Just(date) : $elm$core$Maybe$Nothing;
 			},
 			$pzp1997$assoc_list$AssocList$toList(stuntingModerateDict));
-		return {
-			birthDate: data.birthDate,
-			lowBirthWeight: data.lowBirthWeight,
-			stuntingModerate: sanitizedStuntingModerate,
-			stuntingNormal: sanitizedStuntingNormal,
-			stuntingSevere: $pzp1997$assoc_list$AssocList$values(stuntingSevereDict)
-		};
+		return _Utils_update(
+			data,
+			{
+				stuntingModerate: sanitizedStuntingModerate,
+				stuntingNormal: sanitizedStuntingNormal,
+				stuntingSevere: $pzp1997$assoc_list$AssocList$values(stuntingSevereDict)
+			});
 	});
 var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (currentDate) {
 	return A2(
@@ -6890,29 +6890,39 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 		$author$project$Backend$Scoreboard$Decoder$sainitzePatientData(currentDate),
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'stunting_normal',
-			$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-			_List_Nil,
+			'iron_during_pregnancy',
+			$elm$json$Json$Decode$bool,
+			false,
 			A4(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'stunting_moderate',
-				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-				_List_Nil,
+				'postpartum_checkups',
+				$elm$json$Json$Decode$bool,
+				false,
 				A4(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-					'stunting_severe',
+					'stunting_normal',
 					$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
 					_List_Nil,
 					A4(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-						'low_birth_weight',
-						$elm$json$Json$Decode$maybe($elm$json$Json$Decode$bool),
-						$elm$core$Maybe$Nothing,
-						A3(
-							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'birth_date',
-							$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-							$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))))));
+						'stunting_moderate',
+						$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+						_List_Nil,
+						A4(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+							'stunting_severe',
+							$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+							_List_Nil,
+							A4(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+								'low_birth_weight',
+								$elm$json$Json$Decode$maybe($elm$json$Json$Decode$bool),
+								$elm$core$Maybe$Nothing,
+								A3(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+									'birth_date',
+									$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+									$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))))))));
 };
 var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};

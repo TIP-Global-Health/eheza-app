@@ -24,6 +24,8 @@ type alias PatientData =
     , stuntingSevere : List NominalDate
     , stuntingModerate : List NominalDate
     , stuntingNormal : List NominalDate
+    , postpartumCheckups : Bool
+    , ironDuringPregnancy : Bool
     }
 
 

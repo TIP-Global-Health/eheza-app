@@ -47,6 +47,8 @@ decodePatientData currentDate =
         |> optional "stunting_severe" (list decodeYYYYMMDD) []
         |> optional "stunting_moderate" (list decodeYYYYMMDD) []
         |> optional "stunting_normal" (list decodeYYYYMMDD) []
+        |> optional "postpartum_checkups" bool False
+        |> optional "iron_during_pregnancy" bool False
         |> map (sainitzePatientData currentDate)
 
 
@@ -107,9 +109,8 @@ sainitzePatientData currentDate data =
                             Nothing
                     )
     in
-    { birthDate = data.birthDate
-    , lowBirthWeight = data.lowBirthWeight
-    , stuntingSevere = Dict.values stuntingSevereDict
-    , stuntingModerate = sanitizedStuntingModerate
-    , stuntingNormal = sanitizedStuntingNormal
+    { data
+        | stuntingSevere = Dict.values stuntingSevereDict
+        , stuntingModerate = sanitizedStuntingModerate
+        , stuntingNormal = sanitizedStuntingNormal
     }
