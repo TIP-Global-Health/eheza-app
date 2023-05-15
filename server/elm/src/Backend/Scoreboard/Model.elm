@@ -21,11 +21,24 @@ type SelectedEntity
 type alias PatientData =
     { birthDate : NominalDate
     , lowBirthWeight : Maybe Bool
-    , stuntingSevere : List NominalDate
-    , stuntingModerate : List NominalDate
-    , stuntingNormal : List NominalDate
+    , nutritionCriterions : NutritionCriterionsData
     , postpartumCheckups : Bool
     , ironDuringPregnancy : Bool
+    }
+
+
+type alias NutritionCriterionsData =
+    { stunting : CriterionBySeverities
+    , underweigt : CriterionBySeverities
+    , wasting : CriterionBySeverities
+    , muac : CriterionBySeverities
+    }
+
+
+type alias CriterionBySeverities =
+    { severe : List NominalDate
+    , moderate : List NominalDate
+    , normal : List NominalDate
     }
 
 

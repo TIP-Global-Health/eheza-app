@@ -44,49 +44,64 @@ decodePatientData currentDate =
     succeed PatientData
         |> required "birth_date" decodeYYYYMMDD
         |> optional "low_birth_weight" (maybe bool) Nothing
-        |> optional "stunting_severe" (list decodeYYYYMMDD) []
-        |> optional "stunting_moderate" (list decodeYYYYMMDD) []
-        |> optional "stunting_normal" (list decodeYYYYMMDD) []
+        |> required "nutrition" (decodeNutritionCriterionsData currentDate)
         |> optional "postpartum_checkups" bool False
         |> optional "iron_during_pregnancy" bool False
-        |> map (sainitzePatientData currentDate)
 
 
-{-| Guiding rule is that patient should have only one stunting value
+decodeNutritionCriterionsData : NominalDate -> Decoder NutritionCriterionsData
+decodeNutritionCriterionsData currentDate =
+    succeed NutritionCriterionsData
+        |> required "stunting" (decodeCriterionBySeverities currentDate)
+        |> required "underweigt" (decodeCriterionBySeverities currentDate)
+        |> required "wasting" (decodeCriterionBySeverities currentDate)
+        |> required "muac" (decodeCriterionBySeverities currentDate)
+
+
+decodeCriterionBySeverities : NominalDate -> Decoder CriterionBySeverities
+decodeCriterionBySeverities currentDate =
+    succeed CriterionBySeverities
+        |> optional "severe" (list decodeYYYYMMDD) []
+        |> optional "moderate" (list decodeYYYYMMDD) []
+        |> optional "normal" (list decodeYYYYMMDD) []
+        |> map (sainitzeCriterionBySeverities currentDate)
+
+
+{-| Guiding rule is that patient should have only one severity value
 during calendar month.
-In case there are multuple values, most severe one needs to be selected.
+In case there are multuple severities, most severe one needs to be selected.
 -}
-sainitzePatientData : NominalDate -> PatientData -> PatientData
-sainitzePatientData currentDate data =
+sainitzeCriterionBySeverities : NominalDate -> CriterionBySeverities -> CriterionBySeverities
+sainitzeCriterionBySeverities currentDate data =
     let
         -- Transfering from list to dict with diff months as key makes
         -- sure we get only single value for given months.
-        stuntingSevereDict =
+        severeDict =
             List.map (\date -> ( diffMonths date currentDate, date ))
-                data.stuntingSevere
+                data.severe
                 |> Dict.fromList
 
         -- Transfering from list to dict with diff months as key makes
         -- sure we get only single value for given months.
-        stuntingModerateDict =
+        moderateDict =
             List.map (\date -> ( diffMonths date currentDate, date ))
-                data.stuntingModerate
+                data.moderate
                 |> Dict.fromList
 
         -- Transfering from list to dict with diff months as key makes
         -- sure we get only single value for given months.
-        stuntingNormalDict =
+        normalDict =
             List.map (\date -> ( diffMonths date currentDate, date ))
-                data.stuntingNormal
+                data.normal
                 |> Dict.fromList
 
         -- Filtering out moderate value, in case severe value was taken
         -- during same month.
-        sanitizedStuntingModerate =
-            Dict.toList stuntingModerateDict
+        sanitizedModerate =
+            Dict.toList moderateDict
                 |> List.filterMap
                     (\( months, date ) ->
-                        if isNothing <| Dict.get months stuntingSevereDict then
+                        if isNothing <| Dict.get months severeDict then
                             Just date
 
                         else
@@ -95,13 +110,13 @@ sainitzePatientData currentDate data =
 
         -- Filtering out normal value, in case severe or moderate values
         -- wewre taken during same month.
-        sanitizedStuntingNormal =
-            Dict.toList stuntingNormalDict
+        sanitizedNormal =
+            Dict.toList normalDict
                 |> List.filterMap
                     (\( months, date ) ->
                         if
-                            (isNothing <| Dict.get months stuntingSevereDict)
-                                && (isNothing <| Dict.get months stuntingModerateDict)
+                            (isNothing <| Dict.get months severeDict)
+                                && (isNothing <| Dict.get months moderateDict)
                         then
                             Just date
 
@@ -110,7 +125,7 @@ sainitzePatientData currentDate data =
                     )
     in
     { data
-        | stuntingSevere = Dict.values stuntingSevereDict
-        , stuntingModerate = sanitizedStuntingModerate
-        , stuntingNormal = sanitizedStuntingNormal
+        | severe = Dict.values severeDict
+        , moderate = sanitizedModerate
+        , normal = sanitizedNormal
     }
