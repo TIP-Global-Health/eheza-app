@@ -353,11 +353,11 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   foreach ($muacs as $muac) {
     if (!empty($muac->field_muac) && !empty($muac->field_muac[LANGUAGE_NONE][0]['value'])) {
       $value = $muac->field_muac[LANGUAGE_NONE][0]['value'];
-      $data['nutrition']['muac']['severe'][] = $parts[0];
-      if ($value <= -3) {
-        $parts = explode(' ', $muac->field_date_measured[LANGUAGE_NONE][0]['value']);
+      $parts = explode(' ', $muac->field_date_measured[LANGUAGE_NONE][0]['value']);
+      if ($value <= 11.5) {
+        $data['nutrition']['muac']['severe'][] = $parts[0];
       }
-      elseif ($value <= -2) {
+      elseif ($value <= 12.5) {
         $data['nutrition']['muac']['moderate'][] = $parts[0];
       }
       else {
