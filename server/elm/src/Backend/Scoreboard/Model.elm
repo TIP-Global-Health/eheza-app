@@ -29,9 +29,18 @@ type alias PatientData =
 
 type alias NutritionCriterionsData =
     { stunting : CriterionBySeverities
-    , underweigt : CriterionBySeverities
+    , underweight : CriterionBySeverities
     , wasting : CriterionBySeverities
     , muac : CriterionBySeverities
+    }
+
+
+emptyNutritionCriterionsData : NutritionCriterionsData
+emptyNutritionCriterionsData =
+    { stunting = emptyCriterionBySeverities
+    , underweight = emptyCriterionBySeverities
+    , wasting = emptyCriterionBySeverities
+    , muac = emptyCriterionBySeverities
     }
 
 
@@ -39,6 +48,14 @@ type alias CriterionBySeverities =
     { severe : List NominalDate
     , moderate : List NominalDate
     , normal : List NominalDate
+    }
+
+
+emptyCriterionBySeverities : CriterionBySeverities
+emptyCriterionBySeverities =
+    { severe = []
+    , moderate = []
+    , normal = []
     }
 
 

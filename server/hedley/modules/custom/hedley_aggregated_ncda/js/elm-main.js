@@ -5716,8 +5716,8 @@ var $author$project$Backend$Scoreboard$Model$PatientData = F5(
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
-	function (stunting, underweigt, wasting, muac) {
-		return {muac: muac, stunting: stunting, underweigt: underweigt, wasting: wasting};
+	function (stunting, underweight, wasting, muac) {
+		return {muac: muac, stunting: stunting, underweight: underweight, wasting: wasting};
 	});
 var $author$project$Backend$Scoreboard$Model$CriterionBySeverities = F3(
 	function (severe, moderate, normal) {
@@ -6916,7 +6916,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = f
 			$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'underweigt',
+				'underweight',
 				$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
@@ -6924,6 +6924,8 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = f
 					$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
 					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionCriterionsData)))));
 };
+var $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities = {moderate: _List_Nil, normal: _List_Nil, severe: _List_Nil};
+var $author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData = {muac: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, stunting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, underweight: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, wasting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities};
 var $elm$json$Json$Decode$maybe = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
 		_List_fromArray(
@@ -6943,10 +6945,11 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 			'postpartum_checkups',
 			$elm$json$Json$Decode$bool,
 			false,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 				'nutrition',
 				$author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData(currentDate),
+				$author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData,
 				A4(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 					'low_birth_weight',
@@ -26874,9 +26877,161 @@ var $author$project$Translate$NCDAAcuteMalnutritionItemLabel = function (a) {
 	return {$: 'NCDAAcuteMalnutritionItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition = {$: 'SevereAcuteMalnutrition'};
-var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F4(
-	function (language, currentDate, yearSelectorGap, data) {
-		var values = _List_Nil;
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F5(
+	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+		var emptyValues = A2(
+			$elm$core$List$repeat,
+			12,
+			{row1: 0, row2: 0, row3: 0});
+		var valuesByRow = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (record, accum) {
+					var wastingSevereAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.wasting.severe);
+					var wastingNormalAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.wasting.normal);
+					var wastingModerateAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.wasting.moderate);
+					var underweightSevereAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.underweight.severe);
+					var underweightNormalAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.underweight.normal);
+					var underweightModerateAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.underweight.moderate);
+					var stuntingSevereAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.stunting.severe);
+					var stuntingNormalAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.stunting.normal);
+					var stuntingModerateAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.stunting.moderate);
+					var muacSevereAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.muac.severe);
+					var muacNormalAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.muac.normal);
+					var muacModerateAsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.nutrition.muac.moderate);
+					return A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (index, accumValue) {
+								return A2(
+									$elm$core$Maybe$withDefault,
+									accumValue,
+									A2(
+										$elm$core$Maybe$map,
+										function (gapInMoths) {
+											var _v0 = (A2($elm$core$List$member, gapInMoths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMoths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((A2($elm$core$List$member, gapInMoths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMoths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((A2($elm$core$List$member, gapInMoths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMoths, muacNormalAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
+											var row1 = _v0.a;
+											var row2 = _v0.b;
+											var row3 = _v0.c;
+											return {row1: row1, row2: row2, row3: row3};
+										},
+										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+							}),
+						accum);
+				}),
+			emptyValues,
+			data.records);
+		var values = _List_fromArray(
+			[
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row1;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row2;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row3;
+				},
+				valuesByRow)
+			]);
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -27280,36 +27435,6 @@ var $author$project$Translate$NCDAStuntingItemLabel = function (a) {
 var $author$project$Pages$Scoreboard$Model$NoStunting = {$: 'NoStunting'};
 var $author$project$Pages$Scoreboard$Model$SevereStunting = {$: 'SevereStunting'};
 var $author$project$Translate$Stunting = {$: 'Stunting'};
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
 var $author$project$Pages$Scoreboard$View$viewStuntingPane = F5(
 	function (language, currentDate, yearSelectorGap, monthsGap, data) {
 		var emptyValues = A2(
@@ -27845,7 +27970,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 					topBar,
 					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, data),
 					A5($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
-					A4($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, data),
+					A5($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, data),

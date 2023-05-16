@@ -44,7 +44,7 @@ decodePatientData currentDate =
     succeed PatientData
         |> required "birth_date" decodeYYYYMMDD
         |> optional "low_birth_weight" (maybe bool) Nothing
-        |> required "nutrition" (decodeNutritionCriterionsData currentDate)
+        |> optional "nutrition" (decodeNutritionCriterionsData currentDate) emptyNutritionCriterionsData
         |> optional "postpartum_checkups" bool False
         |> optional "iron_during_pregnancy" bool False
 
@@ -53,7 +53,7 @@ decodeNutritionCriterionsData : NominalDate -> Decoder NutritionCriterionsData
 decodeNutritionCriterionsData currentDate =
     succeed NutritionCriterionsData
         |> required "stunting" (decodeCriterionBySeverities currentDate)
-        |> required "underweigt" (decodeCriterionBySeverities currentDate)
+        |> required "underweight" (decodeCriterionBySeverities currentDate)
         |> required "wasting" (decodeCriterionBySeverities currentDate)
         |> required "muac" (decodeCriterionBySeverities currentDate)
 
