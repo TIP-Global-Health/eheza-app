@@ -377,14 +377,14 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap data =
                                                 gapInMoths - ageInMonths
 
                                             row1 =
-                                                if record.postpartumCheckups && gap > 0 && gap < 10 then
+                                                if record.ncda.postpartumCheckups && gap > 0 && gap < 10 then
                                                     accumValue.row1 + 1
 
                                                 else
                                                     accumValue.row1
 
                                             row2 =
-                                                if record.ironDuringPregnancy && gap > 0 && gap < 10 then
+                                                if record.ncda.ironDuringPregnancy && gap > 0 && gap < 10 then
                                                     accumValue.row2 + 1
 
                                                 else

@@ -415,8 +415,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
       }
     }
   }
-
-
+  
   $encoded_data = json_encode($data);
   $wrapper->field_ncda_data->set($encoded_data);
   $wrapper->save();

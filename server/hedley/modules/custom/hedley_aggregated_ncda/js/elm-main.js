@@ -5710,18 +5710,18 @@ var $author$project$Backend$Scoreboard$Model$ScoreboardData = F3(
 	function (entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F5(
-	function (birthDate, lowBirthWeight, nutrition, postpartumCheckups, ironDuringPregnancy) {
-		return {birthDate: birthDate, ironDuringPregnancy: ironDuringPregnancy, lowBirthWeight: lowBirthWeight, nutrition: nutrition, postpartumCheckups: postpartumCheckups};
+var $author$project$Backend$Scoreboard$Model$PatientData = F4(
+	function (birthDate, lowBirthWeight, nutrition, ncda) {
+		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
-	function (stunting, underweight, wasting, muac) {
-		return {muac: muac, stunting: stunting, underweight: underweight, wasting: wasting};
+var $author$project$Backend$Scoreboard$Model$NCDAData = F3(
+	function (postpartumCheckups, ironDuringPregnancy, nutritionBehavior) {
+		return {ironDuringPregnancy: ironDuringPregnancy, nutritionBehavior: nutritionBehavior, postpartumCheckups: postpartumCheckups};
 	});
-var $author$project$Backend$Scoreboard$Model$CriterionBySeverities = F3(
-	function (severe, moderate, normal) {
-		return {moderate: moderate, normal: normal, severe: severe};
+var $author$project$Backend$Scoreboard$Model$NutritionBehaviorData = F4(
+	function (row1, row2, row3, row4) {
+		return {row1: row1, row2: row2, row3: row3, row4: row4};
 	});
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
@@ -6600,6 +6600,52 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
 				fallback),
 			decoder);
 	});
+var $author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'row4',
+	$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+	_List_Nil,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'row3',
+		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+		_List_Nil,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'row2',
+			$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+			_List_Nil,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'row1',
+				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				_List_Nil,
+				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionBehaviorData)))));
+var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
+var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'pane_nb',
+	$author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData,
+	$author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'iron_during_pregnancy',
+		$elm$json$Json$Decode$bool,
+		false,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'postpartum_checkups',
+			$elm$json$Json$Decode$bool,
+			false,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NCDAData))));
+var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
+	function (stunting, underweight, wasting, muac) {
+		return {muac: muac, stunting: stunting, underweight: underweight, wasting: wasting};
+	});
+var $author$project$Backend$Scoreboard$Model$CriterionBySeverities = F3(
+	function (severe, moderate, normal) {
+		return {moderate: moderate, normal: normal, severe: severe};
+	});
 var $justinmimbs$date$Date$Months = {$: 'Months'};
 var $justinmimbs$date$Date$monthToNumber = function (m) {
 	switch (m.$) {
@@ -6924,6 +6970,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = f
 					$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
 					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionCriterionsData)))));
 };
+var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ironDuringPregnancy: false, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData, postpartumCheckups: false};
 var $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities = {moderate: _List_Nil, normal: _List_Nil, severe: _List_Nil};
 var $author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData = {muac: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, stunting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, underweight: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, wasting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities};
 var $elm$json$Json$Decode$maybe = function (decoder) {
@@ -6937,29 +6984,24 @@ var $elm$json$Json$Decode$maybe = function (decoder) {
 var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (currentDate) {
 	return A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'iron_during_pregnancy',
-		$elm$json$Json$Decode$bool,
-		false,
+		'ncda',
+		$author$project$Backend$Scoreboard$Decoder$decodeNCDAData,
+		$author$project$Backend$Scoreboard$Model$emptyNCDAData,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'postpartum_checkups',
-			$elm$json$Json$Decode$bool,
-			false,
+			'nutrition',
+			$author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData(currentDate),
+			$author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData,
 			A4(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'nutrition',
-				$author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData(currentDate),
-				$author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData,
-				A4(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-					'low_birth_weight',
-					$elm$json$Json$Decode$maybe($elm$json$Json$Decode$bool),
-					$elm$core$Maybe$Nothing,
-					A3(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'birth_date',
-						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData))))));
+				'low_birth_weight',
+				$elm$json$Json$Decode$maybe($elm$json$Json$Decode$bool),
+				$elm$core$Maybe$Nothing,
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'birth_date',
+					$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))));
 };
 var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
@@ -26809,8 +26851,8 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F5(
 										$elm$core$Maybe$map,
 										function (gapInMoths) {
 											var gap = gapInMoths - ageInMonths;
-											var row1 = (record.postpartumCheckups && ((gap > 0) && (gap < 10))) ? (accumValue.row1 + 1) : accumValue.row1;
-											var row2 = (record.ironDuringPregnancy && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = (record.ncda.postpartumCheckups && ((gap > 0) && (gap < 10))) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row2 = (record.ncda.ironDuringPregnancy && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
 											return {row1: row1, row2: row2};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
