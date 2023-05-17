@@ -9,6 +9,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Device.Model exposing (..)
 import EverySet
 import Gizra.Html exposing (showMaybe)
+import Gizra.TimePosix exposing (viewTimePosix)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -105,35 +106,7 @@ viewSyncInfo language info =
                 translate language Translate.Never
 
             else
-                let
-                    normalize number =
-                        if number < 10 then
-                            "0" ++ String.fromInt number
-
-                        else
-                            String.fromInt number
-
-                    year =
-                        Time.toYear Time.utc time |> String.fromInt
-
-                    month =
-                        Time.toMonth Time.utc time
-                            |> Translate.ResolveMonth True
-                            |> translate language
-
-                    day =
-                        Time.toDay Time.utc time |> normalize
-
-                    hour =
-                        Time.toHour Time.utc time |> normalize
-
-                    minute =
-                        Time.toMinute Time.utc time |> normalize
-
-                    second =
-                        Time.toSecond Time.utc time |> normalize
-                in
-                day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second ++ " UTC"
+                viewTimePosix language time
 
         lastSuccessfulContact =
             viewDateTime (Time.millisToPosix info.lastSuccesfulContact)

@@ -197,6 +197,7 @@ type UserPage
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage
     | WellBeingPage
+    | StockManagementPage
 
 
 {-| We group together the pages that can only be viewed in the Dashboard

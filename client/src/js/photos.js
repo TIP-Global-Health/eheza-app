@@ -147,7 +147,6 @@
             event.respondWith(response);
         }
 
-
         // Screenshots upload.
         var screenshotsUrlMatch = screenshotsUploadUrlRegex.test(event.request.url);
         // Handle GET for images which we've uploaded to the cache, but which

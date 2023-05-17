@@ -38,6 +38,7 @@ import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
+import Backend.StockUpdate.Model exposing (StockManagementData)
 import Backend.TraceContact.Model
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
@@ -92,6 +93,7 @@ type alias ModelIndexedDb =
     , nurseRequests : Dict NurseId Backend.Nurse.Model.Model
     , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
     , resilienceMessageRequests : Dict NurseId Backend.ResilienceMessage.Model.Model
+    , stockUpdateRequests : Dict NurseId Backend.StockUpdate.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -133,6 +135,8 @@ type alias ModelIndexedDb =
     , homeVisitMeasurements : Dict HomeVisitEncounterId (WebData HomeVisitMeasurements)
     , wellChildMeasurements : Dict WellChildEncounterId (WebData WellChildMeasurements)
     , ncdMeasurements : Dict NCDEncounterId (WebData NCDMeasurements)
+    , stockManagementMeasurements : Dict HealthCenterId (WebData StockManagementMeasurements)
+    , stockManagementData : Dict HealthCenterId (WebData StockManagementData)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -161,6 +165,9 @@ type alias ModelIndexedDb =
     -- Resilience.
     , resilienceSurveysByNurse : Dict NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     , resilienceMessagesByNurse : Dict NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
+
+    -- Stock Management.
+    , stockUpdates : WebData (Dict StockUpdateId StockUpdate)
     }
 
 
@@ -193,6 +200,8 @@ emptyModelIndexedDb =
     , ncdEncounters = Dict.empty
     , ncdEncountersByParticipant = Dict.empty
     , ncdMeasurements = Dict.empty
+    , stockManagementMeasurements = Dict.empty
+    , stockManagementData = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
@@ -220,6 +229,7 @@ emptyModelIndexedDb =
     , nurseRequests = Dict.empty
     , resilienceSurveyRequests = Dict.empty
     , resilienceMessageRequests = Dict.empty
+    , stockUpdateRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
     , relationshipsByPerson = Dict.empty
@@ -231,6 +241,7 @@ emptyModelIndexedDb =
     , computedDashboardLastFetched = Time.millisToPosix 0
     , resilienceSurveysByNurse = Dict.empty
     , resilienceMessagesByNurse = Dict.empty
+    , stockUpdates = NotAsked
     }
 
 
@@ -310,6 +321,9 @@ type MsgIndexedDb
     | FetchResilienceSurveysForNurse NurseId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
+    | FetchStockManagementMeasurements HealthCenterId
+    | FetchStockManagementData HealthCenterId
+    | MarkForRecalculationStockManagementData HealthCenterId
     | FetchVillages
     | FetchTraceContact AcuteIllnessTraceContactId
       -- Messages which handle responses to data
@@ -355,6 +369,7 @@ type MsgIndexedDb
     | HandleFetchedResilienceSurveysForNurse NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
+    | HandleFetchedStockManagementMeasurements HealthCenterId (WebData StockManagementMeasurements)
     | HandleFetchedVillages (WebData (Dict VillageId Village))
     | HandleFetchedTraceContact AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
       -- Messages which mutate data
@@ -402,6 +417,7 @@ type MsgIndexedDb
     | MsgNurse NurseId Backend.Nurse.Model.Msg
     | MsgResilienceSurvey NurseId Backend.ResilienceSurvey.Model.Msg
     | MsgResilienceMessage NurseId Backend.ResilienceMessage.Model.Msg
+    | MsgStockUpdate NurseId Backend.StockUpdate.Model.Msg
     | ResetFailedToFetchAuthorities
 
 
@@ -537,6 +553,7 @@ type Revision
     | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory
+    | StockUpdateRevision StockUpdateId StockUpdate
     | SymptomsGeneralRevision SymptomsGeneralId SymptomsGeneral
     | SymptomsGIRevision SymptomsGIId SymptomsGI
     | SymptomsRespiratoryRevision SymptomsRespiratoryId SymptomsRespiratory

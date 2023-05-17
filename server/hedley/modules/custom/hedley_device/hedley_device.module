@@ -290,6 +290,13 @@ function hedley_device_assign_shards($node, $wrapper) {
       $shards = hedley_general_shards_by_person($person_id);
       break;
 
+    case 'stock_update':
+      // When creating stock update entry, assign health center as shard.
+      // Note that there's no option to edit such entry from device.
+      $health_centeter_id = $wrapper->field_health_center->getIdentifier();
+      $shards = $health_centeter_id ? [$health_centeter_id] : [];
+      break;
+
     // Handling individual_participant and all kinds of measurements.
     // Shards are assigned based on Person for which measurement was taken.
     default:

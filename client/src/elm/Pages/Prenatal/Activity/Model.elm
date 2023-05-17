@@ -138,7 +138,7 @@ type Msg
     | SetPostpartumChildDangerSign PostpartumChildDangerSign
     | SaveDangerSigns PersonId (Maybe ( DangerSignsId, DangerSigns ))
       -- PrenatalPhotoMsgs
-    | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
+    | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) ImageUrl
       -- BirthPlanMsgs
     | SetBirthPlanBoolInput (Bool -> BirthPlanForm -> BirthPlanForm) Bool
     | SetBirthPlanFamilyPlanning FamilyPlanningSign
@@ -490,7 +490,7 @@ emptyDangerSignsData =
 
 
 type alias PrenatalPhotoData =
-    { url : Maybe PhotoUrl }
+    { url : Maybe ImageUrl }
 
 
 emptyPrenatalPhotoData : PrenatalPhotoData

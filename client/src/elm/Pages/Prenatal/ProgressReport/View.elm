@@ -101,7 +101,7 @@ import Pages.Utils
         ( viewEndEncounterButton
         , viewEndEncounterDialog
         , viewEndEncounterMenuForProgressReport
-        , viewPhotoThumbFromPhotoUrl
+        , viewPhotoThumbFromImageUrl
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -1518,7 +1518,7 @@ viewProgressPhotosPane language currentDate isChw assembled =
                                                         |> Maybe.withDefault ""
                                             in
                                             div [ class "progress-photo" ]
-                                                [ viewPhotoThumbFromPhotoUrl photoUrl
+                                                [ viewPhotoThumbFromImageUrl photoUrl
                                                 , div [ class "ega" ] [ text egaLabel ]
                                                 ]
                                        )
