@@ -27379,61 +27379,89 @@ var $author$project$Translate$NCDANutritionBehaviorItemLabel = function (a) {
 	return {$: 'NCDANutritionBehaviorItemLabel', a: a};
 };
 var $author$project$Translate$NutritionBehavior = {$: 'NutritionBehavior'};
-var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F4(
-	function (language, currentDate, yearSelectorGap, data) {
-		var values = function () {
-			var _v0 = data.entityType;
-			switch (_v0.$) {
-				case 'EntityVillage':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[7, 17, 15, 19, 8, 13, 14, 11, 12, 11, 15, 12]),
-							_List_fromArray(
-							[8, 14, 12, 16, 18, 9, 10, 7, 13, 14, 12, 11]),
-							_List_fromArray(
-							[17, 18, 15, 13, 10, 7, 16, 9, 11, 17, 16, 11]),
-							_List_fromArray(
-							[16, 10, 11, 18, 14, 13, 12, 17, 9, 16, 15, 12])
-						]);
-				case 'EntityCell':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[104, 106, 120, 120, 102, 137, 102, 139, 98, 121, 139, 126]),
-							_List_fromArray(
-							[120, 131, 107, 125, 135, 114, 103, 141, 127, 135, 118, 111]),
-							_List_fromArray(
-							[133, 116, 119, 111, 123, 144, 111, 136, 128, 115, 101, 123]),
-							_List_fromArray(
-							[126, 108, 147, 125, 121, 115, 121, 116, 112, 118, 121, 111])
-						]);
-				case 'EntitySector':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[230, 207, 243, 232, 206, 252, 267, 211, 243, 235, 247, 230]),
-							_List_fromArray(
-							[240, 232, 221, 276, 261, 211, 250, 209, 287, 262, 237, 248]),
-							_List_fromArray(
-							[274, 290, 246, 230, 238, 231, 282, 237, 225, 279, 275, 230]),
-							_List_fromArray(
-							[280, 227, 236, 252, 210, 230, 232, 233, 226, 254, 249, 245])
-						]);
-				default:
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[567, 514, 601, 658, 557, 528, 505, 506, 540, 554, 529, 510]),
-							_List_fromArray(
-							[536, 567, 633, 530, 622, 583, 571, 549, 484, 497, 566, 502]),
-							_List_fromArray(
-							[507, 496, 609, 606, 575, 522, 548, 472, 645, 482, 483, 623]),
-							_List_fromArray(
-							[610, 497, 528, 582, 569, 505, 477, 567, 657, 519, 544, 568])
-						]);
-			}
-		}();
+var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F5(
+	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+		var emptyValues = A2(
+			$elm$core$List$repeat,
+			12,
+			{row1: 0, row2: 0, row3: 0, row4: 0});
+		var valuesByRow = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (record, accum) {
+					var row4AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.nutritionBehavior.row4);
+					var row3AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.nutritionBehavior.row3);
+					var row2AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.nutritionBehavior.row2);
+					var row1AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.nutritionBehavior.row1);
+					return A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (index, accumValue) {
+								return A2(
+									$elm$core$Maybe$withDefault,
+									accumValue,
+									A2(
+										$elm$core$Maybe$map,
+										function (gapInMoths) {
+											var row4 = A2($elm$core$List$member, gapInMoths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
+											var row3 = A2($elm$core$List$member, gapInMoths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = A2($elm$core$List$member, gapInMoths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = A2($elm$core$List$member, gapInMoths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+											return {row1: row1, row2: row2, row3: row3, row4: row4};
+										},
+										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+							}),
+						accum);
+				}),
+			emptyValues,
+			data.records);
+		var values = _List_fromArray(
+			[
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row1;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row2;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row3;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row4;
+				},
+				valuesByRow)
+			]);
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -28016,7 +28044,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 					A5($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, data),
-					A4($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, data),
+					A5($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, data)
 				]));

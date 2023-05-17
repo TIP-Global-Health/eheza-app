@@ -59,7 +59,7 @@ viewScoreboardData language currentDate data model =
         , viewStuntingPane language currentDate model.yearSelectorGap monthsGap data
         , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap data
         , viewUniversalInterventionPane language currentDate model.yearSelectorGap data
-        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap data
+        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap data
         , viewTargetedInterventionsPane language currentDate model.yearSelectorGap data
         , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap data
         ]
@@ -470,8 +470,8 @@ viewUniversalInterventionPane language currentDate yearSelectorGap data =
         ]
 
 
-viewNutritionBehaviorPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
-viewNutritionBehaviorPane language currentDate yearSelectorGap data =
+viewNutritionBehaviorPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
+viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap data =
     let
         rows =
             List.map2
@@ -481,35 +481,78 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap data =
                 [ BreastfedSixMonths, AppropriateComplementaryFeeding, DiverseDiet, MealsADay ]
                 values
 
+        valuesByRow =
+            List.foldl
+                (\record accum ->
+                    let
+                        row1AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row1
+
+                        row2AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row2
+
+                        row3AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row3
+
+                        row4AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row4
+                    in
+                    List.indexedMap
+                        (\index accumValue ->
+                            Dict.get index monthsGap
+                                |> Maybe.map
+                                    (\gapInMoths ->
+                                        let
+                                            row1 =
+                                                if List.member gapInMoths row1AsAgeInMonths then
+                                                    accumValue.row1 + 1
+
+                                                else
+                                                    accumValue.row1
+
+                                            row2 =
+                                                if List.member gapInMoths row2AsAgeInMonths then
+                                                    accumValue.row2 + 1
+
+                                                else
+                                                    accumValue.row2
+
+                                            row3 =
+                                                if List.member gapInMoths row3AsAgeInMonths then
+                                                    accumValue.row3 + 1
+
+                                                else
+                                                    accumValue.row3
+
+                                            row4 =
+                                                if List.member gapInMoths row4AsAgeInMonths then
+                                                    accumValue.row4 + 1
+
+                                                else
+                                                    accumValue.row4
+                                        in
+                                        { row1 = row1
+                                        , row2 = row2
+                                        , row3 = row3
+                                        , row4 = row4
+                                        }
+                                    )
+                                |> Maybe.withDefault accumValue
+                        )
+                        accum
+                )
+                emptyValues
+                data.records
+
+        emptyValues =
+            List.repeat 12 { row1 = 0, row2 = 0, row3 = 0, row4 = 0 }
+
         values =
-            case data.entityType of
-                EntityVillage ->
-                    [ [ 7, 17, 15, 19, 8, 13, 14, 11, 12, 11, 15, 12 ]
-                    , [ 8, 14, 12, 16, 18, 9, 10, 7, 13, 14, 12, 11 ]
-                    , [ 17, 18, 15, 13, 10, 7, 16, 9, 11, 17, 16, 11 ]
-                    , [ 16, 10, 11, 18, 14, 13, 12, 17, 9, 16, 15, 12 ]
-                    ]
-
-                EntityCell ->
-                    [ [ 104, 106, 120, 120, 102, 137, 102, 139, 98, 121, 139, 126 ]
-                    , [ 120, 131, 107, 125, 135, 114, 103, 141, 127, 135, 118, 111 ]
-                    , [ 133, 116, 119, 111, 123, 144, 111, 136, 128, 115, 101, 123 ]
-                    , [ 126, 108, 147, 125, 121, 115, 121, 116, 112, 118, 121, 111 ]
-                    ]
-
-                EntitySector ->
-                    [ [ 230, 207, 243, 232, 206, 252, 267, 211, 243, 235, 247, 230 ]
-                    , [ 240, 232, 221, 276, 261, 211, 250, 209, 287, 262, 237, 248 ]
-                    , [ 274, 290, 246, 230, 238, 231, 282, 237, 225, 279, 275, 230 ]
-                    , [ 280, 227, 236, 252, 210, 230, 232, 233, 226, 254, 249, 245 ]
-                    ]
-
-                EntityDistrict ->
-                    [ [ 567, 514, 601, 658, 557, 528, 505, 506, 540, 554, 529, 510 ]
-                    , [ 536, 567, 633, 530, 622, 583, 571, 549, 484, 497, 566, 502 ]
-                    , [ 507, 496, 609, 606, 575, 522, 548, 472, 645, 482, 483, 623 ]
-                    , [ 610, 497, 528, 582, 569, 505, 477, 567, 657, 519, 544, 568 ]
-                    ]
+            [ List.map .row1 valuesByRow
+            , List.map .row2 valuesByRow
+            , List.map .row3 valuesByRow
+            , List.map .row4 valuesByRow
+            ]
     in
     div [ class "pane velvet" ]
         [ viewPaneHeading language Translate.NutritionBehavior
