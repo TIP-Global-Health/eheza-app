@@ -354,12 +354,6 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
       if (!empty($node->field_weight) && !empty($node->field_weight[LANGUAGE_NONE][0]['value'])) {
         $birth_weight = $node->field_weight[LANGUAGE_NONE][0]['value'];
       }
-
-      if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE) {
-        continue;
-      }
-
-      $questioneers[] = $node;
     }
   }
 
