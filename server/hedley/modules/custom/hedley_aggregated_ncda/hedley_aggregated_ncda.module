@@ -347,7 +347,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     HEDLEY_ACTIVITY_NCDA_BUNDLES,
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
-    HEDLEY_ACTIVITY_MUAC_BUNDLES );
+    HEDLEY_ACTIVITY_MUAC_BUNDLES);
   $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
 
   $heights = $weights = $muacs = $ncdas = [];
