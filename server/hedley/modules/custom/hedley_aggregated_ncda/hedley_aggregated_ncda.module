@@ -2,17 +2,51 @@
 
 /**
  * @file
- * Drupal needs this blank file.
+ * Code for the Hedley Aggregated NCDA feature.
  */
+
+include_once 'hedley_aggregated_ncda.features.inc';
 
 /**
  * Implements hook_menu().
  */
 function hedley_aggregated_ncda_menu() {
   $items['admin/reports/aggregated-ncda'] = array(
-    'title' => '',
-    'description' => 'Aggregated NCDA scoreboard',
-    'page callback' => 'hedley_aggregated_ncda_callback',
+    'title' => 'NCDA scoreboard',
+    'description' => 'View aggregated NCDA scoreboard',
+    'page callback' => 'hedley_aggregated_ncda_callback_menu',
+    'access arguments' => ['hedley_aggregated_ncda_access'],
+  );
+
+  $items['admin/reports/aggregated-ncda/%/%'] = array(
+    'title' => 'NCDA scoreboard',
+    'description' => 'View aggregated NCDA scoreboard',
+    'page callback' => 'hedley_aggregated_ncda_callback_district',
+    'page arguments' => [3, 4],
+    'access arguments' => ['hedley_aggregated_ncda_access'],
+  );
+
+  $items['admin/reports/aggregated-ncda/%/%/%'] = array(
+    'title' => 'NCDA scoreboard',
+    'description' => 'View aggregated NCDA scoreboard',
+    'page callback' => 'hedley_aggregated_ncda_callback_sector',
+    'page arguments' => [3, 4, 5],
+    'access arguments' => ['hedley_aggregated_ncda_access'],
+  );
+
+  $items['admin/reports/aggregated-ncda/%/%/%/%'] = array(
+    'title' => 'NCDA scoreboard',
+    'description' => 'View aggregated NCDA scoreboard',
+    'page callback' => 'hedley_aggregated_ncda_callback_cell',
+    'page arguments' => [3, 4, 5, 6],
+    'access arguments' => ['hedley_aggregated_ncda_access'],
+  );
+
+  $items['admin/reports/aggregated-ncda/%/%/%/%/%'] = array(
+    'title' => 'NCDA scoreboard',
+    'description' => 'View aggregated NCDA scoreboard',
+    'page callback' => 'hedley_aggregated_ncda_callback_village',
+    'page arguments' => [3, 4, 5, 6, 7],
     'access arguments' => ['hedley_aggregated_ncda_access'],
   );
 
@@ -20,7 +54,7 @@ function hedley_aggregated_ncda_menu() {
 }
 
 /**
- * Determines whether current user may access Aggregated NCDA scoreboard page.
+ * Determines whether current user may access Aggregated NCDA scoreboard pages.
  *
  * @return bool
  *   TRUE if the user has access, FALSE otherwise.
@@ -40,15 +74,144 @@ function hedley_aggregated_ncda_access() {
 }
 
 /**
- * Callback function for the Aggregated NCDA scoreboard page.
- *
- * Adds JavaScript and CSS files to the page and initializes an Elm application
- * with the given settings.
+ * Callback for Elm application of administrative division selection.
  *
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_aggregated_ncda_callback() {
+function hedley_aggregated_ncda_callback_menu() {
+  return hedley_aggregated_ncda_build_elm_app('menu', []);
+}
+
+/**
+ * Callback for aggregated NCDA elm application of district.
+ *
+ * @param int $province
+ *   The province ID.
+ * @param int $district
+ *   The district ID.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_aggregated_ncda_callback_district($province, $district) {
+  return hedley_aggregated_ncda_build_results_app($province, $district);
+}
+
+/**
+ * Callback for aggregated NCDA elm application of sector.
+ *
+ * @param int $province
+ *   The province ID.
+ * @param int $district
+ *   The district ID.
+ * @param int $sector
+ *   The sector ID.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_aggregated_ncda_callback_sector($province, $district, $sector) {
+  return hedley_aggregated_ncda_build_results_app($province, $district, $sector);
+}
+
+/**
+ * Callback for aggregated NCDA elm application of cell.
+ *
+ * @param int $province
+ *   The province ID.
+ * @param int $district
+ *   The district ID.
+ * @param int $sector
+ *   The sector ID.
+ * @param int $cell
+ *   The cell ID.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_aggregated_ncda_callback_cell($province, $district, $sector, $cell) {
+  return hedley_aggregated_ncda_build_results_app($province, $district, $sector, $cell);
+}
+
+/**
+ * Callback for aggregated NCDA elm application of village.
+ *
+ * @param int $province
+ *   The province ID.
+ * @param int $district
+ *   The district ID.
+ * @param int $sector
+ *   The sector ID.
+ * @param int $cell
+ *   The cell ID.
+ * @param int $village
+ *   The village ID.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_aggregated_ncda_callback_village($province, $district, $sector, $cell, $village) {
+  return hedley_aggregated_ncda_build_results_app($province, $district, $sector, $cell, $village);
+}
+
+/**
+ * Build results app for aggregated NCDA.
+ *
+ * Based on input fields, determines administrative divisions for which
+ * data is provided.
+ *
+ * @param int $province
+ *   The province ID.
+ * @param int $district
+ *   The district ID.
+ * @param int|null $sector
+ *   The sector ID (optional).
+ * @param int|null $cell
+ *   The cell ID (optional).
+ * @param int|null $village
+ *   The village ID (optional).
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_aggregated_ncda_build_results_app($province, $district, $sector = NULL, $cell = NULL, $village = NULL) {
+  $data = [];
+
+  if (empty($sector)) {
+    $data['entity_id'] = $district;
+    $data['entity_type'] = 'district';
+  }
+  elseif (empty($cell)) {
+    $data['entity_id'] = $sector;
+    $data['entity_type'] = 'sector';
+  }
+  elseif (empty($village)) {
+    $data['entity_id'] = $cell;
+    $data['entity_type'] = 'cell';
+  }
+  else {
+    $data['entity_id'] = $village;
+    $data['entity_type'] = 'village';
+  }
+
+  $data['results'] = hedley_aggregated_ncda_generate_results_data($province, $district, $sector, $cell, $village);
+
+  return hedley_aggregated_ncda_build_elm_app('results', $data);
+}
+
+/**
+ * Build Elm application for aggregated NCDA.
+ *
+ * @param string $page
+ *   The page name.
+ * @param array $data
+ *   The data array to be used by Elm application.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_aggregated_ncda_build_elm_app($page, array $data) {
   // Add application.
   drupal_add_js(drupal_get_path('module', 'hedley_aggregated_ncda') . '/js/elm-main.js');
   drupal_add_js(drupal_get_path('module', 'hedley_aggregated_ncda') . '/js/elm.js');
@@ -63,7 +226,8 @@ function hedley_aggregated_ncda_callback() {
   $settings = [
     'elm_apps' => [
       $app_id => [
-        'data' => [],
+        'page' => $page,
+        'data' => $data,
       ],
     ],
   ];
@@ -71,4 +235,113 @@ function hedley_aggregated_ncda_callback() {
 
   // Return the HTML markup for the Elm application.
   return '<div id="' . $app_id . '"></div>';
+}
+
+/**
+ * Generate aggregated NCDA data which is stored on person nodes.
+ *
+ * @param int $province
+ *   The province ID.
+ * @param int $district
+ *   The district ID.
+ * @param int $sector
+ *   The sector ID.
+ * @param int $cell
+ *   The cell ID.
+ * @param int $village
+ *   The village ID.
+ *
+ * @return array
+ *   An array of generated data.
+ */
+function hedley_aggregated_ncda_generate_results_data($province, $district, $sector, $cell, $village) {
+  $base_query = new EntityFieldQuery();
+  $base_query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'person')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_province', 'target_id', $province)
+    ->fieldCondition('field_district', 'target_id', $district)
+    ->addTag('exclude_deleted');
+
+  if (!empty($sector)) {
+    $base_query->fieldCondition('field_sector', 'target_id', $sector);
+  }
+
+  if (!empty($cell)) {
+    $base_query->fieldCondition('field_cell', 'target_id', $cell);
+  }
+
+  if (!empty($village)) {
+    $base_query->fieldCondition('field_village', 'target_id', $village);
+  }
+
+  $data = [];
+  $nid = 0;
+  $batch = 500;
+  while (TRUE) {
+    // Free up memory.
+    drupal_static_reset();
+
+    $query = clone $base_query;
+    if ($nid) {
+      $query->propertyCondition('nid', $nid, '>');
+    }
+
+    $result = $query
+      ->range(0, $batch)
+      ->execute();
+
+    if (empty($result['node'])) {
+      // No more items left.
+      break;
+    }
+
+    $ids = array_keys($result['node']);
+    $nodes = node_load_multiple($ids);
+    foreach ($nodes as $node) {
+      $json_data = $node->field_ncda_data[LANGUAGE_NONE][0]['value'];
+      if (empty($json_data)) {
+        continue;
+      }
+      $data[] = json_decode($json_data);
+    }
+
+    $nid = end($ids);
+  }
+
+  return $data;
+}
+
+/**
+ * Generates NCDA data for a given person, and stores in field on person node.
+ *
+ * @param int $person_id
+ *   The ID of the person for whom to generate the NCDA data.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_aggregated_ncda_generate_data_for_person($person_id) {
+  $person = node_load($person_id);
+  $wrapper = entity_metadata_wrapper('node', $person);
+  $birth_date = $wrapper->field_birth_date->value();
+  if (empty($birth_date)) {
+    // We must know the birthdate to be able to present NCDA data.
+    return;
+  }
+
+  if ($birth_date < strtotime("-9 year")) {
+    // We generate data for children only.
+    // Our first records are from Jan 2018, so going back
+    // 9 years to make sure we cover all children.
+    return;
+  }
+
+  $data = [
+    'birth_date' => date("Y-m-d", $birth_date),
+  ];
+
+  $encoded_data = json_encode($data);
+  $wrapper->field_ncda_data->set($encoded_data);
+  $wrapper->save();
 }

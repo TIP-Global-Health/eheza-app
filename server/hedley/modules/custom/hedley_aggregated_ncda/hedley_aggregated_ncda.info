@@ -2,4 +2,6 @@ name = Hedley Aggregated NCDA
 description = Aggregated NCDA related code
 core = 7.x
 package = Hedley
+features[ctools][] = strongarm:strongarm:1
 features[features_api][] = api:2
+features_exclude[dependencies][ctools] = ctools

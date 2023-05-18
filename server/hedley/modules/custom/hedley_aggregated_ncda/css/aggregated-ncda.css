@@ -1,12 +1,21 @@
-#main {
+#main-wrapper {
+  background: #0393db !important;
+}
+
+#main-wrapper #main {
   margin: unset;
 }
 
+#header,
 #breadcrumb,
 #main-wrapper #sidebar-first {
   display: none;
 }
 
-.block.block-system .content {
-  color: red;
+#page-title {
+  display: none;
+}
+
+.region.region-content {
+  height: 100%;
 }
