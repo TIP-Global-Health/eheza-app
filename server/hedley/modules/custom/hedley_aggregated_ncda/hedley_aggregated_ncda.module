@@ -379,7 +379,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
       'row1' => [],
       'row2' => [],
       'row3' => [],
-      'row4' => [],
+      'row4' => FALSE,
       'row5' => [],
     ],
   ];
@@ -433,7 +433,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
           break;
 
         case 'insecticide-treated-bednets-during-pregnancy':
-          $data['ncda']['pane_iew']['row4'][] = $parts[0];
+          $data['ncda']['pane_iew']['row4'][] = TRUE;
           break;
 
         case 'has-kitchen-garden':

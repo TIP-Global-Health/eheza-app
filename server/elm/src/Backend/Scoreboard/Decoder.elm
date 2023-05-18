@@ -154,5 +154,5 @@ decodeInfrastructureEnvironmentWashData =
         |> optional "row1" (list decodeYYYYMMDD) []
         |> optional "row2" (list decodeYYYYMMDD) []
         |> optional "row3" (list decodeYYYYMMDD) []
-        |> optional "row4" (list decodeYYYYMMDD) []
+        |> optional "row4" bool False
         |> optional "row5" (list decodeYYYYMMDD) []

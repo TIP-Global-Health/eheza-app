@@ -61,7 +61,7 @@ viewScoreboardData language currentDate data model =
         , viewUniversalInterventionPane language currentDate model.yearSelectorGap data
         , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap data
         , viewTargetedInterventionsPane language currentDate model.yearSelectorGap data
-        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap data
+        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap data
         ]
 
 
@@ -625,50 +625,105 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap data =
         ]
 
 
-viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
-viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap data =
+viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
+viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap monthsGap data =
     let
         rows =
             List.map2
                 (\item itemValues ->
                     viewTableRow language currentDate yearSelectorGap (Translate.NCDAInfrastructureEnvironmentWashItemLabel item) itemValues
                 )
-                [ HasToilets, HasCleanWater, HasHandwashingFacility, HasKitchenGarden, InsecticideTreatedBedNets ]
+                [ HasToilets, HasCleanWater, HasHandwashingFacility, InsecticideTreatedBedNets, HasKitchenGarden ]
                 values
 
+        valuesByRow =
+            List.foldl
+                (\record accum ->
+                    let
+                        ageInMonths =
+                            diffMonths record.birthDate currentDate
+
+                        row1AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.infrastructureEnvironmentWash.row1
+
+                        row2AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.infrastructureEnvironmentWash.row2
+
+                        row3AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.infrastructureEnvironmentWash.row3
+
+                        row5AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.infrastructureEnvironmentWash.row5
+                    in
+                    List.indexedMap
+                        (\index accumValue ->
+                            Dict.get index monthsGap
+                                |> Maybe.map
+                                    (\gapInMoths ->
+                                        let
+                                            row1 =
+                                                if List.member gapInMoths row1AsAgeInMonths then
+                                                    accumValue.row1 + 1
+
+                                                else
+                                                    accumValue.row1
+
+                                            row2 =
+                                                if List.member gapInMoths row2AsAgeInMonths then
+                                                    accumValue.row2 + 1
+
+                                                else
+                                                    accumValue.row2
+
+                                            row3 =
+                                                if List.member gapInMoths row3AsAgeInMonths then
+                                                    accumValue.row3 + 1
+
+                                                else
+                                                    accumValue.row3
+
+                                            row4 =
+                                                let
+                                                    gap =
+                                                        gapInMoths - ageInMonths
+                                                in
+                                                if record.ncda.infrastructureEnvironmentWash.row4 && gap >= 0 && gap < 24 then
+                                                    accumValue.row4 + 1
+
+                                                else
+                                                    accumValue.row4
+
+                                            row5 =
+                                                if List.member gapInMoths row5AsAgeInMonths then
+                                                    accumValue.row5 + 1
+
+                                                else
+                                                    accumValue.row5
+                                        in
+                                        { row1 = row1
+                                        , row2 = row2
+                                        , row3 = row3
+                                        , row4 = row4
+                                        , row5 = row5
+                                        }
+                                    )
+                                |> Maybe.withDefault accumValue
+                        )
+                        accum
+                )
+                emptyValues
+                data.records
+
+        emptyValues =
+            List.repeat 12 { row1 = 0, row2 = 0, row3 = 0, row4 = 0, row5 = 0 }
+
         values =
-            case data.entityType of
-                EntityVillage ->
-                    [ [ 9, 14, 16, 12, 10, 8, 17, 11, 11, 16, 13, 15 ]
-                    , [ 13, 9, 13, 16, 12, 8, 17, 10, 10, 12, 14, 11 ]
-                    , [ 10, 9, 8, 16, 17, 11, 14, 18, 12, 15, 15, 11 ]
-                    , [ 16, 12, 11, 7, 13, 8, 16, 19, 15, 14, 11, 18 ]
-                    , [ 13, 8, 10, 9, 18, 11, 7, 17, 12, 10, 14, 17 ]
-                    ]
-
-                EntityCell ->
-                    [ [ 118, 138, 106, 117, 123, 98, 138, 103, 125, 125, 108, 110 ]
-                    , [ 122, 92, 146, 114, 125, 128, 138, 109, 91, 118, 115, 109 ]
-                    , [ 127, 126, 130, 103, 143, 117, 121, 108, 108, 111, 136, 135 ]
-                    , [ 104, 129, 132, 100, 99, 137, 132, 110, 127, 123, 131, 119 ]
-                    , [ 116, 90, 102, 92, 115, 134, 118, 137, 92, 130, 121, 122 ]
-                    ]
-
-                EntitySector ->
-                    [ [ 252, 244, 239, 247, 234, 259, 217, 259, 215, 250, 222, 264 ]
-                    , [ 257, 261, 209, 263, 225, 213, 226, 236, 220, 259, 240, 243 ]
-                    , [ 262, 209, 234, 237, 236, 237, 215, 267, 237, 228, 230, 256 ]
-                    , [ 252, 249, 214, 226, 284, 291, 202, 279, 238, 215, 285, 271 ]
-                    , [ 211, 262, 224, 244, 275, 237, 220, 246, 282, 265, 241, 241 ]
-                    ]
-
-                EntityDistrict ->
-                    [ [ 631, 583, 667, 626, 621, 567, 652, 611, 506, 555, 665, 636 ]
-                    , [ 537, 523, 588, 628, 617, 502, 562, 640, 504, 568, 522, 534 ]
-                    , [ 625, 623, 556, 504, 664, 655, 661, 531, 637, 558, 638, 582 ]
-                    , [ 657, 624, 577, 659, 643, 490, 532, 545, 601, 680, 506, 651 ]
-                    , [ 530, 605, 652, 621, 650, 522, 559, 606, 548, 523, 656, 492 ]
-                    ]
+            [ List.map .row1 valuesByRow
+            , List.map .row2 valuesByRow
+            , List.map .row3 valuesByRow
+            , List.map .row4 valuesByRow
+            , List.map .row5 valuesByRow
+            ]
     in
     div [ class "pane orange" ]
         [ viewPaneHeading language Translate.InfrastructureEnvironmentWash

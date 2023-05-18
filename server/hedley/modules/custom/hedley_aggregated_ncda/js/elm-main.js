@@ -6608,8 +6608,8 @@ var $author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWa
 	A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 		'row4',
-		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-		_List_Nil,
+		$elm$json$Json$Decode$bool,
+		false,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 			'row3',
@@ -6651,7 +6651,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData = A4(
 				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
 				_List_Nil,
 				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionBehaviorData)))));
-var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
+var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, false, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
@@ -27308,69 +27308,100 @@ var $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets = {$: 'Inse
 var $author$project$Translate$NCDAInfrastructureEnvironmentWashItemLabel = function (a) {
 	return {$: 'NCDAInfrastructureEnvironmentWashItemLabel', a: a};
 };
-var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F4(
-	function (language, currentDate, yearSelectorGap, data) {
-		var values = function () {
-			var _v0 = data.entityType;
-			switch (_v0.$) {
-				case 'EntityVillage':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[9, 14, 16, 12, 10, 8, 17, 11, 11, 16, 13, 15]),
-							_List_fromArray(
-							[13, 9, 13, 16, 12, 8, 17, 10, 10, 12, 14, 11]),
-							_List_fromArray(
-							[10, 9, 8, 16, 17, 11, 14, 18, 12, 15, 15, 11]),
-							_List_fromArray(
-							[16, 12, 11, 7, 13, 8, 16, 19, 15, 14, 11, 18]),
-							_List_fromArray(
-							[13, 8, 10, 9, 18, 11, 7, 17, 12, 10, 14, 17])
-						]);
-				case 'EntityCell':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[118, 138, 106, 117, 123, 98, 138, 103, 125, 125, 108, 110]),
-							_List_fromArray(
-							[122, 92, 146, 114, 125, 128, 138, 109, 91, 118, 115, 109]),
-							_List_fromArray(
-							[127, 126, 130, 103, 143, 117, 121, 108, 108, 111, 136, 135]),
-							_List_fromArray(
-							[104, 129, 132, 100, 99, 137, 132, 110, 127, 123, 131, 119]),
-							_List_fromArray(
-							[116, 90, 102, 92, 115, 134, 118, 137, 92, 130, 121, 122])
-						]);
-				case 'EntitySector':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[252, 244, 239, 247, 234, 259, 217, 259, 215, 250, 222, 264]),
-							_List_fromArray(
-							[257, 261, 209, 263, 225, 213, 226, 236, 220, 259, 240, 243]),
-							_List_fromArray(
-							[262, 209, 234, 237, 236, 237, 215, 267, 237, 228, 230, 256]),
-							_List_fromArray(
-							[252, 249, 214, 226, 284, 291, 202, 279, 238, 215, 285, 271]),
-							_List_fromArray(
-							[211, 262, 224, 244, 275, 237, 220, 246, 282, 265, 241, 241])
-						]);
-				default:
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[631, 583, 667, 626, 621, 567, 652, 611, 506, 555, 665, 636]),
-							_List_fromArray(
-							[537, 523, 588, 628, 617, 502, 562, 640, 504, 568, 522, 534]),
-							_List_fromArray(
-							[625, 623, 556, 504, 664, 655, 661, 531, 637, 558, 638, 582]),
-							_List_fromArray(
-							[657, 624, 577, 659, 643, 490, 532, 545, 601, 680, 506, 651]),
-							_List_fromArray(
-							[530, 605, 652, 621, 650, 522, 559, 606, 548, 523, 656, 492])
-						]);
-			}
-		}();
+var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F5(
+	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+		var emptyValues = A2(
+			$elm$core$List$repeat,
+			12,
+			{row1: 0, row2: 0, row3: 0, row4: 0, row5: 0});
+		var valuesByRow = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (record, accum) {
+					var row5AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.infrastructureEnvironmentWash.row5);
+					var row3AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.infrastructureEnvironmentWash.row3);
+					var row2AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.infrastructureEnvironmentWash.row2);
+					var row1AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.infrastructureEnvironmentWash.row1);
+					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
+					return A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (index, accumValue) {
+								return A2(
+									$elm$core$Maybe$withDefault,
+									accumValue,
+									A2(
+										$elm$core$Maybe$map,
+										function (gapInMoths) {
+											var row5 = A2($elm$core$List$member, gapInMoths, row5AsAgeInMonths) ? (accumValue.row5 + 1) : accumValue.row5;
+											var row4 = function () {
+												var gap = gapInMoths - ageInMonths;
+												return (record.ncda.infrastructureEnvironmentWash.row4 && ((gap >= 0) && (gap < 24))) ? (accumValue.row4 + 1) : accumValue.row4;
+											}();
+											var row3 = A2($elm$core$List$member, gapInMoths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = A2($elm$core$List$member, gapInMoths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = A2($elm$core$List$member, gapInMoths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
+										},
+										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+							}),
+						accum);
+				}),
+			emptyValues,
+			data.records);
+		var values = _List_fromArray(
+			[
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row1;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row2;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row3;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row4;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row5;
+				},
+				valuesByRow)
+			]);
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -27384,7 +27415,7 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 						itemValues);
 				}),
 			_List_fromArray(
-				[$author$project$Pages$Scoreboard$Model$HasToilets, $author$project$Pages$Scoreboard$Model$HasCleanWater, $author$project$Pages$Scoreboard$Model$HasHandwashingFacility, $author$project$Pages$Scoreboard$Model$HasKitchenGarden, $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets]),
+				[$author$project$Pages$Scoreboard$Model$HasToilets, $author$project$Pages$Scoreboard$Model$HasCleanWater, $author$project$Pages$Scoreboard$Model$HasHandwashingFacility, $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets, $author$project$Pages$Scoreboard$Model$HasKitchenGarden]),
 			values);
 		return A2(
 			$elm$html$Html$div,
@@ -28082,7 +28113,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 					A4($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, data),
-					A4($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, data)
+					A5($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, data)
 				]));
 	});
 var $author$project$Pages$Scoreboard$View$view = F4(
