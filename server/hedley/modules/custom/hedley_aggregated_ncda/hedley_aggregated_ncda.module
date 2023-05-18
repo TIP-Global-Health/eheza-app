@@ -74,7 +74,7 @@ function hedley_aggregated_ncda_access() {
 }
 
 /**
- *  Callback for Elm application of administrative division selection.
+ * Callback for Elm application of administrative division selection.
  *
  * @return string
  *  The HTML markup for the Elm application.
