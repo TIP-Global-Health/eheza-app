@@ -59,8 +59,7 @@ emptyCriterionBySeverities =
 
 
 type alias NCDAData =
-    { postpartumCheckups : Bool
-    , ironDuringPregnancy : Bool
+    { ancNewborn : ANCNewbornData
     , nutritionBehavior : NutritionBehaviorData
     , infrastructureEnvironmentWash : InfrastructureEnvironmentWashData
     }
@@ -68,11 +67,21 @@ type alias NCDAData =
 
 emptyNCDAData : NCDAData
 emptyNCDAData =
-    { postpartumCheckups = False
-    , ironDuringPregnancy = False
+    { ancNewborn = emptyANCNewbornData
     , nutritionBehavior = emptyNutritionBehaviorData
     , infrastructureEnvironmentWash = emptyInfrastructureEnvironmentWashData
     }
+
+
+type alias ANCNewbornData =
+    { row1 : Bool
+    , row2 : Bool
+    }
+
+
+emptyANCNewbornData : ANCNewbornData
+emptyANCNewbornData =
+    ANCNewbornData False False
 
 
 type alias NutritionBehaviorData =

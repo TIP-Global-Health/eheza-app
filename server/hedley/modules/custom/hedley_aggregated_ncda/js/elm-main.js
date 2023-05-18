@@ -5715,10 +5715,74 @@ var $author$project$Backend$Scoreboard$Model$PatientData = F4(
 		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $author$project$Backend$Scoreboard$Model$NCDAData = F4(
-	function (postpartumCheckups, ironDuringPregnancy, nutritionBehavior, infrastructureEnvironmentWash) {
-		return {infrastructureEnvironmentWash: infrastructureEnvironmentWash, ironDuringPregnancy: ironDuringPregnancy, nutritionBehavior: nutritionBehavior, postpartumCheckups: postpartumCheckups};
+var $author$project$Backend$Scoreboard$Model$NCDAData = F3(
+	function (ancNewborn, nutritionBehavior, infrastructureEnvironmentWash) {
+		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior};
 	});
+var $author$project$Backend$Scoreboard$Model$ANCNewbornData = F2(
+	function (row1, row2) {
+		return {row1: row1, row2: row2};
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return $elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						decoder,
+						$elm$json$Json$Decode$null(fallback)
+					]));
+		};
+		var handleResult = function (input) {
+			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
+			if (_v0.$ === 'Ok') {
+				var rawValue = _v0.a;
+				var _v1 = A2(
+					$elm$json$Json$Decode$decodeValue,
+					nullOr(valDecoder),
+					rawValue);
+				if (_v1.$ === 'Ok') {
+					var finalResult = _v1.a;
+					return $elm$json$Json$Decode$succeed(finalResult);
+				} else {
+					var finalErr = _v1.a;
+					return $elm$json$Json$Decode$fail(
+						$elm$json$Json$Decode$errorToString(finalErr));
+				}
+			} else {
+				return $elm$json$Json$Decode$succeed(fallback);
+			}
+		};
+		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
+	function (key, valDecoder, fallback, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var $author$project$Backend$Scoreboard$Decoder$decodeANCNewbornData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'row2',
+	$elm$json$Json$Decode$bool,
+	false,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'row1',
+		$elm$json$Json$Decode$bool,
+		false,
+		$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ANCNewbornData)));
 var $author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData = F5(
 	function (row1, row2, row3, row4, row5) {
 		return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
@@ -6536,7 +6600,6 @@ var $justinmimbs$date$Date$fromIsoString = A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map($justinmimbs$date$Date$deadEndToString),
 				$elm$core$Maybe$withDefault('')))));
-var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 	if (result.$ === 'Ok') {
 		var successValue = result.a;
@@ -6552,54 +6615,6 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
 var $elm$json$Json$Decode$list = _Json_decodeList;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
-	function (pathDecoder, valDecoder, fallback) {
-		var nullOr = function (decoder) {
-			return $elm$json$Json$Decode$oneOf(
-				_List_fromArray(
-					[
-						decoder,
-						$elm$json$Json$Decode$null(fallback)
-					]));
-		};
-		var handleResult = function (input) {
-			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
-			if (_v0.$ === 'Ok') {
-				var rawValue = _v0.a;
-				var _v1 = A2(
-					$elm$json$Json$Decode$decodeValue,
-					nullOr(valDecoder),
-					rawValue);
-				if (_v1.$ === 'Ok') {
-					var finalResult = _v1.a;
-					return $elm$json$Json$Decode$succeed(finalResult);
-				} else {
-					var finalErr = _v1.a;
-					return $elm$json$Json$Decode$fail(
-						$elm$json$Json$Decode$errorToString(finalErr));
-				}
-			} else {
-				return $elm$json$Json$Decode$succeed(fallback);
-			}
-		};
-		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
-	function (key, valDecoder, fallback, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
-				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
-				valDecoder,
-				fallback),
-			decoder);
-	});
 var $author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWashData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'row5',
@@ -6651,29 +6666,25 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData = A4(
 				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
 				_List_Nil,
 				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionBehaviorData)))));
+var $author$project$Backend$Scoreboard$Model$emptyANCNewbornData = A2($author$project$Backend$Scoreboard$Model$ANCNewbornData, false, false);
 var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, false, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'pane_iew',
+	'pane5',
 	$author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWashData,
 	$author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData,
 	A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'pane_nb',
+		'pane3',
 		$author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData,
 		$author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'iron_during_pregnancy',
-			$elm$json$Json$Decode$bool,
-			false,
-			A4(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'postpartum_checkups',
-				$elm$json$Json$Decode$bool,
-				false,
-				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NCDAData)))));
+			'pane1',
+			$author$project$Backend$Scoreboard$Decoder$decodeANCNewbornData,
+			$author$project$Backend$Scoreboard$Model$emptyANCNewbornData,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NCDAData))));
 var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
 	function (stunting, underweight, wasting, muac) {
 		return {muac: muac, stunting: stunting, underweight: underweight, wasting: wasting};
@@ -7006,7 +7017,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = f
 					$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
 					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionCriterionsData)))));
 };
-var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {infrastructureEnvironmentWash: $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData, ironDuringPregnancy: false, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData, postpartumCheckups: false};
+var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ancNewborn: $author$project$Backend$Scoreboard$Model$emptyANCNewbornData, infrastructureEnvironmentWash: $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData};
 var $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities = {moderate: _List_Nil, normal: _List_Nil, severe: _List_Nil};
 var $author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData = {muac: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, stunting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, underweight: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, wasting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities};
 var $elm$json$Json$Decode$maybe = function (decoder) {
@@ -26887,8 +26898,8 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F5(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
 											var gap = gapInMonths - ageInMonths;
-											var row1 = (record.ncda.postpartumCheckups && ((gap > 0) && (gap < 10))) ? (accumValue.row1 + 1) : accumValue.row1;
-											var row2 = (record.ncda.ironDuringPregnancy && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = (record.ncda.ancNewborn.row1 && ((gap > 0) && (gap < 10))) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row2 = (record.ncda.ancNewborn.row2 && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
 											return {row1: row1, row2: row2};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));

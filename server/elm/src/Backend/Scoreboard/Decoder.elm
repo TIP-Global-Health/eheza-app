@@ -133,10 +133,16 @@ sainitzeCriterionBySeverities currentDate data =
 decodeNCDAData : Decoder NCDAData
 decodeNCDAData =
     succeed NCDAData
-        |> optional "postpartum_checkups" bool False
-        |> optional "iron_during_pregnancy" bool False
-        |> optional "pane_nb" decodeNutritionBehaviorData emptyNutritionBehaviorData
-        |> optional "pane_iew" decodeInfrastructureEnvironmentWashData emptyInfrastructureEnvironmentWashData
+        |> optional "pane1" decodeANCNewbornData emptyANCNewbornData
+        |> optional "pane3" decodeNutritionBehaviorData emptyNutritionBehaviorData
+        |> optional "pane5" decodeInfrastructureEnvironmentWashData emptyInfrastructureEnvironmentWashData
+
+
+decodeANCNewbornData : Decoder ANCNewbornData
+decodeANCNewbornData =
+    succeed ANCNewbornData
+        |> optional "row1" bool False
+        |> optional "row2" bool False
 
 
 decodeNutritionBehaviorData : Decoder NutritionBehaviorData
