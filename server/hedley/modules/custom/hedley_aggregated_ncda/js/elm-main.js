@@ -5715,13 +5715,13 @@ var $author$project$Backend$Scoreboard$Model$PatientData = F4(
 		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $author$project$Backend$Scoreboard$Model$NCDAData = F3(
-	function (postpartumCheckups, ironDuringPregnancy, nutritionBehavior) {
-		return {ironDuringPregnancy: ironDuringPregnancy, nutritionBehavior: nutritionBehavior, postpartumCheckups: postpartumCheckups};
+var $author$project$Backend$Scoreboard$Model$NCDAData = F4(
+	function (postpartumCheckups, ironDuringPregnancy, nutritionBehavior, infrastructureEnvironmentWash) {
+		return {infrastructureEnvironmentWash: infrastructureEnvironmentWash, ironDuringPregnancy: ironDuringPregnancy, nutritionBehavior: nutritionBehavior, postpartumCheckups: postpartumCheckups};
 	});
-var $author$project$Backend$Scoreboard$Model$NutritionBehaviorData = F4(
-	function (row1, row2, row3, row4) {
-		return {row1: row1, row2: row2, row3: row3, row4: row4};
+var $author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData = F5(
+	function (row1, row2, row3, row4, row5) {
+		return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
 	});
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
@@ -6600,6 +6600,36 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
 				fallback),
 			decoder);
 	});
+var $author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWashData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'row5',
+	$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+	_List_Nil,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'row4',
+		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+		_List_Nil,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'row3',
+			$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+			_List_Nil,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'row2',
+				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				_List_Nil,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'row1',
+					$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+					_List_Nil,
+					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData))))));
+var $author$project$Backend$Scoreboard$Model$NutritionBehaviorData = F4(
+	function (row1, row2, row3, row4) {
+		return {row1: row1, row2: row2, row3: row3, row4: row4};
+	});
 var $author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'row4',
@@ -6621,23 +6651,29 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData = A4(
 				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
 				_List_Nil,
 				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionBehaviorData)))));
+var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'pane_nb',
-	$author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData,
-	$author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData,
+	'pane_iew',
+	$author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWashData,
+	$author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData,
 	A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'iron_during_pregnancy',
-		$elm$json$Json$Decode$bool,
-		false,
+		'pane_nb',
+		$author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData,
+		$author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'postpartum_checkups',
+			'iron_during_pregnancy',
 			$elm$json$Json$Decode$bool,
 			false,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NCDAData))));
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'postpartum_checkups',
+				$elm$json$Json$Decode$bool,
+				false,
+				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NCDAData)))));
 var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
 	function (stunting, underweight, wasting, muac) {
 		return {muac: muac, stunting: stunting, underweight: underweight, wasting: wasting};
@@ -6970,7 +7006,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = f
 					$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
 					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionCriterionsData)))));
 };
-var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ironDuringPregnancy: false, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData, postpartumCheckups: false};
+var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {infrastructureEnvironmentWash: $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData, ironDuringPregnancy: false, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData, postpartumCheckups: false};
 var $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities = {moderate: _List_Nil, normal: _List_Nil, severe: _List_Nil};
 var $author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData = {muac: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, stunting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, underweight: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, wasting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities};
 var $elm$json$Json$Decode$maybe = function (decoder) {

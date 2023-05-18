@@ -62,6 +62,7 @@ type alias NCDAData =
     { postpartumCheckups : Bool
     , ironDuringPregnancy : Bool
     , nutritionBehavior : NutritionBehaviorData
+    , infrastructureEnvironmentWash : InfrastructureEnvironmentWashData
     }
 
 
@@ -70,6 +71,7 @@ emptyNCDAData =
     { postpartumCheckups = False
     , ironDuringPregnancy = False
     , nutritionBehavior = emptyNutritionBehaviorData
+    , infrastructureEnvironmentWash = emptyInfrastructureEnvironmentWashData
     }
 
 
@@ -84,6 +86,20 @@ type alias NutritionBehaviorData =
 emptyNutritionBehaviorData : NutritionBehaviorData
 emptyNutritionBehaviorData =
     NutritionBehaviorData [] [] [] []
+
+
+type alias InfrastructureEnvironmentWashData =
+    { row1 : List NominalDate
+    , row2 : List NominalDate
+    , row3 : List NominalDate
+    , row4 : List NominalDate
+    , row5 : List NominalDate
+    }
+
+
+emptyInfrastructureEnvironmentWashData : InfrastructureEnvironmentWashData
+emptyInfrastructureEnvironmentWashData =
+    InfrastructureEnvironmentWashData [] [] [] [] []
 
 
 type Msg
