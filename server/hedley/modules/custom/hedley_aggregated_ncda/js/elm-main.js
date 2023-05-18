@@ -27308,7 +27308,6 @@ var $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets = {$: 'Inse
 var $author$project$Translate$NCDAInfrastructureEnvironmentWashItemLabel = function (a) {
 	return {$: 'NCDAInfrastructureEnvironmentWashItemLabel', a: a};
 };
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F5(
 	function (language, currentDate, yearSelectorGap, monthsGap, data) {
 		var emptyValues = A2(
@@ -27418,7 +27417,6 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$HasToilets, $author$project$Pages$Scoreboard$Model$HasCleanWater, $author$project$Pages$Scoreboard$Model$HasHandwashingFacility, $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets, $author$project$Pages$Scoreboard$Model$HasKitchenGarden]),
 			values);
-		var _v0 = A2($elm$core$Debug$log, 'monthsGap', monthsGap);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(

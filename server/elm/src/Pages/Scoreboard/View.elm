@@ -628,9 +628,6 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap data =
 viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
 viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap monthsGap data =
     let
-        _ =
-            Debug.log "monthsGap" monthsGap
-
         rows =
             List.map2
                 (\item itemValues ->
