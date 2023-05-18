@@ -346,7 +346,6 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   $content_types_to_load = HEDLEY_ACTIVITY_NCDA_BUNDLES;
   $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
 
-  $questioneers = [];
   $birth_weight = NULL;
   $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
   if (!empty($measurements)) {
