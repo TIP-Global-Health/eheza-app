@@ -482,12 +482,29 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
       'row1' => FALSE,
       'row2' => FALSE,
     ],
+    // Universal Intervention pane.
+    'pane2' => [
+      'row1' => [],
+      'row2' => [],
+      'row3' => [],
+      'row4' => [],
+      'row5' => [],
+    ],
     // Nutrition Behavior pane.
     'pane3' => [
       'row1' => [],
       'row2' => [],
       'row3' => [],
       'row4' => [],
+    ],
+    // Targeted Interventions pane.
+    'pane4' => [
+      'row1' => [],
+      'row2' => [],
+      'row3' => [],
+      'row4' => [],
+      'row5' => [],
+      'row6' => [],
     ],
     // Infrastructure, Environment & Wash pane.
     'pane5' => [
@@ -553,6 +570,22 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
 
         case 'has-kitchen-garden':
           $data['ncda']['pane5']['row5'][] = $parts[0];
+          break;
+
+        case 'ongera-mnp':
+          $data['ncda']['pane2']['row4'][] = $parts[0];
+          break;
+
+        case 'support-child-with-disability':
+          $data['ncda']['pane4']['row4'][] = $parts[0];
+          break;
+
+        case 'conditional-cash-transfer':
+          $data['ncda']['pane4']['row5'][] = $parts[0];
+          break;
+
+        case 'conditional-food-items':
+          $data['ncda']['pane4']['row6'][] = $parts[0];
           break;
       }
     }
