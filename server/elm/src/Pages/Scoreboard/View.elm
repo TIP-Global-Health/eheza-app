@@ -100,10 +100,10 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap data =
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
-                                    (\gapInMoths ->
+                                    (\gapInMonths ->
                                         let
                                             gap =
-                                                ageInMonths - gapInMoths
+                                                ageInMonths - gapInMonths
 
                                             row1 =
                                                 if gap >= 0 && gap < 24 then
@@ -210,30 +210,30 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap data =
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
-                                    (\gapInMoths ->
+                                    (\gapInMonths ->
                                         let
                                             ( row1, row2, row3 ) =
                                                 if
-                                                    List.member gapInMoths stuntingSevereAsAgeInMonths
-                                                        || List.member gapInMoths underweightSevereAsAgeInMonths
-                                                        || List.member gapInMoths wastingSevereAsAgeInMonths
-                                                        || List.member gapInMoths muacModerateAsAgeInMonths
+                                                    List.member gapInMonths stuntingSevereAsAgeInMonths
+                                                        || List.member gapInMonths underweightSevereAsAgeInMonths
+                                                        || List.member gapInMonths wastingSevereAsAgeInMonths
+                                                        || List.member gapInMonths muacModerateAsAgeInMonths
                                                 then
                                                     ( accumValue.row1 + 1, accumValue.row2, accumValue.row3 )
 
                                                 else if
-                                                    List.member gapInMoths stuntingModerateAsAgeInMonths
-                                                        || List.member gapInMoths underweightModerateAsAgeInMonths
-                                                        || List.member gapInMoths wastingModerateAsAgeInMonths
-                                                        || List.member gapInMoths muacModerateAsAgeInMonths
+                                                    List.member gapInMonths stuntingModerateAsAgeInMonths
+                                                        || List.member gapInMonths underweightModerateAsAgeInMonths
+                                                        || List.member gapInMonths wastingModerateAsAgeInMonths
+                                                        || List.member gapInMonths muacModerateAsAgeInMonths
                                                 then
                                                     ( accumValue.row1, accumValue.row2 + 1, accumValue.row3 )
 
                                                 else if
-                                                    List.member gapInMoths stuntingNormalAsAgeInMonths
-                                                        || List.member gapInMoths underweightNormalAsAgeInMonths
-                                                        || List.member gapInMoths wastingNormalAsAgeInMonths
-                                                        || List.member gapInMoths muacNormalAsAgeInMonths
+                                                    List.member gapInMonths stuntingNormalAsAgeInMonths
+                                                        || List.member gapInMonths underweightNormalAsAgeInMonths
+                                                        || List.member gapInMonths wastingNormalAsAgeInMonths
+                                                        || List.member gapInMonths muacNormalAsAgeInMonths
                                                 then
                                                     ( accumValue.row1, accumValue.row2, accumValue.row3 + 1 )
 
@@ -297,24 +297,24 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap data =
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
-                                    (\gapInMoths ->
+                                    (\gapInMonths ->
                                         let
                                             row1 =
-                                                if List.member gapInMoths severeAsAgeInMonths then
+                                                if List.member gapInMonths severeAsAgeInMonths then
                                                     accumValue.row1 + 1
 
                                                 else
                                                     accumValue.row1
 
                                             row2 =
-                                                if List.member gapInMoths moderateAsAgeInMonths then
+                                                if List.member gapInMonths moderateAsAgeInMonths then
                                                     accumValue.row2 + 1
 
                                                 else
                                                     accumValue.row2
 
                                             row3 =
-                                                if List.member gapInMoths normalAsAgeInMonths then
+                                                if List.member gapInMonths normalAsAgeInMonths then
                                                     accumValue.row3 + 1
 
                                                 else
@@ -371,10 +371,10 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap data =
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
-                                    (\gapInMoths ->
+                                    (\gapInMonths ->
                                         let
                                             gap =
-                                                gapInMoths - ageInMonths
+                                                gapInMonths - ageInMonths
 
                                             row1 =
                                                 if record.ncda.postpartumCheckups && gap > 0 && gap < 10 then
@@ -501,31 +501,31 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap data =
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
-                                    (\gapInMoths ->
+                                    (\gapInMonths ->
                                         let
                                             row1 =
-                                                if List.member gapInMoths row1AsAgeInMonths then
+                                                if List.member gapInMonths row1AsAgeInMonths then
                                                     accumValue.row1 + 1
 
                                                 else
                                                     accumValue.row1
 
                                             row2 =
-                                                if List.member gapInMoths row2AsAgeInMonths then
+                                                if List.member gapInMonths row2AsAgeInMonths then
                                                     accumValue.row2 + 1
 
                                                 else
                                                     accumValue.row2
 
                                             row3 =
-                                                if List.member gapInMoths row3AsAgeInMonths then
+                                                if List.member gapInMonths row3AsAgeInMonths then
                                                     accumValue.row3 + 1
 
                                                 else
                                                     accumValue.row3
 
                                             row4 =
-                                                if List.member gapInMoths row4AsAgeInMonths then
+                                                if List.member gapInMonths row4AsAgeInMonths then
                                                     accumValue.row4 + 1
 
                                                 else
@@ -628,6 +628,9 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap data =
 viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
 viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap monthsGap data =
     let
+        _ =
+            Debug.log "monthsGap" monthsGap
+
         rows =
             List.map2
                 (\item itemValues ->
@@ -659,24 +662,24 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
-                                    (\gapInMoths ->
+                                    (\gapInMonths ->
                                         let
                                             row1 =
-                                                if List.member gapInMoths row1AsAgeInMonths then
+                                                if List.member gapInMonths row1AsAgeInMonths then
                                                     accumValue.row1 + 1
 
                                                 else
                                                     accumValue.row1
 
                                             row2 =
-                                                if List.member gapInMoths row2AsAgeInMonths then
+                                                if List.member gapInMonths row2AsAgeInMonths then
                                                     accumValue.row2 + 1
 
                                                 else
                                                     accumValue.row2
 
                                             row3 =
-                                                if List.member gapInMoths row3AsAgeInMonths then
+                                                if List.member gapInMonths row3AsAgeInMonths then
                                                     accumValue.row3 + 1
 
                                                 else
@@ -685,7 +688,7 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                                             row4 =
                                                 let
                                                     gap =
-                                                        gapInMoths - ageInMonths
+                                                        ageInMonths - gapInMonths
                                                 in
                                                 if record.ncda.infrastructureEnvironmentWash.row4 && gap >= 0 && gap < 24 then
                                                     accumValue.row4 + 1
@@ -694,7 +697,7 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                                                     accumValue.row4
 
                                             row5 =
-                                                if List.member gapInMoths row5AsAgeInMonths then
+                                                if List.member gapInMonths row5AsAgeInMonths then
                                                     accumValue.row5 + 1
 
                                                 else

@@ -433,7 +433,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
           break;
 
         case 'insecticide-treated-bednets-during-pregnancy':
-          $data['ncda']['pane_iew']['row4'][] = TRUE;
+          $data['ncda']['pane_iew']['row4'] = TRUE;
           break;
 
         case 'has-kitchen-garden':

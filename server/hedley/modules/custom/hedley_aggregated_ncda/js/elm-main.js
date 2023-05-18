@@ -26885,8 +26885,8 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F5(
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var gap = gapInMoths - ageInMonths;
+										function (gapInMonths) {
+											var gap = gapInMonths - ageInMonths;
 											var row1 = (record.ncda.postpartumCheckups && ((gap > 0) && (gap < 10))) ? (accumValue.row1 + 1) : accumValue.row1;
 											var row2 = (record.ncda.ironDuringPregnancy && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
 											return {row1: row1, row2: row2};
@@ -27076,8 +27076,8 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F5(
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var _v0 = (A2($elm$core$List$member, gapInMoths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMoths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((A2($elm$core$List$member, gapInMoths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMoths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((A2($elm$core$List$member, gapInMoths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMoths, muacNormalAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
+										function (gapInMonths) {
+											var _v0 = (A2($elm$core$List$member, gapInMonths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacNormalAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
 											var row1 = _v0.a;
 											var row2 = _v0.b;
 											var row3 = _v0.c;
@@ -27227,8 +27227,8 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F5(
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var gap = ageInMonths - gapInMoths;
+										function (gapInMonths) {
+											var gap = ageInMonths - gapInMonths;
 											var row1 = ((gap >= 0) && (gap < 24)) ? (accumValue.row1 + 1) : accumValue.row1;
 											var row2 = (!gap) ? (accumValue.row2 + 1) : accumValue.row2;
 											var row3 = ((!gap) && _Utils_eq(
@@ -27308,6 +27308,7 @@ var $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets = {$: 'Inse
 var $author$project$Translate$NCDAInfrastructureEnvironmentWashItemLabel = function (a) {
 	return {$: 'NCDAInfrastructureEnvironmentWashItemLabel', a: a};
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F5(
 	function (language, currentDate, yearSelectorGap, monthsGap, data) {
 		var emptyValues = A2(
@@ -27352,15 +27353,15 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var row5 = A2($elm$core$List$member, gapInMoths, row5AsAgeInMonths) ? (accumValue.row5 + 1) : accumValue.row5;
+										function (gapInMonths) {
+											var row5 = A2($elm$core$List$member, gapInMonths, row5AsAgeInMonths) ? (accumValue.row5 + 1) : accumValue.row5;
 											var row4 = function () {
-												var gap = gapInMoths - ageInMonths;
+												var gap = ageInMonths - gapInMonths;
 												return (record.ncda.infrastructureEnvironmentWash.row4 && ((gap >= 0) && (gap < 24))) ? (accumValue.row4 + 1) : accumValue.row4;
 											}();
-											var row3 = A2($elm$core$List$member, gapInMoths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
-											var row2 = A2($elm$core$List$member, gapInMoths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row1 = A2($elm$core$List$member, gapInMoths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row3 = A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
 											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -27417,6 +27418,7 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$HasToilets, $author$project$Pages$Scoreboard$Model$HasCleanWater, $author$project$Pages$Scoreboard$Model$HasHandwashingFacility, $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets, $author$project$Pages$Scoreboard$Model$HasKitchenGarden]),
 			values);
+		var _v0 = A2($elm$core$Debug$log, 'monthsGap', monthsGap);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -27489,11 +27491,11 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F5(
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var row4 = A2($elm$core$List$member, gapInMoths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
-											var row3 = A2($elm$core$List$member, gapInMoths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
-											var row2 = A2($elm$core$List$member, gapInMoths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row1 = A2($elm$core$List$member, gapInMoths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+										function (gapInMonths) {
+											var row4 = A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
+											var row3 = A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
 											return {row1: row1, row2: row2, row3: row3, row4: row4};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -27609,10 +27611,10 @@ var $author$project$Pages$Scoreboard$View$viewStuntingPane = F5(
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var row3 = A2($elm$core$List$member, gapInMoths, normalAsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
-											var row2 = A2($elm$core$List$member, gapInMoths, moderateAsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row1 = A2($elm$core$List$member, gapInMoths, severeAsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+										function (gapInMonths) {
+											var row3 = A2($elm$core$List$member, gapInMonths, normalAsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = A2($elm$core$List$member, gapInMonths, moderateAsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = A2($elm$core$List$member, gapInMonths, severeAsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
 											return {row1: row1, row2: row2, row3: row3};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
