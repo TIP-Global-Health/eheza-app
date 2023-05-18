@@ -375,6 +375,13 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
       'row3' => [],
       'row4' => [],
     ],
+    'pane_iew' => [
+      'row1' => [],
+      'row2' => [],
+      'row3' => [],
+      'row4' => [],
+      'row5' => [],
+    ],
   ];
 
   foreach ($ncdas as $ncda) {
@@ -412,6 +419,26 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
         case 'meal-frequency-12+m':
          $data['ncda']['pane_nb']['row4'][] = $parts[0];
          break;
+
+        case 'has-clean-water':
+          $data['ncda']['pane_iew']['row1'][] = $parts[0];
+          break;
+
+        case 'has-toilets':
+          $data['ncda']['pane_iew']['row2'][] = $parts[0];
+          break;
+
+        case 'has-handwashing-facility':
+          $data['ncda']['pane_iew']['row3'][] = $parts[0];
+          break;
+
+        case 'insecticide-treated-bednets-during-pregnancy':
+          $data['ncda']['pane_iew']['row4'][] = $parts[0];
+          break;
+
+        case 'has-kitchen-garden':
+          $data['ncda']['pane_iew']['row5'][] = $parts[0];
+          break;
       }
     }
   }
