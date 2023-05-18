@@ -183,11 +183,11 @@ function hedley_aggregated_ncda_build_results_app($province, $district, $sector 
     $data['entity_type'] = 'district';
   }
   elseif (empty($cell)) {
-    $data['entity_id'] = $sector;
+    $data['entity_name'] = $sector;
     $data['entity_type'] = 'sector';
   }
   elseif (empty($village)) {
-    $data['entity_id'] = $cell;
+    $data['entity_name'] = $cell;
     $data['entity_type'] = 'cell';
   }
   else {
