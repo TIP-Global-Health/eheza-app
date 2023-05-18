@@ -496,36 +496,36 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     foreach ($items as $item) {
       switch ($item['value']) {
         case 'regular-prenatal-visits':
-         $data['ncda']['postpartum_checkups'] = TRUE;
-         break;
+          $data['ncda']['postpartum_checkups'] = TRUE;
+          break;
 
         case 'iron-supplements-during-pregnancy':
-         $data['ncda']['iron_during_pregnancy'] = TRUE;
-         break;
+          $data['ncda']['iron_during_pregnancy'] = TRUE;
+          break;
 
         case 'breastfed-for-six-months':
-         $data['ncda']['pane_nb']['row1'][] = $parts[0];
-         break;
+          $data['ncda']['pane_nb']['row1'][] = $parts[0];
+          break;
 
         case 'appropriate-complementary-feeding':
-         $data['ncda']['pane_nb']['row2'][] = $parts[0];
-         break;
+          $data['ncda']['pane_nb']['row2'][] = $parts[0];
+          break;
 
         case 'five-food-groups':
-        $data['ncda']['pane_nb']['row3'][] = $parts[0];
-        break;
+          $data['ncda']['pane_nb']['row3'][] = $parts[0];
+          break;
 
         // These 3 appear according to child age.
         // There can be only one of these values at single questioner.
         case 'meal-frequency-6to8m':
         case 'meal-frequency-9to11m':
         case 'meal-frequency-12+m':
-         $data['ncda']['pane_nb']['row4'][] = $parts[0];
-         break;
+          $data['ncda']['pane_nb']['row4'][] = $parts[0];
+          break;
       }
     }
   }
-  
+
   $encoded_data = json_encode($data);
   $wrapper->field_ncda_data->set($encoded_data);
   $wrapper->save();
