@@ -719,7 +719,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
 
     foreach ($items as $item) {
       if (in_array($item['value'], ['ors', 'zinc'])) {
-        $data['ncda']['pane5']['row3'][] = $date_measured;
+        $data['ncda']['pane4']['row3'][] = $date_measured;
         break;
       }
     }
