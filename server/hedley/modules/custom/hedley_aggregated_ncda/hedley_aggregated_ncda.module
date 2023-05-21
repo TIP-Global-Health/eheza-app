@@ -349,8 +349,9 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_MUAC_BUNDLES);
   $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
+  $content_types_to_load[] = HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE;
 
-  $heights = $weights = $muacs = $ncdas = [];
+  $heights = $weights = $muacs = $ncdas = $fbfs = [];
   $birth_weight = NULL;
   $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
   if (!empty($measurements)) {
@@ -373,6 +374,11 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
 
       if (in_array($node->type, HEDLEY_ACTIVITY_NCDA_BUNDLES)) {
         $ncdas[] = $node;
+        continue;
+      }
+
+      if ($node->type == HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE) {
+        $fbfs[] = $node;
         continue;
       }
 
@@ -416,62 +422,73 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
 
   foreach ($heights as $height) {
     if (!empty($height->field_zscore_age) && !empty($height->field_zscore_age[LANGUAGE_NONE][0]['value'])) {
+      $date_measured = hedley_aggregated_ncda_get_date_measured($height);
+      if (!$date_measured) {
+        continue;
+      }
+
       $value = $height->field_zscore_age[LANGUAGE_NONE][0]['value'];
-      $parts = explode(' ', $height->field_date_measured[LANGUAGE_NONE][0]['value']);
       if ($value <= -3) {
-        $data['nutrition']['stunting']['severe'][] = $parts[0];
+        $data['nutrition']['stunting']['severe'][] = $date_measured;
       }
       elseif ($value <= -2) {
-        $data['nutrition']['stunting']['moderate'][] = $parts[0];
+        $data['nutrition']['stunting']['moderate'][] = $date_measured;
       }
       else {
-        $data['nutrition']['stunting']['normal'][] = $parts[0];
+        $data['nutrition']['stunting']['normal'][] = $date_measured;
       }
     }
   }
 
   foreach ($weights as $weight) {
     if (!empty($weight->field_zscore_age) && !empty($weight->field_zscore_age[LANGUAGE_NONE][0]['value'])) {
+      $date_measured = hedley_aggregated_ncda_get_date_measured($weight);
+      if (!$date_measured) {
+        continue;
+      }
+
       $value = $weight->field_zscore_age[LANGUAGE_NONE][0]['value'];
-      $parts = explode(' ', $weight->field_date_measured[LANGUAGE_NONE][0]['value']);
       if ($value <= -3) {
-        $data['nutrition']['underweight']['severe'][] = $parts[0];
+        $data['nutrition']['underweight']['severe'][] = $date_measured;
       }
       elseif ($value <= -2) {
-        $data['nutrition']['underweight']['moderate'][] = $parts[0];
+        $data['nutrition']['underweight']['moderate'][] = $date_measured;
       }
       else {
-        $data['nutrition']['underweight']['normal'][] = $parts[0];
+        $data['nutrition']['underweight']['normal'][] = $date_measured;
       }
     }
 
     if (!empty($weight->field_zscore_length) && !empty($weight->field_zscore_length[LANGUAGE_NONE][0]['value'])) {
       $value = $weight->field_zscore_length[LANGUAGE_NONE][0]['value'];
-      $parts = explode(' ', $weight->field_date_measured[LANGUAGE_NONE][0]['value']);
       if ($value <= -3) {
-        $data['nutrition']['wasting']['severe'][] = $parts[0];
+        $data['nutrition']['wasting']['severe'][] = $date_measured;
       }
       elseif ($value <= -2) {
-        $data['nutrition']['wasting']['moderate'][] = $parts[0];
+        $data['nutrition']['wasting']['moderate'][] = $date_measured;
       }
       else {
-        $data['nutrition']['wasting']['normal'][] = $parts[0];
+        $data['nutrition']['wasting']['normal'][] = $date_measured;
       }
     }
   }
 
   foreach ($muacs as $muac) {
     if (!empty($muac->field_muac) && !empty($muac->field_muac[LANGUAGE_NONE][0]['value'])) {
+      $date_measured = hedley_aggregated_ncda_get_date_measured($muac);
+      if (!$date_measured) {
+        continue;
+      }
+
       $value = $muac->field_muac[LANGUAGE_NONE][0]['value'];
-      $parts = explode(' ', $muac->field_date_measured[LANGUAGE_NONE][0]['value']);
       if ($value <= 11.5) {
-        $data['nutrition']['muac']['severe'][] = $parts[0];
+        $data['nutrition']['muac']['severe'][] = $date_measured;
       }
       elseif ($value <= 12.5) {
-        $data['nutrition']['muac']['moderate'][] = $parts[0];
+        $data['nutrition']['muac']['moderate'][] = $date_measured;
       }
       else {
-        $data['nutrition']['muac']['normal'][] = $parts[0];
+        $data['nutrition']['muac']['normal'][] = $date_measured;
       }
     }
   }
@@ -521,6 +538,12 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     if (!$items) {
       continue;
     }
+
+    $date_measured = hedley_aggregated_ncda_get_date_measured($fbf);
+    if (!$date_measured) {
+      continue;
+    }
+
     $parts = explode(' ', $ncda->field_date_measured[LANGUAGE_NONE][0]['value']);
     foreach ($items as $item) {
       switch ($item['value']) {
@@ -533,15 +556,15 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
           break;
 
         case 'breastfed-for-six-months':
-          $data['ncda']['pane3']['row1'][] = $parts[0];
+          $data['ncda']['pane3']['row1'][] = $date_measured;
           break;
 
         case 'appropriate-complementary-feeding':
-          $data['ncda']['pane3']['row2'][] = $parts[0];
+          $data['ncda']['pane3']['row2'][] = $date_measured;
           break;
 
         case 'five-food-groups':
-          $data['ncda']['pane3']['row3'][] = $parts[0];
+          $data['ncda']['pane3']['row3'][] = $date_measured;
           break;
 
         // These 3 appear according to child age.
@@ -549,19 +572,19 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
         case 'meal-frequency-6to8m':
         case 'meal-frequency-9to11m':
         case 'meal-frequency-12+m':
-          $data['ncda']['pane3']['row4'][] = $parts[0];
+          $data['ncda']['pane3']['row4'][] = $date_measured;
           break;
 
         case 'has-clean-water':
-          $data['ncda']['pane5']['row1'][] = $parts[0];
+          $data['ncda']['pane5']['row1'][] = $date_measured;
           break;
 
         case 'has-toilets':
-          $data['ncda']['pane5']['row2'][] = $parts[0];
+          $data['ncda']['pane5']['row2'][] = $date_measured;
           break;
 
         case 'has-handwashing-facility':
-          $data['ncda']['pane5']['row3'][] = $parts[0];
+          $data['ncda']['pane5']['row3'][] = $date_measured;
           break;
 
         case 'insecticide-treated-bednets-during-pregnancy':
@@ -569,24 +592,40 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
           break;
 
         case 'has-kitchen-garden':
-          $data['ncda']['pane5']['row5'][] = $parts[0];
+          $data['ncda']['pane5']['row5'][] = $date_measured;
           break;
 
         case 'ongera-mnp':
-          $data['ncda']['pane2']['row4'][] = $parts[0];
+          $data['ncda']['pane2']['row4'][] = $date_measured;
           break;
 
         case 'support-child-with-disability':
-          $data['ncda']['pane4']['row4'][] = $parts[0];
+          $data['ncda']['pane4']['row4'][] = $date_measured;
           break;
 
         case 'conditional-cash-transfer':
-          $data['ncda']['pane4']['row5'][] = $parts[0];
+          $data['ncda']['pane4']['row5'][] = $date_measured;
           break;
 
         case 'conditional-food-items':
-          $data['ncda']['pane4']['row6'][] = $parts[0];
+          $data['ncda']['pane4']['row6'][] = $date_measured;
           break;
+      }
+    }
+  }
+
+  foreach ($fbfs as $fbf) {
+    // We record all occurrences of FBF distribution, if there was
+    // at least one portion distributed.
+    if (!empty($height->field_distributed_amount) && !empty($height->field_distributed_amount[LANGUAGE_NONE][0]['value'])) {
+      $date_measured = hedley_aggregated_ncda_get_date_measured($fbf);
+      if (!$date_measured) {
+        continue;
+      }
+
+      $value = $height->field_distributed_amount[LANGUAGE_NONE][0]['value'];
+      if ($value > 0) {
+        $data['ncda']['pane5']['row1'][] = $date_measured;
       }
     }
   }
@@ -594,4 +633,17 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   $encoded_data = json_encode($data);
   $wrapper->field_ncda_data->set($encoded_data);
   $wrapper->save();
+}
+
+function hedley_aggregated_ncda_get_date_measured($node) {
+  if (!field_info_field('field_date_measured')) {
+    return FALSE;
+  }
+
+  if (empty($ncda->field_date_measured) || empty($ncda->field_date_measured[LANGUAGE_NONE][0]['value'])) {
+    return FALSE;
+  }
+
+  $parts = explode(' ', $ncda->field_date_measured[LANGUAGE_NONE][0]['value']);
+  return $parts[0];
 }
