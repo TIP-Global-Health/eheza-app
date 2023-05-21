@@ -643,7 +643,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
 
       $value = $fbf->field_distributed_amount[LANGUAGE_NONE][0]['value'];
       if ($value > 0) {
-        $data['ncda']['pane5']['row1'][] = $date_measured;
+        $data['ncda']['pane4']['row1'][] = $date_measured;
       }
     }
   }
@@ -696,7 +696,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
       if (in_array($item['value'], ['malnutrition-moderate', 'malnutrition-severe'])) {
         $type = hedley_aggregated_ncda_bundle_to_encounter_type($nutrition);
         if (in_array($date_measured, $referrals_to_hc[$type])) {
-          $data['ncda']['pane5']['row2'][] = $date_measured;
+          $data['ncda']['pane4']['row2'][] = $date_measured;
           break;
         }
       }
