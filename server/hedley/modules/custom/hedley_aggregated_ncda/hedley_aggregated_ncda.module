@@ -558,7 +558,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
       continue;
     }
 
-    $date_measured = hedley_aggregated_ncda_get_date_measured($fbf);
+    $date_measured = hedley_aggregated_ncda_get_date_measured($ncda);
     if (!$date_measured) {
       continue;
     }
@@ -655,7 +655,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   // So, first step is to track treatment for malnutrition, we need to know all
   // dates when patient was referred to HC.
   $referrals_to_hc = [
-    'group' =>  [],
+    'group' => [],
     'nutrition' => [],
     'well_child' => [],
   ];
@@ -730,6 +730,15 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   $wrapper->save();
 }
 
+/**
+ * Maps the bundle of a measurement node to an encounter type.
+ *
+ * @param object $node
+ *   The node object.
+ *
+ * @return string|bool
+ *   The corresponding encounter type, or FALSE if not found.
+ */
 function hedley_aggregated_ncda_bundle_to_encounter_type($node) {
   switch ($node->type) {
     case HEDLEY_ACTIVITY_GROUP_SEND_TO_HC_CONTENT_TYPE:

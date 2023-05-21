@@ -81,7 +81,6 @@ const HEDLEY_ACTIVITY_SEND_TO_HC_BUNDLES = [
   HEDLEY_ACTIVITY_WELL_CHILD_SEND_TO_HC_CONTENT_TYPE,
 ];
 
-
 /**
  * Implements hook_node_insert().
  */
