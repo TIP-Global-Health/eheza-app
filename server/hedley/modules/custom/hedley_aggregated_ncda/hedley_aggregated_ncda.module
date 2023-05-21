@@ -660,7 +660,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     'well_child' => [],
   ];
   foreach ($send_to_hcs as $send_to_hc) {
-    $items = field_get_items('node', $send_to_hc, 'field_ncda_signs');
+    $items = field_get_items('node', $send_to_hc, 'field_send_to_hc');
     if (!$items) {
       continue;
     }
@@ -674,6 +674,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
       if ($item['value'] == 'refer-to-hc') {
         $type = hedley_aggregated_ncda_bundle_to_encounter_type($send_to_hc);
         $referrals_to_hc[$type][] = $date_measured;
+        break;
       }
     }
   }
@@ -696,6 +697,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
         $type = hedley_aggregated_ncda_bundle_to_encounter_type($nutrition);
         if (in_array($date_measured, $referrals_to_hc[$type])) {
           $data['ncda']['pane5']['row2'][] = $date_measured;
+          break;
         }
       }
     }
@@ -718,6 +720,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     foreach ($items as $item) {
       if (in_array($item['value'], ['ors', 'zinc'])) {
         $data['ncda']['pane5']['row3'][] = $date_measured;
+        break;
       }
     }
   }
