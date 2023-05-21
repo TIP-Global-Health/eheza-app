@@ -27767,77 +27767,117 @@ var $author$project$Pages$Scoreboard$Model$SupportChildWithDisability = {$: 'Sup
 var $author$project$Translate$TargetedInterventions = {$: 'TargetedInterventions'};
 var $author$project$Pages$Scoreboard$Model$TreatmentForAcuteMalnutrition = {$: 'TreatmentForAcuteMalnutrition'};
 var $author$project$Pages$Scoreboard$Model$TreatmentForDiarrhea = {$: 'TreatmentForDiarrhea'};
-var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F4(
-	function (language, currentDate, yearSelectorGap, data) {
-		var values = function () {
-			var _v0 = data.entityType;
-			switch (_v0.$) {
-				case 'EntityVillage':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[9, 15, 18, 7, 13, 11, 16, 9, 18, 8, 12, 10]),
-							_List_fromArray(
-							[13, 12, 7, 9, 8, 14, 17, 17, 10, 16, 10, 17]),
-							_List_fromArray(
-							[12, 15, 10, 18, 9, 16, 8, 11, 12, 17, 18, 14]),
-							_List_fromArray(
-							[3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3]),
-							_List_fromArray(
-							[17, 12, 8, 16, 11, 10, 9, 18, 15, 7, 12, 13]),
-							_List_fromArray(
-							[14, 10, 18, 11, 16, 12, 13, 7, 18, 12, 9, 15])
-						]);
-				case 'EntityCell':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[117, 135, 107, 104, 146, 97, 120, 138, 128, 99, 133, 128]),
-							_List_fromArray(
-							[139, 130, 131, 123, 103, 128, 123, 129, 145, 117, 99, 142]),
-							_List_fromArray(
-							[140, 96, 134, 121, 105, 98, 105, 139, 139, 138, 98, 131]),
-							_List_fromArray(
-							[98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122]),
-							_List_fromArray(
-							[142, 100, 129, 117, 141, 118, 120, 120, 123, 133, 98, 137]),
-							_List_fromArray(
-							[110, 91, 146, 124, 133, 149, 114, 89, 107, 144, 147, 118])
-						]);
-				case 'EntitySector':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[266, 288, 280, 238, 281, 275, 276, 259, 253, 246, 254, 259]),
-							_List_fromArray(
-							[203, 257, 234, 245, 245, 256, 124, 145, 124, 145, 239, 240]),
-							_List_fromArray(
-							[240, 229, 250, 240, 270, 216, 258, 247, 212, 250, 229, 209]),
-							_List_fromArray(
-							[203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239]),
-							_List_fromArray(
-							[254, 261, 237, 238, 258, 249, 275, 275, 216, 239, 241, 231]),
-							_List_fromArray(
-							[234, 227, 255, 265, 228, 208, 234, 206, 236, 238, 231, 252])
-						]);
-				default:
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[582, 618, 604, 533, 550, 601, 648, 486, 503, 565, 491, 634]),
-							_List_fromArray(
-							[491, 455, 640, 678, 524, 491, 545, 640, 563, 640, 455, 491]),
-							_List_fromArray(
-							[497, 555, 484, 545, 518, 491, 537, 652, 633, 614, 616, 554]),
-							_List_fromArray(
-							[530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491]),
-							_List_fromArray(
-							[620, 624, 578, 528, 530, 588, 583, 609, 625, 503, 651, 638]),
-							_List_fromArray(
-							[673, 635, 695, 604, 552, 618, 651, 673, 624, 586, 555, 668])
-						]);
-			}
-		}();
+var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F5(
+	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+		var emptyValues = A2(
+			$elm$core$List$repeat,
+			12,
+			{row1: 0, row2: 0, row3: 0, row4: 0, row5: 0, row6: 0});
+		var valuesByRow = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (record, accum) {
+					var row6AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.targetedInterventions.row6);
+					var row5AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.targetedInterventions.row5);
+					var row4AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.targetedInterventions.row4);
+					var row3AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.targetedInterventions.row3);
+					var row2AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.targetedInterventions.row2);
+					var row1AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.targetedInterventions.row1);
+					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
+					return A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (index, accumValue) {
+								return A2(
+									$elm$core$Maybe$withDefault,
+									accumValue,
+									A2(
+										$elm$core$Maybe$map,
+										function (gapInMonths) {
+											var row6 = A2($elm$core$List$member, gapInMonths, row6AsAgeInMonths) ? (accumValue.row6 + 1) : accumValue.row6;
+											var row5 = A2($elm$core$List$member, gapInMonths, row5AsAgeInMonths) ? (accumValue.row5 + 1) : accumValue.row5;
+											var row4 = A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
+											var row1 = A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+											var gap = ageInMonths - gapInMonths;
+											var row2 = (A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) && ((gap >= 0) && (gap < 24))) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row3 = (A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) && ((gap >= 0) && (gap < 24))) ? (accumValue.row3 + 1) : accumValue.row3;
+											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5, row6: row6};
+										},
+										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+							}),
+						accum);
+				}),
+			emptyValues,
+			data.records);
+		var values = _List_fromArray(
+			[
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row1;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row2;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row3;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row4;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row5;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row6;
+				},
+				valuesByRow)
+			]);
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -28191,7 +28231,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 					A5($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
-					A4($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, data),
+					A5($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, data)
 				]));
 	});

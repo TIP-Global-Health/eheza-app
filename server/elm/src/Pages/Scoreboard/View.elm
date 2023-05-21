@@ -60,7 +60,7 @@ viewScoreboardData language currentDate data model =
         , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap data
         , viewUniversalInterventionPane language currentDate model.yearSelectorGap data
         , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap data
-        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap data
+        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap monthsGap data
         , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap data
         ]
 
@@ -562,8 +562,8 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewTargetedInterventionsPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
-viewTargetedInterventionsPane language currentDate yearSelectorGap data =
+viewTargetedInterventionsPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
+viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap data =
     let
         rows =
             List.map2
@@ -579,43 +579,128 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap data =
                 ]
                 values
 
+        valuesByRow =
+            List.foldl
+                (\record accum ->
+                    let
+                        ageInMonths =
+                            diffMonths record.birthDate currentDate
+
+                        row1AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row1
+
+                        row2AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row2
+
+                        row3AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row3
+
+                        row4AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row4
+
+                        row5AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row5
+
+                        row6AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row6
+                    in
+                    List.indexedMap
+                        (\index accumValue ->
+                            Dict.get index monthsGap
+                                |> Maybe.map
+                                    (\gapInMonths ->
+                                        let
+                                            gap =
+                                                ageInMonths - gapInMonths
+
+                                            row1 =
+                                                -- FBFs are distrubuted for children at FBF groups, where
+                                                -- children age is up until 2 years old.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row1AsAgeInMonths then
+                                                    accumValue.row1 + 1
+
+                                                else
+                                                    accumValue.row1
+
+                                            row2 =
+                                                -- Manutrition treatment can be given to children older that 2 years, therefore,
+                                                -- we must verify that at given month, child age is between 0 and 24 months.
+                                                if List.member gapInMonths row2AsAgeInMonths && gap >= 0 && gap < 24 then
+                                                    accumValue.row2 + 1
+
+                                                else
+                                                    accumValue.row2
+
+                                            row3 =
+                                                -- Diarrhea treatment can be given to children older that 2 years, therefore,
+                                                -- we must verify that at given month, child age is between 0 and 24 months.
+                                                if List.member gapInMonths row3AsAgeInMonths && gap >= 0 && gap < 24 then
+                                                    accumValue.row3 + 1
+
+                                                else
+                                                    accumValue.row3
+
+                                            row4 =
+                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- reaches age of 2 years.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row4AsAgeInMonths then
+                                                    accumValue.row4 + 1
+
+                                                else
+                                                    accumValue.row4
+
+                                            row5 =
+                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- reaches age of 2 years.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row5AsAgeInMonths then
+                                                    accumValue.row5 + 1
+
+                                                else
+                                                    accumValue.row5
+
+                                            row6 =
+                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- reaches age of 2 years.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row6AsAgeInMonths then
+                                                    accumValue.row6 + 1
+
+                                                else
+                                                    accumValue.row6
+                                        in
+                                        { row1 = row1
+                                        , row2 = row2
+                                        , row3 = row3
+                                        , row4 = row4
+                                        , row5 = row5
+                                        , row6 = row6
+                                        }
+                                    )
+                                |> Maybe.withDefault accumValue
+                        )
+                        accum
+                )
+                emptyValues
+                data.records
+
+        emptyValues =
+            List.repeat 12 { row1 = 0, row2 = 0, row3 = 0, row4 = 0, row5 = 0, row6 = 0 }
+
         values =
-            case data.entityType of
-                EntityVillage ->
-                    [ [ 9, 15, 18, 7, 13, 11, 16, 9, 18, 8, 12, 10 ]
-                    , [ 13, 12, 7, 9, 8, 14, 17, 17, 10, 16, 10, 17 ]
-                    , [ 12, 15, 10, 18, 9, 16, 8, 11, 12, 17, 18, 14 ]
-                    , [ 3, 8, 2, 0, 7, 6, 1, 5, 9, 4, 2, 3 ]
-                    , [ 17, 12, 8, 16, 11, 10, 9, 18, 15, 7, 12, 13 ]
-                    , [ 14, 10, 18, 11, 16, 12, 13, 7, 18, 12, 9, 15 ]
-                    ]
-
-                EntityCell ->
-                    [ [ 117, 135, 107, 104, 146, 97, 120, 138, 128, 99, 133, 128 ]
-                    , [ 139, 130, 131, 123, 103, 128, 123, 129, 145, 117, 99, 142 ]
-                    , [ 140, 96, 134, 121, 105, 98, 105, 139, 139, 138, 98, 131 ]
-                    , [ 98, 98, 122, 100, 173, 173, 173, 98, 100, 100, 122, 122 ]
-                    , [ 142, 100, 129, 117, 141, 118, 120, 120, 123, 133, 98, 137 ]
-                    , [ 110, 91, 146, 124, 133, 149, 114, 89, 107, 144, 147, 118 ]
-                    ]
-
-                EntitySector ->
-                    [ [ 266, 288, 280, 238, 281, 275, 276, 259, 253, 246, 254, 259 ]
-                    , [ 203, 257, 234, 245, 245, 256, 124, 145, 124, 145, 239, 240 ]
-                    , [ 240, 229, 250, 240, 270, 216, 258, 247, 212, 250, 229, 209 ]
-                    , [ 203, 203, 239, 220, 256, 256, 256, 203, 220, 220, 239, 239 ]
-                    , [ 254, 261, 237, 238, 258, 249, 275, 275, 216, 239, 241, 231 ]
-                    , [ 234, 227, 255, 265, 228, 208, 234, 206, 236, 238, 231, 252 ]
-                    ]
-
-                EntityDistrict ->
-                    [ [ 582, 618, 604, 533, 550, 601, 648, 486, 503, 565, 491, 634 ]
-                    , [ 491, 455, 640, 678, 524, 491, 545, 640, 563, 640, 455, 491 ]
-                    , [ 497, 555, 484, 545, 518, 491, 537, 652, 633, 614, 616, 554 ]
-                    , [ 530, 530, 491, 455, 640, 640, 640, 530, 455, 455, 491, 491 ]
-                    , [ 620, 624, 578, 528, 530, 588, 583, 609, 625, 503, 651, 638 ]
-                    , [ 673, 635, 695, 604, 552, 618, 651, 673, 624, 586, 555, 668 ]
-                    ]
+            [ List.map .row1 valuesByRow
+            , List.map .row2 valuesByRow
+            , List.map .row3 valuesByRow
+            , List.map .row4 valuesByRow
+            , List.map .row5 valuesByRow
+            , List.map .row6 valuesByRow
+            ]
     in
     div [ class "pane cyan" ]
         [ viewPaneHeading language Translate.TargetedInterventions
