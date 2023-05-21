@@ -5715,9 +5715,9 @@ var $author$project$Backend$Scoreboard$Model$PatientData = F4(
 		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $author$project$Backend$Scoreboard$Model$NCDAData = F3(
-	function (ancNewborn, nutritionBehavior, infrastructureEnvironmentWash) {
-		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior};
+var $author$project$Backend$Scoreboard$Model$NCDAData = F4(
+	function (ancNewborn, nutritionBehavior, targetedInterventions, infrastructureEnvironmentWash) {
+		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior, targetedInterventions: targetedInterventions};
 	});
 var $author$project$Backend$Scoreboard$Model$ANCNewbornData = F2(
 	function (row1, row2) {
@@ -6615,84 +6615,6 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
 var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWashData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'row5',
-	$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-	_List_Nil,
-	A4(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'row4',
-		$elm$json$Json$Decode$bool,
-		false,
-		A4(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'row3',
-			$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-			_List_Nil,
-			A4(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'row2',
-				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-				_List_Nil,
-				A4(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-					'row1',
-					$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-					_List_Nil,
-					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData))))));
-var $author$project$Backend$Scoreboard$Model$NutritionBehaviorData = F4(
-	function (row1, row2, row3, row4) {
-		return {row1: row1, row2: row2, row3: row3, row4: row4};
-	});
-var $author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'row4',
-	$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-	_List_Nil,
-	A4(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'row3',
-		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-		_List_Nil,
-		A4(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'row2',
-			$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-			_List_Nil,
-			A4(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'row1',
-				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-				_List_Nil,
-				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionBehaviorData)))));
-var $author$project$Backend$Scoreboard$Model$emptyANCNewbornData = A2($author$project$Backend$Scoreboard$Model$ANCNewbornData, false, false);
-var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, false, _List_Nil);
-var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
-var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'pane5',
-	$author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWashData,
-	$author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData,
-	A4(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'pane3',
-		$author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData,
-		$author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData,
-		A4(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'pane1',
-			$author$project$Backend$Scoreboard$Decoder$decodeANCNewbornData,
-			$author$project$Backend$Scoreboard$Model$emptyANCNewbornData,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NCDAData))));
-var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
-	function (stunting, underweight, wasting, muac) {
-		return {muac: muac, stunting: stunting, underweight: underweight, wasting: wasting};
-	});
-var $author$project$Backend$Scoreboard$Model$CriterionBySeverities = F3(
-	function (severe, moderate, normal) {
-		return {moderate: moderate, normal: normal, severe: severe};
-	});
 var $justinmimbs$date$Date$Months = {$: 'Months'};
 var $justinmimbs$date$Date$monthToNumber = function (m) {
 	switch (m.$) {
@@ -6805,24 +6727,6 @@ var $author$project$Gizra$NominalDate$diffMonths = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, low, high);
 	});
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
 var $pzp1997$assoc_list$AssocList$D = function (a) {
 	return {$: 'D', a: a};
 };
@@ -6871,6 +6775,178 @@ var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
 		$pzp1997$assoc_list$AssocList$D(_List_Nil),
 		alist);
 };
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $pzp1997$assoc_list$AssocList$values = function (_v0) {
+	var alist = _v0.a;
+	return A2($elm$core$List$map, $elm$core$Tuple$second, alist);
+};
+var $author$project$Backend$Scoreboard$Decoder$sanitizeSingleValuePerMonth = F2(
+	function (currentDate, dates) {
+		return $pzp1997$assoc_list$AssocList$values(
+			$pzp1997$assoc_list$AssocList$fromList(
+				A2(
+					$elm$core$List$map,
+					function (date) {
+						return _Utils_Tuple2(
+							A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate),
+							date);
+					},
+					dates)));
+	});
+var $author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues = function (currentDate) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		$author$project$Backend$Scoreboard$Decoder$sanitizeSingleValuePerMonth(currentDate),
+		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
+};
+var $author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWashData = function (currentDate) {
+	return A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'row5',
+		$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+		_List_Nil,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'row4',
+			$elm$json$Json$Decode$bool,
+			false,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'row3',
+				$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+				_List_Nil,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'row2',
+					$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+					_List_Nil,
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+						'row1',
+						$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+						_List_Nil,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData))))));
+};
+var $author$project$Backend$Scoreboard$Model$NutritionBehaviorData = F4(
+	function (row1, row2, row3, row4) {
+		return {row1: row1, row2: row2, row3: row3, row4: row4};
+	});
+var $author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData = function (currentDate) {
+	return A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'row4',
+		$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+		_List_Nil,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'row3',
+			$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+			_List_Nil,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'row2',
+				$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+				_List_Nil,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'row1',
+					$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+					_List_Nil,
+					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionBehaviorData)))));
+};
+var $author$project$Backend$Scoreboard$Model$TargetedInterventionsData = F6(
+	function (row1, row2, row3, row4, row5, row6) {
+		return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5, row6: row6};
+	});
+var $author$project$Backend$Scoreboard$Decoder$decodeTargetedInterventionsData = function (currentDate) {
+	return A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'row6',
+		$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+		_List_Nil,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'row5',
+			$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+			_List_Nil,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'row4',
+				$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+				_List_Nil,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'row3',
+					$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+					_List_Nil,
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+						'row2',
+						$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+						_List_Nil,
+						A4(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+							'row1',
+							$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+							_List_Nil,
+							$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$TargetedInterventionsData)))))));
+};
+var $author$project$Backend$Scoreboard$Model$emptyANCNewbornData = A2($author$project$Backend$Scoreboard$Model$ANCNewbornData, false, false);
+var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, false, _List_Nil);
+var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
+var $author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData = A6($author$project$Backend$Scoreboard$Model$TargetedInterventionsData, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
+var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = function (currentDate) {
+	return A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'pane5',
+		$author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWashData(currentDate),
+		$author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'pane4',
+			$author$project$Backend$Scoreboard$Decoder$decodeTargetedInterventionsData(currentDate),
+			$author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'pane3',
+				$author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData(currentDate),
+				$author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'pane1',
+					$author$project$Backend$Scoreboard$Decoder$decodeANCNewbornData,
+					$author$project$Backend$Scoreboard$Model$emptyANCNewbornData,
+					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NCDAData)))));
+};
+var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
+	function (stunting, underweight, wasting, muac) {
+		return {muac: muac, stunting: stunting, underweight: underweight, wasting: wasting};
+	});
+var $author$project$Backend$Scoreboard$Model$CriterionBySeverities = F3(
+	function (severe, moderate, normal) {
+		return {moderate: moderate, normal: normal, severe: severe};
+	});
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var $pzp1997$assoc_list$AssocList$get = F2(
 	function (targetKey, _v0) {
 		get:
@@ -6905,14 +6981,6 @@ var $elm_community$maybe_extra$Maybe$Extra$isNothing = function (m) {
 var $pzp1997$assoc_list$AssocList$toList = function (_v0) {
 	var alist = _v0.a;
 	return alist;
-};
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
-var $pzp1997$assoc_list$AssocList$values = function (_v0) {
-	var alist = _v0.a;
-	return A2($elm$core$List$map, $elm$core$Tuple$second, alist);
 };
 var $author$project$Backend$Scoreboard$Decoder$sainitzeCriterionBySeverities = F2(
 	function (currentDate, data) {
@@ -7017,7 +7085,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = f
 					$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
 					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionCriterionsData)))));
 };
-var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ancNewborn: $author$project$Backend$Scoreboard$Model$emptyANCNewbornData, infrastructureEnvironmentWash: $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData};
+var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ancNewborn: $author$project$Backend$Scoreboard$Model$emptyANCNewbornData, infrastructureEnvironmentWash: $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData, targetedInterventions: $author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData};
 var $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities = {moderate: _List_Nil, normal: _List_Nil, severe: _List_Nil};
 var $author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData = {muac: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, stunting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, underweight: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, wasting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities};
 var $elm$json$Json$Decode$maybe = function (decoder) {
@@ -7032,7 +7100,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 	return A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 		'ncda',
-		$author$project$Backend$Scoreboard$Decoder$decodeNCDAData,
+		$author$project$Backend$Scoreboard$Decoder$decodeNCDAData(currentDate),
 		$author$project$Backend$Scoreboard$Model$emptyNCDAData,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,

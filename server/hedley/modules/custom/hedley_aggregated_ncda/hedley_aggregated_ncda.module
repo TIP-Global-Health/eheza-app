@@ -738,7 +738,6 @@ function hedley_aggregated_ncda_bundle_to_encounter_type($node) {
 
     case HEDLEY_ACTIVITY_NUTRITION_SEND_TO_HC_CONTENT_TYPE:
     case HEDLEY_ACTIVITY_NUTRITION_NUTRITION_CONTENT_TYPE:
-
       return 'nutrition';
 
     case HEDLEY_ACTIVITY_WELL_CHILD_SEND_TO_HC_CONTENT_TYPE:

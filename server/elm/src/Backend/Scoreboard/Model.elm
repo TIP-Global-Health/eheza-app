@@ -61,6 +61,7 @@ emptyCriterionBySeverities =
 type alias NCDAData =
     { ancNewborn : ANCNewbornData
     , nutritionBehavior : NutritionBehaviorData
+    , targetedInterventions : TargetedInterventionsData
     , infrastructureEnvironmentWash : InfrastructureEnvironmentWashData
     }
 
@@ -69,6 +70,7 @@ emptyNCDAData : NCDAData
 emptyNCDAData =
     { ancNewborn = emptyANCNewbornData
     , nutritionBehavior = emptyNutritionBehaviorData
+    , targetedInterventions = emptyTargetedInterventionsData
     , infrastructureEnvironmentWash = emptyInfrastructureEnvironmentWashData
     }
 
@@ -95,6 +97,21 @@ type alias NutritionBehaviorData =
 emptyNutritionBehaviorData : NutritionBehaviorData
 emptyNutritionBehaviorData =
     NutritionBehaviorData [] [] [] []
+
+
+type alias TargetedInterventionsData =
+    { row1 : List NominalDate
+    , row2 : List NominalDate
+    , row3 : List NominalDate
+    , row4 : List NominalDate
+    , row5 : List NominalDate
+    , row6 : List NominalDate
+    }
+
+
+emptyTargetedInterventionsData : TargetedInterventionsData
+emptyTargetedInterventionsData =
+    TargetedInterventionsData [] [] [] [] [] []
 
 
 type alias InfrastructureEnvironmentWashData =
