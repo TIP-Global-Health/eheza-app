@@ -441,12 +441,12 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   }
 
   foreach ($weights as $weight) {
-    if (!empty($weight->field_zscore_age) && !empty($weight->field_zscore_age[LANGUAGE_NONE][0]['value'])) {
-      $date_measured = hedley_aggregated_ncda_get_date_measured($weight);
-      if (!$date_measured) {
-        continue;
-      }
+    $date_measured = hedley_aggregated_ncda_get_date_measured($weight);
+    if (!$date_measured) {
+      continue;
+    }
 
+    if (!empty($weight->field_zscore_age) && !empty($weight->field_zscore_age[LANGUAGE_NONE][0]['value'])) {
       $value = $weight->field_zscore_age[LANGUAGE_NONE][0]['value'];
       if ($value <= -3) {
         $data['nutrition']['underweight']['severe'][] = $date_measured;
@@ -617,13 +617,13 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   foreach ($fbfs as $fbf) {
     // We record all occurrences of FBF distribution, if there was
     // at least one portion distributed.
-    if (!empty($height->field_distributed_amount) && !empty($height->field_distributed_amount[LANGUAGE_NONE][0]['value'])) {
+    if (!empty($fbf->field_distributed_amount) && !empty($fbf->field_distributed_amount[LANGUAGE_NONE][0]['value'])) {
       $date_measured = hedley_aggregated_ncda_get_date_measured($fbf);
       if (!$date_measured) {
         continue;
       }
 
-      $value = $height->field_distributed_amount[LANGUAGE_NONE][0]['value'];
+      $value = $fbf->field_distributed_amount[LANGUAGE_NONE][0]['value'];
       if ($value > 0) {
         $data['ncda']['pane5']['row1'][] = $date_measured;
       }
@@ -635,15 +635,24 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   $wrapper->save();
 }
 
+/**
+ * Retrieves the date measured field value from measurement node.
+ *
+ * @param object $node
+ *   The node object.
+ *
+ * @return string|bool
+ *   The date measured or FALSE if not found.
+ */
 function hedley_aggregated_ncda_get_date_measured($node) {
   if (!field_info_field('field_date_measured')) {
     return FALSE;
   }
 
-  if (empty($ncda->field_date_measured) || empty($ncda->field_date_measured[LANGUAGE_NONE][0]['value'])) {
+  if (empty($node->field_date_measured) || empty($node->field_date_measured[LANGUAGE_NONE][0]['value'])) {
     return FALSE;
   }
 
-  $parts = explode(' ', $ncda->field_date_measured[LANGUAGE_NONE][0]['value']);
+  $parts = explode(' ', $node->field_date_measured[LANGUAGE_NONE][0]['value']);
   return $parts[0];
 }
