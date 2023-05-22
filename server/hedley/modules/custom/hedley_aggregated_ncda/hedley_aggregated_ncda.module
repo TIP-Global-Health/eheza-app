@@ -56,6 +56,73 @@ function hedley_aggregated_ncda_menu() {
   return $items;
 }
 
+/**
+ * Implements hook_node_insert().
+ */
+function hedley_aggregated_ncda_node_insert($node) {
+  if ($node->type == 'village') {
+    hedley_aggregated_ncda_trigger_recalculation_for_new_village($node);
+    return;
+  }
+
+  hedley_aggregated_ncda_trigger_recalculation_by_measurement($node);
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function hedley_aggregated_ncda_node_update($node) {
+  if ($node->type == 'person') {
+    hedley_aggregated_ncda_trigger_recalculation_by_edited_person($node);
+    return;
+  }
+
+  hedley_aggregated_ncda_trigger_recalculation_by_measurement($node);
+}
+
+function hedley_aggregated_ncda_trigger_recalculation_by_measurement($node) {
+  $triggering_measurement_types = hedley_aggregated_ncda_get_triggering_measurement_types();
+  if (!in_array($node->type, $triggering_measurement_types)) {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+  if (!$wrapper->__isset('field_person')) {
+    // Can't resolve to which person measurement belongs.
+    return;
+  }
+
+  $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $person_id, [
+    'person_id' => $person_id,
+  ]);
+}
+
+function hedley_aggregated_ncda_trigger_recalculation_for_new_village($node) {
+  $residents = hedley_chw_get_village_residents($node->nid);
+
+  foreach ($residents as $resident) {
+    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $resident, [
+      'person_id' => $resident,
+    ]);
+  }
+}
+
+function hedley_aggregated_ncda_trigger_recalculation_by_edited_person($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper_orig = entity_metadata_wrapper('node', $node->original);
+
+  $birth_date = $wrapper->field_birth_date->value();
+  $birth_date_orig = $wrapper_orig->field_birth_date->value();
+
+  if ($birth_date == $birth_date_orig) {
+    return;
+  }
+
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $node->nid, [
+    'person_id' => $node->nid,
+  ]);
+}
 
 /**
  * Implements hook_advanced_queue_info().
