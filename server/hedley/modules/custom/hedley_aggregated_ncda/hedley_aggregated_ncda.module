@@ -7,6 +7,9 @@
 
 include_once 'hedley_aggregated_ncda.features.inc';
 
+define('HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA', 'hedley_aggregated_ncda_calculate_ncda_data');
+
+
 /**
  * Implements hook_menu().
  */
@@ -51,6 +54,63 @@ function hedley_aggregated_ncda_menu() {
   );
 
   return $items;
+}
+
+
+/**
+ * Implements hook_advanced_queue_info().
+ */
+function hedley_aggregated_ncda_advanced_queue_info() {
+  $items[HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA] = [
+    'label' => t('Calculate NCDA data'),
+    'worker callback' => 'hedley_aggregated_ncda_calculate_ncda_data_worker',
+    'groups' => [
+      'hedley',
+    ],
+    // The number of seconds to retry after.
+    'retry after' => 120,
+    // The maximum number of attempts after a failure.
+    'max attempts' => 3,
+  ];
+
+  return $items;
+}
+
+/**
+ * Advanced queue worker; Calculate NCDA data for person.
+ *
+ * @param object $queue_item
+ *   The item object to process.
+ *
+ * @return array
+ *   Array indicating if the process succeeded, or an array with
+ *   "status" and "result" keys.
+ */
+function hedley_aggregated_ncda_calculate_ncda_data_worker($queue_item) {
+  if (!$person_id = $queue_item->data['person_id']) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Does not have Person Node ID.'),
+    ];
+  }
+
+  try {
+    hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id);
+  }
+  catch (Exception $e) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+      'result' => $e->getMessage(),
+    ];
+  }
+
+  $params = [
+    '@nid' => $person_id,
+  ];
+  return [
+    'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
+    'result' => t('NCDA data has been calculated for person ID: @nid', $params),
+  ];
 }
 
 /**
