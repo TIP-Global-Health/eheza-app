@@ -383,7 +383,7 @@ function hedley_aggregated_ncda_generate_results_data($province, $district, $sec
  *
  * @throws EntityMetadataWrapperException
  */
-function hedley_aggregated_ncda_generate_data_for_person($person_id) {
+function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
   $person = node_load($person_id);
   $wrapper = entity_metadata_wrapper('node', $person);
   $birth_date = $wrapper->field_birth_date->value();
@@ -403,19 +403,7 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     'birth_date' => date("Y-m-d", $birth_date),
   ];
 
-  $content_types_to_load = array_merge(
-    HEDLEY_ACTIVITY_NCDA_BUNDLES,
-    HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
-    HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
-    HEDLEY_ACTIVITY_MUAC_BUNDLES,
-    HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
-    HEDLEY_ACTIVITY_SEND_TO_HC_BUNDLES
-  );
-  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
-  $content_types_to_load[] = HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE;
-  $content_types_to_load[] = HEDLEY_ACTIVITY_MEDICATION_DISTRIBUTION_CONTENT_TYPE;
-  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_MEBENDEZOLE_CONTENT_TYPE;
-  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_VITAMIN_A_CONTENT_TYPE;
+  $content_types_to_load = hedley_aggregated_ncda_get_triggering_measurement_types();
 
   $heights = $weights = $muacs = $ncdas = $fbfs = $nutritions = $send_to_hcs = $medication_distributions = $mebendezoles = $vitamins_a = [];
   $birth_weight = NULL;
@@ -888,4 +876,22 @@ function hedley_aggregated_ncda_get_date_measured($node) {
 
   $parts = explode(' ', $node->field_date_measured[LANGUAGE_NONE][0]['value']);
   return $parts[0];
+}
+
+function hedley_aggregated_ncda_get_triggering_measurement_types() {
+  $content_types_to_load = array_merge(
+    HEDLEY_ACTIVITY_NCDA_BUNDLES,
+    HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_MUAC_BUNDLES,
+    HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
+    HEDLEY_ACTIVITY_SEND_TO_HC_BUNDLES
+  );
+  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
+  $content_types_to_load[] = HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE;
+  $content_types_to_load[] = HEDLEY_ACTIVITY_MEDICATION_DISTRIBUTION_CONTENT_TYPE;
+  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_MEBENDEZOLE_CONTENT_TYPE;
+  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_VITAMIN_A_CONTENT_TYPE;
+
+  return $content_types_to_load;
 }
