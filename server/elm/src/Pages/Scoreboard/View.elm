@@ -58,7 +58,7 @@ viewScoreboardData language currentDate data model =
         , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap monthsGap data
         , viewStuntingPane language currentDate model.yearSelectorGap monthsGap data
         , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap data
-        , viewUniversalInterventionPane language currentDate model.yearSelectorGap data
+        , viewUniversalInterventionPane language currentDate model.yearSelectorGap monthsGap data
         , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap data
         , viewTargetedInterventionsPane language currentDate model.yearSelectorGap monthsGap data
         , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap data
@@ -417,8 +417,8 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewUniversalInterventionPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
-viewUniversalInterventionPane language currentDate yearSelectorGap data =
+viewUniversalInterventionPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
+viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap data =
     let
         rows =
             List.map2
@@ -428,39 +428,128 @@ viewUniversalInterventionPane language currentDate yearSelectorGap data =
                 [ Immunization, VitaminA, Deworming, OngeraMNP, ECDServices ]
                 values
 
+        valuesByRow =
+            List.foldl
+                (\record accum ->
+                    let
+                        ageInMonths =
+                            diffMonths record.birthDate currentDate
+
+                        row1AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row1
+
+                        row2AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row2
+
+                        row3AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row3
+
+                        row4AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row4
+
+                        row5AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row5
+                    in
+                    List.indexedMap
+                        (\index accumValue ->
+                            Dict.get index monthsGap
+                                |> Maybe.map
+                                    (\gapInMonths ->
+                                        let
+                                            ageInMonthsForIndexCell =
+                                                ageInMonths - gapInMonths
+
+                                            row1 =
+                                                -- Immunization will be implemented in follow up PR.
+                                                accumValue.row1
+
+                                            -- Vitamin A is given with interval of at least 6 months.
+                                            -- So, once dose is given, we need to do +1 for that month, and
+                                            -- next 5.
+                                            -- Another condition to look for is the age of child, which should be
+                                            -- between 0 and 24 months.
+                                            row2 =
+                                                if
+                                                    List.any
+                                                        (\ageInMonthsOnAdministrationDate ->
+                                                            let
+                                                                numberOfMonthsSinceAdministration =
+                                                                    ageInMonthsOnAdministrationDate - gapInMonths
+                                                            in
+                                                            (numberOfMonthsSinceAdministration < 6) && (numberOfMonthsSinceAdministration >= 0)
+                                                        )
+                                                        row2AsAgeInMonths
+                                                        && (ageInMonthsForIndexCell >= 0)
+                                                        && (ageInMonthsForIndexCell < 24)
+                                                then
+                                                    accumValue.row2 + 1
+
+                                                else
+                                                    accumValue.row2
+
+                                            -- Mebendezoleis given with interval of at least 6 months.
+                                            -- So, once dose is given, we need to do +1 for that month, and
+                                            -- next 5.
+                                            -- Another condition to look for is the age of child, which should be
+                                            -- between 0 and 24 months.
+                                            row3 =
+                                                if
+                                                    List.any
+                                                        (\ageInMonthsOnAdministrationDate ->
+                                                            let
+                                                                numberOfMonthsSinceAdministration =
+                                                                    ageInMonthsOnAdministrationDate - gapInMonths
+                                                            in
+                                                            (numberOfMonthsSinceAdministration < 6) && (numberOfMonthsSinceAdministration >= 0)
+                                                        )
+                                                        row3AsAgeInMonths
+                                                        && (ageInMonthsForIndexCell >= 0)
+                                                        && (ageInMonthsForIndexCell < 34)
+                                                then
+                                                    accumValue.row3 + 1
+
+                                                else
+                                                    accumValue.row3
+
+                                            row4 =
+                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- reaches age of 2 years.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row4AsAgeInMonths then
+                                                    accumValue.row4 + 1
+
+                                                else
+                                                    accumValue.row4
+
+                                            row5 =
+                                                -- ECD will be implemented in follow up PR.
+                                                accumValue.row5
+                                        in
+                                        { row1 = row1
+                                        , row2 = row2
+                                        , row3 = row3
+                                        , row4 = row4
+                                        , row5 = row5
+                                        }
+                                    )
+                                |> Maybe.withDefault accumValue
+                        )
+                        accum
+                )
+                emptyValues
+                data.records
+
+        emptyValues =
+            List.repeat 12 { row1 = 0, row2 = 0, row3 = 0, row4 = 0, row5 = 0 }
+
         values =
-            case data.entityType of
-                EntityVillage ->
-                    [ [ 13, 14, 11, 17, 9, 8, 14, 16, 12, 10, 15, 12 ]
-                    , [ 6, 10, 17, 13, 14, 12, 9, 8, 11, 15, 16, 12 ]
-                    , [ 14, 12, 16, 17, 10, 9, 13, 7, 8, 11, 19, 11 ]
-                    , [ 7, 12, 15, 10, 16, 8, 15, 17, 13, 14, 19, 11 ]
-                    , [ 12, 15, 8, 11, 11, 9, 17, 16, 15, 12, 19, 11 ]
-                    ]
-
-                EntityCell ->
-                    [ [ 89, 98, 76, 81, 105, 92, 113, 127, 140, 115, 92, 104 ]
-                    , [ 102, 85, 121, 96, 133, 107, 127, 104, 141, 110, 88, 129 ]
-                    , [ 129, 118, 144, 96, 142, 139, 112, 131, 147, 137, 135, 123 ]
-                    , [ 136, 142, 98, 131, 143, 101, 131, 119, 144, 99, 109, 126 ]
-                    , [ 117, 121, 124, 133, 104, 141, 109, 128, 101, 137, 122, 99 ]
-                    ]
-
-                EntitySector ->
-                    [ [ 261, 217, 205, 238, 205, 281, 276, 220, 250, 299, 283, 252 ]
-                    , [ 222, 206, 223, 196, 279, 261, 257, 216, 249, 233, 269, 248 ]
-                    , [ 241, 267, 278, 217, 211, 251, 272, 229, 240, 221, 208, 220 ]
-                    , [ 211, 248, 230, 235, 222, 240, 216, 212, 227, 262, 255, 225 ]
-                    , [ 209, 224, 215, 247, 273, 263, 258, 214, 249, 236, 275, 249 ]
-                    ]
-
-                EntityDistrict ->
-                    [ [ 597, 567, 620, 564, 485, 545, 663, 536, 498, 603, 665, 496 ]
-                    , [ 547, 599, 581, 474, 505, 489, 655, 593, 605, 539, 629, 508 ]
-                    , [ 632, 506, 551, 580, 647, 562, 508, 475, 659, 502, 642, 657 ]
-                    , [ 608, 572, 519, 648, 655, 599, 586, 547, 596, 522, 618, 484 ]
-                    , [ 567, 514, 601, 658, 557, 528, 505, 506, 540, 554, 529, 510 ]
-                    ]
+            [ List.map .row1 valuesByRow
+            , List.map .row2 valuesByRow
+            , List.map .row3 valuesByRow
+            , List.map .row4 valuesByRow
+            , List.map .row5 valuesByRow
+            ]
     in
     div [ class "pane orange" ]
         [ viewPaneHeading language Translate.UniversalIntervention
