@@ -343,6 +343,24 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     'birth_date' => date("Y-m-d", $birth_date),
   ];
 
+  $content_types_to_load = HEDLEY_ACTIVITY_NCDA_BUNDLES;
+  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
+
+  $birth_weight = NULL;
+  $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
+  if (!empty($measurements)) {
+    $nodes = node_load_multiple($measurements);
+    foreach ($nodes as $node) {
+      if (!empty($node->field_weight) && !empty($node->field_weight[LANGUAGE_NONE][0]['value'])) {
+        $birth_weight = $node->field_weight[LANGUAGE_NONE][0]['value'];
+      }
+    }
+  }
+
+  if ($birth_weight) {
+    $data['low_birth_weight'] = $birth_weight < 2000;
+  }
+
   $encoded_data = json_encode($data);
   $wrapper->field_ncda_data->set($encoded_data);
   $wrapper->save();

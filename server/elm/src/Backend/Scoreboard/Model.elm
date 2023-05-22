@@ -21,7 +21,9 @@ type SelectedEntity
 
 
 type alias PatientData =
-    { birthDate : NominalDate }
+    { birthDate : NominalDate
+    , lowBirthWeight : Maybe Bool
+    }
 
 
 type Msg

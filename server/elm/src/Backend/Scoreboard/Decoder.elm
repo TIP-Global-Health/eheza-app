@@ -2,7 +2,7 @@ module Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
 
 import Backend.Scoreboard.Model exposing (..)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, float, int, list, map, maybe, string, succeed)
+import Json.Decode exposing (Decoder, andThen, bool, fail, float, int, list, map, maybe, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
 
 
@@ -41,3 +41,4 @@ decodePatientData : Decoder PatientData
 decodePatientData =
     succeed PatientData
         |> required "birth_date" decodeYYYYMMDD
+        |> optional "low_birth_weight" (maybe bool) Nothing
